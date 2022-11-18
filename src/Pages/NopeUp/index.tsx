@@ -1,7 +1,14 @@
 import React from "react";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps } from "../../globalTypes";
 
-export const NopeUp: React.FC<PageProps> = ({}): JSX.Element => {
+export const NopeUp: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
+
+  const navigate: NavigateFunction = useNavigate()
+
+  const handleClick = () => {
+    navigate("/loader")
+  }
 
   return(
     <div className="Home">
@@ -15,7 +22,7 @@ export const NopeUp: React.FC<PageProps> = ({}): JSX.Element => {
           Manulal Connection
         </div>
         <div className="Home_manual_btn">
-          <button>
+          <button onClick={handleClick}>
             Continue
           </button>
         </div>

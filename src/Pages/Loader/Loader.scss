@@ -1,18 +1,20 @@
-.Cart{
+.Loader_Lonic{
   position: relative;
   min-height: 80vh;
   padding-block: 10px;
 
   &__msg{
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    display: block;
+    margin-top: 100px;
     text-align: center;
-    font-size: 1.5rem;
+    color: #949596;
+    font-size: 1.2rem;
     letter-spacing: 0.5px;
+  }
+
+  &__img{
+    transition-duration: 1000ms;
+    text-align: center;
+    margin-top: 15px;
   }
 
   &__info{
