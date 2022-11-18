@@ -1,0 +1,16 @@
+.CheckoutInput{
+  display: flex;
+  flex-direction: column;
+
+  label{
+    font-size: 1.5rem;
+    margin-bottom: 9px;
+  }
+
+  input, select{
+    padding: 9px;
+    font-size: 1.2rem;
+    border-radius: 9px;
+    border: 1px solid $border-color;
+  }
+}

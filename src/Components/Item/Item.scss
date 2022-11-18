@@ -1,0 +1,53 @@
+.Item{
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+
+  &__thumbnail{
+    width: 100%;
+    height: fit-content;
+    display: 	grid;
+    place-content: center;
+    background-color: transparent;
+    border-radius: 9px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    cursor: pointer;
+
+    img{
+      width: 100%;
+      max-height: 450px;
+    }
+
+    @media screen and (min-width: 680px){
+      height: 450px;
+    }
+  }
+
+  &__body{
+    h2{
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  }
+
+  span{
+    display: block;
+    font-size: 1.2rem;
+    padding-block: 5px;
+  }
+
+  &__category{
+    text-transform: capitalize;
+  }
+
+  &__footer{
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-block: 5px;
+  }
+}

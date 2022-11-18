@@ -1,0 +1,26 @@
+.Home{
+  padding-bottom: 30px;
+
+  &__no-found{
+    display: block;
+    text-align: center;
+    padding-block: 40px;
+    font-size: 1.6rem;
+  }
+
+  &__items{
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 25px;
+    padding-top: 20px;
+
+    @media screen and (min-width: 680px){
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media screen and (min-width: 1020px){
+      grid-template-columns: repeat(3, 1fr);
+      gap: 35px;
+    }
+  }
+}

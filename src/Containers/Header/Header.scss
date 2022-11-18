@@ -1,0 +1,124 @@
+.Header{
+  position: relative;
+  width: 100%;
+  padding-block: 20px;
+  align-items: center;
+  justify-content: space-between;
+  display: inline-block;
+
+  &__logo_1{
+    @include buttonPrimary;
+    width: 50%;
+    margin-left: 25%;
+  }
+
+  &__logo_2{
+    @include buttonPrimary;
+    float: left;
+  }
+
+  &__menu{
+    @include buttonPrimary;
+    margin-top: 3px;
+    float: right;
+  }
+
+  &_text{
+    margin-top: 10px;
+    text-align: center;
+    font-family: cursive;
+    font-size: 140%;
+  }
+
+  &__buttons-container{
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  &__desktop{
+    display: none;
+  }
+
+  &__title{
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    right: 50%;
+    bottom: 50%;
+    transform: translate(50%, 50%);
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: capitalize;
+  }
+
+  @media screen and (min-width: 700px){
+    &__buttons-container{
+      display: none;
+    }
+
+    &__desktop{
+      display: flex;
+      align-items: center;
+      width: 100%;
+      justify-content: flex-end;
+
+      &--filter{
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    &__search-field{
+      display: flex;
+      align-items: center;
+      border: 1px solid $border-color;
+      border-radius: 9px;
+      padding: 6px;
+      margin-right: 15px;
+
+      label{
+        display: grid;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+      }
+
+      input{
+        width: 200px;
+        border: none;
+        outline: none;
+        font-size: 1.1rem;
+      }
+    }
+
+    &__cart{
+      position: relative;
+      background-color: $contrast-color;
+      border: none;
+      display: flex;
+      align-items: center;
+      padding: 6px;
+      border-radius: 9px;
+      color: white;
+      letter-spacing: 0.5px;
+      font-size: 1.2rem;
+
+      span{
+        margin-right: 5px;
+      }
+
+      &--notification{
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        display: block;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: red;
+      }
+    }
+  }
+}

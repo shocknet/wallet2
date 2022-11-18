@@ -1,0 +1,21 @@
+.Loader{
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  background: linear-gradient(90deg, rgba(250,250,250,1), rgba(200,199,199));
+  background-size: 400% 400%;
+  animation: loadingAnimation 3s ease-in-out infinite;
+}
+
+@keyframes loadingAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50%{
+    background-position: 100% 50%;
+  }
+  100%{
+    background-position: 0% 50%;
+  }
+}
