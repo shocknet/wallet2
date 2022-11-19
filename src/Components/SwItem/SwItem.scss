@@ -1,0 +1,58 @@
+.SwItem{
+  font-size: 1.2rem;
+  border: none;
+  border-bottom: 1px solid #8c8c8c;
+  margin-top: 10px;
+  display: flow-root;
+
+  &_lighting{
+    height: auto;
+    width: auto;
+    margin-top: 11px;
+    font-family: Open Sans;
+    font-size: 18px;
+    color: #898989;
+    text-decoration: none solid rgb(137, 137, 137);
+    text-align: center;
+    transform: rotate(-2deg);
+  }
+
+  &_left{
+    float: left;
+    display: flex;
+  }
+
+  &_right{
+    margin-right: 10px;
+    float: right;
+  }
+
+  &_text{
+    margin-left: 10px;
+  }
+
+  &_date{
+    font-size: 18px;
+    color: #898989;
+  }
+
+  &_station{
+    margin-top: 10px;
+    font-size: 18px;
+    color: #2aabe1;
+  }
+
+  &_price{
+    margin-top: 5px;
+    display: flex;
+  }
+  
+  &_price_img{
+    margin-right: 5px;
+  }
+
+  &_changes{
+    color: #898989;
+    text-align: right;
+  }
+}

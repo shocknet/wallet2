@@ -1,9 +1,8 @@
 .Header{
   position: relative;
+  padding: 3vh 0 0 0;
+  height: 10vh;
   width: 100%;
-  padding-block: 20px;
-  align-items: center;
-  justify-content: space-between;
   display: inline-block;
 
   &__logo_1{
@@ -24,10 +23,10 @@
   }
 
   &_text{
-    margin-top: 10px;
     text-align: center;
     font-family: cursive;
     font-size: 140%;
+    letter-spacing: 2px;
   }
 
   &__buttons-container{

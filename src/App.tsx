@@ -4,7 +4,6 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import { Home } from "./Pages/Home";
 import { ManageSource } from "./Pages/ManageSource";
 import { Loader } from "./Pages/Loader";
-import { Menu } from "./Pages/Menu";
 import { NopeUp } from './Pages/NopeUp';
 import { Ctx } from "./Context";
 
@@ -14,7 +13,6 @@ import { initialState, reducer } from "./globalState";
 // css
 import './App.scss';
 import { StateInterface } from './globalTypes';
-
 
 function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState())
@@ -40,12 +38,6 @@ function App(): JSX.Element {
                   state={state as StateInterface}
                   dispatch={dispatch}
                   ctx={Ctx}
-                />
-              }/>
-              <Route path="/menu" element={
-                <Menu 
-                  state={state as StateInterface}
-                  dispatch={dispatch}
                 />
               }/>
               <Route path='/manage-source' element={
