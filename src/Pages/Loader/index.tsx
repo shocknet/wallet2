@@ -8,7 +8,7 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
   const navigate: NavigateFunction = useNavigate()
   const [opacity, setOpacity] = useState(0.1);
   
-  let anim = 0;
+  let anim: number = 0;
 
   useEffect(() => {
     

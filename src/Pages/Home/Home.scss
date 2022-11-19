@@ -1,26 +1,69 @@
 .Home{
   padding-bottom: 30px;
+  position: relative;
+  // width: 89%;
 
-  &__no-found{
-    display: block;
+  &_sats{
+    position: relative;
+    border: 1px solid #2693c1;
     text-align: center;
-    padding-block: 40px;
-    font-size: 1.6rem;
+    padding: 6vh 0;
+    background-color: #182830;
+    height: 25vh;
+    margin-top: 0;
   }
 
-  &__items{
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 25px;
-    padding-top: 20px;
-
-    @media screen and (min-width: 680px){
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media screen and (min-width: 1020px){
-      grid-template-columns: repeat(3, 1fr);
-      gap: 35px;
-    }
+  &_sats_amount{
+    font-size: 2.2rem;
+    font-weight: bold;
   }
+
+  &_sats_name{
+    margin-top: 7px;
+    font-size: 1.3rem;
+    color: #2693c1;
+  }
+
+  &_sats_changes{
+    font-size: 1.4rem;
+    margin-top: 10px;
+    color: #7a8989;
+  }
+
+  &_content{
+    padding-top: 0 5px;
+    padding-right: 5px;
+    overflow-y: scroll;
+    position: relative;
+    height: 60vh;
+  }
+}
+
+.demo{
+  padding: 0;
+}
+
+.demo .scroller{
+  --scrollbar-width: 8px;
+  --mask-height: 6vh;
+  overflow-y: auto;
+  height: 53vh;
+  padding-top: var(--mask-height);
+  padding-bottom: var(--mask-height);
+  --mask-image-content: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--mask-height),
+    black calc(100% - var(--mask-height)),
+    transparent
+  );
+  --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+  --mask-image-scrollbar: linear-gradient(black, black);
+  --mask-size-scrollbar: var(--scrollbar-width) 100%;
+  -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  mask-position: 0 0, 100% 0;
+  mask-repeat: no-repeat, no-repeat;
 }

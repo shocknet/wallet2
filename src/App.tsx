@@ -15,7 +15,6 @@ import { initialState, reducer } from "./globalState";
 import './App.scss';
 import { StateInterface } from './globalTypes';
 
-
 function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState())
 
