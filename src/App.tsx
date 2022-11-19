@@ -4,7 +4,7 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import { Home } from "./Pages/Home";
 import { ManageSource } from "./Pages/ManageSource";
 import { Loader } from "./Pages/Loader";
-import { NopeUp } from './Pages/NopeUp';
+import { NodeUp } from './Pages/NodeUp';
 import { Ctx } from "./Context";
 
 // utils
