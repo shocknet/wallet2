@@ -1,14 +1,13 @@
-import React, { Fragment, useContext, useRef } from "react";
-// images and/or icons
+import React, { useContext } from "react";
+import { NavigateFunction, useNavigate } from "react-router-dom";
+
 import QR from "../../Assets/Icons/QR.svg";
 import { HeaderProps } from "./types";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Ctx } from "../../Context";
 
 export const Footer: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
   const navigate: NavigateFunction = useNavigate()
   const state = useContext(Ctx)
-  let { current, shoppingCart, history } = state
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";
