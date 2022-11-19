@@ -8,7 +8,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, dispatch }): JSX.Eleme
     <React.Fragment>
       <Header dispatch={dispatch} />
       {children}
-      <Footer dispatch={dispatch} />
+      <Footer dispatch={dispatch} />  
     </React.Fragment>
   )
 }

@@ -1,7 +1,6 @@
 .Home{
   padding-bottom: 30px;
   position: relative;
-  // width: 89%;
 
   &_sats{
     position: relative;
@@ -31,17 +30,11 @@
   }
 
   &_content{
-    padding-top: 0 5px;
-    padding-right: 5px;
-    overflow-y: scroll;
-    position: relative;
-    height: 60vh;
+    padding: 0 !important;
   }
 }
 
-.demo{
-  padding: 0;
-}
+
 
 .demo .scroller{
   --scrollbar-width: 8px;

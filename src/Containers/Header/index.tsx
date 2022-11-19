@@ -3,11 +3,9 @@ import Logo from "../../Assets/Images/logo.png";
 import Menu from "../../Assets/Icons/menu.svg";
 import { HeaderProps } from "./types";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { Ctx } from "../../Context";
 
-export const Header: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
+export const Header: React.FC<HeaderProps> = (): JSX.Element => {
   const navigate: NavigateFunction = useNavigate()
-  const state = useContext(Ctx)
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";

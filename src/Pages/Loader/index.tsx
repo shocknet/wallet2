@@ -14,7 +14,7 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
     
     const interval = setInterval(() => {
       if(anim > 7)
-        navigate("/sw-home");
+        navigate("/home");
       if(anim%2){
         setOpacity(0.1);
       }else{
@@ -26,9 +26,9 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
   }, []);
 
   return(
-    <section className="Loader_Lonic">
-      <div className="Loader_Lonic__msg">Reticulating splines...</div>
-      <div style={{opacity: opacity}} className="Loader_Lonic__img">
+    <section className="Loader">
+      <div className="Loader_msg">Reticulating splines...</div>
+      <div style={{opacity: opacity}} className="Loader_img">
         <img src={animation} alt="" width="35px" />
       </div>
     </section>

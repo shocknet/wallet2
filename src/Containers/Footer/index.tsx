@@ -1,23 +1,18 @@
-import React, { useContext } from "react";
+import React from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 
 import QR from "../../Assets/Icons/QR.svg";
 import { HeaderProps } from "./types";
-import { Ctx } from "../../Context";
 
-export const Footer: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
+export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
   const navigate: NavigateFunction = useNavigate()
-  const state = useContext(Ctx)
 
-  const isNopeUp: boolean = window.location.pathname === "/";
-  const isLoader: boolean = window.location.pathname === "/loader";
+  const isHome: boolean = window.location.pathname === "/home";
+  const isSources: boolean = window.location.pathname === "/sources";
 
   return (
-    <footer className="Footer">
-      {(isNopeUp || isLoader) && window.screen.width < 700 ? (
-        <React.Fragment>
-        </React.Fragment>
-      ) : (
+    <header className="Footer">
+      {(isHome || isSources) && window.screen.width < 700 ? (
         <React.Fragment>
           <button className="Footer_receive_btn">Receive</button>
           <button className="Footer_send_btn">Send</button>
@@ -25,7 +20,9 @@ export const Footer: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
             <img src={QR} width="60px" height="60px" alt="" />
           </div>
         </React.Fragment>
+      ) : (
+        <></>
       )}
-    </footer>
+    </header>
   )
 }
