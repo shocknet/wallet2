@@ -91,24 +91,22 @@ export const Home: React.FC<PageProps> = ({}): JSX.Element => {
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ $40,000.00</div>
       </div>
-      <div className='demo'>
-        <div className="Home_content scroller">
-          {
-            SwItemArray.map((item, key) => {
-              return (
-                <SwItem 
-                  stateIcon={item.stateIcon} 
-                  station={item.station} 
-                  changes={item.changes} 
-                  price={item.price} 
-                  priceImg={item.priceImg} 
-                  date={item.date}
-                  key={key}
-                />
-              )
-            })
-          }
-        </div>
+      <div className="Home_content scroller">
+        {
+          SwItemArray.map((item, key) => {
+            return (
+              <SwItem 
+                stateIcon={item.stateIcon} 
+                station={item.station} 
+                changes={item.changes} 
+                price={item.price} 
+                priceImg={item.priceImg} 
+                date={item.date}
+                key={key}
+              />
+            )
+          })
+        }
       </div>
     </div>
   )

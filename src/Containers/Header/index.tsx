@@ -5,7 +5,7 @@ import { HeaderProps } from "./types";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Ctx } from "../../Context";
 
-export const Header: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
+export const Header: React.FC<HeaderProps> = (): JSX.Element => {
   const navigate: NavigateFunction = useNavigate()
   const state = useContext(Ctx)
 
@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ dispatch }): JSX.Element => {
 
   return (
     <header className="Header">
-      {(isNopeUp || isLoader) && window.screen.width < 700 ? (
+      {(isNopeUp || isLoader) ? (
         <React.Fragment>
           <button className="Header__logo_1" onClick={() => navigate("/")}>
             <img src={Logo} width="70px" alt="" />
