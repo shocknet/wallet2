@@ -37,7 +37,7 @@ function App(): JSX.Element {
                   ctx={Ctx}
                 />
               }/>
-              <Route path='/source' element={
+              <Route path='/sources' element={
                 <Sources 
                   state={state as StateInterface}
                   dispatch={dispatch}
