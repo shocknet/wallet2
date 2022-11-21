@@ -5,6 +5,8 @@ import { HeaderProps } from "./types";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Ctx } from "../../Context";
 
+import SWText from "../../Assets/Icons/sw_text.png";
+
 export const Header: React.FC<HeaderProps> = (): JSX.Element => {
   const navigate: NavigateFunction = useNavigate()
   const state = useContext(Ctx)
@@ -24,7 +26,9 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <button className="Header__menu" onClick={() => navigate("#")}>
             <img src={Menu} width="40px" alt="" />
           </button>
-          <div className="Header_text">SHOCKWALLET</div>
+          <div className="Header_text">
+            <img src={SWText} width="330px" alt="" />
+          </div>
         </React.Fragment>
       ) : (
         isscan ? (
