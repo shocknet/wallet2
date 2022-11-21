@@ -13,7 +13,7 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
   useEffect(() => {
     
     const interval = setInterval(() => {
-      if(anim > 7)
+      if(anim > 3)
         navigate("/home");
       if(anim%2){
         setOpacity(0.1);

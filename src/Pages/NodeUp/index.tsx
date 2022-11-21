@@ -2,13 +2,9 @@ import React from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps } from "../../globalTypes";
 
-export const NodeUp: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
+export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
 
   const navigate: NavigateFunction = useNavigate()
-
-  const handleClick = () => {
-    navigate("/loader")
-  }
 
   return(
     <div className="NodeUp">
@@ -18,11 +14,11 @@ export const NodeUp: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
         To add a node now, use "Manual Connection"
       </div>
       <div className="NodeUp_manual">
-        <div className="NodeUp_manual_text">
+        <div onClick={() => { navigate("/sources")} } className="NodeUp_manual_text">
           Manulal Connection
         </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={handleClick}>
+          <button onClick={() => { navigate("/loader") }}>
             Continue
           </button>
         </div>

@@ -1,0 +1,159 @@
+.Receive{
+  width: 100%;
+  padding-bottom: 30px;
+  transition-duration: 500ms;
+  font-family: Montserrat;
+
+  &_QR{
+    margin-top: 10px;
+    height: auto;
+    margin-left: 50%;
+    position: absolute;
+    left: -100px;
+    transition-duration: 800ms;
+    font-family: Montserrat;
+
+    &_text{
+      position: relative;
+      text-align: center;
+      color: #a2a3a4;
+      font-size: 15px;
+      font-family: Montserrat;
+    }
+  }
+
+  &_copy{
+    position: relative;
+    margin-top: 230px;
+    text-align: center;
+    color: #2693c1;
+    font-size: 20px;
+    font-family: Montserrat;
+  }
+
+  &_share{
+    text-align: center;
+    margin-top: 35px;
+  }
+
+  &_btn_grp{
+    margin-top: 40px;
+    border-top: 1px solid #666666;
+    display: flex;
+    text-align: center;
+    padding: 40px 0;
+    font-family: Montserrat;
+
+    &_btn{
+      width: 50%;
+      display: flex;
+      font-size: 25px;
+    }
+
+    &_btn button{
+      font-size: 16px;
+      color: #a2a3a4;
+      width: 80%;
+      border-radius: 2rem;
+      border: 1px solid #2693c1;
+      background-color: #16191c;
+    }
+  }
+}
+
+.CreateInvoice{
+  top: 60px;
+  width: 90%;
+  position: fixed;
+  left: 5%;
+  margin-top: 40px;
+  text-align: center;
+  transition-duration: 500ms;
+  font-family: Montserrat;
+
+  &_content{
+    margin-top: 60px;
+    width: 80%;
+    margin-left: 10%;
+    font-family: Montserrat;
+
+    &_price{
+      text-align: right;
+      font-size: 22px;
+      color: #898989;
+    }
+
+    &_amount{
+      margin-top: 5px;
+      text-align: right;
+
+      & span{
+        margin-left: 5px;
+        margin-top: 12px;
+        position: absolute;
+      }
+
+      & input{
+        width: 100%;
+        border: 1px solid #2aabe1;
+        color: #2aabe1;
+        font-family: Montserrat;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: right;
+        padding: 17px 10px;
+        background-color: #16191c;
+      }
+    }
+
+    &_btn_grp{
+      margin-top: 30px;
+      width: 100%;
+      right: 14%;
+      float: right;
+      width: 100%;
+      display: inline-flex;
+
+      &_item_1{
+        width: 35%;
+        margin-left: 25%;
+        font-size: 16px;
+        color: #a2a3a4;
+        border-radius: 2rem;
+        border: 1px solid #2693c1;
+        background-color: #2693c1;
+
+        & button{
+          width: 100%;
+          font-size: 16px;
+          color: #fcfcfc;
+          padding: 15px;
+          border-radius: 2rem;
+          border: 1px solid #2693c1;
+          background-color: #2693c1;
+        }
+      }
+
+      &_item_2{
+        width: 35%;
+        margin-left: 5%;
+        font-size: 16px;
+        color: #a2a3a4;
+        border-radius: 2rem;
+        border: 1px solid #2693c1;
+        background-color: #2693c1;
+
+        & button{
+          width: 100%;
+          font-size: 16px;
+          color: #fcfcfc;
+          padding: 15px;
+          border-radius: 2rem;
+          border: 1px solid #2693c1;
+          background-color: #2693c1;
+        }
+      }
+    }
+  }
+  
+}

@@ -1,3 +1,190 @@
 .Sources{
-  
+  margin-top: 10px;
+  height: 78vh;
+  font-family: Montserrat;
+
+  &_title{
+    text-align: center;
+  }
+
+  &_pay_content{
+    margin-top: 40px;
+  }
+
+  &_receive_content{
+    margin-top: 20px;
+  }
+
+  &_content_title{
+    font-size: 23px;
+  }
+
+  &_content_discription{
+    margin-top: 5px;
+    font-size: 16px;
+    color: #8c8c8c;
+  }
+
+  &_list_box{
+    padding: 0px 10px !important;
+    margin-top: 5px;
+    border-radius: 7px;
+    background-color: #101010;
+    height: 150px;
+    --scrollbar-width: 8px;
+    --mask-height: 20px;
+    overflow-y: auto;
+    padding-top: var(--mask-height);
+    padding-bottom: var(--mask-height);
+    --mask-image-content: linear-gradient(
+      to bottom,
+      transparent,
+      black var(--mask-height),
+      black calc(100% - var(--mask-height)),
+      transparent
+    );
+    --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+    --mask-image-scrollbar: linear-gradient(black, black);
+    --mask-size-scrollbar: var(--scrollbar-width) 100%;
+    -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+    -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+    mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+    mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+    mask-position: 0 0, 100% 0;
+    mask-repeat: no-repeat, no-repeat;
+  }
+
+  &_item{
+    display: flow-root;
+  }
+
+  &_item_left{
+    width: 65%;
+    display: inline-flex;
+    float: left;
+  }
+
+  &_modal_select_state_column{
+    display: inline-flex;
+    width: 60%;
+  }
+
+  &_modal_select_state_column:hover{
+    .Sources_modal_input{
+      border: 1px solid #2693c1;
+      box-shadow: #2693c1;
+    }
+
+    .Sources_modal_icon{
+      color: #2693c1;
+      text-shadow: #2693c1 1px 0 10px;
+    }
+  }
+
+  &_modal_code_discription{
+    margin-top: 30px;
+    font-size: 15px;
+    color: #8c8c8c;
+  }
+
+  &_modal_code{
+    color: #2aabe1;
+    font-size: 12px;
+    margin-top: 10px;
+    background-color: #16191c;
+    padding: 15px;
+    border-radius: 2rem;
+    overflow-x: auto;
+  }
+
+  &_modal_select_state{
+    margin-top: 20px;
+  }
+
+  &_item_right{
+    display: inline-flex;
+    float: right;
+  }
+
+  &_item_icon{
+    width: 30px;
+  }
+
+  &_modal_icon{
+    width: 30px;
+  }
+
+  &_item_input{
+    margin-top: 3px;
+    width: 93%;
+  }
+
+  &_modal_input{
+    text-align: left;
+    margin-top: 3px;
+    padding: 5px 13px;
+    width: 100%;
+    background-color: #16191c;
+    color: #fcfcfc;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+  }
+
+  &_item_input input{
+    width: 100%;
+    background-color: #202020;
+    color: #fcfcfc;
+    font-size: 16px;
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 1%;
+  }
+
+  &_item_close{
+    margin-top: 3px;
+    width: 50%;
+  }
+
+  &_item_menu{
+    margin-top: 6px;
+    width: 70%;
+  }
+
+  &_add_btn{
+    float: right;
+    margin-top: 40px;
+  }
+
+  &_add_btn button{
+    font-size: 20px;
+    font-family: Montserrat;
+    font-weight: bold;
+    padding: 10px 28px;
+    border-radius: 1.5rem;
+    border: none;
+    background-color: #2693c1;
+    color: #fcfcfc;
+  }
+
+  &_modal_add_btn{
+    margin-top: 10px;
+  }
+
+  &_modal_add_btn button{
+    font-size: 15px;
+    font-family: Montserrat;
+    font-weight: bold;
+    padding: 10px 28px;
+    border-radius: 1.5rem;
+    border: none;
+    background-color: #2693c1;
+    color: #fcfcfc;
+  }
+
+  &_modal_discription{
+    font-size: 15px;
+    color: #8c8c8c;
+  }
 }
