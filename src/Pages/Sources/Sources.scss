@@ -65,19 +65,24 @@
 
   &_modal_select_state_column{
     display: inline-flex;
-    width: 64%;
+    width: 60%;
   }
 
   &_modal_select_state_column:hover{
-    .Sources_modal_input input{
+    .Sources_modal_input{
       border: 1px solid #2693c1;
       box-shadow: #2693c1;
+    }
+
+    .Sources_modal_icon{
+      color: #2693c1;
+      text-shadow: #2693c1 1px 0 10px;
     }
   }
 
   &_modal_code_discription{
     margin-top: 30px;
-    font-size: 12px;
+    font-size: 15px;
     color: #8c8c8c;
   }
 
@@ -114,10 +119,8 @@
   }
 
   &_modal_input{
+    text-align: left;
     margin-top: 3px;
-  }
-
-  &_modal_input input{
     padding: 5px 13px;
     width: 100%;
     background-color: #16191c;
@@ -180,7 +183,7 @@
   }
 
   &_modal_discription{
-    font-size: 12px;
+    font-size: 15px;
     color: #8c8c8c;
   }
 }

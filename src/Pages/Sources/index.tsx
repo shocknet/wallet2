@@ -83,33 +83,15 @@ export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =
     <div className='Sources_modal_select_state'>
       <div className="Sources_modal_select_state_column">
         <div className="Sources_modal_icon">🔓</div>
-        <div className="Sources_modal_input">
-          <input
-            type="text"
-            onChange={(e) => setItemInput(e.target.value)}
-            value={itemInput || "A little."}
-          />
-        </div>
+        <div className="Sources_modal_input">A little.</div>
       </div>
       <div className="Sources_modal_select_state_column">
         <div className="Sources_modal_icon">🫡</div>
-        <div className="Sources_modal_input">
-          <input
-            type="text"
-            onChange={(e) => setItemInput(e.target.value)}
-            value={itemInput || "Very well."}
-          />
-        </div>
+        <div className="Sources_modal_input">Very well.</div>
       </div>
       <div className="Sources_modal_select_state_column">
         <div className="Sources_modal_icon">🏠</div>
-        <div className="Sources_modal_input">
-          <input
-            type="text"
-            onChange={(e) => setItemInput(e.target.value)}
-            value={itemInput || "It's my node."}
-          />
-        </div>
+        <div className="Sources_modal_input">It's my node.</div>
       </div>
     </div>
     <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>

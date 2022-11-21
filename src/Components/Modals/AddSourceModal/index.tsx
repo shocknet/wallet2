@@ -26,12 +26,11 @@ export const AddSourceModal: FunctionComponent<ModalProps> = ({
 }) => {
   const modal = (
     <React.Fragment>
-      <Backdrop />
+      <Backdrop onClick={hide} />
       <Wrapper>
         <StyledModal>
           <Header>
             <HeaderText>{headerText}</HeaderText>
-            {/* <CloseButton onClick={hide}>X</CloseButton> */}
           </Header>
           <Content>{modalContent}</Content>
         </StyledModal>
