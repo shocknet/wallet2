@@ -11,7 +11,7 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
 
   const isSources: boolean = window.location.pathname === "/sources";
   const ishome: boolean = window.location.pathname === "/home";
-  const isscan: boolean = window.location.pathname === "/scan";
+  const receive: boolean = window.location.pathname === "/receive";
 
   return (
     <footer className="Footer">
@@ -24,14 +24,14 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
           </div>
         </React.Fragment>
       ) : (
-        isscan ? (
-          <></>
-        ) : (
+        receive ? (
           <React.Fragment>
             <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
               <img src={QR} width="60px" height="60px" alt="" />
             </div>
           </React.Fragment>
+        ) : (
+          <></>
         )
       )}
     </footer>
