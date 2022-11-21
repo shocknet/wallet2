@@ -43,7 +43,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
   return(
     <div>
-      <div className="Receive" style={{opacity: vReceive, zIndex: vReceive}}>
+      <div className="Receive" style={{opacity: vReceive, zIndex: vReceive ? 1000 : -1}}>
         <div className="Receive_QR_text">{valueQR}</div>
         <div className="Receive_QR" style={{transform: deg}}>
           <ReactQrCode 
@@ -73,7 +73,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
       </div>
-      <div className='CreateInvoice' style={{opacity: vCreateInvoice, zIndex: vCreateInvoice}}>
+      <div className='CreateInvoice' style={{opacity: vCreateInvoice, zIndex: vCreateInvoice ? 1000 : -1}}>
         <div className="CreateInvoice_title">Create Invoice</div>
         <div className="CreateInvoice_content">
           <div className="CreateInvoice_content_price">~ $.10</div>

@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header__logo_1" onClick={() => navigate("/")}>
+          <button className="Header__logo_1" onClick={() => navigate("/home")}>
             <img src={Logo} width="70px" alt="" />
           </button>
           <div className="Header_text">
@@ -33,13 +33,13 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
         ) : (
           isreceive ? (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/")}>
+              <button className="Header__logo_2" onClick={() => navigate("/home")}>
                 <img src={Logo} width="30px" alt="" />
               </button>
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/")}>
+              <button className="Header__logo_2" onClick={() => navigate("/home")}>
                 <img src={Logo} width="30px" alt="" />
               </button>
               <button className="Header__menu" onClick={() => navigate("#")}>

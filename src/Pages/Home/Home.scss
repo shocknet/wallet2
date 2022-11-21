@@ -1,6 +1,7 @@
 .Home{
   padding-bottom: 30px;
   position: relative;
+  font-family: Montserrat;
 
   &_sats{
     position: relative;
@@ -12,8 +13,10 @@
     margin-top: 0;
   }
 
+  
   &_sats_amount{
     font-size: 2.2rem;
+    font-family: Montserrat;
     font-weight: bold;
   }
 

@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
 export const Wrapper = styled.div`
+  font-family: Montserrat;
   width: 70% !important;
   position: fixed;
   top: 50%;
@@ -11,6 +12,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Backdrop = styled.div`
+  font-family: Montserrat;
   background-color: black;
   opacity: 0.6;
   position: fixed;
@@ -22,6 +24,7 @@ export const Backdrop = styled.div`
 `;
 
 export const StyledModal = styled.div`
+  font-family: Montserrat;
   padding: 20px;
   text-align: center;
   z-index: 100;
@@ -34,6 +37,7 @@ export const StyledModal = styled.div`
 `;
 
 export const Header = styled.div`
+  font-family: Montserrat;
   text-align: center;
   border-radius: 8px 8px 0 0;
   justify-content: space-between;
@@ -41,12 +45,14 @@ export const Header = styled.div`
 `;
 
 export const HeaderText = styled.div`
+  font-family: Montserrat;
   color: #fff;
   align-self: center;
   color: lightgray;
 `;
 
 export const CloseButton = styled.button`
+  font-family: Montserrat;
   font-size: 0.8rem;
   border: none;
   border-radius: 3px;
@@ -58,6 +64,7 @@ export const CloseButton = styled.button`
 `;
 
 export const Content = styled.div`
+  font-family: Montserrat;
   padding: 10px;
   max-height: 30rem;
   overflow-x: hidden;

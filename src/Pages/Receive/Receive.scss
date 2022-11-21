@@ -1,8 +1,8 @@
 .Receive{
-  position: fixed;
-  width: 90%;
+  width: 100%;
   padding-bottom: 30px;
   transition-duration: 500ms;
+  font-family: Montserrat;
 
   &_QR{
     margin-top: 10px;
@@ -11,12 +11,14 @@
     position: absolute;
     left: -100px;
     transition-duration: 800ms;
+    font-family: Montserrat;
 
     &_text{
       position: relative;
       text-align: center;
       color: #a2a3a4;
       font-size: 15px;
+      font-family: Montserrat;
     }
   }
 
@@ -26,6 +28,7 @@
     text-align: center;
     color: #2693c1;
     font-size: 20px;
+    font-family: Montserrat;
   }
 
   &_share{
@@ -39,6 +42,7 @@
     display: flex;
     text-align: center;
     padding: 40px 0;
+    font-family: Montserrat;
 
     &_btn{
       width: 50%;
@@ -59,16 +63,19 @@
 
 .CreateInvoice{
   top: 60px;
-  position: fixed;
   width: 90%;
+  position: fixed;
+  left: 5%;
   margin-top: 40px;
   text-align: center;
   transition-duration: 500ms;
+  font-family: Montserrat;
 
   &_content{
     margin-top: 60px;
     width: 80%;
     margin-left: 10%;
+    font-family: Montserrat;
 
     &_price{
       text-align: right;
