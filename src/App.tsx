@@ -5,6 +5,8 @@ import { Home } from "./Pages/Home";
 import { Sources } from "./Pages/Sources";
 import { Loader } from "./Pages/Loader";
 import { NodeUp } from './Pages/NodeUp';
+import { Receive } from './Pages/Receive';
+import { Scan } from './Pages/Scan';
 import { Ctx } from "./Context";
 
 // utils
@@ -45,6 +47,18 @@ function App(): JSX.Element {
               }/>
               <Route path='/home' element={
                 <Home 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/receive' element={
+                <Receive 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/scan' element={
+                <Scan 
                   state={state as StateInterface}
                   dispatch={dispatch}
                 />
