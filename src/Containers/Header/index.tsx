@@ -23,9 +23,6 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <button className="Header__logo_1" onClick={() => navigate("/")}>
             <img src={Logo} width="70px" alt="" />
           </button>
-          <button className="Header__menu" onClick={() => navigate("#")}>
-            <img src={Menu} width="40px" alt="" />
-          </button>
           <div className="Header_text">
             <img src={SWText} width="330px" alt="" />
           </div>
