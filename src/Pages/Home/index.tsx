@@ -26,7 +26,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
       }
       setBalance(res.balance)
     })
-  })
+  }, [])
   useEffect(() => {
     nostr.GetUserOperations({
       latestIncomingInvoice: 0,
@@ -54,7 +54,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
       />)
       setItems(merged)
     })
-  })
+  }, [])
 
   let SwItemArray: sw_item[] = [];
   SwItemArray.push({
