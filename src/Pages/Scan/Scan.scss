@@ -12,8 +12,8 @@
       & div{
         width: 100% !important;
         border: none;
-        border-bottom: 35vh solid rgba(0, 0, 0, 0.3) !important;
-        border-top: 30vh solid rgba(0, 0, 0, 0.3) !important;
+        border-bottom: 43vh solid rgba(0, 0, 0, 0.3) !important;
+        border-top: 22vh solid rgba(0, 0, 0, 0.3) !important;
         border-right: calc(50vw - 17.5vh) solid rgba(0, 0, 0, 0.3) !important;
         border-left: calc(50vw - 17.5vh) solid rgba(0, 0, 0, 0.3) !important;
         box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 30px inset !important;
@@ -45,6 +45,7 @@
     bottom: 100px;
     right: 15vw;
     z-index: 100;
+    text-align: center;
 
     & input{
       font-family: Montserrat;
@@ -57,5 +58,77 @@
       border: none;
       border-radius: 2rem;
     }
+
+    & button{
+      margin-top: 10px;
+      background-color: #151d24;
+      border: 1px solid #268fbc;
+      border-radius: 2rem;
+      color: #949596;
+      font-size: 20px;
+      padding: 15px 50px;
+      width: fit-content;
+      transition-duration: 400ms;
+    }
+    
+    & button:hover{
+      background-color: #373a3d;
+    }
+  }
+
+  &_pay_operation{
+    position: fixed;
+    width: 100%;
+    text-align: center;
+    margin-top: 35vh;
+    display: flex;
+
+    & input{
+      font-family: Montserrat;
+      font-size: 17px;
+      width: 70vw;
+      background-color: #16191c;
+      color: #2aabe1;
+      padding: 15px 20px;
+      border: 1px solid #2aabe1;
+      border-top-left-radius: 2rem;
+      border-bottom-left-radius: 2rem;
+      text-align: right;
+    }
+
+    & div{
+      font-family: Montserrat;
+      width: 70vw;
+      background-color: #16191c;
+      padding: 15px 20px;
+      border: 1px solid #2aabe1;
+      border-top-left-radius: 2rem;
+      border-bottom-left-radius: 2rem;
+      text-align: center;
+    }
+
+    & button{
+      font-family: Montserrat;
+      background-color: #151d24;
+      border: 1px solid #268fbc;
+      color: #949596;
+      font-size: 20px;
+      padding: 15px 20px;
+      width: fit-content;
+      border-top-right-radius: 2rem;
+      border-bottom-right-radius: 2rem;
+      transition-duration: 400ms;
+    }
+    
+    & button:hover{
+      background-color: #373a3d;
+    }
+  }
+
+  &_error{
+    font-family: Montserrat;
+    margin-top: 10%;
+    color: rgb(199, 118, 118);
+    text-align: center;
   }
 }

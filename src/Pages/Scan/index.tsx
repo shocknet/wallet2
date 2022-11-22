@@ -85,7 +85,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   if (error !== '') {
-    return <div className="error">{error}</div>;
+    return <div className="Scan_error">{error}</div>;
   }
 
   if (payOperation) {
@@ -98,12 +98,11 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
         p = <div><p>You will pay: {payOperation.amount}sats to invoice</p></div>
         break
     }
-    return <div>
+    return <div className="Scan_pay_operation">
       {p}
       <button onClick={() => pay(payOperation)}>OK</button>
     </div>
   }
-
 
   return (
     <div className="Scan">
