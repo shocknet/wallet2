@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-
+import React, { useEffect, useState } from "react";
+import moment from 'moment'
 import { SwItem } from "../../Components/SwItem";
 import PriceDown from "../../Assets/Icons/PriceDown.svg";
 import PriceUp from "../../Assets/Icons/PriceUp.svg";
@@ -15,10 +15,45 @@ interface sw_item {
   price?: number;
 }
 export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
+  const [error, setError] = useState("")
+  const [balance, setBalance] = useState(0)
+  const [items, setItems] = useState<JSX.Element[]>([])
   useEffect(() => {
-    //setTimeout(() => {
-    nostr.NewInvoice({ amountSats: 10, memo: "" }).then(console.log)
-    //}, 3000);
+    nostr.GetUserInfo().then(res => {
+      if (res.status !== 'OK') {
+        setError(res.reason)
+        return
+      }
+      setBalance(res.balance)
+    })
+  })
+  useEffect(() => {
+    nostr.GetUserOperations({
+      latestIncomingInvoice: 0,
+      latestIncomingTx: 0,
+      latestOutgoingInvoice: 0,
+      latestOutgoingTx: 0
+    }).then(res => {
+      if (res.status !== 'OK') {
+        setError(res.reason)
+        return
+      }
+      const merged = [
+        ...res.latestIncomingInvoiceOperations.operations,
+        ...res.latestIncomingTxOperations.operations,
+        ...res.latestOutgoingInvoiceOperations.operations,
+        ...res.latestOutgoingTxOperations.operations
+      ].sort((a, b) => b.paidAtUnix - a.paidAtUnix).map((o, i): JSX.Element => <SwItem
+        stateIcon={'lighting'}
+        station={o.type}
+        changes={'~ $.10'}
+        price={o.amount}
+        priceImg={o.inbound ? PriceUp : PriceDown}
+        date={moment.unix(o.paidAtUnix).fromNow()}
+        key={i}
+      />)
+      setItems(merged)
+    })
   })
 
   let SwItemArray: sw_item[] = [];
@@ -88,26 +123,12 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
   return (
     <div className="Home">
       <div className="Home_sats">
-        <div className="Home_sats_amount">21,000,000</div>
+        <div className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ $40,000.00</div>
       </div>
       <div className="Home_content scroller">
-        {
-          SwItemArray.map((item, key) => {
-            return (
-              <SwItem
-                stateIcon={item.stateIcon}
-                station={item.station}
-                changes={item.changes}
-                price={item.price}
-                priceImg={item.priceImg}
-                date={item.date}
-                key={key}
-              />
-            )
-          })
-        }
+        {items}
       </div>
     </div>
   )

@@ -61,3 +61,6 @@ function makeId(length: number) {
     }
     return result;
 }
+
+//@ts-ignore use this to have access to the client from the console
+// global.nostr = nostr // TODO: remove,DEV ONLY
