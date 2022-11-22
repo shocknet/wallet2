@@ -120,4 +120,31 @@
       }
     }
   }
+
+  &_modal_content{
+    display: grid;
+    margin-top: 15px;
+
+    &_item{
+      display: flex;
+      margin-top: 20px;
+
+      &_img{
+        text-align: left;
+        width: 60px;
+
+        & img{
+          fill: #29abe2;
+        }
+      }
+
+      &_text{
+        font-family: Montserrat;
+        font-size: 25px;
+        color: #29abe2;
+        text-align: right;
+        width: 100%;
+      }
+    }
+  }
 }
