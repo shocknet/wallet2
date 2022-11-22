@@ -3,6 +3,7 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import QrReader from "react-qr-reader";
 import { PageProps } from "../../globalTypes";
 import Close from "../../Assets/Icons/ScanClose.svg";
+import ErrorMessage from "../../Assets/Icons/error-message.png";
 import { nostr } from '../../Api'
 type PayInvoice = {
   type: 'payInvoice'
@@ -85,7 +86,12 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   if (error !== '') {
-    return <div className="Scan_error">{error}</div>;
+    return <div className="Scan_error">
+      <div className="Scan_error_img">
+        <img src={ErrorMessage} width="100px" alt="" />
+      </div>
+      <div className="Scan_error_text">{error}</div>
+    </div>;
   }
 
   if (payOperation) {
