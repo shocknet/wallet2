@@ -1,6 +1,10 @@
 # wallet2
 Connect to multiple Lightning Nodes via LNURL and NOSTR
 
+Under heavy development
+
+Update src/constants.ts
+
 ## Install
 
 First, clone the repo via git:
@@ -20,7 +24,6 @@ $ cd your-project-name && npm install
 
 ```bash
 $ npm install
-$ yarn install
 ```
 
 ```bash
