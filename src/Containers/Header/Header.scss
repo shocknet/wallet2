@@ -124,6 +124,7 @@
   &_modal_content{
     display: grid;
     margin-top: 15px;
+    cursor: pointer;
 
     &_item{
       display: flex;
@@ -133,17 +134,40 @@
         text-align: left;
         width: 60px;
 
-        & img{
-          fill: #29abe2;
+        & img:nth-child(1){
+          width: 30px;
+        }
+
+        & img:nth-child(2){
+          width: 0;
         }
       }
 
       &_text{
         font-family: Montserrat;
         font-size: 25px;
-        color: #29abe2;
+        color: #f3efef;
         text-align: right;
         width: 100%;
+      }
+    }
+
+    &_item:hover{
+      .Header_modal_content_item_img{
+        text-align: left;
+        width: 60px;
+
+        & img:nth-child(1){
+          width: 0;
+        }
+
+        & img:nth-child(2){
+          width: 30px;
+        }
+      }
+
+      .Header_modal_content_item_text{
+        color: #29abe2;
       }
     }
   }

@@ -5,11 +5,15 @@ import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
 import { UseModal } from "../../Hooks/UseModal";
 
 import SourceItemMenu from "../../Assets/Icons/source-menu.png";
-import Close from "../../Assets/Icons/close.svg";
+import EditSource from "../../Assets/Icons/edit-source.svg";
 
 export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
 
   const [itemInput, setItemInput] = useState("");
+  const [modalType, setModalType] = useState("");
+  const [optionalLabel, setOptionalLabel] = useState("");
+  const [editOptionalLabel, setEditOptionalLabel] = useState("");
+  
   const { isShown, toggle } = UseModal();
 
 
@@ -78,29 +82,77 @@ export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =
     icon: '🔓',
   } as PayTo);
 
-  const content = <React.Fragment>
+  const AddSource_Modal = () => {
+    setModalType("addSource");
+    toggle();
+  }
+
+  const EditSource_Modal = () => {
+    setModalType("editSource");
+    toggle();
+  }
+
+  const Select_OptionalLabal = (e: string) => {
+    setOptionalLabel(e)
+  }
+
+  const Select_EditOptionalLabal = (e: string) => {
+    setEditOptionalLabel(e)
+  }
+
+  const contentAddSource = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className="Sources_modal_select_state_column">
-        <div className="Sources_modal_icon">🔓</div>
-        <div className="Sources_modal_input">A little.</div>
-      </div>
-      <div className="Sources_modal_select_state_column">
-        <div className="Sources_modal_icon">🫡</div>
-        <div className="Sources_modal_input">Very well.</div>
-      </div>
-      <div className="Sources_modal_select_state_column">
-        <div className="Sources_modal_icon">🏠</div>
-        <div className="Sources_modal_input">It's my node.</div>
-      </div>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("A little.")}>
+      <div className="Sources_modal_icon">🔓</div>
+      <div className="Sources_modal_input">A little.</div>
     </div>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("Very well.")}>
+      <div className="Sources_modal_icon">🫡</div>
+      <div className="Sources_modal_input">Very well.</div>
+    </div>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("It's my node.")}>
+      <div className="Sources_modal_icon">🏠</div>
+      <div className="Sources_modal_input">It's my node.</div>
+    </div>
+  </div>
     <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
     <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
+    <div className='Sources_modal_optional_labal'>
+      <input type="text" value={editOptionalLabel} placeholder="Optional label..." />
+    </div>
     <div className="Sources_modal_add_btn">
       <button onClick={toggle}>Add</button>
     </div>
 
   </React.Fragment>;
+
+const contentEditSource = <React.Fragment>
+  <div className='Sources_modal_discription'>How well do you trust this node?</div>
+  <div className='Sources_modal_select_state'>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("A little.")}>
+      <div className="Sources_modal_icon">🔓</div>
+      <div className="Sources_modal_input">A little.</div>
+    </div>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("Very well.")}>
+      <div className="Sources_modal_icon">🫡</div>
+      <div className="Sources_modal_input">Very well.</div>
+    </div>
+    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("It's my node.")}>
+      <div className="Sources_modal_icon">🏠</div>
+      <div className="Sources_modal_input">It's my node.</div>
+    </div>
+  </div>
+  <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
+  <div className='Sources_modal_optional_labal'>
+    <input type="text" value={optionalLabel} placeholder="Optional label..." />
+  </div>
+  <div className="Sources_modal_btn_grp">
+      <button onClick={toggle}>Delet</button>
+      <button onClick={toggle}>Edit</button>
+  </div>
+  
+</React.Fragment>;
 
   return(
     <div className="Sources">
@@ -115,16 +167,12 @@ export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =
                 <div className="Sources_item_left">
                   <div className="Sources_item_icon">{item.icon}</div>
                   <div className="Sources_item_input">
-                    <input
-                      type="text"
-                      onChange={(e) => setItemInput(e.target.value)}
-                      value={itemInput || "My Home Node (33q66w6...)"}
-                    />
+                    <div>{itemInput || "My Home Node (33q66w6...)"}</div>
                   </div>
                 </div>
                 <div className="Sources_item_right">
-                  <div className="Sources_item_close">
-                    <img src={Close} width="15px" alt="" />
+                  <div className="Sources_item_close" onClick={EditSource_Modal}>
+                    <img src={EditSource} width="15px" alt="" />
                   </div>
                   <div className="Sources_item_menu">
                     <img src={SourceItemMenu} width="23px" alt="" />
@@ -146,16 +194,12 @@ export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =
                 <div className="Sources_item_left">
                   <div className="Sources_item_icon">{item.icon}</div>
                   <div className="Sources_item_input">
-                    <input
-                      type="text"
-                      onChange={(e) => setItemInput(e.target.value)}
-                      value={itemInput || "My Home Node (33q66w6...)"}
-                    />
+                    <div>{itemInput || "My Home Node (33q66w6...)"}</div>
                   </div>
                 </div>
                 <div className="Sources_item_right">
-                  <div className="Sources_item_close">
-                    <img src={Close} width="15px" alt="" />
+                  <div className="Sources_item_close" onClick={EditSource_Modal}>
+                    <img src={EditSource} width="15px" alt="" />
                   </div>
                   <div className="Sources_item_menu">
                     <img src={SourceItemMenu} width="23px" alt="" />
@@ -167,9 +211,10 @@ export const Sources: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =
         </div>
       </div>
       <div className="Sources_add_btn">
-        <button onClick={toggle}>Add</button>
+        <button onClick={AddSource_Modal}>Add</button>
       </div>
-      <AddSourceModal isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
+      {console.log(modalType)}
+      <AddSourceModal isShown={isShown} hide={toggle} modalContent={modalType === "addSource"? contentAddSource : contentEditSource} headerText={modalType === "addSource"? "Add Source" : "Edit Source"} />
     </div>
   )
 }

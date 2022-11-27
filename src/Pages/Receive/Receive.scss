@@ -88,21 +88,36 @@
       text-align: right;
 
       & span{
-        margin-left: 5px;
-        margin-top: 12px;
+        margin-left: 9px;
+        margin-top: 8px;
+        font-size: 20px;
         position: absolute;
       }
 
       & input{
         width: 100%;
         border: 1px solid #2aabe1;
+        border-radius: 2rem;
         color: #2aabe1;
         font-family: Montserrat;
-        font-size: 20px;
+        font-size: 15px;
         font-weight: bold;
-        text-align: right;
-        padding: 17px 10px;
+        text-align: center;
+        padding: 14px 10px;
         background-color: #16191c;
+      }
+
+      & input:nth-child(2)::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+        color: #2aabe1;
+        opacity: 1; /* Firefox */
+      }
+      
+      & input:nth-child(2):-ms-input-placeholder { /* Internet Explorer 10-11 */
+        color: #2aabe1;
+      }
+      
+      & input:nth-child(2)::-ms-input-placeholder { /* Microsoft Edge */
+        color: #2aabe1;
       }
     }
 
@@ -126,8 +141,10 @@
         & button{
           width: 100%;
           font-size: 16px;
+          font-family: Montserrat;
+          font-weight: bold;
           color: #fcfcfc;
-          padding: 15px;
+          padding: 12px;
           border-radius: 2rem;
           border: 1px solid #2693c1;
           background-color: #2693c1;
@@ -146,8 +163,10 @@
         & button{
           width: 100%;
           font-size: 16px;
+          font-family: Montserrat;
+          font-weight: bold;
           color: #fcfcfc;
-          padding: 15px;
+          padding: 12px;
           border-radius: 2rem;
           border: 1px solid #2693c1;
           background-color: #2693c1;

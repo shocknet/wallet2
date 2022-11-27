@@ -7,6 +7,8 @@ import Logo from "../../Assets/Images/logo.png";
 import Menu from "../../Assets/Icons/menu.svg";
 import MenuBack from "../../Assets/Icons/menuBack.svg";
 import Setting from "../../Assets/Icons/setting.svg";
+import SettingHover from "../../Assets/Icons/setting-hover.svg";
+import KeyHover from "../../Assets/Icons/key-hover.svg";
 import Key from "../../Assets/Icons/key.svg";
 
 import { HeaderProps } from "./types";
@@ -38,12 +40,14 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
         <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img">
             <img src={Key} width="30px" alt="" />
+            <img src={KeyHover} width="30px" alt="" />
           </div>
           <div className="Header_modal_content_item_text">Key Management</div>
         </div>
         <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img">
             <img src={Setting} width="30px" alt="" />
+            <img src={SettingHover} width="30px" alt="" />
           </div>
           <div className="Header_modal_content_item_text">Preferences</div>
         </div>
