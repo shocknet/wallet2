@@ -1,0 +1,26 @@
+.dropdown {
+  position: absolute;
+  width: 100px;
+  height: 146px;
+  margin-top: 2px;
+  background-color: #101010;
+  right: calc(5% + 3px);
+  border: 1px solid #2693c1;
+  padding: 20px 5px 5px 5px;
+  font-size: 14px;
+  text-align: left;
+  border-radius: 0.25rem;
+  display: grid;
+  z-index: 10;
+}
+.dropdown > p {
+  margin: 0;
+  z-index: 10000;
+}
+.dropdown > p:hover {
+  color: #2693c1;
+}
+
+.dropdown > p.active{
+
+}

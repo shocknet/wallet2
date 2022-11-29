@@ -51,9 +51,18 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           </div>
           <div className="Header_modal_content_item_text">Preferences</div>
         </div>
+        <div className="Header_modal_content_item" onClick={() => {
+          navigate("/sources");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            <img src={Setting} width="30px" alt="" />
+            <img src={SettingHover} width="30px" alt="" />
+          </div>
+          <div className="Header_modal_content_item_text">Manage Sources</div>
+        </div>
       </div>
     </div>
-
   </React.Fragment>;
 
   return (

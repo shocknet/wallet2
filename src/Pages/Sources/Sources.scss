@@ -32,7 +32,7 @@
     background-color: #101010;
     height: 150px;
     --scrollbar-width: 8px;
-    --mask-height: 20px;
+    --mask-height: 2px;
     overflow-y: auto;
     padding-top: var(--mask-height);
     padding-bottom: var(--mask-height);
@@ -46,10 +46,6 @@
     --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
     --mask-image-scrollbar: linear-gradient(black, black);
     --mask-size-scrollbar: var(--scrollbar-width) 100%;
-    -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
-    -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
-    mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
-    mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
     mask-position: 0 0, 100% 0;
     mask-repeat: no-repeat, no-repeat;
   }
@@ -150,6 +146,13 @@
     width: 93%;
   }
 
+  &_item_balance{
+    margin-top: 10px;
+    margin-right: 10px;
+    font-size: 16px !important;
+    font-weight: bold;
+  }
+
   &_modal_input{
     text-align: left;
     margin-top: 3px;
@@ -163,8 +166,7 @@
   }
 
   &_item_input div{
-    position: absolute;
-    width: 60%;
+    width: 100%;
     background-color: #202020;
     color: #fcfcfc;
     font-size: 16px;
@@ -176,13 +178,21 @@
   }
 
   &_item_close{
-    margin-top: 3px;
     width: 50%;
+    padding: 5px 0 0 0;
+    background-color: #101010;
+    position: relative;
+    border: 1px solid transparent;
   }
 
   &_item_menu{
-    margin-top: 6px;
+    background-color: #101010;
+    position: relative;
+    margin-right: -8px;
+    padding: 5px 0 0 0;
     width: 70%;
+    border: 1px solid transparent;
+    cursor: pointer;
   }
 
   &_add_btn{
@@ -243,5 +253,12 @@
       font-weight: 100;
       color: #f3efef;
     }
+  }
+
+  &_dropdown_title{
+    font-weight: bold;
+    color: #2693c1;
+    text-align: center;
+    margin-top: -10px;
   }
 }
