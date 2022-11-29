@@ -15,17 +15,17 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const [payToItems, setPayToItems] = useState([{
     id: 'item4',
     text: 'biscuitsniffer69@zbd.gg',
-    icon: '🔓',
+    icon: 2,
   } as PayTo,
   {
     id: 'item1',
     text: 'My Home Node (33q66w6...)',
-    icon: '🏠',
+    icon: 3,
   } as PayTo,
   {
     id: 'item2',
     text: "Uncle Jim's Node (21mz66...)",
-    icon: '🫡',
+    icon: 1,
   } as PayTo]);
   const [sendFromItems, setSendFromItems] = useState([{
     id: 'item4',
@@ -51,12 +51,19 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     balance: 3200,
     icon: '🫡',
   } as PayTo]);
-  const [modalType, setModalType] = useState<string>("");
+  
+  const [addSourceDefaultLabel, setAddSourceDefaultLabel] = useState<string>("lnbc12345678900000000000000");
   const [optionalLabel, setOptionalLabel] = useState<string>("");
+
   const [editOptionalLabel, setEditOptionalLabel] = useState<string>("");
+
+  const [modalType, setModalType] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
-  const [payToSort, setPayToSort] = useState<string>("");
-  const [sendFromSort, setSendFromSort] = useState<string>("");
+
+  const [payToSort, setPayToSort] = useState<string>("TrustLevel");
+  const [sendFromSort, setSendFromSort] = useState<string>("TrustLevel");
+
+  const [editSourceId, setEditSourceId] = useState<number>(0);
 
   const { isShown, toggle } = UseModal();
 
@@ -92,60 +99,10 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const SpendFromSortSetting = (item: string): void => {
-    let sendFromsources = sendFromItems;
-    if(item === "TrustLevel"){
-      sendFromsources.sort((a: PayTo, b: PayTo) => {
-        let x = String(a.icon).toLowerCase();
-        let y = String(b.icon).toLowerCase();
-        if (x < y) {return 1;}
-        if (x > y) {return -1;}
-        return 0;
-      });
-    }
-    else if(item === "Label"){
-      sendFromsources.sort((a: PayTo, b: PayTo) => {
-        let x = String(a.text).toLowerCase();
-        let y = String(b.text).toLowerCase();
-        if (x < y) {return -1;}
-        if (x > y) {return 1;}
-        return 0;
-      });
-    }
-    else if(item === "Balance"){
-      sendFromsources.sort((a: PayTo, b: PayTo) => {
-        let x = a.balance;
-        let y = b.balance;
-        if (x < y) {return 1;}
-        if (x > y) {return -1;}
-        return 0;
-      });
-    }
-    setSendFromItems(sendFromsources)
     setSendFromSort(item);
   };
 
   const PaytoSortSetting = (item: string): void => {
-    let PayTosources = payToItems;
-
-    if(item === "TrustLevel"){
-      PayTosources.sort((a: PayTo, b: PayTo) => {
-        let x = String(a.icon).toLowerCase();
-        let y = String(b.icon).toLowerCase();
-        if (x < y) {return 1;}
-        if (x > y) {return -1;}
-        return 0;
-      });
-    }
-    else if(item === "Label"){
-      PayTosources.sort((a: PayTo, b: PayTo) => {
-        let x = String(a.text).toLowerCase();
-        let y = String(b.text).toLowerCase();
-        if (x < y) {return -1;}
-        if (x > y) {return 1;}
-        return 0;
-      });
-    }
-    setPayToItems(PayTosources)
     setPayToSort(item);
   };
 
@@ -157,7 +114,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     }
   };
 
-  const EditSource_Modal = () => {
+  const EditSource_Modal = (key: number) => {
+    setEditSourceId(key);
     setModalType("editSource");
     toggle();
   }
@@ -170,9 +128,67 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setEditOptionalLabel(e)
   }
 
+  const AddSource = () => {
+    if(!optionalLabel){
+      alert("Please Select Trust Level!");
+      return;
+    }
+    setPayToItems([...payToItems, {
+      text: addSourceDefaultLabel,
+      icon: optionalLabel === "A little." ? "🔓" : (optionalLabel === "Very well." ? "🫡" : "🏠"),
+    } as PayTo])
+    setOptionalLabel("");
+    toggle();
+  }
+
+  const Edit_Source = () => {
+    let payToSources = payToItems;
+    if(editOptionalLabel)
+      payToSources[editSourceId].icon = (editOptionalLabel == "A little." ? 3 : (editOptionalLabel == "Very well." ? 2 : 1));
+    setPayToItems(payToSources);
+    setEditOptionalLabel("");
+    toggle();
+  }
+
+  const Delete_Source = () => {
+    let payToSources = payToItems;
+    payToSources.splice(editSourceId, 1);
+    setEditSourceId(0);
+    setPayToItems(payToSources);
+    setEditOptionalLabel("");
+    toggle();
+  }
+
   const contentAddSource = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
+      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("A little.")}>
+        <div className="Sources_modal_icon">🔓</div>
+        <div className="Sources_modal_input">A little.</div>
+      </div>
+      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("Very well.")}>
+        <div className="Sources_modal_icon">🫡</div>
+        <div className="Sources_modal_input">Very well.</div>
+      </div>
+      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("It's my node.")}>
+        <div className="Sources_modal_icon">🏠</div>
+        <div className="Sources_modal_input">It's my node.</div>
+      </div>
+    </div>
+    <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
+    <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
+    <div className='Sources_modal_optional_labal'>
+      <input type="text" value={optionalLabel} placeholder="Optional label..." />
+    </div>
+    <div className="Sources_modal_add_btn">
+      <button onClick={AddSource}>Add</button>
+    </div>
+
+  </React.Fragment>;
+
+const contentEditSource = <React.Fragment>
+  <div className='Sources_modal_discription'>How well do you trust this node?</div>
+  <div className='Sources_modal_select_state'>
     <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("A little.")}>
       <div className="Sources_modal_icon">🔓</div>
       <div className="Sources_modal_input">A little.</div>
@@ -186,40 +202,13 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       <div className="Sources_modal_input">It's my node.</div>
     </div>
   </div>
-    <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
-    <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
-    <div className='Sources_modal_optional_labal'>
-      <input type="text" value={editOptionalLabel} placeholder="Optional label..." />
-    </div>
-    <div className="Sources_modal_add_btn">
-      <button onClick={toggle}>Add</button>
-    </div>
-
-  </React.Fragment>;
-
-const contentEditSource = <React.Fragment>
-  <div className='Sources_modal_discription'>How well do you trust this node?</div>
-  <div className='Sources_modal_select_state'>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("A little.")}>
-      <div className="Sources_modal_icon">🔓</div>
-      <div className="Sources_modal_input">A little.</div>
-    </div>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("Very well.")}>
-      <div className="Sources_modal_icon">🫡</div>
-      <div className="Sources_modal_input">Very well.</div>
-    </div>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("It's my node.")}>
-      <div className="Sources_modal_icon">🏠</div>
-      <div className="Sources_modal_input">It's my node.</div>
-    </div>
-  </div>
-  <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
+  <div className='Sources_modal_code'>{payToItems[editSourceId] ? payToItems[editSourceId].text : ""}</div>
   <div className='Sources_modal_optional_labal'>
-    <input type="text" value={optionalLabel} placeholder="Optional label..." />
+    <input type="text" value={editOptionalLabel || !payToItems[editSourceId] ? editOptionalLabel : payToItems[editSourceId].icon == 1 ? "It's my node." : (payToItems[editSourceId].icon == 2 ? "Very well." : "A little.")} placeholder="Optional label..." />
   </div>
   <div className="Sources_modal_btn_grp">
-      <button onClick={toggle}>Delet</button>
-      <button onClick={toggle}>Edit</button>
+      <button onClick={Delete_Source}>Delet</button>
+      <button onClick={Edit_Source}>Edit</button>
   </div>
   
 </React.Fragment>;
@@ -239,17 +228,18 @@ const contentEditSource = <React.Fragment>
               citySelection={PaytoSortSetting}
             />
           )}
-          {payToItems.map((item: PayTo, key) => {
+          {payToItems.sort((a: PayTo, b: PayTo) => payToSort == "Label" ? String(a.text).toLowerCase() == String(b.text).toLowerCase() ? 0 : (String(a.text).toLowerCase() < String(b.text).toLowerCase() ? -1 : 1): a.icon == b.icon ? 0 : (a.icon < b.icon ? -1 : 1))
+          .map((item: PayTo, key) => {
             return (
               <div className="Sources_item" key={key}>
                 <div className="Sources_item_left">
-                  <div className="Sources_item_icon">{item.icon}</div>
+                  <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
                   <div className="Sources_item_input">
                     <div>{item.text}</div>
                   </div>
                 </div>
                 <div className="Sources_item_right">
-                  <button className="Sources_item_close" onClick={EditSource_Modal}>
+                  <button className="Sources_item_close" onClick={() => {EditSource_Modal(key)}}>
                     <img src={EditSource} width="15px" alt="" />
                   </button>
                   <button 
@@ -279,7 +269,8 @@ const contentEditSource = <React.Fragment>
               citySelection={SpendFromSortSetting}
             />
           )}
-          {sendFromItems.map((item: PayTo, key) => {
+          {sendFromItems.sort((a: PayTo, b: PayTo) => sendFromSort == "Label" ? String(a.text).toLowerCase() == String(b.text).toLowerCase() ? 0 : (String(a.text).toLowerCase() < String(b.text).toLowerCase() ? -1 : 1): (sendFromSort == "TrustLevel" ? a.icon == b.icon ? 0 : (a.icon < b.icon ? -1 : 1) : a.icon == b.icon ? 0 : (a.balance < b.balance ? 1 : -1)))
+          .map((item: PayTo, key) => {
             return (
               <div className="Sources_item" key={key}>
                 <div className="Sources_item_left">
@@ -290,7 +281,7 @@ const contentEditSource = <React.Fragment>
                 </div>
                 <div className="Sources_item_right">
                   <div className="Sources_item_balance">{item.balance}</div>
-                  <button className="Sources_item_close" onClick={EditSource_Modal}>
+                  <button className="Sources_item_close">
                     <img src={EditSource} width="15px" alt="" />
                   </button>
                   <button 
