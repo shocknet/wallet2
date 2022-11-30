@@ -130,6 +130,12 @@
       display: flex;
       margin-top: 20px;
 
+      & hr{
+        width: 100%;
+        border: none;
+        border-top: .5px solid #f3efef;
+      }
+
       &_img{
         text-align: left;
         width: 60px;
