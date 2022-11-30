@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavigateFunction, useNavigate } from "react-router-dom";
+import { ReactSortable } from "react-sortablejs";
 import { PageProps } from "../../globalTypes";
 import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
@@ -12,41 +13,41 @@ import EditSource from "../../Assets/Icons/edit-source.svg";
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [itemInput, setItemInput] = useState<string>("");
-  const [payToItems, setPayToItems] = useState([{
-    id: 'item4',
+  const [payToItems, setPayToItems] = useState<Array<any>>([{
+    id: 1,
     text: 'biscuitsniffer69@zbd.gg',
     icon: 2,
   } as PayTo,
   {
-    id: 'item1',
+    id: 4,
     text: 'My Home Node (33q66w6...)',
     icon: 3,
   } as PayTo,
   {
-    id: 'item2',
+    id: 3,
     text: "Uncle Jim's Node (21mz66...)",
     icon: 1,
   } as PayTo]);
-  const [sendFromItems, setSendFromItems] = useState([{
-    id: 'item4',
+  const [sendFromItems, setSendFromItems] = useState<Array<any>>([{
+    id: 1,
     text: 'biscuitsniffer69@zbd.gg',
     balance: 21212,
     icon: '🔓',
   } as PayTo,
   {
-    id: 'item1',
+    id: 2,
     text: 'My Home Node (33q66w6...)',
     balance: 10,
     icon: '🏠',
   } as PayTo,
   {
-    id: 'item2',
+    id: 3,
     text: "Uncle Jim's Node (21mz66...)",
     balance: 615,
     icon: '🫡',
   } as PayTo,
   {
-    id: 'item2',
+    id: 4,
     text: "Uncle Jim's Node (21mz66...)",
     balance: 3200,
     icon: '🫡',
@@ -68,7 +69,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const { isShown, toggle } = UseModal();
 
   interface PayTo {
-    id?: any;
+    id?: number;
     text?: any;
     icon?: any;
     balance?: any;
@@ -228,33 +229,35 @@ const contentEditSource = <React.Fragment>
               citySelection={PaytoSortSetting}
             />
           )}
-          {payToItems.sort((a: PayTo, b: PayTo) => payToSort == "Label" ? String(a.text).toLowerCase() == String(b.text).toLowerCase() ? 0 : (String(a.text).toLowerCase() < String(b.text).toLowerCase() ? -1 : 1): a.icon == b.icon ? 0 : (a.icon < b.icon ? -1 : 1))
-          .map((item: PayTo, key) => {
-            return (
-              <div className="Sources_item" key={key}>
-                <div className="Sources_item_left">
-                  <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
-                  <div className="Sources_item_input">
-                    <div>{item.text}</div>
+          <ReactSortable list={payToItems} setList={setPayToItems}>
+            {payToItems.map((item: PayTo, key) => {
+              return (
+                <div className="Sources_item" key={key}>
+                  <div className="Sources_item_left">
+                    <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
+                    <div className="Sources_item_input">
+                      <div>{item.text}</div>
+                    </div>
+                  </div>
+                  <div className="Sources_item_right">
+                    <button className="Sources_item_close" onClick={() => {EditSource_Modal(key)}}>
+                      <img src={EditSource} width="15px" alt="" />
+                    </button>
+                    <button 
+                      className="Sources_item_menu" 
+                      onClick={(): void => toggleDropDown("PayTo")}
+                      onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
+                        dismissHandler(e)
+                      }
+                    >
+                      <img src={SourceItemMenu} width="23px" alt="" />
+                    </button>
                   </div>
                 </div>
-                <div className="Sources_item_right">
-                  <button className="Sources_item_close" onClick={() => {EditSource_Modal(key)}}>
-                    <img src={EditSource} width="15px" alt="" />
-                  </button>
-                  <button 
-                    className="Sources_item_menu" 
-                    onClick={(): void => toggleDropDown("PayTo")}
-                    onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                      dismissHandler(e)
-                    }
-                  >
-                    <img src={SourceItemMenu} width="23px" alt="" />
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </ReactSortable>
+          
         </div>
       </div>
       <div className="Sources_receive_content">
@@ -269,34 +272,36 @@ const contentEditSource = <React.Fragment>
               citySelection={SpendFromSortSetting}
             />
           )}
-          {sendFromItems.sort((a: PayTo, b: PayTo) => sendFromSort == "Label" ? String(a.text).toLowerCase() == String(b.text).toLowerCase() ? 0 : (String(a.text).toLowerCase() < String(b.text).toLowerCase() ? -1 : 1): (sendFromSort == "TrustLevel" ? a.icon == b.icon ? 0 : (a.icon < b.icon ? -1 : 1) : a.icon == b.icon ? 0 : (a.balance < b.balance ? 1 : -1)))
-          .map((item: PayTo, key) => {
-            return (
-              <div className="Sources_item" key={key}>
-                <div className="Sources_item_left">
-                  <div className="Sources_item_icon">{item.icon}</div>
-                  <div className="Sources_item_input">
-                    <div>{item.text}</div>
+          <ReactSortable list={sendFromItems} setList={setSendFromItems}>
+            {sendFromItems.map((item: PayTo, key) => {
+              return (
+                <div className="Sources_item" key={key}>
+                  <div className="Sources_item_left">
+                    <div className="Sources_item_icon">{item.icon}</div>
+                    <div className="Sources_item_input">
+                      <div>{item.text}</div>
+                    </div>
+                  </div>
+                  <div className="Sources_item_right">
+                    <div className="Sources_item_balance">{item.balance}</div>
+                    <button className="Sources_item_close">
+                      <img src={EditSource} width="15px" alt="" />
+                    </button>
+                    <button 
+                      className="Sources_item_menu" 
+                      onClick={(): void => toggleDropDown("SpendFrom")}
+                      onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
+                        dismissHandler(e)
+                      }
+                    >
+                      <img src={SourceItemMenu} width="23px" alt="" />
+                    </button>
                   </div>
                 </div>
-                <div className="Sources_item_right">
-                  <div className="Sources_item_balance">{item.balance}</div>
-                  <button className="Sources_item_close">
-                    <img src={EditSource} width="15px" alt="" />
-                  </button>
-                  <button 
-                    className="Sources_item_menu" 
-                    onClick={(): void => toggleDropDown("SpendFrom")}
-                    onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                      dismissHandler(e)
-                    }
-                  >
-                    <img src={SourceItemMenu} width="23px" alt="" />
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </ReactSortable>
+          
         </div>
       </div>
       <div className="Sources_add_btn">
