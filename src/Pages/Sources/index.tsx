@@ -12,7 +12,6 @@ import EditSource from "../../Assets/Icons/edit-source.svg";
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
-  const [itemInput, setItemInput] = useState<string>("");
   const [payToItems, setPayToItems] = useState<Array<any>>([{
     id: 1,
     text: 'biscuitsniffer69@zbd.gg',
@@ -53,7 +52,9 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     icon: '🫡',
   } as PayTo]);
   
-  const [addSourceDefaultLabel, setAddSourceDefaultLabel] = useState<string>("lnbc12345678900000000000000");
+  const [addSourceLabel, setAddSourceLabel] = useState<string>("");
+  const [editSourceLabel, setEditSourceLabel] = useState<string>("");
+
   const [optionalLabel, setOptionalLabel] = useState<string>("");
 
   const [editOptionalLabel, setEditOptionalLabel] = useState<string>("");
@@ -117,35 +118,30 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const EditSource_Modal = (key: number) => {
     setEditSourceId(key);
+    setEditSourceLabel(payToItems[key].text);
+    setEditOptionalLabel(payToItems[key].icon == 1 ? "It's my node." : (payToItems[key].icon == 2 ? "Very well." : "A little."));
     setModalType("editSource");
     toggle();
   }
 
-  const Select_OptionalLabal = (e: string) => {
-    setOptionalLabel(e)
-  }
-
-  const Select_EditOptionalLabal = (e: string) => {
-    setEditOptionalLabel(e)
-  }
-
   const AddSource = () => {
-    if(!optionalLabel){
-      alert("Please Select Trust Level!");
-      return;
-    }
+    if(!optionalLabel || !addSourceLabel)
+      return alert("Please Write Data Correctly!");
     setPayToItems([...payToItems, {
-      text: addSourceDefaultLabel,
-      icon: optionalLabel === "A little." ? "🔓" : (optionalLabel === "Very well." ? "🫡" : "🏠"),
+      text: addSourceLabel,
+      icon: optionalLabel === "A little." ? 3 : (optionalLabel === "Very well." ? 2 : 1),
     } as PayTo])
     setOptionalLabel("");
+    setAddSourceLabel("");
     toggle();
   }
 
   const Edit_Source = () => {
     let payToSources = payToItems;
-    if(editOptionalLabel)
-      payToSources[editSourceId].icon = (editOptionalLabel == "A little." ? 3 : (editOptionalLabel == "Very well." ? 2 : 1));
+    if(!editOptionalLabel || !editSourceLabel)
+      return alert("Please Write Data Correctly!");    
+    payToSources[editSourceId].icon = (editOptionalLabel == "A little." ? 3 : (editOptionalLabel == "Very well." ? 2 : 1));
+    payToSources[editSourceId].text = editSourceLabel;
     setPayToItems(payToSources);
     setEditOptionalLabel("");
     toggle();
@@ -163,23 +159,32 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const contentAddSource = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("A little.")}>
+      <div className="Sources_modal_select_state_column" onClick={() => setOptionalLabel("A little.")}>
         <div className="Sources_modal_icon">🔓</div>
         <div className="Sources_modal_input">A little.</div>
       </div>
-      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("Very well.")}>
+      <div className="Sources_modal_select_state_column" onClick={() => setOptionalLabel("Very well.")}>
         <div className="Sources_modal_icon">🫡</div>
         <div className="Sources_modal_input">Very well.</div>
       </div>
-      <div className="Sources_modal_select_state_column" onClick={() => Select_OptionalLabal("It's my node.")}>
+      <div className="Sources_modal_select_state_column" onClick={() => setOptionalLabel("It's my node.")}>
         <div className="Sources_modal_icon">🏠</div>
         <div className="Sources_modal_input">It's my node.</div>
       </div>
     </div>
     <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
-    <div className='Sources_modal_code'>lnbc12345678900000000000000</div>
+    <div className='Sources_modal_code'>
+      <input 
+        placeholder="Label..." 
+        value={addSourceLabel}
+        onChange={(e) => setAddSourceLabel(e.target.value)}
+      />
+    </div>
     <div className='Sources_modal_optional_labal'>
-      <input type="text" value={optionalLabel} placeholder="Optional label..." />
+      <input
+        value={optionalLabel} placeholder="Optional label..." 
+        onChange={(e) => {}}  
+      />
     </div>
     <div className="Sources_modal_add_btn">
       <button onClick={AddSource}>Add</button>
@@ -190,22 +195,31 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 const contentEditSource = <React.Fragment>
   <div className='Sources_modal_discription'>How well do you trust this node?</div>
   <div className='Sources_modal_select_state'>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("A little.")}>
+    <div className="Sources_modal_select_state_column" onClick={() => setEditOptionalLabel("A little.")}>
       <div className="Sources_modal_icon">🔓</div>
       <div className="Sources_modal_input">A little.</div>
     </div>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("Very well.")}>
+    <div className="Sources_modal_select_state_column" onClick={() => setEditOptionalLabel("Very well.")}>
       <div className="Sources_modal_icon">🫡</div>
       <div className="Sources_modal_input">Very well.</div>
     </div>
-    <div className="Sources_modal_select_state_column" onClick={() => Select_EditOptionalLabal("It's my node.")}>
+    <div className="Sources_modal_select_state_column" onClick={() => setEditOptionalLabel("It's my node.")}>
       <div className="Sources_modal_icon">🏠</div>
       <div className="Sources_modal_input">It's my node.</div>
     </div>
   </div>
-  <div className='Sources_modal_code'>{payToItems[editSourceId] ? payToItems[editSourceId].text : ""}</div>
+  <div className='Sources_modal_code'>
+    <input 
+      placeholder="Label..." 
+      value={editSourceLabel}
+      onChange={(e) => setEditSourceLabel(e.target.value)}
+    />
+  </div>
   <div className='Sources_modal_optional_labal'>
-    <input type="text" value={editOptionalLabel || !payToItems[editSourceId] ? editOptionalLabel : payToItems[editSourceId].icon == 1 ? "It's my node." : (payToItems[editSourceId].icon == 2 ? "Very well." : "A little.")} placeholder="Optional label..." />
+    <input 
+      value={editOptionalLabel} placeholder="Optional label..." 
+      onChange={(e) => {}}
+    />
   </div>
   <div className="Sources_modal_btn_grp">
       <button onClick={Delete_Source}>Delet</button>
@@ -257,7 +271,6 @@ const contentEditSource = <React.Fragment>
               )
             })}
           </ReactSortable>
-          
         </div>
       </div>
       <div className="Sources_receive_content">
@@ -300,8 +313,7 @@ const contentEditSource = <React.Fragment>
                 </div>
               )
             })}
-          </ReactSortable>
-          
+          </ReactSortable>        
         </div>
       </div>
       <div className="Sources_add_btn">

@@ -112,15 +112,25 @@
   }
 
   &_modal_code{
-    color: #2aabe1;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: Montserrat;
-    margin-top: 10px;
-    background-color: #16191c;
-    padding: 15px;
-    border-radius: 2rem;
-    overflow-x: auto;
+    
+    & input {
+      color: #2aabe1;
+      border: none;
+      font-size: 12px;
+      font-weight: bold;
+      font-family: Montserrat;
+      text-align: center;
+      margin-top: 10px;
+      background-color: #16191c;
+      padding: 12px;
+      width: 100%;
+      border-radius: 2rem;
+      overflow-x: auto;
+
+      &::placeholder{
+        color: #2aabe1;
+      }
+    }
   }
 
   &_modal_select_state{
