@@ -239,7 +239,7 @@ const contentEditSource = <React.Fragment>
     />
   </div>
   <div className="Sources_modal_btn_grp">
-      <button onClick={Delete_Source}>Delet</button>
+      <button onClick={Delete_Source}>Delete</button>
       <button onClick={Edit_Source}>Edit</button>
   </div>
   
