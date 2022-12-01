@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { ReactSortable } from "react-sortablejs";
+import { Button, notification } from 'antd';
+import type { NotificationPlacement } from 'antd/es/notification/interface';
+
 import { PageProps } from "../../globalTypes";
 import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
@@ -67,9 +69,18 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [editSourceId, setEditSourceId] = useState<number>(0);
 
-  const { isShown, toggle } = UseModal();
+  const [api, contextHolder] = notification.useNotification();
 
-  // const navigate: NavigateFunction = useNavigate()
+  const openNotification = (placement: NotificationPlacement, header: string,  text: string) => {
+    api.info({
+      message: header,
+      description:
+      text,
+      placement
+    });
+  };
+
+  const { isShown, toggle } = UseModal();
 
   interface PayTo {
     id?: number;
@@ -126,7 +137,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const AddSource = () => {
     if(!addSourceOptional || !optionalLabel)
-      return alert("Please Write Data Correctly!");
+      return openNotification("top", "Error", "Please Write Data Correctly!");
     setPayToItems([...payToItems, {
       text: addSourceLabel,
       icon: optionalLabel === "A little." ? 3 : (optionalLabel === "Very well." ? 2 : 1),
@@ -141,7 +152,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const Edit_Source = () => {
     let payToSources = payToItems;
     if(!addSourceOptional || !optionalLabel)
-      return alert("Please Write Data Correctly!");    
+      return openNotification("top", "Error", "Please Write Data Correctly!")
     payToSources[editSourceId].icon = (optionalLabel == "A little." ? 3 : (optionalLabel == "Very well." ? 2 : 1));
     payToSources[editSourceId].text = addSourceLabel;
     payToSources[editSourceId].label = addSourceOptional;
@@ -236,6 +247,7 @@ const contentEditSource = <React.Fragment>
 
   return(
     <div className="Sources">
+      {contextHolder}
       <div className="Sources_title">Manage Sources</div>
       <div className="Sources_pay_content">
         <div className="Sources_content_title">Pay To</div>

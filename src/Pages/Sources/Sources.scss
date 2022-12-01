@@ -117,7 +117,6 @@
       color: #2aabe1;
       border: none;
       font-size: 12px;
-      font-weight: bold;
       font-family: Montserrat;
       text-align: center;
       margin-top: 10px;
@@ -128,7 +127,8 @@
       overflow-x: auto;
 
       &::placeholder{
-        color: #f3efef;
+        font-family: Montserrat;
+        color: #2aabe1;
       }
     }
   }
@@ -248,7 +248,6 @@
       width: 100%;
       border: none;
       font-size: 12px;
-      font-weight: bold;
       font-family: Montserrat;
       color: #2693c1;
       margin-top: 10px;
@@ -259,7 +258,8 @@
     }
 
     & input::placeholder{
-      color: #f3efef;
+      font-family: Montserrat;
+      color: #fcfcfc;
     }
   }
 
