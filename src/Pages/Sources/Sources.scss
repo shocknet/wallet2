@@ -93,7 +93,7 @@
     }
   }
 
-  &_modal_select_state_column:hover{
+  &_modal_select_state_column.active{
     .Sources_modal_input{
       border: 1px solid #2693c1;
       box-shadow: #2693c1;
@@ -128,7 +128,7 @@
       overflow-x: auto;
 
       &::placeholder{
-        color: #2aabe1;
+        color: #f3efef;
       }
     }
   }
@@ -243,15 +243,14 @@
 
   &_modal_optional_labal{
     
-
     & input{
-      color: #fcfcfc;
       text-align: center;
       width: 100%;
       border: none;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
       font-family: Montserrat;
+      color: #2693c1;
       margin-top: 10px;
       background-color: #16191c;
       padding: 12px;
@@ -260,7 +259,6 @@
     }
 
     & input::placeholder{
-      font-weight: 100;
       color: #f3efef;
     }
   }

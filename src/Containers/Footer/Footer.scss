@@ -6,23 +6,35 @@
   height: 9vh;
 
   &_receive_btn{
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: beige;
-    background-color: #2693c1;
-    border: none;
+    float: left;
     width: 50%;
     height: 100%;
+
+    & button{
+      border: none;
+      background-color: #2693c1;
+      color: beige;
+      width: 100%;
+      height: 100%; 
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
   }
 
   &_send_btn{
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: beige;
-    background-color: #2693c1;
-    border: none;
     width: 50%;
-    height: 100%;
+    height: 100%; 
+    float: right;
+
+    & button{
+      border: none;
+      background-color: #2693c1;
+      color: beige;
+      width: 100%;
+      height: 100%; 
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
   }
 
   &_QR{
@@ -38,5 +50,15 @@
     bottom: 100%;
     border-radius: 50%;
     background-color: #16191c;
+  }
+
+  &_QRCodeIcon{
+    width: 60px;
+    height: 60px;
+  }
+
+  &_receiveBTN{
+    width: 50%;
+    height: 100%;
   }
 }
