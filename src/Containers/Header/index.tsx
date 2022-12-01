@@ -124,7 +124,6 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
                 navigate("#");
                 toggle();
               }}>
-                <div className="mouseClick_animation Header_hambugar"></div>
                 <img src={menuIcon} width="40px" alt="" />
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />

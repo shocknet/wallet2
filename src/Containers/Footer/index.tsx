@@ -18,15 +18,12 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
       {(isSources || ishome) ? (
         <React.Fragment>
           <div className="Footer_receive_btn">
-            <div className="mouseClick_animation Footer_receiveBTN"></div>
             <button onClick={() => { navigate("/receive")} }>Receive</button>
           </div>
           <div className="Footer_send_btn">
-            <div className="mouseClick_animation Footer_receiveBTN"></div>
             <button onClick={() => { navigate("/scan")} }>Send</button>
           </div>
           <div className="Footer_QR">
-            <div className="mouseClick_animation Footer_QRCodeIcon"></div>
             <img src={QR} width="60px" height="60px" alt="" />
           </div>
         </React.Fragment>
@@ -34,7 +31,6 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
         receive ? (
           <React.Fragment>
             <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
-              <div className="mouseClick_animation Footer_QRCodeIcon"></div>
               <img src={QR} width="60px" height="60px" alt="" />
             </div>
           </React.Fragment>
