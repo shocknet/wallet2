@@ -24,13 +24,6 @@ body{
   font-size: 1.6rem;
 }
 
-.mouseClick_animation{
-  opacity: 0;
-  position: absolute; 
-  background-color: #5BB166;
-  transition-duration: 500ms;
-}
-
 @mixin buttonPrimary {
   border: none;
   background-color: transparent;

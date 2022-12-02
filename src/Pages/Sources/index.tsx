@@ -14,52 +14,52 @@ import EditSource from "../../Assets/Icons/edit-source.svg";
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
-  const [payToItems, setPayToItems] = useState<Array<any>>([{
+  const [payToLists, setpayToLists] = useState<Array<any>>([{
     id: 1,
     label: 'biscuitsniffer69@zbd.gg',
-    text: "",
+    pasteField: "",
     icon: 2,
   } as PayTo,
   {
     id: 4,
     label: "My Home Node",
-    text: "33q66w6...",
+    pasteField: "33q66w6...",
     icon: 3,
   } as PayTo,
   {
     id: 3,
     label: "Uncle Jim's Node",
-    text: "21mz66...",
+    pasteField: "21mz66...",
     icon: 1,
   } as PayTo]);
-  const [sendFromItems, setSendFromItems] = useState<Array<any>>([{
+  const [sendFromLists, setSendFromLists] = useState<Array<any>>([{
     id: 1,
-    text: 'biscuitsniffer69@zbd.gg',
+    pasteField: 'biscuitsniffer69@zbd.gg',
     balance: 21212,
     icon: '🔓',
   } as PayTo,
   {
     id: 2,
-    text: 'My Home Node (33q66w6...)',
+    pasteField: 'My Home Node (33q66w6...)',
     balance: 10,
     icon: '🏠',
   } as PayTo,
   {
     id: 3,
-    text: "Uncle Jim's Node (21mz66...)",
+    pasteField: "Uncle Jim's Node (21mz66...)",
     balance: 615,
     icon: '🫡',
   } as PayTo,
   {
     id: 4,
-    text: "Uncle Jim's Node (21mz66...)",
+    pasteField: "Uncle Jim's Node (21mz66...)",
     balance: 3200,
     icon: '🫡',
   } as PayTo]);
   
-  const [addSourceLabel, setAddSourceLabel] = useState<string>("");
-  const [addSourceOptional, setAddSourceOptional] = useState<string>("");
-  const [optionalLabel, setOptionalLabel] = useState<string>("");
+  const [sourcePasteField, setSourcePasteField] = useState<string>("");
+  const [sourceLabel, setSourceLabel] = useState<string>("");
+  const [optionalIcon, setOptionalIcon] = useState<string>("");
 
   const [modalType, setModalType] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
@@ -84,7 +84,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   interface PayTo {
     id?: number;
-    text?: any;
+    pasteField?: any;
     icon?: any;
     balance?: any;
     label?: string;
@@ -128,63 +128,63 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const EditSource_Modal = (key: number) => {
     setEditSourceId(key);
-    setAddSourceLabel(payToItems[key].text);
-    setOptionalLabel(payToItems[key].icon == 1 ? "It's my node." : (payToItems[key].icon == 2 ? "Very well." : "A little."));
-    setAddSourceOptional(payToItems[key].label);
+    setSourcePasteField(payToLists[key].pasteField);
+    setOptionalIcon(payToLists[key].icon == 1 ? "It's my node." : (payToLists[key].icon == 2 ? "Very well." : "A little."));
+    setSourceLabel(payToLists[key].label);
     setModalType("editSource");
     toggle();
   }
 
   const AddSource = () => {
-    if(!addSourceOptional || !optionalLabel)
+    if(!sourceLabel || !optionalIcon)
       return openNotification("top", "Error", "Please Write Data Correctly!");
-    setPayToItems([...payToItems, {
-      text: addSourceLabel,
-      icon: optionalLabel === "A little." ? 3 : (optionalLabel === "Very well." ? 2 : 1),
-      label: addSourceOptional
+    setpayToLists([...payToLists, {
+      text: sourcePasteField,
+      icon: optionalIcon === "A little." ? 3 : (optionalIcon === "Very well." ? 2 : 1),
+      label: sourceLabel
     } as PayTo])
-    setOptionalLabel("");
-    setAddSourceLabel("");
-    setAddSourceOptional("");
+    setOptionalIcon("");
+    setSourcePasteField("");
+    setSourceLabel("");
     toggle();
   }
 
   const Edit_Source = () => {
-    let payToSources = payToItems;
-    if(!addSourceOptional || !optionalLabel)
+    let payToSources = payToLists;
+    if(!sourceLabel || !optionalIcon)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    payToSources[editSourceId].icon = (optionalLabel == "A little." ? 3 : (optionalLabel == "Very well." ? 2 : 1));
-    payToSources[editSourceId].text = addSourceLabel;
-    payToSources[editSourceId].label = addSourceOptional;
-    setOptionalLabel("");
-    setAddSourceLabel("");
-    setAddSourceOptional("");
+    payToSources[editSourceId].icon = (optionalIcon == "A little." ? 3 : (optionalIcon == "Very well." ? 2 : 1));
+    payToSources[editSourceId].pasteField = sourcePasteField;
+    payToSources[editSourceId].label = sourceLabel;
+    setOptionalIcon("");
+    setSourcePasteField("");
+    setSourceLabel("");
     toggle();
   }
 
   const Delete_Source = () => {
-    let payToSources = payToItems;
+    let payToSources = payToLists;
     payToSources.splice(editSourceId, 1);
     setEditSourceId(0);
-    setPayToItems(payToSources);
-    setOptionalLabel("");
-    setAddSourceLabel("");
-    setAddSourceOptional("");
+    setpayToLists(payToSources);
+    setOptionalIcon("");
+    setSourcePasteField("");
+    setSourceLabel("");
     toggle();
   }
 
   const contentAddSource = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optionalLabel == "A little." ? "active" : ""}`} onClick={() => setOptionalLabel("A little.")}>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
         <div className="Sources_modal_icon">🔓</div>
         <div className="Sources_modal_input">A little.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalLabel == "Very well." ? "active" : ""}`} onClick={() => setOptionalLabel("Very well.")}>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
         <div className="Sources_modal_icon">🫡</div>
         <div className="Sources_modal_input">Very well.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalLabel == "It's my node." ? "active" : ""}`} onClick={() => setOptionalLabel("It's my node.")}>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
         <div className="Sources_modal_icon">🏠</div>
         <div className="Sources_modal_input">It's my node.</div>
       </div>
@@ -193,14 +193,14 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     <div className='Sources_modal_code'>
       <input 
         placeholder="Label..." 
-        value={addSourceLabel}
-        onChange={(e) => setAddSourceLabel(e.target.value)}
+        value={sourcePasteField}
+        onChange={(e) => setSourcePasteField(e.target.value)}
       />
     </div>
     <div className='Sources_modal_optional_labal'>
       <input
-        value={addSourceOptional} placeholder="Optional label..." 
-        onChange={(e) => setAddSourceOptional(e.target.value)}  
+        value={sourceLabel} placeholder="Optional label..." 
+        onChange={(e) => setSourceLabel(e.target.value)}  
       />
     </div>
     <div className="Sources_modal_add_btn">
@@ -212,15 +212,15 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 const contentEditSource = <React.Fragment>
   <div className='Sources_modal_discription'>How well do you trust this node?</div>
   <div className='Sources_modal_select_state'>
-    <div className={`Sources_modal_select_state_column ${optionalLabel == "A little." ? "active" : ""}`} onClick={() => setOptionalLabel("A little.")}>
+    <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
       <div className="Sources_modal_icon">🔓</div>
       <div className="Sources_modal_input">A little.</div>
     </div>
-    <div className={`Sources_modal_select_state_column ${optionalLabel == "Very well." ? "active" : ""}`} onClick={() => setOptionalLabel("Very well.")}>
+    <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
       <div className="Sources_modal_icon">🫡</div>
       <div className="Sources_modal_input">Very well.</div>
     </div>
-    <div className={`Sources_modal_select_state_column ${optionalLabel == "It's my node." ? "active" : ""}`} onClick={() => setOptionalLabel("It's my node.")}>
+    <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
       <div className="Sources_modal_icon">🏠</div>
       <div className="Sources_modal_input">It's my node.</div>
     </div>
@@ -228,14 +228,14 @@ const contentEditSource = <React.Fragment>
   <div className='Sources_modal_code'>
     <input 
       placeholder="Label..." 
-      value={addSourceLabel}
-      onChange={(e) => setAddSourceLabel(e.target.value)}
+      value={sourcePasteField}
+      onChange={(e) => setSourcePasteField(e.target.value)}
     />
   </div>
   <div className='Sources_modal_optional_labal'>
     <input
-      value={addSourceOptional} placeholder="Optional label..." 
-      onChange={(e) => setAddSourceOptional(e.target.value)}  
+      value={sourceLabel} placeholder="Optional label..." 
+      onChange={(e) => setSourceLabel(e.target.value)}  
     />
   </div>
   <div className="Sources_modal_btn_grp">
@@ -261,14 +261,14 @@ const contentEditSource = <React.Fragment>
               citySelection={PaytoSortSetting}
             />
           )}
-          <ReactSortable list={payToItems} setList={setPayToItems}>
-            {payToItems.map((item: PayTo, key) => {
+          <ReactSortable list={payToLists} setList={setpayToLists}>
+            {payToLists.map((item: PayTo, key) => {
               return (
                 <div className="Sources_item" key={key}>
                   <div className="Sources_item_left">
                     <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
                     <div className="Sources_item_input">
-                      <div>{`${item.label} ${item.text? `(${item.text})` : ""}`}</div>
+                      <div>{`${item.label} ${item.pasteField? `(${item.pasteField})` : ""}`}</div>
                     </div>
                   </div>
                   <div className="Sources_item_right">
@@ -303,14 +303,14 @@ const contentEditSource = <React.Fragment>
               citySelection={SpendFromSortSetting}
             />
           )}
-          <ReactSortable list={sendFromItems} setList={setSendFromItems}>
-            {sendFromItems.map((item: PayTo, key) => {
+          <ReactSortable list={sendFromLists} setList={setSendFromLists}>
+            {sendFromLists.map((item: PayTo, key) => {
               return (
                 <div className="Sources_item" key={key}>
                   <div className="Sources_item_left">
                     <div className="Sources_item_icon">{item.icon}</div>
                     <div className="Sources_item_input">
-                      <div>{item.text}</div>
+                      <div>{item.pasteField}</div>
                     </div>
                   </div>
                   <div className="Sources_item_right">
