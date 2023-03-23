@@ -11,7 +11,8 @@ import { UseModal } from "../../Hooks/UseModal";
 
 import SourceItemMenu from "../../Assets/Icons/source-menu.png";
 import EditSource from "../../Assets/Icons/edit-source.svg";
-
+import { nostr } from '../../Api'
+import { ReactQrCode } from '@devmehq/react-qr-code';
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [payToLists, setpayToLists] = useState<Array<any>>([{
@@ -56,7 +57,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     balance: 3200,
     icon: '🫡',
   } as PayTo]);
-  
+
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optionalIcon, setOptionalIcon] = useState<string>("");
@@ -69,13 +70,17 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [editSourceId, setEditSourceId] = useState<number>(0);
 
+  const [productName, setProductName] = useState("")
+  const [productPrice, setProductPrice] = useState(0)
+  const [productId, setProductId] = useState("")
+
   const [api, contextHolder] = notification.useNotification();
 
-  const openNotification = (placement: NotificationPlacement, header: string,  text: string) => {
+  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
       description:
-      text,
+        text,
       placement
     });
   };
@@ -104,7 +109,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const toggleDropDown = (list: string) => {
-    if(showDropDown)
+    if (showDropDown)
       setShowDropDown("");
     else
       setShowDropDown(list);
@@ -136,7 +141,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const AddSource = () => {
-    if(!sourceLabel || !optionalIcon)
+    if (!sourceLabel || !optionalIcon)
       return openNotification("top", "Error", "Please Write Data Correctly!");
     setpayToLists([...payToLists, {
       text: sourcePasteField,
@@ -151,7 +156,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const Edit_Source = () => {
     let payToSources = payToLists;
-    if(!sourceLabel || !optionalIcon)
+    if (!sourceLabel || !optionalIcon)
       return openNotification("top", "Error", "Please Write Data Correctly!")
     payToSources[editSourceId].icon = (optionalIcon == "A little." ? 3 : (optionalIcon == "Very well." ? 2 : 1));
     payToSources[editSourceId].pasteField = sourcePasteField;
@@ -191,16 +196,16 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     </div>
     <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
     <div className='Sources_modal_code'>
-      <input 
-        placeholder="Label..." 
+      <input
+        placeholder="Label..."
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
       />
     </div>
     <div className='Sources_modal_optional_labal'>
       <input
-        value={sourceLabel} placeholder="Optional label..." 
-        onChange={(e) => setSourceLabel(e.target.value)}  
+        value={sourceLabel} placeholder="Optional label..."
+        onChange={(e) => setSourceLabel(e.target.value)}
       />
     </div>
     <div className="Sources_modal_add_btn">
@@ -209,43 +214,43 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   </React.Fragment>;
 
-const contentEditSource = <React.Fragment>
-  <div className='Sources_modal_discription'>How well do you trust this node?</div>
-  <div className='Sources_modal_select_state'>
-    <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
-      <div className="Sources_modal_icon">🔓</div>
-      <div className="Sources_modal_input">A little.</div>
+  const contentEditSource = <React.Fragment>
+    <div className='Sources_modal_discription'>How well do you trust this node?</div>
+    <div className='Sources_modal_select_state'>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
+        <div className="Sources_modal_icon">🔓</div>
+        <div className="Sources_modal_input">A little.</div>
+      </div>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
+        <div className="Sources_modal_icon">🫡</div>
+        <div className="Sources_modal_input">Very well.</div>
+      </div>
+      <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
+        <div className="Sources_modal_icon">🏠</div>
+        <div className="Sources_modal_input">It's my node.</div>
+      </div>
     </div>
-    <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
-      <div className="Sources_modal_icon">🫡</div>
-      <div className="Sources_modal_input">Very well.</div>
+    <div className='Sources_modal_code'>
+      <input
+        placeholder="Label..."
+        value={sourcePasteField}
+        onChange={(e) => setSourcePasteField(e.target.value)}
+      />
     </div>
-    <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
-      <div className="Sources_modal_icon">🏠</div>
-      <div className="Sources_modal_input">It's my node.</div>
+    <div className='Sources_modal_optional_labal'>
+      <input
+        value={sourceLabel} placeholder="Optional label..."
+        onChange={(e) => setSourceLabel(e.target.value)}
+      />
     </div>
-  </div>
-  <div className='Sources_modal_code'>
-    <input 
-      placeholder="Label..." 
-      value={sourcePasteField}
-      onChange={(e) => setSourcePasteField(e.target.value)}
-    />
-  </div>
-  <div className='Sources_modal_optional_labal'>
-    <input
-      value={sourceLabel} placeholder="Optional label..." 
-      onChange={(e) => setSourceLabel(e.target.value)}  
-    />
-  </div>
-  <div className="Sources_modal_btn_grp">
+    <div className="Sources_modal_btn_grp">
       <button onClick={Delete_Source}>Delete</button>
       <button onClick={Edit_Source}>Edit</button>
-  </div>
-  
-</React.Fragment>;
+    </div>
 
-  return(
+  </React.Fragment>;
+
+  return (
     <div className="Sources">
       {contextHolder}
       <div className="Sources_title">Manage Sources</div>
@@ -268,15 +273,15 @@ const contentEditSource = <React.Fragment>
                   <div className="Sources_item_left">
                     <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
                     <div className="Sources_item_input">
-                      <div>{`${item.label} ${item.pasteField? `(${item.pasteField})` : ""}`}</div>
+                      <div>{`${item.label} ${item.pasteField ? `(${item.pasteField})` : ""}`}</div>
                     </div>
                   </div>
                   <div className="Sources_item_right">
-                    <button className="Sources_item_close" onClick={() => {EditSource_Modal(key)}}>
+                    <button className="Sources_item_close" onClick={() => { EditSource_Modal(key) }}>
                       <img src={EditSource} width="15px" alt="" />
                     </button>
-                    <button 
-                      className="Sources_item_menu" 
+                    <button
+                      className="Sources_item_menu"
                       onClick={(): void => toggleDropDown("PayTo")}
                       onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
                         dismissHandler(e)
@@ -318,8 +323,8 @@ const contentEditSource = <React.Fragment>
                     <button className="Sources_item_close">
                       <img src={EditSource} width="15px" alt="" />
                     </button>
-                    <button 
-                      className="Sources_item_menu" 
+                    <button
+                      className="Sources_item_menu"
                       onClick={(): void => toggleDropDown("SpendFrom")}
                       onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
                         dismissHandler(e)
@@ -331,13 +336,34 @@ const contentEditSource = <React.Fragment>
                 </div>
               )
             })}
-          </ReactSortable>        
+          </ReactSortable>
         </div>
       </div>
       <div className="Sources_add_btn">
         <button onClick={AddSource_Modal}>Add</button>
       </div>
-      <AddSourceModal isShown={isShown} hide={toggle} modalContent={modalType === "addSource"? contentAddSource : contentEditSource} headerText={modalType === "addSource"? "Add Source" : "Edit Source"} />
+      <AddSourceModal isShown={isShown} hide={toggle} modalContent={modalType === "addSource" ? contentAddSource : contentEditSource} headerText={modalType === "addSource" ? "Add Source" : "Edit Source"} />
+      <div>
+        <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="product name" />
+        <input type="number" value={productPrice} onChange={(e) => setProductPrice(e.target.valueAsNumber)} placeholder="product price sats" />
+        <button onClick={async () => {
+          const res = await nostr.AddProduct({ name: productName, price_sats: productPrice })
+          if (res.status !== 'OK') {
+            throw new Error(res.reason)
+          }
+          setProductId(res.id)
+        }}
+        >CREATE PRODUCT</button>
+        {productId && <div>
+          <p>The product id is: {productId}</p>
+          <ReactQrCode
+            style={{ height: "auto", maxWidth: "100%", width: "100%", textAlign: "center", transitionDuration: "500ms" }}
+            value={`pub_product:${productId}`}
+            size={200}
+            renderAs="svg"
+          />
+        </div>}
+      </div>
     </div>
   )
 }

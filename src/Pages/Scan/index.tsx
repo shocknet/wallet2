@@ -14,6 +14,7 @@ type PayAddress = {
   type: 'payAddress'
   address: string
 }
+
 export const Scan: React.FC<PageProps> = (): JSX.Element => {
 
   const navigate: NavigateFunction = useNavigate();
@@ -24,12 +25,29 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
 
-
   const parse = async (input: string) => {
     console.log("parsing")
     setError("");
     const lowData = input.toLowerCase()
-    if (lowData.startsWith('bitcoin:')) {
+    if (lowData.startsWith('pub_product:')) {
+      console.log("parsed pub product", lowData)
+      const productId = lowData.slice('pub_product:'.length)
+      const invoiceRes = await nostr.NewProductInvoice({ id: productId })
+      if (invoiceRes.status !== 'OK') {
+        setError(invoiceRes.reason)
+        return
+      }
+      const decodedRes = await nostr.DecodeInvoice({ invoice: invoiceRes.invoice })
+      if (decodedRes.status !== 'OK') {
+        setError(decodedRes.reason)
+        return
+      }
+      setPayOperation({
+        type: 'payInvoice',
+        invoice: invoiceRes.invoice,
+        amount: decodedRes.amount
+      })
+    } else if (lowData.startsWith('bitcoin:')) {
       const btcAddress = lowData.slice('bitcoin:'.length)
       setPayOperation({
         type: 'payAddress',
@@ -124,6 +142,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
             //navigate("/home");
           }}
           onScan={(data) => {
+            console.log(data)
             if (data) {
               parse(data)
               //setResult(data);
