@@ -31,7 +31,12 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     const lowData = input.toLowerCase()
     if (lowData.startsWith('pub_product:')) {
       console.log("parsed pub product", lowData)
-      const productId = lowData.slice('pub_product:'.length)
+      const productData = JSON.parse(lowData.slice('pub_product:'.length))
+      const productId = productData.productId
+
+      console.log("send the buy request to the following pub:", productData.dest)
+      console.log("send the buy request using the following relays:", productData.relays)
+
       const invoiceRes = await nostr.NewProductInvoice({ id: productId })
       if (invoiceRes.status !== 'OK') {
         setError(invoiceRes.reason)
