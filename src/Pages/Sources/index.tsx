@@ -13,6 +13,7 @@ import SourceItemMenu from "../../Assets/Icons/source-menu.png";
 import EditSource from "../../Assets/Icons/edit-source.svg";
 import { nostr } from '../../Api'
 import { ReactQrCode } from '@devmehq/react-qr-code';
+import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [payToLists, setpayToLists] = useState<Array<any>>([{
@@ -358,7 +359,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           <p>The product id is: {productId}</p>
           <ReactQrCode
             style={{ height: "auto", maxWidth: "100%", width: "100%", textAlign: "center", transitionDuration: "500ms" }}
-            value={`pub_product:${productId}`}
+            value={`pub_product:${JSON.stringify({ productId, dest: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })}`}
             size={200}
             renderAs="svg"
           />
