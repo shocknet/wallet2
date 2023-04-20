@@ -128,7 +128,7 @@
   }
 
   &_item_icon{
-    width: 30px;
+    width: 26px;
   }
 
   &_modal_icon{
@@ -169,6 +169,7 @@
     border-radius: 5px;
     margin-left: 1%;
     overflow-x: hidden;
+    white-space: nowrap;
   }
 
   &_item_close{
