@@ -13,7 +13,7 @@ export const Wrapper = styled.div`
 export const Backdrop = styled.div`
   font-family: Montserrat;
   background-color: #16191c;
-  opacity: 0.8 !important;
+  opacity: 0 !important;
   position: fixed;
   width: 100%;
   height: 100%;
@@ -23,19 +23,19 @@ export const Backdrop = styled.div`
 `;
 
 export const StyledModal = styled.div`
-  border: 1.2px solid #29abe2;
-  border-right: none;
+  width: 100%;
+  height: 100%;
+  right: 0;
+  border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 25px 5% 25px 3%;
+  padding: 25px 5% 25px 5%;
   text-align: right;
   z-index: 100;
   font-size: 20px;
   background: #16191c;
   position: fixed;
   margin: auto;
-  border-radius: 8px;
-  top: 0;
-  right: -1px;
+  border-radius: 5px;
 `;
 
 export const Header = styled.div`

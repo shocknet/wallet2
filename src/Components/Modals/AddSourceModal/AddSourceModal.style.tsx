@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
   font-family: Montserrat;
-  width: 70% !important;
+  width: 88% !important;
   position: fixed;
   top: 50%;
   left: 50%;
