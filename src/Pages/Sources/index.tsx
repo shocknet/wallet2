@@ -94,17 +94,26 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const [modalType, setModalType] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
 
+  /*
+    These are state variables for sort the array of data of Pay To items and Send From items
+    The array can be sorted by Label, TrustLavel and Balance
+  */
   const [payToSort, setPayToSort] = useState<string>("TrustLevel");
   const [sendFromSort, setSendFromSort] = useState<string>("TrustLevel");
 
+  //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editSourceId, setEditSourceId] = useState<number>(0);
 
   const [productName, setProductName] = useState("")
   const [productPrice, setProductPrice] = useState(0)
   const [productId, setProductId] = useState("")
 
+  /*
+    This is part for show notification.
+    It is antd notification.
+    The value of placement can be "top", "left", "right", "bottom", "header" and "text" can be any string, e.g "error", "Please fill the fields" 
+  */
   const [api, contextHolder] = notification.useNotification();
-
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
@@ -352,7 +361,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                         dismissHandler(e)
                       }
                     >
-                      {/* <img src={icons.SourceItemMenu} width="23px" alt="" /> */}
                       {icons.SourceItemMenu()}
                     </button>
                   </div>
