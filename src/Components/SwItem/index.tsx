@@ -19,7 +19,7 @@ export const SwItem: React.FC<SwItemData> = ({
       </div>
       <div className="SwItem_right">
         <div className="SwItem_price">
-          <div className="SwItem_price_img"><img src={priceImg} alt="" /></div>
+          <div className="SwItem_price_img">{priceImg()}</div>
           <div className="SwItem_price_text">{price}</div>
         </div>
         <div className="SwItem_changes">{changes}</div>

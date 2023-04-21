@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import moment from 'moment'
 import { SwItem } from "../../Components/SwItem";
-import PriceDown from "../../Assets/Icons/PriceDown.svg";
-import * as icons from "../../Assets/SvgIconLibrary";
-import PriceUp from "../../Assets/Icons/PriceUp.svg";
+
+//It import svg icons library
+import * as Icons from "../../Assets/SvgIconLibrary";
+
 import { PageProps } from "../../globalTypes";
 import { nostr } from '../../Api'
 interface sw_item {
@@ -11,13 +12,14 @@ interface sw_item {
   changes?: string;
   stateIcon?: string;
   date?: string;
-  priceImg?: string;
+  priceImg: Function;
   price?: number;
 }
 export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
   const [error, setError] = useState("")
   const [balance, setBalance] = useState(0)
   const [items, setItems] = useState<JSX.Element[]>([])
+
   useEffect(() => {
     nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
@@ -27,6 +29,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
       setBalance(res.balance)
     })
   }, [])
+
   useEffect(() => {
     nostr.GetUserOperations({
       latestIncomingInvoice: 0,
@@ -48,7 +51,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
         station={o.type}
         changes={'~ $.10'}
         price={o.amount}
-        priceImg={o.inbound ? PriceUp : PriceDown}
+        priceImg={o.inbound ? Icons.PriceUp : Icons.PriceDown}
         date={moment.unix(o.paidAtUnix).fromNow()}
         key={i}
       />)
@@ -58,7 +61,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
 
   let SwItemArray: sw_item[] = [];
   SwItemArray.push({
-    priceImg: PriceUp,
+    priceImg: Icons.PriceUp,
     changes: '~ $.10',
     station: 'Lightning.Video Paywall',
     date: '3 days ago',
@@ -67,58 +70,23 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
   });
 
   SwItemArray.push({
-    priceImg: PriceUp,
+    priceImg: Icons.PriceDown,
     changes: '~ $.10',
     station: 'Lightning.Video Paywall',
     date: '3 days ago',
     price: 2100,
     stateIcon: 'lighting'
   });
-
-  SwItemArray.push({
-    priceImg: PriceUp,
-    changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
-    price: 2100,
-    stateIcon: 'lighting'
-  });
-
-  SwItemArray.push({
-    priceImg: PriceUp,
-    changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
-    price: 2100,
-    stateIcon: 'lighting'
-  });
-
-  SwItemArray.push({
-    priceImg: PriceUp,
-    changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
-    price: 2100,
-    stateIcon: 'lighting'
-  });
-
-  SwItemArray.push({
-    priceImg: PriceUp,
-    changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
-    price: 2100,
-    stateIcon: 'lighting'
-  });
-
-  SwItemArray.push({
-    priceImg: PriceUp,
-    changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
-    price: 2100,
-    stateIcon: 'lighting'
-  });
+  
+  const DumyData = SwItemArray.map((o, i): JSX.Element => <SwItem
+    stateIcon={'lighting'}
+    station={o.station}
+    changes={o.changes}
+    price={o.price}
+    priceImg={o.priceImg}
+    date={o.date}
+    key={i}
+  />)
 
   return (
     <div className="Home">

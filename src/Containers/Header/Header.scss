@@ -22,18 +22,28 @@
     }
   }
 
-  &__logo_1{
+  &_logo_1{
     @include buttonPrimary;
     width: 50%;
     margin-left: 25%;
+    
+    & div>svg {
+      width: 70px;
+      height: auto;
+    }
   }
 
-  &__logo_2{
+  &_logo_2{
     @include buttonPrimary;
     float: left;
+
+    & div>svg {
+      width: 30px;
+      height: auto;
+    }
   }
 
-  &__menu{
+  &_menu{
     @include buttonPrimary;
     margin-top: 3px;
     float: right;

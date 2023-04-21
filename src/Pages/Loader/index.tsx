@@ -4,7 +4,6 @@ import { PageProps, ActionType } from "../../globalTypes";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-import Animation from "../../Assets/Icons/animation.svg";
 
 export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
 

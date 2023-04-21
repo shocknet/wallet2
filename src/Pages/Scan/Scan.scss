@@ -5,9 +5,16 @@
   left: 0;
   top: 0;
 
-  &_IMG_Close svg{
-    width: 80px;
-    height: auto;
+  &_IMG {
+    &_Close svg{
+      width: 80px;
+      height: auto;
+    }
+
+    &_ErrorMessage svg {
+      width: 100px;
+      height: auto;
+    }
   }
   
   &_scanner section{

@@ -6,8 +6,8 @@ import { UseModal } from "../../Hooks/UseModal";
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
-import Logo from "../../Assets/Images/logo.png";
-import SWText from "../../Assets/Icons/sw_text.png";
+import Logo from "../../Assets/Images/logo.svg";
+import SWText from "../../Assets/Images/sw_text.png";
 
 import { HeaderProps } from "./types";
 import { NavigateFunction, useNavigate } from "react-router-dom";
@@ -81,8 +81,8 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header__logo_1" onClick={() => navigate("/home")}>
-            <img src={Logo} width="70px" alt="" />
+          <button className="Header_logo_1" onClick={() => navigate("/home")}>
+            {Icons.Logo()}
           </button>
           <div className="Header_text">
             <img src={SWText} width="330px" alt="" />
@@ -94,16 +94,16 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
         ) : (
           isreceive ? (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/home")}>
-                <img src={Logo} width="30px" alt="" />
+              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+                {Icons.Logo()}
               </button>
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/home")}>
-                <img src={Logo} width="30px" alt="" />
+              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+                  {Icons.Logo()}
               </button>
-              <button className="Header__menu" onClick={() => {
+              <button className="Header_menu" onClick={() => {
                 navigate("#");
                 toggle();
               }}>
