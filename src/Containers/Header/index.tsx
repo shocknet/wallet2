@@ -6,7 +6,6 @@ import { UseModal } from "../../Hooks/UseModal";
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
-import Logo from "../../Assets/Images/logo.svg";
 import SWText from "../../Assets/Images/sw_text.png";
 
 import { HeaderProps } from "./types";
