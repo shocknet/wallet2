@@ -3,29 +3,41 @@
   height: 78vh;
   font-family: Montserrat;
 
-  &_title{
+  &_IMG {
+    &_EditSource svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    &_SourceItemMenu svg {
+      width: 23px;
+      height: 23px;
+    }
+  }
+
+  &_title {
     text-align: center;
   }
 
-  &_pay_content{
+  &_pay_content {
     margin-top: 40px;
   }
 
-  &_receive_content{
+  &_receive_content {
     margin-top: 20px;
   }
 
-  &_content_title{
+  &_content_title {
     font-size: 23px;
   }
 
-  &_content_discription{
+  &_content_discription{ 
     margin-top: 5px;
     font-size: 16px;
     color: #8c8c8c;
   }
 
-  &_list_box{
+  &_list_box {
     padding: 0px 20px 0 10px !important;
     margin-top: 5px;
     border-radius: 7px;

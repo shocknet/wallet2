@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import moment from 'moment'
 import { SwItem } from "../../Components/SwItem";
 import PriceDown from "../../Assets/Icons/PriceDown.svg";
+import * as icons from "../../Assets/SvgIconLibrary";
 import PriceUp from "../../Assets/Icons/PriceUp.svg";
 import { PageProps } from "../../globalTypes";
 import { nostr } from '../../Api'
