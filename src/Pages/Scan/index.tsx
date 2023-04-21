@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import QrReader from "react-qr-reader";
 import { PageProps } from "../../globalTypes";
-import Close from "../../Assets/Icons/ScanClose.svg";
+
+//It import svg icons library
+import * as Icons from "../../Assets/SvgIconLibrary";
 import ErrorMessage from "../../Assets/Icons/error-message.png";
-import { nostr } from '../../Api'
+import { nostr } from '../../Api';
 type PayInvoice = {
   type: 'payInvoice'
   invoice: string
@@ -136,7 +138,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   return (
     <div className="Scan">
       <div onClick={() => { navigate("/home") }} className="Scan_back">
-        <img src={Close} width="80px" alt="" />
+        {Icons.Close()}
       </div>
       <div className="Scan_scanner">
         <QrReader

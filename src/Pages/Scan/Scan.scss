@@ -4,6 +4,11 @@
   width: 100%;
   left: 0;
   top: 0;
+
+  &_IMG_Close svg{
+    width: 80px;
+    height: auto;
+  }
   
   &_scanner section{
     & section{

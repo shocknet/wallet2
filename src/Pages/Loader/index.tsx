@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps, ActionType } from "../../globalTypes";
-import animation from "../../Assets/Icons/animation.svg";
+
+//It import svg icons library
+import * as Icons from "../../Assets/SvgIconLibrary";
+import Animation from "../../Assets/Icons/animation.svg";
 
 export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
 
@@ -29,7 +32,7 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
     <section className="Loader">
       <div className="Loader_msg">Reticulating splines...</div>
       <div style={{opacity: opacity}} className="Loader_img">
-        <img src={animation} alt="" width="35px" />
+        {Icons.Animation()}
       </div>
     </section>
   )
