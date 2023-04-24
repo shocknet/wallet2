@@ -1,6 +1,6 @@
 {
   "short_name": "Wallet2",
-  "name": "Lonic Mobile",
+  "name": "Ionic Mobile",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",

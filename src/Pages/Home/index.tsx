@@ -7,18 +7,21 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 
 import { PageProps } from "../../globalTypes";
 import { nostr } from '../../Api'
-interface sw_item {
-  station?: string;
-  changes?: string;
-  stateIcon?: string;
-  date?: string;
-  priceImg: Function;
-  price?: number;
-}
+
 export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
   const [error, setError] = useState("")
   const [balance, setBalance] = useState(0)
   const [items, setItems] = useState<JSX.Element[]>([])
+
+  //interfact of balance item
+  interface sw_item {
+    station?: string;
+    changes?: string;
+    stateIcon?: string;
+    date?: string;
+    priceImg: Function;
+    price?: number;
+  }
 
   useEffect(() => {
     nostr.GetUserInfo().then(res => {

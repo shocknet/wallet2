@@ -7,30 +7,22 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 
 export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
 
-  const navigate: NavigateFunction = useNavigate()
-  const [opacity, setOpacity] = useState(0.1);
-  
-  let anim: number = 0;
+  const navigate: NavigateFunction = useNavigate() 
 
   useEffect(() => {
-    
-    const interval = setInterval(() => {
-      if(anim > 3)
-        navigate("/home");
-      if(anim%2){
-        setOpacity(0.1);
-      }else{
-        setOpacity(1);
-      }
-      anim ++;
-    }, 1000);
-    return () => clearInterval(interval);
+    /*
+      It is test for redirects page to "Home" page when loaded all require data
+      We can change this function with async function after complete this part 
+    */
+    setTimeout(() => {
+      navigate("/home");
+    }, 20000);
   }, []);
 
   return(
     <section className="Loader">
       <div className="Loader_msg">Reticulating splines...</div>
-      <div style={{opacity: opacity}} className="Loader_img">
+      <div className="Loader_img">
         {Icons.Animation()}
       </div>
     </section>
