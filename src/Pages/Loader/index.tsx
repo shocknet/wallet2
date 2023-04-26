@@ -16,7 +16,7 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
     */
     setTimeout(() => {
       navigate("/home");
-    }, 20000);
+    }, 5000);
   }, []);
 
   return(

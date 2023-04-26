@@ -24,7 +24,7 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
           <div className="Footer_send_btn">
             <button onClick={() => { navigate("/scan")} }>Send</button>
           </div>
-          <div className="Footer_QR">
+          <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
             {Icons.QR()}
           </div>
         </React.Fragment>
