@@ -15,7 +15,7 @@ export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
       </div>
       <div className="NodeUp_manual">
         <div onClick={() => { navigate("/sources")} } className="NodeUp_manual_text">
-          Manulal Connection
+          Manual Connection
         </div>
         <div className="NodeUp_manual_btn">
           <button onClick={() => { navigate("/loader") }}>
