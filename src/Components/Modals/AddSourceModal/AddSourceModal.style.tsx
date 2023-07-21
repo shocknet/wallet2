@@ -2,13 +2,16 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
   font-family: Montserrat;
-  width: 70% !important;
+  width: 500px !important;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 700;
   outline: 0;
+  @media (max-width: 600px) {
+    width: 88% !important;
+  }  
 `;
 
 export const Backdrop = styled.div`

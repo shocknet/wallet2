@@ -5,18 +5,45 @@
   width: 100%;
   display: inline-block;
 
-  &__logo_1{
+  &_IMG {
+    &_Menu svg {
+      width: 40px;
+      height: auto;
+    }
+
+    &_MenuBack svg {
+      width: 35px;
+      height: auto;
+    }
+
+    &_Setting svg, &_Key svg, &_SourceIcon svg, &_BuyCryptoIcon svg, &_HelpAbout svg {
+      width: 30px;
+      height: auto;
+    }
+  }
+
+  &_logo_1{
     @include buttonPrimary;
     width: 50%;
     margin-left: 25%;
+    
+    & div>svg {
+      width: 70px;
+      height: auto;
+    }
   }
 
-  &__logo_2{
+  &_logo_2{
     @include buttonPrimary;
     float: left;
+
+    & div>svg {
+      width: 30px;
+      height: auto;
+    }
   }
 
-  &__menu{
+  &_menu{
     @include buttonPrimary;
     margin-top: 3px;
     float: right;
@@ -139,14 +166,6 @@
       &_img{
         text-align: left;
         width: 60px;
-
-        & img:nth-child(1){
-          width: 30px;
-        }
-
-        & img:nth-child(2){
-          width: 0;
-        }
       }
 
       &_text{
@@ -159,17 +178,8 @@
     }
 
     &_item:hover{
-      .Header_modal_content_item_img{
-        text-align: left;
-        width: 60px;
-
-        & img:nth-child(1){
-          width: 0;
-        }
-
-        & img:nth-child(2){
-          width: 30px;
-        }
+      .Header_modal_content_item_img>div>svg path{
+        fill: #29abe2 !important;
       }
 
       .Header_modal_content_item_text{

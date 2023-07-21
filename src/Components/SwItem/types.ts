@@ -3,6 +3,6 @@ export interface SwItemData{
   changes?: string;
   stateIcon?: string; 
   date?: string;
-  priceImg?: string;
+  priceImg: Function;
   price?: number;
 }

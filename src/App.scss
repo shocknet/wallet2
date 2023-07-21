@@ -13,10 +13,12 @@ body{
   font-family: Arial, Helvetica, sans-serif;
   font-size: 62.5%;
 }
+
 #root{
   position: relative;
   min-height: 100vh;
 }
+
 .App{
   width: 90%;
   max-width: 1200px;
@@ -27,6 +29,10 @@ body{
 @mixin buttonPrimary {
   border: none;
   background-color: transparent;
+}
+
+input:focus-visible {
+  outline: 1px solid #2693c1;
 }
 
 @import "./Pages/Home/Home.scss";

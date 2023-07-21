@@ -3,7 +3,12 @@
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 9vh;
+  height: 80px;
+
+  &_IMG_QR svg {
+    width: 60px;
+    height: 60px;
+  }
 
   &_receive_btn{
     float: left;
@@ -37,7 +42,7 @@
     }
   }
 
-  &_QR{
+  &_QR {
     position: absolute;
     border: 1px solid #2693c1;
     z-index: 1000;
@@ -52,12 +57,7 @@
     background-color: #16191c;
   }
 
-  &_QRCodeIcon{
-    width: 60px;
-    height: 60px;
-  }
-
-  &_receiveBTN{
+  &_receiveBTN {
     width: 50%;
     height: 100%;
   }

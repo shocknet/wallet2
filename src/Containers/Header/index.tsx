@@ -3,29 +3,16 @@ import React, { useContext, useState } from "react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { UseModal } from "../../Hooks/UseModal";
 
-import Logo from "../../Assets/Images/logo.png";
-import Menu from "../../Assets/Icons/menu.svg";
-import MenuBack from "../../Assets/Icons/menuBack.svg";
-import Setting from "../../Assets/Icons/setting.svg";
-import SettingHover from "../../Assets/Icons/setting-hover.svg";
-import KeyHover from "../../Assets/Icons/key-hover.svg";
-import Key from "../../Assets/Icons/key.svg";
-import SourceIcon from "../../Assets/Icons/sourceIcon-white.svg";
-import SourceIconHover from "../../Assets/Icons/sourceIcon-hover.svg";
-import BuyCryptoIcon from "../../Assets/Icons/buyCrypto.svg";
-import BuyCryptoIconHover from "../../Assets/Icons/buyCrypto-hover.svg";
-import HelpAbout from "../../Assets/Icons/help&about.svg";
-import HelpAboutHover from "../../Assets/Icons/help&about-hover.svg";
+//It import svg icons library
+import * as Icons from "../../Assets/SvgIconLibrary";
+
+import SWText from "../../Assets/Images/sw_text.png";
 
 import { HeaderProps } from "./types";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Ctx } from "../../Context";
 
-import SWText from "../../Assets/Icons/sw_text.png";
-
 export const Header: React.FC<HeaderProps> = (): JSX.Element => {
-
-  const [ menuIcon, setMenuIcon] = useState(Menu);
 
   const { isShown, toggle } = UseModal();
 
@@ -40,20 +27,18 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
   const content = <React.Fragment>
     <div className="Header_modal">
       <div className="Header_modal_close" onClick={() => toggle()}>
-          <img src={MenuBack} width="35px" alt="" />
+          {Icons.MenuBack()}
       </div>
       <div className="Header_modal_content">
         <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img">
-            <img src={Key} width="30px" alt="" />
-            <img src={KeyHover} width="30px" alt="" />
+            {Icons.Key()}
           </div>
           <div className="Header_modal_content_item_text">Key Management</div>
         </div>
         <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img">
-            <img src={Setting} width="30px" alt="" />
-            <img src={SettingHover} width="30px" alt="" />
+            {Icons.Setting()}
           </div>
           <div className="Header_modal_content_item_text">Preferences</div>
         </div>
@@ -62,8 +47,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
-            <img src={SourceIcon} width="30px" alt="" />
-            <img src={SourceIconHover} width="30px" alt="" />
+            {Icons.SourceIcon()}
           </div>
           <div className="Header_modal_content_item_text">Manage Sources</div>
         </div>
@@ -75,8 +59,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
-            <img src={BuyCryptoIcon} width="30px" alt="" />
-            <img src={BuyCryptoIconHover} width="30px" alt="" />
+            {Icons.BuyCryptoIcon()}
           </div>
           <div className="Header_modal_content_item_text">Buy Bitcoin</div>
         </div>
@@ -85,8 +68,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
-            <img src={HelpAbout} width="30px" alt="" />
-            <img src={HelpAboutHover} width="30px" alt="" />
+            {Icons.HelpAbout()}
           </div>
           <div className="Header_modal_content_item_text">Help/About</div>
         </div>
@@ -98,8 +80,8 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header__logo_1" onClick={() => navigate("/home")}>
-            <img src={Logo} width="70px" alt="" />
+          <button className="Header_logo_1" onClick={() => navigate("/home")}>
+            {Icons.Logo()}
           </button>
           <div className="Header_text">
             <img src={SWText} width="330px" alt="" />
@@ -111,20 +93,20 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
         ) : (
           isreceive ? (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/home")}>
-                <img src={Logo} width="30px" alt="" />
+              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+                {Icons.Logo()}
               </button>
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <button className="Header__logo_2" onClick={() => navigate("/home")}>
-                <img src={Logo} width="30px" alt="" />
+              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+                  {Icons.Logo()}
               </button>
-              <button className="Header__menu" onClick={() => {
+              <button className="Header_menu" onClick={() => {
                 navigate("#");
                 toggle();
               }}>
-                <img src={menuIcon} width="40px" alt="" />
+                {Icons.Menu()}
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>

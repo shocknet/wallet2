@@ -14,6 +14,7 @@ import { initialState, reducer } from "./globalState";
 
 // css
 import './App.scss';
+
 import { StateInterface } from './globalTypes';
 
 function App(): JSX.Element {

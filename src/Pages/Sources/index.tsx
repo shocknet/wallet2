@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ReactSortable } from "react-sortablejs";
-import { Button, notification } from 'antd';
+import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
+import { ReactQrCode } from '@devmehq/react-qr-code';
 
 import { PageProps } from "../../globalTypes";
 import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
 
+//It import modal component
 import { UseModal } from "../../Hooks/UseModal";
 
-import SourceItemMenu from "../../Assets/Icons/source-menu.png";
-import EditSource from "../../Assets/Icons/edit-source.svg";
+//It import svg icons library
+import * as icons from "../../Assets/SvgIconLibrary";
+
 import { nostr } from '../../Api'
-import { ReactQrCode } from '@devmehq/react-qr-code';
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
+
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
+  /*
+    This is Dumy data for display in Pay To box.
+    It include data id(int), Label(string), additional field data(pasteField)(string) and icon id(int).
+  */
   const [payToLists, setpayToLists] = useState<Array<any>>([{
     id: 1,
     label: 'biscuitsniffer69@zbd.gg',
@@ -34,30 +41,51 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     pasteField: "21mz66...",
     icon: 1,
   } as PayTo]);
+
+  /*
+    This is Dumy data for display in Send From box
+    It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
+  */
   const [sendFromLists, setSendFromLists] = useState<Array<any>>([{
     id: 1,
     pasteField: 'biscuitsniffer69@zbd.gg',
     balance: 21212,
     icon: '🔓',
-  } as PayTo,
+  } as SendFrom,
   {
     id: 2,
     pasteField: 'My Home Node (33q66w6...)',
     balance: 10,
     icon: '🏠',
-  } as PayTo,
+  } as SendFrom,
   {
     id: 3,
     pasteField: "Uncle Jim's Node (21mz66...)",
     balance: 615,
     icon: '🫡',
-  } as PayTo,
+  } as SendFrom,
   {
     id: 4,
     pasteField: "Uncle Jim's Node (21mz66...)",
     balance: 3200,
     icon: '🫡',
-  } as PayTo]);
+  } as SendFrom]);
+
+  //Interface for Dumy data for display in Pay To bo
+  interface PayTo {
+    id?: number;
+    label?: string;
+    pasteField?: string;
+    icon?: number;
+  }
+
+  //Interface for Dumy data for display in Send From box
+  interface SendFrom {
+    id?: number;
+    pasteField?: string;
+    icon?: string;
+    balance?: number;
+  }
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
@@ -66,17 +94,26 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const [modalType, setModalType] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
 
+  /*
+    These are state variables for sort the array of data of Pay To items and Send From items
+    The array can be sorted by Label, TrustLavel and Balance
+  */
   const [payToSort, setPayToSort] = useState<string>("TrustLevel");
   const [sendFromSort, setSendFromSort] = useState<string>("TrustLevel");
 
+  //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editSourceId, setEditSourceId] = useState<number>(0);
 
   const [productName, setProductName] = useState("")
   const [productPrice, setProductPrice] = useState(0)
   const [productId, setProductId] = useState("")
 
+  /*
+    This is part for show notification.
+    It is antd notification.
+    The value of placement can be "top", "left", "right", "bottom", "header" and "text" can be any string, e.g "error", "Please fill the fields" 
+  */
   const [api, contextHolder] = notification.useNotification();
-
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
@@ -87,14 +124,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const { isShown, toggle } = UseModal();
-
-  interface PayTo {
-    id?: number;
-    pasteField?: any;
-    icon?: any;
-    balance?: any;
-    label?: string;
-  }
 
   const AddSource_Modal = () => {
     setModalType("addSource");
@@ -279,7 +308,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                   </div>
                   <div className="Sources_item_right">
                     <button className="Sources_item_close" onClick={() => { EditSource_Modal(key) }}>
-                      <img src={EditSource} width="15px" alt="" />
+                      {icons.EditSource()}
                     </button>
                     <button
                       className="Sources_item_menu"
@@ -288,7 +317,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                         dismissHandler(e)
                       }
                     >
-                      <img src={SourceItemMenu} width="23px" alt="" />
+                      {icons.SourceItemMenu()}
                     </button>
                   </div>
                 </div>
@@ -310,7 +339,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             />
           )}
           <ReactSortable list={sendFromLists} setList={setSendFromLists}>
-            {sendFromLists.map((item: PayTo, key) => {
+            {sendFromLists.map((item: SendFrom, key) => {
               return (
                 <div className="Sources_item" key={key}>
                   <div className="Sources_item_left">
@@ -322,7 +351,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                   <div className="Sources_item_right">
                     <div className="Sources_item_balance">{item.balance}</div>
                     <button className="Sources_item_close">
-                      <img src={EditSource} width="15px" alt="" />
+                      {/* <img src={EditSource} width="15px" alt="" /> */}
+                      {icons.EditSource()}
                     </button>
                     <button
                       className="Sources_item_menu"
@@ -331,7 +361,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                         dismissHandler(e)
                       }
                     >
-                      <img src={SourceItemMenu} width="23px" alt="" />
+                      {icons.SourceItemMenu()}
                     </button>
                   </div>
                 </div>
