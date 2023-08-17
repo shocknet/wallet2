@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import QrReader from "react-qr-reader";
+import { QrReader } from "react-qr-reader";
 import { PageProps } from "../../globalTypes";
- 
+
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
@@ -81,6 +81,9 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
+  const handleSubmit = async (qrcode: string) => {
+    
+  }
 
   const pay = async (action: PayInvoice | PayAddress) => {
     switch (action.type) {
@@ -142,23 +145,16 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       </div>
       <div className="Scan_scanner">
         <QrReader
-          delay={300}
-          onError={(error) => {
-            setError(error.message);
-            //alert("Error: " + error.message);
-            //navigate("/home");
-          }}
-          onScan={(data) => {
-            console.log(data)
-            if (data) {
-              parse(data)
-              //setResult(data);
-
-              //alert("Scaned: " + data);
-              //navigate("/home");
+          onResult={(result: any, error: any) => {
+            if (!!result) {
+              handleSubmit(result);
             }
-          }}
-          style={{ width: "100%" }}
+
+            if (!!error) {
+              console.info(error);
+            }
+          } } 
+          constraints={{ facingMode: 'user' } }
         />
       </div>
       <div className="Scan_result_input">
