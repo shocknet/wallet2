@@ -192,7 +192,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
               // setError('Device Not found');
             }
           } } 
-          constraints={{ facingMode: 'user' } }
+          constraints={{ facingMode: "environment" } }
         />
       </div>
       <div className="Scan_result_input">
