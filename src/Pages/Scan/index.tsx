@@ -5,7 +5,7 @@ import { PageProps } from "../../globalTypes";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-
+import { bech32 } from "bech32";
 import { nostr } from '../../Api';
 import { request } from "http";
 type PayInvoice = {
@@ -88,26 +88,18 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const handleSubmit = async (qrcode: string) => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lnurl: qrcode })
-    };
-    fetch('http://95.216.8.249:8000/get_invoice', requestOptions).then((response: any) => {
-      return response.json()
-    }).then(res => {
-      fetch(res.result, requestOptions).then((resInvoice: any) => {
-        return resInvoice.json()
-      }).then(invoiceData => {
-        const metadata = JSON.parse(invoiceData.metadata);
-        setInvoice({
-          min: invoiceData.minSendable,
-          max: invoiceData.maxSendable,
-          desc: metadata[1][1],
-        });
-      }).catch(error => {
-        // Handle any errors
-        console.error(error);
+    let { prefix: hrp, words: dataPart } = bech32.decode(qrcode, 2000)
+    let requestByteArray = bech32.fromWords(dataPart)
+
+    let resultLnurl = Buffer.from(requestByteArray).toString()
+    fetch(resultLnurl).then((resInvoice: any) => {
+      return resInvoice.json()
+    }).then(invoiceData => {
+      const metadata = JSON.parse(invoiceData.metadata);
+      setInvoice({
+        min: invoiceData.minSendable,
+        max: invoiceData.maxSendable,
+        desc: metadata[1][1],
       });
     }).catch(error => {
       // Handle any errors
