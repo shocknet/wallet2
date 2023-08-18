@@ -7,6 +7,7 @@ import { PageProps } from "../../globalTypes";
 import * as Icons from "../../Assets/SvgIconLibrary";
 
 import { nostr } from '../../Api';
+import { request } from "http";
 type PayInvoice = {
   type: 'payInvoice'
   invoice: string
@@ -24,6 +25,11 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   const [itemInput, setItemInput] = useState("");
   const [result, setResult] = useState("no result");
   const [error, setError] = useState("");
+  const [invoice, setInvoice] = useState({
+    min:0,
+    max:0,
+    desc:'',
+  });
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
 
@@ -82,7 +88,31 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const handleSubmit = async (qrcode: string) => {
-    
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lnurl: qrcode })
+    };
+    fetch('http://95.216.8.249:8000/get_invoice', requestOptions).then((response: any) => {
+      return response.json()
+    }).then(res => {
+      fetch(res.result, requestOptions).then((resInvoice: any) => {
+        return resInvoice.json()
+      }).then(invoiceData => {
+        const metadata = JSON.parse(invoiceData.metadata);
+        setInvoice({
+          min: invoiceData.minSendable,
+          max: invoiceData.maxSendable,
+          desc: metadata[1][1],
+        });
+      }).catch(error => {
+        // Handle any errors
+        console.error(error);
+      });
+    }).catch(error => {
+      // Handle any errors
+      console.error(error);
+    });
   }
 
   const pay = async (action: PayInvoice | PayAddress) => {
@@ -122,6 +152,17 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     </div>;
   }
 
+  if (invoice.min != 0) {
+    return <div className="Scan_error">
+      <div className="Scan_error_img">
+      Min: {invoice.min}<br/>
+      Max: {invoice.max}<br/>
+      Description: {invoice.desc}<br/>
+      </div>
+      <div className="Scan_error_text">{error}</div>
+    </div>;
+  }
+
   if (payOperation) {
     let p
     switch (payOperation.type) {
@@ -145,13 +186,18 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       </div>
       <div className="Scan_scanner">
         <QrReader
+          // scanDelay={1000}
           onResult={(result: any, error: any) => {
             if (!!result) {
-              handleSubmit(result);
+              console.log(result.text);
+              handleSubmit(result.text);
+              // navigate("/home");
+              // return;
             }
 
             if (!!error) {
               console.info(error);
+              // setError('Device Not found');
             }
           } } 
           constraints={{ facingMode: 'user' } }
