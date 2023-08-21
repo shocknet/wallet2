@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header_logo_1" onClick={() => navigate("/home")}>
+          <button className="Header_logo_1" onClick={() => navigate("/")}>
             {Icons.Logo()}
           </button>
           <div className="Header_text">
