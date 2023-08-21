@@ -5,4 +5,5 @@ export interface SwItemData{
   date?: string;
   priceImg: Function;
   price?: number;
+  underline?: boolean;
 }

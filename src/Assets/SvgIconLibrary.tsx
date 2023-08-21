@@ -410,3 +410,15 @@ export const Animation = () => {
     )
 }
 
+export const lightningIcon = () => {
+    return (
+        <div className="SwItem_stateIcon">⚡️</div>
+    )
+};
+
+export const linkIcon = () => {
+    return (
+        <div className="SwItem_stateIcon">🔗</div>
+    )
+};
+

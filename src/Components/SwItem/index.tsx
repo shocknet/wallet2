@@ -1,3 +1,4 @@
+import { lightningIcon, linkIcon } from "../../Assets/SvgIconLibrary";
 import { SwItemData } from "./types";
 
 export const SwItem: React.FC<SwItemData> = ({
@@ -6,12 +7,26 @@ export const SwItem: React.FC<SwItemData> = ({
   station,
   changes,
   price,
-  priceImg
+  priceImg,
+  underline,
 }): JSX.Element => {
+  underline = underline ?? true;
+  const stateIcons = (icon?: string) => {
+    switch (icon) {
+      case 'lightning':
+        return lightningIcon();
+        break;
+    
+      case 'linked':
+        return linkIcon();
+        break;
+    }
+  }
+  
   return(
     <div className="SwItem">
       <div className="SwItem_left">
-        <div className={`SwItem_${stateIcon}`}>⚡️</div>
+        {stateIcons(stateIcon)}
         <div className="SwItem_text">
           <div className="SwItem_date">{date}</div>
           <div className="SwItem_station">{station}</div>
@@ -24,6 +39,7 @@ export const SwItem: React.FC<SwItemData> = ({
         </div>
         <div className="SwItem_changes">{changes}</div>
       </div>
+      <div className={underline?"SwItem_divider" : ""}></div>
     </div>
   )
 }
