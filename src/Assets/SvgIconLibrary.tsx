@@ -429,3 +429,45 @@ export const linkIcon = () => {
     )
 };
 
+export const mynode = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="e32536c924714fcda0ee8c743c7c05a7" style="overflow: visible;width: 33px;height: 33px;opacity: 1;mix-blend-mode: normal><defs><path id="path-169271476228410641" d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z"></path><pattern id="pattern-169271476234011279" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675274%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.0582010582010582, 0.0582010582010582)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234011279&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const uncle = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="16852934e1c94511963ef56e90e9d3b7" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476228210634" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234111368" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/uncle_jim-d639cb531fb4c5a2929595b6b85bbf5c-bbe8c4.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234111368&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const lightning = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="6160a9a18b444d919b1ebc1d1abd6b01" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227910626" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234311457" height="100%" patternUnits="objectBoundingBox" width="114.60055096418733%" x="-14.600550964187335%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/LV_Signal_Logo_16191c_margins-675168630b49fe34278c03f3c0b9c4f7-92845b.png" height="363" transform="scale(0.09090909090909091, 0.09090909090909091)" width="469"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234311457&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const zbd = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="cc67d5628c354c5fba6a7060a3cea36d" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476231310712" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234511635" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/zbd-e3dd55ce5dc369b5a5ca2f89f20dc8b9-46ce09.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234511635&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const stacker = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="8ed9c386e6ab4260ad871611baa5b9ac" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227610617" d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234411546" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/sn-56c133cd5b4448f8dc4bdbcb3b6fc748-08dca8.webp" height="225" transform="scale(0.14666666666666667, 0.14666666666666667)" width="225"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234411546&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+
+export const plusIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="06eddcf758814960bcea07c9c5c7ce4b" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;><g><defs> </defs> <rect display="none" fill="#FFA400" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <rect id="_x3C_Slice_x3E__126_" display="none" fill="none" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <polygon fill-rule="evenodd" clip-rule="evenodd" points="14,10 14,0 10,0 10,10 0,10 0,14 10,14 10,24 14,24 14,14 24,14 24,10 " style="fill: rgb(255, 255, 255);"></polygon> </g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}

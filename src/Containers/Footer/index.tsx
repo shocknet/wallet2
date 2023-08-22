@@ -15,18 +15,20 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
   const receive: boolean = window.location.pathname === "/receive";
 
   return (
-    <footer className="Footer">
+    <div>
       {(ishome) ? (
         <React.Fragment>
-          <div className="Footer_receive_btn">
-            <button onClick={() => { navigate("/receive")} }>Receive</button>
-          </div>
-          <div className="Footer_send_btn">
-            <button onClick={() => { navigate("/scan")} }>Send</button>
-          </div>
-          <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
-            {Icons.QR()}
-          </div>
+          <footer className="Footer">
+            <div className="Footer_receive_btn">
+              <button onClick={() => { navigate("/receive")} }>Receive</button>
+            </div>
+            <div className="Footer_send_btn">
+              <button onClick={() => { navigate("/scan")} }>Send</button>
+            </div>
+            <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+              {Icons.QR()}
+            </div>
+          </footer>
         </React.Fragment>
       ) : (
         receive ? (
@@ -39,6 +41,6 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
           <></>
         )
       )}
-    </footer>
+    </div>
   )
 }

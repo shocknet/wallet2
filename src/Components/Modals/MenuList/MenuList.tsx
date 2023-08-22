@@ -28,13 +28,12 @@ export const StyledModal = styled.div`
   right: 0;
   border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 25px 5% 0px 2%;
+  padding: 25px 10px 0px 10px;
   text-align: right;
   z-index: 100;
   font-size: 20px;
   background: #16191c;
   position: fixed;
-  margin: auto;
   border-radius: 5px;
 `;
 

@@ -28,7 +28,7 @@ export const StyledModal = styled.div`
   border: 1px solid #29abe2;
   font-family: Montserrat;
   padding: 25px 10px 0px 10px;
-  text-align: right;
+  text-align: center;
   z-index: 100;
   font-size: 20px;
   background: linear-gradient(135deg, #16191c, #151d24);
