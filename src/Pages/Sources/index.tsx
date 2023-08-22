@@ -5,7 +5,7 @@ import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { ReactQrCode } from '@devmehq/react-qr-code';
 
 import { PageProps } from "../../globalTypes";
-import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
+import { Modal } from "../../Components/Modals/Modal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
 
 //It import modal component
@@ -16,6 +16,7 @@ import * as icons from "../../Assets/SvgIconLibrary";
 
 import { nostr } from '../../Api'
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
+import { questionMark } from '../../Assets/SvgIconLibrary';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -91,7 +92,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optionalIcon, setOptionalIcon] = useState<string>("");
 
-  const [modalType, setModalType] = useState<string>("");
+  const [modalContent, setModalContent] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
 
   /*
@@ -125,11 +126,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const { isShown, toggle } = UseModal();
 
-  const AddSource_Modal = () => {
-    setModalType("addSource");
-    toggle();
-  }
-
   const PaytoSortLists = () => {
     return ["TrustLevel", "Label"];
   };
@@ -161,13 +157,39 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     }
   };
 
+  const AddSource_Modal = () => {
+    setModalContent("addSource");
+    toggle();
+  };
+
   const EditSource_Modal = (key: number) => {
     setEditSourceId(key);
     setSourcePasteField(payToLists[key].pasteField);
     setOptionalIcon(payToLists[key].icon == 1 ? "It's my node." : (payToLists[key].icon == 2 ? "Very well." : "A little."));
     setSourceLabel(payToLists[key].label);
-    setModalType("editSource");
+    setModalContent("editSource");
     toggle();
+  };
+
+  const Notify_Modal = () => {
+    setModalContent("notify");
+    toggle();
+  };
+
+  const switchContent = (value: string) => {
+    switch (value) {
+      case 'addSource':
+        return contentAddContent
+
+      case 'editSource':
+        return contentEditContent
+
+      case 'notify':
+        return notifyContent
+        
+      default:
+        return notifyContent
+    }
   }
 
   const AddSource = () => {
@@ -182,7 +204,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
-  }
+  };
 
   const Edit_Source = () => {
     let payToSources = payToLists;
@@ -195,7 +217,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
-  }
+  };
 
   const Delete_Source = () => {
     let payToSources = payToLists;
@@ -206,9 +228,9 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
-  }
+  };
 
-  const contentAddSource = <React.Fragment>
+  const contentAddContent = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
@@ -244,7 +266,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   </React.Fragment>;
 
-  const contentEditSource = <React.Fragment>
+  const contentEditContent = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
@@ -280,13 +302,26 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   </React.Fragment>;
 
+  const notifyContent = <React.Fragment>
+    <div className="Sources_notify">
+      <div className="Sources_notify_title">What is this?</div>
+      <div className="Sources_notify_textBox">
+        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices<br/><br/>
+        If using multiple sources, you may set an order that is used to opportunistically move balances provide liquidity, ot second-attempt network failures.
+      </div>
+      <button className="Sources_notify_button" onClick={toggle}>OK</button>
+    </div>
+  </React.Fragment>;
+
   return (
     <div className="Sources">
       {contextHolder}
       <div className="Sources_title">Manage Sources</div>
       <div className="Sources_pay_content">
-        <div className="Sources_content_title">Pay To</div>
-        <div className="Sources_content_discription">Order of sources from which invoices are generated:</div>
+        <div className="Sources_content_title">
+          Pay To
+          <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
+        </div>
         <div className="Sources_list_box">
           {showDropDown === "PayTo" && (
             <SourceSortDropdown
@@ -327,8 +362,10 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         </div>
       </div>
       <div className="Sources_receive_content">
-        <div className="Sources_content_title">Spend From</div>
-        <div className="Sources_content_discription">Order of sources from which invoices are paid:</div>
+        <div className="Sources_content_title">
+          Spend From
+          <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
+        </div>
         <div className="Sources_list_box">
           {showDropDown === "SpendFrom" && (
             <SourceSortDropdown
@@ -373,7 +410,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       <div className="Sources_add_btn">
         <button onClick={AddSource_Modal}>Add</button>
       </div>
-      <AddSourceModal isShown={isShown} hide={toggle} modalContent={modalType === "addSource" ? contentAddSource : contentEditSource} headerText={modalType === "addSource" ? "Add Source" : "Edit Source"} />
       <div>
         <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="product name" />
         <input type="number" value={productPrice} onChange={(e) => setProductPrice(e.target.valueAsNumber)} placeholder="product price sats" />
@@ -395,6 +431,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           />
         </div>}
       </div>
+      <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} />
     </div>
   )
 }

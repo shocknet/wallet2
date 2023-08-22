@@ -3,6 +3,39 @@
   height: 78vh;
   font-family: Montserrat;
 
+  &_notify {
+    text-align: center;
+    &_title{
+      font-size: 130%;
+      text-align: center;
+    }
+  
+    &_textBox{
+      font-size: 80%;
+      text-align: start;
+      color: #949596;
+      border-width: 1px;
+      border-color: #949596;
+      margin: 10px auto;
+      padding: 10px;
+    }
+
+    &_button {
+      text-align: center;
+      background-color: rgb(21, 29, 36);
+      background-image: none;
+      border-radius: 5px;
+      border-width: 1px;
+      border-color: rgb(41, 171, 226);
+      border-style: solid;
+      color: rgb(255, 255, 255);
+      font-size: 20px;
+      height: 45px;
+      width: 81px;
+      margin: 30px;
+    }
+  }
+
   &_IMG {
     &_EditSource svg {
       width: 15px;
@@ -17,7 +50,6 @@
 
   &_title {
     text-align: center;
-    font-weight: bold;
   }
 
   &_pay_content {
@@ -30,6 +62,15 @@
 
   &_content_title {
     font-size: 23px;
+    display: flex;
+    font-weight: bold;
+  }
+
+  &_question_mark {
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+    display: flex;
+    margin-left: 10px;
   }
 
   &_content_discription{ 

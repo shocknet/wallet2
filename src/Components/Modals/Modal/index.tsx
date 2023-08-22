@@ -9,29 +9,24 @@ import {
   CloseButton,
   Content,
   Backdrop,
-} from './AddSourceModal.style';
+} from './Modal.style';
 
 export interface ModalProps {
   isShown: boolean;
   hide: () => void;
   modalContent: JSX.Element;
-  headerText: string;
 }
 
-export const AddSourceModal: FunctionComponent<ModalProps> = ({
+export const Modal: FunctionComponent<ModalProps> = ({
   isShown,
   hide,
   modalContent,
-  headerText,
 }) => {
   const modal = (
     <React.Fragment>
       <Backdrop onClick={hide} />
       <Wrapper>
         <StyledModal>
-          <Header>
-            <HeaderText>{headerText}</HeaderText>
-          </Header>
           <Content>{modalContent}</Content>
         </StyledModal>
       </Wrapper>

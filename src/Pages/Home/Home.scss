@@ -62,4 +62,8 @@
   &_content{
     margin-top: 30px;
   }
+
+  &_scroller::-webkit-scrollbar {
+    display: none;
+  }
 }

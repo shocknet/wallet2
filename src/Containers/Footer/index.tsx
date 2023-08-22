@@ -16,7 +16,7 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
 
   return (
     <footer className="Footer">
-      {(isSources || ishome) ? (
+      {(ishome) ? (
         <React.Fragment>
           <div className="Footer_receive_btn">
             <button onClick={() => { navigate("/receive")} }>Receive</button>
