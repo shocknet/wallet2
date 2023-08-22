@@ -32,12 +32,6 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
       <div className="Header_modal_content">
         <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img">
-            {Icons.Key()}
-          </div>
-          <div className="Header_modal_content_item_text">Key Management</div>
-        </div>
-        <div className="Header_modal_content_item">
-          <div className="Header_modal_content_item_img">
             {Icons.Setting()}
           </div>
           <div className="Header_modal_content_item_text">Preferences</div>
@@ -80,7 +74,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header_logo_1" onClick={() => navigate("/home")}>
+          <button className="Header_logo_1" onClick={() => navigate("/")}>
             {Icons.Logo()}
           </button>
           <div className="Header_text">

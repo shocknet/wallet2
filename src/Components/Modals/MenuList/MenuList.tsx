@@ -12,8 +12,8 @@ export const Wrapper = styled.div`
 
 export const Backdrop = styled.div`
   font-family: Montserrat;
-  background-color: #16191c;
-  opacity: 0 !important;
+  background-color: black;
+  opacity: 0.8 !important;
   position: fixed;
   width: 100%;
   height: 100%;
@@ -23,12 +23,12 @@ export const Backdrop = styled.div`
 `;
 
 export const StyledModal = styled.div`
-  width: 100%;
-  height: 100%;
+  width: 250px;
+  height: 300px;
   right: 0;
   border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 25px 5% 25px 5%;
+  padding: 25px 5% 0px 2%;
   text-align: right;
   z-index: 100;
   font-size: 20px;

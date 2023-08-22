@@ -1,11 +1,11 @@
 .SwItem{
   font-size: 1.2rem;
   border: none;
-  border-bottom: 1px solid #8c8c8c;
-  margin-top: 10px;
   display: flow-root;
+  margin: auto;
+  width: 98%;
 
-  &_lighting{
+  &_stateIcon{
     height: auto;
     width: auto;
     margin-top: 11px;
@@ -20,11 +20,13 @@
   &_left{
     float: left;
     display: flex;
+    margin-top: 5px;
   }
 
   &_right{
     margin-right: 10px;
     float: right;
+    margin-top: 5px;
   }
 
   &_text{
@@ -32,27 +34,37 @@
   }
 
   &_date{
-    font-size: 18px;
+    font-size: 70%;
     color: #898989;
   }
 
   &_station{
-    margin-top: 10px;
-    font-size: 18px;
+    margin-top: 7px;
+    font-size: 80%;
     color: #2aabe1;
   }
 
   &_price{
-    margin-top: 5px;
     display: flex;
   }
   
   &_price_img{
     margin-right: 5px;
   }
+  
+  &_price_text{
+    font-size: 80%;
+  }
 
   &_changes{
     color: #898989;
     text-align: right;
+    font-size: 80%;
+    margin-bottom: 2px;
+  }
+
+  &_divider {
+    background-color: #8c8c8c;
+    height: 0.5px;
   }
 }

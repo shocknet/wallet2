@@ -10,7 +10,7 @@ import { nostr } from '../../Api'
 
 export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
   const [error, setError] = useState("")
-  const [balance, setBalance] = useState(0)
+  const [balance, setBalance] = useState('21,000,000')
   const [items, setItems] = useState<JSX.Element[]>([])
 
   //interfact of balance item
@@ -21,6 +21,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
     date?: string;
     priceImg: Function;
     price?: number;
+    underline?: boolean;
   }
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
         setError(res.reason)
         return
       }
-      setBalance(res.balance)
+      setBalance((res.balance.toString()))
     })
   }, [])
 
@@ -50,7 +51,7 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
         ...res.latestOutgoingInvoiceOperations.operations,
         ...res.latestOutgoingTxOperations.operations
       ].sort((a, b) => b.paidAtUnix - a.paidAtUnix).map((o, i): JSX.Element => <SwItem
-        stateIcon={'lighting'}
+        stateIcon={'lightning'}
         station={o.type}
         changes={'~ $.10'}
         price={o.amount}
@@ -64,12 +65,13 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
 
   let SwItemArray: sw_item[] = [];
   SwItemArray.push({
-    priceImg: Icons.PriceUp,
+    priceImg: Icons.PriceDown,
     changes: '~ $.10',
-    station: 'Lightning.Video Paywall',
-    date: '3 days ago',
+    station: 'To Exchange',
+    date: 'Pending',
     price: 2100,
-    stateIcon: 'lighting'
+    stateIcon: 'linked',
+    underline: false,
   });
 
   SwItemArray.push({
@@ -78,18 +80,109 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
     station: 'Lightning.Video Paywall',
     date: '3 days ago',
     price: 2100,
-    stateIcon: 'lighting'
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceDown,
+    changes: '~ $.10',
+    station: 'From Exchange',
+    date: '3 days ago',
+    price: 21000000,
+    stateIcon: 'linked'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '3 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '3 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '4 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceDown,
+    changes: '~ $.10',
+    station: 'To Exchange',
+    date: 'Pending',
+    price: 2100,
+    stateIcon: 'linked'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceDown,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '3 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceDown,
+    changes: '~ $.10',
+    station: 'From Exchange',
+    date: '3 days ago',
+    price: 21000000,
+    stateIcon: 'linked'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '3 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '3 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
+  });
+
+  SwItemArray.push({
+    priceImg: Icons.PriceUp,
+    changes: '~ $.10',
+    station: 'Lightning.Video Paywall',
+    date: '4 days ago',
+    price: 2100,
+    stateIcon: 'lightning'
   });
   
   const DumyData = SwItemArray.map((o, i): JSX.Element => <SwItem
-    stateIcon={'lighting'}
+    stateIcon={o.stateIcon}
     station={o.station}
     changes={o.changes}
     price={o.price}
     priceImg={o.priceImg}
     date={o.date}
     key={i}
-  />)
+    underline={o.underline}
+  />);
 
   return (
     <div className="Home">
@@ -98,8 +191,10 @@ export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ $40,000.00</div>
       </div>
-      <div className="Home_content scroller">
-        {items}
+      <div className="Home_scroller scroller">
+        <div className="Home_content">
+          {DumyData}
+        </div>
       </div>
     </div>
   )

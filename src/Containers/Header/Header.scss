@@ -12,13 +12,25 @@
     }
 
     &_MenuBack svg {
-      width: 35px;
+      width: 25px;
       height: auto;
     }
 
     &_Setting svg, &_Key svg, &_SourceIcon svg, &_BuyCryptoIcon svg, &_HelpAbout svg {
       width: 30px;
       height: auto;
+      width: 23px;
+    }
+
+    &_Setting svg, &_SourceIcon svg{
+      fill: rgb(41, 171, 226);
+    }
+
+    &_BuyCryptoIcon svg{
+      fill: rgb(245, 147, 34);
+    }
+    &_HelpAbout svg {
+    fill: rgb(0, 255, 30);
     }
   }
 
@@ -26,6 +38,7 @@
     @include buttonPrimary;
     width: 50%;
     margin-left: 25%;
+    margin-top: 10px;
     
     & div>svg {
       width: 70px;
@@ -150,12 +163,11 @@
 
   &_modal_content{
     display: grid;
-    margin-top: 15px;
+    margin-top: 75px;
     cursor: pointer;
-
     &_item{
       display: flex;
-      margin-top: 20px;
+      margin-top: 10px;
 
       & hr{
         width: 100%;
@@ -165,12 +177,12 @@
 
       &_img{
         text-align: left;
-        width: 60px;
+        width: 30px;
       }
 
       &_text{
         font-family: Montserrat;
-        font-size: 25px;
+        font-size: 100%;
         color: #f3efef;
         text-align: right;
         width: 100%;

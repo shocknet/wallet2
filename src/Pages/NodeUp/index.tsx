@@ -10,12 +10,12 @@ export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
     <div className="NodeUp">
       <div className="NodeUp_title">Node Up</div>
       <div className="NodeUp_textBox">
-        Bootstrap the wallet with a trusted server by chosing "Continue", you may add a node later<br/><br/><br/>
-        To add a node now, use "Manual Connection"
+        "Continue" to bootstrap the wallet with a trusted server and add a node later<br/><br/><br/>
+        "Add connection" to link a node now.
       </div>
       <div className="NodeUp_manual">
         <div onClick={() => { navigate("/sources")} } className="NodeUp_manual_text">
-          Manual Connection
+          Add Connection
         </div>
         <div className="NodeUp_manual_btn">
           <button onClick={() => { navigate("/loader") }}>

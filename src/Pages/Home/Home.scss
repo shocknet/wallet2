@@ -1,5 +1,6 @@
 .Home{
   padding-bottom: 30px;
+  margin-top: 10px;
   position: relative;
   font-family: Montserrat;
 
@@ -7,10 +8,11 @@
     position: relative;
     border: 1px solid #2693c1;
     text-align: center;
-    padding: 6vh 0;
-    background-color: #182830;
-    height: 25vh;
+    background-color: #151d24;
+    padding-top: 35px;
+    height: 175px;
     margin-top: 0;
+    border-radius: 5px;
   }
 
   
@@ -22,23 +24,22 @@
 
   &_sats_name{
     margin-top: 7px;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: #2693c1;
   }
 
   &_sats_changes{
-    font-size: 1.4rem;
+    font-size: 1rem;
     margin-top: 10px;
     color: #7a8989;
   }
 
-  &_content{
-    padding: 0 !important;
+  &_scroller{
     --scrollbar-width: 8px;
     --mask-height: 6vh;
     overflow-y: auto;
-    height: 53vh;
-    padding-top: var(--mask-height);
+    height: calc(100vh - 350px);
+    // padding-top: var(--mask-height);
     padding-bottom: var(--mask-height);
     --mask-image-content: linear-gradient(
       to bottom,
@@ -56,5 +57,9 @@
     mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
     mask-position: 0 0, 100% 0;
     mask-repeat: no-repeat, no-repeat;
+  }
+
+  &_content{
+    margin-top: 30px;
   }
 }
