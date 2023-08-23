@@ -6,6 +6,7 @@ import { Sources } from "./Pages/Sources";
 import { Loader } from "./Pages/Loader";
 import { NodeUp } from './Pages/NodeUp';
 import { Receive } from './Pages/Receive';
+import { Send } from './Pages/Send';
 import { Scan } from './Pages/Scan';
 import { Ctx } from "./Context";
 
@@ -54,6 +55,12 @@ function App(): JSX.Element {
               }/>
               <Route path='/receive' element={
                 <Receive 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/send' element={
+                <Send 
                   state={state as StateInterface}
                   dispatch={dispatch}
                 />

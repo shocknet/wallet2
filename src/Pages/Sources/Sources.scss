@@ -1,14 +1,9 @@
 .Sources{
   margin-top: 10px;
   height: 78vh;
+  width: 94%;
+  margin-inline: auto;
   font-family: Montserrat;
-
-  &_svgIcon {
-    width: 33px;
-    height: 33px;
-    display: inline-flex;
-    align-items: center;
-  }
 
   &_notify {
     text-align: center;
@@ -220,6 +215,13 @@
     height: 100%;
     display: flex;
     align-items: center;
+
+    & div {
+      width: 33px;
+      height: 33px;
+      display: inline-flex;
+      align-items: center;
+    }
   }
 
   &_item_balance{

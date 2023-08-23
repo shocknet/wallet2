@@ -23,7 +23,7 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
               <button onClick={() => { navigate("/receive")} }>Receive</button>
             </div>
             <div className="Footer_send_btn">
-              <button onClick={() => { navigate("/scan")} }>Send</button>
+              <button onClick={() => { navigate("/send")} }>Send</button>
             </div>
             <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
               {Icons.QR()}
