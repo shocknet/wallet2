@@ -3,32 +3,163 @@
   padding-bottom: 30px;
   transition-duration: 500ms;
   font-family: Montserrat;
+  text-align: center;
 
-  &_QR{
-    margin-top: 10px;
-    height: auto;
-    margin-left: 50%;
-    position: absolute;
-    left: -100px;
-    transition-duration: 800ms;
-    font-family: Montserrat;
-
+  &_QR {
+    display: inline-flex;
+    align-items: center;
+    width: 290px;
+    margin: auto;
+    aspect-ratio : 1 / 1;
+    background-color: white;
+    border: 1px solid #2693c1;
+    border-radius: 10px;
     &_text{
-      position: relative;
+      margin-block: 10px;
       text-align: center;
-      color: #a2a3a4;
-      font-size: 15px;
+      color: white;
+      font-size: 26px;
       font-family: Montserrat;
+    }
+
+    & svg {
+      margin: auto;
+    }
+  }
+
+  &_logo_container {
+    position: fixed;
+    left: 125px;
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    & svg {
+      width: 30px;
+      height: 30px;
     }
   }
 
   &_copy{
     position: relative;
-    margin-top: 230px;
+    margin-top: 5px;
     text-align: center;
-    color: #2693c1;
+    color: #a2a3a4;
     font-size: 20px;
     font-family: Montserrat;
+  }
+
+  &_modal_amount {
+    position: relative;
+    margin-top: 5px;
+    text-align: end;
+    color: #a2a3a4;
+    font-size: 20px;
+    font-family: Montserrat;
+  }
+
+  &_copy_icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 5px;
+  }
+
+  &_set_amount_copy {
+    display: inline-flex;
+    margin-top: 10px;
+    z-index: 9999;
+
+    & button{
+      font-size: 22px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding: 2px 10px;
+      border-radius: 5px;
+      border-top: 1px solid #2693c1;
+      border-left: 1px solid #2693c1;
+      border-right: 1px solid white;
+      border-bottom: 1px solid white;
+      background-color: #16191c;
+      color: #fcfcfc;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 3px;
+    }
+  }
+    
+  &_set_amount {
+    margin-top: 10px;
+    & button{
+      font-size: 22px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding: 2px 10px;
+      border-radius: 5px;
+      border-top: 1px solid #2693c1;
+      border-left: 1px solid #2693c1;
+      border-right: 1px solid white;
+      border-bottom: 1px solid white;
+      background-color: #16191c;
+      color: #fcfcfc;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 3px;
+    }
+  }
+
+  &_result_input{
+    width: 100%;
+    margin-top: 70px;
+
+    & input{
+      font-family: Montserrat;
+      font-size: 17px;
+      text-align: end;
+      width: 100%;
+      background-color: #16191c;
+      color: #2aabe1;
+      padding-block: 8px;
+      padding-left: 40px;
+      padding-right: 10px;
+      border: 1px solid #2cb0e9;
+      border-radius: 5px;
+    }
+  }
+
+  &_other_options {
+    font-size: 80%;
+    left: 0;
+    display: inline-flex;
+    width: 100vw;
+    position: fixed;
+    bottom: 60px;
+    z-index: -1;
+  }
+
+  &_lnurl {
+    bottom: 80px;
+    float: left;
+    padding-left: 5vw;
+    display: inline-flex;
+    align-items: center;
+    height: 60px;
+    width: 50%;
+    background: linear-gradient(-160deg, #16191c, #151d24);
+  }
+
+  &_chain {
+    bottom: 80px;
+    float: right;
+    padding-right: 5vw;
+    display: inline-flex;
+    align-items: center;
+    height: 60px;
+    width: 50%;
+    justify-content: end;
+    background: linear-gradient(160deg, #16191c, #151d24);
   }
 
   &_share{

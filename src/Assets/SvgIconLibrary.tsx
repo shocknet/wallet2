@@ -471,3 +471,46 @@ export const plusIcon = () => {
         <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
+
+export const closeIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element fixed-position interactive" data-id="684b564284db4e8888fa11eebb3dc8b8" style="overflow: visible; opacity: 1; mix-blend-mode: normal; width: 28px; height: 28px"><g transform=""><use xlink:href="#path-16927291915041424" filter="url(#filter-16927291915101427)"></use><path d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);"></path></g><defs><path id="path-16927291915041424" d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z"></path><filter height="116.66666319444516%" id="filter-16927291915101427" width="116.66666666666667%" x="-8.333333333333332%" y="-8.333331597222585%"><feFlood flood-opacity="0" result="backgroundFix"></feFlood><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix><feOffset dx="0" dy="0"></feOffset><feGaussianBlur stdDeviation="1.1666666666666665"></feGaussianBlur><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"></feColorMatrix><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1"></feBlend></filter></defs></svg>`;
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const pasteIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element" data-id="df47e532c6eb4b608d7559b5f9a4a0a8"><g transform="translate(0, 0) rotate(0)"><path d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></g><defs><path id="path-16927294668254771" d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></defs></svg>`;
+    return (
+        <div className="Scan_input_icon_svg" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const copy = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="222e8df40dad4212bc42e2b8efa83fd2" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    return (
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const share = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="3c622e0f230641a5b25f16531535677d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    return (
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const arrowLeft = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="8c04bbe7ff1c40c99338e907c691102d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
+    return (
+        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const arrowRight = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="c1a1bae0abe4453f83674d3da4669950" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
+    return (
+        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+

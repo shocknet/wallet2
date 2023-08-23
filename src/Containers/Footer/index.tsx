@@ -33,9 +33,17 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
       ) : (
         receive ? (
           <React.Fragment>
-            <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
-              {Icons.QR()}
-            </div>
+            <footer className="Footer">
+              <div className="Footer_receive_btn">
+                <button onClick={() => { navigate("/home")} }>Cancel</button>
+              </div>
+              <div className="Footer_send_btn">
+                <button onClick={() => { navigate("/home")} }>OK</button>
+              </div>
+              <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+                {Icons.QR()}
+              </div>
+            </footer>
           </React.Fragment>
         ) : (
           <></>

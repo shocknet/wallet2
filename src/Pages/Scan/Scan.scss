@@ -16,39 +16,51 @@
       height: auto;
     }
   }
+
+  &_wall {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0000005b;
+    z-index: 999;
+  }
+
+  &_square {
+    width: 300px;
+    height: 300px;
+    position: fixed;
+    top: 20vh;
+    left: calc(50vw - 150px);
+    border: 2px solid #268fbc;
+    border-radius: 5px;
+    z-index: 99;
+    background-color: #ffffff00;
+  }
   
-  &_scanner section{
+  &_scanner {
     & section{
-      padding-top: 100vh !important;
+      width: 100vw;
+      height: 100vh;
 
       & div{
-        width: 100% !important;
+        width: 100vw !important;
+        height: 100vh !important;
         border: none;
-        border-bottom: 43vh solid rgba(0, 0, 0, 0.3) !important;
-        border-top: 22vh solid rgba(0, 0, 0, 0.3) !important;
-        border-right: calc(50vw - 17.5vh) solid rgba(0, 0, 0, 0.3) !important;
-        border-left: calc(50vw - 17.5vh) solid rgba(0, 0, 0, 0.3) !important;
-        box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 30px inset !important;
-      }
+        padding: 0 !important;
 
-      & div::before {
-        content: '';
-        position: absolute;
-        border: 25px solid #2cb0e9;
-        width: calc(100% - 50px);
-        height: calc(35vh - 50px);
-        background: rgba(0, 0, 0, 0);
-        z-index: -1;
-        border-radius: 1.5rem;
+        & video {
+          width: 100vw !important;
+          height: 100vh !important;
+        }
       }
     }
   }
 
   &_back{
     position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 100;
+    top: 50px;
+    right: 30px;
+    z-index: 99999;
   }
 
   &_result_input{
@@ -56,19 +68,20 @@
     position: fixed;
     bottom: 100px;
     right: 15vw;
-    z-index: 100;
+    z-index: 999999;
     text-align: center;
 
     & input{
       font-family: Montserrat;
       font-size: 17px;
-      width: 100%;
       width: 70vw;
       background-color: #16191c;
       color: #2aabe1;
-      padding: 15px 2rem;
-      border: none;
-      border-radius: 2rem;
+      padding-block: 15px;
+      padding-left: 40px;
+      padding-right: 10px;
+      border: 1px solid #2cb0e9;
+      border-radius: 5px;
     }
 
     & button{
@@ -85,6 +98,28 @@
     
     & button:hover{
       background-color: #373a3d;
+    }
+  }
+
+  &_input_icon {
+    
+    position: absolute;
+    left: 14px;
+    top: 24px;
+    transform: translateY(-50%);
+    width: 20px; /* Adjust this value to change the icon size */
+    height: 20px; /* Adjust this value to change the icon size */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    &_svg {
+      fill: #268fbc;
+    }
+
+    &_svg svg{
+      width: 30px;
+      height: 30px;
     }
   }
 
