@@ -123,8 +123,11 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
         <div className="Send_header_text">Send Payment</div>
         <div className="Send_config">
           <div className="Send_amount">
-            Amount: <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(parseInt(e.target.value))}}/>
-            <button onClick={() => {setAmountAssets(amountAssets == "BTC"?"sats":"BTC")}}>{amountAssets}</button>
+            Amount: 
+            <div className='Send_amount_container'>
+              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(parseInt(e.target.value))}}/>
+              <button onClick={() => {setAmountAssets(amountAssets == "BTC"?"sats":"BTC")}}>{amountAssets}</button>
+            </div>
           </div>
           <div className='Send_available_amount'>
             ~ $40,000.00
