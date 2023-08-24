@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
@@ -358,18 +358,18 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     </div>
   </React.Fragment>;
 
-  const [payScrollPosition, setPayScrollPosition] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   const handlePayTouchMove = (event:any) => {
     if (event.touches.length === 1) {
       const { clientY } = event.touches[0];
-      const deltaY = clientY - payScrollPosition;
+      const deltaY = clientY - scrollPosition;
 
       // Adjust the scroll position of the specific div element based on touch movement
       const scrollableDiv = document.getElementById('payList');
 
       // Update the scroll position
-      setPayScrollPosition(clientY);
+      setScrollPosition(clientY);
 
       if (scrollableDiv) {
         scrollableDiv.scrollTop -= deltaY;
@@ -380,7 +380,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const handleFromTouchMove = (event:any) => {
     if (event.touches.length === 1) {
       const { clientY } = event.touches[0];
-      const deltaY = clientY - payScrollPosition;
+      const deltaY = clientY - scrollPosition;
 
       // Adjust the scroll position of the specific div element based on touch movement
       const scrollableDiv = document.getElementById('fromList');
@@ -390,9 +390,18 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       }
 
       // Update the scroll position
-      setPayScrollPosition(clientY);
+      setScrollPosition(clientY);
     }
   };
+
+  const setPosition = (event:any) => {
+    const { clientY } = event.touches[0];
+    setScrollPosition(clientY);
+  }
+
+  useEffect(() => {
+    window.addEventListener("touchstart", setPosition);
+  }, []);
 
   return (
     <div className="Sources">
