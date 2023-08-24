@@ -15,30 +15,40 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
   const receive: boolean = window.location.pathname === "/receive";
 
   return (
-    <footer className="Footer">
-      {(isSources || ishome) ? (
+    <div>
+      {(ishome) ? (
         <React.Fragment>
-          <div className="Footer_receive_btn">
-            <button onClick={() => { navigate("/receive")} }>Receive</button>
-          </div>
-          <div className="Footer_send_btn">
-            <button onClick={() => { navigate("/scan")} }>Send</button>
-          </div>
-          <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
-            {Icons.QR()}
-          </div>
+          <footer className="Footer">
+            <div className="Footer_receive_btn">
+              <button onClick={() => { navigate("/receive")} }>Receive</button>
+            </div>
+            <div className="Footer_send_btn">
+              <button onClick={() => { navigate("/send")} }>Send</button>
+            </div>
+            <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+              {Icons.QR()}
+            </div>
+          </footer>
         </React.Fragment>
       ) : (
         receive ? (
           <React.Fragment>
-            <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
-              {Icons.QR()}
-            </div>
+            <footer className="Footer">
+              <div className="Footer_receive_btn">
+                <button onClick={() => { navigate("/home")} }>Cancel</button>
+              </div>
+              <div className="Footer_send_btn">
+                <button onClick={() => { navigate("/home")} }>OK</button>
+              </div>
+              <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+                {Icons.QR()}
+              </div>
+            </footer>
           </React.Fragment>
         ) : (
           <></>
         )
       )}
-    </footer>
+    </div>
   )
 }

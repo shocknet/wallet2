@@ -1,0 +1,185 @@
+.Send{
+  &_container {
+    background-image: linear-gradient(320deg, #151d24 31%, #16191c 60%);
+    width: 100%;
+    padding-inline: 3%;
+    padding-bottom: 30px;
+    transition-duration: 500ms;
+    font-family: Montserrat;
+    justify-content: center;
+    position: fixed;
+    left: 0;
+    height: 100%;
+  }
+
+  &_header {
+    display: inline-flex;
+    align-items: center;
+    width: 290px;
+    margin: auto;
+    aspect-ratio : 1 / 1;
+    background-color: white;
+    border: 1px solid #2693c1;
+    border-radius: 10px;
+    &_text{
+      margin-block: 10px;
+      text-align: center;
+      color: white;
+      font-size: 26px;
+      font-family: Montserrat;
+    }
+
+    & svg {
+      margin: auto;
+    }
+  }
+
+  &_config {
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  &_amount{
+    width: 100%;
+    margin-top: 70px;
+    display: inline-flex;
+    align-items: end;
+    font-size: 19px;
+    font-weight: bold;
+
+    &_input{
+      font-family: Montserrat;
+      font-size: 27px;
+      text-align: end;
+      margin-left: 5px;
+      width: 100%;
+      background-color: #16191c;
+      color: #a3a3a3;
+      border-bottom: 1px solid #a3a3a3;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+    }
+    
+    & button{
+      color: #2cb0e9;
+      width: 80px;
+      font-size: 25px;
+      background-color: #16191c;
+      border: 0;
+    }
+  }
+
+  &_to, &_for{
+    width: 100%;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 19px;
+    font-weight: bold;
+
+    & input{
+      font-family: Montserrat;
+      font-size: 15px;
+      text-align: start;
+      width: 100%;
+      background-color: #16191c;
+      color: #2aabe1;
+      padding-block: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border: 1px solid #2cb0e9;
+      border-radius: 5px;
+    }
+
+    & p {
+      width: 70px;
+    }
+  }
+
+  &_from{
+    width: 100%;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: start;
+    font-size: 19px;
+    font-weight: bold;
+
+    & p {
+      margin-right: 10px;
+      margin-top: 5px;
+    }
+  }
+
+  &_available_amount {
+    position: relative;
+    margin-top: 5px;
+    margin-bottom: 40px;
+    text-align: end;
+    color: #a2a3a4;
+    font-size: 15px;
+    font-family: Montserrat;
+  }
+
+  &_set_amount_copy {
+
+    & button{
+      max-width: 160px;
+      width: 140px;
+      font-size: 22px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding: 6px 15px;
+      border-radius: 5px;
+      border-top: 1px solid #2693c1;
+      border-left: 1px solid #2693c1;
+      border-right: 1px solid white;
+      border-bottom: 1px solid white;
+      background-color: #16191c;
+      color: #fcfcfc;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 3px;
+    }
+  }
+
+  &_other_options {
+    font-size: 80%;
+    left: 0;
+    display: inline-flex;
+    width: 100vw;
+    position: fixed;
+    bottom: 30px;
+  }
+
+  &_lnurl {
+    bottom: 80px;
+    float: left;
+    padding-left: 7vw;
+    display: inline-flex;
+    align-items: center;
+    height: 60px;
+    width: 50%;
+  }
+
+  &_chain {
+    bottom: 80px;
+    float: right;
+    padding-right: 7vw;
+    display: inline-flex;
+    align-items: center;
+    height: 60px;
+    width: 50%;
+    justify-content: end;
+  }
+
+  &_IMG_Close {
+    display: inline-flex;
+    margin-right: 10px;
+
+    & svg {
+      width: 20px;
+    }
+  }
+}

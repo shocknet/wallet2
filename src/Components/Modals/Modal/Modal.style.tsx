@@ -2,22 +2,19 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
   font-family: Montserrat;
-  width: 500px !important;
+  width: 100% !important;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  text-align: center;
+  top: 20vh;
+  left: auto;
   z-index: 700;
   outline: 0;
-  @media (max-width: 600px) {
-    width: 88% !important;
-  }  
 `;
 
 export const Backdrop = styled.div`
   font-family: Montserrat;
   background-color: black;
-  opacity: 0.6;
+  opacity: 0.8 !important;
   position: fixed;
   width: 100%;
   height: 100%;
@@ -27,31 +24,27 @@ export const Backdrop = styled.div`
 `;
 
 export const StyledModal = styled.div`
+  max-width: 350px;
+  border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 20px;
+  padding: 25px 10px 0px 10px;
   text-align: center;
   z-index: 100;
   font-size: 20px;
-  background: #202020;
-  border-radius: 2rem !important;
-  position: relative;
+  background: linear-gradient(135deg, #16191c, #151d24);
   margin: auto;
-  border-radius: 8px;
+  border-radius: 5px;
 `;
 
 export const Header = styled.div`
   font-family: Montserrat;
-  text-align: center;
+  text-align: right;
   border-radius: 8px 8px 0 0;
   justify-content: space-between;
-  padding: 0.3rem;
 `;
 
 export const HeaderText = styled.div`
   font-family: Montserrat;
-  color: #fff;
-  align-self: center;
-  color: lightgray;
 `;
 
 export const CloseButton = styled.button`
@@ -68,7 +61,6 @@ export const CloseButton = styled.button`
 
 export const Content = styled.div`
   font-family: Montserrat;
-  padding: 10px;
   max-height: 30rem;
   overflow-x: hidden;
   overflow-y: auto;

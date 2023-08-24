@@ -174,7 +174,10 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   return (
     <div className="Scan">
       <div onClick={() => { navigate("/home") }} className="Scan_back">
-        {Icons.Close()}
+        {Icons.closeIcon()}
+      </div>
+      <div className="Scan_wall">
+        <div className="Scan_square" />
       </div>
       <div className="Scan_scanner">
         <QrReader
@@ -199,10 +202,10 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
-          placeholder="Or paste from clipboard..."
+          placeholder="... Or paste Clipboard"
           value={itemInput}
         />
-        <button onClick={() => { parse(itemInput) }}>SEND</button>
+        <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
       </div>
     </div>
   )

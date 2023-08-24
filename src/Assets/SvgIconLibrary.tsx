@@ -156,9 +156,9 @@ export const Share = () => {
 }
 
 export const Close = () => {
-    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="96" height="96"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgba(42, 171, 225, 0.5);" vector-effect="non-scaling-stroke"/></g></svg>';
+    const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 20 20" class="ng-element" data-id="e1136194e86a4b5396fa52ee720749c5" stroke-linecap="null" stroke-linejoin="null"><g><defs> </defs> <rect display="none" fill="#FFA400" width="20" height="20" style="fill: rgb(255, 255, 255);"></rect> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="20" height="20" style="fill: rgb(255, 255, 255);"></rect> <polygon fill-rule="evenodd" clip-rule="evenodd" points="20,3 17,0 10,7 3,0 0,3 7,10 0,17 3,20 10,13 17,20 20,17 13,10 " style="fill: rgb(255, 255, 255);"></polygon> </g></svg>';
     return (
-        <div className="Scan_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
 
@@ -410,6 +410,13 @@ export const Animation = () => {
     )
 }
 
+export const questionMark = () => {
+    const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element interactive" data-id="85c5ca9ce2814e0090336f34b8f76de8" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 14px; height: 14px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" id="question-circle" d="M13.24,17.24c-0.06,0.06-0.15,0.09-0.24,0.09h-2c-0.18,0.01-0.32-0.13-0.33-0.31c0-0.01,0-0.01,0-0.02  v-2c-0.01-0.18,0.13-0.32,0.31-0.33c0.01,0,0.01,0,0.02,0h2c0.18-0.01,0.32,0.13,0.33,0.31c0,0.01,0,0.01,0,0.02v2  C13.33,17.09,13.3,17.18,13.24,17.24z M16,10c0,0.29-0.04,0.57-0.13,0.84c-0.07,0.22-0.17,0.43-0.29,0.63  c-0.13,0.19-0.28,0.36-0.46,0.5c-0.15,0.13-0.31,0.25-0.48,0.36l-0.51,0.3c-0.23,0.13-0.42,0.31-0.57,0.52  c-0.12,0.15-0.2,0.33-0.22,0.52c0.01,0.18-0.13,0.32-0.31,0.33c-0.01,0-0.02,0-0.03,0h-2c-0.18,0.01-0.32-0.13-0.33-0.31  c0-0.01,0-0.01,0-0.02v-0.38c0.01-0.48,0.21-0.94,0.54-1.29c0.33-0.38,0.74-0.69,1.2-0.9c0.27-0.11,0.51-0.27,0.71-0.47  c0.15-0.18,0.22-0.4,0.21-0.63c-0.02-0.26-0.17-0.49-0.39-0.61c-0.55-0.35-1.24-0.35-1.79,0c-0.34,0.29-0.64,0.63-0.9,1  c-0.06,0.08-0.16,0.12-0.26,0.12c-0.07,0.01-0.14-0.02-0.2-0.06l-1.37-1c-0.14-0.09-0.19-0.27-0.1-0.41  c0.01-0.01,0.01-0.02,0.02-0.03C9.11,7.6,10.6,6.74,12.2,6.79c1.25-0.02,2.44,0.54,3.22,1.51C15.8,8.79,16,9.38,16,10L16,10z   M18.93,8c-0.7-1.21-1.71-2.22-2.93-2.92C14.79,4.37,13.41,3.99,12,4c-1.41-0.01-2.79,0.37-4,1.08C6.79,5.78,5.78,6.79,5.08,8  C4.37,9.21,3.99,10.59,4,12c-0.01,1.41,0.36,2.79,1.07,4c0.7,1.21,1.71,2.22,2.93,2.92c1.21,0.71,2.59,1.09,4,1.08  c1.41,0.01,2.79-0.36,4-1.07c1.21-0.7,2.22-1.71,2.92-2.93c0.71-1.21,1.09-2.59,1.08-4c0.01-1.41-0.37-2.79-1.08-4H18.93z" style="fill: rgb(255, 255, 255);"></path></g></svg>';
+    return (
+        <div style={{display: "flex"}} dangerouslySetInnerHTML={{__html: svgCode}}></div>
+    )
+}
+
 export const lightningIcon = () => {
     return (
         <div className="SwItem_stateIcon">⚡️</div>
@@ -421,4 +428,138 @@ export const linkIcon = () => {
         <div className="SwItem_stateIcon">🔗</div>
     )
 };
+
+export const mynode = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="e32536c924714fcda0ee8c743c7c05a7" style="overflow: visible;width: 33px;height: 33px;opacity: 1;mix-blend-mode: normal><defs><path id="path-169271476228410641" d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z"></path><pattern id="pattern-169271476234011279" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675274%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.0582010582010582, 0.0582010582010582)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234011279&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const uncle = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="16852934e1c94511963ef56e90e9d3b7" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476228210634" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234111368" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/uncle_jim-d639cb531fb4c5a2929595b6b85bbf5c-bbe8c4.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234111368&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const lightning = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="6160a9a18b444d919b1ebc1d1abd6b01" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227910626" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234311457" height="100%" patternUnits="objectBoundingBox" width="114.60055096418733%" x="-14.600550964187335%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/LV_Signal_Logo_16191c_margins-675168630b49fe34278c03f3c0b9c4f7-92845b.png" height="363" transform="scale(0.09090909090909091, 0.09090909090909091)" width="469"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234311457&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const zbd = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="cc67d5628c354c5fba6a7060a3cea36d" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476231310712" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234511635" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/zbd-e3dd55ce5dc369b5a5ca2f89f20dc8b9-46ce09.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234511635&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const stacker = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="8ed9c386e6ab4260ad871611baa5b9ac" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227610617" d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234411546" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/sn-56c133cd5b4448f8dc4bdbcb3b6fc748-08dca8.webp" height="225" transform="scale(0.14666666666666667, 0.14666666666666667)" width="225"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234411546&quot;);"></path></g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const mynodeSmall = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="36a39baaac0c4f38a8ad45662046484e" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700542933255" d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000005 C24 18.62298029392801 18.62298029392798 24.00000000000001 12 24.00000000000001 C5.377019706071995 24.00000000000001 0 18.62298029392801 0 12.000000000000005 C0 5.377019706072 5.377019706071995 0 12 0 Z"></path><pattern id="pattern-169279700549733532" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675207%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.042328042328042326, 0.042328042328042326)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000005 C24 18.62298029392801 18.62298029392798 24.00000000000001 12 24.00000000000001 C5.377019706071995 24.00000000000001 0 18.62298029392801 0 12.000000000000005 C0 5.377019706072 5.377019706071995 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549733532&quot;);"></path></g></svg>`;
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const uncleSmall = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="a3f7ed4a2c16436dafd02870fdbb1ce2" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal; "><defs><path id="path-169279700543333263" d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000007 C24 18.622980293928013 18.622980293927984 24.000000000000014 12 24.000000000000014 C5.377019706071998 24.000000000000014 0 18.622980293928013 0 12.000000000000007 C0 5.377019706071994 5.377019706071998 0 12 0 Z"></path><pattern id="pattern-169279700549333441" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/uncle_jim-d639cb531fb4c5a2929595b6b85bbf5c-bbe8c4.webp" height="512" transform="scale(0.046875, 0.046875)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000007 C24 18.622980293928013 18.622980293927984 24.000000000000014 12 24.000000000000014 C5.377019706071998 24.000000000000014 0 18.622980293928013 0 12.000000000000007 C0 5.377019706071994 5.377019706071998 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549333441&quot;);"></path></g></svg>`;
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const lightningSmall = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="67429c53a39f4d2390fe3f78603e796b" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700542533248" d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000009 C24 18.62298029392801 18.622980293927984 24.000000000000018 12 24.000000000000018 C5.377019706071999 24.000000000000018 0 18.62298029392801 0 12.000000000000009 C0 5.377019706071994 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700549933621" height="100%" patternUnits="objectBoundingBox" width="114.60055096418733%" x="-14.600550964187331%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/LV_Signal_Logo_16191c_margins-675168630b49fe34278c03f3c0b9c4f7-92845b.png" height="363" transform="scale(0.06611570247933884, 0.06611570247933884)" width="469"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000009 C24 18.62298029392801 18.622980293927984 24.000000000000018 12 24.000000000000018 C5.377019706071999 24.000000000000018 0 18.62298029392801 0 12.000000000000009 C0 5.377019706071994 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549933621&quot;);"></path></g></svg>`;
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const zbdSmall = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="17ed649f123b481886f798247dabf982" style="overflow: visible;width: 24px;height: 24px;opacity: 1;mix-blend-mode: normal;"><defs><path id="path-169279700542233243" d="M12 0 C18.622980293927984 0 24 5.3770197060719935 24 12.000000000000005 C24 18.622980293928013 18.622980293927984 24.00000000000001 12 24.00000000000001 C5.377019706071999 24.00000000000001 0 18.622980293928013 0 12.000000000000005 C0 5.3770197060719935 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700550133710" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/zbd-e3dd55ce5dc369b5a5ca2f89f20dc8b9-46ce09.webp" height="512" transform="scale(0.046875, 0.046875)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.3770197060719935 24 12.000000000000005 C24 18.622980293928013 18.622980293927984 24.00000000000001 12 24.00000000000001 C5.377019706071999 24.00000000000001 0 18.622980293928013 0 12.000000000000005 C0 5.3770197060719935 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700550133710&quot;);"></path></g></svg>`;
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const stackerSmall = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="61a1daf435584c6a88670d1afcc8990e" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700541733235" d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000004 C24 18.62298029392801 18.62298029392798 24.000000000000007 12 24.000000000000007 C5.377019706071999 24.000000000000007 0 18.62298029392801 0 12.000000000000004 C0 5.377019706072 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700550333799" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/sn-56c133cd5b4448f8dc4bdbcb3b6fc748-08dca8.webp" height="225" transform="scale(0.10666666666666667, 0.10666666666666667)" width="225"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000004 C24 18.62298029392801 18.62298029392798 24.000000000000007 12 24.000000000000007 C5.377019706071999 24.000000000000007 0 18.62298029392801 0 12.000000000000004 C0 5.377019706072 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700550333799&quot;);"></path></g></svg>`;
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+
+export const plusIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="06eddcf758814960bcea07c9c5c7ce4b" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;><g><defs> </defs> <rect display="none" fill="#FFA400" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <rect id="_x3C_Slice_x3E__126_" display="none" fill="none" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <polygon fill-rule="evenodd" clip-rule="evenodd" points="14,10 14,0 10,0 10,10 0,10 0,14 10,14 10,24 14,24 14,14 24,14 24,10 " style="fill: rgb(255, 255, 255);"></polygon> </g></svg>`;
+    return (
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const closeIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element fixed-position interactive" data-id="684b564284db4e8888fa11eebb3dc8b8" style="overflow: visible; opacity: 1; mix-blend-mode: normal; width: 28px; height: 28px"><g transform=""><use xlink:href="#path-16927291915041424" filter="url(#filter-16927291915101427)"></use><path d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);"></path></g><defs><path id="path-16927291915041424" d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z"></path><filter height="116.66666319444516%" id="filter-16927291915101427" width="116.66666666666667%" x="-8.333333333333332%" y="-8.333331597222585%"><feFlood flood-opacity="0" result="backgroundFix"></feFlood><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix><feOffset dx="0" dy="0"></feOffset><feGaussianBlur stdDeviation="1.1666666666666665"></feGaussianBlur><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"></feColorMatrix><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1"></feBlend></filter></defs></svg>`;
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const pasteIcon = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element" data-id="df47e532c6eb4b608d7559b5f9a4a0a8"><g transform="translate(0, 0) rotate(0)"><path d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></g><defs><path id="path-16927294668254771" d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></defs></svg>`;
+    return (
+        <div className="Scan_input_icon_svg" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const copy = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="222e8df40dad4212bc42e2b8efa83fd2" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    return (
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const share = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="3c622e0f230641a5b25f16531535677d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    return (
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const arrowLeft = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="8c04bbe7ff1c40c99338e907c691102d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
+    return (
+        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const arrowRight = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="c1a1bae0abe4453f83674d3da4669950" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
+    return (
+        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const send = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="06eddcf758814960bcea07c9c5c7ce4b" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><polygon points="2,21 23,12 2,3 2,10 17,12 2,14" style="fill: rgb(255, 255, 255);"></polygon></g></svg>`;
+    return (
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const arrow = () => {
+    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element interactive" data-id="146af6c51fef43f0ab5ae4021b59035e" stroke-linecap="null" stroke-linejoin="null" style=""><g><path xmlns:default="http://www.w3.org/2000/svg" id="chevron-right" d="M17.4,11.99c0-0.18-0.07-0.35-0.2-0.47L9.48,3.8C9.23,3.55,8.82,3.54,8.56,3.78  C8.55,3.79,8.54,3.8,8.54,3.8L6.81,5.53C6.55,5.77,6.54,6.18,6.78,6.44C6.79,6.45,6.8,6.46,6.81,6.47l5.53,5.53l-5.53,5.53  c-0.26,0.25-0.27,0.66-0.02,0.92c0.01,0.01,0.01,0.01,0.02,0.02l1.73,1.73c0.25,0.26,0.66,0.27,0.92,0.02  c0.01-0.01,0.01-0.01,0.02-0.02l7.73-7.73C17.33,12.34,17.4,12.17,17.4,11.99z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    return (
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
 

@@ -90,6 +90,9 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
               <button className="Header_logo_2" onClick={() => navigate("/home")}>
                 {Icons.Logo()}
               </button>
+              <div onClick={() => { navigate("/home") }} className="Header_menu">
+                {Icons.closeIcon()}
+              </div>
             </React.Fragment>
           ) : (
             <React.Fragment>

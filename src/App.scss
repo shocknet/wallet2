@@ -20,7 +20,7 @@ body{
 }
 
 .App{
-  width: 94%;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   font-size: 1.6rem;
@@ -43,9 +43,11 @@ input:focus-visible {
 @import "./Pages/NodeUp/NodeUp.scss";
 @import "./Pages/Scan/Scan.scss";
 @import "./Pages/Receive/Receive.scss";
+@import "./Pages/Send/Send.scss";
 
 @import "./Containers/Header/Header.scss";
 @import "./Containers/Footer/Footer.scss";
 
-@import "./Components/SwItem/SwItem.scss";
 @import "./Components/Dropdowns/SourceSortDropdown/SourceSortDropdown.scss";
+@import "./Components/Dropdowns/SpendFromDropdown/SpendFromDropdown.scss";
+@import "./Components/SwItem/SwItem.scss";

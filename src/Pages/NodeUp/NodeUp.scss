@@ -1,6 +1,8 @@
 .NodeUp{
   padding-bottom: 30px;
   font-family: Montserrat;
+  width: 94%;
+  margin-inline: auto;
 
   &__no-found{
     display: block;
@@ -29,7 +31,7 @@
 
   &_manual{
     position: absolute;
-    width: 100%;
+    width: 94%;
     bottom: 60px;
   }
 
@@ -53,7 +55,7 @@
     color: white;
     font-size: 100%;
     padding: 10px;
-    width: 60vw;
+    width: 100%;
     transition-duration: 400ms;
   }
   

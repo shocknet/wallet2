@@ -5,7 +5,7 @@ import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { ReactQrCode } from '@devmehq/react-qr-code';
 
 import { PageProps } from "../../globalTypes";
-import { AddSourceModal } from "../../Components/Modals/AddSourceModal";
+import { Modal } from "../../Components/Modals/Modal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
 
 //It import modal component
@@ -16,6 +16,7 @@ import * as icons from "../../Assets/SvgIconLibrary";
 
 import { nostr } from '../../Api'
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
+import { questionMark } from '../../Assets/SvgIconLibrary';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -23,53 +24,80 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     This is Dumy data for display in Pay To box.
     It include data id(int), Label(string), additional field data(pasteField)(string) and icon id(int).
   */
-  const [payToLists, setpayToLists] = useState<Array<any>>([{
-    id: 1,
-    label: 'biscuitsniffer69@zbd.gg',
-    pasteField: "",
-    icon: 2,
-  } as PayTo,
-  {
-    id: 4,
-    label: "My Home Node",
-    pasteField: "33q66w6...",
-    icon: 3,
-  } as PayTo,
-  {
-    id: 3,
-    label: "Uncle Jim's Node",
-    pasteField: "21mz66...",
-    icon: 1,
-  } as PayTo]);
+  const [payToLists, setpayToLists] = useState<Array<any>>([
+    {
+      id: 1,
+      label: 'My Node',
+      pasteField: "",
+      icon: 1,
+    } as PayTo,
+    {
+      id: 2,
+      label: "Uncle Jim's Node",
+      pasteField: "33q66w6...",
+      icon: 2,
+    } as PayTo,
+    {
+      id: 3,
+      label: "lightning.video",
+      pasteField: "21mz66...",
+      icon: 3,
+    } as PayTo,
+    {
+      id: 4,
+      label: "zbd.gg",
+      pasteField: "21mz66...",
+      icon: 4,
+    } as PayTo,
+    {
+      id: 5,
+      label: "stacker.news",
+      pasteField: "21mz66...",
+      icon: 5,
+    } as PayTo
+]);
 
   /*
     This is Dumy data for display in Send From box
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
-  const [sendFromLists, setSendFromLists] = useState<Array<any>>([{
-    id: 1,
-    pasteField: 'biscuitsniffer69@zbd.gg',
-    balance: 21212,
-    icon: '🔓',
-  } as SendFrom,
-  {
-    id: 2,
-    pasteField: 'My Home Node (33q66w6...)',
-    balance: 10,
-    icon: '🏠',
-  } as SendFrom,
-  {
-    id: 3,
-    pasteField: "Uncle Jim's Node (21mz66...)",
-    balance: 615,
-    icon: '🫡',
-  } as SendFrom,
-  {
-    id: 4,
-    pasteField: "Uncle Jim's Node (21mz66...)",
-    balance: 3200,
-    icon: '🫡',
-  } as SendFrom]);
+  const [sendFromLists, setSendFromLists] = useState<Array<any>>([
+    {
+      id: 5,
+      label: "stacker.news",
+      pasteField: "21mz66...",
+      icon: 5,
+      balance: "615",
+    } as SendFrom,
+    {
+      id: 4,
+      label: "zbd.gg",
+      pasteField: "21mz66...",
+      icon: 4,
+      balance: "420,000",
+    } as SendFrom,
+    {
+      id: 3,
+      label: "lightning.video",
+      pasteField: "21mz66...",
+      icon: 3,
+      balance: "1,000,000",
+    } as SendFrom,
+    {
+      id: 2,
+      label: "Uncle Jim's Node",
+      pasteField: "33q66w6...",
+      icon: 2,
+      balance: "2,100,000",
+    } as SendFrom,
+    {
+      id: 1,
+      label: 'My Node',
+      pasteField: "",
+      icon: 1,
+      balance: "10,000,000",
+    } as SendFrom,
+  ]);
 
   //Interface for Dumy data for display in Pay To bo
   interface PayTo {
@@ -82,16 +110,17 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   //Interface for Dumy data for display in Send From box
   interface SendFrom {
     id?: number;
+    label?: string;
     pasteField?: string;
-    icon?: string;
-    balance?: number;
+    icon?: number;
+    balance?: string;
   }
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optionalIcon, setOptionalIcon] = useState<string>("");
 
-  const [modalType, setModalType] = useState<string>("");
+  const [modalContent, setModalContent] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
 
   /*
@@ -125,11 +154,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const { isShown, toggle } = UseModal();
 
-  const AddSource_Modal = () => {
-    setModalType("addSource");
-    toggle();
-  }
-
   const PaytoSortLists = () => {
     return ["TrustLevel", "Label"];
   };
@@ -161,13 +185,39 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     }
   };
 
+  const AddSource_Modal = () => {
+    setModalContent("addSource");
+    toggle();
+  };
+
   const EditSource_Modal = (key: number) => {
     setEditSourceId(key);
     setSourcePasteField(payToLists[key].pasteField);
     setOptionalIcon(payToLists[key].icon == 1 ? "It's my node." : (payToLists[key].icon == 2 ? "Very well." : "A little."));
     setSourceLabel(payToLists[key].label);
-    setModalType("editSource");
+    setModalContent("editSource");
     toggle();
+  };
+
+  const Notify_Modal = () => {
+    setModalContent("notify");
+    toggle();
+  };
+
+  const switchContent = (value: string) => {
+    switch (value) {
+      case 'addSource':
+        return contentAddContent
+
+      case 'editSource':
+        return contentEditContent
+
+      case 'notify':
+        return notifyContent
+        
+      default:
+        return notifyContent
+    }
   }
 
   const AddSource = () => {
@@ -182,7 +232,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
-  }
+  };
 
   const Edit_Source = () => {
     let payToSources = payToLists;
@@ -195,7 +245,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
-  }
+  };
 
   const Delete_Source = () => {
     let payToSources = payToLists;
@@ -206,36 +256,58 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
+  };
+
+  const arrangeIcon = (value?: number) => {
+    switch (value) {
+      case 1:
+        return icons.mynode()
+
+      case 2:
+        return icons.uncle()
+
+      case 3:
+        return icons.lightning()
+
+      case 4:
+        return icons.zbd()
+
+      case 5:
+        return icons.stacker()
+          
+      default:
+        return icons.zbd()
+    }
   }
 
-  const contentAddSource = <React.Fragment>
+  const contentAddContent = <React.Fragment>
+    <div className='Sources_modal_header'>Add Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
-        <div className="Sources_modal_icon">🔓</div>
-        <div className="Sources_modal_input">A little.</div>
+        <div className="Sources_modal_input">
+          <p>🔓</p>
+          A little.
+        </div>
       </div>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
-        <div className="Sources_modal_icon">🫡</div>
-        <div className="Sources_modal_input">Very well.</div>
+        <div className="Sources_modal_input">
+          <p>🫡</p>
+          Very well.
+        </div>
       </div>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
-        <div className="Sources_modal_icon">🏠</div>
-        <div className="Sources_modal_input">It's my node.</div>
+        <div className="Sources_modal_input">
+          <p>🏠</p>
+          It's my node.
+        </div>
       </div>
     </div>
-    <div className='Sources_modal_code_discription'>Paste an LNURL or Lightning.Pub</div>
     <div className='Sources_modal_code'>
       <input
-        placeholder="Label..."
+        placeholder="Paste an LNURL, Lightning Address, or LP"
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
-      />
-    </div>
-    <div className='Sources_modal_optional_labal'>
-      <input
-        value={sourceLabel} placeholder="Optional label..."
-        onChange={(e) => setSourceLabel(e.target.value)}
       />
     </div>
     <div className="Sources_modal_add_btn">
@@ -244,7 +316,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   </React.Fragment>;
 
-  const contentEditSource = <React.Fragment>
+  const contentEditContent = <React.Fragment>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
       <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
@@ -280,111 +352,117 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   </React.Fragment>;
 
+  const notifyContent = <React.Fragment>
+    <div className="Sources_notify">
+      <div className="Sources_notify_title">What is this?</div>
+      <div className="Sources_notify_textBox">
+        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices<br/><br/>
+        If using multiple sources, you may set an order that is used to opportunistically move balances provide liquidity, ot second-attempt network failures.
+      </div>
+      <button className="Sources_notify_button" onClick={toggle}>OK</button>
+    </div>
+  </React.Fragment>;
+
   return (
     <div className="Sources">
       {contextHolder}
       <div className="Sources_title">Manage Sources</div>
-      <div className="Sources_pay_content">
-        <div className="Sources_content_title">Pay To</div>
-        <div className="Sources_content_discription">Order of sources from which invoices are generated:</div>
-        <div className="Sources_list_box">
-          {showDropDown === "PayTo" && (
-            <SourceSortDropdown
-              cities={PaytoSortLists()}
-              showDropDown={false}
-              toggleDropDown={(): void => toggleDropDown('PayTo')}
-              citySelection={PaytoSortSetting}
-            />
-          )}
-          <ReactSortable list={payToLists} setList={setpayToLists}>
-            {payToLists.map((item: PayTo, key) => {
-              return (
-                <div className="Sources_item" key={key}>
-                  <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{item.icon == 1 ? "🏠" : (item.icon == 2 ? "🫡" : "🔓")}</div>
-                    <div className="Sources_item_input">
-                      <div>{`${item.label} ${item.pasteField ? `(${item.pasteField})` : ""}`}</div>
+      <div>
+        <div className="Sources_pay_content">
+          <div className="Sources_content_title">
+            Pay To
+            <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
+          </div>
+          <div className="Sources_list_box">
+            {showDropDown === "PayTo" && (
+              <SourceSortDropdown
+                cities={PaytoSortLists()}
+                showDropDown={false}
+                toggleDropDown={(): void => toggleDropDown('PayTo')}
+                citySelection={PaytoSortSetting}
+              />
+            )}
+            <ReactSortable list={payToLists} setList={setpayToLists}>
+              {payToLists.map((item: PayTo, key) => {
+                return (
+                  <div className="Sources_item" key={key}>
+                    <div className="Sources_item_left">
+                      <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                      <div className="Sources_item_input">
+                        <div>{item.label}</div>
+                      </div>
+                    </div>
+                    <div className="Sources_item_right">
+                      <button className="Sources_item_close" onClick={() => { EditSource_Modal(key) }}>
+                        {icons.EditSource()}
+                      </button>
+                      <button
+                        className="Sources_item_menu"
+                        onClick={(): void => toggleDropDown("PayTo")}
+                        onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
+                          dismissHandler(e)
+                        }
+                      >
+                        {icons.SourceItemMenu()}
+                      </button>
                     </div>
                   </div>
-                  <div className="Sources_item_right">
-                    <button className="Sources_item_close" onClick={() => { EditSource_Modal(key) }}>
-                      {icons.EditSource()}
-                    </button>
-                    <button
-                      className="Sources_item_menu"
-                      onClick={(): void => toggleDropDown("PayTo")}
-                      onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                        dismissHandler(e)
-                      }
-                    >
-                      {icons.SourceItemMenu()}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </ReactSortable>
+                )
+              })}
+            </ReactSortable>
+          </div>
         </div>
-      </div>
-      <div className="Sources_receive_content">
-        <div className="Sources_content_title">Spend From</div>
-        <div className="Sources_content_discription">Order of sources from which invoices are paid:</div>
-        <div className="Sources_list_box">
-          {showDropDown === "SpendFrom" && (
-            <SourceSortDropdown
-              cities={SpendFromSortLists()}
-              showDropDown={false}
-              toggleDropDown={(): void => toggleDropDown("SpendFrom")}
-              citySelection={SpendFromSortSetting}
-            />
-          )}
-          <ReactSortable list={sendFromLists} setList={setSendFromLists}>
-            {sendFromLists.map((item: SendFrom, key) => {
-              return (
-                <div className="Sources_item" key={key}>
-                  <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{item.icon}</div>
-                    <div className="Sources_item_input">
-                      <div>{item.pasteField}</div>
+        <div className="Sources_receive_content">
+          <div className="Sources_content_title">
+            Spend From
+            <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
+          </div>
+          <div className="Sources_list_box">
+            {showDropDown === "SpendFrom" && (
+              <SourceSortDropdown
+                cities={SpendFromSortLists()}
+                showDropDown={false}
+                toggleDropDown={(): void => toggleDropDown("SpendFrom")}
+                citySelection={SpendFromSortSetting}
+              />
+            )}
+            <ReactSortable list={sendFromLists} setList={setSendFromLists}>
+              {sendFromLists.map((item: SendFrom, key) => {
+                return (
+                  <div className="Sources_item" key={key}>
+                    <div className="Sources_item_left">
+                      <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                      <div className="Sources_item_input">
+                        <div>{item.label}</div>
+                      </div>
+                    </div>
+                    <div className="Sources_item_balance">{item.balance}</div>
+                    <div className="Sources_item_right">
+                      <button className="Sources_item_close">
+                        {/* <img src={EditSource} width="15px" alt="" /> */}
+                        {icons.EditSource()}
+                      </button>
+                      <button
+                        className="Sources_item_menu"
+                        onClick={(): void => toggleDropDown("SpendFrom")}
+                        onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
+                          dismissHandler(e)
+                        }
+                      >
+                        {icons.SourceItemMenu()}
+                      </button>
                     </div>
                   </div>
-                  <div className="Sources_item_right">
-                    <div className="Sources_item_balance">{item.balance}</div>
-                    <button className="Sources_item_close">
-                      {/* <img src={EditSource} width="15px" alt="" /> */}
-                      {icons.EditSource()}
-                    </button>
-                    <button
-                      className="Sources_item_menu"
-                      onClick={(): void => toggleDropDown("SpendFrom")}
-                      onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                        dismissHandler(e)
-                      }
-                    >
-                      {icons.SourceItemMenu()}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </ReactSortable>
+                )
+              })}
+            </ReactSortable>
+          </div>
         </div>
       </div>
       <div className="Sources_add_btn">
-        <button onClick={AddSource_Modal}>Add</button>
+        <button onClick={AddSource_Modal}>{icons.plusIcon()}ADD</button>
       </div>
-      <AddSourceModal isShown={isShown} hide={toggle} modalContent={modalType === "addSource" ? contentAddSource : contentEditSource} headerText={modalType === "addSource" ? "Add Source" : "Edit Source"} />
-      <div>
-        <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="product name" />
-        <input type="number" value={productPrice} onChange={(e) => setProductPrice(e.target.valueAsNumber)} placeholder="product price sats" />
-        <button onClick={async () => {
-          const res = await nostr.AddProduct({ name: productName, price_sats: productPrice })
-          if (res.status !== 'OK') {
-            throw new Error(res.reason)
-          }
-          setProductId(res.id)
-        }}
-        >CREATE PRODUCT</button>
+      {/* <div>
         {productId && <div>
           <p>The product id is: {productId}</p>
           <ReactQrCode
@@ -394,7 +472,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             renderAs="svg"
           />
         </div>}
-      </div>
+      </div> */}
+      <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} />
     </div>
   )
 }
