@@ -47,18 +47,28 @@
     font-size: 19px;
     font-weight: bold;
 
+    &_container {
+      display: inline-flex;
+      border-bottom: 1px solid #a3a3a3;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      padding-bottom: 1px;
+    }
+
     &_input{
       font-family: Montserrat;
       font-size: 27px;
       text-align: end;
       margin-left: 5px;
       width: 100%;
-      background-color: #16191c;
+      background-color: transparent;
       color: #a3a3a3;
-      border-bottom: 1px solid #a3a3a3;
-      border-top: 0;
-      border-left: 0;
-      border-right: 0;
+      border: 0;
+    }
+
+    &_input:focus{
+      outline: none;
     }
     
     & button{
@@ -83,7 +93,7 @@
       font-size: 15px;
       text-align: start;
       width: 100%;
-      background-color: #16191c;
+      background-color: transparent;
       color: #2aabe1;
       padding-block: 8px;
       padding-left: 10px;

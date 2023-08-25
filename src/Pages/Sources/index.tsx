@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
-import { ReactQrCode } from '@devmehq/react-qr-code';
-
 import { PageProps } from "../../globalTypes";
 import { Modal } from "../../Components/Modals/Modal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
@@ -13,9 +11,6 @@ import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
 import * as icons from "../../Assets/SvgIconLibrary";
-
-import { nostr } from '../../Api'
-import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
 import { questionMark } from '../../Assets/SvgIconLibrary';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
@@ -363,6 +358,51 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     </div>
   </React.Fragment>;
 
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const handlePayTouchMove = (event:any) => {
+    if (event.touches.length === 1) {
+      const { clientY } = event.touches[0];
+      const deltaY = clientY - scrollPosition;
+
+      // Adjust the scroll position of the specific div element based on touch movement
+      const scrollableDiv = document.getElementById('payList');
+
+      // Update the scroll position
+      setScrollPosition(clientY);
+
+      if (scrollableDiv) {
+        scrollableDiv.scrollTop -= deltaY;
+      }
+    }
+  };
+
+  const handleFromTouchMove = (event:any) => {
+    if (event.touches.length === 1) {
+      const { clientY } = event.touches[0];
+      const deltaY = clientY - scrollPosition;
+
+      // Adjust the scroll position of the specific div element based on touch movement
+      const scrollableDiv = document.getElementById('fromList');
+
+      if (scrollableDiv) {
+        scrollableDiv.scrollTop -= deltaY;
+      }
+
+      // Update the scroll position
+      setScrollPosition(clientY);
+    }
+  };
+
+  const setPosition = (event:any) => {
+    const { clientY } = event.touches[0];
+    setScrollPosition(clientY);
+  }
+
+  useEffect(() => {
+    window.addEventListener("touchstart", setPosition);
+  }, []);
+
   return (
     <div className="Sources">
       {contextHolder}
@@ -373,7 +413,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             Pay To
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
-          <div className="Sources_list_box">
+          <div id='payList' className="Sources_list_box">
             {showDropDown === "PayTo" && (
               <SourceSortDropdown
                 cities={PaytoSortLists()}
@@ -382,23 +422,23 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                 citySelection={PaytoSortSetting}
               />
             )}
-            <ReactSortable list={payToLists} setList={setpayToLists}>
+            <ReactSortable filter={".Sources_item_left, .Sources_item_close"} list={payToLists} setList={setpayToLists}>
               {payToLists.map((item: PayTo, key) => {
                 return (
                   <div className="Sources_item" key={key}>
-                    <div className="Sources_item_left">
+                    <div className="Sources_item_left" onTouchMove={handlePayTouchMove}>
                       <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
                       <div className="Sources_item_input">
                         <div>{item.label}</div>
                       </div>
                     </div>
                     <div className="Sources_item_right">
-                      <button className="Sources_item_close" onClick={() => { EditSource_Modal(key) }}>
+                      <button className="Sources_item_close" onTouchStart={() => { EditSource_Modal(key) }} onClick={() => { EditSource_Modal(key) }}>
                         {icons.EditSource()}
                       </button>
                       <button
                         className="Sources_item_menu"
-                        onClick={(): void => toggleDropDown("PayTo")}
+                        // onClick={(): void => toggleDropDown("PayTo")}
                         onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
                           dismissHandler(e)
                         }
@@ -417,7 +457,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             Spend From
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
-          <div className="Sources_list_box">
+          <div id='fromList' className="Sources_list_box">
             {showDropDown === "SpendFrom" && (
               <SourceSortDropdown
                 cities={SpendFromSortLists()}
@@ -426,17 +466,17 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                 citySelection={SpendFromSortSetting}
               />
             )}
-            <ReactSortable list={sendFromLists} setList={setSendFromLists}>
+            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={sendFromLists} setList={setSendFromLists}>
               {sendFromLists.map((item: SendFrom, key) => {
                 return (
                   <div className="Sources_item" key={key}>
-                    <div className="Sources_item_left">
+                    <div className="Sources_item_left" onTouchMove={handleFromTouchMove}>
                       <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
                       <div className="Sources_item_input">
                         <div>{item.label}</div>
                       </div>
                     </div>
-                    <div className="Sources_item_balance">{item.balance}</div>
+                    <div className="Sources_item_balance" onTouchMove={handleFromTouchMove}>{item.balance}</div>
                     <div className="Sources_item_right">
                       <button className="Sources_item_close">
                         {/* <img src={EditSource} width="15px" alt="" /> */}

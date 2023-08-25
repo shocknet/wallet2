@@ -57,6 +57,14 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     setRotation( rotation == 0 ? 90 : 0 )
   }
 
+  const selectOption = (id?: number) => {
+    const selected = values.filter((e) => e.id === id );
+    setValue(selected[0]);
+    const remainValues = values.filter((e) => e.id !== id );
+    setAllValue(remainValues);
+    dropdown();
+  }
+
   return (
     <>
       <div className={showDropDown ? 'spend_from' : 'spend_from active'}>
@@ -73,7 +81,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
           {allValue.map(
             (item: SendFrom, index: number) => {
               return (
-                <div className="spend_from_item" key={item.id}>
+                <div onClick={() => {selectOption(item.id)}} className="spend_from_item" key={item.id}>
                   <div className="spend_from_item_left">
                     <div className="spend_from_item_icon">{arrangeIcon(item.icon)}</div>
                     <div className="spend_from_item_input">
