@@ -12,6 +12,9 @@ import { UseModal } from "../../Hooks/UseModal";
 //It import svg icons library
 import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
+import { bech32 } from "bech32";
+import axios from 'axios';
+import cheerio from 'cheerio';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -24,31 +27,31 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       id: 1,
       label: 'My Node',
       pasteField: "",
-      icon: 1,
+      icon: "1",
     } as PayTo,
     {
       id: 2,
       label: "Uncle Jim's Node",
       pasteField: "33q66w6...",
-      icon: 2,
+      icon: "2",
     } as PayTo,
     {
       id: 3,
       label: "lightning.video",
       pasteField: "21mz66...",
-      icon: 3,
+      icon: "3",
     } as PayTo,
     {
       id: 4,
       label: "zbd.gg",
       pasteField: "21mz66...",
-      icon: 4,
+      icon: "4",
     } as PayTo,
     {
       id: 5,
       label: "stacker.news",
       pasteField: "21mz66...",
-      icon: 5,
+      icon: "5",
     } as PayTo
 ]);
 
@@ -61,35 +64,35 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       id: 5,
       label: "stacker.news",
       pasteField: "21mz66...",
-      icon: 5,
+      icon: "5",
       balance: "615",
     } as SendFrom,
     {
       id: 4,
       label: "zbd.gg",
       pasteField: "21mz66...",
-      icon: 4,
+      icon: "4",
       balance: "420,000",
     } as SendFrom,
     {
       id: 3,
       label: "lightning.video",
       pasteField: "21mz66...",
-      icon: 3,
+      icon: "3",
       balance: "1,000,000",
     } as SendFrom,
     {
       id: 2,
       label: "Uncle Jim's Node",
       pasteField: "33q66w6...",
-      icon: 2,
+      icon: "2",
       balance: "2,100,000",
     } as SendFrom,
     {
       id: 1,
       label: 'My Node',
       pasteField: "",
-      icon: 1,
+      icon: "1",
       balance: "10,000,000",
     } as SendFrom,
   ]);
@@ -99,7 +102,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     id?: number;
     label?: string;
     pasteField?: string;
-    icon?: number;
+    icon?: string;
   }
 
   //Interface for Dumy data for display in Send From box
@@ -107,13 +110,13 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     id?: number;
     label?: string;
     pasteField?: string;
-    icon?: number;
+    icon?: string;
     balance?: string;
   }
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
-  const [optionalIcon, setOptionalIcon] = useState<string>("");
+  const [optional, setOptional] = useState<string>("");
 
   const [modalContent, setModalContent] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
@@ -188,7 +191,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const EditSource_Modal = (key: number) => {
     setEditSourceId(key);
     setSourcePasteField(payToLists[key].pasteField);
-    setOptionalIcon(payToLists[key].icon == 1 ? "It's my node." : (payToLists[key].icon == 2 ? "Very well." : "A little."));
+    setOptional(payToLists[key].icon === 1 ? "It's my node." : (payToLists[key].icon === 2 ? "Very well." : "A little."));
     setSourceLabel(payToLists[key].label);
     setModalContent("editSource");
     toggle();
@@ -215,15 +218,20 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
-  const AddSource = () => {
-    if (!sourceLabel || !optionalIcon)
+  const AddSource = async () => {
+    if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
+    let { prefix: hrp, words: dataPart } = bech32.decode(sourcePasteField, 2000);
+    let sourceURL = bech32.fromWords(dataPart);
+    let resultLnurl = new URL(Buffer.from(sourceURL).toString());
+    const iconLink = await getFavicon(resultLnurl.host);
+    
     setpayToLists([...payToLists, {
       text: sourcePasteField,
-      icon: optionalIcon === "A little." ? 3 : (optionalIcon === "Very well." ? 2 : 1),
-      label: sourceLabel
-    } as PayTo])
-    setOptionalIcon("");
+      icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+      label: resultLnurl.hostname
+    } as PayTo]);
+    setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
@@ -231,12 +239,12 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const Edit_Source = () => {
     let payToSources = payToLists;
-    if (!sourceLabel || !optionalIcon)
+    if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    payToSources[editSourceId].icon = (optionalIcon == "A little." ? 3 : (optionalIcon == "Very well." ? 2 : 1));
+    payToSources[editSourceId].icon = (optional === "A little." ? 3 : (optional === "Very well." ? 2 : 1));
     payToSources[editSourceId].pasteField = sourcePasteField;
     payToSources[editSourceId].label = sourceLabel;
-    setOptionalIcon("");
+    setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
@@ -247,51 +255,71 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     payToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setpayToLists(payToSources);
-    setOptionalIcon("");
+    setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
   };
 
-  const arrangeIcon = (value?: number) => {
+  const arrangeIcon = (value?: string) => {
     switch (value) {
-      case 1:
+      case "1":
         return icons.mynode()
 
-      case 2:
+      case "2":
         return icons.uncle()
 
-      case 3:
+      case "3":
         return icons.lightning()
 
-      case 4:
+      case "4":
         return icons.zbd()
 
-      case 5:
+      case "5":
         return icons.stacker()
           
       default:
-        return icons.zbd()
+        if (!value?.includes("http")) {
+          value = "http://www.google.com/s2/favicons?domain="+value;
+        }
+        return <React.Fragment>
+          <img src = {value} width="33px"/>
+        </React.Fragment>
     }
   }
+
+  const getFavicon = async (url: string) => {
+    try {
+      const {
+        data: { icons }
+      } = await axios.get(`https://favicongrabber.com/api/grab/${url}`);
+      if (icons[0].src !== "") {
+        return icons[0].src;
+      } else {
+        return "nothing";
+      }
+    } catch (error) {
+      return "nothing";
+    }
+  };
 
   const contentAddContent = <React.Fragment>
     <div className='Sources_modal_header'>Add Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "A little." ? "active" : ""}`} onClick={() => setOptional("A little.")}>
         <div className="Sources_modal_input">
           <p>🔓</p>
           A little.
         </div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "Very well." ? "active" : ""}`} onClick={() => setOptional("Very well.")}>
         <div className="Sources_modal_input">
           <p>🫡</p>
           Very well.
         </div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "It's my node." ? "active" : ""}`} onClick={() => setOptional("It's my node.")}>
         <div className="Sources_modal_input">
           <p>🏠</p>
           It's my node.
@@ -312,35 +340,29 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   </React.Fragment>;
 
   const contentEditContent = <React.Fragment>
+    <div className='Sources_modal_header'>Edit Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "A little." ? "active" : ""}`} onClick={() => setOptionalIcon("A little.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "A little." ? "active" : ""}`} onClick={() => setOptional("A little.")}>
         <div className="Sources_modal_icon">🔓</div>
         <div className="Sources_modal_input">A little.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "Very well." ? "active" : ""}`} onClick={() => setOptionalIcon("Very well.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "Very well." ? "active" : ""}`} onClick={() => setOptional("Very well.")}>
         <div className="Sources_modal_icon">🫡</div>
         <div className="Sources_modal_input">Very well.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optionalIcon == "It's my node." ? "active" : ""}`} onClick={() => setOptionalIcon("It's my node.")}>
+      <div className={`Sources_modal_select_state_column ${optional === "It's my node." ? "active" : ""}`} onClick={() => setOptional("It's my node.")}>
         <div className="Sources_modal_icon">🏠</div>
         <div className="Sources_modal_input">It's my node.</div>
       </div>
     </div>
     <div className='Sources_modal_code'>
-      <input
-        placeholder="Label..."
-        value={sourcePasteField}
-        onChange={(e) => setSourcePasteField(e.target.value)}
-      />
-    </div>
-    <div className='Sources_modal_optional_labal'>
-      <input
+    <input
         value={sourceLabel} placeholder="Optional label..."
         onChange={(e) => setSourceLabel(e.target.value)}
       />
     </div>
-    <div className="Sources_modal_btn_grp">
+    <div className="Sources_modal_add_btn">
       <button onClick={Delete_Source}>Delete</button>
       <button onClick={Edit_Source}>Edit</button>
     </div>
