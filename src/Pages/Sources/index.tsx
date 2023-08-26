@@ -373,8 +373,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     <div className="Sources_notify">
       <div className="Sources_notify_title">What is this?</div>
       <div className="Sources_notify_textBox">
-        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices<br/><br/>
-        If using multiple sources, you may set an order that is used to opportunistically move balances provide liquidity, ot second-attempt network failures.
+        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices.<br/><br/>
+        If using multiple sources, you may set an order that is used to move balances opportunistically, provide liquidity, or second-attempt network failures.
       </div>
       <button className="Sources_notify_button" onClick={toggle}>OK</button>
     </div>
