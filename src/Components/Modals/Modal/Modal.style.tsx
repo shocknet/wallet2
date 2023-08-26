@@ -5,6 +5,8 @@ export const Wrapper = styled.div`
   width: 100% !important;
   position: fixed;
   text-align: center;
+  height: 0;
+  overflow: show;
   top: 20vh;
   left: auto;
   z-index: 700;

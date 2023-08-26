@@ -23,13 +23,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   const navigate: NavigateFunction = useNavigate();
 
   const [itemInput, setItemInput] = useState("");
-  const [result, setResult] = useState("no result");
   const [error, setError] = useState("");
-  const [invoice, setInvoice] = useState({
-    min:0,
-    max:0,
-    desc:'',
-  });
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
 
@@ -87,20 +81,26 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
+  const requestTag = {
+    lnurlPay: "payRequest",
+    lnurlWithdraw: "withdrawRequest",
+    lnurlAuth: "",
+    lnurlChannel: "channelRequest",
+  }
+
   const handleSubmit = async (qrcode: string) => {
     let { prefix: hrp, words: dataPart } = bech32.decode(qrcode, 2000)
     let requestByteArray = bech32.fromWords(dataPart)
 
-    let resultLnurl = Buffer.from(requestByteArray).toString()
+    let resultLnurl = Buffer.from(requestByteArray).toString();
+    console.log(resultLnurl);
+    
     fetch(resultLnurl).then((resInvoice: any) => {
       return resInvoice.json()
     }).then(invoiceData => {
-      const metadata = JSON.parse(invoiceData.metadata);
-      setInvoice({
-        min: invoiceData.minSendable,
-        max: invoiceData.maxSendable,
-        desc: metadata[1][1],
-      });
+      console.log(invoiceData.tag, "metaData");
+
+      
     }).catch(error => {
       // Handle any errors
       console.error(error);
@@ -144,17 +144,6 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     </div>;
   }
 
-  if (invoice.min != 0) {
-    return <div className="Scan_error">
-      <div className="Scan_error_img">
-      Min: {invoice.min}<br/>
-      Max: {invoice.max}<br/>
-      Description: {invoice.desc}<br/>
-      </div>
-      <div className="Scan_error_text">{error}</div>
-    </div>;
-  }
-
   if (payOperation) {
     let p
     switch (payOperation.type) {
@@ -186,7 +175,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
             if (!!result) {
               console.log(result.text);
               handleSubmit(result.text);
-              // navigate("/home");
+              navigate("/home");
               // return;
             }
 
