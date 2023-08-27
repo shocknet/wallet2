@@ -78,7 +78,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
           <div className="spend_from_item_balance">{value.balance}</div>
         </div>
         <div className="spend_from_dropdown" style={{opacity: display, transition: "0.3s", overflow: "hidden"}}>
-          {allValue.map(
+          {display === 1 && allValue.map(
             (item: SendFrom, index: number) => {
               return (
                 <div onClick={() => {selectOption(item.id)}} className="spend_from_item" key={item.id}>

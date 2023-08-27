@@ -25,7 +25,7 @@ export const Modal: FunctionComponent<ModalProps> = ({
   const modal = (
     <React.Fragment>
       <Backdrop onClick={hide} onTouchStart={hide}/>
-      <Wrapper onClick={hide}>
+      <Wrapper>
         <StyledModal>
           <Content>{modalContent}</Content>
         </StyledModal>
