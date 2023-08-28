@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { Layout } from "./Layout";
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import { Home } from "./Pages/Home";
@@ -17,9 +17,32 @@ import { initialState, reducer } from "./globalState";
 import './App.scss';
 
 import { StateInterface } from './globalTypes';
-
-function App(): JSX.Element {
+export const App: React.FC = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState())
+  let installPromptFlag = true;
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (event)  => {
+      event.preventDefault();
+      window.addEventListener("click", () => {
+        if(installPromptFlag)
+        {
+          installPWA(event);
+          installPromptFlag = false;
+        }
+      });
+    });
+  }, []);
+
+  const installPWA = async (event: any) => {
+    if (event !== null) {
+      try {
+        const { userChoice } = await event.prompt();
+      } catch (error) {
+        console.log(installPromptFlag);
+        
+      }
+    }
+  }
 
   return (
     <Ctx.Provider value={state}>

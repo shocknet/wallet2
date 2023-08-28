@@ -14,7 +14,6 @@ import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
-import cheerio from 'cheerio';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -59,7 +58,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     This is Dumy data for display in Send From box
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
-  const [sendFromLists, setSendFromLists] = useState<Array<any>>([
+  const [spendFromLists, setSpendFromLists] = useState<Array<any>>([
     {
       id: 5,
       label: "stacker.news",
@@ -131,9 +130,9 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editSourceId, setEditSourceId] = useState<number>(0);
 
-  const [productName, setProductName] = useState("")
-  const [productPrice, setProductPrice] = useState(0)
-  const [productId, setProductId] = useState("")
+  // const [productName, setProductName] = useState("")
+  // const [productPrice, setProductPrice] = useState(0)
+  // const [productId, setProductId] = useState("")
 
   /*
     This is part for show notification.
@@ -188,12 +187,19 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     toggle();
   };
 
-  const EditSource_Modal = (key: number) => {
-    setEditSourceId(key);
-    setSourcePasteField(payToLists[key].pasteField);
-    setOptional(payToLists[key].icon === 1 ? "It's my node." : (payToLists[key].icon === 2 ? "Very well." : "A little."));
+  const EditSourcePay_Modal = (key: number) => {
+    setEditSourceId(key);    
+    setOptional(payToLists[key].pasteField);
     setSourceLabel(payToLists[key].label);
-    setModalContent("editSource");
+    setModalContent("editSourcepay");
+    toggle();
+  };
+
+  const EditSourceSpend_Modal = (key: number) => {
+    setEditSourceId(key);    
+    setOptional(spendFromLists[key].pasteField);
+    setSourceLabel(spendFromLists[key].label);
+    setModalContent("editSourcespend");
     toggle();
   };
 
@@ -207,9 +213,12 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       case 'addSource':
         return contentAddContent
 
-      case 'editSource':
+      case 'editSourcepay':
         return contentEditContent
 
+      case 'editSourcespend':
+        return contentEditContent
+  
       case 'notify':
         return notifyContent
         
@@ -217,44 +226,87 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         return notifyContent
     }
   }
+  
+  const requestTag = {
+    lnurlPay: "lnurl-pay",
+    lnurlWithdraw: "lnurl-withdraw",
+  }
 
   const AddSource = async () => {
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
-    let { prefix: hrp, words: dataPart } = bech32.decode(sourcePasteField, 2000);
+    let { words: dataPart } = bech32.decode(sourcePasteField, 2000);
     let sourceURL = bech32.fromWords(dataPart);
-    let resultLnurl = new URL(Buffer.from(sourceURL).toString());
+    const lnurlLink = Buffer.from(sourceURL).toString()
+    let resultLnurl = new URL(lnurlLink);
     const iconLink = await getFavicon(resultLnurl.host);
+    if (lnurlLink.includes(requestTag.lnurlPay)) {
+      setpayToLists([...payToLists, {
+        id: payToLists.length + 1,
+        pasteField: optional,
+        icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+        label: resultLnurl.hostname
+      } as PayTo]);
+    }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+      setSpendFromLists([...spendFromLists, {
+        id: payToLists.length + 1,
+        label: resultLnurl.hostname,
+        pasteField: optional,
+        icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+        balance: "0",
+      } as SendFrom]);
+    }else {
+      return openNotification("top", "Error", "Please Write LNURL Correctly!");
+    }
     
-    setpayToLists([...payToLists, {
-      text: sourcePasteField,
-      icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
-      label: resultLnurl.hostname
-    } as PayTo]);
     setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
   };
 
-  const Edit_Source = () => {
+  const Edit_Pay_Source = () => {
     let payToSources = payToLists;
     if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    payToSources[editSourceId].icon = (optional === "A little." ? 3 : (optional === "Very well." ? 2 : 1));
-    payToSources[editSourceId].pasteField = sourcePasteField;
+    payToSources[editSourceId].pasteField = optional;
     payToSources[editSourceId].label = sourceLabel;
+    setpayToLists(payToSources);
     setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
     toggle();
   };
 
-  const Delete_Source = () => {
+  const Edit_Spend_Source = () => {
+    let spendFromSources = spendFromLists;
+    if (!sourceLabel || !optional)
+      return openNotification("top", "Error", "Please Write Data Correctly!")
+    spendFromSources[editSourceId].pasteField = optional;
+    spendFromSources[editSourceId].label = sourceLabel;
+    setSpendFromLists(spendFromSources);
+    setOptional("");
+    setSourcePasteField("");
+    setSourceLabel("");
+    toggle();
+  };
+
+  const Delete_Pay_Source = () => {
     let payToSources = payToLists;
     payToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setpayToLists(payToSources);
+    setOptional("");
+    setSourcePasteField("");
+    setSourceLabel("");
+    toggle();
+  };
+
+  const Delete_Spend_Source = () => {
+    let SpendToSources = spendFromLists;
+    SpendToSources.splice(editSourceId, 1);
+    setEditSourceId(0);
+    setSpendFromLists(SpendToSources);
     setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
@@ -283,7 +335,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px"/>
+          <img src = {value} width="33px" alt=''/>
         </React.Fragment>
     }
   }
@@ -363,8 +415,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       />
     </div>
     <div className="Sources_modal_add_btn">
-      <button onClick={Delete_Source}>Delete</button>
-      <button onClick={Edit_Source}>Edit</button>
+      <button onClick={modalContent === "editSourcepay" ? Delete_Pay_Source : Delete_Spend_Source}>Delete</button>
+      <button onClick={modalContent === "editSourcepay" ? Edit_Pay_Source : Edit_Spend_Source}>Edit</button>
     </div>
 
   </React.Fragment>;
@@ -455,7 +507,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                       </div>
                     </div>
                     <div className="Sources_item_right">
-                      <button className="Sources_item_close" onTouchStart={() => { EditSource_Modal(key) }} onClick={() => { EditSource_Modal(key) }}>
+                      <button className="Sources_item_close" onTouchStart={() => { EditSourcePay_Modal(key) }} onClick={() => { EditSourcePay_Modal(key) }}>
                         {icons.EditSource()}
                       </button>
                       <button
@@ -488,8 +540,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                 citySelection={SpendFromSortSetting}
               />
             )}
-            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={sendFromLists} setList={setSendFromLists}>
-              {sendFromLists.map((item: SendFrom, key) => {
+            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists} setList={setSpendFromLists}>
+              {spendFromLists.map((item: SendFrom, key) => {
                 return (
                   <div className="Sources_item" key={key}>
                     <div className="Sources_item_left" onTouchMove={handleFromTouchMove}>
@@ -500,7 +552,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                     </div>
                     <div className="Sources_item_balance" onTouchMove={handleFromTouchMove}>{item.balance}</div>
                     <div className="Sources_item_right">
-                      <button className="Sources_item_close">
+                      <button className="Sources_item_close" onTouchStart={() => { EditSourceSpend_Modal(key) }} onClick={() => { EditSourceSpend_Modal(key) }}>
                         {/* <img src={EditSource} width="15px" alt="" /> */}
                         {icons.EditSource()}
                       </button>

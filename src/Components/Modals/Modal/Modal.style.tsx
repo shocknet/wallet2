@@ -5,7 +5,9 @@ export const Wrapper = styled.div`
   width: 100% !important;
   position: fixed;
   text-align: center;
+  max-width: 350px;
   height: 0;
+  margin-left: calc((100% - 350px)/2);
   overflow: show;
   top: 20vh;
   left: auto;
