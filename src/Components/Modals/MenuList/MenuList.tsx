@@ -14,7 +14,7 @@ export const Wrapper = styled.div`
 
 export const Backdrop = styled.div`
   font-family: Montserrat;
-  background-color: black;
+  background-color: #000000cc;
   opacity: 0.8 !important;
   position: fixed;
   width: 100%;
