@@ -170,7 +170,8 @@
   &_modal_code{
     
     & input {
-      color: #2aabe1;
+
+      color: #999999;
       border: 1px solid #2aabe1;
       font-size: 14px;
       font-family: Montserrat;
@@ -184,7 +185,7 @@
 
       &::placeholder{
         font-family: Montserrat;
-        color: #2aabe1;
+        color: #999999;
       }
     }
   }
@@ -281,9 +282,8 @@
   }
 
   &_add_btn{
-    position: fixed;
-    bottom: 20px;
-    right: 30px;
+    float: right;
+    margin: 30px;
   }
 
   &_add_btn button{

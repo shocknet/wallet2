@@ -2,17 +2,19 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
   font-family: Montserrat;
-  width: 70% !important;
-  position: fixed;
+  width: 100% !important;
+  max-width: 1200px;
   top: 0;
-  right: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: fixed;
   z-index: 700;
   outline: 0;
 `;
 
 export const Backdrop = styled.div`
   font-family: Montserrat;
-  background-color: black;
+  background-color: #000000cc;
   opacity: 0.8 !important;
   position: fixed;
   width: 100%;
@@ -25,6 +27,7 @@ export const Backdrop = styled.div`
 export const StyledModal = styled.div`
   width: 250px;
   height: 300px;
+  top: 0;
   right: 0;
   border: 1px solid #29abe2;
   font-family: Montserrat;

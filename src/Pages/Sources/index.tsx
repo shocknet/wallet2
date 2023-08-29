@@ -235,29 +235,50 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const AddSource = async () => {
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
-    let { words: dataPart } = bech32.decode(sourcePasteField, 2000);
-    let sourceURL = bech32.fromWords(dataPart);
-    const lnurlLink = Buffer.from(sourceURL).toString()
-    let resultLnurl = new URL(lnurlLink);
-    const iconLink = await getFavicon(resultLnurl.host);
-    if (lnurlLink.includes(requestTag.lnurlPay)) {
-      setpayToLists([...payToLists, {
-        id: payToLists.length + 1,
-        pasteField: optional,
-        icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
-        label: resultLnurl.hostname
-      } as PayTo]);
-    }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
-      setSpendFromLists([...spendFromLists, {
-        id: payToLists.length + 1,
-        label: resultLnurl.hostname,
-        pasteField: optional,
-        icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
-        balance: "0",
-      } as SendFrom]);
+    if (sourcePasteField.includes("lnurl")) {
+      let { words: dataPart } = bech32.decode(sourcePasteField, 2000);
+      let sourceURL = bech32.fromWords(dataPart);
+      const lnurlLink = Buffer.from(sourceURL).toString()
+      let resultLnurl = new URL(lnurlLink);
+      const iconLink = await getFavicon(resultLnurl.host);
+      if (lnurlLink.includes(requestTag.lnurlPay)) {
+        setpayToLists([...payToLists, {
+          id: payToLists.length + 1,
+          pasteField: optional,
+          icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+          label: resultLnurl.hostname
+        } as PayTo]);
+      }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+        setSpendFromLists([...spendFromLists, {
+          id: payToLists.length + 1,
+          label: resultLnurl.hostname,
+          pasteField: optional,
+          icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+          balance: "0",
+        } as SendFrom]);
+      }
+    }else if (sourcePasteField.includes("@")) {
+      const lnAddress = sourcePasteField.split("@");
+      const iconLink = await getFavicon(lnAddress[1]);
+        setpayToLists([...payToLists, {
+          id: payToLists.length + 1,
+          pasteField: optional,
+          icon: iconLink === "nothing" ? lnAddress[1] : iconLink,
+          label: lnAddress[1]
+        } as PayTo]);
+      // }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+      //   setSpendFromLists([...spendFromLists, {
+      //     id: payToLists.length + 1,
+      //     label: resultLnurl.hostname,
+      //     pasteField: optional,
+      //     icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
+      //     balance: "0",
+      //   } as SendFrom]);
+      // }
     }else {
-      return openNotification("top", "Error", "Please Write LNURL Correctly!");
+      return openNotification("top", "Error", "Please Write input Correctly!");
     }
+    
     
     setOptional("");
     setSourcePasteField("");
@@ -335,7 +356,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt=''/>
+          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
         </React.Fragment>
     }
   }
