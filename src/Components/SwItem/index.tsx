@@ -15,11 +15,9 @@ export const SwItem: React.FC<SwItemData> = ({
     switch (icon) {
       case 'lightning':
         return lightningIcon();
-        break;
     
       case 'linked':
         return linkIcon();
-        break;
     }
   }
   

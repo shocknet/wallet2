@@ -14,6 +14,7 @@ import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
+import { log } from 'console';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -21,86 +22,20 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     This is Dumy data for display in Pay To box.
     It include data id(int), Label(string), additional field data(pasteField)(string) and icon id(int).
   */
-  const [payToLists, setpayToLists] = useState<Array<any>>([
-    {
-      id: 1,
-      label: 'My Node',
-      pasteField: "",
-      icon: "1",
-    } as PayTo,
-    {
-      id: 2,
-      label: "Uncle Jim's Node",
-      pasteField: "33q66w6...",
-      icon: "2",
-    } as PayTo,
-    {
-      id: 3,
-      label: "lightning.video",
-      pasteField: "21mz66...",
-      icon: "3",
-    } as PayTo,
-    {
-      id: 4,
-      label: "zbd.gg",
-      pasteField: "21mz66...",
-      icon: "4",
-    } as PayTo,
-    {
-      id: 5,
-      label: "stacker.news",
-      pasteField: "21mz66...",
-      icon: "5",
-    } as PayTo
-]);
+  const [payToLists, setpayToLists] = useState<Array<any>>([]);
 
   /*
     This is Dumy data for display in Send From box
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
-  const [spendFromLists, setSpendFromLists] = useState<Array<any>>([
-    {
-      id: 5,
-      label: "stacker.news",
-      pasteField: "21mz66...",
-      icon: "5",
-      balance: "615",
-    } as SendFrom,
-    {
-      id: 4,
-      label: "zbd.gg",
-      pasteField: "21mz66...",
-      icon: "4",
-      balance: "420,000",
-    } as SendFrom,
-    {
-      id: 3,
-      label: "lightning.video",
-      pasteField: "21mz66...",
-      icon: "3",
-      balance: "1,000,000",
-    } as SendFrom,
-    {
-      id: 2,
-      label: "Uncle Jim's Node",
-      pasteField: "33q66w6...",
-      icon: "2",
-      balance: "2,100,000",
-    } as SendFrom,
-    {
-      id: 1,
-      label: 'My Node',
-      pasteField: "",
-      icon: "1",
-      balance: "10,000,000",
-    } as SendFrom,
-  ]);
+  const [spendFromLists, setSpendFromLists] = useState<Array<any>>([]);
 
   //Interface for Dumy data for display in Pay To bo
   interface PayTo {
     id?: number;
     label?: string;
     pasteField?: string;
+    option?: string;
     icon?: string;
   }
 
@@ -109,6 +44,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     id?: number;
     label?: string;
     pasteField?: string;
+    option?: string;
     icon?: string;
     balance?: string;
   }
@@ -119,13 +55,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const [modalContent, setModalContent] = useState<string>("");
   const [showDropDown, setShowDropDown] = useState<string>("");
-
-  /*
-    These are state variables for sort the array of data of Pay To items and Send From items
-    The array can be sorted by Label, TrustLavel and Balance
-  */
-  const [payToSort, setPayToSort] = useState<string>("TrustLevel");
-  const [sendFromSort, setSendFromSort] = useState<string>("TrustLevel");
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editSourceId, setEditSourceId] = useState<number>(0);
@@ -151,29 +80,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const { isShown, toggle } = UseModal();
 
-  const PaytoSortLists = () => {
-    return ["TrustLevel", "Label"];
-  };
-
-  const SpendFromSortLists = () => {
-    return ["TrustLevel", "Label", "Balance"];
-  };
-
-  const toggleDropDown = (list: string) => {
-    if (showDropDown)
-      setShowDropDown("");
-    else
-      setShowDropDown(list);
-  };
-
-  const SpendFromSortSetting = (item: string): void => {
-    setSendFromSort(item);
-  };
-
-  const PaytoSortSetting = (item: string): void => {
-    setPayToSort(item);
-  };
-
   const dismissHandler = (event: React.FocusEvent<HTMLButtonElement>): void => {
     if (event.currentTarget === event.target) {
       setTimeout(() => {
@@ -189,7 +95,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const EditSourcePay_Modal = (key: number) => {
     setEditSourceId(key);    
-    setOptional(payToLists[key].pasteField);
+    setOptional(payToLists[key].option);
     setSourceLabel(payToLists[key].label);
     setModalContent("editSourcepay");
     toggle();
@@ -197,7 +103,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const EditSourceSpend_Modal = (key: number) => {
     setEditSourceId(key);    
-    setOptional(spendFromLists[key].pasteField);
+    setOptional(spendFromLists[key].option);
     setSourceLabel(spendFromLists[key].label);
     setModalContent("editSourcespend");
     toggle();
@@ -235,16 +141,18 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const AddSource = async () => {
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
-    if (sourcePasteField.includes("lnurl")) {
+    if (sourcePasteField.includes("LNURL")) {
       let { words: dataPart } = bech32.decode(sourcePasteField, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString()
+      console.log(lnurlLink);
+      
       let resultLnurl = new URL(lnurlLink);
       const iconLink = await getFavicon(resultLnurl.host);
       if (lnurlLink.includes(requestTag.lnurlPay)) {
         setpayToLists([...payToLists, {
           id: payToLists.length + 1,
-          pasteField: optional,
+          option: optional,
           icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
           label: resultLnurl.hostname
         } as PayTo]);
@@ -252,7 +160,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         setSpendFromLists([...spendFromLists, {
           id: payToLists.length + 1,
           label: resultLnurl.hostname,
-          pasteField: optional,
+          option: optional,
           icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
           balance: "0",
         } as SendFrom]);
@@ -262,27 +170,14 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       const iconLink = await getFavicon(lnAddress[1]);
         setpayToLists([...payToLists, {
           id: payToLists.length + 1,
-          pasteField: optional,
+          option: optional,
           icon: iconLink === "nothing" ? lnAddress[1] : iconLink,
           label: lnAddress[1]
         } as PayTo]);
-      // }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
-      //   setSpendFromLists([...spendFromLists, {
-      //     id: payToLists.length + 1,
-      //     label: resultLnurl.hostname,
-      //     pasteField: optional,
-      //     icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
-      //     balance: "0",
-      //   } as SendFrom]);
-      // }
     }else {
       return openNotification("top", "Error", "Please Write input Correctly!");
     }
-    
-    
-    setOptional("");
-    setSourcePasteField("");
-    setSourceLabel("");
+    resetValue();
     toggle();
   };
 
@@ -290,12 +185,10 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let payToSources = payToLists;
     if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    payToSources[editSourceId].pasteField = optional;
+    payToSources[editSourceId].option = optional;
     payToSources[editSourceId].label = sourceLabel;
     setpayToLists(payToSources);
-    setOptional("");
-    setSourcePasteField("");
-    setSourceLabel("");
+    resetValue();
     toggle();
   };
 
@@ -303,12 +196,10 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let spendFromSources = spendFromLists;
     if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    spendFromSources[editSourceId].pasteField = optional;
+    spendFromSources[editSourceId].option = optional;
     spendFromSources[editSourceId].label = sourceLabel;
     setSpendFromLists(spendFromSources);
-    setOptional("");
-    setSourcePasteField("");
-    setSourceLabel("");
+    resetValue();
     toggle();
   };
 
@@ -317,9 +208,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     payToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setpayToLists(payToSources);
-    setOptional("");
-    setSourcePasteField("");
-    setSourceLabel("");
+    resetValue();
     toggle();
   };
 
@@ -328,11 +217,15 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     SpendToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setSpendFromLists(SpendToSources);
+    resetValue();
+    toggle();
+  };
+
+  const resetValue = () => {
     setOptional("");
     setSourcePasteField("");
     setSourceLabel("");
-    toggle();
-  };
+  }
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
@@ -509,14 +402,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='payList' className="Sources_list_box">
-            {showDropDown === "PayTo" && (
-              <SourceSortDropdown
-                cities={PaytoSortLists()}
-                showDropDown={false}
-                toggleDropDown={(): void => toggleDropDown('PayTo')}
-                citySelection={PaytoSortSetting}
-              />
-            )}
             <ReactSortable filter={".Sources_item_left, .Sources_item_close"} list={payToLists} setList={setpayToLists}>
               {payToLists.map((item: PayTo, key) => {
                 return (
@@ -553,14 +438,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='fromList' className="Sources_list_box">
-            {showDropDown === "SpendFrom" && (
-              <SourceSortDropdown
-                cities={SpendFromSortLists()}
-                showDropDown={false}
-                toggleDropDown={(): void => toggleDropDown("SpendFrom")}
-                citySelection={SpendFromSortSetting}
-              />
-            )}
             <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists} setList={setSpendFromLists}>
               {spendFromLists.map((item: SendFrom, key) => {
                 return (
@@ -579,7 +456,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                       </button>
                       <button
                         className="Sources_item_menu"
-                        onClick={(): void => toggleDropDown("SpendFrom")}
+                        onClick={(): void => {}}
                         onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
                           dismissHandler(e)
                         }
@@ -597,17 +474,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       <div className="Sources_add_btn">
         <button onClick={AddSource_Modal}>{icons.plusIcon()}ADD</button>
       </div>
-      {/* <div>
-        {productId && <div>
-          <p>The product id is: {productId}</p>
-          <ReactQrCode
-            style={{ height: "auto", maxWidth: "100%", width: "100%", textAlign: "center", transitionDuration: "500ms" }}
-            value={`pub_product:${JSON.stringify({ productId, dest: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })}`}
-            size={200}
-            renderAs="svg"
-          />
-        </div>}
-      </div> */}
       <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} />
     </div>
   )

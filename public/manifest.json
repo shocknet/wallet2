@@ -25,7 +25,11 @@
   "protocol_handlers": [
     {
       "protocol": "web+lightning",
-      "url": "./?tea=%s"
+      "url": "./?address=%s"
+    },
+    {
+      "protocol": "bitcoin",
+      "url": "./?address=%s"
     }
   ]
 }

@@ -53,8 +53,8 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   }
 
   const dropdown = () => {
-    setDisplay( display == 0 ? 1 : 0 );
-    setRotation( rotation == 0 ? 90 : 0 )
+    setDisplay( display === 0 ? 1 : 0 );
+    setRotation( rotation === 0 ? 90 : 0 )
   }
 
   const selectOption = (id?: number) => {

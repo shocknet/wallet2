@@ -126,7 +126,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
             Amount: 
             <div className='Send_amount_container'>
               <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(parseInt(e.target.value))}}/>
-              <button onClick={() => {setAmountAssets(amountAssets == "BTC"?"sats":"BTC")}}>{amountAssets}</button>
+              <button onClick={() => {setAmountAssets(amountAssets === "BTC"?"sats":"BTC")}}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
