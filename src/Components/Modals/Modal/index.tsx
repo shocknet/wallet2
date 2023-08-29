@@ -3,10 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {
   Wrapper,
-  Header,
   StyledModal,
-  HeaderText,
-  CloseButton,
   Content,
   Backdrop,
 } from './Modal.style';
