@@ -37,4 +37,35 @@ self.addEventListener('beforeinstallprompt', event => {
         });
     }
 });
-  
+self.addEventListener('launch', (event) => {
+    // Get the URL from the launch event.
+    const url = new URL(event.request.url);
+    
+    // Check if the URL is an LNURL link.
+    if (url.protocol === 'lightning:') {
+    // Decode the LNURL link and get the query parameters.
+    const lnurl = decodeURIComponent(url.href.slice(6));
+    const params = new URLSearchParams(lnurl);
+    
+    // Perform the appropriate action based on the LNURL type.
+    switch (params.get('tag')) {
+        case 'withdrawRequest':
+        // Handle LNURL-withdraw requests.
+        break;
+        case 'login':
+        // Handle LNURL-auth requests.
+        break;
+        case 'payRequest':
+        // Handle LNURL-pay requests.
+        break;
+        case 'channelRequest':
+        // Handle LNURL-channel requests.
+        break;
+        default:
+        // Handle unknown or invalid LNURL requests.
+        break;
+    }
+    } else {
+        // Handle other URLs as normal.
+    }
+});

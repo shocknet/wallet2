@@ -32,10 +32,10 @@ export const App: React.FC = (): JSX.Element => {
       });
     });
   }, []);
-
   const installPWA = async (event: any) => {
     if (event !== null) {
       try {
+        navigator.registerProtocolHandler('web+lightning', './?tea=%s');
         const { userChoice } = await event.prompt();
       } catch (error) {
         console.log(installPromptFlag);
