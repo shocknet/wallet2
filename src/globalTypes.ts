@@ -57,3 +57,63 @@ export interface PageProps {
   dispatch?: React.Dispatch<ActionType>;
   ctx?: React.Context<StateInterface>
 }
+export interface sw_item {
+  station?: string;
+  changes?: string;
+  stateIcon?: string;
+  date?: string;
+  priceImg: Function;
+  price?: number;
+  underline?: boolean;
+}
+
+export interface ModalProps {
+  isShown: boolean;
+  hide: () => void;
+  modalContent: JSX.Element;
+  headerText: string;
+}
+
+export interface ModalProps {
+  isShown: boolean;
+  hide: () => void;
+  modalContent: JSX.Element;
+}
+
+export interface SwItemData{
+  station?: string;
+  changes?: string;
+  stateIcon?: string; 
+  date?: string;
+  priceImg: Function;
+  price?: number;
+  underline?: boolean;
+}
+
+export interface ITotalAmount{
+  subtotal: number;
+  taxes: number;
+  total: number;
+}
+
+export const totalAmountInitial: ITotalAmount = {
+  subtotal: 0,
+  taxes: 0,
+  total: 0
+}
+
+export interface SendFrom {
+  id?: number;
+  label?: string;
+  pasteField?: string;
+  icon?: string;
+  balance?: string;
+}
+
+export interface PayTo {
+  id?: number;
+  label?: string;
+  pasteField?: string;
+  option?: string;
+  icon?: string;
+}

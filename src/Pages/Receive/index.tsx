@@ -116,7 +116,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
       </div>
-      <Modal isShown={isShown} hide={toggle} modalContent={setAmountContent} />
+      <Modal isShown={isShown} hide={toggle} modalContent={setAmountContent} headerText={''} />
       {/* <div className='CreateInvoice' style={{ opacity: vCreateInvoice, zIndex: vCreateInvoice ? 1000 : -1 }}>
         <div className="CreateInvoice_title">Create Invoice</div>
         <div className="CreateInvoice_content">

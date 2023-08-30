@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { PageProps } from "../../globalTypes";
+import { PageProps, SendFrom } from "../../globalTypes";
 import { nostr } from '../../Api'
 
 //It import svg icons library
@@ -29,46 +29,39 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
       id: 5,
       label: "stacker.news",
       pasteField: "21mz66...",
-      icon: 5,
+      icon: "5",
       balance: "615",
     } as SendFrom,
     {
       id: 4,
       label: "zbd.gg",
       pasteField: "21mz66...",
-      icon: 4,
+      icon: "4",
       balance: "420K",
     } as SendFrom,
     {
       id: 3,
       label: "lightning.video",
       pasteField: "21mz66...",
-      icon: 3,
+      icon: "3",
       balance: "1M",
     } as SendFrom,
     {
       id: 2,
       label: "Uncle Jim's Node",
       pasteField: "33q66w6...",
-      icon: 2,
+      icon: "2",
       balance: "2.1M",
     } as SendFrom,
     {
       id: 1,
       label: 'My Node',
       pasteField: "",
-      icon: 1,
+      icon: "1",
       balance: "10M",
     } as SendFrom,
   ]);
 
-  interface SendFrom {
-    id?: number;
-    label?: string;
-    pasteField?: string;
-    icon?: number;
-    balance?: string;
-  }
 
   const navigate: NavigateFunction = useNavigate()
 
@@ -158,7 +151,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
       </div>
-      <Modal isShown={isShown} hide={toggle} modalContent={confirmContent} />
+      <Modal isShown={isShown} hide={toggle} modalContent={confirmContent} headerText={''} />
     </div>
   )
 }

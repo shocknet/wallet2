@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
-import { PageProps } from "../../globalTypes";
+import { PageProps, PayTo, SendFrom } from "../../globalTypes";
 import { Modal } from "../../Components/Modals/Modal";
 import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
 
@@ -14,7 +14,6 @@ import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
-import { log } from 'console';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -29,25 +28,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
   const [spendFromLists, setSpendFromLists] = useState<Array<any>>([]);
-
-  //Interface for Dumy data for display in Pay To bo
-  interface PayTo {
-    id?: number;
-    label?: string;
-    pasteField?: string;
-    option?: string;
-    icon?: string;
-  }
-
-  //Interface for Dumy data for display in Send From box
-  interface SendFrom {
-    id?: number;
-    label?: string;
-    pasteField?: string;
-    option?: string;
-    icon?: string;
-    balance?: string;
-  }
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
@@ -474,7 +454,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       <div className="Sources_add_btn">
         <button onClick={AddSource_Modal}>{icons.plusIcon()}ADD</button>
       </div>
-      <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} />
+      <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} headerText={''} />
     </div>
   )
 }

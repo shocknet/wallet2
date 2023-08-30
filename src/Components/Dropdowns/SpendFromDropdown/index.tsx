@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
-
-interface SendFrom {
-  id?: number;
-  label?: string;
-  pasteField?: string;
-  icon?: number;
-  balance?: string;
-}
+import { SendFrom } from '../../../globalTypes';
 
 type DropDownProps = {
   values: SendFrom[];
@@ -30,25 +23,30 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     setAllValue(box);
   }, [showDropDown]);
 
-  const arrangeIcon = (value?: number) => {
+  const arrangeIcon = (value?: string) => {
     switch (value) {
-      case 1:
-        return icons.mynodeSmall()
+      case "1":
+        return icons.mynode()
 
-      case 2:
-        return icons.uncleSmall()
+      case "2":
+        return icons.uncle()
 
-      case 3:
-        return icons.lightningSmall()
+      case "3":
+        return icons.lightning()
 
-      case 4:
-        return icons.zbdSmall()
+      case "4":
+        return icons.zbd()
 
-      case 5:
-        return icons.stackerSmall()
+      case "5":
+        return icons.stacker()
           
       default:
-        return icons.zbdSmall()
+        if (!value?.includes("http")) {
+          value = "http://www.google.com/s2/favicons?domain="+value;
+        }
+        return <React.Fragment>
+          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
     }
   }
 
