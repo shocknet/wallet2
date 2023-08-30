@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { PageProps, SendFrom } from "../../globalTypes";
+import { PageProps, SpendFrom } from "../../globalTypes";
 import { nostr } from '../../Api'
 
 //It import svg icons library
@@ -31,35 +31,35 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
       pasteField: "21mz66...",
       icon: "5",
       balance: "615",
-    } as SendFrom,
+    } as SpendFrom,
     {
       id: 4,
       label: "zbd.gg",
       pasteField: "21mz66...",
       icon: "4",
       balance: "420K",
-    } as SendFrom,
+    } as SpendFrom,
     {
       id: 3,
       label: "lightning.video",
       pasteField: "21mz66...",
       icon: "3",
       balance: "1M",
-    } as SendFrom,
+    } as SpendFrom,
     {
       id: 2,
       label: "Uncle Jim's Node",
       pasteField: "33q66w6...",
       icon: "2",
       balance: "2.1M",
-    } as SendFrom,
+    } as SpendFrom,
     {
       id: 1,
       label: 'My Node',
       pasteField: "",
       icon: "1",
       balance: "10M",
-    } as SendFrom,
+    } as SpendFrom,
   ]);
 
 

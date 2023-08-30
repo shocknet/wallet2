@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
-import { PageProps, PayTo, SendFrom } from "../../globalTypes";
+import { PageProps, PayTo, SpendFrom } from "../../globalTypes";
 import { Modal } from "../../Components/Modals/Modal";
-import SourceSortDropdown from "../../Components/Dropdowns/SourceSortDropdown";
 
 //It import modal component
 import { UseModal } from "../../Hooks/UseModal";
@@ -15,26 +14,30 @@ import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
 
+//reducer
+import { useSelector, useDispatch } from 'react-redux';
+import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
+import { addSpendSources, editSpendSources, deleteSpendSources } from '../../State/Slices/spendSourcesSlice';
+
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
-  /*
-    This is Dumy data for display in Pay To box.
-    It include data id(int), Label(string), additional field data(pasteField)(string) and icon id(int).
-  */
-  const [payToLists, setpayToLists] = useState<Array<any>>([]);
+  //declaration about reducer
+  const paySources = useSelector((state:any) => state.paySource);
+  const spendSources = useSelector((state:any) => state.spendSource);
+  const dispatch = useDispatch();
 
   /*
-    This is Dumy data for display in Send From box
+    This is Source data from reducer
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
-  const [spendFromLists, setSpendFromLists] = useState<Array<any>>([]);
-
+ 
+  const [payToLists, setpayToLists] = useState<PayTo[]>([]);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>("");
 
   const [modalContent, setModalContent] = useState<string>("");
-  const [showDropDown, setShowDropDown] = useState<string>("");
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editSourceId, setEditSourceId] = useState<number>(0);
@@ -60,14 +63,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const { isShown, toggle } = UseModal();
 
-  const dismissHandler = (event: React.FocusEvent<HTMLButtonElement>): void => {
-    if (event.currentTarget === event.target) {
-      setTimeout(() => {
-        setShowDropDown("");
-      }, 100);
-    }
-  };
-
   const AddSource_Modal = () => {
     setModalContent("addSource");
     toggle();
@@ -75,16 +70,16 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const EditSourcePay_Modal = (key: number) => {
     setEditSourceId(key);    
-    setOptional(payToLists[key].option);
-    setSourceLabel(payToLists[key].label);
+    setOptional(payToLists[key].option || '');
+    setSourceLabel(payToLists[key].label || '');
     setModalContent("editSourcepay");
     toggle();
   };
 
   const EditSourceSpend_Modal = (key: number) => {
     setEditSourceId(key);    
-    setOptional(spendFromLists[key].option);
-    setSourceLabel(spendFromLists[key].label);
+    setOptional(spendFromLists[key].option || '');
+    setSourceLabel(spendFromLists[key].label || '');
     setModalContent("editSourcespend");
     toggle();
   };
@@ -143,7 +138,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           option: optional,
           icon: iconLink === "nothing" ? resultLnurl.hostname : iconLink,
           balance: "0",
-        } as SendFrom]);
+        } as SpendFrom]);
       }
     }else if (sourcePasteField.includes("@")) {
       const lnAddress = sourcePasteField.split("@");
@@ -382,8 +377,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='payList' className="Sources_list_box">
-            <ReactSortable filter={".Sources_item_left, .Sources_item_close"} list={payToLists} setList={setpayToLists}>
-              {payToLists.map((item: PayTo, key) => {
+            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists} setList={setpayToLists}>
+              {payToLists.map((item: PayTo, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
                     <div className="Sources_item_left" onTouchMove={handlePayTouchMove}>
@@ -396,13 +391,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                       <button className="Sources_item_close" onTouchStart={() => { EditSourcePay_Modal(key) }} onClick={() => { EditSourcePay_Modal(key) }}>
                         {icons.EditSource()}
                       </button>
-                      <button
-                        className="Sources_item_menu"
-                        // onClick={(): void => toggleDropDown("PayTo")}
-                        onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                          dismissHandler(e)
-                        }
-                      >
+                      <button className="Sources_item_menu">
                         {icons.SourceItemMenu()}
                       </button>
                     </div>
@@ -419,7 +408,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           </div>
           <div id='fromList' className="Sources_list_box">
             <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists} setList={setSpendFromLists}>
-              {spendFromLists.map((item: SendFrom, key) => {
+              {spendFromLists.map((item: SpendFrom, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
                     <div className="Sources_item_left" onTouchMove={handleFromTouchMove}>
@@ -434,13 +423,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
                         {/* <img src={EditSource} width="15px" alt="" /> */}
                         {icons.EditSource()}
                       </button>
-                      <button
-                        className="Sources_item_menu"
-                        onClick={(): void => {}}
-                        onBlur={(e: React.FocusEvent<HTMLButtonElement>): void =>
-                          dismissHandler(e)
-                        }
-                      >
+                      <button className="Sources_item_menu">
                         {icons.SourceItemMenu()}
                       </button>
                     </div>

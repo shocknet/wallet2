@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
-import { SendFrom } from '../../../globalTypes';
+import { SpendFrom } from '../../../globalTypes';
 
 type DropDownProps = {
-  values: SendFrom[];
-  initialValue: SendFrom;
+  values: SpendFrom[];
+  initialValue: SpendFrom;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
@@ -26,19 +26,19 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   const arrangeIcon = (value?: string) => {
     switch (value) {
       case "1":
-        return icons.mynode()
+        return icons.mynodeSmall()
 
       case "2":
-        return icons.uncle()
+        return icons.uncleSmall()
 
       case "3":
-        return icons.lightning()
+        return icons.lightningSmall()
 
       case "4":
-        return icons.zbd()
+        return icons.zbdSmall()
 
       case "5":
-        return icons.stacker()
+        return icons.stackerSmall()
           
       default:
         if (!value?.includes("http")) {
@@ -77,7 +77,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
         </div>
         <div className="spend_from_dropdown" style={{opacity: display, transition: "0.3s", overflow: "hidden"}}>
           {display === 1 && allValue.map(
-            (item: SendFrom, index: number) => {
+            (item: SpendFrom, index: number) => {
               return (
                 <div onClick={() => {selectOption(item.id)}} className="spend_from_item" key={item.id}>
                   <div className="spend_from_item_left">

@@ -102,16 +102,17 @@ export const totalAmountInitial: ITotalAmount = {
   total: 0
 }
 
-export interface SendFrom {
-  id?: number;
+export interface SpendFrom {
+  id: number;
   label?: string;
   pasteField?: string;
   icon?: string;
   balance?: string;
+  option?: string;
 }
 
-export interface PayTo {
-  id?: number;
+export interface PayTo{
+  id: number;
   label?: string;
   pasteField?: string;
   option?: string;
