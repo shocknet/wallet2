@@ -14,13 +14,13 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
       It is test for redirects page to "Home" page when loaded all require data
       We can change this function with async function after complete this part 
     */
-    const loader = sessionStorage.getItem("loader");
+    const loader = localStorage.getItem("loader");
     if (loader === "true") {
       navigate("/home");
     }
     setTimeout(() => {
       navigate("/home");
-      sessionStorage.setItem("loader", "true");
+      localStorage.setItem("loader", "true");
     }, 5000);
   }, [navigate]);
 

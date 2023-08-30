@@ -18,8 +18,18 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#16191c",
+  "background_color": "#16191c",
+  "protocol_handlers": [
+    {
+      "protocol": "web+lightning",
+      "url": "./?address=%s"
+    },
+    {
+      "protocol": "bitcoin",
+      "url": "./?address=%s"
+    }
+  ]
 }

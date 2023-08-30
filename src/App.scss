@@ -12,6 +12,7 @@ body{
   color: #fcfcfc;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 62.5%;
+  text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px;
 }
 
 #root{
@@ -26,7 +27,6 @@ body{
   font-size: 1.6rem;
   height: 100vh;
   position: relative;
-  text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px;
 }
 
 @mixin buttonPrimary {

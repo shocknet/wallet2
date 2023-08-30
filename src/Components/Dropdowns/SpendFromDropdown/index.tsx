@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
-
-interface SendFrom {
-  id?: number;
-  label?: string;
-  pasteField?: string;
-  icon?: number;
-  balance?: string;
-}
+import { SpendFrom } from '../../../globalTypes';
 
 type DropDownProps = {
-  values: SendFrom[];
-  initialValue: SendFrom;
+  values: SpendFrom[];
+  initialValue: SpendFrom;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
@@ -30,31 +23,36 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     setAllValue(box);
   }, [showDropDown]);
 
-  const arrangeIcon = (value?: number) => {
+  const arrangeIcon = (value?: string) => {
     switch (value) {
-      case 1:
+      case "1":
         return icons.mynodeSmall()
 
-      case 2:
+      case "2":
         return icons.uncleSmall()
 
-      case 3:
+      case "3":
         return icons.lightningSmall()
 
-      case 4:
+      case "4":
         return icons.zbdSmall()
 
-      case 5:
+      case "5":
         return icons.stackerSmall()
           
       default:
-        return icons.zbdSmall()
+        if (!value?.includes("http")) {
+          value = "http://www.google.com/s2/favicons?domain="+value;
+        }
+        return <React.Fragment>
+          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
     }
   }
 
   const dropdown = () => {
-    setDisplay( display == 0 ? 1 : 0 );
-    setRotation( rotation == 0 ? 90 : 0 )
+    setDisplay( display === 0 ? 1 : 0 );
+    setRotation( rotation === 0 ? 90 : 0 )
   }
 
   const selectOption = (id?: number) => {
@@ -79,7 +77,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
         </div>
         <div className="spend_from_dropdown" style={{opacity: display, transition: "0.3s", overflow: "hidden"}}>
           {display === 1 && allValue.map(
-            (item: SendFrom, index: number) => {
+            (item: SpendFrom, index: number) => {
               return (
                 <div onClick={() => {selectOption(item.id)}} className="spend_from_item" key={item.id}>
                   <div className="spend_from_item_left">

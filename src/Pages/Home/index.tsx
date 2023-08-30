@@ -5,24 +5,16 @@ import { SwItem } from "../../Components/SwItem";
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
-import { PageProps } from "../../globalTypes";
+import { PageProps, sw_item } from "../../globalTypes";
 import { nostr } from '../../Api'
 
-export const Home: React.FC<PageProps> = ({ }): JSX.Element => {
+export const Home: React.FC<PageProps> = (): JSX.Element => {
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('21,000,000')
   const [items, setItems] = useState<JSX.Element[]>([])
 
   //interfact of balance item
-  interface sw_item {
-    station?: string;
-    changes?: string;
-    stateIcon?: string;
-    date?: string;
-    priceImg: Function;
-    price?: number;
-    underline?: boolean;
-  }
+  
 
   useEffect(() => {
     nostr.GetUserInfo().then(res => {

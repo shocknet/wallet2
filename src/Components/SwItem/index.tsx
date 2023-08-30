@@ -1,5 +1,5 @@
 import { lightningIcon, linkIcon } from "../../Assets/SvgIconLibrary";
-import { SwItemData } from "./types";
+import { SwItemData } from "../../globalTypes";
 
 export const SwItem: React.FC<SwItemData> = ({
   stateIcon,
@@ -15,11 +15,9 @@ export const SwItem: React.FC<SwItemData> = ({
     switch (icon) {
       case 'lightning':
         return lightningIcon();
-        break;
     
       case 'linked':
         return linkIcon();
-        break;
     }
   }
   

@@ -7,12 +7,8 @@ import {
   Content,
   Backdrop,
 } from './Modal.style';
+import { ModalProps } from '../../../globalTypes';
 
-export interface ModalProps {
-  isShown: boolean;
-  hide: () => void;
-  modalContent: JSX.Element;
-}
 
 export const Modal: FunctionComponent<ModalProps> = ({
   isShown,

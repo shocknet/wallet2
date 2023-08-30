@@ -10,13 +10,9 @@ import {
   Content,
   Backdrop,
 } from './MenuList';
+import { ModalProps } from '../../../globalTypes';
 
-export interface ModalProps {
-  isShown: boolean;
-  hide: () => void;
-  modalContent: JSX.Element;
-  headerText: string;
-}
+
 
 export const MenuList: FunctionComponent<ModalProps> = ({
   isShown,
