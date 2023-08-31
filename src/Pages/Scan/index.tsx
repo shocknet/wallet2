@@ -13,7 +13,7 @@ import { UseModal } from "../../Hooks/UseModal";
 import { useSelector, useDispatch } from 'react-redux';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
-import bolt11 from "bolt11";
+// import bolt11 from "bolt11";
 
 type PayInvoice = {
   type: 'payInvoice'

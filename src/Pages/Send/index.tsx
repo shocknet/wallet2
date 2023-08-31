@@ -14,6 +14,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
 
 export const Send: React.FC<PageProps> = (): JSX.Element => {
+  const price = useSelector((state:any) => state.usdToBTC);
 
   //reducer
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
@@ -113,7 +114,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
             </div>
           </div>
           <div className='Send_available_amount'>
-            ~ $40,000.00
+          ~ ${(amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(4)}
           </div>
           <div className="Send_to">
             <p>To:</p>
