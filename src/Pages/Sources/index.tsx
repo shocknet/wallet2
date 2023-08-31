@@ -164,7 +164,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         option: optional,
         icon: lnAddress[1],
         label: lnAddress[1],
-        pasteField: sourcePasteField.replaceAll("lightning:", ""),
+        pasteField: sourcePasteField,
       } as PayTo;
       setpayToLists([...payToLists, addedSource]);
       dispatch(addPaySources(addedSource));
