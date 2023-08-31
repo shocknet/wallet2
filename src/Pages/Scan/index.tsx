@@ -89,13 +89,18 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const handleSubmit = async (qrcode: string) => {
+    qrcode = qrcode.replaceAll("lightning:", "");
     let { prefix: hrp, words: dataPart } = bech32.decode(qrcode, 2000)
     let requestByteArray = bech32.fromWords(dataPart)
 
     let resultLnurl = Buffer.from(requestByteArray).toString();
     console.log(resultLnurl);
     
-    fetch(resultLnurl).then((resInvoice: any) => {
+    fetch(resultLnurl,{
+      method: 'GET',
+      mode: 'cors', // This is the default
+      // ... other options
+    }).then((resInvoice: any) => {
       return resInvoice.json()
     }).then(invoiceData => {
       console.log(invoiceData.tag, "metaData");
