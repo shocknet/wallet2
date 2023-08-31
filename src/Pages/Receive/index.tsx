@@ -4,6 +4,7 @@ import { ReactQrCode } from '@devmehq/react-qr-code';
 import CopyToClipboard from "react-copy-to-clipboard";
 import { PageProps } from "../../globalTypes";
 import { nostr } from '../../Api'
+import { bech32 } from "bech32";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
@@ -13,17 +14,18 @@ import { UseModal } from '../../Hooks/UseModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
+import { NOSTR_RELAYS } from '../../constants';
 
 export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
   //reducer
   const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-
+  const price = useSelector((state:any) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
-  const [valueQR, setValueQR] = useState("");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
   const [amount, setAmount] = useState("");
+  const [amountValue, setAmountValue] = useState("");
 
   const navigate: NavigateFunction = useNavigate();
 
@@ -43,14 +45,34 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         navigate("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
-    }else {
-      setValueQR(paySource[0].pasteField)
     }
   });
 
   const copyToClip = () => {
     navigator.clipboard.writeText(valueQR)
     return openNotification("top", "Success", "Copied!");
+  }
+
+  const configInvoice = () => {
+    const invoiceData = {
+      callback: NOSTR_RELAYS[0],
+      tag: "payRequest",
+      maxSendable: amount,
+      minSendable: amount,
+      metadata: "",
+      commentAllowed: 280,
+      lightningAddress: paySource[0].pasteField
+    };
+    let words = bech32.toWords(Buffer.from(JSON.stringify(invoiceData), 'utf8'))
+    const valueOfQR = bech32.encode("lnurl", words, 999999)
+    return valueOfQR;
+  }
+  const [valueQR, setValueQR] = useState(configInvoice());
+
+  const updateInvoice = () => {
+    setAmountValue(amount);
+    setValueQR(configInvoice())
+    toggle()
   }
 
   const setAmountContent = <React.Fragment>
@@ -65,9 +87,9 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ $0.00
+        ~ ${(parseFloat(amount||"0") * price.buyPrice * 0.00000001).toFixed(4)}
       </div>
-      <button className="Sources_notify_button" onClick={toggle}>OK</button>
+      <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
     </div>
   </React.Fragment>;
 
@@ -88,7 +110,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
         <div className='Receive_copy'>
-          ~ $0.00
+          ~ ${(parseFloat(amountValue || "0") * price.buyPrice * 0.00000001).toFixed(4)}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>

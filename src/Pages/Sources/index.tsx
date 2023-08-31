@@ -17,7 +17,7 @@ import lightningPayReq from "bolt11";
 //reducer
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
-import { addSpendSources, editSpendSources, deleteSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 
 export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
@@ -30,12 +30,18 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     This is Source data from reducer
     It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
   */
+
+  const options: any = {
+    little: "A little.",
+    very: "Very well.",
+    mine: "It's my node.",
+  }
  
   const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
   const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
-  const [optional, setOptional] = useState<string>("");
+  const [optional, setOptional] = useState<string>(options.little);
 
   const [modalContent, setModalContent] = useState<string>("");
 
@@ -228,7 +234,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const resetValue = () => {
-    setOptional("");
+    setOptional(options.little);
     setSourcePasteField("");
     setSourceLabel("");
   }
@@ -279,19 +285,19 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     <div className='Sources_modal_header'>Add Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optional === "A little." ? "active" : ""}`} onClick={() => setOptional("A little.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.little ? "active" : ""}`} onClick={() => setOptional(options.little)}>
         <div className="Sources_modal_input">
           <p>🔓</p>
           A little.
         </div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optional === "Very well." ? "active" : ""}`} onClick={() => setOptional("Very well.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.very ? "active" : ""}`} onClick={() => setOptional(options.very)}>
         <div className="Sources_modal_input">
           <p>🫡</p>
           Very well.
         </div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optional === "It's my node." ? "active" : ""}`} onClick={() => setOptional("It's my node.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.mine ? "active" : ""}`} onClick={() => setOptional(options.mine)}>
         <div className="Sources_modal_input">
           <p>🏠</p>
           It's my node.
@@ -315,15 +321,15 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     <div className='Sources_modal_header'>Edit Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optional === "A little." ? "active" : ""}`} onClick={() => setOptional("A little.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.little ? "active" : ""}`} onClick={() => setOptional(options.little)}>
         <div className="Sources_modal_icon">🔓</div>
         <div className="Sources_modal_input">A little.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optional === "Very well." ? "active" : ""}`} onClick={() => setOptional("Very well.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.very ? "active" : ""}`} onClick={() => setOptional(options.very)}>
         <div className="Sources_modal_icon">🫡</div>
         <div className="Sources_modal_input">Very well.</div>
       </div>
-      <div className={`Sources_modal_select_state_column ${optional === "It's my node." ? "active" : ""}`} onClick={() => setOptional("It's my node.")}>
+      <div className={`Sources_modal_select_state_column ${optional === options.mine ? "active" : ""}`} onClick={() => setOptional(options.mine)}>
         <div className="Sources_modal_icon">🏠</div>
         <div className="Sources_modal_input">It's my node.</div>
       </div>
@@ -395,7 +401,12 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   useEffect(() => {
     window.addEventListener("touchstart", setPosition);
-  }, []);
+  });
+
+  useEffect(() => {
+    dispatch(setPaySources(payToLists));
+    dispatch(setSpendSources(spendFromLists));
+  }, [dispatch, payToLists, spendFromLists]);
 
   return (
     <div className="Sources">
@@ -409,7 +420,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           </div>
           <div id='payList' className="Sources_list_box">
             <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setpayToLists}>
-              {paySources.map((item: PayTo, key: number) => {
+              {payToLists.map((item: PayTo, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
                     <div className="Sources_item_left" onTouchMove={handlePayTouchMove}>
