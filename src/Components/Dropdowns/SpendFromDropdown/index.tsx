@@ -45,7 +45,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+          <img src = {value} width="23px" alt='' style={{borderRadius: "50%"}}/>
         </React.Fragment>
     }
   }
@@ -66,15 +66,21 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   return (
     <>
       <div className={showDropDown ? 'spend_from' : 'spend_from active'}>
-        <div className="spend_from_item" key={value.id}>
-          <div className="spend_from_item_left">
-            <div className="spend_from_item_icon">{arrangeIcon(value.icon)}</div>
-            <div className="spend_from_item_input">
-              <div>{value.label}</div>
+        {
+          value?
+            (<div className="spend_from_item" key={value.id}>
+              <div className="spend_from_item_left">
+                <div className="spend_from_item_icon">{arrangeIcon(value.icon)}</div>
+                <div className="spend_from_item_input">
+                  <div>{value.label}</div>
+                </div>
+              </div>
+              <div className="spend_from_item_balance">{value.balance}</div>
+            </div>)
+          :
+            <div>
             </div>
-          </div>
-          <div className="spend_from_item_balance">{value.balance}</div>
-        </div>
+        }
         <div className="spend_from_dropdown" style={{opacity: display, transition: "0.3s", overflow: "hidden"}}>
           {display === 1 && allValue.map(
             (item: SpendFrom, index: number) => {
