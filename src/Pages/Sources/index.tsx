@@ -212,6 +212,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     payToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setpayToLists(payToSources);
+    dispatch(deletePaySources(editSourceId))
     resetValue();
     toggle();
   };
@@ -221,6 +222,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     SpendToSources.splice(editSourceId, 1);
     setEditSourceId(0);
     setSpendFromLists(SpendToSources);
+    dispatch(deleteSpendSources(editSourceId))
     resetValue();
     toggle();
   };

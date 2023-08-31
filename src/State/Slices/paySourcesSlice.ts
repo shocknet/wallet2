@@ -14,7 +14,8 @@ const paySourcesSlice = createSlice({
       const id = action.payload.id;
       state[id] = action.payload;
     },
-    deletePaySources: (state) => {
+    deletePaySources: (state, action: PayloadAction<number>) => {
+      state.splice(action.payload, 1)
     },
     setPaySources: (state, action: PayloadAction<PayTo[]>) => {
       state = action.payload;

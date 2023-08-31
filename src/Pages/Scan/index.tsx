@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { QrReader } from "react-qr-reader";
-import { PageProps } from "../../globalTypes";
+import { PageProps, SpendFrom } from "../../globalTypes";
+import { Modal } from "../../Components/Modals/Modal";
+import { notification } from 'antd';
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { bech32 } from "bech32";
 import { nostr } from '../../Api';
 import { request } from "http";
+import { UseModal } from "../../Hooks/UseModal";
+import { useSelector, useDispatch } from 'react-redux';
+import { addSpendSources, editSpendSources, deleteSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { NotificationPlacement } from "antd/es/notification/interface";
+
 type PayInvoice = {
   type: 'payInvoice'
   invoice: string
@@ -20,12 +27,19 @@ type PayAddress = {
 
 export const Scan: React.FC<PageProps> = (): JSX.Element => {
 
+  //declaration about reducer
+  const dispatch = useDispatch();
+  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+
   const navigate: NavigateFunction = useNavigate();
 
   const [itemInput, setItemInput] = useState("");
+  let scaned = false;
   const [error, setError] = useState("");
+  const [qrCodeLnurl, setQrCodeLnurl] = useState("");
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
+  const { isShown, toggle } = UseModal();
 
   const parse = async (input: string) => {
     console.log("parsing")
@@ -88,28 +102,45 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     lnurlChannel: "channelRequest",
   }
 
-  const handleSubmit = async (qrcode: string) => {
-    qrcode = qrcode.replaceAll("lightning:", "");
-    let { prefix: hrp, words: dataPart } = bech32.decode(qrcode, 2000)
-    let requestByteArray = bech32.fromWords(dataPart)
+  const [api, contextHolder] = notification.useNotification();
+  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+    api.info({
+      message: header,
+      description:
+        text,
+      placement
+    });
+  };
 
-    let resultLnurl = Buffer.from(requestByteArray).toString();
-    console.log(resultLnurl);
+  const handleSubmit = async (qrcode: string) => {
+    console.log(scaned, "scaned result");
     
-    fetch(resultLnurl,{
-      method: 'GET',
-      mode: 'cors', // This is the default
-      // ... other options
-    }).then((resInvoice: any) => {
-      return resInvoice.json()
-    }).then(invoiceData => {
-      console.log(invoiceData.tag, "metaData");
+    if (scaned) return;
+    scaned = true;
+    try {
+      let { words: dataPart } = bech32.decode(qrcode.replace("lightning:", ""), 2000);
+      let sourceURL = bech32.fromWords(dataPart);
+      const lnurlLink = Buffer.from(sourceURL).toString();
+      setQrCodeLnurl(qrcode);
+      toggle();
+    } catch (error) {
+      return openNotification("top", "Error", "Please Write input Correctly!");
+    }
+    
+    // fetch(resultLnurl,{
+    //   method: 'GET',
+    //   mode: 'cors', // This is the default
+    //   // ... other options
+    // }).then((resInvoice: any) => {
+    //   return resInvoice.json()
+    // }).then(invoiceData => {
+    //   console.log(invoiceData.tag, "metaData");
 
       
-    }).catch(error => {
-      // Handle any errors
-      console.error(error);
-    });
+    // }).catch(error => {
+    //   // Handle any errors
+    //   console.error(error);
+    // });
   }
 
   const pay = async (action: PayInvoice | PayAddress) => {
@@ -140,6 +171,31 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
+  const addSource = () => {
+    let { prefix:s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
+    let sourceURL = bech32.fromWords(dataPart);
+    const lnurlLink = Buffer.from(sourceURL).toString()
+    console.log(lnurlLink, s);
+    
+    let resultLnurl = new URL(lnurlLink);
+    const parts = resultLnurl.hostname.split(".");
+    const sndleveldomain = parts.slice(-2).join('.');
+    const addedSource = {
+      id: spendSources.length,
+      label: resultLnurl.hostname,
+      option: "A little.",
+      icon: sndleveldomain,
+      balance: "0",
+      pasteField: qrCodeLnurl,
+    } as SpendFrom;
+    dispatch(addSpendSources(addedSource));
+    toggle();
+  }
+  
+  useEffect(() => {
+    
+  })
+
   if (error !== '') {
     return <div className="Scan_error">
       <div className="Scan_error_img">
@@ -165,6 +221,16 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     </div>
   }
 
+  const askSaveContent = <React.Fragment>
+    <div className='Sources_modal_header'>Add Source</div>
+    <div className='Sources_modal_discription'>Would you like to add this url to source?</div>
+    <div className="Sources_modal_add_btn">
+    <button onClick={toggle}>Ignore</button>
+    <button onClick={addSource}>Add</button>
+    </div>
+
+  </React.Fragment>;
+
   return (
     <div className="Scan">
       <div onClick={() => { navigate("/home") }} className="Scan_back">
@@ -178,9 +244,8 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
           // scanDelay={1000}
           onResult={(result: any, error: any) => {
             if (!!result) {
-              console.log(result.text);
               handleSubmit(result.text);
-              navigate("/home");
+              // navigate("/home");
               // return;
             }
 
@@ -201,6 +266,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
         />
         <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
       </div>
+      <Modal isShown={isShown} hide={toggle} modalContent={askSaveContent} headerText={''} />
     </div>
   )
 }

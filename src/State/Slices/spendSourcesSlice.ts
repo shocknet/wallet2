@@ -14,7 +14,8 @@ const spendSourcesSlice = createSlice({
       const id = action.payload.id;
       state[id] = action.payload;
     },
-    deleteSpendSources: (state) => {
+    deleteSpendSources: (state, action: PayloadAction<number>) => {
+      state.splice(action.payload, 1)
     },
   },
 });
