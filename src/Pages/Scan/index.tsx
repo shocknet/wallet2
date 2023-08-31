@@ -9,11 +9,11 @@ import { notification } from 'antd';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { bech32 } from "bech32";
 import { nostr } from '../../Api';
-import { request } from "http";
 import { UseModal } from "../../Hooks/UseModal";
 import { useSelector, useDispatch } from 'react-redux';
-import { addSpendSources, editSpendSources, deleteSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
+import bolt11 from "bolt11";
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -113,34 +113,22 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const handleSubmit = async (qrcode: string) => {
-    console.log(scaned, "scaned result");
-    
     if (scaned) return;
     scaned = true;
+    // console.log(bolt11.decode(qrcode.replaceAll("lightning:", "")))
     try {
       let { words: dataPart } = bech32.decode(qrcode.replace("lightning:", ""), 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
       setQrCodeLnurl(qrcode);
-      toggle();
+      if (lnurlLink.includes("withdraw")) {
+        toggle();
+      }else {
+        navigate("/home")
+      }
     } catch (error) {
-      return openNotification("top", "Error", "Please Write input Correctly!");
+      return openNotification("top", "Error", "Please scan correct QRcode!");
     }
-    
-    // fetch(resultLnurl,{
-    //   method: 'GET',
-    //   mode: 'cors', // This is the default
-    //   // ... other options
-    // }).then((resInvoice: any) => {
-    //   return resInvoice.json()
-    // }).then(invoiceData => {
-    //   console.log(invoiceData.tag, "metaData");
-
-      
-    // }).catch(error => {
-    //   // Handle any errors
-    //   console.error(error);
-    // });
   }
 
   const pay = async (action: PayInvoice | PayAddress) => {
@@ -190,6 +178,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));
     toggle();
+    navigate("/sources")
   }
   
   useEffect(() => {
@@ -233,6 +222,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
 
   return (
     <div className="Scan">
+      {contextHolder}
       <div onClick={() => { navigate("/home") }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
@@ -250,7 +240,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
             }
 
             if (!!error) {
-              console.info(error);
+              // console.info(error);
               // setError('Device Not found');
             }
           } } 

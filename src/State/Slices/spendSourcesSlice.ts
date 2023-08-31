@@ -27,8 +27,12 @@ const spendSourcesSlice = createSlice({
       state.splice(action.payload, 1)
       update(state);
     },
+    setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {      
+      state = action.payload.map((e:any)=>{return {...e}});
+      update(state);
+    },
   },
 });
 
-export const { addSpendSources, editSpendSources, deleteSpendSources } = spendSourcesSlice.actions;
+export const { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } = spendSourcesSlice.actions;
 export default spendSourcesSlice.reducer;

@@ -7,6 +7,11 @@
   display: inline-block;
 
   &_IMG {
+    &_logo {
+      display: inline-flex;
+      align-items: center;
+    }
+
     &_Menu svg {
       width: 40px;
       height: auto;
