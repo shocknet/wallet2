@@ -76,7 +76,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       const callbackURL = await axios.get(callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount));
       setLNInvoice(callbackURL.data.pr);
     } catch (error: any) {
-      return openNotification("top", "Error", error);
+      return openNotification("top", "Error", error.ErrorMessage);
     }
   }
   
