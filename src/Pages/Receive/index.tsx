@@ -60,6 +60,8 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       const invoiceData = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
       let words = bech32.toWords(Buffer.from(invoiceData, 'utf8'))
       valueOfQR = bech32.encode("lnurl", words, 999999)
+    }else {
+      valueOfQR = paySource[0].pasteField;
     }
     return valueOfQR;
   }
