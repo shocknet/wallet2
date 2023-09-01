@@ -72,8 +72,12 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       setAmountValue(callAddress.data.minSendable)
       setAmount(callAddress.data.minSendable) 
     }
-    const callbackURL = await axios.get(callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount));
-    setLNInvoice(callbackURL.data.pr);
+    try {
+      const callbackURL = await axios.get(callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount));
+      setLNInvoice(callbackURL.data.pr);
+    } catch (error: any) {
+      return openNotification("top", "Error", error);
+    }
   }
   
   const configLNURL = () => {
@@ -134,7 +138,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{valueQR === LNInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          <a href={'lightning:' + valueQR}>scsc</a>
+          {/* <a href={'lightning:' + valueQR}>scsc</a> */}
           <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
