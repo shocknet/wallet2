@@ -136,7 +136,7 @@
     width: 100vw;
     position: fixed;
     bottom: 60px;
-    z-index: -1;
+    z-index: 1;
   }
 
   &_lnurl {
@@ -147,7 +147,17 @@
     align-items: center;
     height: 60px;
     width: 50%;
+    margin-right: 50px;
     background: linear-gradient(-160deg, #16191c, #151d24);
+
+    & button {
+      border: 0;
+      background: transparent;
+      display: inline-flex;
+      color: white;
+      font-size: 22px;
+      text-shadow: rgb(0, 0, 0) 1px 1px 1.16667px;
+    }
   }
 
   &_chain {
@@ -160,6 +170,15 @@
     width: 50%;
     justify-content: end;
     background: linear-gradient(160deg, #16191c, #151d24);
+
+    & button {
+      border: 0;
+      background: transparent;
+      display: inline-flex;
+      color: white;
+      font-size: 22px;
+      text-shadow: rgb(0, 0, 0) 1px 1px 1.16667px;
+    }
   }
 
   &_share{

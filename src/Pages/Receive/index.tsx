@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import { NOSTR_RELAYS } from '../../constants';
+import bolt11 from "bolt11";
 
 export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
@@ -54,17 +55,12 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const configInvoice = () => {
-    const invoiceData = {
-      callback: NOSTR_RELAYS[0],
-      tag: "payRequest",
-      maxSendable: amount,
-      minSendable: amount,
-      metadata: "",
-      commentAllowed: 280,
-      lightningAddress: paySource[0].pasteField
-    };
-    let words = bech32.toWords(Buffer.from(JSON.stringify(invoiceData), 'utf8'))
-    const valueOfQR = bech32.encode("lnurl", words, 999999)
+    let valueOfQR = "";
+    if (paySource[0].pasteField.includes("@")) {
+      const invoiceData = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
+      let words = bech32.toWords(Buffer.from(invoiceData, 'utf8'))
+      valueOfQR = bech32.encode("lnurl", words, 999999)
+    }
     return valueOfQR;
   }
   const [valueQR, setValueQR] = useState(configInvoice());
@@ -73,6 +69,10 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
     setAmountValue(amount);
     setValueQR(configInvoice())
     toggle()
+  }
+
+  const changeQRcode = () => {
+    
   }
 
   const setAmountContent = <React.Fragment>
@@ -99,6 +99,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">Lightning Invoice</div>
         <div className="Receive_QR" style={{ transform: deg }}>
+          {/* <a href={'lightning:' + valueQR}>scsc</a> */}
           <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
@@ -122,10 +123,14 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
-            {Icons.arrowLeft()}LNURL
+            <button onClick={changeQRcode}>
+              {Icons.arrowLeft()}LNURL
+            </button>
           </div>
           <div className="Receive_chain">
-            CHAIN{Icons.arrowRight()}
+            <button>
+              CHAIN{Icons.arrowRight()}
+            </button>
           </div>
         </div>
       </div>
