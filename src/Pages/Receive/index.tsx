@@ -15,6 +15,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import { NOSTR_RELAYS } from '../../constants';
+import bolt11 from "bolt11";
+import axios from 'axios';
+
 
 export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
@@ -26,6 +29,9 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   const { isShown, toggle } = UseModal();
   const [amount, setAmount] = useState("");
   const [amountValue, setAmountValue] = useState("");
+  const [LNInvoice, setLNInvoice] = useState("");
+  const [LNurl, setLNurl] = useState("");
+  const [valueQR, setValueQR] = useState("");
 
   const navigate: NavigateFunction = useNavigate();
 
@@ -40,39 +46,72 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   };
 
   useEffect(()=>{
+    configInvoice();
+    configLNURL();
     if (paySource.length === 0) {
       setTimeout(() => {
         navigate("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-  });
+  },[]);
+
+  useEffect(() => {
+    setValueQR(LNInvoice);
+  },[LNInvoice])
 
   const copyToClip = () => {
     navigator.clipboard.writeText(valueQR)
     return openNotification("top", "Success", "Copied!");
   }
 
-  const configInvoice = () => {
-    const invoiceData = {
-      callback: NOSTR_RELAYS[0],
-      tag: "payRequest",
-      maxSendable: amount,
-      minSendable: amount,
-      metadata: "",
-      commentAllowed: 280,
-      lightningAddress: paySource[0].pasteField
-    };
-    let words = bech32.toWords(Buffer.from(JSON.stringify(invoiceData), 'utf8'))
-    const valueOfQR = bech32.encode("lnurl", words, 999999)
+  const configInvoice = async () => {
+    const address = configLNaddress();
+    const callAddress = await axios.get(address);
+    if (amountValue === "") {
+      setAmountValue(callAddress.data.minSendable)
+      setAmount(callAddress.data.minSendable) 
+    }
+    try {
+      const callbackURL = await axios.get(callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount));
+      setLNInvoice(callbackURL.data.pr);
+    } catch (error: any) {
+      return openNotification("top", "Error", error.ErrorMessage);
+    }
+  }
+  
+  const configLNURL = () => {
+    const address = configLNaddress();
+    let words = bech32.toWords(Buffer.from(address, 'utf8'))
+    const lnaddress = bech32.encode("lnurl", words, 999999);
+    setLNurl(lnaddress);
+  }
+
+  const configLNaddress = () => {
+    let valueOfQR = "";
+    if (paySource[0].pasteField.includes("@")) {
+      valueOfQR = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
+    }else {
+      let { words: dataPart } = bech32.decode(paySource[0].pasteField.replace("lightning:", ""), 2000);
+      let sourceURL = bech32.fromWords(dataPart);
+      valueOfQR = Buffer.from(sourceURL).toString();
+    }
     return valueOfQR;
   }
-  const [valueQR, setValueQR] = useState(configInvoice());
+  
 
-  const updateInvoice = () => {
+  const updateInvoice = async () => {
     setAmountValue(amount);
-    setValueQR(configInvoice())
+    configInvoice()
     toggle()
+  }
+
+  const changeQRcode = () => {
+    if (valueQR === LNInvoice) {
+      setValueQR(LNurl);
+    }else {
+      setValueQR(LNInvoice);
+    }
   }
 
   const setAmountContent = <React.Fragment>
@@ -97,8 +136,9 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
     <div>
       {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">Lightning Invoice</div>
+        <div className="Receive_QR_text">{valueQR === LNInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
+          {/* <a href={'lightning:' + valueQR}>scsc</a> */}
           <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
@@ -122,10 +162,14 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
-            {Icons.arrowLeft()}LNURL
+            <button onClick={changeQRcode}>
+              {Icons.arrowLeft()}LNURL
+            </button>
           </div>
           <div className="Receive_chain">
-            CHAIN{Icons.arrowRight()}
+            <button>
+              CHAIN{Icons.arrowRight()}
+            </button>
           </div>
         </div>
       </div>
