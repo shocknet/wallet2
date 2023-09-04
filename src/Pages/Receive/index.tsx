@@ -47,14 +47,14 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   };
 
   useEffect(()=>{
-    configInvoice();
-    configLNURL();
     if (paySource.length === 0) {
       setTimeout(() => {
         navigate("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
+    configInvoice();
+    configLNURL();
   },[]);
 
   useEffect(() => {
@@ -76,8 +76,16 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
     }
     try {
+      console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
+
       const callbackURL = await axios.get(
-        callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount),
+        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amountValue===""?callAddress.data.minSendable:amount),
+        // "https://api.lnmarkets.com/v2/lnurl/pay",
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
       );
       setLNInvoice(callbackURL.data.pr);
     } catch (error: any) {
