@@ -27,7 +27,10 @@ const paySourcesSlice = createSlice({
       update(state);
     },
     setPaySources: (state, action: PayloadAction<PayTo[]>) => {
-      state = action.payload.map((e:any)=>{return {...e}});
+      for (let i = 0; i < state.length; i++) {
+        const element = action.payload[i];
+        state[i] = element;
+      }
       update(state);
     },
   },

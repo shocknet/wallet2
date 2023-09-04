@@ -11,7 +11,6 @@ import { useSelector } from "react-redux";
 
 export const Home: React.FC<PageProps> = (): JSX.Element => {
   const price = useSelector((state:any) => state.usdToBTC);
-  console.log(price, "price");
   
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
