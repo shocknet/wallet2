@@ -24,6 +24,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   //declaration about reducer
   const dispatch = useDispatch();
   const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
+  
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
   
   /*
@@ -37,8 +38,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     mine: "It's my node.",
   }
  
-  const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
-  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
+  const [payToLists, setpayToLists] = useState<PayTo[]>([]);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
@@ -134,7 +135,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       let { prefix:s, words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString()
-      console.log(lnurlLink, s);
       
       let resultLnurl = new URL(lnurlLink);
       const parts = resultLnurl.hostname.split(".");
@@ -151,12 +151,20 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         setpayToLists([...payToLists, addedSource]);
         dispatch(addPaySources(addedSource))
       }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+        let amountSats = "0";
+        try {
+          const amount = await axios.get(lnurlLink);
+          amountSats = amount.data.maxWithdrawable;
+        } catch (error) {
+          
+        }
+        
         const addedSource = {
-          id: payToLists.length,
+          id: spendFromLists.length,
           label: resultLnurl.hostname,
           option: optional,
           icon: sndleveldomain,
-          balance: "0",
+          balance: amountSats,
           pasteField: sourcePasteField.replaceAll("lightning:", ""),
         } as SpendFrom;
         setSpendFromLists([...spendFromLists, addedSource]);
@@ -190,7 +198,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       option: optional,
       label: sourceLabel,
     };
-    console.log(payToSources, editSourceId);
     
     setpayToLists(payToSources);
     dispatch(editPaySources(payToLists[editSourceId]))
@@ -400,13 +407,16 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   }
 
   useEffect(() => {
+    setpayToLists(paySources);
+    setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
-  });
+  },[]);
 
   useEffect(() => {
     dispatch(setPaySources(payToLists));
     dispatch(setSpendSources(spendFromLists));
-  }, [dispatch, payToLists, spendFromLists]);
+    
+  }, [payToLists, spendFromLists]);
 
   return (
     <div className="Sources">

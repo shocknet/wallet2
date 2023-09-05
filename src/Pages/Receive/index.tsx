@@ -20,9 +20,10 @@ import axios from 'axios';
 
 
 export const Receive: React.FC<PageProps> = (): JSX.Element => {
-
+  axios.defaults.headers.post['Content-Type'] ='application/x-www-form-urlencoded';
   //reducer
   const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
+  
   const price = useSelector((state:any) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
@@ -46,14 +47,14 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   };
 
   useEffect(()=>{
-    configInvoice();
-    configLNURL();
     if (paySource.length === 0) {
       setTimeout(() => {
         navigate("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
+    configInvoice();
+    configLNURL();
   },[]);
 
   useEffect(() => {
@@ -71,12 +72,25 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
     if (amountValue === "") {
       setAmountValue(callAddress.data.minSendable)
       setAmount(callAddress.data.minSendable) 
+    }else if (amount < callAddress.data.minSendable) {
+      return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
     }
     try {
-      const callbackURL = await axios.get(callAddress.data.callback+"?amount="+(amountValue===""?callAddress.data.minSendable:amount));
+      console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
+
+      const callbackURL = await axios.get(
+        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amountValue===""?callAddress.data.minSendable:amount),
+        // "https://api.lnmarkets.com/v2/lnurl/pay",
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            withCredentials: false,
+          }
+        }
+      );
       setLNInvoice(callbackURL.data.pr);
     } catch (error: any) {
-      return openNotification("top", "Error", error.ErrorMessage);
+      return openNotification("top", "Error", "Cors error");
     }
   }
   
@@ -139,12 +153,12 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         <div className="Receive_QR_text">{valueQR === LNInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
           {/* <a href={'lightning:' + valueQR}>scsc</a> */}
-          <ReactQrCode
+          {valueQR == "" ? <div></div> :<ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}
             renderAs="svg"
-          />
+          />}
           <div className="Receive_logo_container">
               {Icons.Logo()}
           </div>
@@ -163,7 +177,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
             <button onClick={changeQRcode}>
-              {Icons.arrowLeft()}LNURL
+              {Icons.arrowLeft()}{valueQR === LNInvoice ? "LNURL" : "Invoice"}
             </button>
           </div>
           <div className="Receive_chain">
@@ -174,37 +188,6 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         </div>
       </div>
       <Modal isShown={isShown} hide={toggle} modalContent={setAmountContent} headerText={''} />
-      {/* <div className='CreateInvoice' style={{ opacity: vCreateInvoice, zIndex: vCreateInvoice ? 1000 : -1 }}>
-        <div className="CreateInvoice_title">Create Invoice</div>
-        <div className="CreateInvoice_content">
-          <div className="CreateInvoice_content_price">~ $.10</div>
-          <div className="CreateInvoice_content_amount">
-            <span className="CreateInvoice_content_amount">⚡</span>
-            <input
-              type="number"
-              placeholder="Enter amount in sats..."
-              onChange={(e) => setInvoiceAmount(+e.target.value)}
-              value={invoiceAmount ? invoiceAmount : undefined}
-            />
-          </div>
-          <div className="CreateInvoice_content_amount" style={{ marginTop: "15px" }}>
-            <input
-              type="text"
-              placeholder="Optional memo..."
-              onChange={(e) => setInvoiceMemo(e.target.value)}
-              value={invoiceMemo ? invoiceMemo : undefined}
-            />
-          </div>
-          <div className="CreateInvoice_content_btn_grp">
-            <div className="CreateInvoice_content_btn_grp_item_1">
-              <button onClick={CreateInvoiceCancel}>Cancel</button>
-            </div>
-            <div className="CreateInvoice_content_btn_grp_item_2">
-              <button onClick={CreateInvoiceOK}>OK</button>
-            </div>
-          </div>
-        </div>
-      </div> */}
     </div>
   )
 }

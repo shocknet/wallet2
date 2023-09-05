@@ -93,7 +93,7 @@
     align-items: center;
     height: 45px;
     padding: 0 auto;
-    background-color: #101010;
+    background-color: black;
     margin-block: 3px;
     border-radius: 6px;
   }
@@ -258,14 +258,14 @@
 
   &_item_close{
     width: 50%;
-    background-color: #101010;
+    background-color: transparent;
     margin-inline: 4px;
     position: relative;
     border: 0px solid transparent;
   }
 
   &_item_menu{
-    background-color: #101010;
+    background-color: transparent;
     position: relative;
     margin-right: -8px;
     padding: 5px 0 0 0;

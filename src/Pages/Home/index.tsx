@@ -11,10 +11,11 @@ import { useSelector } from "react-redux";
 
 export const Home: React.FC<PageProps> = (): JSX.Element => {
   const price = useSelector((state:any) => state.usdToBTC);
-  console.log(price, "price");
+  const spendSources = useSelector((state:any) => state.spendSource);
   
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
+  const [money, setMoney] = useState("0")
   const [items, setItems] = useState<JSX.Element[]>([])
 
   const [SwItemArray, setSwItemArray] = useState<sw_item[]>([]);
@@ -44,6 +45,13 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
 
   useEffect(() => {
     getPrice();
+    let totalAmount = 0;
+    for (let i = 0; i < spendSources.length; i++) {
+      const eachAmount = spendSources[i].balance;
+      totalAmount += parseInt(eachAmount);
+    }
+    setBalance(totalAmount.toString());
+    setMoney((totalAmount * price.buyPrice * 0.00000001).toFixed(4))
     nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
         setError(res.reason)
@@ -51,7 +59,7 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
       }
       setBalance((res.balance.toString()))
     })
-  }, [])
+  }, []);
 
   useEffect(() => {
     nostr.GetUserOperations({
@@ -98,7 +106,7 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
       <div className="Home_sats">
         <div className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
-        <div className="Home_sats_changes">~ $0.00</div>
+        <div className="Home_sats_changes">~ ${money}</div>
       </div>
       <div className="Home_scroller scroller">
         <div className="Home_content">
