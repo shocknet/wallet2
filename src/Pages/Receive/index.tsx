@@ -20,7 +20,7 @@ import axios from 'axios';
 
 
 export const Receive: React.FC<PageProps> = (): JSX.Element => {
-
+  axios.defaults.headers.post['Content-Type'] ='application/x-www-form-urlencoded';
   //reducer
   const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
   
@@ -84,6 +84,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         {
           headers: {
             'Content-Type': 'application/json',
+            withCredentials: false,
           }
         }
       );

@@ -93,8 +93,9 @@
       font-size: 15px;
       text-align: start;
       width: 100%;
-      background-color: transparent;
+      background-color: #16191cf7;
       color: #a3a3a3;
+      box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
       padding-block: 8px;
       padding-left: 10px;
       padding-right: 10px;
@@ -140,11 +141,11 @@
       font-family: Montserrat;
       font-weight: bold;
       padding: 6px 15px;
-      border-radius: 5px;
       border-top: 1px solid #2693c1;
       border-left: 1px solid #2693c1;
       border-right: 1px solid white;
       border-bottom: 1px solid white;
+      border-radius: 5px;
       background-color: #16191c;
       color: #fcfcfc;
       display: inline-flex;
