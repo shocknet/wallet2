@@ -28,11 +28,10 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
   const [vReceive, setVReceive] = useState(1);
   const [isCopy, setIsCopy] = useState(false);
   const [amountAssets, setAmountAssets] = useState("sats");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
-  const [spendFromList, setSpendFromList] = useState<SpendFrom[]>(spendSources);
 
   const navigate: NavigateFunction = useNavigate();
 
@@ -109,12 +108,12 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
           <div className="Send_amount">
             Amount: 
             <div className='Send_amount_container'>
-              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(parseInt(e.target.value))}}/>
+              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(e.target.value)}}/>
               <button onClick={() => {setAmountAssets(amountAssets === "BTC"?"sats":"BTC")}}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
-          ~ ${(amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(4)}
+          ~ ${(parseInt(amount===""?"0":amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(4)}
           </div>
           <div className="Send_to">
             <p>To:</p>
@@ -126,7 +125,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
-            <SpendFromDropdown values={spendFromList} initialValue={spendFromList[0]}/>
+            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]}/>
           </div>
         </div>
       </div>

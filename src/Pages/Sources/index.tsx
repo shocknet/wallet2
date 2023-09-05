@@ -151,12 +151,20 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         setpayToLists([...payToLists, addedSource]);
         dispatch(addPaySources(addedSource))
       }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+        let amountSats = "0";
+        try {
+          const amount = await axios.get(lnurlLink);
+          amountSats = amount.data.maxWithdrawable;
+        } catch (error) {
+          
+        }
+        
         const addedSource = {
-          id: payToLists.length,
+          id: spendFromLists.length,
           label: resultLnurl.hostname,
           option: optional,
           icon: sndleveldomain,
-          balance: "0",
+          balance: amountSats,
           pasteField: sourcePasteField.replaceAll("lightning:", ""),
         } as SpendFrom;
         setSpendFromLists([...spendFromLists, addedSource]);
