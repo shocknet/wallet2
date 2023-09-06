@@ -21,6 +21,14 @@ export const App: React.FC = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState())
   let installPromptFlag = true;
   useEffect(() => {
+    console.log(window.location.protocol);
+    
+    if (window.location.protocol === 'bitcoin:') {
+      // Handle the Bitcoin URL here
+      const bitcoinUrl = window.location.href;
+      // Process the Bitcoin URL, e.g., initiate a payment
+      console.log('Received Bitcoin URL:', bitcoinUrl);
+    }
     window.addEventListener('beforeinstallprompt', (event)  => {
       event.preventDefault();
       navigator.registerProtocolHandler('web+lightning', './?tea=%s');

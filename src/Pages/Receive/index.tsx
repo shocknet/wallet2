@@ -70,16 +70,16 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
     const address = configLNaddress();
     const callAddress = await axios.get(address);
     if (amountValue === "") {
-      setAmountValue(callAddress.data.minSendable)
-      setAmount(callAddress.data.minSendable) 
-    }else if (amount < callAddress.data.minSendable) {
+      setAmountValue((callAddress.data.minSendable/1000).toString())
+      setAmount((callAddress.data.minSendable/1000).toString()) 
+    }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
       return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
     }
     try {
       console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
 
       const callbackURL = await axios.get(
-        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amountValue===""?callAddress.data.minSendable:amount),
+        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amountValue===""?callAddress.data.minSendable:parseInt(amount)*1000),
         // "https://api.lnmarkets.com/v2/lnurl/pay",
         {
           headers: {
@@ -134,13 +134,13 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       <div className="Receive_result_input">
         <input
           type="number"
-          onChange={(e) => {setAmount(e.target.value)}}
+          onChange={(e) => {setAmount(parseInt(e.target.value).toString())}}
           placeholder="Enter amount in sats"
           value={amount}
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ ${(parseFloat(amount||"0") * price.buyPrice * 0.00000001).toFixed(4)}
+        ~ ${(parseInt(amount||"0") * price.buyPrice * 0.00001).toFixed(4)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
     </div>
@@ -164,7 +164,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
         <div className='Receive_copy'>
-          ~ ${(parseFloat(amountValue || "0") * price.buyPrice * 0.00000001).toFixed(4)}
+          ~ ${(parseInt(amountValue || "0") * price.buyPrice * 0.00001).toFixed(4)}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>

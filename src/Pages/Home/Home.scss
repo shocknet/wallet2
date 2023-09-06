@@ -37,8 +37,8 @@
   }
 
   &_scroller{
-    --scrollbar-width: 8px;
-    --mask-height: 50px;
+    --scrollbar-width: 0px;
+    --mask-height: 140px;
     overflow-y: auto;
     height: calc(100vh - 350px);
     // padding-top: var(--mask-height);
@@ -51,7 +51,7 @@
       transparent
     );
     --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
-    --mask-image-scrollbar: linear-gradient(black, black);
+    --mask-image-scrollbar: linear-gradient(black, white, black);
     --mask-size-scrollbar: var(--scrollbar-width) 100%;
     -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
     -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);

@@ -31,5 +31,23 @@
       "protocol": "bitcoin",
       "url": "./?address=%s"
     }
-  ]
+  ],
+  "intent_filters": [
+    {
+      "action": "VIEW",
+      "autoVerify": true,
+      "data": {
+        "scheme": "bitcoin"
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

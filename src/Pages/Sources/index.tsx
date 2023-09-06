@@ -154,8 +154,11 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         let amountSats = "0";
         try {
           const amount = await axios.get(lnurlLink);
-          amountSats = amount.data.maxWithdrawable;
+          amountSats = (amount.data.maxWithdrawable/1000).toString();
+          console.log(amountSats,lnurlLink);
+          
         } catch (error) {
+          console.log(error);
           
         }
         
