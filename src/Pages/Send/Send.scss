@@ -134,24 +134,35 @@
 
   &_set_amount_copy {
 
-    & button{
+    & button {
       max-width: 160px;
       width: 140px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
       font-size: 22px;
       font-family: Montserrat;
       font-weight: bold;
       padding: 6px 15px;
-      border-top: 1px solid #2693c1;
-      border-left: 1px solid #2693c1;
-      border-right: 1px solid white;
-      border-bottom: 1px solid white;
+      $border: 1px;
+      color: #FFF;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border transparent; /* !importanté */
       border-radius: 5px;
-      background-color: #16191c;
-      color: #fcfcfc;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       margin-top: 3px;
+    
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: -1;
+        margin: -$border; /* !importanté */
+        border-radius: 3px; /* !importanté */
+        background: linear-gradient(145deg, #2693c1, white);
+      }
     }
   }
 
