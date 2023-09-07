@@ -47,19 +47,22 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   };
 
   useEffect(()=>{
+    configLNURL();
     if (paySource.length === 0) {
       setTimeout(() => {
         navigate("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-    configInvoice();
-    configLNURL();
   },[]);
 
   useEffect(() => {
-    setValueQR(LNInvoice);
-  },[LNInvoice])
+    if (LNInvoice === "") {
+      setValueQR(LNurl);
+    }else {
+      setValueQR(LNInvoice);
+    }
+  },[LNInvoice, LNurl])
 
   const copyToClip = () => {
     navigator.clipboard.writeText(valueQR)
@@ -116,11 +119,15 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
   const updateInvoice = async () => {
     setAmountValue(amount);
-    configInvoice()
-    toggle()
+    configInvoice();
+    toggle();
   }
 
   const changeQRcode = () => {
+    if (LNInvoice == "") {
+      toggle();
+      return;
+    }
     if (valueQR === LNInvoice) {
       setValueQR(LNurl);
     }else {
@@ -134,13 +141,13 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       <div className="Receive_result_input">
         <input
           type="number"
-          onChange={(e) => {setAmount(parseInt(e.target.value).toString())}}
+          onChange={(e) => {setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString())}}
           placeholder="Enter amount in sats"
           value={amount}
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ ${(parseInt(amount||"0") * price.buyPrice * 0.00001).toFixed(4)}
+        ~ ${parseInt(amount===""?"0":amount)===0 ? 0 : (parseInt(amount===""?"0":amount) * price.buyPrice * 0.00001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
     </div>
@@ -164,7 +171,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
         <div className='Receive_copy'>
-          ~ ${(parseInt(amountValue || "0") * price.buyPrice * 0.00001).toFixed(4)}
+          ~ ${parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00001).toFixed(2)}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>

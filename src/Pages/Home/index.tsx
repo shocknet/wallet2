@@ -29,7 +29,8 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
           station: 'Coinbase.com',
           date: 'Buy',
           price: price.buyPrice,
-          stateIcon: 'lightning'
+          stateIcon: 'lightning',
+          underline: false,
         },
         {
           priceImg: Icons.PriceDown,
@@ -37,7 +38,8 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
           station: 'Coinbase.com',
           date: 'Sell',
           price: price.sellPrice,
-          stateIcon: 'lightning'
+          stateIcon: 'lightning',
+          underline: true,
         },
       ]
     );
@@ -51,7 +53,7 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
       totalAmount += parseInt(eachAmount);
     }
     setBalance(totalAmount.toString());
-    setMoney((totalAmount * price.buyPrice * 0.00000001).toFixed(4))
+    setMoney(totalAmount==0?"0":(totalAmount * price.buyPrice * 0.00000001).toFixed(2))
     nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
         setError(res.reason)
