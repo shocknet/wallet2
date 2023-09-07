@@ -147,7 +147,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ ${parseInt(amount===""?"0":amount)===0 ? 0 : (parseInt(amount===""?"0":amount) * price.buyPrice * 0.00001).toFixed(2)}
+        ~ ${parseInt(amount===""?"0":amount)===0 ? 0 : (parseInt(amount===""?"0":amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
     </div>
@@ -171,7 +171,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
         <div className='Receive_copy'>
-          ~ ${parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00001).toFixed(2)}
+          ~ ${parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>
