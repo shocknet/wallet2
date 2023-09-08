@@ -4,7 +4,16 @@ import { PageProps } from "../../globalTypes";
 
 export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
 
-  const navigate: NavigateFunction = useNavigate()
+  const navigate: NavigateFunction = useNavigate();
+
+  const toMainPage = () => {
+    const loader = localStorage.getItem("loader");
+    if (loader === "true") {
+      navigate("/home");
+    }else {
+      navigate("/loader")
+    }
+  };
 
   return(
     <div className="NodeUp">
@@ -18,7 +27,7 @@ export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
           Add Connection
         </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={() => { navigate("/loader") }}>
+          <button onClick={() => { toMainPage() }}>
             Continue
           </button>
         </div>

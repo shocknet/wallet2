@@ -33,7 +33,8 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   const [LNInvoice, setLNInvoice] = useState("");
   const [LNurl, setLNurl] = useState("");
   const [valueQR, setValueQR] = useState("");
-
+  const [lightningAdd, setLightningAdd] = useState("");
+  const [tagInvoice, setTagInvoice] = useState(false);
   const navigate: NavigateFunction = useNavigate();
 
   const [api, contextHolder] = notification.useNotification();
@@ -71,8 +72,8 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
   const configInvoice = async () => {
     const address = configLNaddress();
-    const callAddress = await axios.get(address);
-    if (amountValue === "") {
+    const callAddress = await axios.get(address.valueOfQR);
+    if (amount === "") {
       setAmountValue((callAddress.data.minSendable/1000).toString())
       setAmount((callAddress.data.minSendable/1000).toString()) 
     }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
@@ -82,7 +83,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
 
       const callbackURL = await axios.get(
-        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amountValue===""?callAddress.data.minSendable:parseInt(amount)*1000),
+        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
         // "https://api.lnmarkets.com/v2/lnurl/pay",
         {
           headers: {
@@ -99,12 +100,23 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
   
   const configLNURL = () => {
     const address = configLNaddress();
-    let words = bech32.toWords(Buffer.from(address, 'utf8'))
+    let words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
     const lnaddress = bech32.encode("lnurl", words, 999999);
+    setLightningAdd(address.lithningAdd)
     setLNurl(lnaddress);
   }
 
   const configLNaddress = () => {
+    let lnadd = "";
+    if (paySource[0].pasteField.includes("@")) {
+      lnadd = paySource[0].pasteField;
+    }else {
+      let { words: dataPart } = bech32.decode(paySource[0].pasteField.replace("lightning:", ""), 2000);
+      let sourceURL = bech32.fromWords(dataPart);
+      const payLink = Buffer.from(sourceURL).toString();
+      const url = new URL(payLink);
+      lnadd = url.hostname;
+    }
     let valueOfQR = "";
     if (paySource[0].pasteField.includes("@")) {
       valueOfQR = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
@@ -113,13 +125,20 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       let sourceURL = bech32.fromWords(dataPart);
       valueOfQR = Buffer.from(sourceURL).toString();
     }
-    return valueOfQR;
+    return {
+      lithningAdd: lnadd,
+      valueOfQR: valueOfQR
+    };
+  }
+
+  const getLNaddress = () => {
   }
   
 
   const updateInvoice = async () => {
     setAmountValue(amount);
     configInvoice();
+    setTagInvoice(true)
     toggle();
   }
 
@@ -128,10 +147,12 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
       toggle();
       return;
     }
-    if (valueQR === LNInvoice) {
+    if (tagInvoice) {
       setValueQR(LNurl);
+      setTagInvoice(false);
     }else {
       setValueQR(LNInvoice);
+      setTagInvoice(true);
     }
   }
 
@@ -157,7 +178,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
     <div>
       {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">{valueQR === LNInvoice ? "Lightning Invoice" : "LNURL"}</div>
+        <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
           {/* <a href={'lightning:' + valueQR}>scsc</a> */}
           {valueQR == "" ? <div></div> :<ReactQrCode
@@ -171,7 +192,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
           </div>
         </div>
         <div className='Receive_copy'>
-          ~ ${parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)}
+          {tagInvoice ? '~ $'+(parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>
@@ -184,7 +205,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
             <button onClick={changeQRcode}>
-              {Icons.arrowLeft()}{valueQR === LNInvoice ? "LNURL" : "Invoice"}
+              {Icons.arrowLeft()}{tagInvoice ? "LNURL" : "Invoice"}
             </button>
           </div>
           <div className="Receive_chain">

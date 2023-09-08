@@ -13,6 +13,7 @@ import { UseModal } from "../../Hooks/UseModal";
 import { useSelector, useDispatch } from 'react-redux';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
+import axios from "axios";
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
@@ -159,7 +160,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
-  const addSource = () => {
+  const addSource = async () => {
     let { prefix:s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
     let sourceURL = bech32.fromWords(dataPart);
     const lnurlLink = Buffer.from(sourceURL).toString()
@@ -168,12 +169,22 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     let resultLnurl = new URL(lnurlLink);
     const parts = resultLnurl.hostname.split(".");
     const sndleveldomain = parts.slice(-2).join('.');
+    let amountSats = "0";
+    try {
+      const amount = await axios.get(lnurlLink);
+      amountSats = (amount.data.maxWithdrawable/1000).toString();
+      console.log(amountSats,lnurlLink);
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
     const addedSource = {
       id: spendSources.length,
       label: resultLnurl.hostname,
       option: "A little.",
       icon: sndleveldomain,
-      balance: "0",
+      balance: parseInt(amountSats).toString(),
       pasteField: qrCodeLnurl,
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));

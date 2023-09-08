@@ -167,7 +167,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           label: resultLnurl.hostname,
           option: optional,
           icon: sndleveldomain,
-          balance: amountSats,
+          balance: parseInt(amountSats).toString(),
           pasteField: sourcePasteField.replaceAll("lightning:", ""),
         } as SpendFrom;
         setSpendFromLists([...spendFromLists, addedSource]);
@@ -179,7 +179,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       const addedSource = {
         id: payToLists.length,
         option: optional,
-        icon: lnAddress[1],
+        icon: sourcePasteField,
         label: lnAddress[1],
         pasteField: sourcePasteField,
       } as PayTo;
