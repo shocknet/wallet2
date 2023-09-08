@@ -123,7 +123,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const AddSource = async () => {
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
-    if (!sourcePasteField.includes("@")) {
+    const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!expression.test(sourcePasteField)) {
       try {
         let { words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
@@ -173,14 +174,14 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         setSpendFromLists([...spendFromLists, addedSource]);
         dispatch(addSpendSources(addedSource));
       }
-    }else if (sourcePasteField.includes("@")) {
+    }else if (expression.test(sourcePasteField)) {
       const lnAddress = sourcePasteField.split("@");
       // const iconLink = await getFavicon(lnAddress[1]);
       const addedSource = {
         id: payToLists.length,
         option: optional,
-        icon: sourcePasteField,
-        label: lnAddress[1],
+        icon: lnAddress[1],
+        label: sourcePasteField,
         pasteField: sourcePasteField,
       } as PayTo;
       setpayToLists([...payToLists, addedSource]);
