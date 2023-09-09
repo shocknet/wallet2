@@ -95,11 +95,11 @@
         z-index: -1;
         margin: -$border; /* !importanté */
         border-radius: 3px; /* !importanté */
-        background: linear-gradient(145deg, #2693c1, white);
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
       }
     }
   }
-    
+
   &_set_amount {
     margin-top: 10px;
     & button {
@@ -125,7 +125,7 @@
         z-index: -1;
         margin: -$border; /* !importanté */
         border-radius: 3px; /* !importanté */
-        background: linear-gradient(145deg, #2693c1, white);
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
       }
     }
   }

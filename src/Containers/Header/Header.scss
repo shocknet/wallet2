@@ -15,6 +15,7 @@
     &_Menu svg {
       width: 40px;
       height: auto;
+      filter: drop-shadow(0px 0px 1px rgba(0,0,0,1));
     }
 
     &_MenuBack svg {
@@ -59,6 +60,7 @@
     & div>svg {
       width: 30px;
       height: auto;
+      filter: drop-shadow(0px 0px 1px rgba(0,0,0,1));
     }
   }
 

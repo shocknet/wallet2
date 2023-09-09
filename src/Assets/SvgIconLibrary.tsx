@@ -65,14 +65,14 @@ z"/>
 }
 
 export const PriceDown = () => {
-    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z" style="fill: red;" vector-effect="non-scaling-stroke"/></g></svg>';
+    const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="2ff83c025b4246628c834d86d76fdd0f" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(186, 41, 41); width: 24px; height: 24px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z" style="fill: rgb(186, 41, 41);"></path></g></svg>';
     return (
         <div className="Home_IMG_PriceDown" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
 
 export const PriceUp = () => {
-    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" style="fill: rgb(67, 185, 96);" vector-effect="non-scaling-stroke"/></g></svg>';
+    const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="00e20f6297a14af58205cf161e210f6c" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(67, 185, 96); width: 24px; height: 24px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" style="fill: rgb(67, 185, 96);"></path></g></svg>';
     return (
         <div className="Home_IMG_PriceUp" dangerouslySetInnerHTML={{__html: svgCode}} />
     )

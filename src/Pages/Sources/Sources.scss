@@ -280,20 +280,34 @@
     margin: 30px;
   }
 
-  &_add_btn button{
-    font-size: 20px;
-    font-family: Montserrat;
-    font-weight: bold;
-    padding: 1px 28px;
-    border-radius: 5px;
-    border-top: 2px solid #2693c1;
-    border-left: 2px solid #2693c1;
-    border-right: 1px solid white;
-    border-bottom: 1px solid white;
-    background-color: #16191c;
-    color: #fcfcfc;
-    display: inline-flex;
-    align-items: center;
+  &_add_btn{
+
+    & button {
+      display: flex;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      font-size: 20px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding: 1px 28px;
+      $border: 1px;
+      color: #FFF;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border transparent; /* !importanté */
+      border-radius: 5px;
+    
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: -1;
+        margin: -$border; /* !importanté */
+        border-radius: 3px; /* !importanté */
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+      }
+    }
   }
 
   &_modal_add_btn{
