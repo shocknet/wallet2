@@ -205,7 +205,7 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
             <button onClick={changeQRcode}>
-              {Icons.arrowLeft()}{tagInvoice ? "LNURL" : "Invoice"}
+              {Icons.arrowLeft()}{tagInvoice ? "LNURL" : "INVOICE"}
             </button>
           </div>
           <div className="Receive_chain">
