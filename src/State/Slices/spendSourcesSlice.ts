@@ -27,8 +27,6 @@ const spendSourcesSlice = createSlice({
       update(state);
     },
     setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {
-      console.log("callslice");
-      
       state = action.payload.map((e:any)=>{return {...e}});
       update(state);
     },

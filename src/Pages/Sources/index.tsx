@@ -38,8 +38,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     mine: "It's my node.",
   }
  
-  const [payToLists, setpayToLists] = useState<PayTo[]>([]);
-  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
+  const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
@@ -200,8 +200,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       option: optional,
       label: sourceLabel,
     };
-    
-    setpayToLists(payToSources);
     dispatch(editPaySources(payToLists[editSourceId]))
     resetValue();
     toggle();
@@ -216,7 +214,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       option: optional,
       label: sourceLabel
     }
-    setSpendFromLists(spendFromSources);
     dispatch(editSpendSources(spendFromSources[editSourceId]))
     resetValue();
     toggle();
@@ -236,7 +233,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let SpendToSources = spendFromLists;
     SpendToSources.splice(editSourceId, 1);
     setEditSourceId(0);
-    setSpendFromLists(SpendToSources);
     dispatch(deleteSpendSources(editSourceId))
     resetValue();
     toggle();
@@ -432,18 +428,17 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           dispatch(editSpendSources(box[i]));
 
         } catch (error: any) {
-          dispatch(deleteSpendSources(i))
+          box[i].balance = "0";
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
           console.log(error.response.data.reason);
           return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
         }
-        
       });
   }
 
   useEffect(() => {
     resetSpendFrom();
-    setpayToLists(paySources);
-    setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
   },[]);
 

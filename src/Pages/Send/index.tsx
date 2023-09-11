@@ -12,6 +12,7 @@ import { UseModal } from '../../Hooks/UseModal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 import { useSelector, useDispatch } from 'react-redux';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
+import axios from 'axios';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -189,9 +190,12 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log(to);
-    parse(to);
+    pay({
+      type: 'payAddress',
+      address: "7soscpdlg@lnmarkets.com"
+    })
   }
 
   const confirmContent = <React.Fragment>
