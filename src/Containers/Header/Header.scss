@@ -31,13 +31,16 @@
 
     &_Setting svg, &_SourceIcon svg{
       fill: rgb(41, 171, 226);
+      filter: drop-shadow(0px 0px 1px rgba(0,0,0,1));
     }
 
     &_BuyCryptoIcon svg{
+      filter: drop-shadow(0px 0px 1px rgba(0,0,0,1));
       fill: rgb(245, 147, 34);
     }
     &_HelpAbout svg {
-    fill: rgb(0, 255, 30);
+      filter: drop-shadow(0px 0px 1px rgba(0,0,0,1));
+      fill: rgb(0, 255, 30);
     }
   }
 
@@ -171,7 +174,6 @@
 
   &_modal_content{
     display: grid;
-    margin-top: 75px;
     cursor: pointer;
     &_item{
       display: flex;

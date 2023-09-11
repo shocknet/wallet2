@@ -30,7 +30,28 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           {Icons.MenuBack()}
       </div>
       <div className="Header_modal_content">
-        <div className="Header_modal_content_item">
+        <div className="Header_modal_content_item" onClick={() => {
+          navigate("/automation");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            {Icons.Automation()}
+          </div>
+          <div className="Header_modal_content_item_text">Automation</div>
+        </div>
+        <div className="Header_modal_content_item" onClick={() => {
+          navigate("/contacts");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            {Icons.Contacts()}
+          </div>
+          <div className="Header_modal_content_item_text">Contacts</div>
+        </div>
+        <div className="Header_modal_content_item" onClick={() => {
+          navigate("/prefs");
+          toggle();
+        }}>
           <div className="Header_modal_content_item_img">
             {Icons.Setting()}
           </div>

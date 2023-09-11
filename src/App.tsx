@@ -17,6 +17,9 @@ import { initialState, reducer } from "./globalState";
 import './App.scss';
 
 import { StateInterface } from './globalTypes';
+import { Contacts } from './Pages/Contacts';
+import { Prefs } from './Pages/Prefs';
+import { Automation } from './Pages/Automation';
 export const App: React.FC = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState())
   let installPromptFlag = true;
@@ -91,6 +94,24 @@ export const App: React.FC = (): JSX.Element => {
               }/>
               <Route path='/scan' element={
                 <Scan 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/automation' element={
+                <Automation 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/prefs' element={
+                <Prefs 
+                  state={state as StateInterface}
+                  dispatch={dispatch}
+                />
+              }/>
+              <Route path='/contacts' element={
+                <Contacts 
                   state={state as StateInterface}
                   dispatch={dispatch}
                 />
