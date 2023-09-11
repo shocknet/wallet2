@@ -156,11 +156,9 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         try {
           const amount = await axios.get(lnurlLink);
           amountSats = (amount.data.maxWithdrawable/1000).toString();
-          console.log(amountSats,lnurlLink);
-          
-        } catch (error) {
+        } catch (error: any) {
           console.log(error);
-          
+          return openNotification("top", "Error", error.response.data.reason);
         }
         
         const addedSource = {
@@ -410,7 +408,40 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setScrollPosition(clientY);
   }
 
+  const resetSpendFrom = async () => {
+    const box = spendSources;
+      await box.map(async (e: SpendFrom, i: number) => {
+        const element = e;
+        const copyElement = {
+          id: element.id,
+          label: element.label,
+          pasteField: element.pasteField,
+          icon: element.icon,
+          option: element.option,
+        }
+        let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
+        let sourceURL = bech32.fromWords(dataPart);
+        const lnurlLink = Buffer.from(sourceURL).toString()
+        let amountSats = "0";
+        try {
+          const amount = await axios.get(lnurlLink);
+          amountSats = (amount.data.maxWithdrawable/1000).toString();
+          
+          box[i].balance = parseInt(amountSats).toString();
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+
+        } catch (error: any) {
+          dispatch(deleteSpendSources(i))
+          console.log(error.response.data.reason);
+          return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+        }
+        
+      });
+  }
+
   useEffect(() => {
+    resetSpendFrom();
     setpayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
@@ -419,7 +450,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   useEffect(() => {
     dispatch(setPaySources(payToLists));
     dispatch(setSpendSources(spendFromLists));
-    
   }, [payToLists, spendFromLists]);
 
   return (
