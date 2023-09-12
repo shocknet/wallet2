@@ -3,7 +3,6 @@ import { SpendFrom } from '../../globalTypes';
 
 const getSpendFromLocal = localStorage.getItem("spendFrom");
 
-
 const update = (value: SpendFrom[]) => {
   localStorage.setItem("spendFrom", JSON.stringify(value));
 }
@@ -27,7 +26,7 @@ const spendSourcesSlice = createSlice({
       state.splice(action.payload, 1)
       update(state);
     },
-    setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {      
+    setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {
       state = action.payload.map((e:any)=>{return {...e}});
       update(state);
     },

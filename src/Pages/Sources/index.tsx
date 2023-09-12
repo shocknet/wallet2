@@ -38,8 +38,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     mine: "It's my node.",
   }
  
-  const [payToLists, setpayToLists] = useState<PayTo[]>([]);
-  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
+  const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
@@ -156,11 +156,9 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         try {
           const amount = await axios.get(lnurlLink);
           amountSats = (amount.data.maxWithdrawable/1000).toString();
-          console.log(amountSats,lnurlLink);
-          
-        } catch (error) {
+        } catch (error: any) {
           console.log(error);
-          
+          return openNotification("top", "Error", error.response.data.reason);
         }
         
         const addedSource = {
@@ -202,8 +200,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       option: optional,
       label: sourceLabel,
     };
-    
-    setpayToLists(payToSources);
     dispatch(editPaySources(payToLists[editSourceId]))
     resetValue();
     toggle();
@@ -218,7 +214,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       option: optional,
       label: sourceLabel
     }
-    setSpendFromLists(spendFromSources);
     dispatch(editSpendSources(spendFromSources[editSourceId]))
     resetValue();
     toggle();
@@ -238,7 +233,6 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let SpendToSources = spendFromLists;
     SpendToSources.splice(editSourceId, 1);
     setEditSourceId(0);
-    setSpendFromLists(SpendToSources);
     dispatch(deleteSpendSources(editSourceId))
     resetValue();
     toggle();
@@ -410,16 +404,47 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     setScrollPosition(clientY);
   }
 
+  const resetSpendFrom = async () => {
+    const box = spendSources;
+      await box.map(async (e: SpendFrom, i: number) => {
+        const element = e;
+        const copyElement = {
+          id: element.id,
+          label: element.label,
+          pasteField: element.pasteField,
+          icon: element.icon,
+          option: element.option,
+        }
+        let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
+        let sourceURL = bech32.fromWords(dataPart);
+        const lnurlLink = Buffer.from(sourceURL).toString()
+        let amountSats = "0";
+        try {
+          const amount = await axios.get(lnurlLink);
+          amountSats = (amount.data.maxWithdrawable/1000).toString();
+          
+          box[i].balance = parseInt(amountSats).toString();
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+
+        } catch (error: any) {
+          box[i].balance = "0";
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+          console.log(error.response.data.reason);
+          return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+        }
+      });
+  }
+
   useEffect(() => {
-    setpayToLists(paySources);
-    setSpendFromLists(spendSources);
+    resetSpendFrom();
     window.addEventListener("touchstart", setPosition);
   },[]);
 
   useEffect(() => {
     dispatch(setPaySources(payToLists));
     dispatch(setSpendSources(spendFromLists));
-    
   }, [payToLists, spendFromLists]);
 
   return (
