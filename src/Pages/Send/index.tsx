@@ -192,10 +192,6 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
 
   const handleSubmit = async () => {
     console.log(to);
-    pay({
-      type: 'payAddress',
-      address: "7soscpdlg@lnmarkets.com"
-    })
   }
 
   const confirmContent = <React.Fragment>
