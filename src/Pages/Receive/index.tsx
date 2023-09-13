@@ -72,14 +72,14 @@ export const Receive: React.FC<PageProps> = (): JSX.Element => {
 
   const configInvoice = async () => {
     const address = configLNaddress();
-    const callAddress = await axios.get(address.valueOfQR);
-    if (amount === "") {
-      setAmountValue((callAddress.data.minSendable/1000).toString())
-      setAmount((callAddress.data.minSendable/1000).toString()) 
-    }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
-      return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
-    }
     try {
+      const callAddress = await axios.get(address.valueOfQR);
+      if (amount === "") {
+        setAmountValue((callAddress.data.minSendable/1000).toString())
+        setAmount((callAddress.data.minSendable/1000).toString()) 
+      }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
+        return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
+      }
       console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
 
       const callbackURL = await axios.get(
