@@ -26,7 +26,6 @@ export const Backdrop = styled.div`
 
 export const StyledModal = styled.div`
   width: 250px;
-  height: 300px;
   top: 0;
   right: 0;
   border: 1px solid #29abe2;

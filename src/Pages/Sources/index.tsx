@@ -47,11 +47,8 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   const [modalContent, setModalContent] = useState<string>("");
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
-  const [editSourceId, setEditSourceId] = useState<number>(0);
-
-  // const [productName, setProductName] = useState("")
-  // const [productPrice, setProductPrice] = useState(0)
-  // const [productId, setProductId] = useState("")
+  const [editPSourceId, setEditPSourceId] = useState<number>(0);
+  const [editSSourceId, setEditSSourceId] = useState<number>(0);
 
   /*
     This is part for show notification.
@@ -76,7 +73,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const EditSourcePay_Modal = (key: number) => {
-    setEditSourceId(key);    
+    setEditPSourceId(key);    
     setOptional(payToLists[key].option || '');
     setSourceLabel(payToLists[key].label || '');
     setModalContent("editSourcepay");
@@ -84,7 +81,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
   };
 
   const EditSourceSpend_Modal = (key: number) => {
-    setEditSourceId(key);    
+    setEditSSourceId(key);    
     setOptional(spendFromLists[key].option || '');
     setSourceLabel(spendFromLists[key].label || '');
     setModalContent("editSourcespend");
@@ -128,53 +125,47 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
       try {
         let { words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
-        const lnurlLink = Buffer.from(sourceURL).toString()
+        const lnurlLink = Buffer.from(sourceURL).toString();
+
+        let resultLnurl = new URL(lnurlLink);
+        const parts = resultLnurl.hostname.split(".");
+        const sndleveldomain = parts.slice(-2).join('.');
+        if (lnurlLink.includes(requestTag.lnurlPay)) {
+          const addedSource = {
+            id: payToLists.length,
+            option: optional,
+            icon: sndleveldomain,
+            label: resultLnurl.hostname,
+            pasteField: sourcePasteField.replaceAll("lightning:", ""),
+          } as PayTo;
+          setpayToLists([...payToLists, addedSource]);
+          dispatch(addPaySources(addedSource))
+        }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+          let amountSats = "0";
+          try {
+            const amount = await axios.get(lnurlLink);
+            amountSats = (amount.data.maxWithdrawable/1000).toString();
+          } catch (error: any) {
+            console.log(error);
+            return openNotification("top", "Error", error.response.data.reason);
+          }
+          
+          const addedSource = {
+            id: spendFromLists.length,
+            label: resultLnurl.hostname,
+            option: optional,
+            icon: sndleveldomain,
+            balance: parseInt(amountSats).toString(),
+            pasteField: sourcePasteField.replaceAll("lightning:", ""),
+          } as SpendFrom;
+          setSpendFromLists([...spendFromLists, addedSource]);
+          dispatch(addSpendSources(addedSource));
+        }
       } catch (error) {
         return openNotification("top", "Error", "Please Write input Correctly!");
       }
-      // lightningPayReq.decode(sourcePasteField.replace("lightning:", ""));
-      let { prefix:s, words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
-      let sourceURL = bech32.fromWords(dataPart);
-      const lnurlLink = Buffer.from(sourceURL).toString()
-      
-      let resultLnurl = new URL(lnurlLink);
-      const parts = resultLnurl.hostname.split(".");
-      const sndleveldomain = parts.slice(-2).join('.');
-      // const iconLink = await getFavicon(sndleveldomain);
-      if (lnurlLink.includes(requestTag.lnurlPay)) {
-        const addedSource = {
-          id: payToLists.length,
-          option: optional,
-          icon: sndleveldomain,
-          label: resultLnurl.hostname,
-          pasteField: sourcePasteField.replaceAll("lightning:", ""),
-        } as PayTo;
-        setpayToLists([...payToLists, addedSource]);
-        dispatch(addPaySources(addedSource))
-      }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
-        let amountSats = "0";
-        try {
-          const amount = await axios.get(lnurlLink);
-          amountSats = (amount.data.maxWithdrawable/1000).toString();
-        } catch (error: any) {
-          console.log(error);
-          return openNotification("top", "Error", error.response.data.reason);
-        }
-        
-        const addedSource = {
-          id: spendFromLists.length,
-          label: resultLnurl.hostname,
-          option: optional,
-          icon: sndleveldomain,
-          balance: parseInt(amountSats).toString(),
-          pasteField: sourcePasteField.replaceAll("lightning:", ""),
-        } as SpendFrom;
-        setSpendFromLists([...spendFromLists, addedSource]);
-        dispatch(addSpendSources(addedSource));
-      }
     }else if (expression.test(sourcePasteField)) {
       const lnAddress = sourcePasteField.split("@");
-      // const iconLink = await getFavicon(lnAddress[1]);
       const addedSource = {
         id: payToLists.length,
         option: optional,
@@ -195,12 +186,12 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let payToSources = payToLists;
     if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    payToSources[editSourceId] = {
-      ...payToSources[editSourceId],
+    payToSources[editPSourceId] = {
+      ...payToSources[editPSourceId],
       option: optional,
       label: sourceLabel,
     };
-    dispatch(editPaySources(payToLists[editSourceId]))
+    dispatch(editPaySources(payToLists[editPSourceId]))
     resetValue();
     toggle();
   };
@@ -209,31 +200,31 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let spendFromSources = spendFromLists;
     if (!sourceLabel || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!")
-    spendFromSources[editSourceId] = {
-      ...spendFromSources[editSourceId],
+    spendFromSources[editSSourceId] = {
+      ...spendFromSources[editSSourceId],
       option: optional,
       label: sourceLabel
     }
-    dispatch(editSpendSources(spendFromSources[editSourceId]))
+    dispatch(editSpendSources(spendFromSources[editSSourceId]))
     resetValue();
     toggle();
   };
 
   const Delete_Pay_Source = () => {
     let payToSources = payToLists;
-    payToSources.splice(editSourceId, 1);
-    setEditSourceId(0);
+    payToSources.splice(editPSourceId, 1);
+    setEditPSourceId(0);
     setpayToLists(payToSources);
-    dispatch(deletePaySources(editSourceId))
+    dispatch(deletePaySources(editPSourceId))
     resetValue();
     toggle();
   };
 
   const Delete_Spend_Source = () => {
     let SpendToSources = spendFromLists;
-    SpendToSources.splice(editSourceId, 1);
-    setEditSourceId(0);
-    dispatch(deleteSpendSources(editSourceId))
+    SpendToSources.splice(editSSourceId, 1);
+    setEditSSourceId(0);
+    dispatch(deleteSpendSources(editSSourceId))
     resetValue();
     toggle();
   };
@@ -488,7 +479,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='fromList' className="Sources_list_box">
-            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists} setList={setSpendFromLists}>
+            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists.map((e:any)=>{return {...e}})} setList={setSpendFromLists}>
               {spendFromLists.map((item: SpendFrom, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
