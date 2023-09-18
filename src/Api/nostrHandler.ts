@@ -1,4 +1,6 @@
-import { relayPool, Subscription, Event, RelayPool } from 'nostr-tools'
+//import { relayPool, Subscription, Event, RelayPool } from 'nostr-tools'
+import { SimplePool, Sub, Event, UnsignedEvent, finishEvent, relayInit } from './tools'
+import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 //@ts-ignore
 import { decrypt, encrypt } from 'nostr-tools/nip04.js'
 const handledEvents: string[] = [] // TODO: - big memory leak here, add TTL
@@ -13,54 +15,64 @@ export type NostrEvent = {
     content: string
 }
 export default class Handler {
-    pool: RelayPool = relayPool()
+    pool: SimplePool = new SimplePool()
     settings: NostrSettings
-    sub: Subscription
     constructor(settings: NostrSettings, eventCallback: (event: NostrEvent) => void) {
         this.settings = settings
-        this.pool.setPrivateKey(settings.privateKey)
-        settings.relays.forEach(relay => {
-            try {
-                this.pool.addRelay(relay, { read: true, write: true })
-            } catch (e) {
-                console.error("cannot add relay:", relay)
-            }
-        });
-        console.log("subbing...")
-        this.sub = this.pool.sub({
-            //@ts-ignore
-            filter: {
-                since: Math.floor(Date.now() / 1000) - 1,
+        this.Connect(eventCallback)
+    }
+
+    async Connect(eventCallback: (event: NostrEvent) => void) {
+        console.log("subbing")
+        const relay = relayInit(this.settings.relays[0])
+        relay.on('connect', () => {
+            console.log(`connected to ${relay.url}`)
+        })
+        relay.on('error', () => {
+            console.log(`failed to connect to ${relay.url}`)
+        })
+
+        await relay.connect()
+        const sub = relay.sub([
+            {
+                since: Math.ceil(Date.now() / 1000),
                 kinds: [4],
-                '#p': [settings.publicKey],
-            },
-            cb: async (e, relay) => {
-                console.log(e)
-                if (e.kind !== 4 || !e.pubkey) {
-                    return
-                }
-                //@ts-ignore
-                const eventId = e.id as string
-                if (handledEvents.includes(eventId)) {
-                    console.log("event already handled")
-                    return
-                }
-                handledEvents.push(eventId)
-                eventCallback({ id: eventId, content: decrypt(this.settings.privateKey, e.pubkey, e.content), pub: e.pubkey })
+                '#p': [this.settings.publicKey],
             }
+        ])
+        sub.on("event", async (e) => {
+            console.log({ nostrEvent: e })
+            if (e.kind !== 4 || !e.pubkey) {
+                return
+            }
+            //@ts-ignore
+            const eventId = e.id as string
+            if (handledEvents.includes(eventId)) {
+                console.log("event already handled")
+                return
+            }
+            handledEvents.push(eventId)
+            const decoded = decodePayload(e.content)
+            const content = await decryptData(decoded, getSharedSecret(this.settings.privateKey, e.pubkey))
+            console.log({ decrypted: content })
+            eventCallback({ id: eventId, content, pub: e.pubkey })
         })
     }
 
-    Send(nostrPub: string, message: string) {
-        this.pool.publish({
-            content: encrypt(this.settings.privateKey, nostrPub, message),
+    async Send(pubKey: string, message: string) {
+        const decoded = await encryptData(message, getSharedSecret(this.settings.privateKey, pubKey))
+        const content = encodePayload(decoded)
+        const event: UnsignedEvent = {
+            content,
             created_at: Math.floor(Date.now() / 1000),
             kind: 4,
             pubkey: this.settings.publicKey,
-            //@ts-ignore
-            tags: [['p', nostrPub]]
-        }, (status, url) => {
-            console.log(status, url) // TODO
+            tags: [['p', pubKey]],
+        }
+        const signed = finishEvent(event, this.settings.privateKey)
+        this.pool.publish(this.settings.relays, signed).forEach(p => {
+            p.then(() => console.log("sent ok"))
+            p.catch(() => console.log("failed to send"))
         })
     }
 }
