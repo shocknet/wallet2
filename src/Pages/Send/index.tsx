@@ -12,6 +12,17 @@ import { UseModal } from '../../Hooks/UseModal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 import { useSelector, useDispatch } from 'react-redux';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
+import axios from 'axios';
+
+type PayInvoice = {
+  type: 'payInvoice'
+  invoice: string
+  amount: number
+}
+type PayAddress = {
+  type: 'payAddress'
+  address: string
+}
 
 export const Send: React.FC<PageProps> = (): JSX.Element => {
   const price = useSelector((state:any) => state.usdToBTC);
@@ -20,6 +31,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
 
   const [error, setError] = useState("")
+  const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [invoiceAmount, setInvoiceAmount] = useState(0);
   const [invoiceMemo, setInvoiceMemo] = useState("");
   const [deg, setDeg] = useState("rotate(0deg)");
@@ -32,6 +44,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
+  const [amountToPay, setAmountToPay] = useState(0)
 
   const navigate: NavigateFunction = useNavigate();
 
@@ -92,6 +105,95 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
     setVReceive(1);
   }
 
+  const parse = async (input: string) => {
+    console.log("parsing")
+    setError("");
+    const lowData = input.toLowerCase()
+    if (lowData.startsWith('pub_product:')) {
+      console.log("parsed pub product", lowData)
+      const productData = JSON.parse(lowData.slice('pub_product:'.length))
+      const productId = productData.productId
+
+      console.log("send the buy request to the following pub:", productData.dest)
+      console.log("send the buy request using the following relays:", productData.relays)
+
+      const invoiceRes = await nostr.NewProductInvoice({ id: productId })
+      if (invoiceRes.status !== 'OK') {
+        setError(invoiceRes.reason)
+        return
+      }
+      const decodedRes = await nostr.DecodeInvoice({ invoice: invoiceRes.invoice })
+      if (decodedRes.status !== 'OK') {
+        setError(decodedRes.reason)
+        return
+      }
+      setPayOperation({
+        type: 'payInvoice',
+        invoice: invoiceRes.invoice,
+        amount: decodedRes.amount
+      })
+    } else if (lowData.startsWith('bitcoin:')) {
+      const btcAddress = lowData.slice('bitcoin:'.length)
+      setPayOperation({
+        type: 'payAddress',
+        address: btcAddress
+      })
+    } else if (lowData.startsWith('lightning:')) {
+      const lnOperation = lowData.slice('lightning:'.length)
+      if (lnOperation.startsWith("lnurl")) {
+        setError("lnurl not supported yet" + lnOperation)
+      } else {
+        const res = await nostr.DecodeInvoice({ invoice: lnOperation })
+        console.log(res);
+        
+        if (res.status !== 'OK') {
+          setError(res.reason)
+          return
+        }
+        setPayOperation({
+          type: 'payInvoice',
+          invoice: lnOperation,
+          amount: res.amount
+        })
+        
+      }
+    } else {
+      setError("scanned content unsupported " + lowData)
+    }
+  }
+
+  const pay = async (action: PayInvoice | PayAddress) => {
+    switch (action.type) {
+      case 'payAddress':
+        const resA = await nostr.PayAddress({
+          address: action.address,
+          amoutSats: amountToPay,
+          targetConf: 10
+        })
+        if (resA.status !== 'OK') {
+          setError(resA.reason)
+          return
+        }
+        navigate("/home")
+        break;
+      case 'payInvoice':
+        const resI = await nostr.PayInvoice({
+          invoice: action.invoice,
+          amount: 0,
+        })
+        if (resI.status !== 'OK') {
+          setError(resI.reason)
+          return
+        }
+        navigate("/home")
+        break;
+    }
+  }
+
+  const handleSubmit = async () => {
+    console.log(to);
+  }
+
   const confirmContent = <React.Fragment>
     <div className="Sources_notify">
       <div className="Sources_notify_title">Amount to Receive</div>
@@ -137,7 +239,7 @@ export const Send: React.FC<PageProps> = (): JSX.Element => {
         </div>
         <div className="Send_chain">
           <div className="Send_set_amount_copy">
-            <button onClick={toggle}>{Icons.send()}SEND</button>
+            <button onClick={handleSubmit}>{Icons.send()}SEND</button>
           </div>
         </div>
       </div>

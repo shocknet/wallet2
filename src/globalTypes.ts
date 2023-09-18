@@ -105,7 +105,7 @@ export const totalAmountInitial: ITotalAmount = {
 export interface SpendFrom {
   id: number;
   label?: string;
-  pasteField?: string;
+  pasteField: string;
   icon?: string;
   balance?: string;
   option?: string;
