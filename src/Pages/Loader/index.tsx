@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps, ActionType } from "../../globalTypes";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
+import { useIonRouter } from '@ionic/react';
 
-export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
-
-  const navigate: NavigateFunction = useNavigate() 
+export const Loader = () => {
+  const router = useIonRouter();
 
   useEffect(() => {
     /*
@@ -16,13 +15,13 @@ export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element =>
     */
     const loader = localStorage.getItem("loader");
     if (loader === "true") {
-      navigate("/home");
+      router.push("/home");
     }
     setTimeout(() => {
-      navigate("/home");
+      router.push("/home");
       localStorage.setItem("loader", "true");
     }, 5000);
-  }, [navigate]);
+  }, []);
 
   return(
     <section className="Loader">

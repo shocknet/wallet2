@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { QrReader } from "react-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
-import { Modal } from "../../Components/Modals/Modal";
 import { notification } from 'antd';
 
 //It import svg icons library
@@ -14,6 +12,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";
+import { useIonRouter } from "@ionic/react";
+import { Modal } from "../../components/Modals/Modal";
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
@@ -26,13 +26,13 @@ type PayAddress = {
   address: string
 }
 
-export const Scan: React.FC<PageProps> = (): JSX.Element => {
+export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
 
-  const navigate: NavigateFunction = useNavigate();
+  const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");
   let scaned = false;
@@ -125,7 +125,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       if (lnurlLink.includes("withdraw")) {
         toggle();
       }else {
-        navigate("/home")
+        router.push("/home")
       }
     } catch (error) {
       return openNotification("top", "Error", "Please scan correct QRcode!");
@@ -144,7 +144,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
           setError(resA.reason)
           return
         }
-        navigate("/home")
+        router.push("/home")
         break;
       case 'payInvoice':
         const resI = await nostr.PayInvoice({
@@ -155,7 +155,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
           setError(resI.reason)
           return
         }
-        navigate("/home")
+        router.push("/home")
         break;
     }
   }
@@ -189,7 +189,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));
     toggle();
-    navigate("/sources")
+    router.push("/sources")
   }
   
   useEffect(() => {
@@ -234,7 +234,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   return (
     <div className="Scan">
       {contextHolder}
-      <div onClick={() => { navigate("/home") }} className="Scan_back">
+      <div onClick={() => { router.push("/home") }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
       <div className="Scan_wall">
@@ -246,7 +246,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
           onResult={(result: any, error: any) => {
             if (!!result) {
               handleSubmit(result.text);
-              // navigate("/home");
+              // router.push("/home");
               // return;
             }
 

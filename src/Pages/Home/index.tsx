@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import moment from 'moment'
-import { SwItem } from "../../Components/SwItem";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
 import { PageProps, sw_item } from "../../globalTypes";
-import { nostr } from '../../Api'
+// import { nostr } from '../../Api'
 import { useSelector } from "react-redux";
+import { SwItem } from "../../components/SwItem";
 
-export const Home: React.FC<PageProps> = (): JSX.Element => {
+export const Home = () => {
   const price = useSelector((state:any) => state.usdToBTC);
   const spendSources = useSelector((state:any) => state.spendSource);
   
@@ -54,42 +54,42 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
     }
     setBalance(totalAmount.toString());
     setMoney(totalAmount==0?"0":(totalAmount * price.buyPrice * 0.00000001).toFixed(2))
-    nostr.GetUserInfo().then(res => {
-      if (res.status !== 'OK') {
-        setError(res.reason)
-        return
-      }
-      setBalance((res.balance.toString()))
-    })
+    // nostr.GetUserInfo().then(res => {
+    //   if (res.status !== 'OK') {
+    //     setError(res.reason)
+    //     return
+    //   }
+    //   setBalance((res.balance.toString()))
+    // })
   }, []);
 
   useEffect(() => {
-    nostr.GetUserOperations({
-      latestIncomingInvoice: 0,
-      latestIncomingTx: 0,
-      latestOutgoingInvoice: 0,
-      latestOutgoingTx: 0
-    }).then(res => {
-      if (res.status !== 'OK') {
-        setError(res.reason)
-        return
-      }
-      const merged = [
-        ...res.latestIncomingInvoiceOperations.operations,
-        ...res.latestIncomingTxOperations.operations,
-        ...res.latestOutgoingInvoiceOperations.operations,
-        ...res.latestOutgoingTxOperations.operations
-      ].sort((a, b) => b.paidAtUnix - a.paidAtUnix).map((o, i): JSX.Element => <SwItem
-        stateIcon={'lightning'}
-        station={o.type}
-        changes={'~ $.10'}
-        price={o.amount}
-        priceImg={o.inbound ? Icons.PriceUp : Icons.PriceDown}
-        date={moment.unix(o.paidAtUnix).fromNow()}
-        key={i}
-      />)
-      setItems(merged)
-    });
+    // nostr.GetUserOperations({
+    //   latestIncomingInvoice: 0,
+    //   latestIncomingTx: 0,
+    //   latestOutgoingInvoice: 0,
+    //   latestOutgoingTx: 0
+    // }).then(res => {
+    //   if (res.status !== 'OK') {
+    //     setError(res.reason)
+    //     return
+    //   }
+    //   const merged = [
+    //     ...res.latestIncomingInvoiceOperations.operations,
+    //     ...res.latestIncomingTxOperations.operations,
+    //     ...res.latestOutgoingInvoiceOperations.operations,
+    //     ...res.latestOutgoingTxOperations.operations
+    //   ].sort((a, b) => b.paidAtUnix - a.paidAtUnix).map((o, i): JSX.Element => <SwItem
+    //     stateIcon={'lightning'}
+    //     station={o.type}
+    //     changes={'~ $.10'}
+    //     price={o.amount}
+    //     priceImg={o.inbound ? Icons.PriceUp : Icons.PriceDown}
+    //     date={moment.unix(o.paidAtUnix).fromNow()}
+    //     key={i}
+    //   />)
+    //   setItems(merged)
+    // });
   }, [])
   
   const ArrangeData = SwItemArray.map((o, i): JSX.Element => <SwItem

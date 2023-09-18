@@ -1,30 +1,28 @@
 import React, { useEffect } from "react";
-import { NavigateFunction, useNavigate } from "react-router-dom";
-import { PageProps } from "../../globalTypes";
+import {  } from "react-router-dom";
+import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
 
-export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
-
+export const NodeUp = () => {
+  const router = useIonRouter();
 
   //declaration about reducer
   const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
   
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
 
-  const navigate: NavigateFunction = useNavigate();
-
   const toMainPage = () => {
     const loader = localStorage.getItem("loader");
     if (loader === "true") {
-      navigate("/home");
+      router.push("/home");
     }else {
-      navigate("/loader")
+      router.push("/loader")
     }
   };
 
   useEffect(() => {
     if(paySources.length!==0||spendSources.length!==0){
-      navigate("/home")
+      router.push("/home")
     }
   }, []);
 
@@ -36,7 +34,7 @@ export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
         "Add connection" to link a node now.
       </div>
       <div className="NodeUp_manual">
-        <div onClick={() => { navigate("/sources")} } className="NodeUp_manual_text">
+        <div onClick={() => { router.push("/sources")} } className="NodeUp_manual_text">
           Add Connection
         </div>
         <div className="NodeUp_manual_btn">
