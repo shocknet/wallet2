@@ -16,7 +16,7 @@ import bolt11 from "bolt11";
 import axios from 'axios';
 import { Modal } from '../../components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
-import { Buffer } from 'buffer';
+// import { Buffer } from 'buffer';
 
 
 export const Receive = () => {
