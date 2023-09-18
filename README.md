@@ -10,34 +10,16 @@ Update src/constants.ts
 First, clone the repo via git:
 
 ```bash
-git clone https://github.com/shocknet/wallet2.git your-project-name
+git clone https://github.com/shocknet/wallet2
 ```
-
-And then install dependencies.
-**ProTip**: Install with [yarn](https://github.com/yarnpkg/yarn) for faster and safer installation
-
 ```bash
-$ cd your-project-name && npm install
+cd wallet2 && npm install
+npm run start
 ```
+## Android
 
-## Run
-
-```bash
-$ npm install
-```
-
-```bash
-$ npm run start
-```
-
-## Build
-
-```bash
-$ npm run build
-```
-
-## Test
-
-```bash
-$ npm run test
-```
+Install Ionic CLI
+`npm install -g @ionic/cli native-run cordova-res`
+Build APK
+`ionic cap build android`
+`ionic cap run android --release`
