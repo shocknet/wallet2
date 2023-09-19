@@ -10,6 +10,7 @@ export const http = NewHttpClient({
     baseUrl: "http://localhost:8080",
     retrieveGuestAuth: async () => { return "" },
     retrieveAdminAuth: async () => { throw new Error("admin routes not enabled") },
+    retrieveAppAuth: async () => { throw new Error("application routes not enabled") },
     retrieveUserAuth: async () => { return getAuthToken() },
     encryptCallback: async () => { throw new Error("encryption not enabled") },
     decryptCallback: async () => { throw new Error("encryption not enabled") },

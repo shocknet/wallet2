@@ -2,7 +2,7 @@ export const locationRegex = new RegExp(/\w{1,}/g)
 
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
 export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
-export const NOSTR_RELAYS = ["wss://nostr.1729.cloud"]
-export const NOSTR_PUB_DESTINATION = "42b3f07844b2ad2717078abb47019369cee2aeae79469f8313ede9d75806cf61";
+export const NOSTR_RELAYS = ["wss://relay.unikku.com"]
+export const NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
 export const usdToBTCBuyLink = "https://api.coinbase.com/v2/prices/BTC-USD/buy";
 export const usdToBTCSellLink = "https://api.coinbase.com/v2/prices/BTC-USD/sell";

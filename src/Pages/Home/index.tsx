@@ -11,8 +11,8 @@ import { SwItem } from "../../components/SwItem";
 import { nostr } from "../../Api";
 
 export const Home = () => {
-  const price = useSelector((state:any) => state.usdToBTC);
-  const spendSources = useSelector((state:any) => state.spendSource);
+  const price = useSelector((state: any) => state.usdToBTC);
+  const spendSources = useSelector((state: any) => state.spendSource);
   
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
@@ -20,9 +20,9 @@ export const Home = () => {
   const [items, setItems] = useState<JSX.Element[]>([])
 
   const [SwItemArray, setSwItemArray] = useState<sw_item[]>([]);
-  
+
   const getPrice = async () => {
-      setSwItemArray(
+    setSwItemArray(
       [
         {
           priceImg: Icons.PriceUp,
@@ -54,7 +54,7 @@ export const Home = () => {
       totalAmount += parseInt(eachAmount);
     }
     setBalance(totalAmount.toString());
-    setMoney(totalAmount==0?"0":(totalAmount * price.buyPrice * 0.00000001).toFixed(2))
+    setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
     nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
         setError(res.reason)
@@ -69,7 +69,9 @@ export const Home = () => {
       latestIncomingInvoice: 0,
       latestIncomingTx: 0,
       latestOutgoingInvoice: 0,
-      latestOutgoingTx: 0
+      latestOutgoingTx: 0,
+      latestIncomingUserToUserPayment: 0,
+      latestOutgoingUserToUserPayment: 0
     }).then(res => {
       if (res.status !== 'OK') {
         setError(res.reason)
@@ -78,8 +80,10 @@ export const Home = () => {
       const merged = [
         ...res.latestIncomingInvoiceOperations.operations,
         ...res.latestIncomingTxOperations.operations,
+        ...res.latestIncomingUserToUserPayemnts.operations,
         ...res.latestOutgoingInvoiceOperations.operations,
-        ...res.latestOutgoingTxOperations.operations
+        ...res.latestOutgoingTxOperations.operations,
+        ...res.latestOutgoingUserToUserPayemnts.operations
       ].sort((a, b) => b.paidAtUnix - a.paidAtUnix).map((o, i): JSX.Element => <SwItem
         stateIcon={'lightning'}
         station={o.type}
@@ -92,7 +96,7 @@ export const Home = () => {
       setItems(merged)
     });
   }, [])
-  
+
   const ArrangeData = SwItemArray.map((o, i): JSX.Element => <SwItem
     stateIcon={o.stateIcon}
     station={o.station}

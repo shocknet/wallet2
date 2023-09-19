@@ -33,7 +33,7 @@ const handler = new NostrHandler({
     }
 })
 const clientSend = (to: string, message: NostrRequest): Promise<any> => {
-    console.log("sending", message)
+    console.log("sending to", to, message)
     if (!message.requestId) {
         message.requestId = makeId(16)
     }
