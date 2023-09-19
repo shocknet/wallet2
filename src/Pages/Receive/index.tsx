@@ -48,13 +48,13 @@ export const Receive = () => {
   };
 
   useEffect(()=>{
-    configLNURL();
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
+    configLNURL();
   },[]);
 
   useEffect(() => {
