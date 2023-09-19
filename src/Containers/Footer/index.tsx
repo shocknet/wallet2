@@ -1,13 +1,13 @@
 import React, { useContext } from "react";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
+import { useIonRouter } from "@ionic/react";
 
-export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
-  const navigate: NavigateFunction = useNavigate()
+export const Footer = () => {
+  const router = useIonRouter();
   const state = useContext(Ctx)
 
   const isSources: boolean = window.location.pathname === "/sources";
@@ -20,12 +20,12 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
         <React.Fragment>
           <footer className="Footer">
             <div className="Footer_receive_btn">
-              <button onClick={() => { navigate("/receive")} }>Receive</button>
+              <button onClick={() => { router.push("/receive")} }>Receive</button>
             </div>
             <div className="Footer_send_btn">
-              <button onClick={() => { navigate("/send")} }>Send</button>
+              <button onClick={() => { router.push("/send")} }>Send</button>
             </div>
-            <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+            <div className="Footer_QR" onClick={() => { router.push("/scan")} }>
               {Icons.QR()}
             </div>
           </footer>
@@ -35,12 +35,12 @@ export const Footer: React.FC<HeaderProps> = (): JSX.Element => {
           <React.Fragment>
             <footer className="Footer">
               <div className="Footer_receive_btn">
-                <button onClick={() => { navigate("/home")} }>Cancel</button>
+                <button onClick={() => { router.push("/home")} }>Cancel</button>
               </div>
               <div className="Footer_send_btn">
-                <button onClick={() => { navigate("/home")} }>OK</button>
+                <button onClick={() => { router.push("/home")} }>OK</button>
               </div>
-              <div className="Footer_QR" onClick={() => { navigate("/scan")} }>
+              <div className="Footer_QR" onClick={() => { router.push("/scan")} }>
                 {Icons.QR()}
               </div>
             </footer>

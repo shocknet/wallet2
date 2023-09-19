@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import moment from 'moment'
-import { SwItem } from "../../Components/SwItem";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
 import { PageProps, sw_item } from "../../globalTypes";
-import { nostr } from '../../Api'
+// import { nostr } from '../../Api'
 import { useSelector } from "react-redux";
+import { SwItem } from "../../components/SwItem";
+import { nostr } from "../../Api";
 
-export const Home: React.FC<PageProps> = (): JSX.Element => {
+export const Home = () => {
   const price = useSelector((state: any) => state.usdToBTC);
   const spendSources = useSelector((state: any) => state.spendSource);
-
+  
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
   const [money, setMoney] = useState("0")

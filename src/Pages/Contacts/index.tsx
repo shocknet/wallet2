@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps } from "../../globalTypes";
 
 import { useSelector, useDispatch } from 'react-redux';
-import type { NotificationPlacement } from 'antd/es/notification/interface';
 import axios from 'axios';
+import { useIonRouter } from '@ionic/react';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -16,14 +15,13 @@ type PayAddress = {
   address: string
 }
 
-export const Contacts: React.FC<PageProps> = (): JSX.Element => {
+export const Contacts = () => {
   const price = useSelector((state:any) => state.usdToBTC);
 
   //reducer
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
 
-
-  const navigate: NavigateFunction = useNavigate();
+  const router = useIonRouter();
 
   useEffect(()=>{
   });

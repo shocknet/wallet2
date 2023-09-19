@@ -3,7 +3,6 @@ import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { PageProps, PayTo, SpendFrom } from "../../globalTypes";
-import { Modal } from "../../Components/Modals/Modal";
 
 //It import modal component
 import { UseModal } from "../../Hooks/UseModal";
@@ -18,8 +17,10 @@ import lightningPayReq from "bolt11";
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { Modal } from '../../components/Modals/Modal';
+import { Buffer } from 'buffer';
 
-export const Sources: React.FC<PageProps> = (): JSX.Element => {
+export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -397,45 +398,44 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const resetSpendFrom = async () => {
     const box = spendSources;
-      await box.map(async (e: SpendFrom, i: number) => {
-        const element = e;
-        const copyElement = {
-          id: element.id,
-          label: element.label,
-          pasteField: element.pasteField,
-          icon: element.icon,
-          option: element.option,
-        }
-        let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
-        let sourceURL = bech32.fromWords(dataPart);
-        const lnurlLink = Buffer.from(sourceURL).toString()
-        let amountSats = "0";
-        try {
-          const amount = await axios.get(lnurlLink);
-          amountSats = (amount.data.maxWithdrawable/1000).toString();
-          
-          box[i].balance = parseInt(amountSats).toString();
-          setSpendFromLists([...box]);
-          dispatch(editSpendSources(box[i]));
-
-        } catch (error: any) {
-          box[i].balance = "0";
-          setSpendFromLists([...box]);
-          dispatch(editSpendSources(box[i]));
-          console.log(error.response.data.reason);
-          return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
-        }
-      });
+    await box.map(async (e: SpendFrom, i: number) => {
+      const element = e;
+      const copyElement = {
+        id: element.id,
+        label: element.label,
+        pasteField: element.pasteField,
+        icon: element.icon,
+        option: element.option,
+      }
+      let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
+      let sourceURL = bech32.fromWords(dataPart);
+      const lnurlLink = Buffer.from(sourceURL).toString()
+      let amountSats = "0";
+      try {
+        const amount = await axios.get(lnurlLink);
+        amountSats = (amount.data.maxWithdrawable/1000).toString();
+        
+        box[i].balance = parseInt(amountSats).toString();
+        setSpendFromLists([...box]);
+        dispatch(editSpendSources(box[i]));
+      } catch (error: any) {
+        box[i].balance = amountSats;
+        setSpendFromLists([...box]);
+        dispatch(editSpendSources(box[i]));
+        console.log(error.response.data.reason);
+        return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+      }
+    });
   }
 
   useEffect(() => {
-    resetSpendFrom();
+    // resetSpendFrom();
     window.addEventListener("touchstart", setPosition);
   },[]);
 
   useEffect(() => {
-    dispatch(setPaySources(payToLists));
-    dispatch(setSpendSources(spendFromLists));
+    // dispatch(setPaySources(payToLists));
+    // dispatch(setSpendSources(spendFromLists));
   }, [payToLists, spendFromLists]);
 
   return (
