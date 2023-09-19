@@ -32,18 +32,18 @@ import { ellipse, square, triangle } from 'ionicons/icons';
 // import './theme/variables.css';
 import './App.scss';
 import store from './State/store';
-import { NodeUp } from './pages/NodeUp';
+import { NodeUp } from './Pages/NodeUp';
 import { Provider } from 'react-redux';
 import { Layout } from './Layout';
-import { Loader } from './pages/Loader';
-import { Home } from './pages/Home';
-import { Receive } from './pages/Receive';
-import { Send } from './pages/Send';
-import { Scan } from './pages/Scan';
-import { Sources } from './pages/Sources';
-import { Automation } from './pages/Automation';
-import { Prefs } from './pages/Prefs';
-import { Contacts } from './pages/Contacts';
+import { Loader } from './Pages/Loader';
+import { Home } from './Pages/Home';
+import { Receive } from './Pages/Receive';
+import { Send } from './Pages/Send';
+import { Scan } from './Pages/Scan';
+import { Sources } from './Pages/Sources';
+import { Automation } from './Pages/Automation';
+import { Prefs } from './Pages/Prefs';
+import { Contacts } from './Pages/Contacts';
 
 setupIonicReact();
 
