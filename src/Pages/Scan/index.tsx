@@ -138,7 +138,7 @@ export const Scan = () => {
         const resA = await nostr.PayAddress({
           address: action.address,
           amoutSats: amountToPay,
-          targetConf: 10
+          satsPerVByte: 10
         })
         if (resA.status !== 'OK') {
           setError(resA.reason)

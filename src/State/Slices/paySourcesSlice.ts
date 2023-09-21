@@ -1,9 +1,21 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
+import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 
 const getPayToLocal = localStorage.getItem("payTo");
 
-const initialState: PayTo[] = JSON.parse(getPayToLocal??"[]");
+const initialState: PayTo[] = JSON.parse(getPayToLocal??"[]").length!==0?
+    JSON.parse(getPayToLocal??"[]")
+    :
+    [
+      {
+        id: 0,
+        label: "Bootstrap Node",
+        pasteField: NOSTR_PUB_DESTINATION,
+        option: options.little,
+        icon: "0",
+      }
+    ];
 
 const update = (value: PayTo[]) => {
   localStorage.setItem("payTo", JSON.stringify(value));

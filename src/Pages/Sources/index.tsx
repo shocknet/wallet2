@@ -19,25 +19,15 @@ import { addPaySources, editPaySources, deletePaySources, setPaySources } from '
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
+import { options } from '../../constants';
+import SelfHostedImg from "../../Assets/Images/self_hosted.jpg";
 
 export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
   const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
-  
-  /*
-    This is Source data from reducer
-    It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
-  */
-
-  const options: any = {
-    little: "A little.",
-    very: "Very well.",
-    mine: "It's my node.",
-  }
  
   const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
   const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
@@ -238,6 +228,10 @@ export const Sources = () => {
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
+      case "0":
+        return <React.Fragment>
+          <img src = {SelfHostedImg} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
       case "1":
         return icons.mynode()
 

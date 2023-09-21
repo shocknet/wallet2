@@ -21,6 +21,7 @@ const usdToBTCSlice = createSlice({
   reducers: {
     setAmount: (state, action: PayloadAction<Price>) => {
         state = action.payload;
+        update(state)
     },
   },
 });
