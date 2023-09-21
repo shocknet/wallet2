@@ -258,7 +258,7 @@ export const Sources = () => {
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+          <img src = {value} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
         </React.Fragment>
     }
   }

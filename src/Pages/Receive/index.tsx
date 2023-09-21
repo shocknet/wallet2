@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ReactQrCode } from '@devmehq/react-qr-code';
 import { PageProps } from "../../globalTypes";
 import { nostr } from '../../Api'
-import { bech32 } from "bech32";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
@@ -16,7 +15,8 @@ import bolt11 from "bolt11";
 import axios from 'axios';
 import { Modal } from '../../Components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
-// import { Buffer } from 'buffer';
+import { Buffer } from 'buffer';
+import { bech32 } from '@scure/base';
 
 
 export const Receive = () => {
