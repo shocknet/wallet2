@@ -17,7 +17,7 @@ import lightningPayReq from "bolt11";
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
-import { Modal } from '../../components/Modals/Modal';
+import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
 
 export const Sources = () => {

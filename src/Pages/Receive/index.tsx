@@ -14,7 +14,7 @@ import { NotificationPlacement } from 'antd/es/notification/interface';
 import { NOSTR_RELAYS } from '../../constants';
 import bolt11 from "bolt11";
 import axios from 'axios';
-import { Modal } from '../../components/Modals/Modal';
+import { Modal } from '../../Components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
 // import { Buffer } from 'buffer';
 

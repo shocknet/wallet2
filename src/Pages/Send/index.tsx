@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
 import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
-import { Modal } from '../../components/Modals/Modal';
+import { Modal } from '../../Components/Modals/Modal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 
 type PayInvoice = {

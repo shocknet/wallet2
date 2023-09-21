@@ -13,7 +13,7 @@ import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";
 import { useIonRouter } from "@ionic/react";
-import { Modal } from "../../components/Modals/Modal";
+import { Modal } from "../../Components/Modals/Modal";
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
