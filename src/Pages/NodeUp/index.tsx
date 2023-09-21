@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
+import { setNostrPrivateKey } from "../../Api/nostr";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -12,8 +14,9 @@ export const NodeUp = () => {
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
 
   const toMainPage = () => {
-    const loader = localStorage.getItem("loader");
-    if (loader === "true") {
+    const loader = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+    setNostrPrivateKey()
+    if (loader) {
       router.push("/home");
     }else {
       router.push("/loader")

@@ -13,13 +13,8 @@ export const Loader = () => {
       It is test for redirects page to "Home" page when loaded all require data
       We can change this function with async function after complete this part 
     */
-    const loader = localStorage.getItem("loader");
-    if (loader === "true") {
-      router.push("/home");
-    }
     setTimeout(() => {
       router.push("/home");
-      localStorage.setItem("loader", "true");
     }, 5000);
   }, []);
 

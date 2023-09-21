@@ -47,7 +47,6 @@
     "@types/styled-components": "^5.1.26",
     "antd": "^5.0.3",
     "axios": "^1.5.0",
-    "bech32": "^2.0.0",
     "bolt11": "^1.4.1",
     "buffer": "^6.0.3",
     "ionicons": "^7.0.0",

@@ -17,7 +17,7 @@ import lightningPayReq from "bolt11";
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
-import { Modal } from '../../components/Modals/Modal';
+import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
 
 export const Sources = () => {
@@ -258,7 +258,7 @@ export const Sources = () => {
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+          <img src = {value} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
         </React.Fragment>
     }
   }

@@ -10,7 +10,7 @@ import SWText from "../../Assets/Images/sw_text.png";
 import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
-import { MenuList } from "../../components/Modals/MenuList";
+import { MenuList } from "../../Components/Modals/MenuList";
 
 export const Header = () => {
   const router = useIonRouter();

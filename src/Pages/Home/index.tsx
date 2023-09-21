@@ -7,7 +7,7 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { PageProps, sw_item } from "../../globalTypes";
 // import { nostr } from '../../Api'
 import { useSelector } from "react-redux";
-import { SwItem } from "../../components/SwItem";
+import { SwItem } from "../../Components/SwItem";
 import { nostr } from "../../Api";
 
 export const Home = () => {
@@ -58,8 +58,12 @@ export const Home = () => {
     nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
         setError(res.reason)
+        console.log(res.reason, "reason");
+        
         return
       }
+      console.log(res.balance);
+      
       setBalance((res.balance.toString()))
     })
   }, []);

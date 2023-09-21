@@ -11,8 +11,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
 import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
-import { Modal } from '../../components/Modals/Modal';
-import SpendFromDropdown from '../../components/Dropdowns/SpendFromDropdown';
+import { Modal } from '../../Components/Modals/Modal';
+import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -167,8 +167,8 @@ export const Send = () => {
       case 'payAddress':
         const resA = await nostr.PayAddress({
           address: action.address,
-          amoutSats: amountToPay,
-          targetConf: 10
+          amoutSats: +amount,
+          satsPerVByte: 10
         })
         if (resA.status !== 'OK') {
           setError(resA.reason)
