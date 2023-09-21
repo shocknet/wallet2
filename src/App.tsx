@@ -1,16 +1,10 @@
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
-  IonIcon,
-  IonLabel,
   IonRouterOutlet,
-  IonTabBar,
-  IonTabButton,
-  IonTabs,
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -44,52 +38,81 @@ import { Sources } from './Pages/Sources';
 import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
+import { useEffect } from 'react';
 
 setupIonicReact();
 
-const App: React.FC = () => (
-  <Provider store={store}>
-    <IonApp>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <Layout>
-            <>
-              <Route exact path="/">
-                <NodeUp />
-              </Route>
-              <Route exact path="/loader">
-                <Loader />
-              </Route>
-              <Route exact path="/home">
-                <Home />
-              </Route>
-              <Route exact path="/receive">
-                <Receive />
-              </Route>
-              <Route exact path="/send">
-                <Send />
-              </Route>
-              <Route exact path="/scan">
-                <Scan />
-              </Route>
-              <Route exact path="/sources">
-                <Sources />
-              </Route>
-              <Route exact path="/automation">
-                <Automation />
-              </Route>
-              <Route exact path="/prefs">
-                <Prefs />
-              </Route>
-              <Route exact path="/contacts">
-                <Contacts />
-              </Route>
-            </>
-          </Layout>
-        </IonRouterOutlet>
-      </IonReactRouter>
-    </IonApp>
-  </Provider>
-);
+const App: React.FC = () => {
+
+  let installPromptFlag = true;
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (event)  => {
+      event.preventDefault();
+      window.addEventListener("click", () => {
+        navigator.registerProtocolHandler('web+lightning', './?address=%s');
+        navigator.registerProtocolHandler('bitcoin', './?address=%s');
+        if(installPromptFlag)
+        {
+          installPWA(event);
+          installPromptFlag = false;
+        }
+      });
+    });
+  }, []);
+  const installPWA = async (event: any) => {
+    if (event !== null) {
+      try {
+        const { userChoice } = await event.prompt();
+      } catch (error) {
+        console.log(installPromptFlag);
+      }
+    }
+  }
+  
+  return (
+    <Provider store={store}>
+      <IonApp>
+        <IonReactRouter>
+          <IonRouterOutlet>
+            <Layout>
+              <>
+                <Route exact path="/">
+                  <NodeUp />
+                </Route>
+                <Route exact path="/loader">
+                  <Loader />
+                </Route>
+                <Route exact path="/home">
+                  <Home />
+                </Route>
+                <Route exact path="/receive">
+                  <Receive />
+                </Route>
+                <Route exact path="/send">
+                  <Send />
+                </Route>
+                <Route exact path="/scan">
+                  <Scan />
+                </Route>
+                <Route exact path="/sources">
+                  <Sources />
+                </Route>
+                <Route exact path="/automation">
+                  <Automation />
+                </Route>
+                <Route exact path="/prefs">
+                  <Prefs />
+                </Route>
+                <Route exact path="/contacts">
+                  <Contacts />
+                </Route>
+              </>
+            </Layout>
+          </IonRouterOutlet>
+        </IonReactRouter>
+      </IonApp>
+    </Provider>
+  )
+};
 
 export default App;
