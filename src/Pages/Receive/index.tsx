@@ -54,7 +54,11 @@ export const Receive = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-    configLNURL();
+    if (paySource[0].icon == "0") {
+      CreateInvoiceOK();
+    }else {
+      configLNURL();
+    }
   },[]);
 
   useEffect(() => {
@@ -63,7 +67,20 @@ export const Receive = () => {
     }else {
       setValueQR(LNInvoice);
     }
-  },[LNInvoice, LNurl])
+  },[LNInvoice, LNurl]);
+
+  const CreateInvoiceOK = async () => {
+    const res = await nostr.NewInvoice({
+      amountSats: +amount,
+      memo: ""
+    })
+    if (res.status !== 'OK') {
+      // setError(res.reason)
+      return
+    }
+    setLNInvoice(`lightning:${res.invoice}`);
+    setTagInvoice(true);
+  }
 
   const copyToClip = () => {
     navigator.clipboard.writeText(valueQR)
@@ -92,7 +109,7 @@ export const Receive = () => {
           }
         }
       );
-      setLNInvoice(callbackURL.data.pr);
+      setLNInvoice("lightning:"+callbackURL.data.pr);
     } catch (error: any) {
       return openNotification("top", "Error", "Cors error");
     }
@@ -103,7 +120,7 @@ export const Receive = () => {
     let words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
     const lnaddress = bech32.encode("lnurl", words, 999999);
     setLightningAdd(address.lithningAdd)
-    setLNurl(lnaddress);
+    setLNurl("lightning:"+lnaddress);
   }
 
   const configLNaddress = () => {
@@ -131,13 +148,9 @@ export const Receive = () => {
     };
   }
 
-  const getLNaddress = () => {
-  }
-  
-
   const updateInvoice = async () => {
     setAmountValue(amount);
-    configInvoice();
+    paySource[0].icon == "0" ? CreateInvoiceOK() : configInvoice();
     setTagInvoice(true)
     toggle();
   }
@@ -180,7 +193,7 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          {/* <a href={'lightning:' + valueQR}>scsc</a> */}
+          {/* <a href={valueQR}>scsc</a> */}
           {valueQR == "" ? <div></div> :<ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
