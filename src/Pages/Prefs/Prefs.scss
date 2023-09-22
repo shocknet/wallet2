@@ -1,0 +1,191 @@
+.Prefs{
+    &_setting_icon {
+        width: 24px;
+        height: 24px;
+        margin-top: -14px;
+        margin-inline: auto;
+        background-color: #16191c;
+    }
+
+    &_container {
+      width: 100%;
+      padding-inline: 6%;
+      padding-bottom: 30px;
+      transition-duration: 500ms;
+      font-family: Montserrat;
+      justify-content: center;
+      position: fixed;
+      left: 0;
+      height: 100%;
+    }
+  
+    &_header {
+      display: inline-flex;
+      align-items: center;
+      width: 290px;
+      margin: auto;
+      aspect-ratio : 1 / 1;
+      background-color: white;
+      border: 1px solid #2693c1;
+      border-radius: 10px;
+      &_text{
+        margin-block: 10px;
+        text-align: center;
+        color: white;
+        font-size: 26px;
+        font-family: Montserrat;
+      }
+    }
+
+    &_chainfee {
+        margin-top: 40px;
+        & header {
+            font-family: Montserrat;
+            font-size: 20px;
+            color: #ffffff;
+            text-decoration: none solid rgb(255, 255, 255);
+            text-shadow: 0px 0px 2px rgba(0,0,0,1);
+            font-weight: bold;
+        }
+
+        &_options {
+            width: 100%;
+            font-family: Montserrat;
+            font-size: 16px;
+            text-decoration: none solid rgb(41, 171, 226);
+            text-align: center;
+            text-shadow: 0px 0px 2px rgba(0,0,0,1);
+            display: inline-flex;
+            &_top {
+                color: #29abe2;
+            }
+
+            &_bottom {
+                color: #ffffff;
+            }
+
+            &_first {
+                text-align: left;
+                float: left;
+                margin-right: auto;
+            }
+
+            &_second {
+                text-align: center;
+                margin-right: auto;
+            }
+
+            &_third {
+                text-align: right;
+                float: right;
+            }
+        }
+
+        &_settings {
+            border-top: 1px solid #29abe2;
+            margin-top: 20px;
+        }
+    }
+
+    &_mempool {
+        margin-top: 40px;
+        & header {
+            font-family: Montserrat;
+            font-size: 20px;
+            color: #ffffff;
+            text-decoration: none solid rgb(255, 255, 255);
+            text-shadow: 0px 0px 2px rgba(0,0,0,1);
+            font-weight: bold;
+        }
+        & input{
+            height: 43px;
+            margin-top: 10px;
+            font-family: Montserrat;
+            font-size: 15px;
+            text-align: start;
+            width: 100%;
+            background-color: #16191cf7;
+            color: #a3a3a3;
+            box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
+            padding-block: 8px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border: 1px solid #2cb0e9;
+            border-radius: 5px;
+        }
+    }
+
+    &_fiat {
+        margin-top: 21px;
+        & header {
+            font-family: Montserrat;
+            font-size: 20px;
+            color: #ffffff;
+            text-decoration: none solid rgb(255, 255, 255);
+            text-shadow: 0px 0px 2px rgba(0,0,0,1);
+            font-weight: bold;
+        }
+        & input{
+            height: 43px;
+            font-family: Montserrat;
+            font-size: 15px;
+            text-align: start;
+            width: 100%;
+            background-color: #16191cf7;
+            color: #a3a3a3;
+            box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
+            padding-block: 8px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border: 1px solid #2cb0e9;
+            border-radius: 5px;
+        }
+
+        &_estimates {
+            display: inline-flex;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        &_currency {
+            margin-right: 8px;
+            width: 97px;
+            height: 43px;
+            padding: 0px 8px;
+            border: 1px solid #29abe2;
+            border-radius: 5px;
+            font-family: Montserrat;
+            font-size: 14px;
+            color: #121212;
+            text-decoration: none solid rgb(18, 18, 18);
+        }
+    }
+
+    &_buttons {
+        padding-inline: 16%;
+        display: inline-flex;
+        width: 100%;
+        position: fixed;
+        bottom: 100px;
+        left: 0px;
+        & button {
+            background-color: #151d24;
+            border: 1px solid #268fbc;
+            border-radius: 6px;
+            color: white;
+            padding: 10px;
+            width: 100px;
+            height: 45px;
+            font-size: 20px;
+            transition-duration: 400ms;
+        }
+
+        &_cancel {
+            margin-right: auto;
+        }
+
+        &_save {
+            float: right;
+        }
+    }
+  }
