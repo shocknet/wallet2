@@ -20,7 +20,7 @@ import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources 
 import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
 import { options } from '../../constants';
-import SelfHostedImg from "../../Assets/Images/self_hosted.jpg";
+import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 
 export const Sources = () => {
 
@@ -230,7 +230,7 @@ export const Sources = () => {
     switch (value) {
       case "0":
         return <React.Fragment>
-          <img src = {SelfHostedImg} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+          <img src = {BootstrapSource} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
         </React.Fragment>
       case "1":
         return icons.mynode()
