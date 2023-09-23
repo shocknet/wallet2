@@ -42,7 +42,7 @@ export const Prefs = () => {
         </div>
         <div className='Prefs_mempool'>
           <header>Mempool Provider</header>
-          <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email"/>
+          <input type="text" placeholder="https://mempool.space/api/v1/fees/recommended"/>
         </div>
         <div className='Prefs_fiat'>
           <header>Fiat Estimates</header>
@@ -52,7 +52,7 @@ export const Prefs = () => {
               <option value={"eur"}>EUR</option>
               <option value={"cny"}>CNY</option>
             </select>
-            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email"/>
+            <input type="text" placeholder="https://api.coinbase.com/v2/prices/BTC-USD/spot"/>
           </div>
         </div>
         <div className='Prefs_buttons'>
