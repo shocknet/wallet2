@@ -3,28 +3,55 @@ import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, options } from "../../constants";
+import { addPaySources } from "../../State/Slices/paySourcesSlice";
+import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 
 export const NodeUp = () => {
   const router = useIonRouter();
+  const dispatch = useDispatch();
 
-  //declaration about reducer
-  const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+  const privateKey = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
   const toMainPage = () => {
-    const loader = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-    setNostrPrivateKey()
-    if (loader) {
+    setNostrPrivateKey();
+    addBootStrapSources();
+    if (privateKey) {
       router.push("/home");
     }else {
       router.push("/loader")
     }
   };
 
+  const toSourcePage = () => {
+    setNostrPrivateKey()
+    router.push("/sources")
+  };
+
+  const addBootStrapSources = () => {
+    dispatch(addPaySources(
+      {
+        id: 0,
+        label: "Bootstrap Node",
+        pasteField: NOSTR_PUB_DESTINATION,
+        option: options.little,
+        icon: "0",
+      }
+    ));
+    dispatch(addSpendSources(
+      {
+        id: 0,
+        label: "Bootstrap Node",
+        pasteField: NOSTR_PUB_DESTINATION,
+        option: options.little,
+        icon: "0",
+        balance: "0",
+      }
+    ))
+  }
+
   useEffect(() => {
-    if(paySources.length!==0||spendSources.length!==0){
+    if(privateKey){
       router.push("/home")
     }
   }, []);
@@ -37,11 +64,11 @@ export const NodeUp = () => {
         "Add connection" to link a node now.
       </div>
       <div className="NodeUp_manual">
-        <div onClick={() => { router.push("/sources")} } className="NodeUp_manual_text">
+        <div onClick={toSourcePage} className="NodeUp_manual_text">
           Add Connection
         </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={() => { toMainPage() }}>
+          <button onClick={toMainPage}>
             Continue
           </button>
         </div>

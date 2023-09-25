@@ -8,19 +8,7 @@ const update = (value: SpendFrom[]) => {
   localStorage.setItem("spendFrom", JSON.stringify(value));
 }
 
-const initialState: SpendFrom[] = JSON.parse(getSpendFromLocal??"[]").length!==0?
-    JSON.parse(getSpendFromLocal??"[]")
-    :
-    [
-      {
-        id: 0,
-        label: "Bootstrap Node",
-        pasteField: NOSTR_PUB_DESTINATION,
-        option: options.little,
-        icon: "0",
-        balance: "0",
-      }
-    ];
+const initialState: SpendFrom[] = JSON.parse(getSpendFromLocal??"[]");
 
 const spendSourcesSlice = createSlice({
   name: 'spendSources',
