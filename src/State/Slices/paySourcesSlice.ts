@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
+import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 
 const getPayToLocal = localStorage.getItem("payTo");
 

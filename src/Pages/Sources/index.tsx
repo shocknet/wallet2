@@ -19,28 +19,18 @@ import { addPaySources, editPaySources, deletePaySources, setPaySources } from '
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
+import { options } from '../../constants';
+import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 
 export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
   const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
-  
-  /*
-    This is Source data from reducer
-    It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
-  */
-
-  const options: any = {
-    little: "A little.",
-    very: "Very well.",
-    mine: "It's my node.",
-  }
  
-  const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
-  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
+  const [payToLists, setPayToLists] = useState<PayTo[]>([]);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
@@ -139,7 +129,7 @@ export const Sources = () => {
             label: resultLnurl.hostname,
             pasteField: sourcePasteField.replaceAll("lightning:", ""),
           } as PayTo;
-          setpayToLists([...payToLists, addedSource]);
+          setPayToLists([...payToLists, addedSource]);
           dispatch(addPaySources(addedSource))
         }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
           let amountSats = "0";
@@ -174,7 +164,7 @@ export const Sources = () => {
         label: sourcePasteField,
         pasteField: sourcePasteField,
       } as PayTo;
-      setpayToLists([...payToLists, addedSource]);
+      setPayToLists([...payToLists, addedSource]);
       dispatch(addPaySources(addedSource));
     }else {
       return openNotification("top", "Error", "Please Write input Correctly!");
@@ -215,7 +205,7 @@ export const Sources = () => {
     let payToSources = payToLists;
     payToSources.splice(editPSourceId, 1);
     setEditPSourceId(0);
-    setpayToLists(payToSources);
+    setPayToLists(payToSources);
     dispatch(deletePaySources(editPSourceId))
     resetValue();
     toggle();
@@ -238,6 +228,10 @@ export const Sources = () => {
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
+      case "0":
+        return <React.Fragment>
+          <img src = {BootstrapSource} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
       case "1":
         return icons.mynode()
 
@@ -430,12 +424,14 @@ export const Sources = () => {
 
   useEffect(() => {
     // resetSpendFrom();
+    setPayToLists(paySources);
+    setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
   },[]);
 
   useEffect(() => {
-    // dispatch(setPaySources(payToLists));
-    // dispatch(setSpendSources(spendFromLists));
+    dispatch(setPaySources(payToLists));
+    dispatch(setSpendSources(spendFromLists));
   }, [payToLists, spendFromLists]);
 
   return (
@@ -449,7 +445,7 @@ export const Sources = () => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='payList' className="Sources_list_box">
-            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setpayToLists}>
+            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setPayToLists}>
               {payToLists.map((item: PayTo, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>

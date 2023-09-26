@@ -42,67 +42,6 @@ export const Scan = () => {
   const [amountToPay, setAmountToPay] = useState(0)
   const { isShown, toggle } = UseModal();
 
-  const parse = async (input: string) => {
-    console.log("parsing")
-    setError("");
-    const lowData = input.toLowerCase()
-    if (lowData.startsWith('pub_product:')) {
-      console.log("parsed pub product", lowData)
-      const productData = JSON.parse(lowData.slice('pub_product:'.length))
-      const productId = productData.productId
-
-      console.log("send the buy request to the following pub:", productData.dest)
-      console.log("send the buy request using the following relays:", productData.relays)
-
-      const invoiceRes = await nostr.NewProductInvoice({ id: productId })
-      if (invoiceRes.status !== 'OK') {
-        setError(invoiceRes.reason)
-        return
-      }
-      const decodedRes = await nostr.DecodeInvoice({ invoice: invoiceRes.invoice })
-      if (decodedRes.status !== 'OK') {
-        setError(decodedRes.reason)
-        return
-      }
-      setPayOperation({
-        type: 'payInvoice',
-        invoice: invoiceRes.invoice,
-        amount: decodedRes.amount
-      })
-    } else if (lowData.startsWith('bitcoin:')) {
-      const btcAddress = lowData.slice('bitcoin:'.length)
-      setPayOperation({
-        type: 'payAddress',
-        address: btcAddress
-      })
-    } else if (lowData.startsWith('lightning:')) {
-      const lnOperation = lowData.slice('lightning:'.length)
-      if (lnOperation.startsWith("lnurl")) {
-        setError("lnurl not supported yet" + lnOperation)
-      } else {
-        const res = await nostr.DecodeInvoice({ invoice: lnOperation })
-        if (res.status !== 'OK') {
-          setError(res.reason)
-          return
-        }
-        setPayOperation({
-          type: 'payInvoice',
-          invoice: lnOperation,
-          amount: res.amount
-        })
-      }
-    } else {
-      setError("scanned content unsupported " + lowData)
-    }
-  }
-
-  const requestTag = {
-    lnurlPay: "payRequest",
-    lnurlWithdraw: "withdrawRequest",
-    lnurlAuth: "",
-    lnurlChannel: "channelRequest",
-  }
-
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -129,34 +68,6 @@ export const Scan = () => {
       }
     } catch (error) {
       return openNotification("top", "Error", "Please scan correct QRcode!");
-    }
-  }
-
-  const pay = async (action: PayInvoice | PayAddress) => {
-    switch (action.type) {
-      case 'payAddress':
-        const resA = await nostr.PayAddress({
-          address: action.address,
-          amoutSats: amountToPay,
-          targetConf: 10
-        })
-        if (resA.status !== 'OK') {
-          setError(resA.reason)
-          return
-        }
-        router.push("/home")
-        break;
-      case 'payInvoice':
-        const resI = await nostr.PayInvoice({
-          invoice: action.invoice,
-          amount: 0,
-        })
-        if (resI.status !== 'OK') {
-          setError(resI.reason)
-          return
-        }
-        router.push("/home")
-        break;
     }
   }
 
@@ -217,7 +128,7 @@ export const Scan = () => {
     }
     return <div className="Scan_pay_operation">
       {p}
-      <button onClick={() => pay(payOperation)}>OK</button>
+      <button onClick={() => {}}>OK</button>
     </div>
   }
 
