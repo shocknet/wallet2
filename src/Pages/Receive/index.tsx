@@ -160,6 +160,7 @@ export const Receive = () => {
       toggle();
       return;
     }
+    if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
     if (tagInvoice) {
       setValueQR(LNurl);
       setTagInvoice(false);
