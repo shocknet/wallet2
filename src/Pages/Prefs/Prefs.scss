@@ -3,8 +3,9 @@
         width: 24px;
         height: 24px;
         margin-top: -14px;
-        margin-inline: auto;
+        // margin-inline: auto;
         background-color: #16191c;
+        // transform: translateX(100%);
     }
 
     &_container {
@@ -148,6 +149,7 @@
         }
 
         &_currency {
+            background-color: white;
             margin-right: 8px;
             width: 97px;
             height: 43px;

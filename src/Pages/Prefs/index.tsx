@@ -8,6 +8,14 @@ import axios from 'axios';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 
+interface ChainFeesInter {
+  fastestFee: number,
+  halfHourFee: number,
+  hourFee: number,
+  economyFee: number,
+  minimumFee: number,
+}
+
 export const Prefs = () => {
   const router = useIonRouter();
   const dispatch = useDispatch();
@@ -22,12 +30,22 @@ export const Prefs = () => {
     });
   };
 
-  const price = useSelector((state:any) => state.usdToBTC);
   //reducer
   const prefsRedux = useSelector((state:any) => state.prefs);
 
+  const screenWidth = window.innerWidth * 0.88 - 23;
+
   const [mempool, setMempool] = useState(prefsRedux.mempool||"");
   const [fiat, setFiat] = useState(prefsRedux.fiat||"");
+  const [chainFees, setChainFees] = useState<ChainFeesInter>({
+    fastestFee: 0,
+    halfHourFee: 0,
+    hourFee: 0,
+    economyFee: 0,
+    minimumFee: 0,
+  });
+  const [chainFee, setChainFee] = useState(prefsRedux.chainFee??1);
+  const [pos, setPos] = useState(0);
 
   const hadleSubmit = async () => {
     let mempoolInfo;
@@ -51,6 +69,7 @@ export const Prefs = () => {
         {
           mempool: mempool,
           fiat: fiat,
+          chainFee: chainFee
         }
       ));
       return openNotification("top", "Success", "Successfully saved!");
@@ -60,7 +79,65 @@ export const Prefs = () => {
   }
 
   useEffect(()=>{
-  });
+    switch (chainFee) {
+      case 0:
+        setPos(23)
+        break;
+
+      case 1:
+        setPos(screenWidth/2)
+        break;
+
+      case 2:
+        setPos(screenWidth-23)
+        break;
+    }
+    getChainFee();
+  },[prefsRedux]);
+
+  const getChainFee = async () => {
+    if (prefsRedux.mempool === "") {
+      setChainFees({
+        fastestFee: 0,
+        halfHourFee: 0,
+        hourFee: 0,
+        economyFee: 0,
+        minimumFee: 0,
+      })
+      return;
+    }
+    const getFee = await axios.get(prefsRedux.mempool);
+    setChainFees(getFee.data);
+  }
+
+  const touchMoveSlide = (e: any) => {
+    let positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
+    if (positionX<0) {
+      positionX = 0;
+    }
+    if (positionX>window.innerWidth * 0.88 - 23) {
+      positionX = window.innerWidth * 0.88 - 23;
+    }
+    setPos(positionX);
+  }
+
+  const touchEndSlide = () => {
+    const feeValue = pos*2/screenWidth;
+    switch (Math.round(feeValue)) {
+      case 0:
+        setPos(23)
+        break;
+
+      case 1:
+        setPos(screenWidth/2)
+        break;
+
+      case 2:
+        setPos(screenWidth-23)
+        break;
+    }
+    setChainFee(Math.round(feeValue))
+  }
 
   return (
     <div className='Prefs_container'>
@@ -72,19 +149,21 @@ export const Prefs = () => {
           <div className='Prefs_chainfee_options'>
             <div className='Prefs_chainfee_options_first'>
               <p className='Prefs_chainfee_options_top'>Economy</p>
-              <p className='Prefs_chainfee_options_bottom'>10 sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.economyFee} sat/byte</p>
             </div>
             <div className='Prefs_chainfee_options_second'>
               <p className='Prefs_chainfee_options_top'>Average</p>
-              <p className='Prefs_chainfee_options_bottom'>30 sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.hourFee} sat/byte</p>
             </div>
             <div className='Prefs_chainfee_options_third'>
               <p className='Prefs_chainfee_options_top'>ASAP</p>
-              <p className='Prefs_chainfee_options_bottom'>60 sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.halfHourFee} sat/byte</p>
             </div>
           </div>
           <div className='Prefs_chainfee_settings'>
-            {Icons.prefsSetting()}
+            <div onTouchStart={touchMoveSlide} onTouchMove={touchMoveSlide} style={{paddingLeft: pos, transition: "0.15s"}} onTouchEnd={touchEndSlide}>
+              {Icons.prefsSetting()}
+            </div>
           </div>
         </div>
         <div className='Prefs_mempool'>

@@ -3,6 +3,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 interface PrefsInterface {
     mempool: string,
     fiat: string,
+    chainFee: number,
 }
 
 const prefs = localStorage.getItem("prefs");
@@ -18,8 +19,10 @@ const prefsSlice = createSlice({
   initialState,
   reducers: {
     setPrefs: (state, action: PayloadAction<PrefsInterface>) => {
-        state = action.payload;
-        update(state)
+      state.fiat = action.payload.fiat;
+      state.mempool = action.payload.mempool;
+      state.chainFee = action.payload.chainFee;
+      update(state)
     },
   },
 });
