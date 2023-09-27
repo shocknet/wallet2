@@ -35,6 +35,7 @@ export const Receive = () => {
   const [valueQR, setValueQR] = useState("");
   const [lightningAdd, setLightningAdd] = useState("");
   const [tagInvoice, setTagInvoice] = useState(false);
+  const [bitcoinAdd, setBitcoinAdd] = useState("");
   const router = useIonRouter();
 
   const [api, contextHolder] = notification.useNotification();
@@ -155,6 +156,10 @@ export const Receive = () => {
       return
     }
     setValueQR(`bitcoin:${res.address}`);
+    setTagInvoice(false);
+    setBitcoinAdd(
+      res.address.substr(0,5)+"..."+res.address.substr(res.address.length-5,5)
+    )
   }
 
   const updateInvoice = async () => {
@@ -169,8 +174,8 @@ export const Receive = () => {
       toggle();
       return;
     }
-    if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
     if (tagInvoice) {
+      if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
       setValueQR(LNurl);
       setTagInvoice(false);
     }else {
@@ -215,7 +220,7 @@ export const Receive = () => {
           </div>
         </div>
         <div className='Receive_copy'>
-          {tagInvoice ? '~ $'+(parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : lightningAdd}
+          {tagInvoice ? '~ $'+(parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:")?bitcoinAdd:lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>

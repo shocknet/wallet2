@@ -60,7 +60,7 @@ z"/>
 z"/>
 </svg>`;
     return (
-        <div className="Header_IMG_Logo" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_logo" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
 
