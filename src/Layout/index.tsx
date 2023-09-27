@@ -43,8 +43,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(()=>{
-    getPrice()
-  }, [])
+    getPrice();
+  })
 
   return(
     <React.Fragment>

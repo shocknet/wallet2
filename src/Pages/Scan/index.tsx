@@ -145,7 +145,7 @@ export const Scan = () => {
   return (
     <div className="Scan">
       {contextHolder}
-      <div onClick={() => { router.push("/home") }} className="Scan_back">
+      <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
       <div className="Scan_wall">
@@ -155,17 +155,18 @@ export const Scan = () => {
         <QrReader
           // scanDelay={1000}
           onResult={(result: any, error: any) => {
-            if (!!result) {
-              handleSubmit(result.text);
-              // router.push("/home");
-              // return;
-            }
+              if (!!result) {
+                handleSubmit(result.text);
+                // router.push("/home");
+                // return;
+              }
 
-            if (!!error) {
-              // console.info(error);
-              // setError('Device Not found');
+              if (!!error) {
+                // console.info(error);
+                // setError('Device Not found');
+              }
             }
-          } } 
+          }
           constraints={{ facingMode: "environment" } }
         />
       </div>

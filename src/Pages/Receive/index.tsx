@@ -148,6 +148,15 @@ export const Receive = () => {
     };
   }
 
+  const ChainAdress = async () => {
+    const res = await nostr.NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    if (res.status !== 'OK') {
+      // setError(res.reason)
+      return
+    }
+    setValueQR(`bitcoin:${res.address}`);
+  }
+
   const updateInvoice = async () => {
     setAmountValue(amount);
     paySource[0].icon == "0" ? CreateInvoiceOK() : configInvoice();
@@ -223,7 +232,7 @@ export const Receive = () => {
             </button>
           </div>
           <div className="Receive_chain">
-            <button>
+            <button onClick={ChainAdress}>
               CHAIN{Icons.arrowRight()}
             </button>
           </div>
