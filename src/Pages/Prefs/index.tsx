@@ -7,6 +7,7 @@ import { setPrefs } from '../../State/Slices/prefsSlice';
 import axios from 'axios';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
+import { defaultMempool } from '../../constants';
 
 interface ChainFeesInter {
   fastestFee: number,
@@ -46,6 +47,7 @@ export const Prefs = () => {
   });
   const [chainFee, setChainFee] = useState(prefsRedux.chainFee??1);
   const [pos, setPos] = useState(0);
+  const [click, setClick] = useState(false);
 
   const hadleSubmit = async () => {
     let mempoolInfo;
@@ -95,15 +97,16 @@ export const Prefs = () => {
     getChainFee();
   },[prefsRedux]);
 
+  useEffect(()=>{
+    window.addEventListener("mouseup", ()=>{
+      // touchEndSlide();
+    })
+  },[])
+
   const getChainFee = async () => {
     if (prefsRedux.mempool === "") {
-      setChainFees({
-        fastestFee: 0,
-        halfHourFee: 0,
-        hourFee: 0,
-        economyFee: 0,
-        minimumFee: 0,
-      })
+      const defaultFee = await axios.get(defaultMempool);
+      setChainFees(defaultFee.data)
       return;
     }
     const getFee = await axios.get(prefsRedux.mempool);
@@ -111,7 +114,15 @@ export const Prefs = () => {
   }
 
   const touchMoveSlide = (e: any) => {
-    let positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
+    let positionX = 0;
+    if (e.type.includes("mouse")) {
+      positionX = e.pageX - window.innerWidth * 0.06 - 12;
+      if (!click) {
+        return;
+      }
+    }else if (e.type.includes("touch")) {
+      positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
+    }
     if (positionX<0) {
       positionX = 0;
     }
@@ -136,7 +147,8 @@ export const Prefs = () => {
         setPos(screenWidth-23)
         break;
     }
-    setChainFee(Math.round(feeValue))
+    setChainFee(Math.round(feeValue));
+    setClick(false);
   }
 
   return (
@@ -161,7 +173,16 @@ export const Prefs = () => {
             </div>
           </div>
           <div className='Prefs_chainfee_settings'>
-            <div onTouchStart={touchMoveSlide} onTouchMove={touchMoveSlide} style={{paddingLeft: pos, transition: "0.15s"}} onTouchEnd={touchEndSlide}>
+            <div 
+              onTouchStart={touchMoveSlide}
+              onTouchMove={touchMoveSlide}
+              onTouchEnd={touchEndSlide}
+              onMouseDown={()=>{setClick(true)}}
+              onMouseMove={touchMoveSlide}
+              onMouseLeave={touchEndSlide}
+              onMouseUp={touchEndSlide}
+              style={{paddingLeft: pos, transition: "0.15s"}}
+            >
               {Icons.prefsSetting()}
             </div>
           </div>

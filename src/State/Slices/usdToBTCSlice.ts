@@ -13,14 +13,15 @@ const update = (value: Price) => {
   localStorage.setItem("price", JSON.stringify(value));
 }
 
-const initialState: Price = JSON.parse(priceLocal??"[]");
+const initialState: Price = JSON.parse(priceLocal??"{}");
 
 const usdToBTCSlice = createSlice({
   name: 'usdToBTC',
   initialState,
   reducers: {
     setAmount: (state, action: PayloadAction<Price>) => {
-        state = action.payload;
+        state.buyPrice = action.payload.buyPrice;
+        state.sellPrice = action.payload.sellPrice;
         update(state)
     },
   },

@@ -215,7 +215,7 @@ export const Send = () => {
             </div>
           </div>
           <div className='Send_available_amount'>
-          ~ ${parseInt(amount===""?"0":amount)===0?0:(parseInt(amount===""?"0":amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00001)).toFixed(2)}
+          ~ ${parseInt(amount===""?"0":amount)===0?0:(parseInt(amount===""?"0":amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001 )).toFixed(2)}
           </div>
           <div className="Send_to">
             <p>To:</p>

@@ -48,6 +48,9 @@ export const Home = () => {
 
   useEffect(() => {
     getPrice();
+  },[price])
+
+  useEffect(() => {
     let totalAmount = 0;
     for (let i = 0; i < spendSources.length; i++) {
       const eachAmount = spendSources[i].balance;
@@ -55,17 +58,17 @@ export const Home = () => {
     }
     setBalance(totalAmount.toString());
     setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
-    nostr.GetUserInfo().then(res => {
-      if (res.status !== 'OK') {
-        setError(res.reason)
-        console.log(res.reason, "reason");
+    // nostr.GetUserInfo().then(res => {
+    //   if (res.status !== 'OK') {
+    //     setError(res.reason)
+    //     console.log(res.reason, "reason");
         
-        return
-      }
-      console.log(res.balance);
+    //     return
+    //   }
+    //   console.log(res.balance);
       
-      setBalance((res.balance.toString()))
-    })
+    //   setBalance((res.balance.toString()))
+    // })
   }, []);
 
   useEffect(() => {

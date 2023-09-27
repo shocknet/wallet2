@@ -3,7 +3,7 @@ import { Header } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
 import axios from "axios";
-import { usdToBTCBuyLink, usdToBTCSellLink } from "../constants";
+import { usdToBTCSpotLink } from "../constants";
 import { useDispatch } from "react-redux";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
 
@@ -18,7 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   
   const getPrice = async () => {
     const buyInfo = await axios.get<any>(
-      usdToBTCBuyLink,
+      usdToBTCSpotLink,
       {
         headers: {
           Accept: 'application/json',
@@ -26,7 +26,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
       }
     );
     const sellInfo = await axios.get<any>(
-      usdToBTCSellLink,
+      usdToBTCSpotLink,
       {
         headers: {
           Accept: 'application/json',
@@ -43,8 +43,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(()=>{
-    getPrice()
-  }, [])
+    getPrice();
+  })
 
   return(
     <React.Fragment>

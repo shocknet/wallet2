@@ -12,7 +12,7 @@ const update = (value: PrefsInterface) => {
   localStorage.setItem("prefs", JSON.stringify(value));
 }
 
-const initialState: PrefsInterface = JSON.parse(prefs??"{}");
+const initialState: PrefsInterface = JSON.parse(prefs??'{"fiat":"","mempool":""}');
 
 const prefsSlice = createSlice({
   name: 'prefs',

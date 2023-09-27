@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { QrReader } from "react-qr-reader";
+import QrReader from "react-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 
@@ -67,6 +67,7 @@ export const Scan = () => {
         router.push("/home")
       }
     } catch (error) {
+      scaned = false;
       return openNotification("top", "Error", "Please scan correct QRcode!");
     }
   }
@@ -145,7 +146,7 @@ export const Scan = () => {
   return (
     <div className="Scan">
       {contextHolder}
-      <div onClick={() => { router.push("/home") }} className="Scan_back">
+      <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
       <div className="Scan_wall">
@@ -153,20 +154,23 @@ export const Scan = () => {
       </div>
       <div className="Scan_scanner">
         <QrReader
-          // scanDelay={1000}
-          onResult={(result: any, error: any) => {
-            if (!!result) {
-              handleSubmit(result.text);
-              // router.push("/home");
-              // return;
-            }
+          delay={1000}
+          onScan={(scanData: any) => {
+              if (!!scanData) {
+                handleSubmit(scanData);
+                // router.push("/home");
+                // return;
+              }
 
-            if (!!error) {
-              // console.info(error);
-              // setError('Device Not found');
+              if (!!error) {
+                // console.info(error);
+                // setError('Device Not found');
+              }
             }
-          } } 
-          constraints={{ facingMode: "environment" } }
+          }
+          onError={()=>{}}
+          facingMode={"environment"}
+          showViewFinder={false}
         />
       </div>
       <div className="Scan_result_input">
