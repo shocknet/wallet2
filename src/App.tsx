@@ -39,6 +39,7 @@ import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
+import AppUrlListener from './Hooks/appUrlListener';
 
 setupIonicReact();
 
@@ -76,6 +77,7 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Layout>
               <>
+                <AppUrlListener/>
                 <Route exact path="/">
                   <NodeUp />
                 </Route>

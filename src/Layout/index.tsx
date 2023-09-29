@@ -42,11 +42,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
       const bitcoinUri = data.url;
       // Do something with the bitcoin URI, such as parsing it or sending it to another component
     });
-    
-    // Remove the listener when the component is unmounted
-    return () => {
-      listener.remove();
-    };
   }, []);
 
   return(
