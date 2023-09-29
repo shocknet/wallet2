@@ -17,7 +17,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <data android:scheme="bitcoin" android:host="*" />
+                <data android:scheme="bitcoin" android:host="io.ionic.wallet" />
             </intent-filter>
         </activity>
 
