@@ -30,7 +30,9 @@ export const Contacts = () => {
     <div className='Send_container'>
       <div className="Send">
         <div className="Send_header_text">Contacts</div>
-        
+        <a href='https://google.com'>https</a><br/>
+        <a href='bitcoin:bc1923fjo34fjskdjf3q4jgsdj'>bitcoin</a><br/>
+        <a href='lightning:lnurl0sd089qudioudfi'>lightning</a><br/>
       </div>
     </div>
   )

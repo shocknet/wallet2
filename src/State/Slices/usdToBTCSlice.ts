@@ -1,6 +1,4 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { usdToBTCBuyLink, usdToBTCSellLink } from '../../constants';
-import axios from 'axios';
 
 interface Price {
     buyPrice: number,
