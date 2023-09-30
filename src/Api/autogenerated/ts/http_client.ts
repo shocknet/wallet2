@@ -118,7 +118,7 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    AddGuestAppUser: async (request: Types.AddGuestAppUserRequest): Promise<ResultError | ({ status: 'OK' } & Types.AppUser)> => {
+    AddGuestAppUser: async (request: Types.AddAppUserRequest): Promise<ResultError | ({ status: 'OK' } & Types.AppUser)> => {
         const auth = await params.retrieveGuestAuth()
         if (auth === null) throw new Error('retrieveGuestAuth() returned null')
         let finalRoute = '/api/guest/app/user/add'

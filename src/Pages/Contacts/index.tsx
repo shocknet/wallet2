@@ -30,7 +30,6 @@ export const Contacts = () => {
     <div className='Send_container'>
       <div className="Send">
         <div className="Send_header_text">Contacts</div>
-        
       </div>
     </div>
   )
