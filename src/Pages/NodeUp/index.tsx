@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setNostrPrivateKey } from "../../Api/nostr";
+import { nostr, setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, options } from "../../constants";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
@@ -29,6 +29,16 @@ export const NodeUp = () => {
   };
 
   const addBootStrapSources = () => {
+    let bootstrapBalance = "0";
+    nostr.GetUserInfo().then(res => {
+      if (res.status !== 'OK') {
+        console.log(res.reason, "reason");
+        return
+      }
+      console.log(res.balance);
+      
+      bootstrapBalance = res.balance.toString()
+    })
     dispatch(addPaySources(
       {
         id: 0,
@@ -45,7 +55,7 @@ export const NodeUp = () => {
         pasteField: NOSTR_PUB_DESTINATION,
         option: options.little,
         icon: "0",
-        balance: "0",
+        balance: bootstrapBalance,
       }
     ))
   }
