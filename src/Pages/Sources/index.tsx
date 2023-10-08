@@ -19,8 +19,9 @@ import { addPaySources, editPaySources, deletePaySources, setPaySources } from '
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
-import { options } from '../../constants';
+import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
+import { nostr } from '../../Api/nostr';
 
 export const Sources = () => {
 
@@ -394,36 +395,50 @@ export const Sources = () => {
     const box = spendSources;
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
-      const copyElement = {
-        id: element.id,
-        label: element.label,
-        pasteField: element.pasteField,
-        icon: element.icon,
-        option: element.option,
-      }
-      let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
-      let sourceURL = bech32.fromWords(dataPart);
-      const lnurlLink = Buffer.from(sourceURL).toString()
-      let amountSats = "0";
-      try {
-        const amount = await axios.get(lnurlLink);
-        amountSats = (amount.data.maxWithdrawable/1000).toString();
-        
-        box[i].balance = parseInt(amountSats).toString();
+      if (element.pasteField === NOSTR_PUB_DESTINATION) {
+        let bootstrapBalance = "0";
+        try {
+          await nostr.GetUserInfo().then(res => {
+            if (res.status !== 'OK') {
+              console.log(res.reason, "reason");
+              return
+            }
+            console.log(res.balance);
+            
+            bootstrapBalance = res.balance.toString()
+          })
+        } catch (error) {
+          console.log(error);
+          
+        }
+        box[i].balance = bootstrapBalance;
         setSpendFromLists([...box]);
         dispatch(editSpendSources(box[i]));
-      } catch (error: any) {
-        box[i].balance = amountSats;
-        setSpendFromLists([...box]);
-        dispatch(editSpendSources(box[i]));
-        console.log(error.response.data.reason);
-        return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+      }else {
+        let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
+        let sourceURL = bech32.fromWords(dataPart);
+        const lnurlLink = Buffer.from(sourceURL).toString()
+        let amountSats = "0";
+        try {
+          const amount = await axios.get(lnurlLink);
+          amountSats = (amount.data.maxWithdrawable/1000).toString();
+          
+          box[i].balance = parseInt(amountSats).toString();
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+        } catch (error: any) {
+          box[i].balance = amountSats;
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+          console.log(error.response.data.reason);
+          return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+        }
       }
     });
   }
 
   useEffect(() => {
-    // resetSpendFrom();
+    resetSpendFrom();
     setPayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
