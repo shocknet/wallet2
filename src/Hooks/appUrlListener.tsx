@@ -1,21 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { useIonRouter } from '@ionic/react';
 
 const AppUrlListener: React.FC<any> = () => {
+    const router = useIonRouter();
     let history = useHistory();
     useEffect(() => {
       App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-        // Example url: https://beerswift.app/tabs/tab2
-        // slug = /tabs/tab2
-        console.log("asdfasdfadf");
-        
-        const slug = event.url.split('.app').pop();
-        if (slug) {
-          history.push(slug);
+        router.push("/bitcoin")
+        if (event.url.includes("bitcoin:")) {
+          
+        }else if (event.url.includes("lightning:")) {
+
         }
-        // If no match, do nothing - let regular routing
-        // logic take over
       });
     }, []);
   

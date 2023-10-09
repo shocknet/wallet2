@@ -28,9 +28,9 @@ export const NodeUp = () => {
     router.push("/sources")
   };
 
-  const addBootStrapSources = () => {
+  const addBootStrapSources = async () => {
     let bootstrapBalance = "0";
-    nostr.GetUserInfo().then(res => {
+    await nostr.GetUserInfo().then(res => {
       if (res.status !== 'OK') {
         console.log(res.reason, "reason");
         return
