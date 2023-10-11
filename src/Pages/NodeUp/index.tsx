@@ -3,9 +3,10 @@ import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { nostr, setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
+import { nip19 } from "nostr-tools";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -30,20 +31,12 @@ export const NodeUp = () => {
 
   const addBootStrapSources = async () => {
     let bootstrapBalance = "0";
-    await nostr.GetUserInfo().then(res => {
-      if (res.status !== 'OK') {
-        console.log(res.reason, "reason");
-        return
-      }
-      console.log(res.balance);
-      
-      bootstrapBalance = res.balance.toString()
-    })
+    let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })
     dispatch(addPaySources(
       {
         id: 0,
         label: "Bootstrap Node",
-        pasteField: NOSTR_PUB_DESTINATION,
+        pasteField: nprofile,
         option: options.little,
         icon: "0",
       }
@@ -52,7 +45,7 @@ export const NodeUp = () => {
       {
         id: 0,
         label: "Bootstrap Node",
-        pasteField: NOSTR_PUB_DESTINATION,
+        pasteField: nprofile,
         option: options.little,
         icon: "0",
         balance: bootstrapBalance,

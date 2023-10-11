@@ -9,6 +9,7 @@ import { PageProps, sw_item } from "../../globalTypes";
 import { useSelector } from "react-redux";
 import { SwItem } from "../../Components/SwItem";
 import { nostr } from "../../Api";
+import ownNostr from "../../Api/ownNostr";
 
 export const Home = () => {
   const price = useSelector((state: any) => state.usdToBTC);
@@ -58,17 +59,13 @@ export const Home = () => {
     }
     setBalance(totalAmount.toString());
     setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
-    // nostr.GetUserInfo().then(res => {
-    //   if (res.status !== 'OK') {
-    //     setError(res.reason)
-    //     console.log(res.reason, "reason");
-        
-    //     return
-    //   }
-    //   console.log(res.balance);
-      
-    //   setBalance((res.balance.toString()))
-    // })
+    nostr.GetUserInfo().then(res => {
+      if (res.status !== 'OK') {
+        console.log(res.reason, "reason");
+        return
+      }
+      console.log(res, "nostr profile");
+    })
   }, []);
 
   useEffect(() => {

@@ -16,7 +16,7 @@ if (!nostrPrivateKey) {
     nostrPrivateKey = generatePrivateKey()
     // setNostrPrivateKey(nostrPrivateKey)
 }
-const nostrPublicKey = getPublicKey(Buffer.from(nostrPrivateKey, 'hex'))
+const nostrPublicKey = getPublicKey(nostrPrivateKey)
 const clientCbs: Record<string, (res: any) => void> = {}
 const handler = new NostrHandler({
     privateKey: nostrPrivateKey,

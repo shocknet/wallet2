@@ -52,7 +52,7 @@
     "buffer": "^6.0.3",
     "ionicons": "^7.0.0",
     "moment": "^2.29.4",
-    "nostr-tools": "^0.24.1",
+    "nostr-tools": "^1.16.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-qr-reader": "^2.2.1",
