@@ -130,28 +130,17 @@ export const Sources = () => {
           id: payToLists.length,
           option: optional,
           icon: sndleveldomain,
-          label: sourcePasteField,
+          label: resultLnurl.hostname,
           pasteField: sourcePasteField,
         } as PayTo;
         setPayToLists([...payToLists, addedPaySource]);
         dispatch(addPaySources(addedPaySource));
-        const newNostr = ownNostr(dataBox);
-        let balanceOfNostr = "0";
-        await newNostr.GetUserInfo().then(res => {
-          if (res.status !== 'OK') {
-            console.log(res.reason, "reason");
-            return
-          }
-          console.log(res, "nostr profile");
-          
-          balanceOfNostr = res.balance.toString()
-        })
         const addedSpendSource = {
           id: spendFromLists.length,
           label: resultLnurl.hostname,
           option: optional,
           icon: sndleveldomain,
-          balance: balanceOfNostr,
+          balance: "0",
           pasteField: sourcePasteField.replaceAll("lightning:", ""),
         } as SpendFrom;
         setSpendFromLists([...spendFromLists, addedSpendSource]);
