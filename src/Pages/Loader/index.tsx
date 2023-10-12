@@ -1,28 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { PageProps, ActionType } from "../../globalTypes";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
+import { useIonRouter } from '@ionic/react';
 
-export const Loader: React.FC<PageProps> = ({ state, dispatch }): JSX.Element => {
-
-  const navigate: NavigateFunction = useNavigate() 
+export const Loader = () => {
+  const router = useIonRouter();
 
   useEffect(() => {
     /*
       It is test for redirects page to "Home" page when loaded all require data
       We can change this function with async function after complete this part 
     */
-    const loader = localStorage.getItem("loader");
-    if (loader === "true") {
-      navigate("/home");
-    }
     setTimeout(() => {
-      navigate("/home");
-      localStorage.setItem("loader", "true");
+      router.push("/home");
     }, 5000);
-  }, [navigate]);
+  }, []);
 
   return(
     <section className="Loader">

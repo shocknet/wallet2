@@ -1,30 +1,68 @@
 import React, { useEffect } from "react";
-import { NavigateFunction, useNavigate } from "react-router-dom";
-import { PageProps } from "../../globalTypes";
+import {  } from "react-router-dom";
+import { useIonRouter } from '@ionic/react';
 import { useSelector, useDispatch } from 'react-redux';
+import { nostr, setNostrPrivateKey } from "../../Api/nostr";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, options } from "../../constants";
+import { addPaySources } from "../../State/Slices/paySourcesSlice";
+import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 
-export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
+export const NodeUp = () => {
+  const router = useIonRouter();
+  const dispatch = useDispatch();
 
-
-  //declaration about reducer
-  const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
-
-  const navigate: NavigateFunction = useNavigate();
+  const privateKey = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
   const toMainPage = () => {
-    const loader = localStorage.getItem("loader");
-    if (loader === "true") {
-      navigate("/home");
+    setNostrPrivateKey();
+    addBootStrapSources();
+    if (privateKey) {
+      router.push("/home");
     }else {
-      navigate("/loader")
+      router.push("/loader")
     }
   };
 
+  const toSourcePage = () => {
+    setNostrPrivateKey()
+    router.push("/sources")
+  };
+
+  const addBootStrapSources = async () => {
+    let bootstrapBalance = "0";
+    await nostr.GetUserInfo().then(res => {
+      if (res.status !== 'OK') {
+        console.log(res.reason, "reason");
+        return
+      }
+      console.log(res.balance);
+      
+      bootstrapBalance = res.balance.toString()
+    })
+    dispatch(addPaySources(
+      {
+        id: 0,
+        label: "Bootstrap Node",
+        pasteField: NOSTR_PUB_DESTINATION,
+        option: options.little,
+        icon: "0",
+      }
+    ));
+    dispatch(addSpendSources(
+      {
+        id: 0,
+        label: "Bootstrap Node",
+        pasteField: NOSTR_PUB_DESTINATION,
+        option: options.little,
+        icon: "0",
+        balance: bootstrapBalance,
+      }
+    ))
+  }
+
   useEffect(() => {
-    if(paySources.length!==0||spendSources.length!==0){
-      navigate("/home")
+    if(privateKey){
+      router.push("/home")
     }
   }, []);
 
@@ -36,11 +74,11 @@ export const NodeUp: React.FC<PageProps> = (): JSX.Element => {
         "Add connection" to link a node now.
       </div>
       <div className="NodeUp_manual">
-        <div onClick={() => { navigate("/sources")} } className="NodeUp_manual_text">
+        <div onClick={toSourcePage} className="NodeUp_manual_text">
           Add Connection
         </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={() => { toMainPage() }}>
+          <button onClick={toMainPage}>
             Continue
           </button>
         </div>

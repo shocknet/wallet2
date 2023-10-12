@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import moment from 'moment'
-import { SwItem } from "../../Components/SwItem";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
 import { PageProps, sw_item } from "../../globalTypes";
-import { nostr } from '../../Api'
+// import { nostr } from '../../Api'
 import { useSelector } from "react-redux";
+import { SwItem } from "../../Components/SwItem";
+import { nostr } from "../../Api";
 
-export const Home: React.FC<PageProps> = (): JSX.Element => {
+export const Home = () => {
   const price = useSelector((state: any) => state.usdToBTC);
   const spendSources = useSelector((state: any) => state.spendSource);
-
+  
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
   const [money, setMoney] = useState("0")
@@ -47,6 +48,9 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
 
   useEffect(() => {
     getPrice();
+  },[price])
+
+  useEffect(() => {
     let totalAmount = 0;
     for (let i = 0; i < spendSources.length; i++) {
       const eachAmount = spendSources[i].balance;
@@ -54,13 +58,17 @@ export const Home: React.FC<PageProps> = (): JSX.Element => {
     }
     setBalance(totalAmount.toString());
     setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
-    nostr.GetUserInfo().then(res => {
-      if (res.status !== 'OK') {
-        setError(res.reason)
-        return
-      }
-      setBalance((res.balance.toString()))
-    })
+    // nostr.GetUserInfo().then(res => {
+    //   if (res.status !== 'OK') {
+    //     setError(res.reason)
+    //     console.log(res.reason, "reason");
+        
+    //     return
+    //   }
+    //   console.log(res.balance);
+      
+    //   setBalance((res.balance.toString()))
+    // })
   }, []);
 
   useEffect(() => {

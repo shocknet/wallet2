@@ -1,43 +1,26 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { usdToBTCBuyLink, usdToBTCSellLink } from '../../constants';
-import axios from 'axios';
 
 interface Price {
     buyPrice: number,
     sellPrice: number,
 };
 
-const getPrice = async () => {
-    const buyInfo = await axios.get<any>(
-      usdToBTCBuyLink,
-      {
-        headers: {
-          Accept: 'application/json',
-        }
-      }
-    );
-    const sellInfo = await axios.get<any>(
-      usdToBTCSellLink,
-      {
-        headers: {
-          Accept: 'application/json',
-        }
-      }
-    );
-    
-    return {
-        buyPrice: buyInfo.data.data.amount,
-        sellPrice: sellInfo.data.data.amount
-    } as Price
+const priceLocal = localStorage.getItem("price");
+
+const update = (value: Price) => {
+  localStorage.setItem("price", JSON.stringify(value));
 }
-const initialState: Price = await getPrice();
+
+const initialState: Price = JSON.parse(priceLocal??"{}");
 
 const usdToBTCSlice = createSlice({
   name: 'usdToBTC',
   initialState,
   reducers: {
     setAmount: (state, action: PayloadAction<Price>) => {
-        state = action.payload;
+        state.buyPrice = action.payload.buyPrice;
+        state.sellPrice = action.payload.sellPrice;
+        update(state)
     },
   },
 });

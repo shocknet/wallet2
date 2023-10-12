@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 
-import { MenuList } from "../../Components/Modals/MenuList";
 import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
@@ -9,14 +8,15 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import SWText from "../../Assets/Images/sw_text.png";
 
 import { HeaderProps } from "./types";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { Ctx } from "../../Context";
+import { useIonRouter } from "@ionic/react";
+import { MenuList } from "../../Components/Modals/MenuList";
 
-export const Header: React.FC<HeaderProps> = (): JSX.Element => {
+export const Header = () => {
+  const router = useIonRouter();
 
   const { isShown, toggle } = UseModal();
 
-  const navigate: NavigateFunction = useNavigate()
   const state = useContext(Ctx)
 
   const isNopeUp: boolean = window.location.pathname === "/";
@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
       </div>
       <div className="Header_modal_content">
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/automation");
+          router.push("/automation");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <div className="Header_modal_content_item_text">Automation</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/contacts");
+          router.push("/contacts");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <div className="Header_modal_content_item_text">Contacts</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/prefs");
+          router.push("/prefs");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <div className="Header_modal_content_item_text">Preferences</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/sources");
+          router.push("/sources");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <hr />
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/sources");
+          router.push("/sources");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
           <div className="Header_modal_content_item_text">Buy Bitcoin</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          navigate("/sources");
+          router.push("/sources");
           toggle();
         }}>
           <div className="Header_modal_content_item_img">
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
     <header className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header_logo_1" onClick={() => navigate("/")}>
+          <button className="Header_logo_1" onClick={() => router.push("/")}>
             {Icons.Logo()}
           </button>
           <div className="Header_text">
@@ -108,20 +108,20 @@ export const Header: React.FC<HeaderProps> = (): JSX.Element => {
         ) : (
           isreceive ? (
             <React.Fragment>
-              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+              <button className="Header_logo_2" onClick={() => router.push("/home")}>
                 {Icons.Logo()}
               </button>
-              <div onClick={() => { navigate("/home") }} className="Header_menu">
+              <div onClick={() => { router.push("/home") }} className="Header_menu">
                 {Icons.closeIcon()}
               </div>
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <button className="Header_logo_2" onClick={() => navigate("/home")}>
+              <button className="Header_logo_2" onClick={() => router.push("/home")}>
                   {Icons.Logo()}
               </button>
               <button className="Header_menu" onClick={() => {
-                navigate("#");
+                router.push("#");
                 toggle();
               }}>
                 {Icons.Menu()}

@@ -1,81 +1,81 @@
 .NodeUp{
-  padding-bottom: 30px;
-  font-family: Montserrat;
-  width: 94%;
-  margin-inline: auto;
-
-  &__no-found{
-    display: block;
-    text-align: center;
-    padding-block: 40px;
-    font-size: 1.6rem;
-  }
-
-  &_title{
-    font-size: 100%;
-    text-align: center;
-    margin-top: 50px;
-  }
-
-  &_textBox{
-    font-size: 60%;
-    text-align: center;
-    color: #949596;
-    padding: 40px 0 60px 0;
-    border-bottom: 1px solid #949596;
-    border-top: 1px solid #949596;
-    margin-top: 30px;
-    border-width: 1px;
-    border-color: #949596;
-  }
-
-  &_manual{
-    position: absolute;
+    padding-bottom: 30px;
+    font-family: Montserrat;
     width: 94%;
-    bottom: 60px;
-  }
-
-  &_manual_text{
-    font-size: 80%;
-    color: #268fbc;
-    text-align: center;
-  }
-
-  &_manual_btn{
-    margin-top: 20px;
-    text-align: center;
-    padding: 0;
-    width: 100%;
-  }
-
-  &_manual_btn button{
-    background-color: #16191c;
-    border: 1px solid #268fbc;
-    border-radius: 6px;
-    color: white;
-    font-size: 100%;
-    padding: 10px;
-    width: 220px;
-    transition-duration: 400ms;
-  }
+    margin-inline: auto;
   
-  &_manual_btn button:hover{
-    background-color: #373a3d;
-  }
-
-  &__items{
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 25px;
-    padding-top: 20px;
-
-    @media screen and (min-width: 680px){
-      grid-template-columns: repeat(2, 1fr);
+    &__no-found{
+      display: block;
+      text-align: center;
+      padding-block: 40px;
+      font-size: 1.6rem;
     }
-
-    @media screen and (min-width: 1020px){
-      grid-template-columns: repeat(3, 1fr);
-      gap: 35px;
+  
+    &_title{
+      font-size: 100%;
+      text-align: center;
+      margin-top: 50px;
+    }
+  
+    &_textBox{
+      font-size: 60%;
+      text-align: center;
+      color: #949596;
+      padding: 40px 0 60px 0;
+      border-bottom: 1px solid #949596;
+      border-top: 1px solid #949596;
+      margin-top: 30px;
+      border-width: 1px;
+      border-color: #949596;
+    }
+  
+    &_manual{
+      position: absolute;
+      width: 94%;
+      bottom: 60px;
+    }
+  
+    &_manual_text{
+      font-size: 80%;
+      color: #268fbc;
+      text-align: center;
+    }
+  
+    &_manual_btn{
+      margin-top: 20px;
+      text-align: center;
+      padding: 0;
+      width: 100%;
+    }
+  
+    &_manual_btn button{
+      background-color: #16191c;
+      border: 1px solid #268fbc;
+      border-radius: 6px;
+      color: white;
+      font-size: 100%;
+      padding: 10px;
+      width: 220px;
+      transition-duration: 400ms;
+    }
+    
+    &_manual_btn button:hover{
+      background-color: #373a3d;
+    }
+  
+    &__items{
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 25px;
+      padding-top: 20px;
+  
+      @media screen and (min-width: 680px){
+        grid-template-columns: repeat(2, 1fr);
+      }
+  
+      @media screen and (min-width: 1020px){
+        grid-template-columns: repeat(3, 1fr);
+        gap: 35px;
+      }
     }
   }
-}

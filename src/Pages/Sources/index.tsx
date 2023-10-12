@@ -3,7 +3,6 @@ import { ReactSortable } from "react-sortablejs";
 import { notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { PageProps, PayTo, SpendFrom } from "../../globalTypes";
-import { Modal } from "../../Components/Modals/Modal";
 
 //It import modal component
 import { UseModal } from "../../Hooks/UseModal";
@@ -18,28 +17,21 @@ import lightningPayReq from "bolt11";
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { Modal } from '../../Components/Modals/Modal';
+import { Buffer } from 'buffer';
+import { NOSTR_PUB_DESTINATION, options } from '../../constants';
+import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
+import { nostr } from '../../Api/nostr';
 
-export const Sources: React.FC<PageProps> = (): JSX.Element => {
+export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
   const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
-  
-  /*
-    This is Source data from reducer
-    It include data id, additional field data(pasteField)(string), balance(int), and icon id(string).
-  */
-
-  const options: any = {
-    little: "A little.",
-    very: "Very well.",
-    mine: "It's my node.",
-  }
  
-  const [payToLists, setpayToLists] = useState<PayTo[]>(paySources);
-  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>(spendSources);
+  const [payToLists, setPayToLists] = useState<PayTo[]>([]);
+  const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
@@ -138,7 +130,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             label: resultLnurl.hostname,
             pasteField: sourcePasteField.replaceAll("lightning:", ""),
           } as PayTo;
-          setpayToLists([...payToLists, addedSource]);
+          setPayToLists([...payToLists, addedSource]);
           dispatch(addPaySources(addedSource))
         }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
           let amountSats = "0";
@@ -173,7 +165,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
         label: sourcePasteField,
         pasteField: sourcePasteField,
       } as PayTo;
-      setpayToLists([...payToLists, addedSource]);
+      setPayToLists([...payToLists, addedSource]);
       dispatch(addPaySources(addedSource));
     }else {
       return openNotification("top", "Error", "Please Write input Correctly!");
@@ -214,7 +206,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
     let payToSources = payToLists;
     payToSources.splice(editPSourceId, 1);
     setEditPSourceId(0);
-    setpayToLists(payToSources);
+    setPayToLists(payToSources);
     dispatch(deletePaySources(editPSourceId))
     resetValue();
     toggle();
@@ -237,6 +229,10 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
+      case "0":
+        return <React.Fragment>
+          <img src = {BootstrapSource} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
       case "1":
         return icons.mynode()
 
@@ -257,7 +253,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           value = "http://www.google.com/s2/favicons?domain="+value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt='' style={{borderRadius: "50%"}}/>
+          <img src = {value} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
         </React.Fragment>
     }
   }
@@ -397,15 +393,28 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
 
   const resetSpendFrom = async () => {
     const box = spendSources;
-      await box.map(async (e: SpendFrom, i: number) => {
-        const element = e;
-        const copyElement = {
-          id: element.id,
-          label: element.label,
-          pasteField: element.pasteField,
-          icon: element.icon,
-          option: element.option,
+    await box.map(async (e: SpendFrom, i: number) => {
+      const element = e;
+      if (element.pasteField === NOSTR_PUB_DESTINATION) {
+        let bootstrapBalance = "0";
+        try {
+          await nostr.GetUserInfo().then(res => {
+            if (res.status !== 'OK') {
+              console.log(res.reason, "reason");
+              return
+            }
+            console.log(res.balance);
+            
+            bootstrapBalance = res.balance.toString()
+          })
+        } catch (error) {
+          console.log(error);
+          
         }
+        box[i].balance = bootstrapBalance;
+        setSpendFromLists([...box]);
+        dispatch(editSpendSources(box[i]));
+      }else {
         let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString()
@@ -417,19 +426,21 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
           box[i].balance = parseInt(amountSats).toString();
           setSpendFromLists([...box]);
           dispatch(editSpendSources(box[i]));
-
         } catch (error: any) {
-          box[i].balance = "0";
+          box[i].balance = amountSats;
           setSpendFromLists([...box]);
           dispatch(editSpendSources(box[i]));
           console.log(error.response.data.reason);
           return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
         }
-      });
+      }
+    });
   }
 
   useEffect(() => {
     resetSpendFrom();
+    setPayToLists(paySources);
+    setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
   },[]);
 
@@ -449,7 +460,7 @@ export const Sources: React.FC<PageProps> = (): JSX.Element => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='payList' className="Sources_list_box">
-            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setpayToLists}>
+            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setPayToLists}>
               {payToLists.map((item: PayTo, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>

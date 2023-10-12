@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
+import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
 
 type DropDownProps = {
   values: SpendFrom[];
@@ -25,6 +26,10 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
+      case "0":
+        return <React.Fragment>
+          <img src = {BootstrapSource} width="23px" alt='Avatar' style={{borderRadius: "50%"}}/>
+        </React.Fragment>
       case "1":
         return icons.mynodeSmall()
 

@@ -164,14 +164,13 @@
   &_modal_code{
     
     & input {
-
       color: #999999;
       border: 1px solid #2aabe1;
       font-size: 14px;
       font-family: Montserrat;
       text-align: center;
       margin-top: 10px;
-      background-color: #16191c;
+      background-color: transparent;
       padding: 12px;
       width: 100%;
       border-radius: 5px;
@@ -346,7 +345,7 @@
       font-family: Montserrat;
       color: #2693c1;
       margin-top: 10px;
-      background-color: #16191c;
+      background-color: transparent;
       padding: 12px;
       border-radius: 2rem;
       overflow-x: auto;

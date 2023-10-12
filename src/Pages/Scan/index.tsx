@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { NavigateFunction, useNavigate } from "react-router-dom";
-import { QrReader } from "react-qr-reader";
+import QrReader from "react-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
-import { Modal } from "../../Components/Modals/Modal";
 import { notification } from 'antd';
 
 //It import svg icons library
@@ -14,6 +12,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";
+import { useIonRouter } from "@ionic/react";
+import { Modal } from "../../Components/Modals/Modal";
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
@@ -26,13 +26,13 @@ type PayAddress = {
   address: string
 }
 
-export const Scan: React.FC<PageProps> = (): JSX.Element => {
+export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
   const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
-  const navigate: NavigateFunction = useNavigate();
+  const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");
   let scaned = false;
@@ -41,67 +41,6 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
   const { isShown, toggle } = UseModal();
-
-  const parse = async (input: string) => {
-    console.log("parsing")
-    setError("");
-    const lowData = input.toLowerCase()
-    if (lowData.startsWith('pub_product:')) {
-      console.log("parsed pub product", lowData)
-      const productData = JSON.parse(lowData.slice('pub_product:'.length))
-      const productId = productData.productId
-
-      console.log("send the buy request to the following pub:", productData.dest)
-      console.log("send the buy request using the following relays:", productData.relays)
-
-      const invoiceRes = await nostr.NewProductInvoice({ id: productId })
-      if (invoiceRes.status !== 'OK') {
-        setError(invoiceRes.reason)
-        return
-      }
-      const decodedRes = await nostr.DecodeInvoice({ invoice: invoiceRes.invoice })
-      if (decodedRes.status !== 'OK') {
-        setError(decodedRes.reason)
-        return
-      }
-      setPayOperation({
-        type: 'payInvoice',
-        invoice: invoiceRes.invoice,
-        amount: decodedRes.amount
-      })
-    } else if (lowData.startsWith('bitcoin:')) {
-      const btcAddress = lowData.slice('bitcoin:'.length)
-      setPayOperation({
-        type: 'payAddress',
-        address: btcAddress
-      })
-    } else if (lowData.startsWith('lightning:')) {
-      const lnOperation = lowData.slice('lightning:'.length)
-      if (lnOperation.startsWith("lnurl")) {
-        setError("lnurl not supported yet" + lnOperation)
-      } else {
-        const res = await nostr.DecodeInvoice({ invoice: lnOperation })
-        if (res.status !== 'OK') {
-          setError(res.reason)
-          return
-        }
-        setPayOperation({
-          type: 'payInvoice',
-          invoice: lnOperation,
-          amount: res.amount
-        })
-      }
-    } else {
-      setError("scanned content unsupported " + lowData)
-    }
-  }
-
-  const requestTag = {
-    lnurlPay: "payRequest",
-    lnurlWithdraw: "withdrawRequest",
-    lnurlAuth: "",
-    lnurlChannel: "channelRequest",
-  }
 
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
@@ -125,38 +64,11 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       if (lnurlLink.includes("withdraw")) {
         toggle();
       } else {
-        navigate("/home")
+        router.push("/home")
       }
     } catch (error) {
+      scaned = false;
       return openNotification("top", "Error", "Please scan correct QRcode!");
-    }
-  }
-
-  const pay = async (action: PayInvoice | PayAddress) => {
-    switch (action.type) {
-      case 'payAddress':
-        const resA = await nostr.PayAddress({
-          address: action.address,
-          amoutSats: amountToPay,
-          satsPerVByte: 10
-        })
-        if (resA.status !== 'OK') {
-          setError(resA.reason)
-          return
-        }
-        navigate("/home")
-        break;
-      case 'payInvoice':
-        const resI = await nostr.PayInvoice({
-          invoice: action.invoice,
-          amount: 0,
-        })
-        if (resI.status !== 'OK') {
-          setError(resI.reason)
-          return
-        }
-        navigate("/home")
-        break;
     }
   }
 
@@ -189,7 +101,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));
     toggle();
-    navigate("/sources")
+    router.push("/sources")
   }
 
   useEffect(() => {
@@ -217,7 +129,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     }
     return <div className="Scan_pay_operation">
       {p}
-      <button onClick={() => pay(payOperation)}>OK</button>
+      <button onClick={() => { }}>OK</button>
     </div>
   }
 
@@ -234,7 +146,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   return (
     <div className="Scan">
       {contextHolder}
-      <div onClick={() => { navigate("/home") }} className="Scan_back">
+      <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
       <div className="Scan_wall">
@@ -242,11 +154,11 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       </div>
       <div className="Scan_scanner">
         <QrReader
-          // scanDelay={1000}
-          onResult={(result: any, error: any) => {
-            if (!!result) {
-              handleSubmit(result.text);
-              // navigate("/home");
+          delay={1000}
+          onScan={(scanData: any) => {
+            if (!!scanData) {
+              handleSubmit(scanData);
+              // router.push("/home");
               // return;
             }
 
@@ -254,8 +166,11 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
               // console.info(error);
               // setError('Device Not found');
             }
-          }}
-          constraints={{ facingMode: "environment" }}
+          }
+          }
+          onError={() => { }}
+          facingMode={"environment"}
+          showViewFinder={false}
         />
       </div>
       <div className="Scan_result_input">
