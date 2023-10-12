@@ -27,9 +27,9 @@ export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-  const paySources = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
- 
+  const paySources = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
+  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
+
   const [payToLists, setPayToLists] = useState<PayTo[]>([]);
   const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
@@ -65,7 +65,7 @@ export const Sources = () => {
   };
 
   const EditSourcePay_Modal = (key: number) => {
-    setEditPSourceId(key);    
+    setEditPSourceId(key);
     setOptional(payToLists[key].option || '');
     setSourceLabel(payToLists[key].label || '');
     setModalContent("editSourcepay");
@@ -73,7 +73,7 @@ export const Sources = () => {
   };
 
   const EditSourceSpend_Modal = (key: number) => {
-    setEditSSourceId(key);    
+    setEditSSourceId(key);
     setOptional(spendFromLists[key].option || '');
     setSourceLabel(spendFromLists[key].label || '');
     setModalContent("editSourcespend");
@@ -95,15 +95,15 @@ export const Sources = () => {
 
       case 'editSourcespend':
         return contentEditContent
-  
+
       case 'notify':
         return notifyContent
-        
+
       default:
         return notifyContent
     }
   }
-  
+
   const requestTag = {
     lnurlPay: "pay",
     lnurlWithdraw: "withdraw",
@@ -132,16 +132,16 @@ export const Sources = () => {
           } as PayTo;
           setPayToLists([...payToLists, addedSource]);
           dispatch(addPaySources(addedSource))
-        }else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+        } else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
           let amountSats = "0";
           try {
             const amount = await axios.get(lnurlLink);
-            amountSats = (amount.data.maxWithdrawable/1000).toString();
+            amountSats = (amount.data.maxWithdrawable / 1000).toString();
           } catch (error: any) {
             console.log(error);
             return openNotification("top", "Error", error.response.data.reason);
           }
-          
+
           const addedSource = {
             id: spendFromLists.length,
             label: resultLnurl.hostname,
@@ -156,7 +156,7 @@ export const Sources = () => {
       } catch (error) {
         return openNotification("top", "Error", "Please Write input Correctly!");
       }
-    }else if (expression.test(sourcePasteField)) {
+    } else if (expression.test(sourcePasteField)) {
       const lnAddress = sourcePasteField.split("@");
       const addedSource = {
         id: payToLists.length,
@@ -167,7 +167,7 @@ export const Sources = () => {
       } as PayTo;
       setPayToLists([...payToLists, addedSource]);
       dispatch(addPaySources(addedSource));
-    }else {
+    } else {
       return openNotification("top", "Error", "Please Write input Correctly!");
     }
     resetValue();
@@ -231,7 +231,7 @@ export const Sources = () => {
     switch (value) {
       case "0":
         return <React.Fragment>
-          <img src = {BootstrapSource} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+          <img src={BootstrapSource} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
         </React.Fragment>
       case "1":
         return icons.mynode()
@@ -247,13 +247,13 @@ export const Sources = () => {
 
       case "5":
         return icons.stacker()
-          
+
       default:
         if (!value?.includes("http")) {
-          value = "http://www.google.com/s2/favicons?domain="+value;
+          value = "http://www.google.com/s2/favicons?domain=" + value;
         }
         return <React.Fragment>
-          <img src = {value} width="33px" alt='Avatar' style={{borderRadius: "50%"}}/>
+          <img src={value} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
         </React.Fragment>
     }
   }
@@ -327,7 +327,7 @@ export const Sources = () => {
       </div>
     </div>
     <div className='Sources_modal_code'>
-    <input
+      <input
         value={sourceLabel} placeholder="Optional label..."
         onChange={(e) => setSourceLabel(e.target.value)}
       />
@@ -343,7 +343,7 @@ export const Sources = () => {
     <div className="Sources_notify">
       <div className="Sources_notify_title">What is this?</div>
       <div className="Sources_notify_textBox">
-        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices.<br/><br/>
+        Sources are a node or account used by the wallet. Pay To sources generate invoices to receive payments, and Spend From sources will pay invoices.<br /><br />
         If using multiple sources, you may set an order that is used to move balances opportunistically, provide liquidity, or second-attempt network failures.
       </div>
       <button className="Sources_notify_button" onClick={toggle}>OK</button>
@@ -352,7 +352,7 @@ export const Sources = () => {
 
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  const handlePayTouchMove = (event:any) => {
+  const handlePayTouchMove = (event: any) => {
     if (event.touches.length === 1) {
       const { clientY } = event.touches[0];
       const deltaY = clientY - scrollPosition;
@@ -369,7 +369,7 @@ export const Sources = () => {
     }
   };
 
-  const handleFromTouchMove = (event:any) => {
+  const handleFromTouchMove = (event: any) => {
     if (event.touches.length === 1) {
       const { clientY } = event.touches[0];
       const deltaY = clientY - scrollPosition;
@@ -386,7 +386,7 @@ export const Sources = () => {
     }
   };
 
-  const setPosition = (event:any) => {
+  const setPosition = (event: any) => {
     const { clientY } = event.touches[0];
     setScrollPosition(clientY);
   }
@@ -404,25 +404,25 @@ export const Sources = () => {
               return
             }
             console.log(res.balance);
-            
+
             bootstrapBalance = res.balance.toString()
           })
         } catch (error) {
           console.log(error);
-          
+
         }
         box[i].balance = bootstrapBalance;
         setSpendFromLists([...box]);
         dispatch(editSpendSources(box[i]));
-      }else {
-        let { prefix:s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
+      } else {
+        let { prefix: s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString()
         let amountSats = "0";
         try {
           const amount = await axios.get(lnurlLink);
-          amountSats = (amount.data.maxWithdrawable/1000).toString();
-          
+          amountSats = (amount.data.maxWithdrawable / 1000).toString();
+
           box[i].balance = parseInt(amountSats).toString();
           setSpendFromLists([...box]);
           dispatch(editSpendSources(box[i]));
@@ -431,7 +431,7 @@ export const Sources = () => {
           setSpendFromLists([...box]);
           dispatch(editSpendSources(box[i]));
           console.log(error.response.data.reason);
-          return openNotification("top", "Error",(i+1) + " " + error.response.data.reason);
+          return openNotification("top", "Error", (i + 1) + " " + error.response.data.reason);
         }
       }
     });
@@ -442,7 +442,7 @@ export const Sources = () => {
     setPayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
-  },[]);
+  }, []);
 
   useEffect(() => {
     dispatch(setPaySources(payToLists));
@@ -460,7 +460,7 @@ export const Sources = () => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='payList' className="Sources_list_box">
-            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e:any)=>{return {...e}})} setList={setPayToLists}>
+            <ReactSortable<PayTo> filter={".Sources_item_left, .Sources_item_close"} list={payToLists.map((e: any) => { return { ...e } })} setList={setPayToLists}>
               {payToLists.map((item: PayTo, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
@@ -490,7 +490,7 @@ export const Sources = () => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <div id='fromList' className="Sources_list_box">
-            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists.map((e:any)=>{return {...e}})} setList={setSpendFromLists}>
+            <ReactSortable filter={".Sources_item_left, .Sources_item_balance, .Sources_item_close"} list={spendFromLists.map((e: any) => { return { ...e } })} setList={setSpendFromLists}>
               {spendFromLists.map((item: SpendFrom, key: number) => {
                 return (
                   <div className="Sources_item" key={key}>
