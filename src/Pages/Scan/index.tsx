@@ -30,7 +30,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const navigate: NavigateFunction = useNavigate();
 
@@ -124,7 +124,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
       setQrCodeLnurl(qrcode);
       if (lnurlLink.includes("withdraw")) {
         toggle();
-      }else {
+      } else {
         navigate("/home")
       }
     } catch (error) {
@@ -138,7 +138,7 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
         const resA = await nostr.PayAddress({
           address: action.address,
           amoutSats: amountToPay,
-          targetConf: 10
+          satsPerVByte: 10
         })
         if (resA.status !== 'OK') {
           setError(resA.reason)
@@ -161,23 +161,23 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
   }
 
   const addSource = async () => {
-    let { prefix:s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
+    let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
     let sourceURL = bech32.fromWords(dataPart);
     const lnurlLink = Buffer.from(sourceURL).toString()
     console.log(lnurlLink, s);
-    
+
     let resultLnurl = new URL(lnurlLink);
     const parts = resultLnurl.hostname.split(".");
     const sndleveldomain = parts.slice(-2).join('.');
     let amountSats = "0";
     try {
       const amount = await axios.get(lnurlLink);
-      amountSats = (amount.data.maxWithdrawable/1000).toString();
-      console.log(amountSats,lnurlLink);
-      
+      amountSats = (amount.data.maxWithdrawable / 1000).toString();
+      console.log(amountSats, lnurlLink);
+
     } catch (error) {
       console.log(error);
-      
+
     }
     const addedSource = {
       id: spendSources.length,
@@ -191,9 +191,9 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     toggle();
     navigate("/sources")
   }
-  
+
   useEffect(() => {
-    
+
   })
 
   if (error !== '') {
@@ -225,8 +225,8 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
     <div className='Sources_modal_header'>Add Source</div>
     <div className='Sources_modal_discription'>Would you like to add this url to source?</div>
     <div className="Sources_modal_add_btn">
-    <button onClick={toggle}>Ignore</button>
-    <button onClick={addSource}>Add</button>
+      <button onClick={toggle}>Ignore</button>
+      <button onClick={addSource}>Add</button>
     </div>
 
   </React.Fragment>;
@@ -254,8 +254,8 @@ export const Scan: React.FC<PageProps> = (): JSX.Element => {
               // console.info(error);
               // setError('Device Not found');
             }
-          } } 
-          constraints={{ facingMode: "environment" } }
+          }}
+          constraints={{ facingMode: "environment" }}
         />
       </div>
       <div className="Scan_result_input">

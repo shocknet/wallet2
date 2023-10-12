@@ -118,20 +118,6 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    AddGuestAppUser: async (request: Types.AddGuestAppUserRequest): Promise<ResultError | ({ status: 'OK' } & Types.AppUser)> => {
-        const auth = await params.retrieveGuestAuth()
-        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/guest/app/user/add'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') {
-            const result = data
-            if (!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.AppUserValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
     AddAppInvoice: async (request: Types.AddAppInvoiceRequest): Promise<ResultError | ({ status: 'OK' } & Types.NewInvoiceResponse)> => {
         const auth = await params.retrieveAppAuth()
         if (auth === null) throw new Error('retrieveAppAuth() returned null')
