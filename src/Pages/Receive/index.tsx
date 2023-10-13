@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ReactQrCode } from '@devmehq/react-qr-code';
-import { PageProps } from "../../globalTypes";
-import { nostr } from '../../Api'
+import { getNostrClient } from '../../Api'
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
@@ -10,14 +9,11 @@ import { UseModal } from '../../Hooks/UseModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
-import { NOSTR_RELAYS } from '../../constants';
-import bolt11 from "bolt11";
 import axios from 'axios';
 import { Modal } from '../../Components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
 import { Buffer } from 'buffer';
-import { bech32 } from '@scure/base';
-
+import { bech32 } from 'bech32';
 
 export const Receive = () => {
   axios.defaults.headers.post['Content-Type'] ='application/x-www-form-urlencoded';
@@ -37,6 +33,7 @@ export const Receive = () => {
   const [tagInvoice, setTagInvoice] = useState(false);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const router = useIonRouter();
+  const nostrSource = paySource.filter((e: any)=>e.pasteField.includes("nprofile"))
 
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
@@ -55,11 +52,7 @@ export const Receive = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-    if (paySource[0].icon == "0") {
-      CreateInvoiceOK();
-    }else {
-      configLNURL();
-    }
+    configLNURL();
   },[]);
 
   useEffect(() => {
@@ -70,15 +63,22 @@ export const Receive = () => {
     }
   },[LNInvoice, LNurl]);
 
-  const CreateInvoiceOK = async () => {
-    const res = await nostr.NewInvoice({
+  const CreateNostrInvoice = async () => {
+    console.log(nostrSource);
+    
+    if (!nostrSource.length) return;
+    const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
       amountSats: +amount,
       memo: ""
     })
+    console.log(res);
+    
     if (res.status !== 'OK') {
       // setError(res.reason)
       return
     }
+    console.log(res.invoice, " this is invoice");
+    
     setLNInvoice(`lightning:${res.invoice}`);
     setTagInvoice(true);
   }
@@ -90,29 +90,33 @@ export const Receive = () => {
 
   const configInvoice = async () => {
     const address = configLNaddress();
-    try {
-      const callAddress = await axios.get(address.valueOfQR);
-      if (amount === "") {
-        setAmountValue((callAddress.data.minSendable/1000).toString())
-        setAmount((callAddress.data.minSendable/1000).toString()) 
-      }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
-        return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
-      }
-      console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
-
-      const callbackURL = await axios.get(
-        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
-        // "https://api.lnmarkets.com/v2/lnurl/pay",
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            withCredentials: false,
-          }
+    
+    if (address.valueOfQR==="") CreateNostrInvoice()
+    else {
+      try {
+        const callAddress = await axios.get(address.valueOfQR);
+        if (amount === "") {
+          setAmountValue((callAddress.data.minSendable/1000).toString())
+          setAmount((callAddress.data.minSendable/1000).toString()) 
+        }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
+          return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
         }
-      );
-      setLNInvoice("lightning:"+callbackURL.data.pr);
-    } catch (error: any) {
-      return openNotification("top", "Error", "Cors error");
+        console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
+
+        const callbackURL = await axios.get(
+          callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
+          // "https://api.lnmarkets.com/v2/lnurl/pay",
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              withCredentials: false,
+            }
+          }
+        );
+        setLNInvoice("lightning:"+callbackURL.data.pr);
+      } catch (error: any) {
+        return openNotification("top", "Error", "Cors error");
+      }
     }
   }
   
@@ -126,21 +130,16 @@ export const Receive = () => {
 
   const configLNaddress = () => {
     let lnadd = "";
+    let valueOfQR = "";
     if (paySource[0].pasteField.includes("@")) {
       lnadd = paySource[0].pasteField;
-    }else {
+      valueOfQR = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
+    }else if (!paySource[0].pasteField.includes("nprofile")) {
       let { words: dataPart } = bech32.decode(paySource[0].pasteField.replace("lightning:", ""), 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const payLink = Buffer.from(sourceURL).toString();
       const url = new URL(payLink);
       lnadd = url.hostname;
-    }
-    let valueOfQR = "";
-    if (paySource[0].pasteField.includes("@")) {
-      valueOfQR = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
-    }else {
-      let { words: dataPart } = bech32.decode(paySource[0].pasteField.replace("lightning:", ""), 2000);
-      let sourceURL = bech32.fromWords(dataPart);
       valueOfQR = Buffer.from(sourceURL).toString();
     }
     return {
@@ -150,7 +149,8 @@ export const Receive = () => {
   }
 
   const ChainAdress = async () => {
-    const res = await nostr.NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    if (!nostrSource.length) return;
+    const res = await getNostrClient(nostrSource[0].pasteField).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       // setError(res.reason)
       return
@@ -164,7 +164,7 @@ export const Receive = () => {
 
   const updateInvoice = async () => {
     setAmountValue(amount);
-    paySource[0].icon == "0" ? CreateInvoiceOK() : configInvoice();
+    configInvoice();
     setTagInvoice(true)
     toggle();
   }
@@ -208,7 +208,6 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          {/* <a href={valueQR}>scsc</a> */}
           {valueQR == "" ? <div></div> :<ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}

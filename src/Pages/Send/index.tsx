@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageProps, SpendFrom } from "../../globalTypes";
-import { nostr } from '../../Api'
+import { getNostrClient } from '../../Api'
 import { notification } from 'antd';
 
 //It import svg icons library
@@ -28,6 +28,7 @@ export const Send = () => {
   const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
+  const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
   const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const [error, setError] = useState("")
@@ -45,6 +46,7 @@ export const Send = () => {
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
   const [amountToPay, setAmountToPay] = useState(0)
+  const nostrSource = paySource.filter((e: any)=>e.pasteField.includes("nprofile"))
 
   const router = useIonRouter();
 
@@ -68,7 +70,8 @@ export const Send = () => {
   });
 
   const ChainAdress = async () => {
-    const res = await nostr.NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    if (!nostrSource.length) return;
+    const res = await getNostrClient(nostrSource[0].pasteField).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       setError(res.reason)
       return
@@ -85,7 +88,8 @@ export const Send = () => {
   }
 
   const CreateInvoiceOK = async () => {
-    const res = await nostr.NewInvoice({
+    if (!nostrSource.length) return;
+    const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
       amountSats: invoiceAmount,
       memo: invoiceMemo
     })
@@ -106,6 +110,7 @@ export const Send = () => {
   }
 
   const parse = async (input: string) => {
+    if (!nostrSource.length) return;
     console.log("parsing")
     setError("");
     const lowData = input.toLowerCase()
@@ -117,12 +122,12 @@ export const Send = () => {
       console.log("send the buy request to the following pub:", productData.dest)
       console.log("send the buy request using the following relays:", productData.relays)
 
-      const invoiceRes = await nostr.NewProductInvoice({ id: productId })
+      const invoiceRes = await getNostrClient(nostrSource[0].pasteField).NewProductInvoice({ id: productId })
       if (invoiceRes.status !== 'OK') {
         setError(invoiceRes.reason)
         return
       }
-      const decodedRes = await nostr.DecodeInvoice({ invoice: invoiceRes.invoice })
+      const decodedRes = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: invoiceRes.invoice })
       if (decodedRes.status !== 'OK') {
         setError(decodedRes.reason)
         return
@@ -143,7 +148,7 @@ export const Send = () => {
       if (lnOperation.startsWith("lnurl")) {
         setError("lnurl not supported yet" + lnOperation)
       } else {
-        const res = await nostr.DecodeInvoice({ invoice: lnOperation })
+        const res = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: lnOperation })
         console.log(res);
 
         if (res.status !== 'OK') {
@@ -163,9 +168,10 @@ export const Send = () => {
   }
 
   const pay = async (action: PayInvoice | PayAddress) => {
+    if (!nostrSource.length) return;
     switch (action.type) {
       case 'payAddress':
-        const resA = await nostr.PayAddress({
+        const resA = await getNostrClient(nostrSource[0].length).PayAddress({
           address: action.address,
           amoutSats: +amount,
           satsPerVByte: 10
@@ -177,7 +183,7 @@ export const Send = () => {
         router.push("/home")
         break;
       case 'payInvoice':
-        const resI = await nostr.PayInvoice({
+        const resI = await getNostrClient(nostrSource[0].length).PayInvoice({
           invoice: action.invoice,
           amount: 0,
         })

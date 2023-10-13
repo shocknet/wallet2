@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import QrReader from "react-qr-reader";
+import { QrReader } from "react-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { bech32 } from "bech32";
-import { nostr } from '../../Api';
 import { UseModal } from "../../Hooks/UseModal";
 import { useSelector, useDispatch } from 'react-redux';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
@@ -154,23 +153,20 @@ export const Scan = () => {
       </div>
       <div className="Scan_scanner">
         <QrReader
-          delay={1000}
-          onScan={(scanData: any) => {
-            if (!!scanData) {
-              handleSubmit(scanData);
-              // router.push("/home");
-              // return;
-            }
+          onResult={(result: any, error) => {
+              if (!!result) {
+                handleSubmit(result.text);
+                // router.push("/home");
+                // return;
+              }
 
-            if (!!error) {
-              // console.info(error);
-              // setError('Device Not found');
+              if (!!error) {
+                // console.info(error);
+                // setError('Device Not found');
+              }
             }
           }
-          }
-          onError={() => { }}
-          facingMode={"environment"}
-          showViewFinder={false}
+          constraints= {{facingMode: "environment"}}
         />
       </div>
       <div className="Scan_result_input">
