@@ -427,25 +427,25 @@ export const Sources = () => {
   }
 
   const resetSpendFrom = async () => {
-    const box = [...spendSources];
+    let box: any = spendSources.map((e:SpendFrom)=>{return {...e}});
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
       if (element.pasteField.includes("nprofile")) {
         let balanceOfNostr = "0";
-        console.log(element.pasteField);
-        
-        await getNostrClient(element.pasteField).GetUserInfo().then(res => {
-          if (res.status !== 'OK') {
-            console.log(res.reason, "reason");
-            return
-          }
-          console.log(res, "nostr profile");
-          
-          balanceOfNostr = res.balance.toString()
-        })
-        box[i].balance = balanceOfNostr;
-        setSpendFromLists([...box]);
-        dispatch(editSpendSources(box[i]));
+        try {
+          await getNostrClient(element.pasteField).GetUserInfo().then(res => {
+            if (res.status !== 'OK') {
+              console.log(res.reason, "reason");
+              return
+            }
+            balanceOfNostr = res.balance.toString()
+          })
+          box[i].balance = balanceOfNostr;
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
+        } catch (error) {
+          return openNotification("top", "Error", "Couldn't connect to relays");
+        }
       } else {
         let { prefix: s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
