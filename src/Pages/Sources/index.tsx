@@ -22,6 +22,8 @@ import { Buffer } from 'buffer';
 import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { nostr } from '../../Api/nostr';
+import ownNostr from '../../Api/ownNostr';
+import { nip19 } from 'nostr-tools';
 
 export const Sources = () => {
 
@@ -113,12 +115,46 @@ export const Sources = () => {
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    if (!expression.test(sourcePasteField)) {
+    if (sourcePasteField.includes("nprofile")) {
+      try {
+        let {type, data} = nip19.decode(sourcePasteField);
+        if (type !== 'nprofile') {
+          return openNotification("top", "Error", "Please Write Data Correctly!");
+        }
+        const dataString = JSON.stringify(data);
+        const dataBox = JSON.parse(dataString);
+        let resultLnurl = new URL(dataBox.relays[0]);
+        const parts = resultLnurl.hostname.split(".");
+        const sndleveldomain = parts.slice(-2).join('.');
+        const addedPaySource = {
+          id: payToLists.length,
+          option: optional,
+          icon: sndleveldomain,
+          label: resultLnurl.hostname,
+          pasteField: sourcePasteField,
+        } as PayTo;
+        setPayToLists([...payToLists, addedPaySource]);
+        dispatch(addPaySources(addedPaySource));
+        const addedSpendSource = {
+          id: spendFromLists.length,
+          label: resultLnurl.hostname,
+          option: optional,
+          icon: sndleveldomain,
+          balance: "0",
+          pasteField: sourcePasteField.replaceAll("lightning:", ""),
+        } as SpendFrom;
+        setSpendFromLists([...spendFromLists, addedSpendSource]);
+        dispatch(addSpendSources(addedSpendSource));
+      } catch (error) {
+        console.log(error);
+        
+      }
+    }else if (!expression.test(sourcePasteField)) {
       try {
         let { words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString();
-
+        
         let resultLnurl = new URL(lnurlLink);
         const parts = resultLnurl.hostname.split(".");
         const sndleveldomain = parts.slice(-2).join('.');
@@ -409,9 +445,21 @@ export const Sources = () => {
           })
         } catch (error) {
           console.log(error);
-
         }
-        box[i].balance = bootstrapBalance;
+        const dataString = JSON.stringify(data);
+        const dataBox = JSON.parse(dataString);
+        const newNostr = ownNostr(dataBox);
+        let balanceOfNostr = "0";
+        await newNostr.GetUserInfo().then(res => {
+          if (res.status !== 'OK') {
+            console.log(res.reason, "reason");
+            return
+          }
+          console.log(res, "nostr profile");
+          
+          balanceOfNostr = res.balance.toString()
+        })
+        box[i].balance = balanceOfNostr;
         setSpendFromLists([...box]);
         dispatch(editSpendSources(box[i]));
       } else {
