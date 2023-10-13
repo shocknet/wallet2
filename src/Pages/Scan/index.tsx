@@ -30,7 +30,7 @@ export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const router = useIonRouter();
 
@@ -63,7 +63,7 @@ export const Scan = () => {
       setQrCodeLnurl(qrcode);
       if (lnurlLink.includes("withdraw")) {
         toggle();
-      }else {
+      } else {
         router.push("/home")
       }
     } catch (error) {
@@ -73,23 +73,23 @@ export const Scan = () => {
   }
 
   const addSource = async () => {
-    let { prefix:s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
+    let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
     let sourceURL = bech32.fromWords(dataPart);
     const lnurlLink = Buffer.from(sourceURL).toString()
     console.log(lnurlLink, s);
-    
+
     let resultLnurl = new URL(lnurlLink);
     const parts = resultLnurl.hostname.split(".");
     const sndleveldomain = parts.slice(-2).join('.');
     let amountSats = "0";
     try {
       const amount = await axios.get(lnurlLink);
-      amountSats = (amount.data.maxWithdrawable/1000).toString();
-      console.log(amountSats,lnurlLink);
-      
+      amountSats = (amount.data.maxWithdrawable / 1000).toString();
+      console.log(amountSats, lnurlLink);
+
     } catch (error) {
       console.log(error);
-      
+
     }
     const addedSource = {
       id: spendSources.length,
@@ -103,9 +103,9 @@ export const Scan = () => {
     toggle();
     router.push("/sources")
   }
-  
+
   useEffect(() => {
-    
+
   })
 
   if (error !== '') {
@@ -129,7 +129,7 @@ export const Scan = () => {
     }
     return <div className="Scan_pay_operation">
       {p}
-      <button onClick={() => {}}>OK</button>
+      <button onClick={() => { }}>OK</button>
     </div>
   }
 
@@ -137,8 +137,8 @@ export const Scan = () => {
     <div className='Sources_modal_header'>Add Source</div>
     <div className='Sources_modal_discription'>Would you like to add this url to source?</div>
     <div className="Sources_modal_add_btn">
-    <button onClick={toggle}>Ignore</button>
-    <button onClick={addSource}>Add</button>
+      <button onClick={toggle}>Ignore</button>
+      <button onClick={addSource}>Add</button>
     </div>
 
   </React.Fragment>;
@@ -156,19 +156,19 @@ export const Scan = () => {
         <QrReader
           delay={1000}
           onScan={(scanData: any) => {
-              if (!!scanData) {
-                handleSubmit(scanData);
-                // router.push("/home");
-                // return;
-              }
+            if (!!scanData) {
+              handleSubmit(scanData);
+              // router.push("/home");
+              // return;
+            }
 
-              if (!!error) {
-                // console.info(error);
-                // setError('Device Not found');
-              }
+            if (!!error) {
+              // console.info(error);
+              // setError('Device Not found');
             }
           }
-          onError={()=>{}}
+          }
+          onError={() => { }}
           facingMode={"environment"}
           showViewFinder={false}
         />

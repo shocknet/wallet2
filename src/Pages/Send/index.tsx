@@ -25,10 +25,10 @@ type PayAddress = {
 }
 
 export const Send = () => {
-  const price = useSelector((state:any) => state.usdToBTC);
+  const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const [error, setError] = useState("")
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
@@ -58,7 +58,7 @@ export const Send = () => {
     });
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     if (spendSources.length === 0) {
       setTimeout(() => {
         router.push("/home");
@@ -145,7 +145,7 @@ export const Send = () => {
       } else {
         const res = await nostr.DecodeInvoice({ invoice: lnOperation })
         console.log(res);
-        
+
         if (res.status !== 'OK') {
           setError(res.reason)
           return
@@ -155,7 +155,7 @@ export const Send = () => {
           invoice: lnOperation,
           amount: res.amount
         })
-        
+
       }
     } else {
       setError("scanned content unsupported " + lowData)
@@ -208,33 +208,33 @@ export const Send = () => {
         <div className="Send_header_text">Send Payment</div>
         <div className="Send_config">
           <div className="Send_amount">
-            Amount: 
+            Amount:
             <div className='Send_amount_container'>
-              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => {setAmount(e.target.value)}}/>
-              <button onClick={() => {setAmountAssets(amountAssets === "BTC"?"sats":"BTC")}}>{amountAssets}</button>
+              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => { setAmount(e.target.value) }} />
+              <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
-          ~ ${parseInt(amount===""?"0":amount)===0?0:(parseInt(amount===""?"0":amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001 )).toFixed(2)}
+            ~ ${parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => {setTo(e.target.value)}}/>
+            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => { setTo(e.target.value) }} />
           </div>
           <div className="Send_for">
             <p>For:</p>
-            <input type="text" placeholder="Add a note" value={note} onChange={(e) => {setNote(e.target.value)}}/>
+            <input type="text" placeholder="Add a note" value={note} onChange={(e) => { setNote(e.target.value) }} />
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
-            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]}/>
+            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]} />
           </div>
         </div>
       </div>
       <div className="Send_other_options">
         <div className="Send_lnurl">
           <div className="Send_set_amount_copy">
-            <button onClick={()=>{router.goBack()}}>{Icons.Close()}CANCEL</button>
+            <button onClick={() => { router.goBack() }}>{Icons.Close()}CANCEL</button>
           </div>
         </div>
         <div className="Send_chain">

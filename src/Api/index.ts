@@ -1,5 +1,5 @@
 import { http } from './http'
-import { nostr } from './nostr'
+import { getNostrClient } from './nostr'
 export {
-    http, nostr
+    http, getNostrClient
 }
