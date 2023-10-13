@@ -12,7 +12,6 @@ import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
-import lightningPayReq from "bolt11";
 //reducer
 import { useSelector, useDispatch } from 'react-redux';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
@@ -21,7 +20,7 @@ import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
 import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
-import { nostr } from '../../Api/nostr';
+import { getNostrClient } from '../../Api/nostr';
 import ownNostr from '../../Api/ownNostr';
 import { nip19 } from 'nostr-tools';
 
@@ -428,40 +427,25 @@ export const Sources = () => {
   }
 
   const resetSpendFrom = async () => {
-    const box = spendSources;
+    let box: any = spendSources.map((e:SpendFrom)=>{return {...e}});
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
-      if (element.pasteField === NOSTR_PUB_DESTINATION) {
-        let bootstrapBalance = "0";
+      if (element.pasteField.includes("nprofile")) {
+        let balanceOfNostr = "0";
         try {
-          await nostr.GetUserInfo().then(res => {
+          await getNostrClient(element.pasteField).GetUserInfo().then(res => {
             if (res.status !== 'OK') {
               console.log(res.reason, "reason");
               return
             }
-            console.log(res.balance);
-
-            bootstrapBalance = res.balance.toString()
+            balanceOfNostr = res.balance.toString()
           })
+          box[i].balance = balanceOfNostr;
+          setSpendFromLists([...box]);
+          dispatch(editSpendSources(box[i]));
         } catch (error) {
-          console.log(error);
+          return openNotification("top", "Error", "Couldn't connect to relays");
         }
-        const dataString = JSON.stringify(data);
-        const dataBox = JSON.parse(dataString);
-        const newNostr = ownNostr(dataBox);
-        let balanceOfNostr = "0";
-        await newNostr.GetUserInfo().then(res => {
-          if (res.status !== 'OK') {
-            console.log(res.reason, "reason");
-            return
-          }
-          console.log(res, "nostr profile");
-          
-          balanceOfNostr = res.balance.toString()
-        })
-        box[i].balance = balanceOfNostr;
-        setSpendFromLists([...box]);
-        dispatch(editSpendSources(box[i]));
       } else {
         let { prefix: s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
