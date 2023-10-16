@@ -28,7 +28,7 @@ export const Send = () => {
   const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
-  const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
+  const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
   const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const [error, setError] = useState("")
@@ -46,7 +46,7 @@ export const Send = () => {
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
   const [amountToPay, setAmountToPay] = useState(0)
-  const nostrSource = paySource.filter((e: any)=>e.pasteField.includes("nprofile"))
+  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
 
   const router = useIonRouter();
 
@@ -71,7 +71,7 @@ export const Send = () => {
 
   const ChainAdress = async () => {
     if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       setError(res.reason)
       return
@@ -89,7 +89,7 @@ export const Send = () => {
 
   const CreateInvoiceOK = async () => {
     if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
       amountSats: invoiceAmount,
       memo: invoiceMemo
     })
@@ -122,12 +122,12 @@ export const Send = () => {
       console.log("send the buy request to the following pub:", productData.dest)
       console.log("send the buy request using the following relays:", productData.relays)
 
-      const invoiceRes = await getNostrClient(nostrSource[0].pasteField).NewProductInvoice({ id: productId })
+      const invoiceRes = await (await getNostrClient(nostrSource[0].pasteField)).NewProductInvoice({ id: productId })
       if (invoiceRes.status !== 'OK') {
         setError(invoiceRes.reason)
         return
       }
-      const decodedRes = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: invoiceRes.invoice })
+      const decodedRes = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: invoiceRes.invoice })
       if (decodedRes.status !== 'OK') {
         setError(decodedRes.reason)
         return
@@ -148,7 +148,7 @@ export const Send = () => {
       if (lnOperation.startsWith("lnurl")) {
         setError("lnurl not supported yet" + lnOperation)
       } else {
-        const res = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: lnOperation })
+        const res = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: lnOperation })
         console.log(res);
 
         if (res.status !== 'OK') {
@@ -171,7 +171,7 @@ export const Send = () => {
     if (!nostrSource.length) return;
     switch (action.type) {
       case 'payAddress':
-        const resA = await getNostrClient(nostrSource[0].length).PayAddress({
+        const resA = await (await getNostrClient(nostrSource[0].pasteField)).PayAddress({
           address: action.address,
           amoutSats: +amount,
           satsPerVByte: 10
@@ -183,7 +183,7 @@ export const Send = () => {
         router.push("/home")
         break;
       case 'payInvoice':
-        const resI = await getNostrClient(nostrSource[0].length).PayInvoice({
+        const resI = await (await getNostrClient(nostrSource[0].pasteField)).PayInvoice({
           invoice: action.invoice,
           amount: 0,
         })

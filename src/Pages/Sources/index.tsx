@@ -115,7 +115,7 @@ export const Sources = () => {
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     if (sourcePasteField.includes("nprofile")) {
       try {
-        let {type, data} = nip19.decode(sourcePasteField);
+        let { type, data } = nip19.decode(sourcePasteField);
         if (type !== 'nprofile') {
           return openNotification("top", "Error", "Please Write Data Correctly!");
         }
@@ -145,14 +145,14 @@ export const Sources = () => {
         dispatch(addSpendSources(addedSpendSource));
       } catch (error) {
         console.log(error);
-        
+
       }
-    }else if (!expression.test(sourcePasteField)) {
+    } else if (!expression.test(sourcePasteField)) {
       try {
         let { words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString();
-        
+
         let resultLnurl = new URL(lnurlLink);
         const parts = resultLnurl.hostname.split(".");
         const sndleveldomain = parts.slice(-2).join('.');
@@ -426,13 +426,13 @@ export const Sources = () => {
   }
 
   const resetSpendFrom = async () => {
-    let box: any = spendSources.map((e:SpendFrom)=>{return {...e}});
+    let box: any = spendSources.map((e: SpendFrom) => { return { ...e } });
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
       if (element.pasteField.includes("nprofile")) {
         let balanceOfNostr = "0";
         try {
-          await getNostrClient(element.pasteField).GetUserInfo().then(res => {
+          await (await getNostrClient(element.pasteField)).GetUserInfo().then(res => {
             if (res.status !== 'OK') {
               console.log(res.reason, "reason");
               return

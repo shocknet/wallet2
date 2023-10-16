@@ -16,11 +16,11 @@ import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 
 export const Receive = () => {
-  axios.defaults.headers.post['Content-Type'] ='application/x-www-form-urlencoded';
+  axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
   //reducer
-  const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
-  
-  const price = useSelector((state:any) => state.usdToBTC);
+  const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
+
+  const price = useSelector((state: any) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
@@ -33,7 +33,7 @@ export const Receive = () => {
   const [tagInvoice, setTagInvoice] = useState(false);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const router = useIonRouter();
-  const nostrSource = paySource.filter((e: any)=>e.pasteField.includes("nprofile"))
+  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
 
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
@@ -45,40 +45,40 @@ export const Receive = () => {
     });
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
-    }else if (paySource[0].pasteField.includes("nprofile")) {
+    } else if (paySource[0].pasteField.includes("nprofile")) {
       CreateNostrInvoice();
-    }else {
+    } else {
       configLNURL();
     }
-  },[]);
+  }, []);
 
   useEffect(() => {
     if (LNInvoice === "") {
       setValueQR(LNurl);
-    }else {
+    } else {
       setValueQR(LNInvoice);
     }
-  },[LNInvoice, LNurl]);
+  }, [LNInvoice, LNurl]);
 
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
       amountSats: +"100",
       memo: ""
     })
-    
+
     if (res.status !== 'OK') {
       // setError(res.reason)
       return
     }
     console.log(res.invoice, " this is invoice");
-    
+
     setLNInvoice(`lightning:${res.invoice}`);
     setTagInvoice(true);
   }
@@ -90,19 +90,19 @@ export const Receive = () => {
 
   const configInvoice = async () => {
     const address = configLNaddress();
-    
+
     try {
       const callAddress = await axios.get(address.valueOfQR);
       if (amount === "") {
-        setAmountValue((callAddress.data.minSendable/1000).toString())
-        setAmount((callAddress.data.minSendable/1000).toString()) 
-      }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
+        setAmountValue((callAddress.data.minSendable / 1000).toString())
+        setAmount((callAddress.data.minSendable / 1000).toString())
+      } else if (parseInt(amount) < callAddress.data.minSendable / 1000) {
         return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
       }
-      console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
+      console.log(callAddress.data.callback + "&amount=" + callAddress.data.minSendable);
 
       const callbackURL = await axios.get(
-        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
+        callAddress.data.callback + (callAddress.data.callback.includes('?') ? "&" : "?") + "amount=" + (amount === "" ? callAddress.data.minSendable : parseInt(amount) * 1000),
         {
           headers: {
             'Content-Type': 'application/json',
@@ -110,18 +110,18 @@ export const Receive = () => {
           }
         }
       );
-      setLNInvoice("lightning:"+callbackURL.data.pr);
+      setLNInvoice("lightning:" + callbackURL.data.pr);
     } catch (error: any) {
       return openNotification("top", "Error", "Cors error");
     }
   }
-  
+
   const configLNURL = () => {
     const address = configLNaddress();
     let words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
     const lnaddress = bech32.encode("lnurl", words, 999999);
     setLightningAdd(address.lithningAdd)
-    setLNurl("lightning:"+lnaddress);
+    setLNurl("lightning:" + lnaddress);
   }
 
   const configLNaddress = () => {
@@ -130,7 +130,7 @@ export const Receive = () => {
     if (paySource[0].pasteField.includes("@")) {
       lnadd = paySource[0].pasteField;
       valueOfQR = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
-    }else if (!paySource[0].pasteField.includes("nprofile")) {
+    } else if (!paySource[0].pasteField.includes("nprofile")) {
       let { words: dataPart } = bech32.decode(paySource[0].pasteField.replace("lightning:", ""), 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const payLink = Buffer.from(sourceURL).toString();
@@ -146,7 +146,7 @@ export const Receive = () => {
 
   const ChainAdress = async () => {
     if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       // setError(res.reason)
       return
@@ -154,7 +154,7 @@ export const Receive = () => {
     setValueQR(`bitcoin:${res.address}`);
     setTagInvoice(false);
     setBitcoinAdd(
-      res.address.substr(0,5)+"..."+res.address.substr(res.address.length-5,5)
+      res.address.substr(0, 5) + "..." + res.address.substr(res.address.length - 5, 5)
     )
   }
 
@@ -174,7 +174,7 @@ export const Receive = () => {
       if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
       setValueQR(LNurl);
       setTagInvoice(false);
-    }else {
+    } else {
       setValueQR(LNInvoice);
       setTagInvoice(true);
     }
@@ -186,13 +186,13 @@ export const Receive = () => {
       <div className="Receive_result_input">
         <input
           type="number"
-          onChange={(e) => {setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString())}}
+          onChange={(e) => { setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString()) }}
           placeholder="Enter amount in sats"
           value={amount}
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ ${parseInt(amount===""?"0":amount)===0 ? 0 : (parseInt(amount===""?"0":amount) * price.buyPrice * 0.00000001).toFixed(2)}
+        ~ ${parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
     </div>
@@ -205,26 +205,26 @@ export const Receive = () => {
         <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
           <a href={valueQR}>QR</a>
-          {valueQR == "" ? <div></div> :<ReactQrCode
+          {valueQR == "" ? <div></div> : <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}
             renderAs="svg"
           />}
           <div className="Receive_logo_container">
-              {Icons.Logo()}
+            {Icons.Logo()}
           </div>
         </div>
         <div className='Receive_copy'>
-          {tagInvoice ? '~ $'+(parseInt(amountValue===""?"0":amountValue)===0?0:(parseInt(amountValue===""?"0":amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:")?bitcoinAdd:lightningAdd}
+          {tagInvoice ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:") ? bitcoinAdd : lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>
         </div>
         <div className="Receive_set_amount_copy">
-          <button onClick={copyToClip} style={{width: "130px"}}>{Icons.copy()}COPY</button>
-          <div style={{width: "20px"}}/>
-          <button onClick={()=>{}} style={{width: "130px"}}>{Icons.share()}SHARE</button>
+          <button onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+          <div style={{ width: "20px" }} />
+          <button onClick={() => { }} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">

@@ -49,13 +49,12 @@ const App: React.FC = () => {
 
   let installPromptFlag = true;
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (event)  => {
+    window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {
         navigator.registerProtocolHandler('web+lightning', './?address=%s');
         navigator.registerProtocolHandler('bitcoin', './?address=%s');
-        if(installPromptFlag)
-        {
+        if (installPromptFlag) {
           installPWA(event);
           installPromptFlag = false;
         }
@@ -71,7 +70,7 @@ const App: React.FC = () => {
       }
     }
   }
-  
+
   return (
     <Provider store={store}>
       <IonApp>
@@ -79,7 +78,7 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Layout>
               <>
-                <AppUrlListener/>
+                <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
                 </Route>
