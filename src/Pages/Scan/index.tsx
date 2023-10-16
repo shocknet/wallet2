@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { QrReader } from "react-qr-reader";
+import QrReader from "reactjs-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 
@@ -13,6 +13,7 @@ import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";
 import { useIonRouter } from "@ionic/react";
 import { Modal } from "../../Components/Modals/Modal";
+import { Buffer } from "buffer";
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
@@ -59,6 +60,7 @@ export const Scan = () => {
       let { words: dataPart } = bech32.decode(qrcode.replace("lightning:", ""), 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
+      
       setQrCodeLnurl(qrcode);
       if (lnurlLink.includes("withdraw")) {
         toggle();
@@ -153,20 +155,20 @@ export const Scan = () => {
       </div>
       <div className="Scan_scanner">
         <QrReader
-          onResult={(result: any, error) => {
-              if (!!result) {
-                handleSubmit(result.text);
+          delay={500}
+          showViewFinder={false}
+          onError={(error)=>{
+            console.log(error);
+          }}
+          onScan={(result: any) => {
+              if (result) {
+                handleSubmit(result.data);
                 // router.push("/home");
                 // return;
               }
-
-              if (!!error) {
-                // console.info(error);
-                // setError('Device Not found');
-              }
             }
           }
-          constraints= {{facingMode: "environment"}}
+          facingMode="environment"
         />
       </div>
       <div className="Scan_result_input">

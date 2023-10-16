@@ -24,7 +24,7 @@ export const Receive = () => {
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("0");
   const [amountValue, setAmountValue] = useState("");
   const [LNInvoice, setLNInvoice] = useState("");
   const [LNurl, setLNurl] = useState("");
@@ -52,7 +52,7 @@ export const Receive = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     } else if (paySource[0].pasteField.includes("nprofile")) {
-      CreateNostrInvoice();
+      configInvoice();
     } else {
       configLNURL();
     }
@@ -69,7 +69,7 @@ export const Receive = () => {
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
-      amountSats: +"100",
+      amountSats: +amount,
       memo: ""
     })
 
@@ -90,7 +90,10 @@ export const Receive = () => {
 
   const configInvoice = async () => {
     const address = configLNaddress();
-
+    if (paySource[0].pasteField.includes("nprofile")) {
+      CreateNostrInvoice();
+      return;
+    }
     try {
       const callAddress = await axios.get(address.valueOfQR);
       if (amount === "") {
@@ -204,17 +207,17 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          <a href={valueQR}>QR</a>
           {valueQR == "" ? <div></div> : <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}
             renderAs="svg"
-          />}
+          />
+          }
           <div className="Receive_logo_container">
             {Icons.Logo()}
           </div>
-        </div>
+        </div >
         <div className='Receive_copy'>
           {tagInvoice ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:") ? bitcoinAdd : lightningAdd}
         </div>
@@ -238,8 +241,8 @@ export const Receive = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div >
       <Modal isShown={isShown} hide={toggle} modalContent={setAmountContent} headerText={''} />
-    </div>
+    </div >
   )
 }
