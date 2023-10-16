@@ -7,8 +7,6 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { PageProps, sw_item } from "../../globalTypes";
 import { useSelector } from "react-redux";
 import { SwItem } from "../../Components/SwItem";
-import { getNostrClient } from "../../Api";
-import ownNostr from "../../Api/ownNostr";
 
 export const Home = () => {
   const price = useSelector((state: any) => state.usdToBTC);

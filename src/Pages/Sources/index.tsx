@@ -21,7 +21,6 @@ import { Buffer } from 'buffer';
 import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
-import ownNostr from '../../Api/ownNostr';
 import { nip19 } from 'nostr-tools';
 
 export const Sources = () => {
