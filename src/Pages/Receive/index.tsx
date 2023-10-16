@@ -51,8 +51,11 @@ export const Receive = () => {
         router.push("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
+    }else if (paySource[0].pasteField.includes("nprofile")) {
+      CreateNostrInvoice();
+    }else {
+      configLNURL();
     }
-    configLNURL();
   },[]);
 
   useEffect(() => {
@@ -64,14 +67,11 @@ export const Receive = () => {
   },[LNInvoice, LNurl]);
 
   const CreateNostrInvoice = async () => {
-    console.log(nostrSource);
-    
     if (!nostrSource.length) return;
     const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
-      amountSats: +amount,
+      amountSats: +"100",
       memo: ""
     })
-    console.log(res);
     
     if (res.status !== 'OK') {
       // setError(res.reason)
@@ -91,32 +91,28 @@ export const Receive = () => {
   const configInvoice = async () => {
     const address = configLNaddress();
     
-    if (address.valueOfQR==="") CreateNostrInvoice()
-    else {
-      try {
-        const callAddress = await axios.get(address.valueOfQR);
-        if (amount === "") {
-          setAmountValue((callAddress.data.minSendable/1000).toString())
-          setAmount((callAddress.data.minSendable/1000).toString()) 
-        }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
-          return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
-        }
-        console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
-
-        const callbackURL = await axios.get(
-          callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
-          // "https://api.lnmarkets.com/v2/lnurl/pay",
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              withCredentials: false,
-            }
-          }
-        );
-        setLNInvoice("lightning:"+callbackURL.data.pr);
-      } catch (error: any) {
-        return openNotification("top", "Error", "Cors error");
+    try {
+      const callAddress = await axios.get(address.valueOfQR);
+      if (amount === "") {
+        setAmountValue((callAddress.data.minSendable/1000).toString())
+        setAmount((callAddress.data.minSendable/1000).toString()) 
+      }else if (parseInt(amount) < callAddress.data.minSendable/1000) {
+        return openNotification("top", "Error", "Please set amount is bigger than" + callAddress.data.minSendable);
       }
+      console.log(callAddress.data.callback+"&amount="+callAddress.data.minSendable);
+
+      const callbackURL = await axios.get(
+        callAddress.data.callback+(callAddress.data.callback.includes('?')?"&":"?")+"amount="+(amount===""?callAddress.data.minSendable:parseInt(amount)*1000),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            withCredentials: false,
+          }
+        }
+      );
+      setLNInvoice("lightning:"+callbackURL.data.pr);
+    } catch (error: any) {
+      return openNotification("top", "Error", "Cors error");
     }
   }
   
@@ -208,6 +204,7 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
+          <a href={valueQR}>QR</a>
           {valueQR == "" ? <div></div> :<ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
