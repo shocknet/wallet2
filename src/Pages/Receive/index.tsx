@@ -16,7 +16,6 @@ import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 
 export const Receive = () => {
-  axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
   //reducer
   const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
 
@@ -46,6 +45,8 @@ export const Receive = () => {
   };
 
   useEffect(() => {
+    console.log("usereffect");
+    
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
