@@ -66,6 +66,13 @@ export const Home = () => {
 
   useEffect(() => {
     resetSpendFrom();
+  }, []);
+
+  useEffect(() => {
+    getSumBalances();
+  }, [spendSources]);
+
+  const getSumBalances = () => {
     let totalAmount = 0;
     for (let i = 0; i < spendSources.length; i++) {
       const eachAmount = spendSources[i].balance;
@@ -73,7 +80,7 @@ export const Home = () => {
     }
     setBalance(totalAmount.toString());
     setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
-  }, []);
+  }
 
   const resetSpendFrom = async () => {
     let box: any = spendSources.map((e: SpendFrom) => { return { ...e } });
