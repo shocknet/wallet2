@@ -91,6 +91,8 @@ export const Sources = () => {
 
   const switchContent = (value: string) => {
     switch (value) {
+      case 'handleLnurlWithdraw':
+        return handleLnurlWithdraw
       case 'addSource':
         return contentAddContent
 
@@ -388,6 +390,16 @@ export const Sources = () => {
     </div>
   </React.Fragment>;
 
+  const handleLnurlWithdraw = <React.Fragment>
+    <div className='Sources_modal_header'>LNURL Withdraw</div>
+    <div className='Sources_modal_discription'>Do you wanna add to spend source or send sats from your wallet?</div>
+    <div className="Sources_modal_add_btn">
+      <button>Add</button>
+      <button>Send</button>
+    </div>
+
+  </React.Fragment>;
+
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const handlePayTouchMove = (event: any) => {
@@ -474,8 +486,8 @@ export const Sources = () => {
 
   const detectProtocol = () => {
     if (urlParam) {
-      AddSource_Modal();
-      setSourcePasteField(urlParam);
+      setModalContent("handleLnurlWithdraw")
+      toggle();
     }
   }
 
