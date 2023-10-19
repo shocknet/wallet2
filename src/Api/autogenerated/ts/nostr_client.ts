@@ -8,7 +8,7 @@ export type NostrClientParams = {
     retrieveNostrUserAuth: () => Promise<string | null>
     checkResult?: true
 }
-export default (params: NostrClientParams, send: (to: string, message: NostrRequest) => Promise<any>) => ({
+export default (params: NostrClientParams, send: (to: string, message: NostrRequest) => Promise<any>, subscribe: (to: string, message: NostrRequest, cb: (res: any) => void) => void) => ({
     GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' } & Types.UserInfo)> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
@@ -199,5 +199,20 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
+    },
+    GetLiveUserOperations: async (cb: (res: ResultError | ({ status: 'OK' } & Types.LiveUserOperation)) => void): Promise<void> => {
+        const auth = await params.retrieveNostrUserAuth()
+        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        subscribe(params.pubDestination, { rpcName: 'GetLiveUserOperations', authIdentifier: auth, ...nostrRequest }, (data) => {
+            if (data.status === 'ERROR' && typeof data.reason === 'string') return cb(data)
+            if (data.status === 'OK') {
+                const result = data
+                if (!params.checkResult) return { status: 'OK', ...result }
+                const error = Types.LiveUserOperationValidate(result)
+                if (error === null) { return cb({ status: 'OK', ...result }) } else return cb({ status: 'ERROR', reason: error.message })
+            }
+            return cb({ status: 'ERROR', reason: 'invalid response' })
+        })
     },
 })

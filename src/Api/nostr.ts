@@ -56,9 +56,9 @@ export const getNostrClient = async (nProfile: string): Promise<Client> => {
     queue.forEach(f => f(readyClient))
     return readyClient
 }
-
+type nostrCallback = { type: 'single' | 'stream', f: (res: any) => void }
 const createNostrClient = async (pubDestination: string, relays: string[]) => {
-    const clientCbs: Record<string, (res: any) => void> = {}
+    const clientCbs: Record<string, nostrCallback> = {}
     const handler = await new Promise<NostrHandler>((res) => {
         const h = new NostrHandler({
             privateKey: nostrPrivateKey!,
@@ -71,8 +71,10 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
                 if (clientCbs[res.requestId]) {
                     console.log("cb found")
                     const cb = clientCbs[res.requestId]
-                    cb(res)
-                    delete clientCbs[res.requestId]
+                    cb.f(res)
+                    if (cb.type === 'single') {
+                        delete clientCbs[res.requestId]
+                    }
                 } else {
                     console.log("cb not found")
                 }
@@ -88,17 +90,31 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
         }
         handler.Send(to, JSON.stringify(message))
         return new Promise(res => {
-            clientCbs[reqId] = (response: any) => {
-                res(response)
+            clientCbs[reqId] = {
+                type: 'single',
+                f: (response: any) => { res(response) }
             }
         })
+    }
+    const clientSub = (to: string, message: NostrRequest, cb: (res: any) => void): void => {
+        if (!message.requestId) {
+            message.requestId = makeId(16)
+        }
+        const reqId = message.requestId
+        if (clientCbs[reqId]) {
+            throw new Error("request was already sent")
+        }
+        handler.Send(to, JSON.stringify(message))
+        clientCbs[reqId] = {
+            type: 'stream',
+            f: (response: any) => { cb(response) }
+        }
     }
     return NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },
         pubDestination,
-    }, clientSend)
+    }, clientSend, clientSub)
 }
-
 
 
 function makeId(length: number) {
