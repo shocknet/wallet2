@@ -40,8 +40,6 @@ import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
-import { Bitcoin } from './Pages/Bitcoin';
-import { Lightning } from './Pages/Lightning';
 
 setupIonicReact();
 
@@ -81,12 +79,6 @@ const App: React.FC = () => {
                 <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
-                </Route>
-                <Route exact path="/bitcoin">
-                  <Bitcoin />
-                </Route>
-                <Route exact path="/lightning">
-                  <Lightning />
                 </Route>
                 <Route exact path="/loader">
                   <Loader />

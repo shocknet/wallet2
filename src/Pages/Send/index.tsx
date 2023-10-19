@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
 import { Modal } from '../../Components/Modals/Modal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
+import { useLocation } from 'react-router-dom';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -25,6 +26,10 @@ type PayAddress = {
 }
 
 export const Send = () => {
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);;
+  const urlParam = addressSearch.get("url");
+  
   const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
@@ -67,7 +72,9 @@ export const Send = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-  });
+
+    setTo(urlParam??"")
+  }, []);
 
   const ChainAdress = async () => {
     if (!nostrSource.length) return;

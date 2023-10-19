@@ -22,8 +22,12 @@ import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
 import { nip19 } from 'nostr-tools';
+import { useLocation } from 'react-router-dom';
 
 export const Sources = () => {
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);;
+  const urlParam = addressSearch.get("url");
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -468,8 +472,16 @@ export const Sources = () => {
     });
   }
 
+  const detectProtocol = () => {
+    if (urlParam) {
+      AddSource_Modal();
+      setSourcePasteField(urlParam);
+    }
+  }
+
   useEffect(() => {
     resetSpendFrom();
+    detectProtocol();
     setPayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);

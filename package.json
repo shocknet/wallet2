@@ -23,6 +23,7 @@
     "@capacitor/preferences": "^5.0.6",
     "@capacitor/status-bar": "5.0.6",
     "@devmehq/react-qr-code": "^1.0.6",
+    "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
     "@ionic/react": "^7.0.0",
     "@ionic/react-router": "^7.0.0",
