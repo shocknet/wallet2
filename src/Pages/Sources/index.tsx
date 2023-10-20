@@ -115,7 +115,10 @@ export const Sources = () => {
     lnurlWithdraw: "withdraw",
   }
 
+  let isProgress = false;
   const AddSource = async () => {
+    if (isProgress) return;
+    isProgress = true;
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -212,6 +215,7 @@ export const Sources = () => {
     }
     resetValue();
     toggle();
+    isProgress = false;
   };
 
   const Edit_Pay_Source = () => {
@@ -290,7 +294,7 @@ export const Sources = () => {
 
       default:
         if (!value?.includes("http")) {
-          value = "http://www.google.com/s2/favicons?domain=" + value;
+          value = "https://www.google.com/s2/favicons?domain=" + value;
         }
         return <React.Fragment>
           <img src={value} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
@@ -394,7 +398,7 @@ export const Sources = () => {
     <div className='Sources_modal_header'>LNURL Withdraw</div>
     <div className='Sources_modal_discription'>Do you wanna add to spend source or send sats from your wallet?</div>
     <div className="Sources_modal_add_btn">
-      <button>Add</button>
+      <button onClick={()=>{AddSource()}}>Add</button>
       <button>Send</button>
     </div>
 
@@ -448,7 +452,7 @@ export const Sources = () => {
       if (element.pasteField.includes("nprofile")) {
         let balanceOfNostr = "0";
         try {
-          await (await getNostrClient(element.pasteField)).GetUserInfo().then(res => {
+          await (await getNostrClient(element.pasteField)).GetUserInfo().then((res) => {
             if (res.status !== 'OK') {
               console.log(res.reason, "reason");
               return
