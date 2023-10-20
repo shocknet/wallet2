@@ -52,8 +52,6 @@ export const Receive = () => {
         router.push("/home");
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
-    } else if (paySource[0].pasteField.includes("nprofile")) {
-      configInvoice();
     } else {
       configLNURL();
     }
@@ -82,6 +80,18 @@ export const Receive = () => {
 
     setLNInvoice(`lightning:${res.invoice}`);
     setTagInvoice(true);
+  }
+
+  const CreateNostrPayLink = async () => {
+    if (!nostrSource.length) return;
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).GetLnurlPayLink()
+    
+    if (res.status !== 'OK') {
+      // setError(res.reason)
+      return
+    }
+
+    setLNurl("lightning:" + res.lnurl);
   }
 
   const copyToClip = () => {
@@ -121,6 +131,10 @@ export const Receive = () => {
   }
 
   const configLNURL = () => {
+    if (paySource[0].pasteField.includes("nprofile")) {
+      CreateNostrPayLink();
+      return;
+    }
     const address = configLNaddress();
     let words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
     const lnaddress = bech32.encode("lnurl", words, 999999);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import QrReader from "reactjs-qr-reader";
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
-
+import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from '@ionic-native/camera';
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { bech32 } from "bech32";
@@ -105,8 +105,24 @@ export const Scan = () => {
     router.push("/sources")
   }
 
-  useEffect(() => {
+  const requestCameraPermission = async () => {
+    try {
+      const cameraOptions: CameraOptions = {
+        quality: 90,
+        destinationType: DestinationType.DATA_URL,
+        encodingType: EncodingType.JPEG,
+        mediaType: MediaType.PICTURE,
+      };
+  
+      const imageData = await Camera.getPicture(cameraOptions);
+      // Process the captured image data as needed
+    } catch (error) {
+      // Handle any errors that occur during camera access
+    }
+  };
 
+  useEffect(() => {
+    requestCameraPermission();
   })
 
   if (error !== '') {

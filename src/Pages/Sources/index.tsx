@@ -22,8 +22,12 @@ import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
 import { nip19 } from 'nostr-tools';
+import { useLocation } from 'react-router-dom';
 
 export const Sources = () => {
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);;
+  const urlParam = addressSearch.get("url");
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -87,6 +91,8 @@ export const Sources = () => {
 
   const switchContent = (value: string) => {
     switch (value) {
+      case 'handleLnurlWithdraw':
+        return handleLnurlWithdraw
       case 'addSource':
         return contentAddContent
 
@@ -384,6 +390,16 @@ export const Sources = () => {
     </div>
   </React.Fragment>;
 
+  const handleLnurlWithdraw = <React.Fragment>
+    <div className='Sources_modal_header'>LNURL Withdraw</div>
+    <div className='Sources_modal_discription'>Do you wanna add to spend source or send sats from your wallet?</div>
+    <div className="Sources_modal_add_btn">
+      <button>Add</button>
+      <button>Send</button>
+    </div>
+
+  </React.Fragment>;
+
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const handlePayTouchMove = (event: any) => {
@@ -468,8 +484,16 @@ export const Sources = () => {
     });
   }
 
+  const detectProtocol = () => {
+    if (urlParam) {
+      setModalContent("handleLnurlWithdraw")
+      toggle();
+    }
+  }
+
   useEffect(() => {
     resetSpendFrom();
+    detectProtocol();
     setPayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
