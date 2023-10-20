@@ -5,6 +5,7 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { StatusBar } from '@capacitor/status-bar';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -47,6 +48,7 @@ const App: React.FC = () => {
 
   let installPromptFlag = true;
   useEffect(() => {
+    setStatusBarColor();
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {
@@ -68,6 +70,10 @@ const App: React.FC = () => {
       }
     }
   }
+
+  const setStatusBarColor = async () => {
+    await StatusBar.setBackgroundColor({ color: '#16191c' }); // Replace with your desired color code
+  };
 
   return (
     <Provider store={store}>

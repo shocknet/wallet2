@@ -31,6 +31,7 @@ export const Receive = () => {
   const [lightningAdd, setLightningAdd] = useState("");
   const [tagInvoice, setTagInvoice] = useState(false);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
+  const [header, setHeader] = useState("LNURL");
   const router = useIonRouter();
   const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
 
@@ -45,8 +46,7 @@ export const Receive = () => {
   };
 
   useEffect(() => {
-    console.log("usereffect");
-    
+    getLive();
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
@@ -65,6 +65,18 @@ export const Receive = () => {
     }
   }, [LNInvoice, LNurl]);
 
+  const getLive = async () => {
+    const res = await (await getNostrClient(nostrSource[0].pasteField)).GetLiveUserOperations(
+      (res) => {
+        if (res.status !== "OK") {
+          return;
+        }
+        console.log("good job",res);
+        
+      }
+    )
+  }
+
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
@@ -80,6 +92,7 @@ export const Receive = () => {
 
     setLNInvoice(`lightning:${res.invoice}`);
     setTagInvoice(true);
+    setHeader("Lightning Invoice");
   }
 
   const CreateNostrPayLink = async () => {
@@ -164,6 +177,9 @@ export const Receive = () => {
 
   const ChainAdress = async () => {
     if (!nostrSource.length) return;
+    if (!nostrSource[0].pasteField.includes("nprofile")) {
+      return;
+    }
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       // setError(res.reason)
@@ -171,6 +187,7 @@ export const Receive = () => {
     }
     setValueQR(`bitcoin:${res.address}`);
     setTagInvoice(false);
+    setHeader("Chain Address");
     setBitcoinAdd(
       res.address.substr(0, 5) + "..." + res.address.substr(res.address.length - 5, 5)
     )
@@ -179,7 +196,8 @@ export const Receive = () => {
   const updateInvoice = async () => {
     setAmountValue(amount);
     configInvoice();
-    setTagInvoice(true)
+    setTagInvoice(true);
+    setHeader("Lightning Invoice");
     toggle();
   }
 
@@ -192,9 +210,11 @@ export const Receive = () => {
       if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
       setValueQR(LNurl);
       setTagInvoice(false);
+      setHeader("LNURL");
     } else {
       setValueQR(LNInvoice);
       setTagInvoice(true);
+      setHeader("Lightning Invoice");
     }
   }
 
@@ -220,7 +240,7 @@ export const Receive = () => {
     <div>
       {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">{tagInvoice ? "Lightning Invoice" : "LNURL"}</div>
+        <div className="Receive_QR_text">{header}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
           {valueQR == "" ? <div></div> : <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
