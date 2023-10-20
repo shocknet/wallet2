@@ -294,7 +294,7 @@ export const Sources = () => {
 
       default:
         if (!value?.includes("http")) {
-          value = "http://www.google.com/s2/favicons?domain=" + value;
+          value = "https://www.google.com/s2/favicons?domain=" + value;
         }
         return <React.Fragment>
           <img src={value} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
@@ -452,7 +452,7 @@ export const Sources = () => {
       if (element.pasteField.includes("nprofile")) {
         let balanceOfNostr = "0";
         try {
-          await (await getNostrClient(element.pasteField)).GetUserInfo().then(res => {
+          await (await getNostrClient(element.pasteField)).GetUserInfo().then((res) => {
             if (res.status !== 'OK') {
               console.log(res.reason, "reason");
               return
