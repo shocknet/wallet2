@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: 18
 
+      - run: npm install -g @ionic/cli
+
       - run: npm install
 
       - run: ionic build --prod
