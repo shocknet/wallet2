@@ -1,0 +1,26 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - run: npm install
+
+      - run: ionic build --prod
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: platforms/android/app/build/outputs/apk/release/app-release.apk
