@@ -17,12 +17,15 @@ if (!nostrPrivateKey) {
     // setNostrPrivateKey(nostrPrivateKey)
 }
 const nostrPublicKey = getPublicKey(nostrPrivateKey)
-
-const clients: Record<string, ReturnType<typeof NewNostrClient>> = {}
+type Client = ReturnType<typeof NewNostrClient>
+type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
+type ReadyClient = { type: 'client', client: Client }
+type StoredClient = PendingClient | ReadyClient
+const clients: Record<string, StoredClient> = {}
 
 const parseNprofile = (nprofile: string) => {
     const { type, data } = nip19.decode(nprofile)
-    
+
     if (type !== "nprofile") {
         throw new Error("invalid bech32 this is not a nprofile")
     }
@@ -32,38 +35,52 @@ const parseNprofile = (nprofile: string) => {
     return dataBox;
 }
 
-export const getNostrClient = (nProfile: string) => {
+export const getNostrClient = async (nProfile: string): Promise<Client> => {
     const { pubkey, relays } = parseNprofile(nProfile)
     const c = clients[pubkey]
-    if (c) {
-        return c
+    if (c && c.type === 'client') {
+        return c.client
+    }
+    if (c && c.type === 'promise') {
+        return new Promise<Client>((res) => {
+            (clients[pubkey] as PendingClient).queue.push(res)
+        })
     }
     if (!relays) {
         throw new Error("cannot create client if no relays are provided")
     }
-    clients[pubkey] = createNostrClient(pubkey, relays)
-    return clients[pubkey]
+    clients[pubkey] = { type: 'promise', queue: [] }
+    const readyClient = await createNostrClient(pubkey, relays)
+    const queue = (clients[pubkey] as PendingClient).queue
+    clients[pubkey] = { type: 'client', client: readyClient }
+    queue.forEach(f => f(readyClient))
+    return readyClient
 }
-
-const createNostrClient = (pubDestination: string, relays: string[]) => {
-    const clientCbs: Record<string, (res: any) => void> = {}
-    const handler = new NostrHandler({
-        privateKey: nostrPrivateKey!,
-        publicKey: nostrPublicKey,
-        relays
-    }, e => {
-        const res = JSON.parse(e.content) as { requestId: string }
-        if (clientCbs[res.requestId]) {
-            console.log("cb found")
-            const cb = clientCbs[res.requestId]
-            cb(res)
-            delete clientCbs[res.requestId]
-        } else {
-            console.log("cb not found")
-        }
+type nostrCallback = { type: 'single' | 'stream', f: (res: any) => void }
+const createNostrClient = async (pubDestination: string, relays: string[]) => {
+    const clientCbs: Record<string, nostrCallback> = {}
+    const handler = await new Promise<NostrHandler>((res) => {
+        const h = new NostrHandler({
+            privateKey: nostrPrivateKey!,
+            publicKey: nostrPublicKey,
+            relays
+        },
+            () => { res(h) },
+            e => {
+                const res = JSON.parse(e.content) as { requestId: string }
+                if (clientCbs[res.requestId]) {
+                    console.log("cb found")
+                    const cb = clientCbs[res.requestId]
+                    cb.f(res)
+                    if (cb.type === 'single') {
+                        delete clientCbs[res.requestId]
+                    }
+                } else {
+                    console.log("cb not found")
+                }
+            })
     })
     const clientSend = (to: string, message: NostrRequest): Promise<any> => {
-        console.log("sending to", to, message)
         if (!message.requestId) {
             message.requestId = makeId(16)
         }
@@ -73,17 +90,31 @@ const createNostrClient = (pubDestination: string, relays: string[]) => {
         }
         handler.Send(to, JSON.stringify(message))
         return new Promise(res => {
-            clientCbs[reqId] = (response: any) => {
-                res(response)
+            clientCbs[reqId] = {
+                type: 'single',
+                f: (response: any) => { res(response) }
             }
         })
+    }
+    const clientSub = (to: string, message: NostrRequest, cb: (res: any) => void): void => {
+        if (!message.requestId) {
+            message.requestId = makeId(16)
+        }
+        const reqId = message.requestId
+        if (clientCbs[reqId]) {
+            throw new Error("request was already sent")
+        }
+        handler.Send(to, JSON.stringify(message))
+        clientCbs[reqId] = {
+            type: 'stream',
+            f: (response: any) => { cb(response) }
+        }
     }
     return NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },
         pubDestination,
-    }, clientSend)
+    }, clientSend, clientSub)
 }
-
 
 
 function makeId(length: number) {

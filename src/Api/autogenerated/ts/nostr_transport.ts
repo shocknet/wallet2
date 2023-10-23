@@ -10,11 +10,12 @@ export type NostrRequest = {
     body?: any
     authIdentifier?: string
     requestId?: string
+    appId?: string
 }
 export type NostrOptions = {
     logger?: Logger
     throwErrors?: true
-    NostrUserAuthGuard: (identifier?: string) => Promise<Types.UserContext>
+    NostrUserAuthGuard: (appId?: string, identifier?: string) => Promise<Types.UserContext>
 }
 const logErrorAndReturnResponse = (error: Error, response: string, res: NostrResponse, logger: Logger) => { logger.error(error.message || error); res({ status: 'ERROR', reason: response }) }
 export default (methods: Types.ServerMethods, opts: NostrOptions) => {
@@ -24,7 +25,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'GetUserInfo':
                 try {
                     if (!methods.GetUserInfo) throw new Error('method: GetUserInfo is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const query = req.query
                     const params = req.params
                     const response = await methods.GetUserInfo({ ...authContext, ...query, ...params })
@@ -34,7 +35,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'AddProduct':
                 try {
                     if (!methods.AddProduct) throw new Error('method: AddProduct is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.AddProductRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -47,7 +48,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'NewProductInvoice':
                 try {
                     if (!methods.NewProductInvoice) throw new Error('method: NewProductInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const query = req.query
                     const params = req.params
                     const response = await methods.NewProductInvoice({ ...authContext, ...query, ...params })
@@ -57,7 +58,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'GetUserOperations':
                 try {
                     if (!methods.GetUserOperations) throw new Error('method: GetUserOperations is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.GetUserOperationsRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -70,7 +71,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'NewAddress':
                 try {
                     if (!methods.NewAddress) throw new Error('method: NewAddress is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.NewAddressRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -83,7 +84,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'PayAddress':
                 try {
                     if (!methods.PayAddress) throw new Error('method: PayAddress is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.PayAddressRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -96,7 +97,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'NewInvoice':
                 try {
                     if (!methods.NewInvoice) throw new Error('method: NewInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.NewInvoiceRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -109,7 +110,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'DecodeInvoice':
                 try {
                     if (!methods.DecodeInvoice) throw new Error('method: DecodeInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.DecodeInvoiceRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -122,7 +123,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'PayInvoice':
                 try {
                     if (!methods.PayInvoice) throw new Error('method: PayInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.PayInvoiceRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -135,7 +136,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'OpenChannel':
                 try {
                     if (!methods.OpenChannel) throw new Error('method: OpenChannel is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const request = req.body
                     const error = Types.OpenChannelRequestValidate(request)
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger)
@@ -148,17 +149,27 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
             case 'GetLnurlWithdrawLink':
                 try {
                     if (!methods.GetLnurlWithdrawLink) throw new Error('method: GetLnurlWithdrawLink is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const query = req.query
                     const params = req.params
                     const response = await methods.GetLnurlWithdrawLink({ ...authContext, ...query, ...params })
                     res({ status: 'OK', ...response })
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger); if (opts.throwErrors) throw e }
                 break
+            case 'GetLnurlPayLink':
+                try {
+                    if (!methods.GetLnurlPayLink) throw new Error('method: GetLnurlPayLink is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    const query = req.query
+                    const params = req.params
+                    const response = await methods.GetLnurlPayLink({ ...authContext, ...query, ...params })
+                    res({ status: 'OK', ...response })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger); if (opts.throwErrors) throw e }
+                break
             case 'GetLNURLChannelLink':
                 try {
                     if (!methods.GetLNURLChannelLink) throw new Error('method: GetLNURLChannelLink is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.authIdentifier)
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     const query = req.query
                     const params = req.params
                     const response = await methods.GetLNURLChannelLink({ ...authContext, ...query, ...params })

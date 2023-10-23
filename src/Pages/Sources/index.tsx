@@ -21,10 +21,13 @@ import { Buffer } from 'buffer';
 import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
-import ownNostr from '../../Api/ownNostr';
 import { nip19 } from 'nostr-tools';
+import { useLocation } from 'react-router-dom';
 
 export const Sources = () => {
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);;
+  const urlParam = addressSearch.get("url");
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -88,6 +91,8 @@ export const Sources = () => {
 
   const switchContent = (value: string) => {
     switch (value) {
+      case 'handleLnurlWithdraw':
+        return handleLnurlWithdraw
       case 'addSource':
         return contentAddContent
 
@@ -110,13 +115,16 @@ export const Sources = () => {
     lnurlWithdraw: "withdraw",
   }
 
+  let isProgress = false;
   const AddSource = async () => {
+    if (isProgress) return;
+    isProgress = true;
     if (!sourcePasteField || !optional)
       return openNotification("top", "Error", "Please Write Data Correctly!");
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     if (sourcePasteField.includes("nprofile")) {
       try {
-        let {type, data} = nip19.decode(sourcePasteField);
+        let { type, data } = nip19.decode(sourcePasteField);
         if (type !== 'nprofile') {
           return openNotification("top", "Error", "Please Write Data Correctly!");
         }
@@ -146,14 +154,14 @@ export const Sources = () => {
         dispatch(addSpendSources(addedSpendSource));
       } catch (error) {
         console.log(error);
-        
+
       }
-    }else if (!expression.test(sourcePasteField)) {
+    } else if (!expression.test(sourcePasteField)) {
       try {
         let { words: dataPart } = bech32.decode(sourcePasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString();
-        
+
         let resultLnurl = new URL(lnurlLink);
         const parts = resultLnurl.hostname.split(".");
         const sndleveldomain = parts.slice(-2).join('.');
@@ -207,6 +215,7 @@ export const Sources = () => {
     }
     resetValue();
     toggle();
+    isProgress = false;
   };
 
   const Edit_Pay_Source = () => {
@@ -285,7 +294,7 @@ export const Sources = () => {
 
       default:
         if (!value?.includes("http")) {
-          value = "http://www.google.com/s2/favicons?domain=" + value;
+          value = "https://www.google.com/s2/favicons?domain=" + value;
         }
         return <React.Fragment>
           <img src={value} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
@@ -385,6 +394,16 @@ export const Sources = () => {
     </div>
   </React.Fragment>;
 
+  const handleLnurlWithdraw = <React.Fragment>
+    <div className='Sources_modal_header'>LNURL Withdraw</div>
+    <div className='Sources_modal_discription'>Do you wanna add to spend source or send sats from your wallet?</div>
+    <div className="Sources_modal_add_btn">
+      <button onClick={()=>{AddSource()}}>Add</button>
+      <button>Send</button>
+    </div>
+
+  </React.Fragment>;
+
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const handlePayTouchMove = (event: any) => {
@@ -427,13 +446,13 @@ export const Sources = () => {
   }
 
   const resetSpendFrom = async () => {
-    let box: any = spendSources.map((e:SpendFrom)=>{return {...e}});
+    let box: any = spendSources.map((e: SpendFrom) => { return { ...e } });
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
       if (element.pasteField.includes("nprofile")) {
         let balanceOfNostr = "0";
         try {
-          await getNostrClient(element.pasteField).GetUserInfo().then(res => {
+          await (await getNostrClient(element.pasteField)).GetUserInfo().then((res) => {
             if (res.status !== 'OK') {
               console.log(res.reason, "reason");
               return
@@ -469,8 +488,16 @@ export const Sources = () => {
     });
   }
 
+  const detectProtocol = () => {
+    if (urlParam) {
+      setModalContent("handleLnurlWithdraw")
+      toggle();
+    }
+  }
+
   useEffect(() => {
     resetSpendFrom();
+    detectProtocol();
     setPayToLists(paySources);
     setSpendFromLists(spendSources);
     window.addEventListener("touchstart", setPosition);
