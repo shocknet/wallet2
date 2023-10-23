@@ -5,6 +5,7 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { StatusBar } from '@capacitor/status-bar';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -40,8 +41,6 @@ import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
-import { Bitcoin } from './Pages/Bitcoin';
-import { Lightning } from './Pages/Lightning';
 
 setupIonicReact();
 
@@ -49,13 +48,13 @@ const App: React.FC = () => {
 
   let installPromptFlag = true;
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (event)  => {
+    setStatusBarColor();
+    window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {
         navigator.registerProtocolHandler('web+lightning', './?address=%s');
         navigator.registerProtocolHandler('bitcoin', './?address=%s');
-        if(installPromptFlag)
-        {
+        if (installPromptFlag) {
           installPWA(event);
           installPromptFlag = false;
         }
@@ -71,7 +70,11 @@ const App: React.FC = () => {
       }
     }
   }
-  
+
+  const setStatusBarColor = async () => {
+    await StatusBar.setBackgroundColor({ color: '#16191c' }); // Replace with your desired color code
+  };
+
   return (
     <Provider store={store}>
       <IonApp>
@@ -79,15 +82,9 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Layout>
               <>
-                <AppUrlListener/>
+                <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
-                </Route>
-                <Route exact path="/bitcoin">
-                  <Bitcoin />
-                </Route>
-                <Route exact path="/lightning">
-                  <Lightning />
                 </Route>
                 <Route exact path="/loader">
                   <Loader />

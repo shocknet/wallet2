@@ -17,16 +17,17 @@ export type NostrEvent = {
 export default class Handler {
     pool: SimplePool = new SimplePool()
     settings: NostrSettings
-    constructor(settings: NostrSettings, eventCallback: (event: NostrEvent) => void) {
+    constructor(settings: NostrSettings, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
         this.settings = settings
-        this.Connect(eventCallback)
+        this.Connect(connectedCallback, eventCallback)
     }
 
-    async Connect(eventCallback: (event: NostrEvent) => void) {
+    async Connect(connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
         console.log("subbing")
         const relay = relayInit(this.settings.relays[0])
         relay.on('connect', () => {
             console.log(`connected to ${relay.url}`)
+            connectedCallback()
         })
         relay.on('error', () => {
             console.log(`failed to connect to ${relay.url}`)

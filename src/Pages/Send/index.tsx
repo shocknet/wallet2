@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
 import { Modal } from '../../Components/Modals/Modal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
+import { useLocation } from 'react-router-dom';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -22,31 +23,30 @@ type PayInvoice = {
 type PayAddress = {
   type: 'payAddress'
   address: string
+  amount: number
 }
 
 export const Send = () => {
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);;
+  const urlParam = addressSearch.get("url");
+  
   const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
-  const paySource = useSelector((state:any) => state.paySource).map((e:any)=>{return {...e}});
+  const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
   const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const [error, setError] = useState("")
-  const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
-  const [invoiceAmount, setInvoiceAmount] = useState(0);
-  const [invoiceMemo, setInvoiceMemo] = useState("");
-  const [deg, setDeg] = useState("rotate(0deg)");
-  const [valueQR, setValueQR] = useState("LNURL12344adfasdfasdfasdfsdf5677888");
-  const [vCreateInvoice, setVCreateInvoice] = useState(0);
   const [vReceive, setVReceive] = useState(1);
-  const [isCopy, setIsCopy] = useState(false);
   const [amountAssets, setAmountAssets] = useState("sats");
   const [amount, setAmount] = useState("");
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
-  const [amountToPay, setAmountToPay] = useState(0)
-  const nostrSource = paySource.filter((e: any)=>e.pasteField.includes("nprofile"))
+  const [selectedSource, setSelectedSource] = useState(spendSources[0]);
+
+  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
 
   const router = useIonRouter();
 
@@ -67,111 +67,15 @@ export const Send = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-  });
 
-  const ChainAdress = async () => {
-    if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
-    if (res.status !== 'OK') {
-      setError(res.reason)
-      return
-    }
-
-    setValueQR(`bitcoin:${res.address}`);
-    setDeg("rotate(90deg)");
-    setIsCopy(false);
-  }
-
-  const CreateInvoice = () => {
-    setVCreateInvoice(1);
-    setVReceive(0);
-  }
-
-  const CreateInvoiceOK = async () => {
-    if (!nostrSource.length) return;
-    const res = await getNostrClient(nostrSource[0].pasteField).NewInvoice({
-      amountSats: invoiceAmount,
-      memo: invoiceMemo
-    })
-    if (res.status !== 'OK') {
-      setError(res.reason)
-      return
-    }
-    setVCreateInvoice(0);
-    setVReceive(1);
-    setDeg("rotate(180deg)");
-    setValueQR(`lightning:${res.invoice}`);
-    setIsCopy(false);
-  }
-
-  const CreateInvoiceCancel = () => {
-    setVCreateInvoice(0);
-    setVReceive(1);
-  }
-
-  const parse = async (input: string) => {
-    if (!nostrSource.length) return;
-    console.log("parsing")
-    setError("");
-    const lowData = input.toLowerCase()
-    if (lowData.startsWith('pub_product:')) {
-      console.log("parsed pub product", lowData)
-      const productData = JSON.parse(lowData.slice('pub_product:'.length))
-      const productId = productData.productId
-
-      console.log("send the buy request to the following pub:", productData.dest)
-      console.log("send the buy request using the following relays:", productData.relays)
-
-      const invoiceRes = await getNostrClient(nostrSource[0].pasteField).NewProductInvoice({ id: productId })
-      if (invoiceRes.status !== 'OK') {
-        setError(invoiceRes.reason)
-        return
-      }
-      const decodedRes = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: invoiceRes.invoice })
-      if (decodedRes.status !== 'OK') {
-        setError(decodedRes.reason)
-        return
-      }
-      setPayOperation({
-        type: 'payInvoice',
-        invoice: invoiceRes.invoice,
-        amount: decodedRes.amount
-      })
-    } else if (lowData.startsWith('bitcoin:')) {
-      const btcAddress = lowData.slice('bitcoin:'.length)
-      setPayOperation({
-        type: 'payAddress',
-        address: btcAddress
-      })
-    } else if (lowData.startsWith('lightning:')) {
-      const lnOperation = lowData.slice('lightning:'.length)
-      if (lnOperation.startsWith("lnurl")) {
-        setError("lnurl not supported yet" + lnOperation)
-      } else {
-        const res = await getNostrClient(nostrSource[0].pasteField).DecodeInvoice({ invoice: lnOperation })
-        console.log(res);
-
-        if (res.status !== 'OK') {
-          setError(res.reason)
-          return
-        }
-        setPayOperation({
-          type: 'payInvoice',
-          invoice: lnOperation,
-          amount: res.amount
-        })
-
-      }
-    } else {
-      setError("scanned content unsupported " + lowData)
-    }
-  }
+    setTo(urlParam??"")
+  }, []);
 
   const pay = async (action: PayInvoice | PayAddress) => {
     if (!nostrSource.length) return;
     switch (action.type) {
       case 'payAddress':
-        const resA = await getNostrClient(nostrSource[0].length).PayAddress({
+        const resA = await (await getNostrClient(selectedSource.pasteField)).PayAddress({
           address: action.address,
           amoutSats: +amount,
           satsPerVByte: 10
@@ -183,7 +87,7 @@ export const Send = () => {
         router.push("/home")
         break;
       case 'payInvoice':
-        const resI = await getNostrClient(nostrSource[0].length).PayInvoice({
+        const resI = await (await getNostrClient(selectedSource.pasteField)).PayInvoice({
           invoice: action.invoice,
           amount: 0,
         })
@@ -197,7 +101,56 @@ export const Send = () => {
   }
 
   const handleSubmit = async () => {
-    console.log(to);
+    if (selectedSource.pasteField.includes("nprofile")) {
+      payUsingNprofile();
+    }else {
+
+    }
+  }
+
+  const payUsingNprofile = async () => {
+    try {
+      const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
+      if (result.status != "OK") {
+        return;
+      }
+      pay(
+        {
+          type: 'payInvoice',
+          invoice: to,
+          amount: result.amount,
+        }
+      )
+      console.log(result,"this is decoded invocie");
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+
+    // try {
+    //   pay(
+    //     {
+    //       type: "payAddress",
+    //       address: to,
+    //       amount: +amount,
+    //     }
+    //   )
+    // } catch (error) {
+    //   return openNotification("top", "Error", "Couldn't send using this info.");
+    // }
+  }
+
+  const onChangeTo = async (e: string) => {
+    setTo(e);
+    try {
+      const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
+      if (result.status != "OK") {
+        return;
+      }
+      setAmount(result.amount.toString());
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const confirmContent = <React.Fragment>
@@ -233,7 +186,7 @@ export const Send = () => {
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
-            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]} />
+            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]} callback={setSelectedSource}/>
           </div>
         </div>
       </div>
