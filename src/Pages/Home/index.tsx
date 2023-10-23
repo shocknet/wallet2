@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import moment from 'moment'
+import { useEffect, useState } from "react";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
-import { PageProps, SpendFrom, sw_item } from "../../globalTypes";
+import { SpendFrom, sw_item } from "../../globalTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { SwItem } from "../../Components/SwItem";
 import { bech32 } from "bech32";
+import { Buffer } from "buffer";
 import axios from "axios";
 import { getNostrClient } from "../../Api";
 import { editSpendSources } from "../../State/Slices/spendSourcesSlice";

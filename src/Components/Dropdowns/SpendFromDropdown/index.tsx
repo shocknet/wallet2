@@ -6,11 +6,13 @@ import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
 type DropDownProps = {
   values: SpendFrom[];
   initialValue: SpendFrom;
+  callback: Function;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
   values,
   initialValue,
+  callback,
 }: DropDownProps): JSX.Element => {
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const [value, setValue] = useState(initialValue);
@@ -66,6 +68,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     const remainValues = values.filter((e) => e.id !== id );
     setAllValue(remainValues);
     dropdown();
+    callback(selected[0])
   }
 
   return (
