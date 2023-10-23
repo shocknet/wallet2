@@ -122,21 +122,22 @@ export const Send = () => {
         }
       )
       console.log(result,"this is decoded invocie");
+      return;
     } catch (error) {
       console.log(error);
     }
 
-    try {
-      pay(
-        {
-          type: "payAddress",
-          address: to,
-          amount: +amount,
-        }
-      )
-    } catch (error) {
-      return openNotification("top", "Error", "Couldn't send using this info.");
-    }
+    // try {
+    //   pay(
+    //     {
+    //       type: "payAddress",
+    //       address: to,
+    //       amount: +amount,
+    //     }
+    //   )
+    // } catch (error) {
+    //   return openNotification("top", "Error", "Couldn't send using this info.");
+    // }
   }
 
   const onChangeTo = async (e: string) => {
