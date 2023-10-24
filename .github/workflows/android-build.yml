@@ -9,12 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: cimg/android:2023.10
+
     steps:
       - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
 
       - run: npm install -g @ionic/cli
 
@@ -22,7 +21,9 @@ jobs:
 
       - run: ionic build --prod
 
+      - run: ionic capacitor build android --prod
+
       - uses: actions/upload-artifact@v3
         with:
           name: app-release.apk
-          path: platforms/android/app/build/outputs/apk/release/app-release.apk
+          path: android-release/app-release.apk
