@@ -23,7 +23,7 @@ jobs:
 
       - run: ionic build --prod
 
-      - run: ionic capacitor build android --prod
+      - run: ionic capacitor build android --prod --output-path .
 
       - uses: actions/upload-artifact@v3
         with:
