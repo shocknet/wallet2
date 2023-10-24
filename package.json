@@ -47,6 +47,7 @@
     "@types/secp256k1": "^4.0.3",
     "@types/sortablejs": "^1.15.2",
     "@types/styled-components": "^5.1.26",
+    "act": "^0.0.6",
     "antd": "^5.0.3",
     "axios": "^1.5.0",
     "bech32": "^2.0.0",
