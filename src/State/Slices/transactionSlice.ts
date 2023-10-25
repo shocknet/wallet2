@@ -5,8 +5,8 @@ interface TransactionInterface {
   memo: string,
   time: string,
   destination: string,
-  chainLN: string,
-  confirm: string,
+  chainLN: Boolean,
+  confirm: any,
 }
 
 const transaction = localStorage.getItem("transaction");

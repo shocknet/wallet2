@@ -132,6 +132,14 @@ export const Send = () => {
         console.log(result,"this is decoded invocie");
         if (payRes?.status == "OK") {
           openNotification("top", "Success", "Successfully paid.");
+          dispatch(addTransaction({
+            amount: amount,
+            memo: note,
+            time: nowTime,
+            destination: to,
+            chainLN: false,
+            confirm: payRes,
+          }))
         }else {
           openNotification("top", "Error", "Failed transaction.");
         }
@@ -150,6 +158,14 @@ export const Send = () => {
         )
         if (payRes?.status == "OK") {
           openNotification("top", "Success", "Successfully paid.");
+          dispatch(addTransaction({
+            amount: amount,
+            memo: note,
+            time: nowTime,
+            destination: to,
+            chainLN: true,
+            confirm: payRes,
+          }))
         }else {
           openNotification("top", "Error", "Failed transaction.");
         }
@@ -157,26 +173,20 @@ export const Send = () => {
         return openNotification("top", "Error", "Couldn't send using this info.");
       }
     }
-    // dispatch(addTransaction({
-    //   amount: amount,
-    //   memo: note,
-    //   time: nowTime,
-    //   destination: "string",
-    //   chainLN: "string",
-    //   confirm: payRes?.preimage,
-    // }))
   }
 
   const onChangeTo = async (e: string) => {
     setTo(e);
-    try {
-      const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
-      if (result.status != "OK") {
-        return;
+    if (selectedSource.pasteField.includes("lnbc")) {
+      try {
+        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
+        if (result.status != "OK") {
+          return;
+        }
+        setAmount(result.amount.toString());
+      } catch (error) {
+        console.log(error);
       }
-      setAmount(result.amount.toString());
-    } catch (error) {
-      console.log(error);
     }
   }
 
@@ -205,7 +215,7 @@ export const Send = () => {
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => { setTo(e.target.value) }} />
+            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => { onChangeTo(e.target.value) }} />
           </div>
           <div className="Send_for">
             <p>For:</p>

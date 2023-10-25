@@ -46,7 +46,6 @@ export const Receive = () => {
   };
 
   useEffect(() => {
-    getLive();
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
@@ -64,18 +63,6 @@ export const Receive = () => {
       setValueQR(LNInvoice);
     }
   }, [LNInvoice, LNurl]);
-
-  const getLive = async () => {
-    const res = await (await getNostrClient(nostrSource[0].pasteField)).GetLiveUserOperations(
-      (res) => {
-        if (res.status !== "OK") {
-          return;
-        }
-        console.log("good job",res);
-        
-      }
-    )
-  }
 
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;

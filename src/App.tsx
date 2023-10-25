@@ -28,7 +28,7 @@ import { StatusBar } from '@capacitor/status-bar';
 import './App.scss';
 import store from './State/store';
 import { NodeUp } from './Pages/NodeUp';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { Layout } from './Layout';
 import { Loader } from './Pages/Loader';
 import { Home } from './Pages/Home';
