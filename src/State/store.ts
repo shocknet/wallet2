@@ -5,6 +5,7 @@ import paySourcesReducer from './Slices/paySourcesSlice';
 import spendSourcesReducer from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
 import prefsSlice from './Slices/prefsSlice';
+import transactionSlice from './Slices/transactionSlice';
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     spendSource: spendSourcesReducer,
     usdToBTC: usdToBTCReducer,
     prefs: prefsSlice,
+    transaction: transactionSlice,
   },
 });
 
