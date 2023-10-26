@@ -41,6 +41,7 @@ import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
+import { Auth } from './Pages/Auth';
 
 setupIonicReact();
 
@@ -112,6 +113,9 @@ const App: React.FC = () => {
                 </Route>
                 <Route exact path="/contacts">
                   <Contacts />
+                </Route>
+                <Route exact path="/auth">
+                  <Auth />
                 </Route>
               </>
             </Layout>
