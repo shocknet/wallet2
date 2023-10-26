@@ -1,33 +1,64 @@
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { PageProps } from "../../globalTypes";
 
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
+import { saveAs } from 'file-saver';
+import { Buffer } from 'buffer';
 
 export const Auth = () => {
-  const price = useSelector((state:any) => state.usdToBTC);
+  //decode and encode
+  const decode = (str: string):string => Buffer.from(str, 'base64').toString('binary');
+  const encode = (str: string):string => Buffer.from(str, 'binary').toString('base64');
 
   //reducer
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
-
+  const price = useSelector((state:any) => state.usdToBTC);
 
   const router = useIonRouter();
 
   const [auth, setAuth] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const send = () => {
 
   }
 
-  const downloadBackUp = () => {
+  const downloadBackUp = async () => {
     
+    const allData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)??"null";
+      const value = localStorage.getItem(key);
+      allData[key] = value;
+    }
+    
+    const saveData = encode(JSON.stringify(allData));
+    const blob: Blob = new Blob([saveData], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'shockw.dat');
   }
 
-  const importBackUp = () => {
+  const getDatafromBackup = (e: ChangeEvent<HTMLInputElement>) => {
+    const file: File | undefined = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        importBackup(content);
+      };
+      reader.readAsText(file);
+    }
+  }
 
+  const importBackup = (content:string) => {
+    const data = JSON.parse(decode(content));
+    for (let i = 0; i < Object.keys(data).length; i++) {
+      const element = Object.keys(data)[i];
+      localStorage.setItem(element, data[element])
+    }
   }
 
   useEffect(()=>{
@@ -71,7 +102,8 @@ export const Auth = () => {
         </div>
         <div className='Auth_border'></div>
         <div className='Auth_import'>
-          <p onClick={importBackUp}>Import File Backup</p>
+          <input type='file' ref={fileInputRef} onChange={(e)=>{getDatafromBackup(e)}} style={{display: "none"}}/>
+          <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
       </div>
     </div>
