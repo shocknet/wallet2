@@ -116,7 +116,49 @@ export const Send = () => {
 
   const payUsingNprofile = async () => {
     let payRes;
-    if (to.includes("lnbc")) {
+    const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (expression.test(to)) {
+      try {
+        const payLink = "https://" + to.split("@")[1] + "/.well-known/lnurlp/" + to.split("@")[0];
+        const res = await axios.get(payLink);
+        const callbackURL = await axios.get(
+          res.data.callback + (res.data.callback.includes('?') ? "&" : "?") + "amount=" + (amount === "" ? res.data.minSendable : parseInt(amount) * 1000),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              withCredentials: false,
+            }
+          }
+        );
+        console.log(callbackURL);
+        
+        if (callbackURL.data.success===false) {
+          return openNotification("top", "Error", callbackURL.data.error);
+        }
+        payRes = await pay(
+          {
+            type: 'payInvoice',
+            invoice: callbackURL.data.pr,
+            amount: +amount,
+          }
+        )
+        if (payRes?.status == "OK") {
+          dispatch(addTransaction({
+            amount: amount,
+            memo: note,
+            time: nowTime,
+            destination: to,
+            chainLN: false,
+            confirm: payRes,
+          }))
+          return openNotification("top", "Success", "Successfully paid.");
+        }else {
+          return openNotification("top", "Error", "Failed transaction.");
+        }
+      } catch (error) {
+        return openNotification("top", "Error", "Couldn't send using this info.");
+      }
+    }else if (to.includes("lnbc")) {
       try {
         const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
         if (result.status != "OK") {

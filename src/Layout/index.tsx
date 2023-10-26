@@ -54,12 +54,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const getLive = async () => {
     nostrSource.map(async (e:PayTo)=>{
       if (e.pasteField.includes("nprofile")) {
-        const res = await (await getNostrClient(e.pasteField)).GetLiveUserOperations(
+        await (await getNostrClient(e.pasteField)).GetLiveUserOperations(
           (res) => {
+            console.log("good job",res);
             if (res.status !== "OK") {
               return;
             }
-            console.log("good job",res);
             
           }
         )
