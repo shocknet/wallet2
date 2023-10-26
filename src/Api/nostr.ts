@@ -71,6 +71,8 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
                 if (clientCbs[res.requestId]) {
                     console.log("cb found")
                     const cb = clientCbs[res.requestId]
+                    console.log(cb, "this is cd");
+                    
                     cb.f(res)
                     if (cb.type === 'single') {
                         delete clientCbs[res.requestId]
@@ -109,6 +111,8 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
             type: 'stream',
             f: (response: any) => { cb(response) }
         }
+        console.log(clientCbs,"this is all cbs");
+        
     }
     return NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },

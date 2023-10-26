@@ -14,6 +14,7 @@ import { Modal } from '../../Components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
 import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
+import { PayTo } from '../../globalTypes';
 
 export const Receive = () => {
   //reducer
@@ -45,6 +46,20 @@ export const Receive = () => {
     });
   };
 
+  const getLive = async (e: PayTo) => {
+      if (e.pasteField.includes("nprofile")) {
+        await (await getNostrClient(e.pasteField)).GetLiveUserOperations(
+          (res) => {
+            console.log("good job",res);
+            if (res.status !== "OK") {
+              return;
+            }
+            
+          }
+        )
+      }
+  }
+
   useEffect(() => {
     if (paySource.length === 0) {
       setTimeout(() => {
@@ -75,6 +90,7 @@ export const Receive = () => {
       // setError(res.reason)
       return
     }
+    getLive(nostrSource[0]);
     console.log(res.invoice, " this is invoice");
 
     setLNInvoice(`lightning:${res.invoice}`);

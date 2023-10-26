@@ -40,7 +40,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   });
 
   useEffect(() => {
-    getLive();
     // Listen for the appUrlOpen event
     const listener = App.addListener("appUrlOpen", (data) => {
       console.log("appurlopen");
@@ -50,22 +49,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
       // Do something with the bitcoin URI, such as parsing it or sending it to another component
     });
   }, []);
-
-  const getLive = async () => {
-    nostrSource.map(async (e:PayTo)=>{
-      if (e.pasteField.includes("nprofile")) {
-        await (await getNostrClient(e.pasteField)).GetLiveUserOperations(
-          (res) => {
-            console.log("good job",res);
-            if (res.status !== "OK") {
-              return;
-            }
-            
-          }
-        )
-      }
-    })
-  }
 
   return(
     <React.Fragment>

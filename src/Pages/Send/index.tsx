@@ -175,7 +175,7 @@ export const Send = () => {
         if (payRes?.status == "OK") {
           openNotification("top", "Success", "Successfully paid.");
           dispatch(addTransaction({
-            amount: amount,
+            amount: result.amount+"",
             memo: note,
             time: nowTime,
             destination: to,
