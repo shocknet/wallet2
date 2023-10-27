@@ -56,7 +56,7 @@ export const Home = () => {
       stateIcon: 'lightning',
       underline: i !== collapsed.length - 1
     })) || [])
-  }, [price, operationGroups])
+  }, [])
 
   useEffect(() => {
     resetSpendFrom();

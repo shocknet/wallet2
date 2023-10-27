@@ -43,6 +43,7 @@ import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
+import { isBrowser } from 'react-device-detect'
 
 setupIonicReact();
 
@@ -50,7 +51,8 @@ const App: React.FC = () => {
 
   let installPromptFlag = true;
   useEffect(() => {
-    setStatusBarColor();
+    if (!isBrowser) setStatusBarColor();
+    
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {

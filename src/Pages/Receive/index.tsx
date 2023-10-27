@@ -67,7 +67,7 @@ export const Receive = () => {
   }, [LNInvoice, LNurl]);
 
   useEffect(()=>{
-    if (receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+    if (receiveHistory.latestOperation!=undefined&&receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
       setTimeout(() => {
         router.push("/home");
       }, 1000);
