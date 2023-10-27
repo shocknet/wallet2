@@ -105,10 +105,13 @@ export const Send = () => {
         return resI;
     }
   }
-
+  let loadingSend = false;
   const handleSubmit = async () => {
+    if (loadingSend) return;
+    loadingSend = true;
     if (selectedSource.pasteField.includes("nprofile")) {
-      payUsingNprofile();
+      await payUsingNprofile();
+      loadingSend = false;
     }else {
 
     }
