@@ -21,7 +21,6 @@ export const Background: React.FC<Props> = (): JSX.Element => {
             }
             subbed.push(source.pasteField)
             getNostrClient(source.pasteField).then(c => {
-                const req = populateCursorRequest(cursor)
                 c.GetLiveUserOperations(newOp => {
                     if (newOp.status === "OK") {
                         console.log(newOp)
