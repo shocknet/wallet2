@@ -42,6 +42,7 @@ import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
+import { Background } from './Components/Background';
 
 setupIonicReact();
 
@@ -83,6 +84,7 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Layout>
               <>
+                <Background />
                 <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
