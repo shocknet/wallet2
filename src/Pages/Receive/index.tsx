@@ -19,6 +19,7 @@ import { PayTo } from '../../globalTypes';
 export const Receive = () => {
   //reducer
   const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
+  const receiveHistory = useSelector((state: any) => state.history);
 
   const price = useSelector((state: any) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
@@ -46,20 +47,6 @@ export const Receive = () => {
     });
   };
 
-  const getLive = async (e: PayTo) => {
-      if (e.pasteField.includes("nprofile")) {
-        await (await getNostrClient(e.pasteField)).GetLiveUserOperations(
-          (res) => {
-            console.log("good job",res);
-            if (res.status !== "OK") {
-              return;
-            }
-            
-          }
-        )
-      }
-  }
-
   useEffect(() => {
     if (paySource.length === 0) {
       setTimeout(() => {
@@ -79,6 +66,15 @@ export const Receive = () => {
     }
   }, [LNInvoice, LNurl]);
 
+  useEffect(()=>{
+    if (receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+      setTimeout(() => {
+        router.push("/home");
+      }, 1000);
+      return openNotification("top", "Success", "Payment received!");
+    }
+  },[])
+
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
@@ -90,7 +86,6 @@ export const Receive = () => {
       // setError(res.reason)
       return
     }
-    getLive(nostrSource[0]);
     console.log(res.invoice, " this is invoice");
 
     setLNInvoice(`lightning:${res.invoice}`);

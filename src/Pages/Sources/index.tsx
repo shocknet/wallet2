@@ -504,7 +504,7 @@ export const Sources = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(setPaySources(payToLists??[]));
+    dispatch(setPaySources(payToLists));
     dispatch(setSpendSources(spendFromLists));
   }, [payToLists, spendFromLists]);
 
