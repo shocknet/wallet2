@@ -72,13 +72,13 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
                     console.log("cb found")
                     const cb = clientCbs[res.requestId]
                     console.log(cb, "this is cd");
-                    
+
                     cb.f(res)
                     if (cb.type === 'single') {
                         delete clientCbs[res.requestId]
                     }
                 } else {
-                    console.log("cb not found")
+                    console.log("cb not found for", res)
                 }
             })
     })
@@ -91,6 +91,7 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
             throw new Error("request was already sent")
         }
         handler.Send(to, JSON.stringify(message))
+        console.log("subbing  to single send", reqId)
         return new Promise(res => {
             clientCbs[reqId] = {
                 type: 'single',
@@ -107,12 +108,13 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
             throw new Error("request was already sent")
         }
         handler.Send(to, JSON.stringify(message))
+        console.log("subbing  to stream", reqId)
         clientCbs[reqId] = {
             type: 'stream',
             f: (response: any) => { cb(response) }
         }
-        console.log(clientCbs,"this is all cbs");
-        
+        console.log(clientCbs, "this is all cbs");
+
     }
     return NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },
