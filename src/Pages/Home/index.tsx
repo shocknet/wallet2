@@ -49,9 +49,9 @@ export const Home = () => {
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     setSwItemArray(collapsed.map((o, i) => ({
       priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
-      station: o.identifier.length < 32 ? o.identifier : `${o.identifier.substring(0, 15)}...${o.identifier.substring(o.identifier.length - 15, o.identifier.length)}`,
+      station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
       changes: `${o.inbound ? "" : "-"}${o.amount}`,
-      date: moment(o.paidAtUnix).fromNow(),
+      date: moment(o.paidAtUnix*1000).fromNow(),
       price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: 'lightning',
       underline: i !== collapsed.length - 1
