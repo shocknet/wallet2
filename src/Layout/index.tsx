@@ -19,7 +19,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   //reducer
   const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
-  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
   
   const dispatch = useDispatch();
   
