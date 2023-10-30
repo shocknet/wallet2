@@ -28,7 +28,7 @@ import { StatusBar } from '@capacitor/status-bar';
 import './App.scss';
 import store from './State/store';
 import { NodeUp } from './Pages/NodeUp';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { Layout } from './Layout';
 import { Loader } from './Pages/Loader';
 import { Home } from './Pages/Home';
@@ -41,6 +41,9 @@ import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
+import { Auth } from './Pages/Auth';
+import { Background } from './Components/Background';
+import { isBrowser } from 'react-device-detect'
 
 setupIonicReact();
 
@@ -48,7 +51,8 @@ const App: React.FC = () => {
 
   let installPromptFlag = true;
   useEffect(() => {
-    setStatusBarColor();
+    if (!isBrowser) setStatusBarColor();
+    
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {
@@ -82,6 +86,7 @@ const App: React.FC = () => {
           <IonRouterOutlet>
             <Layout>
               <>
+                <Background />
                 <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
@@ -112,6 +117,9 @@ const App: React.FC = () => {
                 </Route>
                 <Route exact path="/contacts">
                   <Contacts />
+                </Route>
+                <Route exact path="/auth">
+                  <Auth />
                 </Route>
               </>
             </Layout>

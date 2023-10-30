@@ -14,10 +14,12 @@ import { Modal } from '../../Components/Modals/Modal';
 import { useIonRouter } from '@ionic/react';
 import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
+import { PayTo } from '../../globalTypes';
 
 export const Receive = () => {
   //reducer
   const paySource = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
+  const receiveHistory = useSelector((state: any) => state.history);
 
   const price = useSelector((state: any) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
@@ -46,7 +48,6 @@ export const Receive = () => {
   };
 
   useEffect(() => {
-    getLive();
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
@@ -65,17 +66,14 @@ export const Receive = () => {
     }
   }, [LNInvoice, LNurl]);
 
-  const getLive = async () => {
-    const res = await (await getNostrClient(nostrSource[0].pasteField)).GetLiveUserOperations(
-      (res) => {
-        if (res.status !== "OK") {
-          return;
-        }
-        console.log("good job",res);
-        
-      }
-    )
-  }
+  useEffect(()=>{
+    if (receiveHistory.latestOperation!=undefined&&receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+      setTimeout(() => {
+        router.push("/home");
+      }, 1000);
+      return openNotification("top", "Success", "Payment received!");
+    }
+  },[])
 
   const CreateNostrInvoice = async () => {
     if (!nostrSource.length) return;
