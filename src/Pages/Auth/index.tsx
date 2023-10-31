@@ -7,6 +7,11 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { saveAs } from 'file-saver';
 import { Buffer } from 'buffer';
+import { notification } from 'antd';
+import { NotificationPlacement } from 'antd/es/notification/interface';
+import { UseModal } from '../../Hooks/UseModal';
+import { Modal } from '../../Components/Modals/Modal';
+import { AES, enc } from 'crypto-js';
 
 export const Auth = () => {
   //decode and encode
@@ -21,13 +26,34 @@ export const Auth = () => {
 
   const [auth, setAuth] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
+  const [passphrase, setPassphrase] = useState("");
+  const [passphraseR, setPassphraseR] = useState("");
+  const [dataFromFile, setDataFromFile] = useState("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [api, contextHolder] = notification.useNotification();
+  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+    api.info({
+      message: header,
+      description:
+        text,
+      placement
+    });
+  };
 
+  const { isShown, toggle } = UseModal();
   const send = () => {
 
   }
 
+  const openDownBackupModal = () => {
+    setModalContent('encrypt');
+    toggle();
+  }
+
   const downloadBackUp = async () => {
+    if (passphrase != passphraseR||passphrase == "") {
+      return openNotification("top", "Error", "Please insert same sentence.");
+    }
     
     const allData = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -36,9 +62,12 @@ export const Auth = () => {
       allData[key] = value;
     }
     
-    const saveData = encode(JSON.stringify(allData));
-    const blob: Blob = new Blob([saveData], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, 'shockw.dat');
+    const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
+
+    saveAs(encodedString, 'shockw.dat');
+    toggle();
+    setPassphrase("")
+    setPassphraseR("")
   }
 
   const getDatafromBackup = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,14 +76,25 @@ export const Auth = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
-        importBackup(content);
+        setDataFromFile(content);
+        setModalContent('decrypt');
+        toggle();
       };
       reader.readAsText(file);
     }
   }
 
-  const importBackup = (content:string) => {
-    const data = JSON.parse(decode(content));
+  const importBackup = () => {
+    console.log(passphrase);
+    if (!passphrase) return;
+    
+    var decodedString: string = "";
+    try {
+      decodedString = AES.decrypt(dataFromFile, passphrase).toString(enc.Utf8);
+    } catch (error) {
+      return openNotification("top", "Error", "Passphrase is not correct.");
+    }
+    const data = JSON.parse(decodedString);
     for (let i = 0; i < Object.keys(data).length; i++) {
       const element = Object.keys(data)[i];
       localStorage.setItem(element, data[element])
@@ -64,8 +104,46 @@ export const Auth = () => {
   useEffect(()=>{
   });
 
+  const [modalContent, setModalContent] = useState('encrypt');
+  const switchModalContent = () => {
+    switch (modalContent) {
+      case 'encrypt':
+        return encryptBackupModal
+      case 'decrypt':
+        return decryptBackupModal;
+      default:
+        return encryptBackupModal;
+    }
+  }
+
+  const encryptBackupModal = <React.Fragment>
+    <div className='Auth_modal_header'>Encrypt Backup</div>
+    <div className='Auth_modal_description'>Set a passphrase for your backup file.</div>
+    <div className='Auth_serviceauth'>
+      <input value={passphrase} onChange={(e)=>{setPassphrase(e.target.value)}} type="text" placeholder="Sentences make for good entropy"/>
+      <input value={passphraseR} onChange={(e)=>{setPassphraseR(e.target.value)}} type="text" placeholder="Sentences make for good entropy"/>
+    </div>
+    <div className="Auth_modal_add_btn">
+      <button onClick={downloadBackUp}>OK</button>
+    </div>
+
+  </React.Fragment>;
+
+  const decryptBackupModal = <React.Fragment>
+    <div className='Auth_modal_header'>Decrypt Backup</div>
+    <div className='Auth_modal_description'>Please insert your passphrase</div>
+    <div className='Auth_serviceauth'>
+      <input value={passphrase} onChange={(e)=>{setPassphrase(e.target.value)}} type="text" placeholder="Sentences make for good entropy"/>
+    </div>
+    <div className="Auth_modal_add_btn">
+      <button onClick={importBackup}>OK</button>
+    </div>
+
+  </React.Fragment>;
+
   return (
     <div className='Auth_container'>
+      {contextHolder}
       <div className="Auth">
         <div className="Auth_header_text">Back-Up & Restore</div>
         <div className='Auth_description'>
@@ -92,19 +170,20 @@ export const Auth = () => {
         </div>
         <div className='Auth_download'>
           <div className="Auth_download_button">
-            <button onClick={downloadBackUp}>
+            <button onClick={()=>{openDownBackupModal()}}>
               Download File Backup
             </button>
           </div>
-          <p className='Auth_description_para'>
-            Note: Be sure to download an updated file after adding or modifying connections.
-          </p>
+          <div className='Auth_description_note'>
+            <p className='Auth_description_note_header'>Note:</p> Be sure to download an updated file after adding or modifying connections.
+          </div>
         </div>
         <div className='Auth_border'></div>
         <div className='Auth_import'>
           <input type='file' ref={fileInputRef} onChange={(e)=>{getDatafromBackup(e)}} style={{display: "none"}}/>
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
+        <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>
     </div>
   )
