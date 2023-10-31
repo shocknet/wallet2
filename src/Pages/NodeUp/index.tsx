@@ -10,13 +10,11 @@ import { nip19 } from "nostr-tools";
 
 export const NodeUp = () => {
   const router = useIonRouter();
-  const dispatch = useDispatch();
 
   const privateKey = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
   const toMainPage = () => {
     setNostrPrivateKey();
-    addBootStrapSources();
     if (privateKey) {
       router.push("/home");
     }else {
@@ -28,30 +26,6 @@ export const NodeUp = () => {
     setNostrPrivateKey()
     router.push("/sources")
   };
-
-  const addBootStrapSources = async () => {
-    let bootstrapBalance = "0";
-    let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })
-    dispatch(addPaySources(
-      {
-        id: 0,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-      }
-    ));
-    dispatch(addSpendSources(
-      {
-        id: 0,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-        balance: bootstrapBalance,
-      }
-    ))
-  }
 
   useEffect(() => {
     if(privateKey){
