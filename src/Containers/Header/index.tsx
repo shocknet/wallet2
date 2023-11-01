@@ -126,6 +126,10 @@ export const Header = () => {
               }}>
                 {Icons.Menu()}
               </button>
+              <button className="Header_notify">
+                {Icons.notification()}
+                {Icons.oval()}
+              </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>
           )

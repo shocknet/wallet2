@@ -216,4 +216,16 @@
     margin-left: -4px;
     height: 40px;
   }
+
+  &_notify {
+    @include buttonPrimary;
+    float: right;
+    margin-top: 12px;
+    margin-right: 15px;
+  }
+
+  &_oval {
+    margin-top: -16px;
+    margin-left: -19px;
+  }
 }

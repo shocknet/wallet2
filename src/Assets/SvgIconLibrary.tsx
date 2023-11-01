@@ -602,3 +602,17 @@ export const prefsSetting = () => {
         <div className="Prefs_setting_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+export const notification = () => {
+    const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="-13.160000000000025 0 658 658" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M552.5,389.4V236.8C552.5,105.2,447.3,0,315.7,0S78.9,105.2,78.9,236.8v152.6L0,578.8h78.9h157.9  c0,44.7,34.2,78.9,78.9,78.9c44.7,0,78.9-34.2,78.9-78.9h157.9h78.9L552.5,389.4z M315.7,26.3c115.8,0,210.5,94.7,210.5,210.5v131.5  H105.2V236.8C105.2,121,199.9,26.3,315.7,26.3z M315.7,631.4c-28.9,0-52.6-23.7-52.6-52.6h105.2  C368.3,607.7,344.6,631.4,315.7,631.4z M78.9,552.5H39.5l63.1-152.6l2.6-5.3h420.9l2.6,5.3L592,552.5h-39.5H78.9z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div className="" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
+
+export const oval = () => {
+    const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 8 8" width="8" height="8"><g transform="translate(0, 0)"><defs><path id="path-16987583019702256" d="M4 0 C6.2076600979759995 0 8 1.7923399020239992 8 3.9999999999999987 C8 6.207660097975998 6.2076600979759995 7.999999999999997 4 7.999999999999997 C1.7923399020239996 7.999999999999997 0 6.207660097975998 0 3.9999999999999987 C0 1.7923399020239992 1.7923399020239996 0 4 0 Z" vector-effect="non-scaling-stroke"/></defs><g transform="translate(0, 0)"><path d="M4 0 C6.2076600979759995 0 8 1.7923399020239992 8 3.9999999999999987 C8 6.207660097975998 6.2076600979759995 7.999999999999997 4 7.999999999999997 C1.7923399020239996 7.999999999999997 0 6.207660097975998 0 3.9999999999999987 C0 1.7923399020239992 1.7923399020239996 0 4 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 119, 0);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+    return (
+        <div className="Header_oval" dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
