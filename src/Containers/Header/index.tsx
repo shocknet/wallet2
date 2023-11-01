@@ -126,7 +126,9 @@ export const Header = () => {
               }}>
                 {Icons.Menu()}
               </button>
-              <button className="Header_notify">
+              <button className="Header_notify" onClick={() => {
+                router.push('/notify')
+              }}>
                 {Icons.notification()}
                 {Icons.oval()}
               </button>
