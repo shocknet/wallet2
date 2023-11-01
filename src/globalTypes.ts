@@ -90,6 +90,14 @@ export interface SwItemData{
   underline?: boolean;
 }
 
+export interface NotifyItemData{
+  header: string;
+  icon: string;
+  desc: string; 
+  date: number;
+  link: string;
+}
+
 export interface ITotalAmount{
   subtotal: number;
   taxes: number;
