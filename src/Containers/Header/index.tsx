@@ -11,9 +11,11 @@ import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
+import { useSelector } from "react-redux";
 
 export const Header = () => {
   const router = useIonRouter();
+  const notifications = useSelector(({notify}) => notify);
 
   const { isShown, toggle } = UseModal();
 
@@ -130,7 +132,7 @@ export const Header = () => {
                 router.push('/notify')
               }}>
                 {Icons.notification()}
-                {Icons.oval()}
+                {notifications.notifications[notifications.notifications.length-1].date>notifications.checkTime?Icons.oval():''}
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>

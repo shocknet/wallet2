@@ -3,14 +3,17 @@ import { NotifyItemData, PageProps } from "../../globalTypes";
 
 import { useSelector, useDispatch } from 'react-redux';
 import { NotifyItem } from '../../Components/NotifyItem';
+import { updateCheckTime } from '../../State/Slices/notificationSlice';
 
 export const Notify = () => {
+  const dispatch = useDispatch();
   useEffect(()=>{
-  });
+    dispatch(updateCheckTime(Date.now()))
+  }, []);
 
   const notifications = useSelector(({notify}) => notify);
 
-  const notifyItem = notifications.map((o: NotifyItemData, i: number): JSX.Element => <NotifyItem
+  const notifyItem = notifications.notifications.map((o: NotifyItemData, i: number): JSX.Element => <NotifyItem
     header={o.header}
     icon={o.icon}
     desc={o.desc}
