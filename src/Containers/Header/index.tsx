@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -14,6 +14,7 @@ import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "react-redux";
 
 export const Header = () => {
+  const [badge, setBadge] = useState(false);
   const router = useIonRouter();
   const notifications = useSelector(({notify}) => notify);
 
@@ -25,6 +26,15 @@ export const Header = () => {
   const isLoader: boolean = window.location.pathname === "/loader";
   const isscan: boolean = window.location.pathname === "/scan";
   const isreceive: boolean = window.location.pathname === "/receive";
+  const getNotifyBadge = () => {
+    if (notifications&&notifications.notifications.length) {
+      setBadge(notifications.notifications[notifications.notifications.length-1].date>notifications.checkTime)
+    }
+  }
+
+  useEffect(() => {
+    getNotifyBadge();
+  })
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -132,7 +142,7 @@ export const Header = () => {
                 router.push('/notify')
               }}>
                 {Icons.notification()}
-                {notifications.notifications[notifications.notifications.length-1].date>notifications.checkTime?Icons.oval():''}
+                {badge?Icons.oval():''}
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>
