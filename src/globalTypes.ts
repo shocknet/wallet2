@@ -90,6 +90,15 @@ export interface SwItemData{
   underline?: boolean;
 }
 
+export interface TransactionInterface {
+  amount: string,
+  memo: string,
+  time: number,
+  destination: string,
+  inbound: boolean,
+  confirm: any,
+}
+
 export interface NotifyItemData{
   header: string;
   icon: string;

@@ -28,10 +28,6 @@ type PayAddress = {
 }
 
 export const Send = () => {
-  //time
-  const now = new Date();
-  const options = { timeZone: 'America/New_York' }; // Replace with your desired timezone
-  const nowTime = now.toLocaleString(undefined, options);
   //parameter in url when click protocol
   const addressSearch = new URLSearchParams(useLocation().search);;
   const urlParam = addressSearch.get("url");
@@ -90,7 +86,6 @@ export const Send = () => {
           setError(resA.reason)
           return
         }
-        router.push("/home")
         return resA;
       case 'payInvoice':
         const resI = await (await getNostrClient(selectedSource.pasteField)).PayInvoice({
@@ -101,17 +96,15 @@ export const Send = () => {
           setError(resI.reason)
           return
         }
-        router.push("/home")
         return resI;
     }
   }
-  let loadingSend = false;
+  const [loading, setLoading] = useState("none");
   const handleSubmit = async () => {
-    if (loadingSend) return;
-    loadingSend = true;
+    setLoading("flex")
     if (selectedSource.pasteField.includes("nprofile")) {
       await payUsingNprofile();
-      loadingSend = false;
+      setLoading("none")
     }else {
 
     }
@@ -136,7 +129,7 @@ export const Send = () => {
         console.log(callbackURL);
         
         if (callbackURL.data.success===false) {
-          return openNotification("top", "Error", callbackURL.data.error);
+          openNotification("top", "Error", callbackURL.data.error);
         }
         payRes = await pay(
           {
@@ -149,17 +142,17 @@ export const Send = () => {
           dispatch(addTransaction({
             amount: amount,
             memo: note,
-            time: nowTime,
+            time: Date.now(),
             destination: to,
-            chainLN: false,
+            inbound: false,
             confirm: payRes,
           }))
-          return openNotification("top", "Success", "Successfully paid.");
+          openNotification("top", "Success", "Successfully paid.");
         }else {
-          return openNotification("top", "Error", "Failed transaction.");
+          openNotification("top", "Error", "Failed transaction.");
         }
       } catch (error) {
-        return openNotification("top", "Error", "Couldn't send using this info.");
+        openNotification("top", "Error", "Couldn't send using this info.");
       }
     }else if (to.includes("lnbc")) {
       try {
@@ -180,9 +173,9 @@ export const Send = () => {
           dispatch(addTransaction({
             amount: result.amount+"",
             memo: note,
-            time: nowTime,
+            time: Date.now(),
             destination: to,
-            chainLN: false,
+            inbound: false,
             confirm: payRes,
           }))
         }else {
@@ -190,7 +183,7 @@ export const Send = () => {
         }
       } catch (error) {
         console.log(error);
-        return openNotification("top", "Error", "Couldn't send using this info.");
+        openNotification("top", "Error", "Couldn't send using this info.");
       }
     }else {
       try {
@@ -206,18 +199,21 @@ export const Send = () => {
           dispatch(addTransaction({
             amount: amount,
             memo: note,
-            time: nowTime,
+            time: Date.now(),
             destination: to,
-            chainLN: true,
+            inbound: false,
             confirm: payRes,
           }))
         }else {
           openNotification("top", "Error", "Failed transaction.");
         }
       } catch (error) {
-        return openNotification("top", "Error", "Couldn't send using this info.");
+        openNotification("top", "Error", "Couldn't send using this info.");
       }
     }
+    setTimeout(() => {
+      router.push("/home")
+    }, 500);
   }
 
   const onChangeTo = async (e: string) => {
@@ -244,6 +240,12 @@ export const Send = () => {
 
   return (
     <div className='Send_container'>
+      <div className='Send_loading' style={{display: loading}}>
+        <div className='Send_img'>
+          {Icons.Animation()}
+          <p>Sending</p>
+        </div>
+      </div>
       {contextHolder}
       <div className="Send" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Send_header_text">Send Payment</div>

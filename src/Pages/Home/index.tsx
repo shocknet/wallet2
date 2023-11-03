@@ -3,7 +3,7 @@ import moment from 'moment'
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 
-import { SpendFrom, sw_item } from "../../globalTypes";
+import { SpendFrom, TransactionInterface, sw_item } from "../../globalTypes";
 import { useDispatch, useSelector } from "../../State/store";
 import { SwItem } from "../../Components/SwItem";
 import { bech32 } from "bech32";
@@ -19,6 +19,7 @@ export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const spendSources = useSelector((state) => state.spendSource);
   const operationGroups = useSelector(({ history }) => history.operations) || {}
+  const transactions: TransactionInterface[] = useSelector(({ transaction }) => transaction) || []
 
   const [error, setError] = useState("")
   const [balance, setBalance] = useState('0.00')
@@ -47,16 +48,32 @@ export const Home = () => {
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
     console.log(entries)
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
-    setSwItemArray(collapsed.map((o, i) => ({
+    // setSwItemArray(collapsed.map((o, i) => ({
+    //   priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
+    //   station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
+    //   changes: `${o.inbound ? "" : "-"}${o.amount}`,
+    //   date: moment(o.paidAtUnix*1000).fromNow(),
+    //   price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
+    //   stateIcon: 'lightning',
+    //   underline: i !== collapsed.length - 1
+    // })) || [])
+    console.log(transactions);
+    var boxArray = [];
+    for (let i = transactions.length-1; i >= 0; i--) {
+      boxArray.push(transactions[i])
+    }
+    
+    setSwItemArray(boxArray.map((o, i) => ({
       priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
-      station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
+      station: o.destination.length < 20 ? o.destination : `${o.destination.substring(0, 9)}...${o.destination.substring(o.destination.length - 9, o.destination.length)}`,
       changes: `${o.inbound ? "" : "-"}${o.amount}`,
-      date: moment(o.paidAtUnix*1000).fromNow(),
-      price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
+      date: moment(o.time).fromNow(),
+      price: Math.round(100 * parseInt(o.amount) * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: 'lightning',
-      underline: i !== collapsed.length - 1
+      underline: i !== transactions.length - 1
     })) || [])
-  }, [])
+    
+  }, [operationGroups])
 
   useEffect(() => {
     resetSpendFrom();
