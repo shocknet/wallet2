@@ -43,10 +43,9 @@ export const Home = () => {
     const entries = Object.entries(operationGroups).filter(([_, v]) => { console.log({ v }); return v.length > 0 })
     if (entries.length === 0) {
       console.log("no operations to display")
-      return
+      // return
     }
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
-    console.log(entries)
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     // setSwItemArray(collapsed.map((o, i) => ({
     //   priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
@@ -57,7 +56,7 @@ export const Home = () => {
     //   stateIcon: 'lightning',
     //   underline: i !== collapsed.length - 1
     // })) || [])
-    console.log(transactions);
+    console.log(transactions,"transactions");
     var boxArray = [];
     for (let i = transactions.length-1; i >= 0; i--) {
       boxArray.push(transactions[i])
@@ -73,7 +72,7 @@ export const Home = () => {
       underline: i !== transactions.length - 1
     })) || [])
     
-  }, [operationGroups])
+  }, [transactions])
 
   useEffect(() => {
     resetSpendFrom();

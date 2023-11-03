@@ -48,18 +48,18 @@ export const Header = () => {
         date: Date.now(),
         link: '/auth',
       }))
-      openNotification("top", "Reminder", "Please back up your credentials!");
+      openNotification("top", "Reminder", "Please back up your credentials!", ()=>{router.push("/auth")});
       localStorage.setItem("isBackUp", "1")
     }
   }, []);
 
   const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+  const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick: (() => void) | undefined) => {
     api.info({
       message: header,
-      description:
-        text,
-      placement
+      description: text,
+      placement,
+      onClick: onClick,
     });
   };
 
