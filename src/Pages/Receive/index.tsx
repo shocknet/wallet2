@@ -224,6 +224,7 @@ export const Receive = () => {
           toggle();
           return;
         }
+        setValueQR(LNInvoice);
         break;
     
       case 2:
@@ -258,6 +259,7 @@ export const Receive = () => {
       {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{headerText[tag]}</div>
+        <p>{valueQR}</p>
         <div className="Receive_QR" style={{ transform: deg }}>
           {valueQR == "" ? <div></div> : <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
