@@ -11,7 +11,10 @@ import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addNotification } from "../../State/Slices/notificationSlice";
+import { notification } from "antd";
+import { NotificationPlacement } from "antd/es/notification/interface";
 
 export const Header = () => {
   const [badge, setBadge] = useState(false);
@@ -19,8 +22,7 @@ export const Header = () => {
   const notifications = useSelector(({notify}) => notify);
 
   const { isShown, toggle } = UseModal();
-
-  const state = useContext(Ctx)
+  const dispatch = useDispatch();
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";
@@ -34,7 +36,32 @@ export const Header = () => {
 
   useEffect(() => {
     getNotifyBadge();
-  })
+  }, [notifications])
+  useEffect(() => {
+    getNotifyBadge();
+    const isBackUp = localStorage.getItem("isBackUp")??"0";
+    if (isBackUp == "0") {
+      dispatch(addNotification({
+        header: 'Reminder',
+        icon: '⚠️',
+        desc: 'Back up your credentials!',
+        date: Date.now(),
+        link: '/auth',
+      }))
+      openNotification("top", "Reminder", "Please back up your credentials!");
+      localStorage.setItem("isBackUp", "1")
+    }
+  }, []);
+
+  const [api, contextHolder] = notification.useNotification();
+  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+    api.info({
+      message: header,
+      description:
+        text,
+      placement
+    });
+  };
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -105,6 +132,7 @@ export const Header = () => {
 
   return (
     <header className="Header">
+      {contextHolder}
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
           <button className="Header_logo_1" onClick={() => router.push("/")}>

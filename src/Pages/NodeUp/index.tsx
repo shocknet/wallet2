@@ -1,20 +1,13 @@
 import React, { useEffect } from "react";
 import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
-import { useSelector, useDispatch } from 'react-redux';
 import { setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
-import { addPaySources } from "../../State/Slices/paySourcesSlice";
-import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
-import { nip19 } from "nostr-tools";
-import { addNotification } from "../../State/Slices/notificationSlice";
 
 export const NodeUp = () => {
   const router = useIonRouter();
 
   const privateKey = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-  const dispatch = useDispatch();
-
   const toMainPage = () => {
     setPrivateKey();
     if (privateKey) {
@@ -37,13 +30,6 @@ export const NodeUp = () => {
 
   const setPrivateKey = () => {
     setNostrPrivateKey();
-    dispatch(addNotification({
-      header: 'Reminder',
-      icon: '⚠️',
-      desc: 'Back up your credentials!',
-      date: Date.now(),
-      link: '/auth',
-    }))
   }
 
   return(
