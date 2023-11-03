@@ -59,40 +59,45 @@ export const Home = () => {
   },[])
 
   useEffect(() => {
+    transactionsView();
+    // console.log(transactions,"transactions");
+    // var boxArray = [];
+    // for (let i = transactions.length-1; i >= 0; i--) {
+    //   boxArray.push(transactions[i])
+    // }
+    
+    // setSwItemArray(boxArray.map((o, i) => ({
+    //   priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
+    //   station: o.destination.length < 20 ? o.destination : `${o.destination.substring(0, 9)}...${o.destination.substring(o.destination.length - 9, o.destination.length)}`,
+    //   changes: `${o.inbound ? "" : "-"}${o.amount}`,
+    //   date: moment(o.time).fromNow(),
+    //   price: Math.round(100 * parseInt(o.amount) * price.sellPrice / (100 * 1000 * 1000)) / 100,
+    //   stateIcon: 'lightning',
+    //   underline: i !== transactions.length - 1
+    // })) || [])
+    
+  }, [transactions])
+
+  const transactionsView = () => {
     console.log(price, operationGroups)
     const entries = Object.entries(operationGroups).filter(([_, v]) => { console.log({ v }); return v.length > 0 })
     if (entries.length === 0) {
       console.log("no operations to display")
+      // transactionsView();
       // return
     }
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
-    // setSwItemArray(collapsed.map((o, i) => ({
-    //   priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
-    //   station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
-    //   changes: `${o.inbound ? "" : "-"}${o.amount}`,
-    //   date: moment(o.paidAtUnix*1000).fromNow(),
-    //   price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
-    //   stateIcon: 'lightning',
-    //   underline: i !== collapsed.length - 1
-    // })) || [])
-    console.log(transactions,"transactions");
-    var boxArray = [];
-    for (let i = transactions.length-1; i >= 0; i--) {
-      boxArray.push(transactions[i])
-    }
-    
-    setSwItemArray(boxArray.map((o, i) => ({
+    setSwItemArray(collapsed.map((o, i) => ({
       priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
-      station: o.destination.length < 20 ? o.destination : `${o.destination.substring(0, 9)}...${o.destination.substring(o.destination.length - 9, o.destination.length)}`,
+      station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
       changes: `${o.inbound ? "" : "-"}${o.amount}`,
-      date: moment(o.time).fromNow(),
-      price: Math.round(100 * parseInt(o.amount) * price.sellPrice / (100 * 1000 * 1000)) / 100,
+      date: moment(o.paidAtUnix*1000).fromNow(),
+      price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: 'lightning',
-      underline: i !== transactions.length - 1
+      underline: i !== collapsed.length - 1
     })) || [])
-    
-  }, [transactions])
+  }
 
   useEffect(() => {
     resetSpendFrom();
