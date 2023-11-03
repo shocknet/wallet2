@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addNotification } from "../../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
 
 export const Header = () => {
   const [badge, setBadge] = useState(false);
@@ -22,7 +23,6 @@ export const Header = () => {
   const notifications = useSelector(({notify}) => notify);
 
   const { isShown, toggle } = UseModal();
-  const dispatch = useDispatch();
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";
@@ -39,29 +39,8 @@ export const Header = () => {
   }, [notifications])
   useEffect(() => {
     getNotifyBadge();
-    const isBackUp = localStorage.getItem("isBackUp")??"0";
-    if (isBackUp == "0") {
-      dispatch(addNotification({
-        header: 'Reminder',
-        icon: '⚠️',
-        desc: 'Back up your credentials!',
-        date: Date.now(),
-        link: '/auth',
-      }))
-      openNotification("top", "Reminder", "Please back up your credentials!", ()=>{router.push("/auth")});
-      localStorage.setItem("isBackUp", "1")
-    }
+    
   }, []);
-
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick: (() => void) | undefined) => {
-    api.info({
-      message: header,
-      description: text,
-      placement,
-      onClick: onClick,
-    });
-  };
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -132,7 +111,6 @@ export const Header = () => {
 
   return (
     <header className="Header">
-      {contextHolder}
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
           <button className="Header_logo_1" onClick={() => router.push("/")}>

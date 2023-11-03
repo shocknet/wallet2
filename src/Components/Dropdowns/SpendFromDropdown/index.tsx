@@ -80,7 +80,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
               <div className="spend_from_item_left">
                 <div className="spend_from_item_icon">{arrangeIcon(value.icon)}</div>
                 <div className="spend_from_item_input">
-                  <div>{value.label}</div>
+                  <div style={{width: "130px"}}>{value.label}</div>
                 </div>
               </div>
               <div className="spend_from_item_balance">{value.balance}</div>
