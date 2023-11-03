@@ -124,7 +124,7 @@ export const Home = () => {
               console.log(res.reason, "reason");
               return
             }
-            balanceOfNostr = res.balance.toString()
+            balanceOfNostr = res.max_withdrawable.toString()
           })
           box[i].balance = balanceOfNostr;
           dispatch(editSpendSources(box[i]));

@@ -457,7 +457,7 @@ export const Sources = () => {
               console.log(res.reason, "reason");
               return
             }
-            balanceOfNostr = res.balance.toString()
+            balanceOfNostr = res.max_withdrawable.toString()
           })
           box[i].balance = balanceOfNostr;
           setSpendFromLists([...box]);
