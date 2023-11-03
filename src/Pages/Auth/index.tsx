@@ -63,8 +63,9 @@ export const Auth = () => {
     }
     
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
+    const blob = new Blob([encodedString], { type: 'text/plain;charset=utf-8' });
 
-    saveAs(encodedString, 'shockw.dat');
+    saveAs(blob, 'shockw.dat');
     toggle();
     setPassphrase("")
     setPassphraseR("")
@@ -99,6 +100,7 @@ export const Auth = () => {
       const element = Object.keys(data)[i];
       localStorage.setItem(element, data[element])
     }
+    toggle()
   }
 
   useEffect(()=>{

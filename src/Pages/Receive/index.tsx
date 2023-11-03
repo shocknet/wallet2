@@ -82,6 +82,8 @@ export const Receive = () => {
   },[])
 
   const CreateNostrInvoice = async () => {
+    console.log("here", amount);
+
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
       amountSats: +amount,
@@ -94,6 +96,9 @@ export const Receive = () => {
     }
     console.log(res.invoice, " this is invoice");
 
+    if (LNInvoice != "") {
+      setValueQR(`lightning:${res.invoice}`);
+    }
     setLNInvoice(`lightning:${res.invoice}`);
   }
 
@@ -115,8 +120,7 @@ export const Receive = () => {
     return openNotification("top", "Success", "Copied!");
   }
 
-  const configInvoice = async () => {
-    if (LNInvoice != '') return;
+  const configInvoice = async () => {    
     const address = configLNaddress();
     if (paySource[0].pasteField.includes("nprofile")) {
       await CreateNostrInvoice();
@@ -141,6 +145,9 @@ export const Receive = () => {
           }
         }
       );
+      if (LNInvoice != "") {
+        setValueQR("lightning:" + callbackURL.data.pr);
+      }
       setLNInvoice("lightning:" + callbackURL.data.pr);
     } catch (error: any) {
       return openNotification("top", "Error", "Cors error");
@@ -264,7 +271,7 @@ export const Receive = () => {
           </div>
         </div >
         <div className='Receive_copy'>
-          {!tag ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:") ? bitcoinAddText : lightningAdd}
+          {tag==1 ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag==2 ? bitcoinAddText : lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>

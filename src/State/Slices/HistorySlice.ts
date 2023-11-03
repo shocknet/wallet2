@@ -33,7 +33,7 @@ const historySlice = createSlice({
       if (!state.operations) {
         state.operations = {}
       }
-      state.operations[nprofile] = { ...operations }
+      state.operations[nprofile] = [ ...operations ]
       state.cursor = { ...cursor }
       update(state)
     },
