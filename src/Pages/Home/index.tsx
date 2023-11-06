@@ -76,7 +76,7 @@ export const Home = () => {
     //   underline: i !== transactions.length - 1
     // })) || [])
     
-  }, [transactions])
+  }, [operationGroups])
 
   const transactionsView = () => {
     console.log(price, operationGroups)
@@ -88,6 +88,14 @@ export const Home = () => {
     }
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
+    collapsed.sort((a: any, b: any) => b.paidAtUnix - a.paidAtUnix);
+    collapsed.map((item)=>{
+      const sameTrans = transactions.filter(trans => trans.invoice??"" != item.identifier);
+      if (sameTrans.length !=0) {
+        item.identifier = sameTrans[0].destination;
+      }
+    })
+    
     setSwItemArray(collapsed.map((o, i) => ({
       priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
       station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,

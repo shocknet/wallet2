@@ -52,6 +52,7 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                             destination: newOp.operation.identifier,
                             inbound: true,
                             confirm: {},
+                            invoice: "",
                         }))
                         dispatch(setLatestOperation({ operation: newOp.operation }))
                     } else {
@@ -78,7 +79,7 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                 const req = populateCursorRequest(cursor)
                 c.GetUserOperations(req).then(ops => {
                     if (ops.status === 'OK') {
-                        console.log(parseOperationsResponse(ops), "ops")
+                        console.log((ops), "ops")
                         dispatch(setSourceHistory({ nprofile: source.pasteField, ...parseOperationsResponse(ops) }))
                     } else {
                         console.log(ops.reason, "ops.reason")
@@ -94,12 +95,19 @@ export const Background: React.FC<Props> = (): JSX.Element => {
 
 const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Types.GetUserOperationsRequest => {
     return {
-        latestIncomingInvoice: p.latestIncomingInvoice || 0,
-        latestOutgoingInvoice: p.latestOutgoingInvoice || 0,
-        latestIncomingTx: p.latestIncomingTx || 0,
-        latestOutgoingTx: p.latestOutgoingTx || 0,
-        latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment || 0,
-        latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment || 0,
+        // latestIncomingInvoice: p.latestIncomingInvoice || 0,
+        // latestOutgoingInvoice: p.latestOutgoingInvoice || 0,
+        // latestIncomingTx: p.latestIncomingTx || 0,
+        // latestOutgoingTx: p.latestOutgoingTx || 0,
+        // latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment || 0,
+        // latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment || 0,
+        
+        latestIncomingInvoice: 0,
+        latestOutgoingInvoice: 0,
+        latestIncomingTx: 0,
+        latestOutgoingTx: 0,
+        latestIncomingUserToUserPayment: 0,
+        latestOutgoingUserToUserPayment: 0,
     }
 }
 

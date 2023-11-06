@@ -97,6 +97,7 @@ export interface TransactionInterface {
   destination: string,
   inbound: boolean,
   confirm: any,
+  invoice: string,
 }
 
 export interface NotifyItemData{

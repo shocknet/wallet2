@@ -38,7 +38,7 @@
 
   &_scroller{
     --scrollbar-width: 0px;
-    --mask-height: 140px;
+    --mask-height: 10px;
     overflow-y: auto;
     height: calc(100vh - 350px);
     // padding-top: var(--mask-height);
