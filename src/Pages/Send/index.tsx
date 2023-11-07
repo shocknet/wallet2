@@ -170,7 +170,6 @@ export const Send = () => {
         )
         console.log(result,"this is decoded invocie");
         if (payRes?.status == "OK") {
-          openNotification("top", "Success", "Successfully paid.");
           await (await getNostrClient(selectedSource.pasteField)).GetUserOperations({
             latestIncomingInvoice: 0,
             latestOutgoingInvoice: 0,
@@ -194,7 +193,8 @@ export const Send = () => {
             } else {
                 console.log(ops.reason, "ops.reason")
             }
-          })
+          });
+          return openNotification("top", "Success", "Successfully paid.");
         }else {
           return openNotification("top", "Error", "Failed transaction.");
         }
