@@ -89,8 +89,10 @@ export const Home = () => {
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     collapsed.sort((a: any, b: any) => b.paidAtUnix - a.paidAtUnix);
-    collapsed.map((item)=>{
-      const sameTrans = transactions.filter(trans => {(trans.invoice??"") == item.identifier});
+    console.log(transactions, collapsed, "this is data");
+    
+    collapsed.map((item, i)=>{
+      const sameTrans = transactions.filter(trans => {return ((trans.invoice??"") == item.identifier)});
       if (sameTrans.length !=0) {
         item.identifier = sameTrans[0].destination;
       }
