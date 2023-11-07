@@ -90,7 +90,7 @@ export const Home = () => {
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     collapsed.sort((a: any, b: any) => b.paidAtUnix - a.paidAtUnix);
     collapsed.map((item)=>{
-      const sameTrans = transactions.filter(trans => trans.invoice??"" == item.identifier);
+      const sameTrans = transactions.filter(trans => {(trans.invoice??"") == item.identifier});
       if (sameTrans.length !=0) {
         item.identifier = sameTrans[0].destination;
       }
