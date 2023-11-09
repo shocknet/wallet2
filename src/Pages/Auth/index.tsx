@@ -6,7 +6,6 @@ import axios from 'axios';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { saveAs } from 'file-saver';
-import { Buffer } from 'buffer';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import { UseModal } from '../../Hooks/UseModal';
@@ -14,10 +13,6 @@ import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
 
 export const Auth = () => {
-  //decode and encode
-  const decode = (str: string):string => Buffer.from(str, 'base64').toString('binary');
-  const encode = (str: string):string => Buffer.from(str, 'binary').toString('base64');
-
   //reducer
   const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
   const price = useSelector((state:any) => state.usdToBTC);

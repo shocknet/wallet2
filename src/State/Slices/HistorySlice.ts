@@ -16,13 +16,13 @@ const update = (value: History) => {
 }
 
 const initialState: History = JSON.parse(historyLocal ?? "{}");
-const ops: SourceOperations = {}
-Object.entries(initialState.operations || {}).forEach(([k, o]) => {
-  if (!Array.isArray(o)) {
-    ops[k] = Object.values(o) || []
-  }
-})
-initialState.operations = ops
+// const ops: SourceOperations = {}
+// Object.entries(initialState.operations || {}).forEach(([k, o]) => {
+//   if (!Array.isArray(o)) {
+//     ops[k] = Object.values(o) || []
+//   }
+// })
+// initialState.operations = ops
 
 const historySlice = createSlice({
   name: 'history',

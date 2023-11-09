@@ -15,6 +15,8 @@ import { Modal } from '../../Components/Modals/Modal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 import { useLocation } from 'react-router-dom';
 import { addTransaction } from '../../State/Slices/transactionSlice';
+import { nip19 } from 'nostr-tools';
+import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
 
 type PayInvoice = {
   type: 'payInvoice'
@@ -237,16 +239,16 @@ export const Send = () => {
 
   const onChangeTo = async (e: string) => {
     setTo(e);
-    if (selectedSource.pasteField.includes("lnbc")) {
-      try {
-        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
-        if (result.status != "OK") {
-          return;
-        }
-        setAmount(result.amount.toString());
-      } catch (error) {
-        console.log(error);
+    try {
+      const result = await (await getNostrClient( nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }))).DecodeInvoice({invoice:e});
+      console.log(result);
+      
+      if (result.status != "OK") {
+        return;
       }
+      setAmount(result.amount+'')
+    } catch (error) {
+      console.log(error);
     }
   }
 

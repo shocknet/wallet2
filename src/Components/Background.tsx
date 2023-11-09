@@ -14,6 +14,7 @@ export const Background: React.FC<Props> = (): JSX.Element => {
     const nostrSource = useSelector((state) => state.paySource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
     const cursor = useSelector(({ history }) => history.cursor) || {}
     const latestOp = useSelector(({ history }) => history.latestOperation) || {}
+    const transaction = useSelector(({ transaction }) => transaction) || {}
     const dispatch = useDispatch();
     const [initialFetch, setInitialFetch] = useState(true)
     const [api, contextHolder] = notification.useNotification();
@@ -87,7 +88,7 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                 })
             })
         })
-    }, [latestOp, initialFetch])
+    }, [latestOp, initialFetch, transaction])
     return <>
       {contextHolder}
     </>
