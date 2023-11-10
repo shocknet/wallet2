@@ -71,9 +71,11 @@ export const Send = () => {
       }, 1000);
       return openNotification("top", "Error", "You don't have any source!");
     }
-
-    setTo(urlParam??"")
   }, []);
+
+  useEffect(() => {
+    onChangeTo(urlParam??"");
+  }, [urlParam])
 
   const pay = async (action: PayInvoice | PayAddress) => {
     if (!nostrSource.length) return;
