@@ -44,6 +44,7 @@ import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
+import { Notify } from './Pages/Notify';
 
 setupIonicReact();
 
@@ -120,6 +121,9 @@ const App: React.FC = () => {
                 </Route>
                 <Route exact path="/auth">
                   <Auth />
+                </Route>
+                <Route exact path="/notify">
+                  <Notify />
                 </Route>
               </>
             </Layout>

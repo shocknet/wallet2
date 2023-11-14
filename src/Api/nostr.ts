@@ -101,11 +101,19 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
     }
     const clientSub = (to: string, message: NostrRequest, cb: (res: any) => void): void => {
         if (!message.requestId) {
-            message.requestId = makeId(16)
+            message.requestId = message.rpcName
         }
         const reqId = message.requestId
+        if (!reqId) {
+            throw new Error("invalid sub")
+        }
         if (clientCbs[reqId]) {
-            throw new Error("request was already sent")
+            clientCbs[reqId] = {
+                type: 'stream',
+                f: (response: any) => { cb(response) }
+            }
+            console.log("sub for", reqId, "was already registered, overriding")
+            return
         }
         handler.Send(to, JSON.stringify(message))
         console.log("subbing  to stream", reqId)
@@ -113,8 +121,6 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
             type: 'stream',
             f: (response: any) => { cb(response) }
         }
-        console.log(clientCbs, "this is all cbs");
-
     }
     return NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },

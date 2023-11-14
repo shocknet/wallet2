@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -11,18 +11,36 @@ import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
+import { useDispatch, useSelector } from "react-redux";
+import { addNotification } from "../../State/Slices/notificationSlice";
+import { notification } from "antd";
+import { NotificationPlacement } from "antd/es/notification/interface";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
 
 export const Header = () => {
+  const [badge, setBadge] = useState(false);
   const router = useIonRouter();
+  const notifications = useSelector(({notify}) => notify);
 
   const { isShown, toggle } = UseModal();
-
-  const state = useContext(Ctx)
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";
   const isscan: boolean = window.location.pathname === "/scan";
   const isreceive: boolean = window.location.pathname === "/receive";
+  const getNotifyBadge = () => {
+    if (notifications&&notifications.notifications.length) {
+      setBadge(notifications.notifications[notifications.notifications.length-1].date>notifications.checkTime)
+    }
+  }
+
+  useEffect(() => {
+    getNotifyBadge();
+  }, [notifications])
+  useEffect(() => {
+    getNotifyBadge();
+    
+  }, []);
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -125,6 +143,12 @@ export const Header = () => {
                 toggle();
               }}>
                 {Icons.Menu()}
+              </button>
+              <button className="Header_notify" onClick={() => {
+                router.push('/notify')
+              }}>
+                {Icons.notification()}
+                {badge?Icons.oval():''}
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>

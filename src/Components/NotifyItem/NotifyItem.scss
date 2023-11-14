@@ -1,0 +1,48 @@
+.NotifyItem{
+  font-size: 1.2rem;
+  border: none;
+  display: flow-root;
+  width: 98%;
+  margin-bottom: 13px;
+
+  &_icon{
+    font-size: 28px;
+  }
+
+  &_left{
+    float: left;
+    display: flex;
+    margin-top: 5px;
+    width: 100%;
+  }
+
+  &_text{
+    margin-left: 10px;
+    width: 100%;
+  }
+
+  &_header{
+    font-size: 14px;
+    color: white;
+    display: inline-flex;
+    width: 100%;
+  }
+
+  &_desc{
+    margin-top: 7px;
+    font-size: 16px;
+    color: #54bbe8;
+  }
+
+  &_date{
+    display: flex;
+    font-size: 14px;
+    color: #a3a3a3;
+    margin-left: auto;
+  }
+
+  &_divider {
+    background-color: #8c8c8c;
+    height: 1px;
+  }
+}

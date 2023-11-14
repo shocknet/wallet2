@@ -31,11 +31,23 @@ export const Receive = () => {
   const [LNurl, setLNurl] = useState("");
   const [valueQR, setValueQR] = useState("");
   const [lightningAdd, setLightningAdd] = useState("");
-  const [tagInvoice, setTagInvoice] = useState(false);
+  const [tag, setTag] = useState(0);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
-  const [header, setHeader] = useState("LNURL");
+  const [bitcoinAddText, setBitcoinAddText] = useState("");
   const router = useIonRouter();
-  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
+  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"));
+
+  const headerText: string[]=[
+    'LNURL',
+    'Lightning Invoice',
+    'Chain Address'
+  ]
+
+  const buttonText: string[]=[
+    'LNURL',
+    'INVOICE',
+    'CHAIN'
+  ]
 
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
@@ -55,16 +67,10 @@ export const Receive = () => {
       return openNotification("top", "Error", "You don't have any source!");
     } else {
       configLNURL();
+      configInvoice();
+      ChainAddress();
     }
   }, []);
-
-  useEffect(() => {
-    if (LNInvoice === "") {
-      setValueQR(LNurl);
-    } else {
-      setValueQR(LNInvoice);
-    }
-  }, [LNInvoice, LNurl]);
 
   useEffect(()=>{
     if (receiveHistory.latestOperation!=undefined&&receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
@@ -76,6 +82,8 @@ export const Receive = () => {
   },[])
 
   const CreateNostrInvoice = async () => {
+    console.log("here", amount);
+
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).NewInvoice({
       amountSats: +amount,
@@ -88,9 +96,10 @@ export const Receive = () => {
     }
     console.log(res.invoice, " this is invoice");
 
+    if (LNInvoice != "") {
+      setValueQR(`lightning:${res.invoice}`);
+    }
     setLNInvoice(`lightning:${res.invoice}`);
-    setTagInvoice(true);
-    setHeader("Lightning Invoice");
   }
 
   const CreateNostrPayLink = async () => {
@@ -103,6 +112,7 @@ export const Receive = () => {
     }
 
     setLNurl("lightning:" + res.lnurl);
+    setValueQR("lightning:" + res.lnurl);
   }
 
   const copyToClip = () => {
@@ -110,10 +120,10 @@ export const Receive = () => {
     return openNotification("top", "Success", "Copied!");
   }
 
-  const configInvoice = async () => {
+  const configInvoice = async () => {    
     const address = configLNaddress();
     if (paySource[0].pasteField.includes("nprofile")) {
-      CreateNostrInvoice();
+      await CreateNostrInvoice();
       return;
     }
     try {
@@ -135,6 +145,9 @@ export const Receive = () => {
           }
         }
       );
+      if (LNInvoice != "") {
+        setValueQR("lightning:" + callbackURL.data.pr);
+      }
       setLNInvoice("lightning:" + callbackURL.data.pr);
     } catch (error: any) {
       return openNotification("top", "Error", "Cors error");
@@ -142,6 +155,7 @@ export const Receive = () => {
   }
 
   const configLNURL = () => {
+    if (LNurl != '') return;
     if (paySource[0].pasteField.includes("nprofile")) {
       CreateNostrPayLink();
       return;
@@ -151,6 +165,7 @@ export const Receive = () => {
     const lnaddress = bech32.encode("lnurl", words, 999999);
     setLightningAdd(address.lithningAdd)
     setLNurl("lightning:" + lnaddress);
+    setValueQR("lightning:" + lnaddress);
   }
 
   const configLNaddress = () => {
@@ -173,7 +188,8 @@ export const Receive = () => {
     };
   }
 
-  const ChainAdress = async () => {
+  const ChainAddress = async () => {
+    if (bitcoinAdd != '') return;
     if (!nostrSource.length) return;
     if (!nostrSource[0].pasteField.includes("nprofile")) {
       return;
@@ -183,10 +199,8 @@ export const Receive = () => {
       // setError(res.reason)
       return
     }
-    setValueQR(`bitcoin:${res.address}`);
-    setTagInvoice(false);
-    setHeader("Chain Address");
-    setBitcoinAdd(
+    setBitcoinAdd(res.address);
+    setBitcoinAddText(
       res.address.substr(0, 5) + "..." + res.address.substr(res.address.length - 5, 5)
     )
   }
@@ -194,25 +208,31 @@ export const Receive = () => {
   const updateInvoice = async () => {
     setAmountValue(amount);
     configInvoice();
-    setTagInvoice(true);
-    setHeader("Lightning Invoice");
+    setTag(1);
     toggle();
   }
 
-  const changeQRcode = () => {
-    if (LNInvoice == "") {
-      toggle();
-      return;
-    }
-    if (tagInvoice) {
-      if (LNurl == "") return openNotification("top", "Error", "You don't have any lightning address");
-      setValueQR(LNurl);
-      setTagInvoice(false);
-      setHeader("LNURL");
-    } else {
-      setValueQR(LNInvoice);
-      setTagInvoice(true);
-      setHeader("Lightning Invoice");
+  const changeQRcode = (index: number) => {
+    setTag(index);
+    switch (index) {
+      case 0:
+        setValueQR(LNurl);
+        break;
+    
+      case 1:
+        if (LNInvoice == "") {
+          toggle();
+          return;
+        }
+        setValueQR(LNInvoice);
+        break;
+    
+      case 2:
+        setValueQR(`bitcoin:${bitcoinAdd}`);
+        break;
+    
+      default:
+        break;
     }
   }
 
@@ -238,7 +258,7 @@ export const Receive = () => {
     <div>
       {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">{header}</div>
+        <div className="Receive_QR_text">{headerText[tag]}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
           {valueQR == "" ? <div></div> : <ReactQrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
@@ -252,7 +272,7 @@ export const Receive = () => {
           </div>
         </div >
         <div className='Receive_copy'>
-          {tagInvoice ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : valueQR.includes("bitcoin:") ? bitcoinAdd : lightningAdd}
+          {tag==1 ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag==2 ? bitcoinAddText : lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>
@@ -264,13 +284,13 @@ export const Receive = () => {
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
-            <button onClick={changeQRcode}>
-              {Icons.arrowLeft()}{tagInvoice ? "LNURL" : "INVOICE"}
+            <button onClick={()=>{changeQRcode((tag+1)%3)}}>
+              {Icons.arrowLeft()}{buttonText[(tag+1)%3]}
             </button>
           </div>
           <div className="Receive_chain">
-            <button onClick={ChainAdress}>
-              CHAIN{Icons.arrowRight()}
+            <button onClick={()=>{changeQRcode((tag+2)%3)}}>
+              {buttonText[(tag+2)%3]}{Icons.arrowRight()}
             </button>
           </div>
         </div>

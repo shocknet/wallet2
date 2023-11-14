@@ -37,7 +37,7 @@
     &_description {
         margin-top: 20px;
         &_header {
-            color: #29abe2;
+            color: #FF7700;
             font-size: 16px;
             line-height: inherit;
         }
@@ -46,6 +46,17 @@
             font-size: 16px;
             text-decoration: none solid rgb(163, 163, 163);
             margin-top: 20px;
+        }
+
+        &_note {
+            font-size: 16px;
+            color: #a3a3a3;
+            text-decoration: none solid rgb(163, 163, 163);
+            margin-top: 20px;
+            display: inline-flex;
+            &_header {
+                color: #FF7700;
+            }
         }
     }
 
@@ -172,5 +183,37 @@
         color: #ffffff;
         background-color: #16191c;
         text-align: center;
+    }
+
+    &_modal {
+        &_add_btn{
+            margin-top: 10px;
+            text-align: center;
+            padding: 0;
+            width: 100%;
+        }
+    
+        &_add_btn button{
+            margin: 10px;
+            background-color: #151d24;
+            border: 1px solid #268fbc;
+            border-radius: 6px;
+            color: white;
+            font-size: 100%;
+            padding-inline: 30px;
+            padding-block: 10px;
+            transition-duration: 400ms;
+            margin-bottom: 30px;
+        }
+        &_header {
+            font-size: 24px;
+            color: white;
+        }
+
+        &_description {
+            margin-top: 30px;
+            font-size: 16px;
+            color: white;
+        }
     }
 }
