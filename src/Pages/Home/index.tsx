@@ -28,7 +28,6 @@ export const Home = () => {
   const [balance, setBalance] = useState('0.00')
   const [money, setMoney] = useState("0")
   const [items, setItems] = useState<JSX.Element[]>([])
-  const router = useIonRouter();
 
   const [SwItemArray, setSwItemArray] = useState<sw_item[]>([]);
   const dispatch = useDispatch();
@@ -42,21 +41,6 @@ export const Home = () => {
       onClick: onClick,
     });
   };
-
-  useEffect(()=>{
-    const isBackUp = localStorage.getItem("isBackUp")??"0";
-    if (isBackUp == "0"&&localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)) {
-      dispatch(addNotification({
-        header: 'Reminder',
-        icon: '⚠️',
-        desc: 'Back up your credentials!',
-        date: Date.now(),
-        link: '/auth',
-      }))
-      localStorage.setItem("isBackUp", "1")
-      return openNotification("top", "Reminder", "Please back up your credentials!", ()=>{router.push("/auth")});
-    }
-  },[])
 
   useEffect(() => {
     transactionsView();

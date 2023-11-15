@@ -7,25 +7,31 @@ import { addNotification } from "../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { addTransaction } from "../State/Slices/transactionSlice";
-type Props = {}
-export const Background: React.FC<Props> = (): JSX.Element => {
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, getFormattedTime } from "../constants";
+import { useIonRouter } from "@ionic/react";
 
+export const Background = () => {
+
+    const router = useIonRouter();
     //reducer
     const nostrSource = useSelector((state) => state.paySource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
+    const paySource = useSelector((state) => state.paySource)
+    const spendSource = useSelector((state) => state.spendSource)
     const cursor = useSelector(({ history }) => history.cursor) || {}
     const latestOp = useSelector(({ history }) => history.latestOperation) || {}
     const transaction = useSelector(({ transaction }) => transaction) || {}
     const dispatch = useDispatch();
     const [initialFetch, setInitialFetch] = useState(true)
     const [api, contextHolder] = notification.useNotification();
-    const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+    const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?:(() => void) | undefined) => {
         api.info({
           message: header,
           description:
             text,
-          placement
+          placement,
+          onClick: onClick,
         });
-      };
+    };
       
     useEffect(() => {
         const subbed: string[] = []
@@ -37,14 +43,6 @@ export const Background: React.FC<Props> = (): JSX.Element => {
             getNostrClient(source.pasteField).then(c => {
                 c.GetLiveUserOperations(newOp => {
                     if (newOp.status === "OK") {
-                        console.log(newOp)
-                        dispatch(addNotification({
-                            header: 'Payments',
-                            icon: '⚡',
-                            desc: `You received `+newOp.operation.amount+` payments.`,
-                            date: Date.now(),
-                            link: '/home',
-                          }))
                         openNotification("top", "Payments", "You received payment.");
                         dispatch(addTransaction({
                             amount: newOp.operation.amount+'',
@@ -61,8 +59,38 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                     }
                 })
             })
-        })
+        });
+console.log(localStorage.getItem('lastOnline'), Date.now());
+
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            // Call your function here
+            localStorage.setItem("lastOnline", Date.now().toString())
+            console.log('App is closing!');
+        };
+      
+        window.addEventListener('beforeunload', handleBeforeUnload);
     }, [])
+
+    useEffect(() => {
+        const nostrSpends = spendSource.filter((e) => e.icon == "0");
+        const otherPaySources = spendSource.filter((e) => e.icon != "0");
+        const otherSpendSources = spendSource.filter((e) => e.icon != "0");
+        if (nostrSpends.length==0) {
+            return;
+        }
+        if (nostrSpends[0].balance != "0"||(otherPaySources.length>0&&otherSpendSources.length>0)) {
+            dispatch(addNotification({
+                header: 'Reminder',
+                icon: '⚠️',
+                desc: 'Back up your credentials!',
+                date: Date.now(),
+                link: '/auth',
+            }))
+            localStorage.setItem("isBackUp", "1")
+            openNotification("top", "Reminder", "Please back up your credentials!", ()=>{router.push("/auth")});
+        }
+    }, [paySource, spendSource])
 
     useEffect(() => {
         if (Object.entries(latestOp).length === 0 && !initialFetch) {
@@ -81,6 +109,18 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                 c.GetUserOperations(req).then(ops => {
                     if (ops.status === 'OK') {
                         console.log((ops), "ops")
+                        const totalHistory = parseOperationsResponse(ops);
+                        const lastTimestamp = parseInt(localStorage.getItem('lastOnline')??"0")
+                        const payments = totalHistory.operations.filter((e) => e.paidAtUnix*1000>lastTimestamp)
+                        if (payments.length>0) {
+                            dispatch(addNotification({
+                                header: 'Payments',
+                                icon: '⚡',
+                                desc: 'You received '+ payments.length + ' payments since ' + getFormattedTime(lastTimestamp),
+                                date: Date.now(),
+                                link: '/home',
+                            }))
+                        }
                         dispatch(setSourceHistory({ nprofile: source.pasteField, ...parseOperationsResponse(ops) }))
                     } else {
                         console.log(ops.reason, "ops.reason")
