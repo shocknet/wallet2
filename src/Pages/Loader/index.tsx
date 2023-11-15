@@ -9,12 +9,13 @@ import { dispatch } from 'rxjs/internal/observable/pairs';
 import { addPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from '../../constants';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const Loader = () => {
   const router = useIonRouter();
   const dispatch = useDispatch();
-
+  const paySources = useSelector((state) => state.spendSource);
+  const spendSources = useSelector((state) => state.spendSource);
   useEffect(() => {
     /*
       It is test for redirects page to "Home" page when loaded all require data
@@ -24,27 +25,31 @@ export const Loader = () => {
   }, []);
 
   const addBootStrapSources = async () => {
-    let bootstrapBalance = "0";
-    let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })
-    dispatch(addPaySources(
-      {
-        id: 0,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-      }
-    ));
-    dispatch(addSpendSources(
-      {
-        id: 0,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-        balance: bootstrapBalance,
-      }
-    ))
+    if (paySources.length!=0&&spendSources.length!=0) {
+      return;
+    }else {
+      let bootstrapBalance = "0";
+      let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })
+      dispatch(addPaySources(
+        {
+          id: 0,
+          label: "Bootstrap Node",
+          pasteField: nprofile,
+          option: options.little,
+          icon: "0",
+        }
+      ));
+      dispatch(addSpendSources(
+        {
+          id: 0,
+          label: "Bootstrap Node",
+          pasteField: nprofile,
+          option: options.little,
+          icon: "0",
+          balance: bootstrapBalance,
+        }
+      ))
+    }
     setTimeout(() => {
       router.push("/home");
     }, 500);
