@@ -242,6 +242,12 @@ export const Receive = () => {
       <div className="Receive_result_input">
         <input
           type="number"
+          onKeyPress={(event)=>{
+            if (event.key === 'Enter') {
+              updateInvoice();
+            }
+            
+          }}
           onChange={(e) => { setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString()) }}
           placeholder="Enter amount in sats"
           value={amount}
