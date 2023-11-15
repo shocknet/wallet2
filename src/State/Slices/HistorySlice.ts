@@ -28,12 +28,12 @@ const historySlice = createSlice({
   name: 'history',
   initialState,
   reducers: {
-    setSourceHistory: (state, action: PayloadAction<{ nprofile: string, operations: Types.UserOperation[], cursor: Cursor }>) => {
-      const { nprofile, operations, cursor } = action.payload
+    setSourceHistory: (state, action: PayloadAction<{ pub: string, operations: Types.UserOperation[], cursor: Cursor }>) => {
+      const { pub, operations, cursor } = action.payload
       if (!state.operations) {
         state.operations = {}
       }
-      state.operations[nprofile] = [ ...operations ]
+      state.operations[pub] = [...operations]
       state.cursor = { ...cursor }
       update(state)
     },

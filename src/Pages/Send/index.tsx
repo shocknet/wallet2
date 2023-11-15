@@ -33,7 +33,7 @@ export const Send = () => {
   //parameter in url when click protocol
   const addressSearch = new URLSearchParams(useLocation().search);;
   const urlParam = addressSearch.get("url");
-  
+
   const price = useSelector((state: any) => state.usdToBTC);
 
   //reducer
@@ -74,7 +74,7 @@ export const Send = () => {
   }, []);
 
   useEffect(() => {
-    onChangeTo(urlParam??"");
+    onChangeTo(urlParam ?? "");
   }, [urlParam])
 
   const pay = async (action: PayInvoice | PayAddress) => {
@@ -109,7 +109,7 @@ export const Send = () => {
     if (selectedSource.pasteField.includes("nprofile")) {
       await payUsingNprofile();
       setLoading("none")
-    }else {
+    } else {
 
     }
   }
@@ -131,8 +131,8 @@ export const Send = () => {
           }
         );
         console.log(callbackURL);
-        
-        if (callbackURL.data.success===false) {
+
+        if (callbackURL.data.success === false) {
           return openNotification("top", "Error", callbackURL.data.error);
         }
         payRes = await pay(
@@ -153,15 +153,16 @@ export const Send = () => {
             invoice: callbackURL.data.pr,
           }))
           openNotification("top", "Success", "Successfully paid.");
-        }else {
+        } else {
           return openNotification("top", "Error", "Failed transaction.");
         }
       } catch (error) {
+        console.log(error)
         return openNotification("top", "Error", "Couldn't send using this info.");
       }
-    }else if (to.includes("lnbc")) {
+    } else if (to.includes("lnbc")) {
       try {
-        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({invoice:to});
+        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({ invoice: to });
         if (result.status != "OK") {
           return;
         }
@@ -172,7 +173,7 @@ export const Send = () => {
             amount: result.amount,
           }
         )
-        console.log(result,"this is decoded invocie");
+        console.log(result, "this is decoded invocie");
         if (payRes?.status == "OK") {
           await (await getNostrClient(selectedSource.pasteField)).GetUserOperations({
             latestIncomingInvoice: 0,
@@ -186,7 +187,7 @@ export const Send = () => {
               console.log((ops), "ops")
               ops.latestOutgoingTxOperations
               dispatch(addTransaction({
-                amount: result.amount+"",
+                amount: result.amount + "",
                 memo: note,
                 time: Date.now(),
                 destination: to,
@@ -195,18 +196,18 @@ export const Send = () => {
                 invoice: ops.latestOutgoingTxOperations.operations[0].identifier,
               }))
             } else {
-                console.log(ops.reason, "ops.reason")
+              console.log(ops.reason, "ops.reason")
             }
           });
           return openNotification("top", "Success", "Successfully paid.");
-        }else {
+        } else {
           return openNotification("top", "Error", "Failed transaction.");
         }
       } catch (error) {
         console.log(error);
         return openNotification("top", "Error", "Couldn't send using this info.");
       }
-    }else {
+    } else {
       try {
         payRes = await pay(
           {
@@ -227,10 +228,11 @@ export const Send = () => {
             confirm: payRes,
             invoice: to,
           }))
-        }else {
+        } else {
           return openNotification("top", "Error", "Failed transaction.");
         }
       } catch (error) {
+        console.log(error)
         return openNotification("top", "Error", "Couldn't send using this info.");
       }
     }
@@ -242,13 +244,13 @@ export const Send = () => {
   const onChangeTo = async (e: string) => {
     setTo(e);
     try {
-      const result = await (await getNostrClient( nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }))).DecodeInvoice({invoice:e});
+      const result = await (await getNostrClient(nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }))).DecodeInvoice({ invoice: e });
       console.log(result);
-      
+
       if (result.status != "OK") {
         return;
       }
-      setAmount(result.amount+'')
+      setAmount(result.amount + '')
     } catch (error) {
       console.log(error);
     }
@@ -263,7 +265,7 @@ export const Send = () => {
 
   return (
     <div className='Send_container'>
-      <div className='Send_loading' style={{display: loading}}>
+      <div className='Send_loading' style={{ display: loading }}>
         <div className='Send_img'>
           {Icons.Animation()}
           <p>Sending</p>
@@ -293,7 +295,7 @@ export const Send = () => {
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
-            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]} callback={setSelectedSource}/>
+            <SpendFromDropdown values={spendSources} initialValue={spendSources[0]} callback={setSelectedSource} />
           </div>
         </div>
       </div>

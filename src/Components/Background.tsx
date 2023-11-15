@@ -7,6 +7,7 @@ import { addNotification } from "../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { addTransaction } from "../State/Slices/transactionSlice";
+import { parseNprofile } from "../Api/nostr";
 type Props = {}
 export const Background: React.FC<Props> = (): JSX.Element => {
 
@@ -20,13 +21,13 @@ export const Background: React.FC<Props> = (): JSX.Element => {
     const [api, contextHolder] = notification.useNotification();
     const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
         api.info({
-          message: header,
-          description:
-            text,
-          placement
+            message: header,
+            description:
+                text,
+            placement
         });
-      };
-      
+    };
+
     useEffect(() => {
         const subbed: string[] = []
         nostrSource.forEach(source => {
@@ -41,13 +42,13 @@ export const Background: React.FC<Props> = (): JSX.Element => {
                         dispatch(addNotification({
                             header: 'Payments',
                             icon: '⚡',
-                            desc: `You received `+newOp.operation.amount+` payments.`,
+                            desc: `You received ` + newOp.operation.amount + ` payments.`,
                             date: Date.now(),
                             link: '/home',
-                          }))
+                        }))
                         openNotification("top", "Payments", "You received payment.");
                         dispatch(addTransaction({
-                            amount: newOp.operation.amount+'',
+                            amount: newOp.operation.amount + '',
                             memo: "",
                             time: Date.now(),
                             destination: newOp.operation.identifier,
@@ -72,16 +73,17 @@ export const Background: React.FC<Props> = (): JSX.Element => {
         setInitialFetch(false)
         const sent: string[] = []
         nostrSource.forEach(source => {
-            if (sent.find(s => s === source.pasteField)) {
+            const { pubkey, relays } = parseNprofile(source.pasteField)
+            if (sent.find(s => s === pubkey)) {
                 return
             }
-            sent.push(source.pasteField)
-            getNostrClient(source.pasteField).then(c => {
+            sent.push(pubkey)
+            getNostrClient({ pubkey, relays }).then(c => {
                 const req = populateCursorRequest(cursor)
                 c.GetUserOperations(req).then(ops => {
                     if (ops.status === 'OK') {
                         console.log((ops), "ops")
-                        dispatch(setSourceHistory({ nprofile: source.pasteField, ...parseOperationsResponse(ops) }))
+                        dispatch(setSourceHistory({ pub: pubkey, ...parseOperationsResponse(ops) }))
                     } else {
                         console.log(ops.reason, "ops.reason")
                     }
@@ -90,7 +92,7 @@ export const Background: React.FC<Props> = (): JSX.Element => {
         })
     }, [latestOp, initialFetch, transaction])
     return <>
-      {contextHolder}
+        {contextHolder}
     </>
 }
 
@@ -102,7 +104,7 @@ const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Type
         // latestOutgoingTx: p.latestOutgoingTx || 0,
         // latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment || 0,
         // latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment || 0,
-        
+
         latestIncomingInvoice: 0,
         latestOutgoingInvoice: 0,
         latestIncomingTx: 0,

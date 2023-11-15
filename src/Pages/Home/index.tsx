@@ -33,7 +33,7 @@ export const Home = () => {
   const [SwItemArray, setSwItemArray] = useState<sw_item[]>([]);
   const dispatch = useDispatch();
   const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?:(() => void) | undefined) => {
+  const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
     api.info({
       message: header,
       description:
@@ -43,9 +43,9 @@ export const Home = () => {
     });
   };
 
-  useEffect(()=>{
-    const isBackUp = localStorage.getItem("isBackUp")??"0";
-    if (isBackUp == "0"&&localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)) {
+  useEffect(() => {
+    const isBackUp = localStorage.getItem("isBackUp") ?? "0";
+    if (isBackUp == "0" && localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)) {
       dispatch(addNotification({
         header: 'Reminder',
         icon: '⚠️',
@@ -54,18 +54,21 @@ export const Home = () => {
         link: '/auth',
       }))
       localStorage.setItem("isBackUp", "1")
-      return openNotification("top", "Reminder", "Please back up your credentials!", ()=>{router.push("/auth")});
+      return openNotification("top", "Reminder", "Please back up your credentials!", () => { router.push("/auth") });
     }
-  },[])
+  }, [])
 
   useEffect(() => {
+    if (!operationGroups) {
+      return
+    }
     transactionsView();
     // console.log(transactions,"transactions");
     // var boxArray = [];
     // for (let i = transactions.length-1; i >= 0; i--) {
     //   boxArray.push(transactions[i])
     // }
-    
+
     // setSwItemArray(boxArray.map((o, i) => ({
     //   priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
     //   station: o.destination.length < 20 ? o.destination : `${o.destination.substring(0, 9)}...${o.destination.substring(o.destination.length - 9, o.destination.length)}`,
@@ -75,7 +78,7 @@ export const Home = () => {
     //   stateIcon: 'lightning',
     //   underline: i !== transactions.length - 1
     // })) || [])
-    
+
   }, [operationGroups])
 
   const transactionsView = () => {
@@ -90,19 +93,19 @@ export const Home = () => {
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     collapsed.sort((a: any, b: any) => b.paidAtUnix - a.paidAtUnix);
     console.log(transactions, collapsed, "this is data");
-    
-    collapsed.map((item, i)=>{
-      const sameTrans = transactions.filter(trans => {return ((trans.invoice??"") == item.identifier)});
-      if (sameTrans.length !=0) {
+
+    collapsed.map((item, i) => {
+      const sameTrans = transactions.filter(trans => { return ((trans.invoice ?? "") == item.identifier) });
+      if (sameTrans.length != 0) {
         item.identifier = sameTrans[0].destination;
       }
     })
-    
+
     setSwItemArray(collapsed.map((o, i) => ({
       priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
       station: o.identifier.length < 20 ? o.identifier : `${o.identifier.substring(0, 9)}...${o.identifier.substring(o.identifier.length - 9, o.identifier.length)}`,
       changes: `${o.inbound ? "" : "-"}${o.amount}`,
-      date: moment(o.paidAtUnix*1000).fromNow(),
+      date: moment(o.paidAtUnix * 1000).fromNow(),
       price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: 'lightning',
       underline: i !== collapsed.length - 1
