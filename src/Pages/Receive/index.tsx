@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ReactQrCode } from '@devmehq/react-qr-code';
+import QrCode from 'react-qr-code';
 import { getNostrClient } from '../../Api'
 
 //It import svg icons library
@@ -260,7 +260,7 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{headerText[tag]}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          {valueQR == "" ? <div></div> : <ReactQrCode
+          {valueQR == "" ? <div></div> : <QrCode
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}
