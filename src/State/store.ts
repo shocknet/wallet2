@@ -7,7 +7,6 @@ import usdToBTCReducer from './Slices/usdToBTCSlice';
 import prefsSlice from './Slices/prefsSlice';
 import transactionSlice from './Slices/transactionSlice';
 import historySlice from './Slices/HistorySlice';
-import notificationSlice from './Slices/notificationSlice';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 
 const store = configureStore({
@@ -17,8 +16,7 @@ const store = configureStore({
     usdToBTC: usdToBTCReducer,
     prefs: prefsSlice,
     transaction: transactionSlice,
-    history: historySlice,
-    notify: notificationSlice
+    history: historySlice
   },
 });
 export type State = ReturnType<typeof store.getState>

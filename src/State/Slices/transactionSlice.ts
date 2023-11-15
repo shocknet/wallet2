@@ -1,6 +1,13 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { TransactionInterface } from '../../globalTypes';
 
+interface TransactionInterface {
+  amount: string,
+  memo: string,
+  time: string,
+  destination: string,
+  chainLN: Boolean,
+  confirm: any,
+}
 
 const transaction = localStorage.getItem("transaction");
 
