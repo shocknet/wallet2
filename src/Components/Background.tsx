@@ -74,6 +74,7 @@ export const Background = () => {
             event.preventDefault();
             // Call your function here
             localStorage.setItem("lastOnline", Date.now().toString())
+            localStorage.setItem("getHistory", "false")
         };
       
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -122,6 +123,7 @@ export const Background = () => {
                         const lastTimestamp = parseInt(localStorage.getItem('lastOnline')??"0")
                         const payments = totalHistory.operations.filter((e) => e.paidAtUnix*1000>lastTimestamp)
                         if (payments.length>0) {
+                            if (localStorage.getItem("getHistory")=="true") return;
                             dispatch(addNotification({
                                 header: 'Payments',
                                 icon: '⚡',
@@ -129,6 +131,7 @@ export const Background = () => {
                                 date: Date.now(),
                                 link: '/home',
                             }))
+                            localStorage.setItem("getHistory", "true");
                         }
                         dispatch(setSourceHistory({ nprofile: source.pasteField, ...parseOperationsResponse(ops) }))
                     } else {
