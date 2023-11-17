@@ -352,10 +352,10 @@ export const Sources = () => {
     <div className="Sources_modal_add_btn">
       <button onClick={AddSource}>Add</button>
     </div>
-    <div className="Sources_modal_add_btn_bottom">
+    {(paySources.filter((e) => e.icon != "0").length==0&&spendSources.filter((e) => e.icon != "0").length==0)?(<div className="Sources_modal_add_btn_bottom">
       <p>or</p>
       <button onClick={()=>{router.push("/auth")}}>Recover Backup</button>
-    </div>
+    </div>):null}
 
   </React.Fragment>;
 

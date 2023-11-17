@@ -7,8 +7,15 @@ import { addNotification } from "../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { addTransaction } from "../State/Slices/transactionSlice";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, getFormattedTime } from "../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, getFormattedTime } from "../constants";
 import { useIonRouter } from "@ionic/react";
+import { Modal } from "./Modals/Modal";
+import { UseModal } from "../Hooks/UseModal";
+import { isBrowser } from "react-device-detect";
+import * as icons from '../Assets/SvgIconLibrary';
+import { Clipboard } from '@capacitor/clipboard';
+import { validate } from 'bitcoin-address-validation';
+import { nip19 } from "nostr-tools";
 
 export const Background = () => {
 
@@ -23,6 +30,8 @@ export const Background = () => {
     const dispatch = useDispatch();
     const [initialFetch, setInitialFetch] = useState(true)
     const [api, contextHolder] = notification.useNotification();
+    const [clipText, setClipText] = useState("")
+    const { isShown, toggle } = UseModal();
     const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?:(() => void) | undefined) => {
         api.info({
           message: header,
@@ -60,13 +69,11 @@ export const Background = () => {
                 })
             })
         });
-console.log(localStorage.getItem('lastOnline'), Date.now());
 
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             event.preventDefault();
             // Call your function here
             localStorage.setItem("lastOnline", Date.now().toString())
-            console.log('App is closing!');
         };
       
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -74,7 +81,7 @@ console.log(localStorage.getItem('lastOnline'), Date.now());
 
     useEffect(() => {
         const nostrSpends = spendSource.filter((e) => e.icon == "0");
-        const otherPaySources = spendSource.filter((e) => e.icon != "0");
+        const otherPaySources = paySource.filter((e) => e.icon != "0");
         const otherSpendSources = spendSource.filter((e) => e.icon != "0");
         if (nostrSpends.length==0) {
             return;
@@ -129,8 +136,68 @@ console.log(localStorage.getItem('lastOnline'), Date.now());
             })
         })
     }, [latestOp, initialFetch, transaction])
+
+    useEffect(() => {
+        window.addEventListener("paste", checkClipboard);
+      
+        return () => {
+            window.removeEventListener("paste", checkClipboard);
+        };
+    }, [])
+    
+    const checkClipboard = async (event: any) => {
+        console.log("paste");
+        var text = '';
+        if (isBrowser) {
+            try {
+                text = await navigator.clipboard.readText();
+            } catch (error) {
+                console.error('Error reading clipboard data:', error);
+            }
+        }else {
+            const { type, value } = await Clipboard.read();
+            text = value;
+        }
+        text = event.clipboardData.getData("text")
+        
+        if (text.length) {
+            const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+            const boolLnAddress = expression.test(text);
+            var boolLnInvoice = false;
+            if (text.startsWith("ln")) {
+                const result = await (await getNostrClient( nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }))).DecodeInvoice({invoice:text});
+                boolLnInvoice = result.status=="OK";
+            }
+            const boolAddress = validate(text);
+            const boolLnurl = text.startsWith("lnurl");
+            if (boolAddress||boolLnInvoice||boolLnAddress||boolLnurl) {
+                setClipText(text);
+                toggle();
+            }
+        }
+    };
+
+    const clipBoardContent = <React.Fragment>
+        <div className='Home_modal_header'>Clipboard Detected</div>
+        <div className='Home_modal_discription'>Would you like to use it?</div>
+        <div className='Home_modal_clipboard'>{clipText}</div>
+        <div className="Home_add_btn">
+            <div className='Home_add_btn_container'>
+            <button onClick={toggle}>
+                {icons.Close()}NO
+            </button>
+            </div>
+            <div className='Home_add_btn_container'>
+            <button onClick={()=>{}}>
+                {icons.clipboard()}YES
+            </button>
+            </div>
+        </div>
+    </React.Fragment>;
+
     return <>
       {contextHolder}
+      <Modal isShown={isShown} hide={toggle} modalContent={clipBoardContent} headerText={''} />
     </>
 }
 
