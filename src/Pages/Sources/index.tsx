@@ -23,11 +23,13 @@ import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
 import { nip19 } from 'nostr-tools';
 import { useLocation } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 
 export const Sources = () => {
   //parameter in url when click protocol
   const addressSearch = new URLSearchParams(useLocation().search);;
   const urlParam = addressSearch.get("url");
+  const router = useIonRouter();
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -350,6 +352,10 @@ export const Sources = () => {
     <div className="Sources_modal_add_btn">
       <button onClick={AddSource}>Add</button>
     </div>
+    {(paySources.filter((e) => e.icon != "0").length==0&&spendSources.filter((e) => e.icon != "0").length==0)?(<div className="Sources_modal_add_btn_bottom">
+      <p>or</p>
+      <button onClick={()=>{router.push("/auth")}}>Recover Backup</button>
+    </div>):null}
 
   </React.Fragment>;
 

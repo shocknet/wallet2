@@ -142,6 +142,7 @@ export const Auth = () => {
     <div className='Auth_container'>
       {contextHolder}
       <div className="Auth">
+        <div style={{opacity: "0"}}>
         <div className="Auth_header_text">Back-Up & Restore</div>
         <div className='Auth_description'>
           <p className='Auth_description_header'>
@@ -164,6 +165,7 @@ export const Auth = () => {
         </div>
         <div className='Auth_border'>
           <p className='Auth_or'>or</p>
+        </div>
         </div>
         <div className='Auth_download'>
           <div className="Auth_download_button">
