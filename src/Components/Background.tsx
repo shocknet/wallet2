@@ -11,7 +11,7 @@ import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, get
 import { useIonRouter } from "@ionic/react";
 import { Modal } from "./Modals/Modal";
 import { UseModal } from "../Hooks/UseModal";
-import { isBrowser } from "react-device-detect";
+import { isBrowser, isWindows } from "react-device-detect";
 import * as icons from '../Assets/SvgIconLibrary';
 import { Clipboard } from '@capacitor/clipboard';
 import { validate } from 'bitcoin-address-validation';
@@ -83,10 +83,12 @@ export const Background = () => {
         const nostrSpends = spendSource.filter((e) => e.icon == "0");
         const otherPaySources = paySource.filter((e) => e.icon != "0");
         const otherSpendSources = spendSource.filter((e) => e.icon != "0");
-        if (nostrSpends.length==0) {
-            return;
-        }
-        if (nostrSpends[0].balance != "0"||(otherPaySources.length>0&&otherSpendSources.length>0)) {
+        
+        if ((nostrSpends.length!=0&&nostrSpends[0].balance != "0")||(otherPaySources.length>0||otherSpendSources.length>0)) {
+            if (localStorage.getItem("isBackUp")=="1") {
+                return;
+            }
+            console.log("changed",otherPaySources,otherSpendSources);
             dispatch(addNotification({
                 header: 'Reminder',
                 icon: '⚠️',
@@ -138,27 +140,37 @@ export const Background = () => {
     }, [latestOp, initialFetch, transaction])
 
     useEffect(() => {
-        window.addEventListener("paste", checkClipboard);
+        window.addEventListener("visibilitychange", checkClipboard);
+        window.addEventListener("focus", checkClipboard);
       
         return () => {
-            window.removeEventListener("paste", checkClipboard);
+            window.removeEventListener("visibilitychange", checkClipboard);
+            window.removeEventListener("focus", checkClipboard);
         };
     }, [])
     
-    const checkClipboard = async (event: any) => {
-        console.log("paste");
+    const checkClipboard = async () => {
         var text = '';
+        document.getElementById('focus_div')?.focus();
+        if (document.hidden) {        
+            window.focus();
+        }
         if (isBrowser) {
             try {
-                text = await navigator.clipboard.readText();
+                const { type, value } = await Clipboard.read();
+                text = value;
             } catch (error) {
                 console.error('Error reading clipboard data:', error);
             }
-        }else {
-            const { type, value } = await Clipboard.read();
-            text = value;
+        } else {
+            try {
+                const { type, value } = await Clipboard.read();
+                text = value;
+            } catch (error) {
+                console.error('Error reading clipboard data:', error);
+            }
         }
-        text = event.clipboardData.getData("text")
+        console.log(text);
         
         if (text.length) {
             const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -195,10 +207,10 @@ export const Background = () => {
         </div>
     </React.Fragment>;
 
-    return <>
+    return <div id="focus_div">
       {contextHolder}
       <Modal isShown={isShown} hide={toggle} modalContent={clipBoardContent} headerText={''} />
-    </>
+    </div>
 }
 
 const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Types.GetUserOperationsRequest => {
