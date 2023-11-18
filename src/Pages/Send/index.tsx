@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { getNostrClient } from '../../Api'
 import { notification } from 'antd';
+import { validate, getAddressInfo } from 'bitcoin-address-validation';
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
@@ -14,7 +15,7 @@ import { useIonRouter } from '@ionic/react';
 import { Modal } from '../../Components/Modals/Modal';
 import SpendFromDropdown from '../../Components/Dropdowns/SpendFromDropdown';
 import { useLocation } from 'react-router-dom';
-import { addTransaction } from '../../State/Slices/transactionSlice';
+import { addAddressbookLink } from '../../State/Slices/addressbookSlice';
 import { nip19 } from 'nostr-tools';
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from '../../constants';
 
@@ -44,7 +45,8 @@ export const Send = () => {
   const [error, setError] = useState("")
   const [vReceive, setVReceive] = useState(1);
   const [amountAssets, setAmountAssets] = useState("sats");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [decodedAmount, setDecodedAmount] = useState(0);
   const [to, setTo] = useState("");
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
@@ -114,52 +116,55 @@ export const Send = () => {
     }
   }
 
+  const payLNAddress = async () => {
+    try {
+      const payLink = "https://" + to.split("@")[1] + "/.well-known/lnurlp/" + to.split("@")[0];
+      const res = await axios.get(payLink);
+      const callbackURL = await axios.get(
+        res.data.callback + (res.data.callback.includes('?') ? "&" : "?") + "amount=" + (amount === 0 ? res.data.minSendable : amount * 1000),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            withCredentials: false,
+          }
+        }
+      );
+      console.log(callbackURL);
+
+      if (callbackURL.data.success === false) {
+        return openNotification("top", "Error", callbackURL.data.error);
+      }
+      const client = await getNostrClient(selectedSource.pasteField)
+
+
+      //const payRes = await client.PayInvoice({ amount: 0, invoice: })
+      const payRes = await pay(
+        {
+          type: 'payInvoice',
+          invoice: callbackURL.data.pr,
+          amount: +amount,
+        }
+      )
+      if (payRes?.status == "OK") {
+        dispatch(addAddressbookLink({
+          identifier: callbackURL.data.pr,
+          address: to
+        }))
+        openNotification("top", "Success", "Successfully paid.");
+      } else {
+        return openNotification("top", "Error", "Failed transaction.");
+      }
+    } catch (error) {
+      console.log(error)
+      return openNotification("top", "Error", "Couldn't send using this info.");
+    }
+  }
+
   const payUsingNprofile = async () => {
     let payRes: ({ status: "OK"; } & PayAddressResponse) | ({ status: "OK"; } & PayInvoiceResponse) | undefined;
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     if (expression.test(to)) {
-      try {
-        const payLink = "https://" + to.split("@")[1] + "/.well-known/lnurlp/" + to.split("@")[0];
-        const res = await axios.get(payLink);
-        const callbackURL = await axios.get(
-          res.data.callback + (res.data.callback.includes('?') ? "&" : "?") + "amount=" + (amount === "" ? res.data.minSendable : parseInt(amount) * 1000),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              withCredentials: false,
-            }
-          }
-        );
-        console.log(callbackURL);
-
-        if (callbackURL.data.success === false) {
-          return openNotification("top", "Error", callbackURL.data.error);
-        }
-        payRes = await pay(
-          {
-            type: 'payInvoice',
-            invoice: callbackURL.data.pr,
-            amount: +amount,
-          }
-        )
-        if (payRes?.status == "OK") {
-          dispatch(addTransaction({
-            amount: amount,
-            memo: note,
-            time: Date.now(),
-            destination: to,
-            inbound: false,
-            confirm: payRes,
-            invoice: callbackURL.data.pr,
-          }))
-          openNotification("top", "Success", "Successfully paid.");
-        } else {
-          return openNotification("top", "Error", "Failed transaction.");
-        }
-      } catch (error) {
-        console.log(error)
-        return openNotification("top", "Error", "Couldn't send using this info.");
-      }
+      await payLNAddress()
     } else if (to.includes("lnbc")) {
       try {
         const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({ invoice: to });
@@ -175,30 +180,6 @@ export const Send = () => {
         )
         console.log(result, "this is decoded invocie");
         if (payRes?.status == "OK") {
-          await (await getNostrClient(selectedSource.pasteField)).GetUserOperations({
-            latestIncomingInvoice: 0,
-            latestOutgoingInvoice: 0,
-            latestIncomingTx: 0,
-            latestOutgoingTx: 0,
-            latestIncomingUserToUserPayment: 0,
-            latestOutgoingUserToUserPayment: 0,
-          }).then(ops => {
-            if (ops.status === 'OK') {
-              console.log((ops), "ops")
-              ops.latestOutgoingTxOperations
-              dispatch(addTransaction({
-                amount: result.amount + "",
-                memo: note,
-                time: Date.now(),
-                destination: to,
-                inbound: false,
-                confirm: payRes,
-                invoice: ops.latestOutgoingTxOperations.operations[0].identifier,
-              }))
-            } else {
-              console.log(ops.reason, "ops.reason")
-            }
-          });
           return openNotification("top", "Success", "Successfully paid.");
         } else {
           return openNotification("top", "Error", "Failed transaction.");
@@ -218,16 +199,6 @@ export const Send = () => {
         )
         if (payRes?.status == "OK") {
           openNotification("top", "Success", "Successfully paid.");
-
-          dispatch(addTransaction({
-            amount: amount,
-            memo: note,
-            time: Date.now(),
-            destination: to,
-            inbound: false,
-            confirm: payRes,
-            invoice: to,
-          }))
         } else {
           return openNotification("top", "Error", "Failed transaction.");
         }
@@ -243,14 +214,21 @@ export const Send = () => {
 
   const onChangeTo = async (e: string) => {
     setTo(e);
+    let invoice = e.toLowerCase()
+    if (invoice.startsWith("lightning:")) {
+      invoice = invoice.slice("lightning:".length)
+    }
+    if (!invoice.startsWith("lnbc")) {
+      return
+    }
     try {
-      const result = await (await getNostrClient(nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }))).DecodeInvoice({ invoice: e });
+      const result = await (await getNostrClient({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })).DecodeInvoice({ invoice: e });
       console.log(result);
-
       if (result.status != "OK") {
+        console.log(result.reason)
         return;
       }
-      setAmount(result.amount + '')
+      setDecodedAmount(result.amount)
     } catch (error) {
       console.log(error);
     }
@@ -278,12 +256,12 @@ export const Send = () => {
           <div className="Send_amount">
             Amount:
             <div className='Send_amount_container'>
-              <input className="Send_amount_input" type="number" value={amount} onChange={(e) => { setAmount(e.target.value) }} />
+              <input className="Send_amount_input" type="number" value={decodedAmount || amount} readOnly={decodedAmount !== 0} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
-            ~ ${parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+            ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
           </div>
           <div className="Send_to">
             <p>To:</p>
