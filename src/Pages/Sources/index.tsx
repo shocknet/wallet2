@@ -13,7 +13,7 @@ import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
 //reducer
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
@@ -33,8 +33,8 @@ export const Sources = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-  const paySources = useSelector((state: any) => state.paySource).map((e: any) => { return { ...e } });
-  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
+  const paySources = useSelector((state) => state.paySource).map((e) => { return { ...e } });
+  const spendSources = useSelector((state) => state.spendSource).map((e) => { return { ...e } });
 
   const [payToLists, setPayToLists] = useState<PayTo[]>([]);
   const [spendFromLists, setSpendFromLists] = useState<SpendFrom[]>([]);
@@ -404,7 +404,7 @@ export const Sources = () => {
     <div className='Sources_modal_header'>LNURL Withdraw</div>
     <div className='Sources_modal_discription'>Do you wanna add to spend source or send sats from your wallet?</div>
     <div className="Sources_modal_add_btn">
-      <button onClick={()=>{AddSource()}}>Add</button>
+      <button onClick={() => { AddSource() }}>Add</button>
       <button>Send</button>
     </div>
 

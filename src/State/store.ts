@@ -5,7 +5,7 @@ import paySourcesReducer from './Slices/paySourcesSlice';
 import spendSourcesReducer from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
 import prefsSlice from './Slices/prefsSlice';
-import transactionSlice from './Slices/transactionSlice';
+import addressbookSlice from './Slices/addressbookSlice';
 import historySlice from './Slices/HistorySlice';
 import notificationSlice from './Slices/notificationSlice';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
@@ -16,7 +16,7 @@ const store = configureStore({
     spendSource: spendSourcesReducer,
     usdToBTC: usdToBTCReducer,
     prefs: prefsSlice,
-    transaction: transactionSlice,
+    addressbook: addressbookSlice,
     history: historySlice,
     notify: notificationSlice
   },

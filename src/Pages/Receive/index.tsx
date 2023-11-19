@@ -18,10 +18,10 @@ import { useSelector } from '../../State/store';
 
 export const Receive = () => {
   //reducer
-  const paySource = useSelector((state: any) => state.paySource)
-  const receiveHistory = useSelector((state: any) => state.history);
+  const paySource = useSelector((state) => state.paySource)
+  const receiveHistory = useSelector((state) => state.history);
 
-  const price = useSelector((state: any) => state.usdToBTC);
+  const price = useSelector((state) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
@@ -35,15 +35,15 @@ export const Receive = () => {
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const [bitcoinAddText, setBitcoinAddText] = useState("");
   const router = useIonRouter();
-  const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"));
+  const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
 
-  const headerText: string[]=[
+  const headerText: string[] = [
     'LNURL',
     'Lightning Invoice',
     'Chain Address'
   ]
 
-  const buttonText: string[]=[
+  const buttonText: string[] = [
     'LNURL',
     'INVOICE',
     'CHAIN'
@@ -72,14 +72,14 @@ export const Receive = () => {
     }
   }, []);
 
-  useEffect(()=>{
-    if (receiveHistory.latestOperation!=undefined&&receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+  useEffect(() => {
+    if (receiveHistory.latestOperation != undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+      console.log("got thats what I was looking for")
       setTimeout(() => {
         router.push("/home");
       }, 1000);
-      return openNotification("top", "Success", "Payment received!");
     }
-  },[])
+  }, [receiveHistory.latestOperation])
 
   const CreateNostrInvoice = async () => {
     console.log("here", amount);
@@ -105,7 +105,7 @@ export const Receive = () => {
   const CreateNostrPayLink = async () => {
     if (!nostrSource.length) return;
     const res = await (await getNostrClient(nostrSource[0].pasteField)).GetLnurlPayLink()
-    
+
     if (res.status !== 'OK') {
       // setError(res.reason)
       return
@@ -120,7 +120,7 @@ export const Receive = () => {
     return openNotification("top", "Success", "Copied!");
   }
 
-  const configInvoice = async () => {    
+  const configInvoice = async () => {
     const address = configLNaddress();
     if (paySource[0].pasteField.includes("nprofile")) {
       await CreateNostrInvoice();
@@ -218,7 +218,7 @@ export const Receive = () => {
       case 0:
         setValueQR(LNurl);
         break;
-    
+
       case 1:
         if (LNInvoice == "") {
           toggle();
@@ -226,11 +226,11 @@ export const Receive = () => {
         }
         setValueQR(LNInvoice);
         break;
-    
+
       case 2:
         setValueQR(`bitcoin:${bitcoinAdd}`);
         break;
-    
+
       default:
         break;
     }
@@ -242,11 +242,11 @@ export const Receive = () => {
       <div className="Receive_result_input">
         <input
           type="number"
-          onKeyPress={(event)=>{
+          onKeyPress={(event) => {
             if (event.key === 'Enter') {
               updateInvoice();
             }
-            
+
           }}
           onChange={(e) => { setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString()) }}
           placeholder="Enter amount in sats"
@@ -270,7 +270,6 @@ export const Receive = () => {
             style={{ height: "auto", maxWidth: "300px", textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}
-            renderAs="svg"
           />
           }
           <div className="Receive_logo_container">
@@ -278,7 +277,7 @@ export const Receive = () => {
           </div>
         </div >
         <div className='Receive_copy'>
-          {tag==1 ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag==2 ? bitcoinAddText : lightningAdd}
+          {tag == 1 ? '~ $' + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag == 2 ? bitcoinAddText : lightningAdd}
         </div>
         <div className="Receive_set_amount">
           <button onClick={toggle}>SET AMOUNT</button>
@@ -290,13 +289,13 @@ export const Receive = () => {
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
-            <button onClick={()=>{changeQRcode((tag+1)%3)}}>
-              {Icons.arrowLeft()}{buttonText[(tag+1)%3]}
+            <button onClick={() => { changeQRcode((tag + 1) % 3) }}>
+              {Icons.arrowLeft()}{buttonText[(tag + 1) % 3]}
             </button>
           </div>
           <div className="Receive_chain">
-            <button onClick={()=>{changeQRcode((tag+2)%3)}}>
-              {buttonText[(tag+2)%3]}{Icons.arrowRight()}
+            <button onClick={() => { changeQRcode((tag + 2) % 3) }}>
+              {buttonText[(tag + 2) % 3]}{Icons.arrowRight()}
             </button>
           </div>
         </div>
