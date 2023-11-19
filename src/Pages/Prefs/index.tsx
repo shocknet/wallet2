@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { useIonRouter } from '@ionic/react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { setPrefs } from '../../State/Slices/prefsSlice';
@@ -9,7 +9,7 @@ import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import { defaultMempool } from '../../constants';
 
-interface ChainFeesInter {
+export interface ChainFeesInter {
   fastestFee: number,
   halfHourFee: number,
   hourFee: number,
@@ -32,12 +32,12 @@ export const Prefs = () => {
   };
 
   //reducer
-  const prefsRedux = useSelector((state:any) => state.prefs);
+  const prefsRedux = useSelector((state) => state.prefs);
 
   const screenWidth = window.innerWidth * 0.88 - 23;
 
-  const [mempool, setMempool] = useState(prefsRedux.mempool||"");
-  const [fiat, setFiat] = useState(prefsRedux.fiat||"");
+  const [mempool, setMempool] = useState(prefsRedux.mempoolUrl || "");
+  const [fiat, setFiat] = useState(prefsRedux.BTCUSDUrl || "");
   const [chainFees, setChainFees] = useState<ChainFeesInter>({
     fastestFee: 0,
     halfHourFee: 0,
@@ -45,7 +45,7 @@ export const Prefs = () => {
     economyFee: 0,
     minimumFee: 0,
   });
-  const [chainFee, setChainFee] = useState(prefsRedux.chainFee??1);
+  const [chainFee, setChainFee] = useState(prefsRedux.selected ?? "");
   const [pos, setPos] = useState(0);
   const [click, setClick] = useState(false);
 
@@ -64,52 +64,46 @@ export const Prefs = () => {
       fiatInfo = {};
       console.log(error);
     }
-    const mempoolBool = (mempool===""||mempoolInfo.data.halfHourFee);
-    const fiatBool = (fiat===""||fiatInfo.data.data.amount);
-    if (mempoolBool&&fiatBool) {
+    const mempoolBool = (mempool === "" || mempoolInfo.data.halfHourFee);
+    const fiatBool = (fiat === "" || fiatInfo.data.data.amount);
+    if (mempoolBool && fiatBool) {
       dispatch(setPrefs(
         {
-          mempool: mempool,
-          fiat: fiat,
-          chainFee: chainFee
+          mempoolUrl: mempool,
+          BTCUSDUrl: fiat,
+          selected: chainFee
         }
       ));
       return openNotification("top", "Success", "Successfully saved!");
-    }else {
+    } else {
       return openNotification("top", "Error", "Please insert correct endpoint!");
     }
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     switch (chainFee) {
-      case 0:
+      case "":
+      case "eco":
         setPos(23)
         break;
-
-      case 1:
-        setPos(screenWidth/2)
+      case "avg":
+        setPos(screenWidth / 2)
         break;
-
-      case 2:
-        setPos(screenWidth-23)
+      case "asap":
+        setPos(screenWidth - 23)
         break;
     }
     getChainFee();
-  },[prefsRedux]);
+  }, [prefsRedux]);
 
-  useEffect(()=>{
-    window.addEventListener("mouseup", ()=>{
+  useEffect(() => {
+    window.addEventListener("mouseup", () => {
       // touchEndSlide();
     })
-  },[])
+  }, [])
 
   const getChainFee = async () => {
-    if (prefsRedux.mempool === "") {
-      const defaultFee = await axios.get(defaultMempool);
-      setChainFees(defaultFee.data)
-      return;
-    }
-    const getFee = await axios.get(prefsRedux.mempool);
+    const getFee = await axios.get(prefsRedux.mempoolUrl || defaultMempool);
     setChainFees(getFee.data);
   }
 
@@ -120,34 +114,36 @@ export const Prefs = () => {
       if (!click) {
         return;
       }
-    }else if (e.type.includes("touch")) {
+    } else if (e.type.includes("touch")) {
       positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
     }
-    if (positionX<0) {
+    if (positionX < 0) {
       positionX = 0;
     }
-    if (positionX>window.innerWidth * 0.88 - 23) {
+    if (positionX > window.innerWidth * 0.88 - 23) {
       positionX = window.innerWidth * 0.88 - 23;
     }
     setPos(positionX);
   }
 
   const touchEndSlide = () => {
-    const feeValue = pos*2/screenWidth;
+    const feeValue = pos * 2 / screenWidth;
     switch (Math.round(feeValue)) {
       case 0:
         setPos(23)
+        setChainFee("eco")
         break;
 
       case 1:
-        setPos(screenWidth/2)
+        setPos(screenWidth / 2)
+        setChainFee("avg")
         break;
 
       case 2:
-        setPos(screenWidth-23)
+        setPos(screenWidth - 23)
+        setChainFee("asap")
         break;
     }
-    setChainFee(Math.round(feeValue));
     setClick(false);
   }
 
@@ -165,23 +161,23 @@ export const Prefs = () => {
             </div>
             <div className='Prefs_chainfee_options_second'>
               <p className='Prefs_chainfee_options_top'>Average</p>
-              <p className='Prefs_chainfee_options_bottom'>{chainFees.hourFee} sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{Math.ceil((chainFees.hourFee + chainFees.halfHourFee) / 2)} sat/byte</p>
             </div>
             <div className='Prefs_chainfee_options_third'>
               <p className='Prefs_chainfee_options_top'>ASAP</p>
-              <p className='Prefs_chainfee_options_bottom'>{chainFees.halfHourFee} sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.fastestFee} sat/byte</p>
             </div>
           </div>
           <div className='Prefs_chainfee_settings'>
-            <div 
+            <div
               onTouchStart={touchMoveSlide}
               onTouchMove={touchMoveSlide}
               onTouchEnd={touchEndSlide}
-              onMouseDown={()=>{setClick(true)}}
+              onMouseDown={() => { setClick(true) }}
               onMouseMove={touchMoveSlide}
               onMouseLeave={touchEndSlide}
               onMouseUp={touchEndSlide}
-              style={{paddingLeft: pos, transition: "0.15s"}}
+              style={{ paddingLeft: pos, transition: "0.15s" }}
             >
               {Icons.prefsSetting()}
             </div>
@@ -189,7 +185,7 @@ export const Prefs = () => {
         </div>
         <div className='Prefs_mempool'>
           <header>Mempool Provider</header>
-          <input value={mempool} onChange={(e)=>{setMempool(e.target.value)}} type="text" placeholder="https://mempool.space/api/v1/fees/recommended"/>
+          <input value={mempool} onChange={(e) => { setMempool(e.target.value) }} type="text" placeholder="https://mempool.space/api/v1/fees/recommended" />
         </div>
         <div className='Prefs_fiat'>
           <header>Fiat Estimates</header>
@@ -199,11 +195,11 @@ export const Prefs = () => {
               <option value={"eur"}>EUR</option>
               <option value={"cny"}>CNY</option>
             </select>
-            <input value={fiat} onChange={(e)=>{setFiat(e.target.value)}} type="text" placeholder="https://api.coinbase.com/v2/prices/BTC-USD/spot"/>
+            <input value={fiat} onChange={(e) => { setFiat(e.target.value) }} type="text" placeholder="https://api.coinbase.com/v2/prices/BTC-USD/spot" />
           </div>
         </div>
         <div className='Prefs_buttons'>
-          <button className='Prefs_buttons_cancel' onClick={()=>{router.goBack()}}>Cancel</button>
+          <button className='Prefs_buttons_cancel' onClick={() => { router.goBack() }}>Cancel</button>
           <button className='Prefs_buttons_save' onClick={hadleSubmit}>Save</button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PageProps } from "../../globalTypes";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
 
@@ -16,14 +16,13 @@ type PayAddress = {
 }
 
 export const Contacts = () => {
-  const price = useSelector((state:any) => state.usdToBTC);
 
   //reducer
-  const spendSources = useSelector((state:any) => state.spendSource).map((e:any)=>{return {...e}});
+  const spendSources = useSelector((state: any) => state.spendSource).map((e: any) => { return { ...e } });
 
   const router = useIonRouter();
 
-  useEffect(()=>{
+  useEffect(() => {
   });
 
   return (

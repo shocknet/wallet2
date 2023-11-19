@@ -6,6 +6,7 @@ interface History {
   operations?: SourceOperations
   cursor?: Cursor
   latestOperation?: Partial<Types.UserOperation>
+  operationsUpdateHook?: number
 };
 
 const historyLocal = localStorage.getItem("history");
@@ -33,13 +34,23 @@ const historySlice = createSlice({
       if (!state.operations) {
         state.operations = {}
       }
-      state.operations[pub] = [...operations]
+      state.operations[pub] = operations
       state.cursor = { ...cursor }
+      state.operationsUpdateHook = Math.random()
       update(state)
     },
-    setLatestOperation: (state, action: PayloadAction<{ operation: Types.UserOperation }>) => {
-      const { operation } = action.payload
+    setLatestOperation: (state, action: PayloadAction<{ pub: string, operation: Types.UserOperation }>) => {
+      const { pub, operation } = action.payload
       state.latestOperation = { ...operation }
+      if (!state.operations) {
+        state.operations = {}
+      }
+      if (!state.operations[pub]) {
+        state.operations[pub] = [operation]
+      } else if (!state.operations[pub].find(o => o.operationId === operation.operationId)) {
+        state.operations[pub].push(operation)
+      }
+      state.operationsUpdateHook = Math.random()
       update(state)
     },
   },
