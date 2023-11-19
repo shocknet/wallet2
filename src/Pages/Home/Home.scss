@@ -68,4 +68,66 @@
   &_scroller::-webkit-scrollbar {
     display: none;
   }
+
+  &_modal_header {
+    font-family: Montserrat;
+    border-radius: 8px 8px 0 0;
+    justify-content: space-between;
+    font-size: 30px;
+  }
+
+  &_modal_discription{
+    font-size: 15px;
+    color: #8c8c8c;
+    margin-top: 10px;
+  }
+
+  
+  &_add_btn{
+    margin-block: 30px;
+    display: flex;
+
+    & button {
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding-block: 3px;
+      width: 136px;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      $border: 1px;
+      color: #FFF;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border transparent; /* !importanté */
+      border-radius: 5px;
+    
+    }
+
+    &_container {
+      position: relative;
+      top: 0; right: 0; bottom: 0; left: 0;
+      margin: -1px; /* !importanté */
+      border-radius: 3px; /* !importanté */
+      background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+      margin-inline: auto;
+    }
+
+  }
+
+  &_modal_clipboard {
+    margin-block: 30px;
+    font-size: 18px;
+    color: #54bbe8;
+  }
+
+  &_clipboard {
+    margin-inline: 5px;
+    align-items: center;
+    display: flex;
+  }
 }

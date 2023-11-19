@@ -185,7 +185,7 @@
 
   &_modal_select_state{
     margin-top: 20px;
-    padding-bottom: 40px;
+    padding-bottom: 5px;
   }
 
   &_item_right{
@@ -277,9 +277,6 @@
   &_add_btn{
     float: right;
     margin: 30px;
-  }
-
-  &_add_btn{
 
     & button {
       display: flex;
@@ -316,7 +313,29 @@
     width: 100%;
   }
 
+  &_modal_add_btn_bottom{
+    margin-top: 10px;
+    text-align: center;
+    padding: 0;
+    width: 100%;
+    position: fixed;
+    left: 0;
+  }
+
   &_modal_add_btn button{
+    margin: 10px;
+    background-color: #151d24;
+    border: 1px solid #268fbc;
+    border-radius: 6px;
+    color: white;
+    font-size: 100%;
+    padding-inline: 30px;
+    padding-block: 10px;
+    transition-duration: 400ms;
+    margin-bottom: 30px;
+  }
+
+  &_modal_add_btn_bottom button{
     margin: 10px;
     background-color: #151d24;
     border: 1px solid #268fbc;
@@ -332,7 +351,7 @@
   &_modal_discription{
     font-size: 15px;
     color: #8c8c8c;
-    margin-top: 25px;
+    margin-top: 10px;
   }
 
   &_modal_optional_labal{

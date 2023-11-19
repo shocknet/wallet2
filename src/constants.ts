@@ -12,3 +12,22 @@ export const options: any = {
     very: "Very well.",
     mine: "It's my node.",
 }
+
+function padZero(number: number) {
+    return number.toString().padStart(2, '0');
+}
+
+export function getFormattedTime(timestamp: number) {
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+  
+    // Format the time as desired (e.g., HH:MM:SS)
+    const formattedTime = `${day}/${padZero(month)}/${padZero(year)} ${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+  
+    return formattedTime;
+}
