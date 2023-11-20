@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { NotifyItemData, PageProps } from "../../globalTypes";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { NotifyItem } from '../../Components/NotifyItem';
 import { updateCheckTime } from '../../State/Slices/notificationSlice';
 

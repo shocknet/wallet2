@@ -11,7 +11,7 @@ import { HeaderProps } from "./types";
 import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "../../State/store";
 import { addNotification } from "../../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";

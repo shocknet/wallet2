@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { useIonRouter } from '@ionic/react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { setPrefs } from '../../State/Slices/prefsSlice';

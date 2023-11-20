@@ -13,7 +13,7 @@ import { questionMark } from '../../Assets/SvgIconLibrary';
 import { bech32 } from "bech32";
 import axios from 'axios';
 //reducer
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';

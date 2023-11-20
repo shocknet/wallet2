@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PageProps } from "../../globalTypes";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import axios from 'axios';
 import { useIonRouter } from '@ionic/react';
 

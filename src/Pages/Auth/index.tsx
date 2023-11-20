@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { PageProps } from "../../globalTypes";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import axios from 'axios';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';

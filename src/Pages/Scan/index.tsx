@@ -7,7 +7,7 @@ import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from 
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { bech32 } from "bech32";
 import { UseModal } from "../../Hooks/UseModal";
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from '../../State/store';
 import { addSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import axios from "axios";

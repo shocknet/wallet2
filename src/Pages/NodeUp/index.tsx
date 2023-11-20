@@ -3,7 +3,7 @@ import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
-import { useDispatch } from "react-redux";
+import { useDispatch } from "../../State/store";
 import { useSelector } from "../../State/store";
 import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
