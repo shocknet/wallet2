@@ -1,10 +1,10 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
-import { NOSTR_PUB_DESTINATION, options } from '../../constants';
+import { options } from '../../constants';
 
 const getPayToLocal = localStorage.getItem("payTo");
 
-const initialState: PayTo[] = JSON.parse(getPayToLocal??"[]");
+const initialState: PayTo[] = JSON.parse(getPayToLocal ?? "[]");
 
 const update = (value: PayTo[]) => {
   localStorage.setItem("payTo", JSON.stringify(value));
@@ -28,7 +28,7 @@ const paySourcesSlice = createSlice({
       update(state);
     },
     setPaySources: (state, action: PayloadAction<PayTo[]>) => {
-      if (state.length!=action.payload.length) return;
+      if (state.length != action.payload.length) return;
       for (let i = 0; i < state.length; i++) {
         const element = action.payload[i];
         state[i] = element;
