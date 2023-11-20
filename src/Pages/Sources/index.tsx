@@ -18,7 +18,7 @@ import { addPaySources, editPaySources, deletePaySources, setPaySources } from '
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
 import { Buffer } from 'buffer';
-import { NOSTR_PUB_DESTINATION, options } from '../../constants';
+import { options } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import { getNostrClient } from '../../Api/nostr';
 import { nip19 } from 'nostr-tools';
@@ -352,10 +352,10 @@ export const Sources = () => {
     <div className="Sources_modal_add_btn">
       <button onClick={AddSource}>Add</button>
     </div>
-    {(paySources.filter((e) => e.icon != "0").length==0&&spendSources.filter((e) => e.icon != "0").length==0)?(<div className="Sources_modal_add_btn_bottom">
+    {(paySources.filter((e) => e.icon != "0").length == 0 && spendSources.filter((e) => e.icon != "0").length == 0) ? (<div className="Sources_modal_add_btn_bottom">
       <p>or</p>
-      <button onClick={()=>{router.push("/auth")}}>Recover Backup</button>
-    </div>):null}
+      <button onClick={() => { router.push("/auth") }}>Recover Backup</button>
+    </div>) : null}
 
   </React.Fragment>;
 

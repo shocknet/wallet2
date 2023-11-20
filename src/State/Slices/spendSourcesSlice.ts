@@ -1,6 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { SpendFrom } from '../../globalTypes';
-import { NOSTR_PUB_DESTINATION, options } from '../../constants';
 
 const getSpendFromLocal = localStorage.getItem("spendFrom");
 
@@ -8,7 +7,7 @@ const update = (value: SpendFrom[]) => {
   localStorage.setItem("spendFrom", JSON.stringify(value));
 }
 
-const initialState: SpendFrom[] = JSON.parse(getSpendFromLocal??"[]");
+const initialState: SpendFrom[] = JSON.parse(getSpendFromLocal ?? "[]");
 
 const spendSourcesSlice = createSlice({
   name: 'spendSources',
@@ -28,8 +27,8 @@ const spendSourcesSlice = createSlice({
       update(state);
     },
     setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {
-      if (state.length!=action.payload.length) return;
-      state = action.payload.map((e:any)=>{return {...e}});
+      if (state.length != action.payload.length) return;
+      state = action.payload.map((e: any) => { return { ...e } });
       update(state);
     },
   },
