@@ -53,7 +53,7 @@ const App: React.FC = () => {
   let installPromptFlag = true;
   useEffect(() => {
     if (!isBrowser) setStatusBarColor();
-    
+
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       window.addEventListener("click", () => {
