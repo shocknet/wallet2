@@ -70,6 +70,8 @@ export const Background = () => {
         });
 
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.returnValue = null;
+            window.onbeforeunload = null;
             event.preventDefault();
             // Call your function here
             localStorage.setItem("lastOnline", Date.now().toString())
@@ -77,6 +79,10 @@ export const Background = () => {
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            return window.removeEventListener('beforeunload', handleBeforeUnload);
+        }
     }, [nostrSource.length])
 
     useEffect(() => {
@@ -153,6 +159,7 @@ export const Background = () => {
     }, [])
 
     const checkClipboard = async () => {
+        window.onbeforeunload = null;
         var text = '';
         document.getElementById('focus_div')?.focus();
         if (document.hidden) {
@@ -173,8 +180,7 @@ export const Background = () => {
                 console.error('Error reading clipboard data:', error);
             }
         }
-        console.log(text);
-
+        text = text.replaceAll('lightning:', "")
         if (text.length) {
             const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
             const boolLnAddress = expression.test(text);

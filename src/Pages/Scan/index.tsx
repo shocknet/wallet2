@@ -14,6 +14,7 @@ import axios from "axios";
 import { useIonRouter } from "@ionic/react";
 import { Modal } from "../../Components/Modals/Modal";
 import { Buffer } from "buffer";
+import { validate } from 'bitcoin-address-validation';
 // import bolt11 from "bolt11";
 
 type PayInvoice = {
@@ -53,11 +54,17 @@ export const Scan = () => {
   };
 
   const handleSubmit = async (qrcode: string) => {
+    qrcode = qrcode.replace("lightning:", "");
     if (scaned) return;
     scaned = true;
-    // console.log(bolt11.decode(qrcode.replaceAll("lightning:", "")))
+    if (qrcode.startsWith('lnbc')) {
+      router.push("/send?url="+qrcode)
+    }
+    if (validate(qrcode)) {
+      router.push("/send?url="+qrcode)
+    }
     try {
-      let { words: dataPart } = bech32.decode(qrcode.replace("lightning:", ""), 2000);
+      let { words: dataPart } = bech32.decode(qrcode, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
       
@@ -65,7 +72,7 @@ export const Scan = () => {
       if (lnurlLink.includes("withdraw")) {
         toggle();
       } else {
-        router.push("/home")
+        router.push("/send?url="+qrcode)
       }
     } catch (error) {
       scaned = false;

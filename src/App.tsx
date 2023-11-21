@@ -55,10 +55,14 @@ const App: React.FC = () => {
     if (!isBrowser) setStatusBarColor();
     
     window.addEventListener('beforeinstallprompt', (event) => {
+      window.onbeforeunload = null;
       event.preventDefault();
       window.addEventListener("click", () => {
         navigator.registerProtocolHandler('web+lightning', './?address=%s');
         navigator.registerProtocolHandler('bitcoin', './?address=%s');
+        navigator.registerProtocolHandler('https', 'test.shockwallet.app');
+        navigator.registerProtocolHandler('https', 'my.shockwallet.app');
+        navigator.registerProtocolHandler('http', './?address=%s');
         if (installPromptFlag) {
           installPWA(event);
           installPromptFlag = false;
