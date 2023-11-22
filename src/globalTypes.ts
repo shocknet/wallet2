@@ -1,21 +1,21 @@
 import React from "react";
 
-export interface ChangeQuantityInterface{
+export interface ChangeQuantityInterface {
   id: number;
   quantity: number
 }
 
-export interface RoutesInterface{
+export interface RoutesInterface {
   current: string;
   history: string;
 }
 
-interface RatingInterface{
+interface RatingInterface {
   rate: number;
   count: number;
 }
 
-export interface ItemInterface{
+export interface ItemInterface {
   id: number;
   category: string;
   description: string;
@@ -27,7 +27,7 @@ export interface ItemInterface{
   added?: boolean
 }
 
-export interface StateInterface{
+export interface StateInterface {
   items: Array<ItemInterface>,
   filteredItems: Array<ItemInterface>,
   shoppingCart: Array<ItemInterface>,
@@ -44,12 +44,12 @@ export interface StateInterface{
 
 export type ActionType = {
   type: string,
-  payload?: 
-    | ItemInterface[] 
-    | string 
-    | number 
-    | ChangeQuantityInterface
-    | RoutesInterface
+  payload?:
+  | ItemInterface[]
+  | string
+  | number
+  | ChangeQuantityInterface
+  | RoutesInterface
 }
 
 export interface PageProps {
@@ -80,10 +80,10 @@ export interface ModalProps {
   modalContent: JSX.Element;
 }
 
-export interface SwItemData{
+export interface SwItemData {
   station?: string;
   changes?: string;
-  stateIcon?: string; 
+  stateIcon?: string;
   date?: string;
   priceImg: Function;
   price?: number;
@@ -100,15 +100,15 @@ export interface TransactionInterface {
   invoice: string,
 }
 
-export interface NotifyItemData{
+export interface NotifyItemData {
   header: string;
   icon: string;
-  desc: string; 
+  desc: string;
   date: number;
   link: string;
 }
 
-export interface ITotalAmount{
+export interface ITotalAmount {
   subtotal: number;
   taxes: number;
   total: number;
@@ -129,7 +129,7 @@ export interface SpendFrom {
   option: string;
 }
 
-export interface PayTo{
+export interface PayTo {
   id: number;
   label: string;
   pasteField: string;

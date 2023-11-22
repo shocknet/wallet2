@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -16,36 +16,86 @@ import { addNotification } from "../../State/Slices/notificationSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
-
+import { Modal } from "../../Components/Modals/Modal";
+let logs: string[] = []
+const saveLog = (...args: any[]) => {
+  const line = args.map(m => {
+    if (typeof m === 'object') {
+      try {
+        return JSON.stringify(m)
+      } catch (e) {
+        return "[object]"
+      }
+    } else {
+      return m
+    }
+  }).join(" ")
+  logs.push(line)
+}
 export const Header = () => {
   const [badge, setBadge] = useState(false);
   const router = useIonRouter();
-  const notifications = useSelector(({notify}) => notify);
+  const notifications = useSelector(({ notify }) => notify);
+  const debugMode = useSelector(({ prefs }) => prefs.debugMode);
 
   const { isShown, toggle } = UseModal();
+  const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
   const isNopeUp: boolean = window.location.pathname === "/";
   const isLoader: boolean = window.location.pathname === "/loader";
   const isscan: boolean = window.location.pathname === "/scan";
   const isreceive: boolean = window.location.pathname === "/receive";
   const getNotifyBadge = () => {
-    if (notifications&&notifications.notifications.length) {
-      setBadge(notifications.notifications[notifications.notifications.length-1].date>notifications.checkTime)
+    if (notifications && notifications.notifications.length) {
+      setBadge(notifications.notifications[notifications.notifications.length - 1].date > notifications.checkTime)
     }
   }
+  useEffect(() => {
+    if (!debugMode) {
+      logs = []
+      return
+    }
+    const { log, warn, error } = console
+    const newConsole = {
+      log: (...args: any[]) => {
+        saveLog(...args)
+        log(...args)
+      },
+      warn: (...args: any[]) => {
+        saveLog(...args)
+        warn(...args)
+      },
+      error: (...args: any[]) => {
+        saveLog(...args)
+        error(...args)
+      },
+    }
+    console.log = newConsole.log
+    console.warn = newConsole.warn
+    console.error = newConsole.error
+  }, [debugMode])
+
+  const debugLines = useMemo(() => {
+    if (!isDebugShown) {
+      return <></>
+    }
+    const lines = logs.map((log, i) => <p key={i}>{log}</p>)
+    return <>{lines}</>
+
+  }, [isDebugShown])
 
   useEffect(() => {
     getNotifyBadge();
   }, [notifications])
   useEffect(() => {
     getNotifyBadge();
-    
+
   }, []);
 
   const content = <React.Fragment>
     <div className="Header_modal">
       <div className="Header_modal_close" onClick={() => toggle()}>
-          {Icons.MenuBack()}
+        {Icons.MenuBack()}
       </div>
       <div className="Header_modal_content">
         <div className="Header_modal_content_item" onClick={() => {
@@ -97,8 +147,12 @@ export const Header = () => {
           <div className="Header_modal_content_item_text">Buy Bitcoin</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
-          router.push("/sources");
-          toggle();
+          if (debugMode) {
+            toggleDebugShown()
+          } else {
+            router.push("/sources");
+            toggle();
+          }
         }}>
           <div className="Header_modal_content_item_img">
             {Icons.HelpAbout()}
@@ -136,7 +190,7 @@ export const Header = () => {
           ) : (
             <React.Fragment>
               <button className="Header_logo_2" onClick={() => router.push("/home")}>
-                  {Icons.Logo()}
+                {Icons.Logo()}
               </button>
               <button className="Header_menu" onClick={() => {
                 router.push("#");
@@ -148,13 +202,14 @@ export const Header = () => {
                 router.push('/notify')
               }}>
                 {Icons.notification()}
-                {badge?Icons.oval():''}
+                {badge ? Icons.oval() : ''}
               </button>
               <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>
           )
         )
       )}
+      <Modal isShown={isDebugShown} headerText="debug" hide={() => toggleDebugShown()} modalContent={debugLines} />
     </header>
   )
 }
