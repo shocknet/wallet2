@@ -16,6 +16,7 @@ import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 import { PayTo } from '../../globalTypes';
 import { useSelector } from '../../State/store';
+import { Clipboard } from '@capacitor/clipboard';
 
 export const Receive = () => {
   //reducer
@@ -116,8 +117,10 @@ export const Receive = () => {
     setValueQR("lightning:" + res.lnurl);
   }
 
-  const copyToClip = () => {
-    navigator.clipboard.writeText(valueQR)
+  const copyToClip = async () => {
+    await Clipboard.write({
+      string: valueQR
+    })
     return openNotification("top", "Success", "Copied!");
   }
 
