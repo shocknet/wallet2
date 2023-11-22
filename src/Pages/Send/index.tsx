@@ -108,32 +108,6 @@ export const Send = () => {
     onChangeTo(urlParam ?? "");
   }, [urlParam])
 
-  const paya = async (action: PayInvoice | PayAddress) => {
-    if (!nostrSource.length) return;
-    switch (action.type) {
-      case 'payAddress':
-        const resA = await (await getNostrClient(selectedSource.pasteField)).PayAddress({
-          address: action.address,
-          amoutSats: +amount,
-          satsPerVByte: 10
-        })
-        if (resA.status !== 'OK') {
-          setError(resA.reason)
-          return
-        }
-        return resA;
-      case 'payInvoice':
-        const resI = await (await getNostrClient(selectedSource.pasteField)).PayInvoice({
-          invoice: action.invoice,
-          amount: +amount,
-        })
-        if (resI.status !== 'OK') {
-          setError(resI.reason)
-          return
-        }
-        return resI;
-    }
-  }
   const [loading, setLoading] = useState("none");
   const handleSubmit = async () => {
     setLoading("flex")
@@ -196,20 +170,29 @@ export const Send = () => {
 
   const payUsingNprofile = async () => {
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    if (expression.test(to)) {
+    let dst = to.toLowerCase()
+    if (dst.startsWith("lightning:")) {
+      dst = dst.slice("lightning:".length)
+    }
+    if (dst.startsWith("bitcoin:")) {
+      dst = dst.slice("bitcoin:".length)
+    }
+    if (expression.test(dst)) {
       await payLNAddress()
-    } else if (to.includes("lnbc")) {
+      return
+    }
+    if (dst.startsWith("lnbc")) {
       try {
-        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({ invoice: to });
+        const result = await (await getNostrClient(selectedSource.pasteField)).DecodeInvoice({ invoice: dst });
         if (result.status != "OK") {
           return;
         }
         const payRes = await (await getNostrClient(selectedSource.pasteField)).PayInvoice({
-          invoice: to,
-          amount: result.amount,
+          invoice: dst,
+          amount: +amount,
         })
         if (payRes.status == "OK") {
-          return paymentSuccess(+amount, to, Types.UserOperationType.OUTGOING_INVOICE, payRes)
+          return paymentSuccess(result.amount, dst, Types.UserOperationType.OUTGOING_INVOICE, payRes)
         } else {
           return openNotification("top", "Error", payRes.reason);
         }
@@ -217,15 +200,16 @@ export const Send = () => {
         console.log(error);
         return openNotification("top", "Error", "Couldn't send using this info.");
       }
-    } else if (validate(to)) {
+    }
+    if (validate(dst)) {
       try {
         const payRes = await (await getNostrClient(selectedSource.pasteField)).PayAddress({
-          address: to,
+          address: dst,
           amoutSats: +amount,
           satsPerVByte: satsPerByte
         })
         if (payRes.status == "OK") {
-          return paymentSuccess(+amount, to, Types.UserOperationType.OUTGOING_TX, payRes)
+          return paymentSuccess(+amount, dst, Types.UserOperationType.OUTGOING_TX, payRes)
         } else {
           return openNotification("top", "Error", payRes.reason);
         }
