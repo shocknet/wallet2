@@ -204,7 +204,9 @@ export const Background = () => {
                 </button>
             </div>
             <div className='Home_add_btn_container'>
-                <button onClick={() => { }}>
+                <button onClick={() => {
+                    router.push("/send?url="+clipText)
+                }}>
                     {icons.clipboard()}YES
                 </button>
             </div>
