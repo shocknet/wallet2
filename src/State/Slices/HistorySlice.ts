@@ -47,8 +47,13 @@ const historySlice = createSlice({
       }
       if (!state.operations[pub]) {
         state.operations[pub] = [operation]
-      } else if (!state.operations[pub].find(o => o.operationId === operation.operationId)) {
-        state.operations[pub].push(operation)
+      } else {
+        const existingIndex = state.operations[pub].findIndex(o => o.operationId === operation.operationId)
+        if (existingIndex !== -1) {
+          state.operations[pub][existingIndex] = { ...operation }
+        } else {
+          state.operations[pub].push(operation)
+        }
       }
       state.operationsUpdateHook = Math.random()
       update(state)
