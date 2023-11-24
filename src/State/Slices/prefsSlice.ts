@@ -4,6 +4,7 @@ interface PrefsInterface {
   mempoolUrl: string,
   BTCUSDUrl: string,
   selected: FeeOptions
+  debugMode?: boolean
 }
 
 const prefs = localStorage.getItem("prefs");
@@ -24,8 +25,12 @@ const prefsSlice = createSlice({
       state.selected = action.payload.selected
       update(state)
     },
+    setDebugMode: (state, action: PayloadAction<boolean>) => {
+      state.debugMode = action.payload
+      update(state)
+    }
   },
 });
 
-export const { setPrefs } = prefsSlice.actions;
+export const { setPrefs, setDebugMode } = prefsSlice.actions;
 export default prefsSlice.reducer;
