@@ -55,13 +55,16 @@ export const Scan = () => {
 
   const handleSubmit = async (qrcode: string) => {
     qrcode = qrcode.replace("lightning:", "");
+    
     if (scaned) return;
     scaned = true;
-    if (qrcode.startsWith('lnbc')) {
+    if (qrcode.slice(0,4).toLowerCase()=="lnbc") {
       router.push("/send?url="+qrcode)
+      return;
     }
     if (validate(qrcode)) {
       router.push("/send?url="+qrcode)
+      return;
     }
     try {
       let { words: dataPart } = bech32.decode(qrcode, 2000);
@@ -74,8 +77,10 @@ export const Scan = () => {
       } else {
         router.push("/send?url="+qrcode)
       }
+      return;
     } catch (error) {
       scaned = false;
+      router.push("/home");
       return openNotification("top", "Error", "Please scan correct QRcode!");
     }
   }

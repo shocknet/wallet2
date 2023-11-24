@@ -40,6 +40,22 @@ export const Background = () => {
             onClick: onClick,
         });
     };
+    window.onbeforeunload = function () {return null;};
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            // Call your function here
+            localStorage.setItem("lastOnline", Date.now().toString())
+            localStorage.setItem("getHistory", "false");
+            return false;
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            return window.removeEventListener('beforeunload', handleBeforeUnload);
+        }
+    }, []);
 
     useEffect(() => {
         const subbed: string[] = []
@@ -53,13 +69,6 @@ export const Background = () => {
                 c.GetLiveUserOperations(newOp => {
                     if (newOp.status === "OK") {
                         console.log(newOp)
-                        dispatch(addNotification({
-                            header: 'Payments',
-                            icon: '⚡',
-                            desc: `You received ` + newOp.operation.amount + ` payments.`,
-                            date: Date.now(),
-                            link: '/home',
-                        }))
                         openNotification("top", "Payments", "You received payment.");
                         dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
                     } else {
@@ -68,21 +77,6 @@ export const Background = () => {
                 })
             })
         });
-
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            event.returnValue = null;
-            window.onbeforeunload = null;
-            event.preventDefault();
-            // Call your function here
-            localStorage.setItem("lastOnline", Date.now().toString())
-            localStorage.setItem("getHistory", "false")
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            return window.removeEventListener('beforeunload', handleBeforeUnload);
-        }
     }, [nostrSource.length])
 
     useEffect(() => {
