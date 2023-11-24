@@ -69,8 +69,10 @@ export const Receive = () => {
       return openNotification("top", "Error", "You don't have any source!");
     } else {
       configLNURL();
-      configInvoice();
-      ChainAddress();
+      if (paySource[0].pasteField.startsWith("nprofile")) {
+        configInvoice();
+        ChainAddress();
+      }
     }
   }, []);
 
