@@ -30,14 +30,6 @@
     {
       "protocol": "bitcoin",
       "url": "./?address=%s"
-    },
-    {
-      "protocol": "https",
-      "url": "test.shockwallet.app"
-    },
-    {
-      "protocol": "http",
-      "url": "./?address=%s"
     }
   ],
   "intent_filters": [

@@ -27,7 +27,7 @@ export const Receive = () => {
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState("");
   const [amountValue, setAmountValue] = useState("");
   const [LNInvoice, setLNInvoice] = useState("");
   const [LNurl, setLNurl] = useState("");
