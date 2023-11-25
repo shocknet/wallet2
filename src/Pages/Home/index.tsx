@@ -167,7 +167,7 @@ export const Home = () => {
     <div className="Home">
       {contextHolder}
       <div className="Home_sats">
-        {!!onTheWay && <p>{onTheWay} sats are on the way!</p>}
+        {/* {!!onTheWay && <p>{onTheWay} sats are on the way!</p>} */}
         <div className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ ${money}</div>
