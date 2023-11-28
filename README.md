@@ -1,26 +1,72 @@
 # wallet2
-Connect to multiple Lightning Nodes via LNURL and NOSTR
+Connect to multiple Lightning Nodes via LNURL and NOSTR. 
 
-Under heavy development
+Built with React and Ionic allowing builds for [PWA](https://test.shockwallet.app), [Android APK](https://cdn.shockwallet.app/shockwallet.apk), or iOS. 
+* iOS currently unbuilt and untested, help or donations requested
 
-Update src/constants.ts
+![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
 
-## Run PWA
+This is a reference wallet client for [Lightning.Pub](https://github.com/shocknet/Lightning.Pub) and also contains the beginnings of a node management dashboard. 
 
-First, clone the repo via git:
+<p style="text-align: center;"><img src="https://shockwallet.b-cdn.net/pub_home_ss.png" alt="Pub Dashboard" width="240"></p>
+
+#### ShockWallet and most of Lightning.Pub were developed as part of the [Bolt.Fun hackathon](https://bolt.fun/project/shocknet). If you would like to see continued development, please show your support there and help us win :)
+
+
+
+# Try It
+
+A development instance of the PWA is up at https://test.shockwallet.app 
+
+or [Download Android APK](https://cdn.shockwallet.app/shockwallet.apk)
+
+The bootstrap node is on mainnet, but has minimal liquidity.
+
+# From Source
+
+Clone the repo
 
 ```bash
 git clone https://github.com/shocknet/wallet2
 ```
+Install
+
 ```bash
-cd wallet2 && npm i --force
+cd wallet2 && npm i
 npm install -g @ionic/cli native-run cordova-res
+```
+* Update src/constants.ts to customize
+
+### Self-Hosting the PWA
+
+Run dev server
+
+```
 ionic serve
 ```
-## Android
+or 
 
-Install Ionic CLI
-`npm install -g @ionic/cli native-run cordova-res`
+Build for production as static files
+
+```
+ionic build --prod
+```
+
+Serve behind a reverse-proxy like `Caddy`
+
+### Build for Android
+* (Requires Android Studio)
+
 Build APK
-`ionic cap build android`
-`ionic cap run android --release`
+
+```
+ionic cap build android --release
+```
+
+#### Debug Mode
+
+From to send screen, type `howdoyouturnthison` into on the destination and press send
+
+This will cause the "Help/About" button in the menu to instead show the debug modal
+
+To disable, go back to send screen and type `howdoyouturnthisoff` int othe destination and press send

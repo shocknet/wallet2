@@ -26,6 +26,7 @@ export const Home = () => {
   const [balance, setBalance] = useState('0.00')
   const [money, setMoney] = useState("0")
   const [items, setItems] = useState<JSX.Element[]>([])
+  const [onTheWay, setOnTheWay] = useState(0)
 
   const [SwItemArray, setSwItemArray] = useState<sw_item[]>([]);
   const dispatch = useDispatch();
@@ -74,9 +75,12 @@ export const Home = () => {
     const collapsed: (Types.UserOperation & { nprofile: string })[] = []
     entries.forEach(([nprofile, operations]) => { if (operations) collapsed.push(...operations.map(o => ({ ...o, nprofile }))) })
     collapsed.sort((a: any, b: any) => b.paidAtUnix - a.paidAtUnix);
-
+    let totalPending = 0
     setSwItemArray(collapsed.map((o, i) => {
       const label = getIdentifierLink(addressbook, o.identifier)
+      if (o.type === Types.UserOperationType.INCOMING_TX && !o.confirmed) {
+        totalPending += o.amount
+      }
       return {
         priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
         station: label.length < 20 ? label : `${label.substring(0, 9)}...${label.substring(label.length - 9, label.length)}`,
@@ -87,6 +91,7 @@ export const Home = () => {
         underline: i !== collapsed.length - 1
       }
     }) || [])
+    setOnTheWay(totalPending)
   }
 
   useEffect(() => {
@@ -162,6 +167,7 @@ export const Home = () => {
     <div className="Home">
       {contextHolder}
       <div className="Home_sats">
+        {/* {!!onTheWay && <p>{onTheWay} sats are on the way!</p>} */}
         <div className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ ${money}</div>

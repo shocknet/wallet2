@@ -40,6 +40,10 @@
       color: #268fbc;
       text-align: center;
     }
+
+    &_manual_text:hover {
+      text-decoration: underline;
+    }
   
     &_manual_btn{
       margin-top: 20px;

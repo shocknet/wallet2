@@ -1,8 +1,5 @@
-//import { relayPool, Subscription, Event, RelayPool } from 'nostr-tools'
 import { SimplePool, Sub, Event, UnsignedEvent, finishEvent, relayInit } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
-//@ts-ignore
-import { decrypt, encrypt } from 'nostr-tools/nip04.js'
 const handledEvents: string[] = [] // TODO: - big memory leak here, add TTL
 export type NostrSettings = {
     privateKey: string

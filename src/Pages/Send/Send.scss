@@ -55,6 +55,7 @@
       border-left: 0;
       border-right: 0;
       padding-bottom: 1px;
+      margin-left: 5px;
     }
 
     &_input{
@@ -124,13 +125,34 @@
   }
 
   &_available_amount {
-    position: relative;
+    width: 100%;
+    display: inline-flex;
     margin-top: 5px;
     margin-bottom: 40px;
     text-align: end;
     color: #a2a3a4;
     font-size: 15px;
     font-family: Montserrat;
+
+    &_sats {
+      & input {
+        width: 32px;
+        height: 22px;
+        border: 1px solid #29abe2;
+        border-radius: 5px;
+        background-color: #16191c;
+        font-family: Montserrat;
+        font-size: 11px;
+        color: #999999;
+        margin-right: 3px;
+        text-align: right;
+        padding-right: 5px;
+      }
+    }
+
+    &_amount {
+      margin-left: auto;
+    }
   }
 
   &_set_amount_copy {
@@ -240,6 +262,40 @@
       }
       100% {
         opacity: 0.3;
+      }
+    }
+  }
+
+  &_maxButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: end;
+    & button {
+      width: 36px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      font-size: 12px;
+      font-family: Montserrat;
+      font-weight: bold;
+      $border: 1px;
+      color: #FFF;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border transparent; /* !importanté */
+      border-radius: 5px;
+      margin-top: 3px;
+    
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: -1;
+        margin: -$border; /* !importanté */
+        border-radius: 3px; /* !importanté */
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
       }
     }
   }

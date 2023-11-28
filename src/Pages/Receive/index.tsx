@@ -27,7 +27,7 @@ export const Receive = () => {
   const [deg, setDeg] = useState("rotate(0deg)");
   const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState("");
   const [amountValue, setAmountValue] = useState("");
   const [LNInvoice, setLNInvoice] = useState("");
   const [LNurl, setLNurl] = useState("");
@@ -69,8 +69,10 @@ export const Receive = () => {
       return openNotification("top", "Error", "You don't have any source!");
     } else {
       configLNURL();
-      configInvoice();
-      ChainAddress();
+      if (paySource[0].pasteField.startsWith("nprofile")) {
+        configInvoice();
+        ChainAddress();
+      }
     }
   }, []);
 
