@@ -60,7 +60,6 @@ export const Send = () => {
   const { isShown, toggle } = UseModal();
   const [selectedSource, setSelectedSource] = useState(spendSources[0]);
   const [satsPerByte, setSatsPerByte] = useState(0)
-
   const nostrSource = paySource.filter((e: any) => e.pasteField.includes("nprofile"))
 
   const router = useIonRouter();

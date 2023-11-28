@@ -31,6 +31,7 @@ export const Background = () => {
     const [api, contextHolder] = notification.useNotification();
     const [clipText, setClipText] = useState("")
     const { isShown, toggle } = UseModal();
+    const [latestAckedClipboard, setLatestAckedClipboard] = useState("")
     const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
         api.info({
             message: header,
@@ -181,21 +182,25 @@ export const Background = () => {
             }
         }
         text = text.replaceAll('lightning:', "")
-        if (text.length) {
-            const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-            const boolLnAddress = expression.test(text);
-            var boolLnInvoice = false;
-            if (text.startsWith("ln") && nostrSource.length > 0) {
+        if (!text.length) {
+            return
+        }
+        if (text === latestAckedClipboard) {
+            return
+        }
+        const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+        const boolLnAddress = expression.test(text);
+        var boolLnInvoice = false;
+        if (text.startsWith("ln") && nostrSource.length > 0) {
 
-                const result = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: text });
-                boolLnInvoice = result.status == "OK";
-            }
-            const boolAddress = validate(text);
-            const boolLnurl = text.startsWith("lnurl");
-            if (boolAddress || boolLnInvoice || boolLnAddress || boolLnurl) {
-                setClipText(text);
-                toggle();
-            }
+            const result = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: text });
+            boolLnInvoice = result.status == "OK";
+        }
+        const boolAddress = validate(text);
+        const boolLnurl = text.startsWith("lnurl");
+        if (boolAddress || boolLnInvoice || boolLnAddress || boolLnurl) {
+            setClipText(text);
+            toggle();
         }
     };
 
@@ -205,12 +210,12 @@ export const Background = () => {
         <div className='Home_modal_clipboard'>{clipText}</div>
         <div className="Home_add_btn">
             <div className='Home_add_btn_container'>
-                <button onClick={toggle}>
+                <button onClick={() => { toggle(); setLatestAckedClipboard(clipText); }}>
                     {icons.Close()}NO
                 </button>
             </div>
             <div className='Home_add_btn_container'>
-                <button onClick={() => { }}>
+                <button onClick={() => { toggle(); setLatestAckedClipboard(clipText); router.push("/send?url=" + clipText) }}>
                     {icons.clipboard()}YES
                 </button>
             </div>

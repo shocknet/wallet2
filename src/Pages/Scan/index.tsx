@@ -58,21 +58,23 @@ export const Scan = () => {
     if (scaned) return;
     scaned = true;
     if (qrcode.startsWith('lnbc')) {
-      router.push("/send?url="+qrcode)
+      router.push("/send?url=" + qrcode)
+      return
     }
     if (validate(qrcode)) {
-      router.push("/send?url="+qrcode)
+      router.push("/send?url=" + qrcode)
+      return
     }
     try {
       let { words: dataPart } = bech32.decode(qrcode, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
-      
+
       setQrCodeLnurl(qrcode);
       if (lnurlLink.includes("withdraw")) {
         toggle();
       } else {
-        router.push("/send?url="+qrcode)
+        router.push("/send?url=" + qrcode)
       }
     } catch (error) {
       scaned = false;
@@ -120,7 +122,7 @@ export const Scan = () => {
         encodingType: EncodingType.JPEG,
         mediaType: MediaType.PICTURE,
       };
-  
+
       const imageData = await Camera.getPicture(cameraOptions);
       // Process the captured image data as needed
     } catch (error) {
@@ -180,16 +182,16 @@ export const Scan = () => {
         <QrReader
           delay={500}
           showViewFinder={false}
-          onError={(error)=>{
+          onError={(error) => {
             console.log(error);
           }}
           onScan={(result: any) => {
-              if (result) {
-                handleSubmit(result.data);
-                // router.push("/home");
-                // return;
-              }
+            if (result) {
+              handleSubmit(result.data);
+              // router.push("/home");
+              // return;
             }
+          }
           }
           facingMode="environment"
         />
