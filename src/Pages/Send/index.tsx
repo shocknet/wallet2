@@ -142,7 +142,10 @@ export const Send = () => {
     }, 500);
     const { pubkey } = parseNprofile(selectedSource.pasteField)
     const now = Date.now() / 1000
-    dispatch(setLatestOperation({ pub: pubkey, operation: { amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee } }))
+    dispatch(setLatestOperation({ pub: pubkey, operation: {
+      amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee,
+      confirmed: false,
+    } }))
     return openNotification("top", "Success", "Successfully paid.");
   }
 
@@ -294,16 +297,24 @@ export const Send = () => {
       <div className="Send" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Send_header_text">Send Payment</div>
         <div className="Send_config">
-          {!!satsPerByte && <> <input type="number" name="sats_per_byte" value={satsPerByte} onChange={e => setSatsPerByte(+e.target.value)} /> sats per byte</>}
           <div className="Send_amount">
             Amount:
             <div className='Send_amount_container'>
+              <div className="Send_maxButton">
+                <button onClick={()=>{setAmount(parseInt(selectedSource.balance))}}>Max</button>
+              </div>
               <input className="Send_amount_input" type="number" value={decodedAmount || amount} readOnly={decodedAmount !== 0} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
-            ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+            <div className='Send_available_amount_sats'>
+              <input type='number' value={satsPerByte} onChange={e => setSatsPerByte(+e.target.value)}/>
+               sats per byte
+            </div>
+            <p className='Send_available_amount_amount'>
+              ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+            </p>
           </div>
           <div className="Send_to">
             <p>To:</p>
