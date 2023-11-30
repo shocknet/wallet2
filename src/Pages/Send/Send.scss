@@ -148,6 +148,10 @@
         text-align: right;
         padding-right: 5px;
       }
+
+      & input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
     }
 
     &_amount {
