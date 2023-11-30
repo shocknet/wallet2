@@ -12,8 +12,11 @@ export const Notify = () => {
   }, []);
 
   const notifications = useSelector(({notify}) => notify);
+  const notify: NotifyItemData[] = [];
+  Object.assign(notify, notifications.notifications)
+  notify.sort((i: NotifyItemData, j: NotifyItemData) => j.date - i.date)
 
-  const notifyItem = notifications.notifications.map((o: NotifyItemData, i: number): JSX.Element => <NotifyItem
+  const notifyItem = notify.map((o: NotifyItemData, i: number): JSX.Element => <NotifyItem
     header={o.header}
     icon={o.icon}
     desc={o.desc}

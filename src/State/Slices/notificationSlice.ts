@@ -25,9 +25,16 @@ const notifySlice = createSlice({
     updateCheckTime: (state, action: PayloadAction<number>) => {
       state.checkTime = action.payload;
       update(state)
+    },
+    removeNotify: (state, action: PayloadAction<number>) => {
+      console.log(JSON.stringify(state.notifications), action.payload);
+      let newArray = state.notifications.filter(item => item.date !== action.payload);
+      console.log(newArray);
+      state.notifications = newArray;
+      update(state)
     }
   },
 });
 
-export const { addNotification, updateCheckTime } = notifySlice.actions;
+export const { addNotification, updateCheckTime, removeNotify } = notifySlice.actions;
 export default notifySlice.reducer;

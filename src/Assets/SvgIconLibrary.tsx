@@ -623,3 +623,10 @@ export const clipboard = () => {
         <div className="Home_clipboard" dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+export const deleteNotify = () => {
+    const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="16" height="16"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
