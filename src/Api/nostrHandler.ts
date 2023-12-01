@@ -34,13 +34,13 @@ export default class Handler {
         const sub = relay.sub([
             {
                 since: Math.ceil(Date.now() / 1000),
-                kinds: [4],
+                kinds: [21000],
                 '#p': [this.settings.publicKey],
             }
         ])
         sub.on("event", async (e) => {
             console.log({ nostrEvent: e })
-            if (e.kind !== 4 || !e.pubkey) {
+            if (e.kind !== 21000 || !e.pubkey) {
                 return
             }
             //@ts-ignore
@@ -63,7 +63,7 @@ export default class Handler {
         const event: UnsignedEvent = {
             content,
             created_at: Math.floor(Date.now() / 1000),
-            kind: 4,
+            kind: 21000,
             pubkey: this.settings.publicKey,
             tags: [['p', pubKey]],
         }
