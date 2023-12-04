@@ -117,16 +117,13 @@ export const Home = () => {
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
       if (element.pasteField.includes("nprofile")) {
-        let balanceOfNostr = "0";
         try {
-          await (await getNostrClient(element.pasteField)).GetUserInfo().then(res => {
-            if (res.status !== 'OK') {
-              console.log(res.reason, "reason");
-              return
-            }
-            balanceOfNostr = res.max_withdrawable.toString()
-          })
-          box[i].balance = balanceOfNostr;
+          const res = await (await getNostrClient(element.pasteField)).GetUserInfo()
+          if (res.status !== 'OK') {
+            console.log(res.reason, "reason");
+            return
+          }
+          box[i].balance = res.balance.toString()
           dispatch(editSpendSources(box[i]));
         } catch (error) {
           return openNotification("top", "Error", "Couldn't connect to relays");
@@ -135,16 +132,11 @@ export const Home = () => {
         let { prefix: s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString()
-        let amountSats = "0";
         try {
           const amount = await axios.get(lnurlLink);
-          amountSats = (amount.data.maxWithdrawable / 1000).toString();
-
-          box[i].balance = parseInt(amountSats).toString();
+          box[i].balance = Math.round(amount.data.maxWithdrawable / 1000).toString();
           dispatch(editSpendSources(box[i]));
         } catch (error: any) {
-          box[i].balance = amountSats;
-          dispatch(editSpendSources(box[i]));
           console.log(error.response.data.reason);
           return openNotification("top", "Error", (i + 1) + " " + error.response.data.reason);
         }
