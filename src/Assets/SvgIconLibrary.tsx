@@ -630,3 +630,10 @@ export const deleteNotify = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+export const check = () => {
+    const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="14" height="14"><g><defs> </defs> <rect display="none" fill="#FFA400" width="24" height="24" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="24" height="24" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <polygon fill-rule="evenodd" clip-rule="evenodd" points="20.5,2 9.5,16.5 3,10 0,13 10,23 24,5 " style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> </g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}

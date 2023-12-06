@@ -1,0 +1,98 @@
+.Automation {
+
+    &_container {
+      width: 100%;
+      padding-inline: 4%;
+      padding-bottom: 30px;
+      transition-duration: 500ms;
+      font-family: Montserrat;
+      justify-content: center;
+      position: fixed;
+      left: 0;
+      height: 100%;
+    }
+  
+    &_header {
+      display: inline-flex;
+      align-items: center;
+      width: 290px;
+      margin: auto;
+      aspect-ratio : 1 / 1;
+      background-color: white;
+      border: 1px solid #2693c1;
+      border-radius: 10px;
+      &_text{
+        margin-block: 10px;
+        text-align: center;
+        color: white;
+        font-size: 26px;
+        font-family: Montserrat;
+      }
+    }
+
+    &_content {
+        margin-top: 10%;
+
+        &_title {
+            font-size: 16px;
+            color: #29abe2;
+            display: flex;
+
+            &_checkbox {
+                margin-left: auto;
+                width: 16px;
+                height: 16px;
+                border-radius: 5px;
+                fill: #16191c;
+                border: 1px solid #a3a3a3;
+                stroke-width: 1;
+            }
+        }
+
+        &_desc {
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        &_input {
+            width: 26px;
+            height: 19px;
+            padding: 0px 4px;
+            border: 1px solid #29abe2;
+            border-radius: 5px;
+            background-size: cover;
+            font-family: Montserrat;
+            font-size: 12px;
+            color: #999999;
+            text-align: center;
+        }
+    }
+
+    &_buttons {
+        padding-inline: 16%;
+        display: inline-flex;
+        width: 100%;
+        position: fixed;
+        bottom: 100px;
+        left: 0px;
+        & button {
+            background-color: #151d24;
+            border: 1px solid #268fbc;
+            border-radius: 6px;
+            color: white;
+            padding: 10px;
+            width: 100px;
+            height: 45px;
+            font-size: 20px;
+            transition-duration: 400ms;
+        }
+
+        &_cancel {
+            margin-right: auto;
+        }
+
+        &_save {
+            float: right;
+        }
+    }
+  }
