@@ -152,11 +152,13 @@ export const Header = () => {
           if (debugMode) {
             toggleDebugShown()
           } else {
-            router.push("/sources");
+            window.open('https://docs.shock.network/', '_blank');
             toggle();
           }
         }}>
-          <div className="Header_modal_content_item_img">
+          <div className="Header_modal_content_item_img" onClick={() => {
+            window.location.href ='https://docs.shock.network/';
+          }}>
             {Icons.HelpAbout()}
           </div>
           <div className="Header_modal_content_item_text">Help/About</div>

@@ -103,6 +103,7 @@
     width: calc(100% - 80px);
     display: inline-flex;
     float: left;
+    overflow: hidden;
   }
 
   &_modal_header {
