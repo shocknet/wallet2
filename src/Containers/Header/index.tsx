@@ -41,10 +41,12 @@ export const Header = () => {
   const { isShown, toggle } = UseModal();
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
-  const isNopeUp: boolean = window.location.pathname === "/";
-  const isLoader: boolean = window.location.pathname === "/loader";
-  const isscan: boolean = window.location.pathname === "/scan";
-  const isreceive: boolean = window.location.pathname === "/receive";
+  const isNopeUp: boolean = router.routeInfo.pathname === "/";
+  router.routeInfo;
+  const isLoader: boolean = router.routeInfo.pathname === "/loader";
+  const isscan: boolean = router.routeInfo.pathname === "/scan";
+  const isreceive: boolean = router.routeInfo.pathname === "/receive";
+
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
       setBadge(notifications.notifications[notifications.notifications.length - 1].date > notifications.checkTime)

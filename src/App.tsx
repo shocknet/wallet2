@@ -4,7 +4,7 @@ import {
   IonRouterOutlet,
   setupIonicReact
 } from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
+import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
 
 /* Core CSS required for Ionic components to work properly */
@@ -84,7 +84,7 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <IonApp>
-        <IonReactRouter>
+        <IonReactHashRouter>
           <IonRouterOutlet>
             <Layout>
               <>
@@ -129,7 +129,7 @@ const App: React.FC = () => {
               </>
             </Layout>
           </IonRouterOutlet>
-        </IonReactRouter>
+        </IonReactHashRouter>
       </IonApp>
     </Provider>
   )

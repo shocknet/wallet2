@@ -10,9 +10,9 @@ export const Footer = () => {
   const router = useIonRouter();
   const state = useContext(Ctx)
 
-  const isSources: boolean = window.location.pathname === "/sources";
-  const ishome: boolean = window.location.pathname === "/home";
-  const receive: boolean = window.location.pathname === "/receive";
+  const isSources: boolean = router.routeInfo.pathname === "/sources";
+  const ishome: boolean = router.routeInfo.pathname === "/home";
+  const receive: boolean = router.routeInfo.pathname === "/receive";
 
   return (
     <div>
@@ -20,12 +20,12 @@ export const Footer = () => {
         <React.Fragment>
           <footer className="Footer">
             <div className="Footer_receive_btn">
-              <button onClick={() => { router.push("/receive")} }>Receive</button>
+              <button onClick={() => { router.push("/receive") }}>Receive</button>
             </div>
             <div className="Footer_send_btn">
-              <button onClick={() => { router.push("/send")} }>Send</button>
+              <button onClick={() => { router.push("/send") }}>Send</button>
             </div>
-            <div className="Footer_QR" onClick={() => { router.push("/scan")} }>
+            <div className="Footer_QR" onClick={() => { router.push("/scan") }}>
               {Icons.QR()}
             </div>
           </footer>
@@ -35,12 +35,12 @@ export const Footer = () => {
           <React.Fragment>
             <footer className="Footer">
               <div className="Footer_receive_btn">
-                <button onClick={() => { router.push("/home")} }>Cancel</button>
+                <button onClick={() => { router.push("/home") }}>Cancel</button>
               </div>
               <div className="Footer_send_btn">
-                <button onClick={() => { router.push("/home")} }>OK</button>
+                <button onClick={() => { router.push("/home") }}>OK</button>
               </div>
-              <div className="Footer_QR" onClick={() => { router.push("/scan")} }>
+              <div className="Footer_QR" onClick={() => { router.push("/scan") }}>
                 {Icons.QR()}
               </div>
             </footer>
