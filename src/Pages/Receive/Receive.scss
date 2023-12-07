@@ -8,7 +8,9 @@
   &_QR {
     display: inline-flex;
     align-items: center;
-    width: 290px;
+    justify-content: center;
+    max-width: 300px;
+    width: 40vh;
     margin: auto;
     aspect-ratio : 1 / 1;
     background-color: white;
@@ -32,8 +34,6 @@
   }
 
   &_logo_container {
-    position: fixed;
-    left: 125px;
     width: 40px;
     height: 40px;
     background-color: white;

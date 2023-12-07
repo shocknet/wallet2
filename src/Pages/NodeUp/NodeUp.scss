@@ -21,7 +21,7 @@
       font-size: 60%;
       text-align: center;
       color: #949596;
-      padding: 40px 0 60px 0;
+      padding: 4vh 0 6vh 0;
       border-bottom: 1px solid #949596;
       border-top: 1px solid #949596;
       margin-top: 30px;
@@ -30,9 +30,7 @@
     }
   
     &_manual{
-      position: absolute;
-      width: 94%;
-      bottom: 60px;
+      margin-top: 5vh;
     }
   
     &_manual_text{
