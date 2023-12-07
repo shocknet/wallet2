@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import QrReader from "reactjs-qr-reader";
+import { useZxing } from "react-zxing";
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from '@ionic-native/camera';
@@ -53,6 +53,8 @@ export const Scan = () => {
     });
   };
 
+
+
   const handleSubmit = async (qrcode: string) => {
     qrcode = qrcode.replace("lightning:", "");
 
@@ -84,6 +86,12 @@ export const Scan = () => {
       return openNotification("top", "Error", "Please scan correct QRcode!");
     }
   }
+
+  const { ref } = useZxing({
+    onDecodeResult(result) {
+      handleSubmit(result.getText());
+    },
+  });
 
   const addSource = async () => {
     let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
@@ -182,22 +190,7 @@ export const Scan = () => {
         <div className="Scan_square" />
       </div>
       <div className="Scan_scanner">
-        <QrReader
-          delay={500}
-          showViewFinder={false}
-          onError={(error) => {
-            console.log(error);
-          }}
-          onScan={(result: any) => {
-            if (result) {
-              handleSubmit(result.data);
-              // router.push("/home");
-              // return;
-            }
-          }
-          }
-          facingMode="environment"
-        />
+        <video ref={ref} width={"100%"} height={"100%"} />
       </div>
       <div className="Scan_result_input">
         <input
