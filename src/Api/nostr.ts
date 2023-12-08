@@ -61,13 +61,14 @@ export const getNostrClient = async (nProfile: { pubkey: string, relays?: string
 type nostrCallback = { type: 'single' | 'stream', f: (res: any) => void }
 const createNostrClient = async (pubDestination: string, relays: string[]) => {
     const clientCbs: Record<string, nostrCallback> = {}
+    let connected = false
     const handler = await new Promise<NostrHandler>((res) => {
         const h = new NostrHandler({
             privateKey: nostrPrivateKey!,
             publicKey: nostrPublicKey,
             relays
         },
-            () => { res(h) },
+            () => { if (!connected) { connected = true; res(h) } },
             e => {
                 const res = JSON.parse(e.content) as { requestId: string }
                 if (clientCbs[res.requestId]) {
