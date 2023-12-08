@@ -26,6 +26,8 @@
 
     & canvas {
       margin: auto;
+      width: calc(40vh - 20px) !important;
+      height: calc(40vh - 20px) !important;
     }
 
     & svg {
@@ -40,6 +42,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: absolute;
 
     & svg {
       width: 30px;
