@@ -16,35 +16,20 @@ export default class Handler {
     settings: NostrSettings
     constructor(settings: NostrSettings, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
         this.settings = settings
-        this.Connect(connectedCallback, eventCallback)
-    }
-
-    async Connect(connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
-        console.log("subbing")
-        const relay = relayInit(this.settings.relays[0])
-        relay.on('connect', () => {
-            console.log(`connected to ${relay.url}`)
-            connectedCallback()
-        })
-        relay.on('error', () => {
-            console.log(`failed to connect to ${relay.url}`)
-        })
-
-        await relay.connect()
-        const sub = relay.sub([
+        const sub = this.pool.sub(this.settings.relays, [
             {
                 since: Math.ceil(Date.now() / 1000),
                 kinds: [21000],
                 '#p': [this.settings.publicKey],
             }
         ])
+        sub.on('eose', connectedCallback)
         sub.on("event", async (e) => {
             console.log({ nostrEvent: e })
             if (e.kind !== 21000 || !e.pubkey) {
                 return
             }
-            //@ts-ignore
-            const eventId = e.id as string
+            const eventId = e.id
             if (handledEvents.includes(eventId)) {
                 console.log("event already handled")
                 return
