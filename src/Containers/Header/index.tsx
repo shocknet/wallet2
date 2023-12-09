@@ -4,19 +4,12 @@ import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-
 import SWText from "../../Assets/Images/sw_text.png";
-
-import { HeaderProps } from "./types";
-import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
-import { useDispatch, useSelector } from "../../State/store";
-import { addNotification } from "../../State/Slices/notificationSlice";
-import { notification } from "antd";
-import { NotificationPlacement } from "antd/es/notification/interface";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "../../constants";
+import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
+import { isBrowser, isMobile } from "react-device-detect";
 let logs: string[] = []
 const saveLog = (...args: any[]) => {
   const line = args.map(m => {
@@ -46,6 +39,7 @@ export const Header = () => {
   const isLoader: boolean = router.routeInfo.pathname === "/loader";
   const isscan: boolean = router.routeInfo.pathname === "/scan";
   const isreceive: boolean = router.routeInfo.pathname === "/receive";
+  const [padding, setPadding] = useState("");
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
@@ -92,6 +86,11 @@ export const Header = () => {
   useEffect(() => {
     getNotifyBadge();
 
+    if (!isBrowser) {
+      setPadding("4vh")
+    }else {
+      setPadding("3vh")
+    }
   }, []);
 
   const content = <React.Fragment>
@@ -168,7 +167,7 @@ export const Header = () => {
   </React.Fragment>;
 
   return (
-    <header className="Header">
+    <div className="Header" style={{paddingTop: padding}}>
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
           <button className="Header_logo_1" onClick={() => router.push("/")}>
@@ -214,6 +213,6 @@ export const Header = () => {
         )
       )}
       <Modal isShown={isDebugShown} headerText="debug" hide={() => toggleDebugShown()} modalContent={debugLines} />
-    </header>
+    </div>
   )
 }
