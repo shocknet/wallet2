@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import QrScanner from 'qr-scanner';
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
@@ -44,6 +44,8 @@ export const Scan = () => {
   const { isShown, toggle } = UseModal();
   const ref = useRef<HTMLVideoElement>(null)
   const [ttt, setTtt] = useState("aa")
+  const [selectedCam, setSelectedCam] = useState("")
+  const [cams, setCams] = useState<JSX.Element[]>([])
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -53,16 +55,29 @@ export const Scan = () => {
       placement
     });
   };
+  useEffect(() => {
+    QrScanner.listCameras().then(found => {
+      const e = found.map((c, i) => <button onClick={() => {
+        setSelectedCam(c.id)
+        localStorage.setItem("qr-camera-setting", c.id)
+      }} >{i}:{c.label}</button>)
+      setCams(e)
+
+    })
+  }, [])
 
   useEffect(() => {
     if (!ref.current) {
       return
     }
+    const v = localStorage.getItem("qr-camera-setting") || 'environment'
+    setSelectedCam(v)
     const qrScanner = new QrScanner(ref.current,
       result => {
-        handleSubmit(result)
+        setTtt(result.data)
+        handleSubmit(result.data)
         qrScanner.stop()
-      });
+      }, { preferredCamera: v });
     qrScanner.start()
   }, [ref.current])
 
@@ -200,7 +215,9 @@ export const Scan = () => {
         <video ref={ref} width={"100%"} height={"100%"} />
       </div>
       <div className="Scan_result_input">
+        {cams}
         {ttt}
+        {selectedCam}
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
