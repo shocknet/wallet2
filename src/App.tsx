@@ -83,7 +83,7 @@ const App: React.FC = () => {
 
   return (
     <Provider store={store}>
-      <IonApp>
+      <IonApp className='safe-area'>
         <IonReactHashRouter>
           <IonRouterOutlet>
             <Layout>

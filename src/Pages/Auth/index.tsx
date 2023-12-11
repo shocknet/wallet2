@@ -11,6 +11,7 @@ import { NotificationPlacement } from 'antd/es/notification/interface';
 import { UseModal } from '../../Hooks/UseModal';
 import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
+import { Filesystem, FilesystemDirectory, FilesystemEncoding } from '@capacitor/filesystem';
 
 export const Auth = () => {
   //reducer
@@ -29,7 +30,7 @@ export const Auth = () => {
     api.info({
       message: header,
       description:
-        text,
+      text,
       placement
     });
   };
@@ -60,6 +61,13 @@ export const Auth = () => {
     const blob = new Blob([encodedString], { type: 'text/plain;charset=utf-8' });
 
     saveAs(blob, 'shockw.dat');
+    // this will be work on mobile.
+    // const result = await Filesystem.writeFile({
+    //   path: 'shockw.dat',
+    //   data: blob,
+    //   directory: FilesystemDirectory.Documents,
+    //   encoding: FilesystemEncoding.UTF8
+    // });
     toggle();
     setPassphrase("")
     setPassphraseR("")
@@ -94,7 +102,11 @@ export const Auth = () => {
       const element = Object.keys(data)[i];
       localStorage.setItem(element, data[element])
     }
-    toggle()
+    toggle();
+    openNotification("top", "Success", "Backup is imported successfully.");
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
   }
 
   useEffect(() => {

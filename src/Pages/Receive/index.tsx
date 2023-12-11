@@ -76,6 +76,12 @@ export const Receive = () => {
     }
   }, []);
 
+  // useEffect(() => {
+  //   if (LNInvoice!="") {
+  //     setValueQR(LNInvoice)
+  //   }
+  // }, [LNInvoice])
+
   useEffect(() => {
     if (receiveHistory.latestOperation != undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
       console.log("got thats what I was looking for")

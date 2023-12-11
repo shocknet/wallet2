@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -9,7 +9,6 @@ import { useIonRouter } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
-import { isBrowser, isMobile } from "react-device-detect";
 let logs: string[] = []
 const saveLog = (...args: any[]) => {
   const line = args.map(m => {
@@ -39,7 +38,6 @@ export const Header = () => {
   const isLoader: boolean = router.routeInfo.pathname === "/loader";
   const isscan: boolean = router.routeInfo.pathname === "/scan";
   const isreceive: boolean = router.routeInfo.pathname === "/receive";
-  const [padding, setPadding] = useState("");
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
@@ -85,12 +83,6 @@ export const Header = () => {
   }, [notifications])
   useEffect(() => {
     getNotifyBadge();
-
-    if (!isBrowser) {
-      setPadding("4vh")
-    }else {
-      setPadding("3vh")
-    }
   }, []);
 
   const content = <React.Fragment>
@@ -167,7 +159,7 @@ export const Header = () => {
   </React.Fragment>;
 
   return (
-    <div className="Header" style={{paddingTop: padding}}>
+    <div className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
           <button className="Header_logo_1" onClick={() => router.push("/")}>
