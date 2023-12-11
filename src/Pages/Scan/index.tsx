@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useZxing } from "react-zxing";
+import React, { useEffect, useRef, useState } from "react";
+import QrScanner from 'qr-scanner';
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from '@ionic-native/camera';
@@ -42,7 +42,8 @@ export const Scan = () => {
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
   const { isShown, toggle } = UseModal();
-
+  const ref = useRef<HTMLVideoElement>(null)
+  const [ttt, setTtt] = useState("aa")
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -52,6 +53,18 @@ export const Scan = () => {
       placement
     });
   };
+
+  useEffect(() => {
+    if (!ref.current) {
+      return
+    }
+    const qrScanner = new QrScanner(ref.current,
+      result => {
+        handleSubmit(result)
+        qrScanner.stop()
+      });
+    qrScanner.start()
+  }, [ref.current])
 
 
 
@@ -86,12 +99,6 @@ export const Scan = () => {
       return openNotification("top", "Error", "Please scan correct QRcode!");
     }
   }
-
-  const { ref } = useZxing({
-    onDecodeResult(result) {
-      handleSubmit(result.getText());
-    },
-  });
 
   const addSource = async () => {
     let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
@@ -193,6 +200,7 @@ export const Scan = () => {
         <video ref={ref} width={"100%"} height={"100%"} />
       </div>
       <div className="Scan_result_input">
+        {ttt}
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
