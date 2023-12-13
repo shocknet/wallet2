@@ -36,7 +36,6 @@ export const Scan = () => {
   const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");
-  let scaned = false;
   const [error, setError] = useState("");
   const [qrCodeLnurl, setQrCodeLnurl] = useState("");
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
@@ -100,38 +99,48 @@ export const Scan = () => {
 
 
   const handleSubmit = async (qrcode: string) => {
+    console.log(qrcode);
+    
+    qrcode = qrcode.toLowerCase();
     qrcode = qrcode.replace("lightning:", "");
 
-    if (scaned) return;
-    scaned = true;
-    if (qrcode.slice(0, 4).toLowerCase() == "lnbc") {
+    //case of qr code is invoice
+    if (qrcode.slice(0, 4) == "lnbc") {
       router.push("/send?url=" + qrcode)
       return;
     }
+    //case of qr code is bitcoin address
     if (validate(qrcode)) {
       router.push("/send?url=" + qrcode)
       return;
     }
+    //case of lnurl
     try {
       let { words: dataPart } = bech32.decode(qrcode, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
 
       setQrCodeLnurl(qrcode);
+      //case withdraw link
       if (lnurlLink.includes("withdraw")) {
         toggle();
-      } else {
+      } 
+      //case deposite link
+      else {
         router.push("/send?url=" + qrcode)
       }
       return;
     } catch (error) {
-      scaned = false;
       router.push("/home");
       return openNotification("top", "Error", "Please scan correct QRcode!");
     }
   }
 
+  const [addLoading, setAddLoading] = useState("none");
+
   const addSource = async () => {
+    setAddLoading("flex");
+    toggle();
     let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
     let sourceURL = bech32.fromWords(dataPart);
     const lnurlLink = Buffer.from(sourceURL).toString()
@@ -148,7 +157,8 @@ export const Scan = () => {
 
     } catch (error) {
       console.log(error);
-
+      setAddLoading("none");
+      return openNotification("top", "Error", "There's error while adding source");
     }
     const addedSource = {
       id: spendSources.length,
@@ -159,7 +169,7 @@ export const Scan = () => {
       pasteField: qrCodeLnurl,
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));
-    toggle();
+    setAddLoading("none");
     router.push("/sources")
   }
 
@@ -220,6 +230,12 @@ export const Scan = () => {
 
   return (
     <div className="Scan">
+      <div className='Scan_loading' style={{ display: addLoading }}>
+        <div className='Scan_img'>
+          {Icons.Animation()}
+          <p>Adding Source</p>
+        </div>
+      </div>
       {contextHolder}
       <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
