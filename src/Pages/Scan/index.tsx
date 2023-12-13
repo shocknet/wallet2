@@ -100,9 +100,9 @@ export const Scan = () => {
 
   const handleSubmit = async (qrcode: string) => {
     console.log(qrcode);
-    
     qrcode = qrcode.toLowerCase();
-    qrcode = qrcode.replace("lightning:", "");
+    qrcode = qrcode.replaceAll("lightning:", "");
+    qrcode = qrcode.replaceAll('bitcoin:', "")
 
     //case of qr code is invoice
     if (qrcode.slice(0, 4) == "lnbc") {
@@ -131,8 +131,10 @@ export const Scan = () => {
       }
       return;
     } catch (error) {
-      router.push("/home");
-      return openNotification("top", "Error", "Please scan correct QRcode!");
+      openNotification("top", "Error", "Please scan correct QRcode!");
+      setTimeout(() => {
+        router.push("/home");
+      }, 1000);
     }
   }
 

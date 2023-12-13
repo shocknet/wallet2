@@ -323,7 +323,7 @@ export const Send = () => {
       <div className="Send_other_options">
         <div className="Send_lnurl">
           <div className="Send_set_amount_copy">
-            <button onClick={() => { router.goBack() }}>{Icons.Close()}CANCEL</button>
+            <button onClick={() => { router.push("/home") }}>{Icons.Close()}CANCEL</button>
           </div>
         </div>
         <div className="Send_chain">
