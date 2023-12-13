@@ -26,7 +26,6 @@ type PayAddress = {
   type: 'payAddress'
   address: string
 }
-let qrScanner: QrScanner
 export const Scan = () => {
 
   //declaration about reducer
@@ -43,10 +42,10 @@ export const Scan = () => {
   const [amountToPay, setAmountToPay] = useState(0)
   const { isShown, toggle } = UseModal();
   const ref = useRef<HTMLVideoElement>(null)
-  const [ttt, setTtt] = useState("aa")
   const [camsRotation, setCamsRotation] = useState<string[]>([])
   const [currentCam, setCurrentCam] = useState(0)
   const [allowRefocus, setAllowRefocus] = useState(true)
+  const [qrScanner, setQrScanner] = useState<QrScanner | null>(null)
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -66,12 +65,8 @@ export const Scan = () => {
     const defaultCam = cam2_0 ? cam2_0.id : 'environment'
     const rotation = cameras.filter(c => c.label.includes("facing back")).map(c => c.id)
     setCamsRotation([defaultCam, ...rotation])
-    qrScanner = new QrScanner(ref.current,
-      result => {
-        handleSubmit(result.data)
-        qrScanner.stop()
-      }, { preferredCamera: defaultCam });
-    qrScanner.start()
+    initScanner(ref.current, defaultCam)
+
   }
 
   const rotateCamera = async () => {
@@ -84,13 +79,18 @@ export const Scan = () => {
     qrScanner?.stop()
     qrScanner?.destroy()
     await new Promise(res => setTimeout(res, 1500))
-    qrScanner = new QrScanner(ref.current,
+    initScanner(ref.current, camsRotation[nextCam])
+    setTimeout(() => setAllowRefocus(true), 2000)
+  }
+
+  const initScanner = (current: HTMLVideoElement, cam: string) => {
+    const scanner = new QrScanner(current,
       result => {
         handleSubmit(result.data)
-        qrScanner.stop()
-      }, { preferredCamera: camsRotation[nextCam] });
-    qrScanner.start()
-    setTimeout(() => setAllowRefocus(true), 2000)
+        scanner.stop()
+      }, { preferredCamera: cam });
+    scanner.start()
+    setQrScanner(scanner)
   }
 
   useEffect(() => {
@@ -232,7 +232,6 @@ export const Scan = () => {
         <video ref={ref} width={"100%"} height={"100%"} />
       </div>
       <div className="Scan_result_input">
-        {ttt}
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
