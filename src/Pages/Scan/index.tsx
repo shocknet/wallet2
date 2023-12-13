@@ -26,7 +26,7 @@ type PayAddress = {
   type: 'payAddress'
   address: string
 }
-
+let qrScanner: QrScanner
 export const Scan = () => {
 
   //declaration about reducer
@@ -44,8 +44,9 @@ export const Scan = () => {
   const { isShown, toggle } = UseModal();
   const ref = useRef<HTMLVideoElement>(null)
   const [ttt, setTtt] = useState("aa")
-  const [selectedCam, setSelectedCam] = useState("")
-  const [cams, setCams] = useState<JSX.Element[]>([])
+  const [camsRotation, setCamsRotation] = useState<string[]>([])
+  const [currentCam, setCurrentCam] = useState(0)
+  const [allowRefocus, setAllowRefocus] = useState(true)
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -55,31 +56,46 @@ export const Scan = () => {
       placement
     });
   };
-  useEffect(() => {
-    QrScanner.listCameras().then(found => {
-      const e = found.map((c, i) => <button onClick={() => {
-        setSelectedCam(c.id)
-        localStorage.setItem("qr-camera-setting", c.id)
-      }} >{i}:{c.label}</button>)
-      setCams(e)
 
-    })
-  }, [])
-
-  useEffect(() => {
+  const setupScanner = async () => {
     if (!ref.current) {
       return
     }
-    const v = localStorage.getItem("qr-camera-setting") || 'environment'
-    setSelectedCam(v)
-    const qrScanner = new QrScanner(ref.current,
+    const cameras = await QrScanner.listCameras(true)
+    const cam2_0 = cameras.find(camera => camera.label.startsWith("camera2 0"))
+    const defaultCam = cam2_0 ? cam2_0.id : 'environment'
+    const rotation = cameras.filter(c => c.label.includes("facing back")).map(c => c.id)
+    setCamsRotation([defaultCam, ...rotation])
+    qrScanner = new QrScanner(ref.current,
       result => {
-        setTtt(result.data)
         handleSubmit(result.data)
         qrScanner.stop()
-      }, { preferredCamera: v });
+      }, { preferredCamera: defaultCam });
     qrScanner.start()
-  }, [ref.current])
+  }
+
+  const rotateCamera = async () => {
+    if (!ref.current || camsRotation.length < 2) {
+      return
+    }
+    setAllowRefocus(false)
+    const nextCam = currentCam === camsRotation.length - 1 ? 0 : currentCam + 1
+    setCurrentCam(nextCam)
+    qrScanner?.stop()
+    qrScanner?.destroy()
+    await new Promise(res => setTimeout(res, 1500))
+    qrScanner = new QrScanner(ref.current,
+      result => {
+        handleSubmit(result.data)
+        qrScanner.stop()
+      }, { preferredCamera: camsRotation[nextCam] });
+    qrScanner.start()
+    setTimeout(() => setAllowRefocus(true), 2000)
+  }
+
+  useEffect(() => {
+    setupScanner()
+  }, [])
 
 
 
@@ -208,6 +224,7 @@ export const Scan = () => {
       <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
+      {camsRotation.length > 1 && allowRefocus && <button onClick={() => rotateCamera()}>REFOCUS</button>}
       <div className="Scan_wall">
         <div className="Scan_square" />
       </div>
@@ -215,9 +232,7 @@ export const Scan = () => {
         <video ref={ref} width={"100%"} height={"100%"} />
       </div>
       <div className="Scan_result_input">
-        {cams}
         {ttt}
-        {selectedCam}
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
