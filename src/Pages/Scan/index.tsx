@@ -242,18 +242,20 @@ export const Scan = () => {
       <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
-      {camsRotation.length > 1 && allowRefocus && <button onClick={() => rotateCamera()}>REFOCUS</button>}
+
       <div className="Scan_wall">
         <div className="Scan_square" />
-        <div className="Scan_refocus">
-          <div className="Scan_refocus_button">
-            <span>REFOCUS</span>
-            <div className="Scan_refocus_button_dot">
-              <div className="Scan_enable"></div>
-              <div className="Scan_disable"></div>
+        {camsRotation.length > 1 && allowRefocus &&
+          <div className="Scan_refocus" onClick={() => rotateCamera()}>
+            <div className="Scan_refocus_button">
+              <span>REFOCUS</span>
+              <div className="Scan_refocus_button_dot">
+                <div className="Scan_enable"></div>
+                <div className="Scan_disable"></div>
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
       <div className="Scan_scanner">
         <video ref={ref} width={"100%"} height={"100%"} />
