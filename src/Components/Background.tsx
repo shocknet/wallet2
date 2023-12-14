@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "../State/store";
 import { setLatestOperation, setSourceHistory } from "../State/Slices/HistorySlice";
 import { getNostrClient } from "../Api";
@@ -16,12 +16,13 @@ import { Clipboard } from '@capacitor/clipboard';
 import { validate } from 'bitcoin-address-validation';
 import { nip19 } from "nostr-tools";
 import { parseNprofile } from "../Api/nostr";
+import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 
 export const Background = () => {
 
     const router = useIonRouter();
     //reducer
-    const nostrSource = useSelector((state) => state.paySource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
+    const nostrSource = useSelector((state) => state.spendSource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
     const paySource = useSelector((state) => state.paySource)
     const spendSource = useSelector((state) => state.spendSource)
     const cursor = useSelector(({ history }) => history.cursor) || {}
@@ -31,7 +32,13 @@ export const Background = () => {
     const [api, contextHolder] = notification.useNotification();
     const [clipText, setClipText] = useState("")
     const { isShown, toggle } = UseModal();
-    const [latestAckedClipboard, setLatestAckedClipboard] = useState("")
+    const latestAckedClipboard = useRef("");
+    const isShownRef = useRef(false);
+
+    useEffect(() => {
+        isShownRef.current = isShown;
+    }, [isShown])
+
     const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
         api.info({
             message: header,
@@ -44,7 +51,7 @@ export const Background = () => {
     window.onbeforeunload = function () { return null; };
 
     useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+        const handleBeforeUnload = () => {
             // Call your function here
             localStorage.setItem("lastOnline", Date.now().toString())
             localStorage.setItem("getHistory", "false");
@@ -117,10 +124,25 @@ export const Background = () => {
             sent.push(pubkey)
             getNostrClient({ pubkey, relays }).then(c => {
                 const req = populateCursorRequest(cursor)
-                c.GetUserOperations(req).then(ops => {
-                    if (ops.status === 'OK') {
-                        console.log((ops), "ops")
-                        const totalHistory = parseOperationsResponse(ops);
+                c.BatchUser([
+                    { rpcName: 'GetUserInfo' },
+                    { rpcName: 'GetUserOperations', req },
+                ]).then(res => {
+                    if (res.status === 'ERROR') {
+                        console.log(res.reason)
+                        return
+                    }
+                    const [infoResponse, operationsResponse] = res.responses as [Types.GetUserInfo_Output, Types.GetUserOperations_Output]
+                    if (infoResponse.status === 'ERROR') {
+                        console.log(infoResponse.reason)
+                    } else {
+                        dispatch(editSpendSources({ ...source, balance: `${infoResponse.balance}` }));
+                    }
+                    if (operationsResponse.status === 'ERROR') {
+                        console.log(operationsResponse.reason)
+                    } else {
+                        console.log((operationsResponse), "ops")
+                        const totalHistory = parseOperationsResponse(operationsResponse);
                         const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
                         const payments = totalHistory.operations.filter((e) => e.paidAtUnix * 1000 > lastTimestamp)
                         if (payments.length > 0) {
@@ -134,9 +156,7 @@ export const Background = () => {
                             }))
                             localStorage.setItem("getHistory", "true");
                         }
-                        dispatch(setSourceHistory({ pub: pubkey, ...parseOperationsResponse(ops) }))
-                    } else {
-                        console.log(ops.reason, "ops.reason")
+                        dispatch(setSourceHistory({ pub: pubkey, ...parseOperationsResponse(operationsResponse) }))
                     }
                 })
             })
@@ -153,38 +173,38 @@ export const Background = () => {
         };
     }, [])
 
-    const checkClipboard = async () => {
+    useEffect(() => {
+        checkClipboard();
+    }, [])
+
+    const checkClipboard = useCallback( async() => {
         window.onbeforeunload = null;
-        var text = '';
+        let text = '';
         document.getElementById('focus_div')?.focus();
         if (document.hidden) {
             window.focus();
         }
-        if (isBrowser) {
-            try {
-                const { type, value } = await Clipboard.read();
+        if (isShownRef.current) {
+            return;
+        }
+        try {
+            const { type, value } = await Clipboard.read();
+            if (type === "text/plain") {
                 text = value;
-            } catch (error) {
-                console.error('Error reading clipboard data:', error);
             }
-        } else {
-            try {
-                const { type, value } = await Clipboard.read();
-                text = value;
-            } catch (error) {
-                console.error('Error reading clipboard data:', error);
-            }
+        } catch (error) {
+            console.error('Error reading clipboard data:', error);
         }
         text = text.replaceAll('lightning:', "")
         if (!text.length) {
             return
         }
-        if (text === latestAckedClipboard) {
+        if (text === latestAckedClipboard.current) {
             return
         }
         const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         const boolLnAddress = expression.test(text);
-        var boolLnInvoice = false;
+        let boolLnInvoice = false;
         if (text.startsWith("ln") && nostrSource.length > 0) {
 
             const result = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: text });
@@ -196,7 +216,7 @@ export const Background = () => {
             setClipText(text);
             toggle();
         }
-    };
+    }, [nostrSource, toggle]);
 
     const clipBoardContent = <React.Fragment>
         <div className='Home_modal_header'>Clipboard Detected</div>
@@ -204,12 +224,12 @@ export const Background = () => {
         <div className='Home_modal_clipboard'>{clipText}</div>
         <div className="Home_add_btn">
             <div className='Home_add_btn_container'>
-                <button onClick={() => { toggle(); setLatestAckedClipboard(clipText); }}>
+                <button onClick={() => { toggle(); latestAckedClipboard.current = clipText; }}>
                     {icons.Close()}NO
                 </button>
             </div>
             <div className='Home_add_btn_container'>
-                <button onClick={() => { toggle(); setLatestAckedClipboard(clipText); router.push("/send?url=" + clipText) }}>
+                <button onClick={() => { toggle(); latestAckedClipboard.current = clipText; router.push("/send?url=" + clipText) }}>
                     {icons.clipboard()}YES
                 </button>
             </div>
@@ -223,6 +243,7 @@ export const Background = () => {
 }
 
 const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Types.GetUserOperationsRequest => {
+    console.log(p)
     return {
         // latestIncomingInvoice: p.latestIncomingInvoice || 0,
         // latestOutgoingInvoice: p.latestOutgoingInvoice || 0,

@@ -2,7 +2,6 @@
   "name": "SHOCKWALLET",
   "private": true,
   "version": "0.0.1",
-  "type": "module",
   "scripts": {
     "start": "vite",
     "start:22k": "vite --port 22000",
@@ -11,7 +10,7 @@
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
-    "lint": "eslint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@capacitor/android": "5.4.0",
@@ -80,15 +79,19 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-legacy": "^4.0.2",
     "@vitejs/plugin-react": "^4.0.1",
     "cypress": "^12.7.0",
-    "eslint": "^8.35.0",
+    "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^22.1.0",
     "sass": "^1.67.0",
-    "typescript": "^5.1.6",
+    "typescript": "^5.3.3",
     "vite": "^4.3.9",
+    "vite-plugin-eslint": "^1.8.1",
     "vitest": "^0.32.2"
   },
   "description": "An Ionic project"

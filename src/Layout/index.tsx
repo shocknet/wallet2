@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "../State/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
 import { App } from "@capacitor/app";
 import { PayTo } from "../globalTypes";
-import { getNostrClient } from "../Api";
 
 interface Price {
   buyPrice: number,

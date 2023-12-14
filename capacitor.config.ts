@@ -5,7 +5,9 @@ const config: CapacitorConfig = {
   appName: 'SHOCKWALLET',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https'/* ,
+    url: "http://192.168.1.125:8100",
+    cleartext: true */
   }
 };
 
