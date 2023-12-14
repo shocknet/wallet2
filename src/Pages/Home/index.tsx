@@ -9,7 +9,6 @@ import { SwItem } from "../../Components/SwItem";
 import { bech32 } from "bech32";
 import { Buffer } from "buffer";
 import axios from "axios";
-import { getNostrClient } from "../../Api";
 import { editSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
@@ -116,19 +115,7 @@ export const Home = () => {
     let box: any = spendSources.map((e: SpendFrom) => { return { ...e } });
     await box.map(async (e: SpendFrom, i: number) => {
       const element = e;
-      if (element.pasteField.includes("nprofile")) {
-        try {
-          const res = await (await getNostrClient(element.pasteField)).GetUserInfo()
-          if (res.status !== 'OK') {
-            console.log(res.reason, "reason");
-            return
-          }
-          box[i].balance = res.balance.toString()
-          dispatch(editSpendSources(box[i]));
-        } catch (error) {
-          return openNotification("top", "Error", "Couldn't connect to relays");
-        }
-      } else {
+      if (!element.pasteField.includes("nprofile")) {
         let { prefix: s, words: dataPart } = bech32.decode(element.pasteField.replace("lightning:", ""), 2000);
         let sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString()
