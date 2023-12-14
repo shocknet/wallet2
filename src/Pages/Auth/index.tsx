@@ -1,16 +1,30 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { PageProps } from "../../globalTypes";
-
-import { useSelector, useDispatch } from '../../State/store';
-import axios from 'axios';
+import { useSelector } from '../../State/store';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
-import { saveAs } from 'file-saver';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import { UseModal } from '../../Hooks/UseModal';
 import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { isPlatform } from '@ionic/react';
+
+const FILENAME = "shockw.dat";
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      resolve(base64data.split(',')[1]);
+    };
+    reader.onerror = reject;
+  });
+}
+
+
 
 export const Auth = () => {
   //reducer
@@ -57,9 +71,33 @@ export const Auth = () => {
     }
 
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
-    const blob = new Blob([encodedString], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([encodedString], {type: 'text/plain'});
+    if (!isPlatform("hybrid")) {
+      const link = document.createElement('a');
+      link.download = FILENAME;
 
-    saveAs(blob, 'shockw.dat');
+      console.log({encodedString})
+
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+
+      reader.onload = function() {
+        link.href = reader.result as string;
+        link.click();
+      };
+    } else {
+      try {
+        const savedFile = await Filesystem.writeFile({
+          path: FILENAME,
+          data: await blobToBase64(blob),
+          directory: Directory.Documents,
+          recursive: true,
+        });
+        console.log({savedFile})
+      } catch (e) {
+        console.log(e)
+      }
+    }
     toggle();
     setPassphrase("")
     setPassphraseR("")
@@ -70,12 +108,17 @@ export const Auth = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const content = event.target?.result as string;
-        setDataFromFile(content);
-        setModalContent('decrypt');
-        toggle();
+        if (event.target && event.target.result && typeof event.target.result === "string") {
+          const content = event.target.result.split(",")[1];
+          const decodedString = atob(content);
+          console.log({decodedString})
+          setDataFromFile(decodedString);
+          setModalContent('decrypt');
+          toggle();
+        }
       };
-      reader.readAsText(file);
+      reader.onerror = (e) => console.log(e)
+      reader.readAsDataURL(file);
     }
   }
 
