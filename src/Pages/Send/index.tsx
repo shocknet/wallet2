@@ -291,7 +291,7 @@ export const Send = () => {
             Amount:
             <div className='Send_amount_container'>
               <div className="Send_maxButton">
-                <button onClick={() => { setAmount(parseInt(selectedSource.balance)) }}>Max</button>
+                {decodedAmount === 0 ? <button onClick={() => { setAmount(parseInt(selectedSource.balance)) }}>Max</button> : <div></div>}
               </div>
               <input className="Send_amount_input" type="number" value={decodedAmount || amount} readOnly={decodedAmount !== 0} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
@@ -323,7 +323,7 @@ export const Send = () => {
       <div className="Send_other_options">
         <div className="Send_lnurl">
           <div className="Send_set_amount_copy">
-            <button onClick={() => { router.goBack() }}>{Icons.Close()}CANCEL</button>
+            <button onClick={() => { router.push("/home") }}>{Icons.Close()}CANCEL</button>
           </div>
         </div>
         <div className="Send_chain">
