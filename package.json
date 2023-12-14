@@ -24,6 +24,7 @@
     "@capacitor/keyboard": "5.0.6",
     "@capacitor/preferences": "^5.0.6",
     "@capacitor/status-bar": "^5.0.6",
+    "@gandlaf21/bolt11-decode": "^3.0.6",
     "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
     "@ionic/react": "^7.0.0",
