@@ -1,4 +1,4 @@
-.Scan{
+.Scan {
   font-family: Montserrat;
   position: fixed;
   width: 100%;
@@ -18,7 +18,7 @@
     background-blend-mode: color-burn;
   }
 
-  &_img{
+  &_img {
     transition-duration: 1000ms;
     text-align: center;
     animation: loadingAnimation 5000ms cubic-bezier(0.9, 0.7, 0.5, 0.9) infinite; //For animation
@@ -27,18 +27,23 @@
       0% {
         opacity: 1;
       }
+
       20% {
         opacity: 0.3;
       }
+
       40% {
         opacity: 1;
       }
+
       60% {
         opacity: 0.3;
       }
+
       80% {
         opacity: 1;
       }
+
       100% {
         opacity: 0.3;
       }
@@ -46,7 +51,7 @@
   }
 
   &_IMG {
-    &_Close svg{
+    &_Close svg {
       width: 80px;
       height: auto;
     }
@@ -76,13 +81,13 @@
     z-index: 99;
     background-color: #ffffff00;
   }
-  
+
   &_scanner {
-    & section{
+    & section {
       width: 100vw;
       height: 100vh;
 
-      & div{
+      & div {
         width: 100vw !important;
         height: 100vh !important;
         border: none;
@@ -96,14 +101,14 @@
     }
   }
 
-  &_back{
+  &_back {
     position: fixed;
     top: 50px;
     right: 30px;
     z-index: 9999;
   }
 
-  &_result_input{
+  &_result_input {
     width: 70vw;
     position: fixed;
     bottom: 100px;
@@ -111,7 +116,7 @@
     z-index: 999999;
     text-align: center;
 
-    & input{
+    & input {
       font-family: Montserrat;
       font-size: 17px;
       width: 70vw;
@@ -124,7 +129,7 @@
       border-radius: 5px;
     }
 
-    & button{
+    & button {
       margin-top: 10px;
       background-color: #151d24;
       border: 1px solid #268fbc;
@@ -135,20 +140,22 @@
       width: fit-content;
       transition-duration: 400ms;
     }
-    
-    & button:hover{
+
+    & button:hover {
       background-color: #373a3d;
     }
   }
 
   &_input_icon {
-    
+
     position: absolute;
     left: 14px;
     top: 24px;
     transform: translateY(-50%);
-    width: 20px; /* Adjust this value to change the icon size */
-    height: 20px; /* Adjust this value to change the icon size */
+    width: 20px;
+    /* Adjust this value to change the icon size */
+    height: 20px;
+    /* Adjust this value to change the icon size */
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
@@ -157,20 +164,20 @@
       fill: #268fbc;
     }
 
-    &_svg svg{
+    &_svg svg {
       width: 30px;
       height: 30px;
     }
   }
 
-  &_pay_operation{
+  &_pay_operation {
     position: fixed;
     width: 100%;
     text-align: center;
     margin-top: 35vh;
     display: flex;
 
-    & input{
+    & input {
       font-family: Montserrat;
       font-size: 17px;
       width: 70vw;
@@ -183,7 +190,7 @@
       text-align: right;
     }
 
-    & div{
+    & div {
       font-family: Montserrat;
       width: 70vw;
       background-color: transparent;
@@ -194,7 +201,7 @@
       text-align: center;
     }
 
-    & button{
+    & button {
       font-family: Montserrat;
       background-color: #151d24;
       border: 1px solid #268fbc;
@@ -206,16 +213,63 @@
       border-bottom-right-radius: 2rem;
       transition-duration: 400ms;
     }
-    
-    & button:hover{
+
+    & button:hover {
       background-color: #373a3d;
     }
   }
 
-  &_error{
+  &_error {
     font-family: Montserrat;
     margin-top: 10%;
     color: rgb(199, 118, 118);
     text-align: center;
+  }
+
+  &_refocus {
+    position: fixed;
+    top: calc(20vh + 300px);
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    z-index: 99;
+
+    &_button {
+      border-radius: 5px;
+      font-size: 22px;
+      color: #adadad;
+      border: none;
+      background-color: #16191c;
+      padding: 5px;
+      text-align: center;
+      position: relative;
+      display: grid;
+
+      &_dot {
+        display: inline-flex;
+        position: absolute;
+        top: 30px;
+        margin-inline: auto;
+        margin-block: auto;
+        transform: translate(-50%,0);
+        left: 50%;
+      }
+    }
+  }
+
+  &_enable {
+    background-color: #adadadca;
+    width: 5px;
+    height: 5px;
+    border-radius: 10px;
+    margin-inline: 2px;
+  }
+
+  &_disable {
+    background-color: #adadad40;
+    width: 5px;
+    height: 5px;
+    border-radius: 10px;
+    margin-inline: 2px;
   }
 }
