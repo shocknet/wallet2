@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 import { getNostrClient } from '../../Api'
 
@@ -75,6 +75,12 @@ export const Receive = () => {
       }
     }
   }, []);
+
+  // useEffect(() => {
+  //   if (LNInvoice!="") {
+  //     setValueQR(LNInvoice)
+  //   }
+  // }, [LNInvoice])
 
   useEffect(() => {
     if (receiveHistory.latestOperation != undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
@@ -272,7 +278,7 @@ export const Receive = () => {
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{headerText[tag]}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          {valueQR == "" ? <div></div> : <QRCode
+          {valueQR == "" ? <div></div> : <QRCodeSVG
             style={{ textAlign: "center", transitionDuration: "500ms" }}
             value={valueQR}
             size={250}

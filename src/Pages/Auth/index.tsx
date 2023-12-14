@@ -43,7 +43,7 @@ export const Auth = () => {
     api.info({
       message: header,
       description:
-        text,
+      text,
       placement
     });
   };
@@ -137,7 +137,11 @@ export const Auth = () => {
       const element = Object.keys(data)[i];
       localStorage.setItem(element, data[element])
     }
-    toggle()
+    toggle();
+    openNotification("top", "Success", "Backup is imported successfully.");
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
   }
 
   useEffect(() => {

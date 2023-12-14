@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "vite",
+    "start:22k": "vite --port 22000",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
@@ -58,6 +59,7 @@
     "ionicons": "^7.0.0",
     "moment": "^2.29.4",
     "nostr-tools": "^1.16.0",
+    "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",

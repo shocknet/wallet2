@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useZxing } from "react-zxing";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import QrScanner from 'qr-scanner';
 import { PageProps, SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from '@ionic-native/camera';
@@ -26,7 +26,6 @@ type PayAddress = {
   type: 'payAddress'
   address: string
 }
-
 export const Scan = () => {
 
   //declaration about reducer
@@ -36,13 +35,16 @@ export const Scan = () => {
   const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");
-  let scaned = false;
   const [error, setError] = useState("");
   const [qrCodeLnurl, setQrCodeLnurl] = useState("");
   const [payOperation, setPayOperation] = useState<PayInvoice | PayAddress | null>(null)
   const [amountToPay, setAmountToPay] = useState(0)
   const { isShown, toggle } = UseModal();
-
+  const ref = useRef<HTMLVideoElement>(null)
+  const [camsRotation, setCamsRotation] = useState<string[]>([])
+  const [currentCam, setCurrentCam] = useState(0)
+  const [allowRefocus, setAllowRefocus] = useState(true)
+  const [qrScanner, setQrScanner] = useState<QrScanner | null>(null)
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
@@ -53,47 +55,94 @@ export const Scan = () => {
     });
   };
 
+  const setupScanner = async () => {
+    if (!ref.current) {
+      return
+    }
+    const cameras = await QrScanner.listCameras(true)
+    const cam2_0 = cameras.find(camera => camera.label.startsWith("camera2 0"))
+    const defaultCam = cam2_0 ? cam2_0.id : 'environment'
+    const rotation = cameras.filter(c => c.label.includes("facing back")).map(c => c.id)
+    setCamsRotation([defaultCam, ...rotation])
+    initScanner(ref.current, defaultCam)
+
+  }
+
+  const rotateCamera = async () => {
+    if (!ref.current || camsRotation.length < 2) {
+      return
+    }
+    setAllowRefocus(false)
+    const nextCam = currentCam === camsRotation.length - 1 ? 0 : currentCam + 1
+    setCurrentCam(nextCam)
+    qrScanner?.stop()
+    qrScanner?.destroy()
+    await new Promise(res => setTimeout(res, 1500))
+    initScanner(ref.current, camsRotation[nextCam])
+    setTimeout(() => setAllowRefocus(true), 2000)
+  }
+
+  const initScanner = (current: HTMLVideoElement, cam: string) => {
+    const scanner = new QrScanner(current,
+      result => {
+        handleSubmit(result.data)
+        scanner.stop()
+      }, { preferredCamera: cam });
+    scanner.start()
+    setQrScanner(scanner)
+  }
+
+  useEffect(() => {
+    setupScanner()
+  }, [])
+
 
 
   const handleSubmit = async (qrcode: string) => {
-    qrcode = qrcode.replace("lightning:", "");
+    console.log(qrcode);
+    qrcode = qrcode.toLowerCase();
+    qrcode = qrcode.replaceAll("lightning:", "");
+    qrcode = qrcode.replaceAll('bitcoin:', "")
 
-    if (scaned) return;
-    scaned = true;
-    if (qrcode.slice(0, 4).toLowerCase() == "lnbc") {
+    //case of qr code is invoice
+    if (qrcode.slice(0, 4) == "lnbc") {
       router.push("/send?url=" + qrcode)
       return;
     }
+    //case of qr code is bitcoin address
     if (validate(qrcode)) {
       router.push("/send?url=" + qrcode)
       return;
     }
+    //case of lnurl
     try {
       let { words: dataPart } = bech32.decode(qrcode, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
 
       setQrCodeLnurl(qrcode);
+      //case withdraw link
       if (lnurlLink.includes("withdraw")) {
         toggle();
-      } else {
+      } 
+      //case deposite link
+      else {
         router.push("/send?url=" + qrcode)
       }
       return;
     } catch (error) {
-      scaned = false;
-      router.push("/home");
-      return openNotification("top", "Error", "Please scan correct QRcode!");
+      openNotification("top", "Error", "Please scan correct QRcode!");
+      setTimeout(() => {
+        router.push("/home");
+      }, 1000);
     }
   }
 
-  const { ref } = useZxing({
-    onDecodeResult(result) {
-      handleSubmit(result.getText());
-    },
-  });
+  const [addLoading, setAddLoading] = useState("none");
 
   const addSource = async () => {
+    setAddLoading("flex");
+    toggle();
     let { prefix: s, words: dataPart } = bech32.decode(qrCodeLnurl.replace("lightning:", ""), 2000);
     let sourceURL = bech32.fromWords(dataPart);
     const lnurlLink = Buffer.from(sourceURL).toString()
@@ -110,7 +159,8 @@ export const Scan = () => {
 
     } catch (error) {
       console.log(error);
-
+      setAddLoading("none");
+      return openNotification("top", "Error", "There's error while adding source");
     }
     const addedSource = {
       id: spendSources.length,
@@ -121,7 +171,7 @@ export const Scan = () => {
       pasteField: qrCodeLnurl,
     } as SpendFrom;
     dispatch(addSpendSources(addedSource));
-    toggle();
+    setAddLoading("none");
     router.push("/sources")
   }
 
@@ -182,10 +232,17 @@ export const Scan = () => {
 
   return (
     <div className="Scan">
+      <div className='Scan_loading' style={{ display: addLoading }}>
+        <div className='Scan_img'>
+          {Icons.Animation()}
+          <p>Adding Source</p>
+        </div>
+      </div>
       {contextHolder}
       <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
+      {camsRotation.length > 1 && allowRefocus && <button onClick={() => rotateCamera()}>REFOCUS</button>}
       <div className="Scan_wall">
         <div className="Scan_square" />
       </div>

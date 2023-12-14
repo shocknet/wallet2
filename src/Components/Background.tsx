@@ -16,12 +16,13 @@ import { Clipboard } from '@capacitor/clipboard';
 import { validate } from 'bitcoin-address-validation';
 import { nip19 } from "nostr-tools";
 import { parseNprofile } from "../Api/nostr";
+import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 
 export const Background = () => {
 
     const router = useIonRouter();
     //reducer
-    const nostrSource = useSelector((state) => state.paySource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
+    const nostrSource = useSelector((state) => state.spendSource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
     const paySource = useSelector((state) => state.paySource)
     const spendSource = useSelector((state) => state.spendSource)
     const cursor = useSelector(({ history }) => history.cursor) || {}
@@ -123,10 +124,25 @@ export const Background = () => {
             sent.push(pubkey)
             getNostrClient({ pubkey, relays }).then(c => {
                 const req = populateCursorRequest(cursor)
-                c.GetUserOperations(req).then(ops => {
-                    if (ops.status === 'OK') {
-                        console.log((ops), "ops")
-                        const totalHistory = parseOperationsResponse(ops);
+                c.BatchUser([
+                    { rpcName: 'GetUserInfo' },
+                    { rpcName: 'GetUserOperations', req },
+                ]).then(res => {
+                    if (res.status === 'ERROR') {
+                        console.log(res.reason)
+                        return
+                    }
+                    const [infoResponse, operationsResponse] = res.responses as [Types.GetUserInfo_Output, Types.GetUserOperations_Output]
+                    if (infoResponse.status === 'ERROR') {
+                        console.log(infoResponse.reason)
+                    } else {
+                        dispatch(editSpendSources({ ...source, balance: `${infoResponse.balance}` }));
+                    }
+                    if (operationsResponse.status === 'ERROR') {
+                        console.log(operationsResponse.reason)
+                    } else {
+                        console.log((operationsResponse), "ops")
+                        const totalHistory = parseOperationsResponse(operationsResponse);
                         const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
                         const payments = totalHistory.operations.filter((e) => e.paidAtUnix * 1000 > lastTimestamp)
                         if (payments.length > 0) {
@@ -140,9 +156,7 @@ export const Background = () => {
                             }))
                             localStorage.setItem("getHistory", "true");
                         }
-                        dispatch(setSourceHistory({ pub: pubkey, ...parseOperationsResponse(ops) }))
-                    } else {
-                        console.log(ops.reason, "ops.reason")
+                        dispatch(setSourceHistory({ pub: pubkey, ...parseOperationsResponse(operationsResponse) }))
                     }
                 })
             })
