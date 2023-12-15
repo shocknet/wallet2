@@ -56,7 +56,7 @@ export const Receive = () => {
   const [amountValue, setAmountValue] = useState("");
   const [LNInvoice, setLNInvoice] = useState("");
   const [LNurl, setLNurl] = useState("");
-  const [valueQR, setValueQR] = useState("");
+  const [valueQR, setQR] = useState("");
   const [lightningAdd, setLightningAdd] = useState("");
   const [tag, setTag] = useState(0);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
@@ -65,7 +65,11 @@ export const Receive = () => {
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
 
 
- 
+  const setValueQR = (param: string) => {
+    setQR(param.toUpperCase());
+  }
+
+
 
   useEffect(() => {
     if (paySource.length === 0) {

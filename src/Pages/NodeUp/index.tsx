@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import {  } from "react-router-dom";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
@@ -20,7 +19,7 @@ export const NodeUp = () => {
     addBootStrapSources();
     if (privateKey) {
       router.push("/home");
-    }else {
+    } else {
       router.push("/loader")
     }
   };
@@ -31,7 +30,7 @@ export const NodeUp = () => {
   };
 
   useEffect(() => {
-    if(privateKey){
+    if (privateKey) {
       router.push("/home")
     }
   }, []);
@@ -40,13 +39,13 @@ export const NodeUp = () => {
     setNostrPrivateKey();
   }
 
-  
+
   const addBootStrapSources = async () => {
-    if (paySources.length!=0&&spendSources.length!=0) {
+    if (paySources.length != 0 && spendSources.length != 0) {
       return;
-    }else {
+    } else {
       let bootstrapBalance = "0";
-      let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })
+      let nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
       dispatch(addPaySources(
         {
           id: 0,
@@ -69,11 +68,11 @@ export const NodeUp = () => {
     }
   }
 
-  return(
+  return (
     <div className="NodeUp">
       <div className="NodeUp_title">Node Up</div>
       <div className="NodeUp_textBox">
-        "Continue" to bootstrap the wallet with a trusted server and add a node later<br/><br/><br/>
+        "Continue" to bootstrap the wallet with a trusted server and add a node later<br /><br /><br />
         "Add connection" to link a node now.
       </div>
       <div className="NodeUp_manual">
