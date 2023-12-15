@@ -23,6 +23,7 @@
     "@capacitor/ios": "5.4.0",
     "@capacitor/keyboard": "5.0.6",
     "@capacitor/preferences": "^5.0.6",
+    "@capacitor/share": "^5.0.6",
     "@capacitor/status-bar": "^5.0.6",
     "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
