@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { getNostrClient } from '../../Api'
@@ -17,8 +17,33 @@ import { bech32 } from 'bech32';
 import { PayTo } from '../../globalTypes';
 import { useSelector } from '../../State/store';
 import { Clipboard } from '@capacitor/clipboard';
+import { Share } from "@capacitor/share";
+import { useDispatch } from '../../State/store';
+import { addAsset } from '../../State/Slices/generatedAssets';
+
+const headerText: string[] = [
+  'LNURL',
+  'Lightning Invoice',
+  'Chain Address'
+]
+
+const buttonText: string[] = [
+  'LNURL',
+  'INVOICE',
+  'CHAIN'
+]
+
+const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+  notification.info({
+    message: header,
+    description:
+      text,
+    placement
+  });
+};
 
 export const Receive = () => {
+  const dispatch = useDispatch();
   //reducer
   const paySource = useSelector((state) => state.paySource)
   const receiveHistory = useSelector((state) => state.history);
@@ -39,38 +64,19 @@ export const Receive = () => {
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
 
+
   const setValueQR = (param: string) => {
     setQR(param.toUpperCase());
   }
 
-  const headerText: string[] = [
-    'LNURL',
-    'Lightning Invoice',
-    'Chain Address'
-  ]
 
-  const buttonText: string[] = [
-    'LNURL',
-    'INVOICE',
-    'CHAIN'
-  ]
-
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-    api.info({
-      message: header,
-      description:
-        text,
-      placement
-    });
-  };
 
   useEffect(() => {
     if (paySource.length === 0) {
       setTimeout(() => {
         router.push("/home");
       }, 1000);
-      return openNotification("top", "Error", "You don't have any source!");
+      return openNotification("top", "Error", "You don't have any sources!");
     } else {
       configLNURL();
       if (paySource[0].pasteField.startsWith("nprofile")) {
@@ -87,7 +93,7 @@ export const Receive = () => {
   // }, [LNInvoice])
 
   useEffect(() => {
-    if (receiveHistory.latestOperation != undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
+    if (receiveHistory.latestOperation !== undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
       console.log("got thats what I was looking for")
       setTimeout(() => {
         router.push("/home");
@@ -129,19 +135,20 @@ export const Receive = () => {
     setValueQR("lightning:" + res.lnurl);
   }
 
-  const copyToClip = async () => {
+  const copyToClip = useCallback(async () => {
     await Clipboard.write({
       string: valueQR
     })
+    dispatch(addAsset({ asset: valueQR }));
     return openNotification("top", "Success", "Copied!");
-  }
+  }, [valueQR, dispatch])
 
   const configInvoice = async () => {
-    const address = configLNaddress();
     if (paySource[0].pasteField.includes("nprofile")) {
       await CreateNostrInvoice();
       return;
     }
+    const address = configLNaddress();
     try {
       const callAddress = await axios.get(address.valueOfQR);
       if (amount === "") {
@@ -161,11 +168,11 @@ export const Receive = () => {
           }
         }
       );
-      if (LNInvoice != "") {
+      if (LNInvoice !== "") {
         setValueQR("lightning:" + callbackURL.data.pr);
       }
       setLNInvoice("lightning:" + callbackURL.data.pr);
-    } catch (error: any) {
+    } catch {
       return openNotification("top", "Error", "Cors error");
     }
   }
@@ -177,7 +184,7 @@ export const Receive = () => {
       return;
     }
     const address = configLNaddress();
-    let words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
+    const words = bech32.toWords(Buffer.from(address.valueOfQR, 'utf8'))
     const lnaddress = bech32.encode("lnurl", words, 999999);
     setLightningAdd(address.lithningAdd)
     setLNurl("lightning:" + lnaddress);
@@ -252,6 +259,18 @@ export const Receive = () => {
     }
   }
 
+  const shareText = useCallback(async () => {
+    try {
+      await Share.share({
+        title: 'Share',
+        text: valueQR,
+        dialogTitle: 'Share with'
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  }, [valueQR]);
+
   const setAmountContent = <React.Fragment>
     <div className="Sources_notify">
       <div className="Sources_notify_title">Amount to Receive</div>
@@ -278,15 +297,17 @@ export const Receive = () => {
 
   return (
     <div>
-      {contextHolder}
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Receive_QR_text">{headerText[tag]}</div>
         <div className="Receive_QR" style={{ transform: deg }}>
-          {valueQR == "" ? <div></div> : <QRCodeSVG
-            style={{ textAlign: "center", transitionDuration: "500ms" }}
-            value={valueQR}
-            size={250}
-          />
+          {
+            valueQR
+            &&
+            <QRCodeSVG
+              style={{ textAlign: "center", transitionDuration: "500ms" }}
+              value={valueQR}
+              size={250}
+            />
           }
           <div className="Receive_logo_container">
             {Icons.Logo()}
@@ -301,7 +322,7 @@ export const Receive = () => {
         <div className="Receive_set_amount_copy">
           <button onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
           <div style={{ width: "20px" }} />
-          <button onClick={() => { }} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+          <button onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
         </div>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">

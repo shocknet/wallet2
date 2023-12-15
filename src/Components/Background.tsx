@@ -18,10 +18,21 @@ import { nip19 } from "nostr-tools";
 import { parseNprofile } from "../Api/nostr";
 import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 
+const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
+    notification.info({
+        message: header,
+        description:
+            text,
+        placement,
+        onClick: onClick,
+    });
+};
+
 export const Background = () => {
 
     const router = useIonRouter();
     //reducer
+    const savedAssets = useSelector(state => state.generatedAssets.assets)
     const nostrSource = useSelector((state) => state.spendSource).map((e) => { return { ...e } }).filter((e) => e.pasteField.includes("nprofile"))
     const paySource = useSelector((state) => state.paySource)
     const spendSource = useSelector((state) => state.spendSource)
@@ -29,7 +40,6 @@ export const Background = () => {
     const latestOp = useSelector(({ history }) => history.latestOperation) || {}
     const dispatch = useDispatch();
     const [initialFetch, setInitialFetch] = useState(true)
-    const [api, contextHolder] = notification.useNotification();
     const [clipText, setClipText] = useState("")
     const { isShown, toggle } = UseModal();
     const latestAckedClipboard = useRef("");
@@ -39,15 +49,7 @@ export const Background = () => {
         isShownRef.current = isShown;
     }, [isShown])
 
-    const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
-        api.info({
-            message: header,
-            description:
-                text,
-            placement,
-            onClick: onClick,
-        });
-    };
+
     window.onbeforeunload = function () { return null; };
 
     useEffect(() => {
@@ -76,7 +78,7 @@ export const Background = () => {
             getNostrClient({ pubkey, relays }).then(c => {
                 c.GetLiveUserOperations(newOp => {
                     if (newOp.status === "OK") {
-                        console.log(newOp)
+                        console.log("New operation", newOp)
                         openNotification("top", "Payments", "You received payment.");
                         dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
                     } else {
@@ -85,7 +87,7 @@ export const Background = () => {
                 })
             })
         });
-    }, [nostrSource.length])
+    }, [nostrSource, dispatch])
 
     useEffect(() => {
         const nostrSpends = spendSource.filter((e) => e.icon == "0");
@@ -146,7 +148,7 @@ export const Background = () => {
                         const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
                         const payments = totalHistory.operations.filter((e) => e.paidAtUnix * 1000 > lastTimestamp)
                         if (payments.length > 0) {
-                            if (localStorage.getItem("getHistory") == "true") return;
+                            if (localStorage.getItem("getHistory") === "true") return;
                             dispatch(addNotification({
                                 header: 'Payments',
                                 icon: '⚡',
@@ -163,21 +165,9 @@ export const Background = () => {
         })
     }, [latestOp, initialFetch])
 
-    useEffect(() => {
-        window.addEventListener("visibilitychange", checkClipboard);
-        window.addEventListener("focus", checkClipboard);
 
-        return () => {
-            window.removeEventListener("visibilitychange", checkClipboard);
-            window.removeEventListener("focus", checkClipboard);
-        };
-    }, [])
 
-    useEffect(() => {
-        checkClipboard();
-    }, [])
-
-    const checkClipboard = useCallback( async() => {
+    const checkClipboard = useCallback(async () => {
         window.onbeforeunload = null;
         let text = '';
         document.getElementById('focus_div')?.focus();
@@ -194,6 +184,9 @@ export const Background = () => {
             }
         } catch (error) {
             console.error('Error reading clipboard data:', error);
+        }
+        if (savedAssets.includes(text)) {
+            return;
         }
         text = text.replaceAll('lightning:', "")
         if (!text.length) {
@@ -216,7 +209,22 @@ export const Background = () => {
             setClipText(text);
             toggle();
         }
-    }, [nostrSource, toggle]);
+    }, [nostrSource, toggle, savedAssets]);
+
+    useEffect(() => {
+        window.addEventListener("visibilitychange", checkClipboard);
+        window.addEventListener("focus", checkClipboard);
+
+        return () => {
+            window.removeEventListener("visibilitychange", checkClipboard);
+            window.removeEventListener("focus", checkClipboard);
+        };
+    }, [checkClipboard])
+
+    useEffect(() => {
+        checkClipboard();
+    }, [checkClipboard])
+
 
     const clipBoardContent = <React.Fragment>
         <div className='Home_modal_header'>Clipboard Detected</div>
@@ -237,7 +245,6 @@ export const Background = () => {
     </React.Fragment>;
 
     return <div id="focus_div">
-        {contextHolder}
         <Modal isShown={isShown} hide={toggle} modalContent={clipBoardContent} headerText={''} />
     </div>
 }
