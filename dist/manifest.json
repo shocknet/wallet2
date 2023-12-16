@@ -30,6 +30,11 @@
     {
       "protocol": "bitcoin",
       "url": "./?address=%s"
+    },
+    {
+      "protocol": "https",
+      "host": "test.shockwallet.app",
+      "url": "./?address=%s"
     }
   ],
   "intent_filters": [
@@ -38,6 +43,14 @@
       "autoVerify": true,
       "data": {
         "scheme": "bitcoin"
+      }
+    },
+    {
+      "action": "VIEW",
+      "autoVerify": true,
+      "data": {
+        "scheme": "https",
+        "host": "test.shockwallet.app"
       }
     }
   ],
