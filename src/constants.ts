@@ -53,11 +53,11 @@ export const classifyBitcoinInput = (input: string): { type: InputClassification
     const removePrefix = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
     if (LN_INVOICE_REGEX.test(input)) {
-        return { type: InputClassification.LN_INVOICE, data: removePrefix(input, "lightning:") };
+        return { type: InputClassification.LN_INVOICE, data: removePrefix(input, "lightning:").toLocaleLowerCase() };
     } else if (LNURL_REGEX.test(input)) {
-        return { type: InputClassification.LNURL, data: removePrefix(input, "lightning:") };
+        return { type: InputClassification.LNURL, data: removePrefix(input, "lightning:").toLocaleLowerCase() };
     } else if (BITCOIN_ADDRESS_REGEX.test(input)) {
-        return { type: InputClassification.BITCOIN_ADDRESS, data: removePrefix(input, "bitcoin:") };
+        return { type: InputClassification.BITCOIN_ADDRESS, data: removePrefix(input, "bitcoin:").toLocaleLowerCase() };
     } else if (LN_ADDRESS_REGEX.test(input)) {
         return { type: InputClassification.LN_ADDRESS, data: input };
     } else {
