@@ -23,7 +23,8 @@ yarn.lock
 !/.vscode/extensions.json
 .idea
 dist/index.html
-dist/*
+dist/assets
+dist/favicon.png
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
