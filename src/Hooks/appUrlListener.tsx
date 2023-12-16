@@ -20,6 +20,7 @@ const AppUrlListener: React.FC<any> = () => {
     }, []);
 
     const recogParam = (param: string) => {
+      param = param.toLowerCase();
       const paramArr = param.split(":");
       switch (paramArr[0]) {
         case "bitcoin":
