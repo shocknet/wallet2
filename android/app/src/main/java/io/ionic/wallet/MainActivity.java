@@ -1,4 +1,4 @@
-package io.ionic.wallet;
+package app.shockwallet.test;
 
 import com.getcapacitor.BridgeActivity;
 
