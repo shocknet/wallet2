@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "io.ionic.wallet",
+            "sha256_cert_fingerprints": [
+                " 6A:D2:CD:0A:09:BB:4E:AB:DC:4A:CA:9A:D2:97:3B:96:24:11:AF:A4:CB:10:B6:78:55:F3:73:7B:C1:0B:D9:49"
+            ]
+        }
+    }
+]
