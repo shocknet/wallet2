@@ -27,7 +27,7 @@ import { useIonRouter } from '@ionic/react';
 
 export const Sources = () => {
   //parameter in url when click protocol
-  const addressSearch = new URLSearchParams(useLocation().search);;
+  const addressSearch = new URLSearchParams(useLocation().search);
   const urlParam = addressSearch.get("url");
   const router = useIonRouter();
 

@@ -30,6 +30,11 @@
     {
       "protocol": "bitcoin",
       "url": "./?address=%s"
+    },
+    {
+      "protocol": "https",
+      "host": "test.shockwallet.app",
+      "url": "./?address=%s"
     }
   ],
   "intent_filters": [
@@ -38,6 +43,14 @@
       "autoVerify": true,
       "data": {
         "scheme": "bitcoin"
+      }
+    },
+    {
+      "action": "VIEW",
+      "autoVerify": true,
+      "data": {
+        "scheme": "https",
+        "host": "test.shockwallet.app"
       }
     }
   ],
@@ -49,5 +62,22 @@
       "text": "text",
       "url": "url"
     }
-  }
+  },
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://test.shockwallet.app/manifest.json"
+    }
+  ],
+  "url_handlers": [
+    {
+      "origin": "https://test.shockwallet.app"
+    },
+    {
+      "origin": "https://*.shockwallet.app"
+    },
+    {
+      "orogin": "localhost"
+    }
+  ]
 }
