@@ -166,8 +166,8 @@ export const Send = () => {
               setDestination({
                 ...returned,
                 callback: res.data.callback,
-                min: +res.data.MinSendable / 1000,
-                max: +res.data.MaxSendable / 1000
+                min: parseInt(res.data.minSendable) / 1000,
+                max: parseInt(res.data.maxSendable) / 1000
               });
               break;
             } catch (err) {
@@ -191,8 +191,8 @@ export const Send = () => {
               setDestination({
                 ...returned,
                 callback: res.data.callback,
-                min: +res.data.MinSendable / 1000,
-                max: +res.data.MaxSendable / 1000
+                min: parseInt(res.data.minSendable) / 1000,
+                max: parseInt(res.data.maxSendable) / 1000
               });
             } catch (e) {
               console.log(e);
@@ -232,7 +232,13 @@ export const Send = () => {
         await handlePayInvoice(destination.data);
         break;
       }
-      case InputClassification.LNURL || InputClassification.LN_ADDRESS: {
+      case (InputClassification.LN_ADDRESS): {
+      
+        await handlePayLnurlPay();
+        break;
+      }
+      case InputClassification.LNURL: {
+        console.log("lnurl");
         await handlePayLnurlPay();
         break;
       }
@@ -324,12 +330,13 @@ export const Send = () => {
         } else {
           //paymentSuccess(+amount, resp.data.pr, Types.UserOperationType.OUTGOING_INVOICE, { operation_id })
           openNotification("top", "Success", "Paid successfuly");
+          router.push("/home");
         }
       } catch (err) {
         console.log(err)
       }
     }
-  }, [paymentSuccess, selectedSource, openNotification])
+  }, [paymentSuccess, selectedSource, openNotification, router])
 
   const handlePayLnurlPay = useCallback(async () => {
     const { callback, min } = destination as { callback: string, min: number, max: number };
