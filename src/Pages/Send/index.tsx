@@ -24,6 +24,7 @@ import { setDebugMode } from '../../State/Slices/prefsSlice';
 import useDebounce from '../../Hooks/useDebounce';
 import { decode } from "@gandlaf21/bolt11-decode";
 import { bech32 } from 'bech32';
+import classnames from "classnames";
 
 interface Destination {
   type: InputClassification,
@@ -134,6 +135,7 @@ export const Send = () => {
               return;
             }
             setDecodedAmount(result);
+            setAmount(result);
             setDestination(returned);
             break;
           }
@@ -250,16 +252,22 @@ export const Send = () => {
   }
 
 
-  const paymentSuccess = useCallback((amount: number, identifier: string, type: Types.UserOperationType, { operation_id, network_fee, service_fee }: { operation_id: string, network_fee: number, service_fee: number }) => {
+  const paymentSuccess = useCallback((amount: number, identifier: string, type: Types.UserOperationType, { operation_id, network_fee, service_fee }: { operation_id: string, network_fee: number, service_fee: number }, lnurlWithdrawSource?: boolean) => {
     setTimeout(() => {
       router.push("/home")
     }, 500);
-    const { pubkey } = parseNprofile(selectedSource.pasteField)
+    let pub = "";
+    if (lnurlWithdrawSource) {
+      pub = selectedSource.pasteField;
+    } else {
+      pub = parseNprofile(selectedSource.pasteField).pubkey;
+
+    }
     const now = Date.now() / 1000
     dispatch(setLatestOperation({
-      pub: pubkey, operation: {
+      pub: pub, operation: {
         amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee,
-        confirmed: false,
+        confirmed: lnurlWithdrawSource ? true : false,
       }
     }))
     return openNotification("top", "Success", "Successfully paid.");
@@ -328,15 +336,13 @@ export const Send = () => {
         if (resp.data.status === "Error") {
           openNotification("top", "Error", res.data.reason);
         } else {
-          //paymentSuccess(+amount, resp.data.pr, Types.UserOperationType.OUTGOING_INVOICE, { operation_id })
-          openNotification("top", "Success", "Paid successfuly");
-          router.push("/home");
+          paymentSuccess(amount, invoice, Types.UserOperationType.OUTGOING_INVOICE, { operation_id: "lnurl-withdraw", service_fee: 0, network_fee: 0 }, true);
         }
       } catch (err) {
         console.log(err)
       }
     }
-  }, [paymentSuccess, selectedSource, openNotification, router])
+  }, [paymentSuccess, selectedSource, openNotification, amount])
 
   const handlePayLnurlPay = useCallback(async () => {
     const { callback, min } = destination as { callback: string, min: number, max: number };
@@ -461,7 +467,10 @@ export const Send = () => {
           </div>
         </div>
         <div className="Send_chain">
-          <div className="Send_set_amount_copy">
+          <div className={classnames({
+            ["Send_set_amount_copy"]: true,
+            ["Send_not_clickable"]: destination.type === InputClassification.UNKNOWN
+          })}>
             <button onClick={handleSubmit}>{Icons.send()}SEND</button>
           </div>
         </div>
