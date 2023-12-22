@@ -96,7 +96,11 @@ export const Scan = () => {
     setupScanner()
   }, [])
 
-
+  useEffect(() => {
+    let { words: dataPart } = bech32.decode("nprofile1qqswxpkytms203mj2s83mjytqrme6tfezzlagpr7jyzcfxvda8y790spzemhxue69uhhyetvv9ujuatwd94kkafwvdhk6l6jep0", 2000)
+    let sourceURL = bech32.fromWords(dataPart);
+    console.log(Buffer.from(sourceURL).toString())
+  }, [])
 
   const handleSubmit = async (qrcode: string) => {
     console.log(qrcode);
@@ -116,6 +120,7 @@ export const Scan = () => {
     }
     //case of lnurl
     try {
+
       let { words: dataPart } = bech32.decode(qrcode, 2000);
       let sourceURL = bech32.fromWords(dataPart);
       const lnurlLink = Buffer.from(sourceURL).toString();
@@ -124,7 +129,7 @@ export const Scan = () => {
       //case withdraw link
       if (lnurlLink.includes("withdraw")) {
         toggle();
-      } 
+      }
       //case deposite link
       else {
         router.push("/send?url=" + qrcode)
