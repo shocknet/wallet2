@@ -35,6 +35,10 @@ const openNotification = (placement: NotificationPlacement, header: string, text
   });
 };
 export const Sources = () => {
+
+  //parameter in url when click protocol
+  const addressSearch = new URLSearchParams(useLocation().search);
+  const urlParam = addressSearch.get("url");
   const router = useIonRouter();
 
   const [tempParsedWithdraw, setTempParsedWithdraw] = useState<Destination>();
