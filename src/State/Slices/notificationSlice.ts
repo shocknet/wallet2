@@ -12,7 +12,7 @@ const update = (value: NotificationType) => {
   localStorage.setItem("notifications", JSON.stringify(value));
 }
 
-const initialState: NotificationType = JSON.parse(notifications??JSON.stringify({checkTime:0,notifications:[]}));
+const initialState: NotificationType = JSON.parse(notifications ?? JSON.stringify({checkTime:0,notifications:[]}));
 
 const notifySlice = createSlice({
   name: 'notifications',
@@ -28,7 +28,7 @@ const notifySlice = createSlice({
     },
     removeNotify: (state, action: PayloadAction<number>) => {
       console.log(JSON.stringify(state.notifications), action.payload);
-      let newArray = state.notifications.filter(item => item.date !== action.payload);
+      const newArray = state.notifications.filter(item => item.date !== action.payload);
       console.log(newArray);
       state.notifications = newArray;
       update(state)

@@ -8,6 +8,15 @@ import { Buffer } from 'buffer';
 const AppUrlListener: React.FC<any> = () => {
     const router = useIonRouter();
 
+  /*   useEffect(() => {
+      App.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
+        const slug = event.url.split('.app').pop();
+        if (slug) {
+          router.push(slug);
+        }
+      });
+    }, []); */
+
     const requestTag = {
       lnurlPay: "pay",
       lnurlWithdraw: "withdraw",
