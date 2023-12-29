@@ -127,6 +127,7 @@ export interface SpendFrom {
   icon: string;
   balance: string;
   option: string;
+  disabled?: string // the error message
 }
 
 export interface PayTo {

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "../State/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
 import { App } from "@capacitor/app";
 import { PayTo } from "../globalTypes";
+import LoadingOverlay from "../Components/LoadingOverlay";
 
 interface Price {
   buyPrice: number,
@@ -56,6 +57,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
     <React.Fragment>
       <Header />
       {children}
+      <LoadingOverlay />
       <Footer />
     </React.Fragment>
   )

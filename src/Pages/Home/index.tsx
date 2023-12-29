@@ -94,33 +94,7 @@ export const Home = () => {
     setOnTheWay(totalPending)
   }
   
-  const resetSpendFrom = useCallback( async () => {
-    const sources = [...spendSources]
-    sources.forEach(async source => {
-      if (!source.pasteField.includes("nprofile")) {
-        const { words } = bech32.decode(source.pasteField.replace("lightning:", ""), 2000);
-        const sourceUrl = bech32.fromWords(words);
-        const lnurlLink = Buffer.from(sourceUrl).toString();
-        try {
-          const amount = await axios.get(lnurlLink);
-          source.balance = Math.round(amount.data.maxWithdrawable / 1000).toString();
-          dispatch(editSpendSources(source));
-        } catch (err) {
-          if (isAxiosError(err)) {
-            if (err.response) {
-              console.log(err.response, err.response.data);
-              openNotification("top", "Error", (source.id + 1) + " " + err.response.data.reason);
-            }
-          }
-        }
-      }
-    })
-  }, [spendSources, dispatch]);
 
-
-  useEffect(() => {
-    resetSpendFrom();
-  }, [resetSpendFrom]);
 
   useEffect(() => {
     getSumBalances();

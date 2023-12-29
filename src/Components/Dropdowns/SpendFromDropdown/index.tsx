@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
@@ -6,7 +6,7 @@ import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
 type DropDownProps = {
   values: SpendFrom[];
   initialValue: SpendFrom;
-  callback: Function;
+  callback: Dispatch<SetStateAction<SpendFrom>>;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
@@ -49,7 +49,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
           
       default:
         if (!value?.includes("http")) {
-          value = "http://www.google.com/s2/favicons?domain="+value;
+          value = "http://www.google.com/s2/favicons?sz=64&domain="+value;
         }
         return <React.Fragment>
           <img src = {value} width="23px" alt='' style={{borderRadius: "50%"}}/>
@@ -91,7 +91,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
         }
         <div className="spend_from_dropdown" style={{opacity: display, transition: "0.3s", overflow: "hidden"}}>
           {display === 1 && allValue.map(
-            (item: SpendFrom, index: number) => {
+            (item: SpendFrom) => {
               return (
                 <div onClick={() => {selectOption(item.id)}} className="spend_from_item" key={item.id}>
                   <div className="spend_from_item_left">

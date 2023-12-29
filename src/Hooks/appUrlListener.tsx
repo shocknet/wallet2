@@ -13,6 +13,7 @@ const AppUrlListener: React.FC<any> = () => {
     lnurlWithdraw: "withdraw",
   }
 
+
   useEffect(() => {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
       const slug = event.url.split(".app").pop();

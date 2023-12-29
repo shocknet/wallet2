@@ -159,7 +159,14 @@
     }
   }
 
+  &_not_clickable {
+    & button {
+      pointer-events: none;
+      filter: brightness(50%);
+    }
+  }
   &_set_amount_copy {
+
 
     & button {
       max-width: 160px;
@@ -180,6 +187,8 @@
       border: solid $border transparent; /* !importanté */
       border-radius: 5px;
       margin-top: 3px;
+      
+
     
       &:before {
         content: '';
