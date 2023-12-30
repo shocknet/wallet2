@@ -59,6 +59,7 @@ const App: React.FC = () => {
       window.addEventListener("click", () => {
         navigator.registerProtocolHandler('web+lightning', './?address=%s');
         navigator.registerProtocolHandler('bitcoin', './?address=%s');
+        navigator.registerProtocolHandler('https', 'test.shockwallet.app');
         if (installPromptFlag) {
           installPWA(event);
           setInstallPromptFlag(false);
