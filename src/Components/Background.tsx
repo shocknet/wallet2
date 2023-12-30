@@ -211,7 +211,7 @@ export const Background = () => {
 		} catch (error) {
 			//console.error('Error reading clipboard data:', error);
 		}
-		if (savedAssets.includes(text)) {
+		if (savedAssets?.includes(text)) {
 			return;
 		}
 		text = text.replaceAll('lightning:', "")

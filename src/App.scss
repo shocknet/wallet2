@@ -55,6 +55,19 @@ input:focus-visible {
 .sortable-drag-class {
   display: none !important;
 }
+
+body.barcode-scanner-active {
+  visibility: hidden;
+  background: transparent;
+  --background: transparent;
+  --ion-background-color: transparent;
+}
+
+.ant-notification {
+  visibility: visible;
+}
+
+
 @import "./Pages/Home/Home.scss";
 @import "./Pages/Loader/Loader.scss";
 @import "./Pages/Sources/Sources.scss";

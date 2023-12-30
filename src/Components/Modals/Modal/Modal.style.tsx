@@ -13,6 +13,7 @@ export const Wrapper = styled.div`
   left: auto;
   z-index: 700;
   outline: 0;
+  visibility: visible;
 `;
 
 export const Backdrop = styled.div`
