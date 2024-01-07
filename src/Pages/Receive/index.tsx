@@ -63,6 +63,7 @@ export const Receive = () => {
   const [tag, setTag] = useState(0);
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const [bitcoinAddText, setBitcoinAddText] = useState("");
+  const [invoiceMemo, setInvoiceMemo] = useState("");
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
 
@@ -116,7 +117,7 @@ export const Receive = () => {
     let invoice = "";
     try {
       if (topPaySource.pasteField.includes("nprofile")) {
-        invoice = await createNostrInvoice(topPaySource.pasteField, +amountToRecive);
+        invoice = await createNostrInvoice(topPaySource.pasteField, +amountToRecive, invoiceMemo);
       } else {
         const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
         invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
@@ -125,14 +126,14 @@ export const Receive = () => {
       setLNInvoice(`lightning:${invoice}`);
     } catch (err: any) {
       if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data);
+        openNotification("top", "Error", err.response.data.reason);
       } else if (err instanceof Error) {
         openNotification("top", "Error", err.message);
       } else {
         console.log("Unknown error occured", err);
       }
     }
-  }, [paySource]);
+  }, [paySource, invoiceMemo]);
 
   const configLNURL = useCallback(async () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }))
@@ -174,6 +175,7 @@ export const Receive = () => {
   }
 
   const updateInvoice = async () => {
+    console.log("the memo", invoiceMemo)
     toggle();
     dispatch(toggleLoading({ loadingMessage: "Loading..." }))
     setAmountValue(amount);
@@ -225,7 +227,7 @@ export const Receive = () => {
 
   const setAmountContent = <React.Fragment>
     <div className="Sources_notify">
-      <div className="Sources_notify_title">Amount to Receive</div>
+      <div className="Sources_notify_title">Receive via Invoice</div>
       <div className="Receive_result_input">
         <input
           type="number"
@@ -238,6 +240,15 @@ export const Receive = () => {
           onChange={(e) => { setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString()) }}
           placeholder="Enter amount in sats"
           value={amount}
+        />
+        <input
+          type="text"
+          maxLength={90}
+          style={{marginTop: "15px"}}
+          
+          onChange={(e) => setInvoiceMemo(e.target.value)}
+          placeholder="Description (optional)"
+          value={invoiceMemo}
         />
       </div>
       <div className='Receive_modal_amount'>

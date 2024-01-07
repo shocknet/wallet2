@@ -103,7 +103,7 @@ export const Scan = () => {
 			setDestination(parsed);
 		} catch (err: any) {
 			if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data);
+        openNotification("top", "Error", err.response.data.reason);
       } else if (err instanceof Error) {
         openNotification("top", "Error", err.message);
       } else {
