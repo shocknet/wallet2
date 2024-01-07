@@ -1,9 +1,9 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-interface Price {
+export interface Price {
     buyPrice: number,
     sellPrice: number,
-};
+}
 
 const priceLocal = localStorage.getItem("price");
 

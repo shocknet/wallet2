@@ -20,7 +20,16 @@ import useDebounce from '../../Hooks/useDebounce';
 import classnames from "classnames";
 import { createLnurlInvoice, handlePayBitcoinAddress, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
+import { addAddressbookLink } from '../../State/Slices/addressbookSlice';
 
+const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+  notification.info({
+    message: header,
+    description:
+      text,
+    placement
+  });
+};
 
 
 
@@ -54,15 +63,8 @@ export const Send = () => {
   });
   const router = useIonRouter();
 
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = useCallback((placement: NotificationPlacement, header: string, text: string) => {
-    api.info({
-      message: header,
-      description:
-        text,
-      placement
-    });
-  }, [api]);
+
+ 
 
   const updateSatsPerByte = useCallback(async () => {
     const res = await axios.get(mempoolUrl)
@@ -94,12 +96,10 @@ export const Send = () => {
 
   useEffect(() => {
     if (spendSources.length === 0) {
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
-      return openNotification("top", "Error", "You don't have any source!");
+      openNotification("top", "Error", "You don't have any source!");
+      router.push("/home");
     }
-  }, [router, spendSources, openNotification]);
+  }, [router, spendSources]);
 
   useEffect(() => {
     const addressSearch = new URLSearchParams(router.routeInfo.search);
@@ -118,6 +118,7 @@ export const Send = () => {
     const determineReceiver = async () => {
       try {
         const parsedInput = await parseBitcoinInput(debouncedTo);
+        console.log("parsedInput", parsedInput);
 
         if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
           throw new Error ("Lnurl cannot be a lnurl-withdraw");
@@ -125,6 +126,9 @@ export const Send = () => {
 
         if (parsedInput.type === InputClassification.LN_INVOICE) {
           setAmount(parsedInput.amount as number);
+          if (parsedInput.memo) {
+            setNote(parsedInput.memo);
+          }
         }
         if (parsedInput.type === InputClassification.BITCOIN_ADDRESS) {
           await updateSatsPerByte();
@@ -133,7 +137,7 @@ export const Send = () => {
         setDestination(parsedInput);
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data);
+          openNotification("top", "Error", err.response.data.reason);
         } else if (err instanceof Error) {
           openNotification("top", "Error", err.message);
         } else {
@@ -147,7 +151,7 @@ export const Send = () => {
     }
   }, [debouncedTo])
 
-  const checkDebugModeInput = () => {
+/*   const checkDebugModeInput = () => {
     if (to === 'howdoyouturnthison') {
       dispatch(setDebugMode(true))
       router.push("/home")
@@ -159,28 +163,40 @@ export const Send = () => {
       return true
     }
     return false
-  }
+  } */
 
+  
+  /* In addition to adding to the transaction history this function also adds to the addressbook.
+  *  If there is a note (memo) that's prioritized.
+  */
   const paymentSuccess = useCallback((amount: number, identifier: string, type: Types.UserOperationType, { operation_id, network_fee, service_fee }: { operation_id: string, network_fee: number, service_fee: number }) => {
-    setTimeout(() => {
-      router.push("/home")
-    }, 500);
     let pub = "";
     if (operation_id === "lnurl-withdraw") {
       pub = selectedSource.pasteField;
     } else {
       pub = parseNprofile(selectedSource.pasteField).pubkey;
-
+      
     }
     const now = Date.now() / 1000
     dispatch(setLatestOperation({
       pub: pub, operation: {
         amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee,
-        confirmed: operation_id === "lnurl-withdraw" ? true : false,
+        confirmed: false,
       }
     }))
-    return openNotification("top", "Success", "Successfully paid.");
-  }, [dispatch, openNotification, router, selectedSource])
+    
+    if (note) {
+      dispatch(addAddressbookLink({ identifier, address: note }));
+    } else if (destination.type === InputClassification.LNURL) {
+      dispatch(addAddressbookLink({ identifier, contact: destination.domainName , address: destination.data }))
+    } else if (destination.type === InputClassification.LN_ADDRESS) {
+      dispatch(addAddressbookLink({ identifier, contact: destination.data }))
+    }
+
+    openNotification("top", "Success", "Transaction sent.");
+    router.push("/home")
+
+  }, [dispatch, router, selectedSource, note, destination])
 
   const handleSubmit = useCallback(async () => {
     if (destination.type === InputClassification.UNKNOWN) {
@@ -204,13 +220,13 @@ export const Send = () => {
         case InputClassification.LN_ADDRESS: {
           const invoice = await createLnurlInvoice(amount, destination);
           const payRes = await handlePayInvoice(invoice, selectedSource.pasteField);
-          paymentSuccess(amount, destination.data, Types.UserOperationType.OUTGOING_INVOICE, payRes);
+          paymentSuccess(amount, invoice, Types.UserOperationType.OUTGOING_INVOICE, payRes);
           break;
         }
         case InputClassification.LNURL: {
           const invoice = await createLnurlInvoice(amount, destination);
           const payRes = await handlePayInvoice(invoice, selectedSource.pasteField);
-          paymentSuccess(amount, destination.data, Types.UserOperationType.OUTGOING_INVOICE, payRes);
+          paymentSuccess(amount, invoice, Types.UserOperationType.OUTGOING_INVOICE, payRes);
           break;
         }
         case InputClassification.BITCOIN_ADDRESS: {
@@ -220,7 +236,7 @@ export const Send = () => {
       }
     } catch (err: any) {
       if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data);
+        openNotification("top", "Error", err.response.data.reason);
       } else if (err instanceof Error) {
         openNotification("top", "Error", err.message);
       } else {
@@ -230,7 +246,7 @@ export const Send = () => {
     dispatch(toggleLoading({ loadingMessage: "" }));
     setSendRunning(false);
 
-  }, [amount, destination, openNotification, paymentSuccess, sendRunning, dispatch, selectedSource, satsPerByte,]);
+  }, [amount, destination, paymentSuccess, sendRunning, dispatch, selectedSource, satsPerByte,]);
 
 
 
@@ -242,14 +258,19 @@ export const Send = () => {
     </div>
   </React.Fragment>;
 
-
+  const setMaxValue = () => {
+    if (selectedSource.pasteField.includes("nprofile") && !destination.isPub && selectedSource.maxWithdrawable) {
+      setAmount(parseInt(selectedSource.maxWithdrawable))
+    } else {
+      setAmount(parseInt(selectedSource.balance))
+    }
+  }
 
 
 
 
   return (
     <div className='Send_container'>
-      {contextHolder}
       <div className="Send" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
         <div className="Send_header_text">Send Payment</div>
         <div className="Send_config">
@@ -257,7 +278,7 @@ export const Send = () => {
             Amount:
             <div className='Send_amount_container'>
               <div className="Send_maxButton">
-                {destination.type !== InputClassification.LN_INVOICE ? <button onClick={() => { setAmount(parseInt(selectedSource.balance)) }}>Max</button> : <div></div>}
+                {destination.type !== InputClassification.LN_INVOICE ? <button onClick={setMaxValue}>Max</button> : <div></div>}
               </div>
               <input className="Send_amount_input" type="number" value={amount} readOnly={destination.type === InputClassification.LN_INVOICE} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>

@@ -1,8 +1,12 @@
-import { decode } from "@gandlaf21/bolt11-decode";
+
 import { bech32 } from 'bech32';
 import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
+import { decode } from "@gandlaf21/bolt11-decode";
+import { notification } from "antd";
+import { NotificationPlacement } from "antd/es/notification/interface";
 
+ 
 export const locationRegex = new RegExp(/\w{1,}/g)
 
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
@@ -62,7 +66,9 @@ export interface Destination {
 	lnurlType?: "payRequest" | "withdrawRequest",
 	lnurlEndpoint?: string,
 	domainName?: string,
-	hostName?: string
+	hostName?: string,
+	isPub?: boolean,
+	memo?: string
 }
 
 export const decodeLnurl = (lnurl: string) => {
@@ -78,18 +84,21 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 
 	if (LN_INVOICE_REGEX.test(input)) {
 		const invoice = removePrefixIfExists(input, "lightning:");
+
 		const decodedInvoice = decode(invoice);
-		const amountSection = decodedInvoice.sections.filter(section => section.name === "amount");
+		const amountSection = decodedInvoice.sections.find(section => section.name === "amount");
+		const description = decodedInvoice.sections.find(section => section.name === "description")?.value;
 		let amount = 0;
-		if (amountSection.length > 0) {
-			amount = amountSection[0].value / 1000;
+		if (amountSection) {
+			amount = amountSection.value / 1000;
 		} else {
 			throw new Error("Error decoding provided invoice");
 		}
 		return {
 			type: InputClassification.LN_INVOICE,
 			data: invoice,
-			amount
+			amount,
+			memo: description || undefined
 		};
 	} else if (LNURL_REGEX.test(input)) {
 		const lnurl = removePrefixIfExists(input, "lightning:");
@@ -110,7 +119,8 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			lnurlType,
 			lnurlEndpoint,
 			domainName,
-			hostName: hostName.hostname
+			hostName: hostName.hostname,
+			isPub: domainName === "lightning.pub"
 		};
 	} else if (BITCOIN_ADDRESS_REGEX.test(input)) {
 		const btcAddress = removePrefixIfExists(input, "bitcoin:");
@@ -135,6 +145,8 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			min: Math.floor(res.data.minSendable / 1000),
 			max: Math.floor(res.data.maxSendable / 1000),
 			domainName: lnParts[1],
+			isPub: lnParts[1] === "lightning.pub"
+			
 		};
 	} else {
 		return { type: InputClassification.UNKNOWN, data: input };
@@ -145,3 +157,12 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 
 
 
+export const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
+	notification.info({
+		message: header,
+		description:
+			text,
+		placement,
+		onClick: onClick,
+	});
+};

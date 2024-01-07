@@ -102,9 +102,9 @@ export const Sources = () => {
   };
 
   const openEditSourcePay = (id: number) => {
-    setEditPSourceId(id);
     const source = paySources.find(s => s.id === id);
     if (source) {
+      setEditPSourceId(id);
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcepay");
@@ -112,12 +112,15 @@ export const Sources = () => {
     }
   };
 
-  const EditSourceSpend_Modal = (key: number) => {
-    setEditSSourceId(key);
-    setOptional(spendSources[key].option || '');
-    setSourceLabel(spendSources[key].label || '');
-    setModalContent("editSourcespend");
-    toggle();
+  const EditSourceSpend_Modal = (id: number) => {
+    const source = spendSources.find(s => s.id === id);
+    if (source) {
+      setEditSSourceId(id);
+      setOptional(source.option || '');
+      setSourceLabel(source.label || '');
+      setModalContent("editSourcespend");
+      toggle();
+    }
   };
 
   const Notify_Modal = () => {
@@ -220,7 +223,7 @@ export const Sources = () => {
         parsed = await parseBitcoinInput(sourcePasteField);
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data);
+          openNotification("top", "Error", err.response.data.reason);
         } else if (err instanceof Error) {
           openNotification("top", "Error", err.message);
         } else {
@@ -268,7 +271,7 @@ export const Sources = () => {
       }
 
     }
-    openNotification("top", "Success", `${parsed? parsed.hostName : "Nprofile"} successfuly added to sources`);
+    openNotification("top", "Success", `${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`);
     resetValue();
     dispatch(toggleLoading({ loadingMessage: "" }))
     
@@ -376,20 +379,10 @@ export const Sources = () => {
         } else {
           invoice = await createLnurlInvoice(tempParsedWithdraw.max, await parseBitcoinInput(topPaySource.pasteField));
         }
-        const payRes = await handlePayInvoice(invoice, tempParsedWithdraw!.data);
-        const now = Date.now() / 1000;
+        await handlePayInvoice(invoice, tempParsedWithdraw!.data);
 
-        // if it's nprofile we will conveniently get the transaction from getLiveUserTransactions,
-        // but if it's an lnurl-withdraw we gotta handle that ourselves
-        if (!isNprofile) {
-          dispatch(setLatestOperation({
-            pub: topPaySource.pasteField, operation: {
-              amount: tempParsedWithdraw.max, identifier: invoice, inbound: true, operationId: payRes.operation_id, paidAtUnix: now, type: UserOperationType.INCOMING_INVOICE, network_fee: payRes.network_fee, service_fee: payRes.service_fee,
-              confirmed: true,
-            }
-          }))
-        }
-        openNotification("top", "Success", `${tempParsedWithdraw?.max} sats have successfuly been swept to ${topPaySource.label}.`);
+        
+        openNotification("top", "Success", `Withdraw request successfuly sent to ${tempParsedWithdraw.domainName}.`);
         setTimeout(() => {
           router.push("/home");
         }, 1000);
@@ -397,7 +390,7 @@ export const Sources = () => {
       catch (err) {
         console.log(err)
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data);
+          openNotification("top", "Error", err.response.data.reason);
         } else if (err instanceof Error) {
           openNotification("top", "Error", err.message);
         } else {
