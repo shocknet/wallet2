@@ -6,9 +6,9 @@
 	width: 100% !important;
 	position: fixed;
 	text-align: center;
-	max-width: 350px;
+	max-width: 500px;
 	height: 0;
-	margin-left: calc((100% - 350px)/2);
+	margin-left: calc((100% - 500px)/2);
 	overflow: show;
 	top: 20vh;
 	left: auto;
@@ -16,7 +16,7 @@
 	outline: 0;
 	visibility: visible;
 	.container {
-		max-width: 350px;
+		max-width: 500px;
 		border: 1px solid #29abe2;
 		font-family: Montserrat;
 		padding: 25px 10px 0px 10px;
@@ -52,21 +52,51 @@
 					}
 					&.info-item-databox {
 						flex-direction: column;
+						gap: 7px;
+						margin-bottom: 11px;
 						.left {
 							align-self: flex-start;
 						}
-						.data-box {
-							width: 100%;
-							background: linear-gradient(135deg, #282d31, #222f3a);
-							overflow: hidden;
-							word-wrap: break-word;
-							text-align: left;
-							padding: 7px;
-							border-radius: 12px;
-						}
+						
 					}
 				}
 			}
 		}
+	}
+}
+
+.data-box {
+	width: 100%;
+	background: linear-gradient(135deg, #282d31, #222f3a);
+	overflow: hidden;
+	word-wrap: break-word;
+	text-align: left;
+	padding: 7px;
+	border-radius: 12px;
+	max-height: 60px;
+	position: relative;
+	&.expanded {
+		max-height: unset;
+	}
+	.copy-field {
+		font-size: 16px;
+		font-weight: 500;
+		line-height: 1.5;
+		user-select: none;
+		font-family: 'Courier New', Courier, monospace;
+	}
+
+	.hover {
+		position: absolute;
+		right: 5px;
+		bottom: 5px;
+		background-color: black;
+		padding: 0 12px;
+		cursor: pointer;
+		user-select: none;
+	}
+	
+	@media (max-width: 768px) {
+		font-size: 16px;
 	}
 }

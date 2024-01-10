@@ -45,30 +45,7 @@ export const Home = () => {
     console.log("collpased:", collapsed)
     collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
     setTransactions(collapsed);
-    /* let totalPending = 0
-    setSwItemArray(collapsed.map((o, i) => {
-      let label = getIdentifierLink(addressbook, o.identifier);
-      if (label === o.identifier && o.type === Types.UserOperationType.INCOMING_INVOICE) {
-        const decodedInvoice = decode(o.identifier);
-        const description = decodedInvoice.sections.find(section => section.name === "description");
-        if (description) {
-          label = description.value;
-        }
-      }
-      if (o.type === Types.UserOperationType.INCOMING_TX && !o.confirmed) {
-        totalPending += o.amount
-      }
-      return {
-        priceImg: o.inbound ? Icons.PriceUp : Icons.PriceDown,
-        station: label.length < 30 ? label : `${label.substring(0, 9)}...${label.substring(label.length - 9, label.length)}`,
-        changes: `${o.inbound ? "" : "-"}${o.amount}`,
-        date: o.confirmed! ? "Pending" : moment(o.paidAtUnix * 1000).fromNow(),
-        price: Math.round(100 * o.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
-        stateIcon: 'lightning',
-        underline: i !== collapsed.length - 1
-      }
-    }) || [])
-    setOnTheWay(totalPending) */
+
    
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [operationsUpdateHook]);

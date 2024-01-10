@@ -170,20 +170,17 @@ export const Send = () => {
   *  If there is a note (memo) that's prioritized.
   */
   const paymentSuccess = useCallback((amount: number, identifier: string, type: Types.UserOperationType, { operation_id, network_fee, service_fee }: { operation_id: string, network_fee: number, service_fee: number }) => {
-    let pub = "";
-    if (operation_id === "lnurl-withdraw") {
-      pub = selectedSource.pasteField;
-    } else {
-      pub = parseNprofile(selectedSource.pasteField).pubkey;
-      
+    if (selectedSource.pasteField.includes("nprofile")) {
+      const pub = parseNprofile(selectedSource.pasteField).pubkey;
+      const now = Date.now() / 1000
+      dispatch(setLatestOperation({
+        pub: pub, operation: {
+          amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee,
+          confirmed: false,
+          tx_hash: "", internal: false
+        }
+      }))
     }
-    const now = Date.now() / 1000
-    dispatch(setLatestOperation({
-      pub: pub, operation: {
-        amount, identifier, inbound: false, operationId: operation_id, paidAtUnix: now, type, network_fee, service_fee,
-        confirmed: false,
-      }
-    }))
     
     if (note) {
       dispatch(addAddressbookLink({ identifier, address: note }));
@@ -280,14 +277,14 @@ export const Send = () => {
               <div className="Send_maxButton">
                 {destination.type !== InputClassification.LN_INVOICE ? <button onClick={setMaxValue}>Max</button> : <div></div>}
               </div>
-              <input className="Send_amount_input" type="number" value={amount} readOnly={destination.type === InputClassification.LN_INVOICE} onChange={(e) => { setAmount(+e.target.value) }} />
+              <input className="Send_amount_input" type="number" value={amount || ""} readOnly={destination.type === InputClassification.LN_INVOICE} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
             </div>
           </div>
           <div className='Send_available_amount'>
             {!!satsPerByte && <div className='Send_available_amount_sats'>
               <input type='number' value={satsPerByte} onChange={e => setSatsPerByte(+e.target.value)} />
-              sats per byte
+              Sats per vByte
             </div>}
             <p className='Send_available_amount_amount'>
               ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}

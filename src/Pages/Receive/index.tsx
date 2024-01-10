@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { getNostrClient } from '../../Api'
@@ -66,6 +66,13 @@ export const Receive = () => {
   const [invoiceMemo, setInvoiceMemo] = useState("");
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isShown && amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
+  }, [isShown])
 
 
 
@@ -230,6 +237,7 @@ export const Receive = () => {
       <div className="Sources_notify_title">Receive via Invoice</div>
       <div className="Receive_result_input">
         <input
+          ref={amountInputRef}
           type="number"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -287,9 +295,13 @@ export const Receive = () => {
           !(tag === 2 && !paySource[0].pasteField.includes("nprofile"))
           &&
           <>
-            <div className="Receive_set_amount">
-              <button onClick={toggle}>SET AMOUNT</button>
-            </div>
+            {
+              tag === 1
+              &&
+              <div className="Receive_set_amount">
+                <button onClick={toggle}>SET AMOUNT</button>
+              </div>
+            }
             <div className="Receive_set_amount_copy">
               <button onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
               <div style={{ width: "20px" }} />
