@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "../../State/store"
-import { Subscription, SubscriptionPayment, addSubPayment } from "../../State/Slices/subscriptionsSlice"
+import { Subscription, SubscriptionPayment, addSubPayment, removeActiveSub } from "../../State/Slices/subscriptionsSlice"
 import { InputClassification, openNotification, usdToBTCSpotLink } from "../../constants"
 import { createLnurlInvoice, handlePayInvoice } from "../../Api/helpers"
 import axios from "axios"
@@ -38,6 +38,11 @@ export const SubscriptionsBackground = () => {
                     maxIndex = index
                 }
             })
+            if (maxEnd < nowUnix) {
+                console.log("sub", sub.subId, "expired")
+                dispatch(removeActiveSub({ subId: sub.subId, unsubReason: 'expire' }))
+                return
+            }
             if (maxEnd - sub.periodSeconds > nowUnix) {
                 console.log("sub", sub.subId, "is up to date")
                 return
