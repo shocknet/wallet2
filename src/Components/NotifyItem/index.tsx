@@ -1,18 +1,17 @@
 import moment from "moment";
-import { lightningIcon, linkIcon } from "../../Assets/SvgIconLibrary";
 import { NotifyItemData } from "../../globalTypes";
 import { useIonRouter } from "@ionic/react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useDispatch } from "../../State/store";
 import { removeNotify } from '../../State/Slices/notificationSlice';
 
-export const NotifyItem: React.FC<NotifyItemData> = ({
+export const NotifyItem = ({
   header,
   icon,
   desc,
   date,
   link,
-}): JSX.Element => {
+}: NotifyItemData): JSX.Element => {
 
   const dispatch = useDispatch();
   const router = useIonRouter();

@@ -8,6 +8,8 @@ import prefsSlice from './Slices/prefsSlice';
 import addressbookSlice from './Slices/addressbookSlice';
 import historySlice from './Slices/HistorySlice';
 import notificationSlice from './Slices/notificationSlice';
+import generatedAssets from './Slices/generatedAssets';
+import loadingOverlay from './Slices/loadingOverlay';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 
 const store = configureStore({
@@ -18,7 +20,9 @@ const store = configureStore({
     prefs: prefsSlice,
     addressbook: addressbookSlice,
     history: historySlice,
-    notify: notificationSlice
+    notify: notificationSlice,
+    generatedAssets,
+    loadingOverlay
   },
 });
 export type State = ReturnType<typeof store.getState>

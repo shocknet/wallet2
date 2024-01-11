@@ -84,7 +84,7 @@
   &_list_box {
     margin-top: 5px;
     border-radius: 7px;
-    height: 25vh;
+    max-height: 25vh;
     overflow-y: auto;
   }
 
@@ -96,6 +96,11 @@
     background-color: black;
     margin-block: 3px;
     border-radius: 6px;
+
+
+  }
+  &_item:hover {
+    z-index: 0;
   }
 
   &_item_left{
@@ -205,6 +210,15 @@
     align-items: center;
   }
 
+  &_item_disabled {
+    font-size: 16px;
+    align-self: center;
+    color: #f04437;
+    font-weight: 600;
+    margin-left: 1%;
+    display: flex;
+  }
+
   &_item_icon {
     margin-inline: 10px;
     height: 100%;
@@ -254,6 +268,7 @@
     margin-left: 1%;
     overflow-x: hidden;
     white-space: nowrap;
+    font-weight: 600;
   }
 
   &_item_close{
@@ -353,6 +368,7 @@
     font-size: 15px;
     color: #8c8c8c;
     margin-top: 10px;
+    font-weight: 600;
   }
 
   &_modal_optional_labal{
@@ -384,3 +400,4 @@
     margin-top: -10px;
   }
 }
+

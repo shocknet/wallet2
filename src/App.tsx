@@ -1,4 +1,4 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import {
   IonApp,
   IonRouterOutlet,
@@ -39,7 +39,7 @@ import { Sources } from './Pages/Sources';
 import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
@@ -50,8 +50,7 @@ import { Metrics } from './Pages/Metrics';
 setupIonicReact();
 
 const App: React.FC = () => {
-
-  let installPromptFlag = true;
+  const [installPromptFlag, setInstallPromptFlag] = useState(true);
   useEffect(() => {
     if (!isBrowser) setStatusBarColor();
 
@@ -61,9 +60,10 @@ const App: React.FC = () => {
       window.addEventListener("click", () => {
         navigator.registerProtocolHandler('web+lightning', './?address=%s');
         navigator.registerProtocolHandler('bitcoin', './?address=%s');
+        navigator.registerProtocolHandler('https', 'test.shockwallet.app');
         if (installPromptFlag) {
           installPWA(event);
-          installPromptFlag = false;
+          setInstallPromptFlag(false);
         }
       });
     });
@@ -71,7 +71,7 @@ const App: React.FC = () => {
   const installPWA = async (event: any) => {
     if (event !== null) {
       try {
-        const { userChoice } = await event.prompt();
+        await event.prompt();
       } catch (error) {
         console.log(installPromptFlag);
       }
