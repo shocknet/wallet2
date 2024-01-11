@@ -6,9 +6,23 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { useSelector, useDispatch } from '../../State/store';
 import { useIonRouter } from '@ionic/react';
 import { getHttpClient } from '../../Api';
-import { BarGraph, LineGraph, PieGraph, processData } from './dataProcessor';
+import { BarGraph, LineGraph, LndGraphs, PieGraph, processData, processLnd } from './dataProcessor';
 
 type Creds = { url: string, metricsToken: string }
+type ChannelsInfo = {
+  offlineChannels: number
+  onlineChannels: number
+  pendingChannels: number
+  closingChannels: number
+  openChannels: number[]
+  closeChannels: number[]
+  bestLocalChan: string
+  bestRemoteChan: string
+}
+type AppsInfo = {
+  totalBalance: number
+  appsUsers: { appName: string, users: number }[]
+}
 const saveCreds = (creds: Creds) => {
   localStorage.setItem("metrics-creds", JSON.stringify(creds))
 }
@@ -24,15 +38,10 @@ export const Metrics = () => {
   const [metricsToken, setMetricsToken] = useState("")
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [requestsPerTimeData, setRequestsPerTimeData] = useState<BarGraph>()
-  const [requestsPerMethodData, setRequestsPerMethodData] = useState<BarGraph>()
-  const [handleTimePerMethodData, setHandleTimePerMethodData] = useState<BarGraph>()
-  const [chainBalanceEventsData, setChainBalanceEventsData] = useState<LineGraph>()
-  const [localChanBalanceEventsData, setLocalChanBalanceEventsData] = useState<LineGraph>()
-  const [remoteChanBalanceEventsData, setRemoteChanBalanceEventsData] = useState<LineGraph>()
-  const [appsBalancesData, setAppsBalancesData] = useState<PieGraph>()
-  const [serviceFeesData, setServiceFeesData] = useState<BarGraph>()
-  const [movingSatsData, setMovingSatsData] = useState<BarGraph>()
+  const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
+  const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
+  const [appsInfo, setAppsInfo] = useState<AppsInfo>()
+
   const fetchMetrics = async (fromCache?: boolean) => {
     if (!url || !metricsToken) {
       console.log("token or url missing")
@@ -47,16 +56,38 @@ export const Metrics = () => {
     if (apps.status !== 'OK') throw new Error(apps.reason)
     if (lnd.status !== 'OK') throw new Error(lnd.reason)
     if (!fromCache) saveCreds({ url, metricsToken })
-    const { requestsPerMethod, requestsPerTime, handleTimePerMethod, chainBalanceEvents, locaChanBalanceEvent, remoteChanBalanceEvents, appsBalances, feesPaid, movingSats } = processData({ usage, apps, lnd }, { type: '5min', ms: 300000 })
-    setRequestsPerTimeData(requestsPerTime)
-    setRequestsPerMethodData(requestsPerMethod)
-    setHandleTimePerMethodData(handleTimePerMethod)
-    setChainBalanceEventsData(chainBalanceEvents)
-    setRemoteChanBalanceEventsData(remoteChanBalanceEvents)
-    setLocalChanBalanceEventsData(locaChanBalanceEvent)
-    setAppsBalancesData(appsBalances)
-    setServiceFeesData(feesPaid)
-    setMovingSatsData(movingSats)
+    const lndGraphs = processLnd(lnd)
+    setLndGraphsData(lndGraphs)
+    const bestLocal = { n: "", v: 0 }
+    const bestRemote = { n: "", v: 0 }
+    const openChannels = lnd.nodes[0].open_channels.map(c => {
+      if (c.remote_balance > bestRemote.v) {
+        bestRemote.v = c.remote_balance; bestRemote.n = c.channel_id
+      }
+      if (c.local_balance > bestLocal.v) {
+        bestLocal.v = c.remote_balance; bestLocal.n = c.channel_id
+      }
+      return c.lifetime
+    })
+    setChannelsInfo({
+      closingChannels: lnd.nodes[0].closing_channels,
+      offlineChannels: lnd.nodes[0].offline_channels,
+      onlineChannels: lnd.nodes[0].online_channels,
+      pendingChannels: lnd.nodes[0].pending_channels,
+      closeChannels: lnd.nodes[0].closed_channels.map(c => c.closed_height),
+      openChannels,
+      bestLocalChan: bestLocal.n,
+      bestRemoteChan: bestRemote.n
+    })
+    let totalAppsBalance = 0
+    const appsUsers = apps.apps.map(app => {
+      totalAppsBalance += app.app.balance
+      return { appName: app.app.name, users: app.users.total }
+    })
+    setAppsInfo({
+      totalBalance: totalAppsBalance,
+      appsUsers
+    })
     setReady(true)
   }
   useEffect(() => {
@@ -86,41 +117,51 @@ export const Metrics = () => {
       </div>
     </div>
   }
-  if (!requestsPerTimeData || !requestsPerMethodData || !handleTimePerMethodData || !chainBalanceEventsData || !remoteChanBalanceEventsData || !localChanBalanceEventsData || !appsBalancesData || !serviceFeesData || !movingSatsData) {
+  if (!lndGraphsData || !channelsInfo || !appsInfo) {
     return <div style={{ color: 'red' }}>
       something went wrong
 
     </div>
   }
-  return <div style={{ overflow: 'scroll' }}>
-    <div style={{ display: 'flex', flexWrap: 'wrap', }}>
+  return <div>
+    <div >
+
       <div style={{ height: 400, width: "800px" }}>
-        <Bar data={requestsPerTimeData} />
+        <Line data={lndGraphsData.balanceEvents} />
       </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Bar data={requestsPerMethodData} />
+      <h3>Events</h3>
+      {channelsInfo.openChannels.map(v => <>
+        <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>Channel Opened {v} seconds ago</div>
+      </>)}
+      {channelsInfo.closeChannels.map(v => <>
+        <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>Channel Closed at block {v}</div>
+      </>)}
+      <h3>Highlights</h3>
+      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
+        <h4>Net</h4>
+        <p>{appsInfo.totalBalance}sats</p>
       </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Bar data={handleTimePerMethodData} />
+      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
+        <h4>Channels</h4>
+        <p>{channelsInfo.offlineChannels} offline</p>
+        <p>{channelsInfo.onlineChannels} online</p>
+        <p>{channelsInfo.pendingChannels} pending</p>
+        <p>{channelsInfo.closingChannels} closing</p>
       </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Line data={chainBalanceEventsData} />
+      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
+        <h4>Top Channels</h4>
+        <p>Local: {channelsInfo.bestLocalChan}</p>
+        <p>Remote: {channelsInfo.bestRemoteChan}</p>
       </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Line data={remoteChanBalanceEventsData} />
+      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
+        <h4>Routing</h4>
+        <p>{lndGraphsData.forwardedEvents} forwards</p>
+        <p>{lndGraphsData.forwardRevenue} sats</p>
       </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Line data={localChanBalanceEventsData} />
-      </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Pie data={appsBalancesData} />
-      </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Bar data={serviceFeesData} />
-      </div>
-      <div style={{ height: 400, width: "800px" }}>
-        <Bar data={movingSatsData} />
-      </div>
+      {appsInfo.appsUsers.map(app => <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
+        <h4>{app.appName}</h4>
+        <p>{app.users} users</p>
+      </div>)}
     </div>
   </div>
 }

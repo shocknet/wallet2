@@ -10,17 +10,22 @@ type DataPoint<T extends number | string> = { x: T, y: number }
 export type BarGraph = ChartData<"bar", DataPoint<number | string>[], string>
 export type LineGraph = ChartData<"line", DataPoint<number | string>[], string>
 export type PieGraph = ChartData<"pie", number[], string>
-type Graphs = {
+export type UsageGraphs = {
     requestsPerTime: BarGraph
     requestsPerMethod: BarGraph
     handleTimePerMethod: BarGraph
-    chainBalanceEvents: LineGraph
-    remoteChanBalanceEvents: LineGraph
-    locaChanBalanceEvent: LineGraph
+}
+export type LndGraphs = {
+    balanceEvents: LineGraph
+    forwardedEvents: number
+    forwardRevenue: number
+}
+export type AppGraphs = {
     appsBalances: PieGraph
     feesPaid: BarGraph
     movingSats: BarGraph
 }
+export type Graphs = UsageGraphs & LndGraphs & AppGraphs
 type DataRecord<T extends number | string> = Record<T, DataPoint<T>>
 export const processData = (data: SourceData, timeFrame: TimeFrame): Graphs => {
     const { usage, apps, lnd } = data
@@ -33,6 +38,10 @@ export const processData = (data: SourceData, timeFrame: TimeFrame): Graphs => {
         ...lndGraphs,
         ...appsGraphs
     }
+}
+
+export const ProcessLndData = () => {
+
 }
 
 const processApps = (apps: Types.AppsMetrics, timeFrame: TimeFrame): { appsBalances: PieGraph, feesPaid: BarGraph, movingSats: BarGraph } => {
@@ -96,9 +105,11 @@ const processApps = (apps: Types.AppsMetrics, timeFrame: TimeFrame): { appsBalan
     }
 }
 
-const processLnd = (lnd: Types.LndMetrics): { chainBalanceEvents: LineGraph, remoteChanBalanceEvents: LineGraph, locaChanBalanceEvent: LineGraph } => {
+export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     let minBlock = Number.MAX_SAFE_INTEGER
     let maxBlock = 0
+    let forwardedEvents = 0
+    let forwardedMSats = 0
     const totalChainEvents: { x: number; y: number; }[][] = []
     const channelsBalanceRemote: Record<string, { x: number; y: number; }[]> = {}
     const channelsBalanceLocal: Record<string, { x: number; y: number; }[]> = {}
@@ -121,25 +132,25 @@ const processLnd = (lnd: Types.LndMetrics): { chainBalanceEvents: LineGraph, rem
                 channelsBalanceLocal[datasetId] = [{ x: e.block_height, y: e.local_balance_sats }]
             }
         })
+
+        node.routing_events.forEach(e => {
+            if (e.incoming_amt_msat && e.outgoing_amt_msat) {
+                forwardedEvents++
+                forwardedMSats += e.incoming_amt_msat - e.outgoing_amt_msat
+            }
+        })
     })
     const labels = generateTimeSeriesLabels(minBlock, maxBlock)
     const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: `chain balance node ${i + 1}` }))
     const remoteChannels = Object.entries(channelsBalanceRemote).map(([k, data]) => ({ data, label: `remote balance ch ${k}` }))
     const localChannels = Object.entries(channelsBalanceLocal).map(([k, data]) => ({ data, label: `local balance ch ${k}` }))
     return {
-        chainBalanceEvents: {
-            datasets: chainDatasets,
+        balanceEvents: {
+            datasets: [...chainDatasets, ...localChannels],
             labels
         },
-        remoteChanBalanceEvents: {
-            datasets: remoteChannels,
-            labels
-        },
-        locaChanBalanceEvent: {
-            datasets: localChannels,
-            labels
-        },
-
+        forwardedEvents,
+        forwardRevenue: Math.floor(forwardedMSats / 1000)
     }
 }
 
