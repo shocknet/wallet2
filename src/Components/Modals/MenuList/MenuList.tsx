@@ -26,7 +26,7 @@ export const Backdrop = styled.div`
 
 export const StyledModal = styled.div`
   width: 250px;
-  top: 0;
+  top: 70px;
   right: 0;
   border: 1px solid #29abe2;
   font-family: Montserrat;
