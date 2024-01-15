@@ -20,7 +20,7 @@ if (!nostrPrivateKey) {
 const nostrPublicKey = getPublicKey(nostrPrivateKey)
 type Client = ReturnType<typeof NewNostrClient>
 type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
-type ReadyClient = { type: 'client', client: Client }
+type ReadyClient = { type: 'client', client: Client, disconnectCalls: () => void }
 type StoredClient = PendingClient | ReadyClient
 const clients: Record<string, StoredClient> = {}
 
@@ -34,6 +34,15 @@ export const parseNprofile = (nprofile: string) => {
     const dataBox = JSON.parse(dataString);
 
     return dataBox as ProfilePointer;
+}
+
+export const disconnectNostrClientCalls = async (nProfile: { pubkey: string, relays?: string[] } | string) => {
+    const { pubkey } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
+    const c = clients[pubkey]
+    if (c.type !== 'client') {
+        return
+    }
+    c.disconnectCalls()
 }
 
 export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
@@ -51,15 +60,22 @@ export const getNostrClient = async (nProfile: { pubkey: string, relays?: string
         throw new Error("cannot create client if no relays are provided")
     }
     clients[pubkey] = { type: 'promise', queue: [] }
-    const readyClient = await createNostrClient(pubkey, relays)
+    const { readyClient, disconnectCalls } = await createNostrClient(pubkey, relays)
     const queue = (clients[pubkey] as PendingClient).queue
-    clients[pubkey] = { type: 'client', client: readyClient }
+    clients[pubkey] = { type: 'client', client: readyClient, disconnectCalls }
     queue.forEach(f => f(readyClient))
     return readyClient
 }
 type nostrCallback = { type: 'single' | 'stream', f: (res: any) => void }
 const createNostrClient = async (pubDestination: string, relays: string[]) => {
     const clientCbs: Record<string, nostrCallback> = {}
+    const disconnectCalls = () => {
+        for (const key in clientCbs) {
+            const element = clientCbs[key]
+            element.f({ status: "ERROR", reason: "nostr connection timeout" })
+            delete clientCbs[key]
+        }
+    }
     let connected = false
     const handler = await new Promise<NostrHandler>((res) => {
         const h = new NostrHandler({
@@ -94,13 +110,13 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
 
         console.log("subbing  to single send", reqId)
         return new Promise(res => {
-            setTimeout(() => {
+            /*setTimeout(() => {
                 const pending = clientCbs[reqId]
                 if (pending) {
                     res({ status: "ERROR", reason: "nostr request timeout" })
                     delete clientCbs[reqId]
                 }
-            }, requestExpirationSeconds * 1000)
+            }, requestExpirationSeconds * 1000)*/
             clientCbs[reqId] = {
                 type: 'single',
                 f: (response: any) => { res(response) },
@@ -130,10 +146,11 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
             f: (response: any) => { cb(response) }
         }
     }
-    return NewNostrClient({
+    const readyClient = NewNostrClient({
         retrieveNostrUserAuth: async () => { return nostrPublicKey },
         pubDestination,
     }, clientSend, clientSub)
+    return { readyClient, disconnectCalls }
 }
 
 

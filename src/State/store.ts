@@ -24,6 +24,7 @@ const store = configureStore({
     notify: notificationSlice,
     subscriptions: subscriptionsSlice,
     generatedAssets,
+
     loadingOverlay
   },
 });
