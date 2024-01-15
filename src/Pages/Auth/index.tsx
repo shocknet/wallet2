@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useSelector } from '../../State/store';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { notification } from 'antd';
@@ -9,6 +8,10 @@ import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
+import { keyLinkClient } from '../../Api/keylink/http';
+import { keylinkAppId } from '../../constants';
+import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
+import { getPublicKey } from '../../Api/tools/keys';
 
 const FILENAME = "shockw.dat";
 
@@ -28,11 +31,9 @@ function blobToBase64(blob: Blob): Promise<string> {
 
 export const Auth = () => {
   //reducer
-  const spendSources = useSelector((state) => state.spendSource).map((e) => { return { ...e } });
-
   const router = useIonRouter();
 
-  const [auth, setAuth] = useState("");
+  const [email, setEmail] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
@@ -43,14 +44,45 @@ export const Auth = () => {
     api.info({
       message: header,
       description:
-      text,
+        text,
       placement
     });
   };
 
   const { isShown, toggle } = UseModal();
-  const send = () => {
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const pubkey = urlParams.get("t")
+    if (!pubkey) {
+      return
+    }
+    const nsec = urlParams.get("n")
+    if (!nsec || pubkey !== getPublicKey(nsec)) {
+      console.log("invalid pub/priv key recovered from keylink")
+      return
+    }
+    setNostrPrivateKey(nsec)
+    const destination = urlParams.get("d")
+    if (destination) {
+      router.push(destination)
+    }
+  }, [])
+
+  const loginEmail = () => {
+    keyLinkClient.RequestUserAuth({
+      app_id: keylinkAppId,
+      email
+    })
+  }
+  const signUpEmail = () => {
+    const nsec = getNostrPrivateKey()!
+    keyLinkClient.LinkAppUserToEmail({
+      app_id: keylinkAppId,
+      email,
+      identifier: getPublicKey(nsec),
+      nostr_secret: nsec
+    })
   }
 
   const openDownBackupModal = () => {
@@ -71,17 +103,17 @@ export const Auth = () => {
     }
 
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
-    const blob = new Blob([encodedString], {type: 'text/plain'});
+    const blob = new Blob([encodedString], { type: 'text/plain' });
     if (!isPlatform("hybrid")) {
       const link = document.createElement('a');
       link.download = FILENAME;
 
-      console.log({encodedString})
+      console.log({ encodedString })
 
       const reader = new FileReader();
       reader.readAsDataURL(blob);
 
-      reader.onload = function() {
+      reader.onload = function () {
         link.href = reader.result as string;
         link.click();
       };
@@ -93,7 +125,7 @@ export const Auth = () => {
           directory: Directory.Documents,
           recursive: true,
         });
-        console.log({savedFile})
+        console.log({ savedFile })
       } catch (e) {
         console.log(e)
       }
@@ -111,7 +143,7 @@ export const Auth = () => {
         if (event.target && event.target.result && typeof event.target.result === "string") {
           const content = event.target.result.split(",")[1];
           const decodedString = atob(content);
-          console.log({decodedString})
+          console.log({ decodedString })
           setDataFromFile(decodedString);
           setModalContent('decrypt');
           toggle();
@@ -126,7 +158,7 @@ export const Auth = () => {
     console.log(passphrase);
     if (!passphrase) return;
 
-    var decodedString: string = "";
+    let decodedString: string = "";
     try {
       decodedString = AES.decrypt(dataFromFile, passphrase).toString(enc.Utf8);
     } catch (error) {
@@ -204,10 +236,11 @@ export const Auth = () => {
           </div>
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
-            <input value={auth} onChange={(e) => { setAuth(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
+            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
           </div>
           <div className="Auth_auth_send">
-            <button onClick={send}>{Icons.send()}SEND</button>
+            <button onClick={() => loginEmail()}>{Icons.send()}LOGIN</button>
+            <button onClick={() => signUpEmail()}>{Icons.send()}SIGNUP</button>
           </div>
           <div className='Auth_border'>
             <p className='Auth_or'>or</p>

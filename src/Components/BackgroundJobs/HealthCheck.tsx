@@ -26,6 +26,7 @@ export const HealthCheck = () => {
     }, [])
 
     const checkHealth = async () => {
+        console.log("checking sources state...")
         const sourcesToCheckMap: Record<string, boolean> = {}
         const checkFunc = (s: { pasteField: string }) => {
             if (s.pasteField.startsWith("nprofile")) {
@@ -36,9 +37,12 @@ export const HealthCheck = () => {
         spendSource.forEach(checkFunc)
         const sourcesToCheck = Object.keys(sourcesToCheckMap)
         await Promise.all(sourcesToCheck.map(async s => {
-            const c = await getNostrClient(s)
+            const { pubkey, relays } = parseNprofile(s)
+            const c = await getNostrClient({ pubkey, relays })
             const healthPromise = c.UserHealth()
             const timeout = setTimeout(() => {
+                console.log("cannot connect to", pubkey, { relays })
+                openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
                 disconnectNostrClientCalls(s)
                 updateSubState(s, false)
             }, 30 * 1000);
