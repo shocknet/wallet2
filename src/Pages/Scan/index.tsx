@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import QrScanner from 'qr-scanner';
-import { PageProps, SpendFrom } from "../../globalTypes";
+import { SpendFrom } from "../../globalTypes";
 import { notification } from 'antd';
 import { Camera, CameraOptions, DestinationType, EncodingType, MediaType } from '@ionic-native/camera';
 //It import svg icons library
