@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
