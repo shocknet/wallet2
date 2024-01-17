@@ -87,7 +87,7 @@ export const Home = () => {
     <div className="Home">
       <div className="Home_sats">
         {/* {!!onTheWay && <p>{onTheWay} sats are on the way!</p>} */}
-        <div className="Home_sats_amount">{balance}</div>
+        <div id="wallet_balance" className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ ${money}</div>
       </div>

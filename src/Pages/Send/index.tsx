@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { notification } from 'antd';
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
@@ -94,9 +94,9 @@ export const Send = () => {
   
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (spendSources.length === 0) {
-      openNotification("top", "Error", "You don't have any source!");
+      openNotification("top", "Error", "You don't have any sources!");
       router.push("/home");
     }
   }, [router, spendSources]);
@@ -277,7 +277,7 @@ export const Send = () => {
               <div className="Send_maxButton">
                 {destination.type !== InputClassification.LN_INVOICE ? <button onClick={setMaxValue}>Max</button> : <div></div>}
               </div>
-              <input className="Send_amount_input" type="number" value={amount || ""} readOnly={destination.type === InputClassification.LN_INVOICE} onChange={(e) => { setAmount(+e.target.value) }} />
+              <input id="send-amount-input" className="Send_amount_input" type="number" value={amount || ""} readOnly={destination.type === InputClassification.LN_INVOICE} onChange={(e) => { setAmount(+e.target.value) }} />
               <button onClick={() => { setAmountAssets(amountAssets === "BTC" ? "sats" : "BTC") }}>{amountAssets}</button>
             </div>
           </div>
@@ -292,11 +292,11 @@ export const Send = () => {
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => setTo(e.target.value.toLocaleLowerCase())} />
+            <input id="bitcoin-input" type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => setTo(e.target.value.toLocaleLowerCase())} />
           </div>
           <div className="Send_for">
             <p>For:</p>
-            <input type="text" placeholder="Add a note" value={note} onChange={(e) => { setNote(e.target.value) }} />
+            <input id="memo-input" type="text" placeholder="Add a note" value={note} onChange={(e) => { setNote(e.target.value) }} />
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
@@ -315,7 +315,7 @@ export const Send = () => {
             ["Send_set_amount_copy"]: true,
             ["Send_not_clickable"]: destination.type === InputClassification.UNKNOWN
           })}>
-            <button onClick={handleSubmit}>{Icons.send()}SEND</button>
+            <button id="send-button" onClick={handleSubmit}>{Icons.send()}SEND</button>
           </div>
         </div>
       </div>
