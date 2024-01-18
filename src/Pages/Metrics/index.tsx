@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Chart as ChartJS, registerables } from 'chart.js';
+import { Chart as ChartJS, registerables, Legend } from 'chart.js';
 import { Bar, Line, Pie, Chart } from 'react-chartjs-2'
-ChartJS.register(...registerables);
+ChartJS.register(...registerables, Legend);
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useSelector, useDispatch } from '../../State/store';
 import { useIonRouter } from '@ionic/react';
 import { getHttpClient } from '../../Api';
 import { BarGraph, LineGraph, LndGraphs, PieGraph, processData, processLnd } from './dataProcessor';
+import styles from "./styles/index.module.scss";
+import classNames from 'classnames';
+import moment from 'moment';
+
+const trimText = (text: string) => {
+	return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
+}
+
+const getTimeAgo = (secondsAgo: number) => {
+	return moment().subtract(secondsAgo, 'seconds').fromNow();
+}
+
+
 
 type Creds = { url: string, metricsToken: string }
 type ChannelsInfo = {
@@ -58,6 +71,7 @@ export const Metrics = () => {
     if (!fromCache) saveCreds({ url, metricsToken })
     const lndGraphs = processLnd(lnd)
     setLndGraphsData(lndGraphs)
+		console.log({lndGraphs})
     const bestLocal = { n: "", v: 0 }
     const bestRemote = { n: "", v: 0 }
     const openChannels = lnd.nodes[0].open_channels.map(c => {
@@ -124,44 +138,141 @@ export const Metrics = () => {
     </div>
   }
   return <div>
-    <div >
+    <div className={styles["metrics-container"]}>
 
-      <div style={{ height: 400, width: "800px" }}>
-        <Line data={lndGraphsData.balanceEvents} />
+      <div  className={classNames(styles["section"], styles["chart"])}>
+        <Line
+					data={lndGraphsData.balanceEvents}
+					options={{
+						responsive: true,
+						maintainAspectRatio: true,
+						aspectRatio: 16/9,
+						plugins: {
+							legend: {
+								display: true,
+								position: "chartArea",
+								align: "start",
+								fullSize: false,
+								maxWidth: 12,
+								labels: {
+									boxWidth: 10,
+									boxHeight: 10
+								}
+							} 
+						},
+						scales: {
+							x: {
+								grid: {
+									color: "#383838"
+								}
+							},
+							y: {
+								grid: {
+									color: "#383838"
+								}
+							}
+						},
+					}}
+				/>
       </div>
-      <h3>Events</h3>
-      {channelsInfo.openChannels.map(v => <>
-        <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>Channel Opened {v} seconds ago</div>
-      </>)}
-      {channelsInfo.closeChannels.map(v => <>
-        <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>Channel Closed at block {v}</div>
-      </>)}
-      <h3>Highlights</h3>
-      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
-        <h4>Net</h4>
-        <p>{appsInfo.totalBalance}sats</p>
+			<div className={styles["section"]}>
+				<div className={styles["between"]}>
+					<div className={styles["center"]} style={{opacity: 0}}>
+						<div className={classNames(styles["center"], styles["box"])}>
+							<span style={{ color: "#a012c7" }}>{Icons.Automation()}</span>
+							<span>This Week</span>
+						</div>
+						<div className={styles["arrows"]}>
+							Arrows
+						</div>
+					</div>
+					<div className={classNames(styles["box"], styles["border"])}>
+						Manage
+					</div>
+
+				</div>
+			</div>
+      <div className={styles["section"]}><span className={styles["separator"]}></span></div>
+      <div className={styles["section"]}>
+        <h3 className={styles["sub-title"]}>Events</h3>
+        <div className={styles["column-flex"]}>
+          {channelsInfo.openChannels.map(v => <>
+            <div className={styles["event-item"]}><span> {Icons.lightningIcon()} Channel Opened</span> <span>{getTimeAgo(v)}</span></div>
+          </>)}
+          {channelsInfo.closeChannels.map(v => <>
+            <div className={styles["event-item"]}><span> {Icons.Automation()} Channel Closed</span> <span>At block {v}</span></div>
+          </>)}
+        </div>
       </div>
-      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
-        <h4>Channels</h4>
-        <p>{channelsInfo.offlineChannels} offline</p>
-        <p>{channelsInfo.onlineChannels} online</p>
-        <p>{channelsInfo.pendingChannels} pending</p>
-        <p>{channelsInfo.closingChannels} closing</p>
+      <div className={styles["section"]}>
+        <h3 className={styles["sub-title"]}>Highlights</h3>
+        <div className={styles["cards-container"]}>
+          <div className={classNames(styles["card"], styles["net"])}>
+            <div className={styles["top"]}>    
+              <h4 className={styles["card-label"]}>Net</h4>
+              <span className={styles["number"]}> {
+								new Intl.NumberFormat('fr-FR').format(appsInfo.totalBalance)
+							}</span>
+            </div>
+          </div>
+					<div className={classNames(styles["card"], styles["channels"])}>
+						<div className={styles["top"]}>
+							<h4 className={styles["card-label"]}>Channels</h4>
+						</div>
+						<div className={classNames(styles["bot"], styles["channels-grid"])}>
+							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.onlineChannels} online</span></div>
+							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.pendingChannels} pending</span></div>
+							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.offlineChannels} offline</span></div>
+							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.closingChannels} closing</span></div>
+						</div>
+					</div>
+					<div className={classNames(styles["card"], styles["top-channels"])}>
+						<div className={styles["top"]}>
+							<h4 className={styles["card-label"]}>Top Channels</h4>
+						</div>
+						<div className={classNames(styles["bot"], styles["top-channels"])}>
+							<div className={styles["row"]}>
+								<span className={styles["label"]}>In:&nbsp;</span>
+								<span>{trimText(channelsInfo.bestLocalChan)}</span>
+							</div>
+							<div className={styles["row"]}>
+								<span className={styles["label"]}>Out:&nbsp;</span>
+								<span> {trimText(channelsInfo.bestRemoteChan)}</span>
+							</div>
+						</div>
+					</div>
+					<div className={classNames(styles["card"], styles["top-channels"], styles["routing"])}>
+						<div className={styles["top"]}>
+							<h4 className={styles["card-label"]}>Routing</h4>
+						</div>
+						<div className={classNames(styles["bot"], styles["top-channels"])}>
+							<div className={styles["row"]}>
+								{lndGraphsData.forwardedEvents} forwards
+							</div>
+							<div className={styles["row"]}>
+								{lndGraphsData.forwardRevenue} sats
+							</div>
+						</div>
+					</div>
+					{
+						appsInfo.appsUsers.map(app => (
+							<div key={app.appName} className={classNames(styles["card"], styles["top-channels"])}>
+								<div className={styles["top"]}>
+									<h4 className={styles["card-label"]}>{app.appName}</h4>
+								</div>
+								<div className={classNames(styles["bot"], styles["top-channels"])}>
+									<div className={styles["row"]}>
+										{app.users} users
+									</div>
+									<div className={styles["row"]}>
+										invoices
+									</div>
+								</div>
+							</div>
+						))
+					}
+        </div>
       </div>
-      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
-        <h4>Top Channels</h4>
-        <p>Local: {channelsInfo.bestLocalChan}</p>
-        <p>Remote: {channelsInfo.bestRemoteChan}</p>
-      </div>
-      <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
-        <h4>Routing</h4>
-        <p>{lndGraphsData.forwardedEvents} forwards</p>
-        <p>{lndGraphsData.forwardRevenue} sats</p>
-      </div>
-      {appsInfo.appsUsers.map(app => <div style={{ border: "2px solid #73AD21", borderRadius: "10px" }}>
-        <h4>{app.appName}</h4>
-        <p>{app.users} users</p>
-      </div>)}
     </div>
   </div>
 }

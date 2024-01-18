@@ -86,7 +86,7 @@ const App: React.FC = () => {
     <Provider store={store}>
       <IonApp className='safe-area'>
         <IonReactHashRouter>
-          <IonRouterOutlet>
+          <IonRouterOutlet style={{ position: "static" }}>
             <Layout>
               <>
                 <Background />
