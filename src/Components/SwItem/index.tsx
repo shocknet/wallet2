@@ -56,7 +56,6 @@ export const SwItem = ({
       stateIcon: !operation.confirmed ? "linked" : "lightning",
     }
   }, [operation, addressbook, price]);
-  console.log("Operatinnnnnnnnnnnn", operation)
   
   return(
     <>
