@@ -127,6 +127,8 @@ export interface SpendFrom {
   icon: string;
   balance: string;
   option: string;
+  maxWithdrawable?: string; // Max sats payable to out of pub invoice
+  disabled?: string // the error message
 }
 
 export interface PayTo {

@@ -43,6 +43,30 @@ body{
 input:focus-visible {
   outline: 1px solid #2693c1;
 }
+.sortable-ghost-class {
+  background-color: #2693c1 !important;
+}
+.sortable-chosen-class {
+  background-color: #2693c1 !important;
+  & * {
+    color: white !important;
+  }
+}
+.sortable-drag-class {
+  display: none !important;
+}
+
+body.barcode-scanner-active {
+  visibility: hidden;
+  background: transparent;
+  --background: transparent;
+  --ion-background-color: transparent;
+}
+
+.ant-notification {
+  visibility: visible;
+}
+
 
 @import "./Pages/Home/Home.scss";
 @import "./Pages/Loader/Loader.scss";

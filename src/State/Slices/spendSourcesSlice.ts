@@ -14,22 +14,25 @@ const spendSourcesSlice = createSlice({
   initialState,
   reducers: {
     addSpendSources: (state, action: PayloadAction<SpendFrom>) => {
-      state.push(action.payload);
-      update(state);
+      const newState = [...state, action.payload];
+      update(newState);
+      return newState
     },
     editSpendSources: (state, action: PayloadAction<SpendFrom>) => {
       const id = action.payload.id;
-      state[id] = action.payload;
-      update(state);
+      const newState = state.map(s => s.id === id ? { ...action.payload } : { ...s });
+      update(newState);
+      return newState;
     },
     deleteSpendSources: (state, action: PayloadAction<number>) => {
-      state.splice(action.payload, 1)
-      update(state);
+      const newState = state.filter(source => source.id !== action.payload);
+      update(newState);
+      return newState;
     },
     setSpendSources: (state, action: PayloadAction<SpendFrom[]>) => {
-      if (state.length != action.payload.length) return;
-      state = action.payload.map((e: any) => { return { ...e } });
-      update(state);
+      if (state.length !== action.payload.length) return;
+      update(action.payload);
+      return action.payload
     },
   },
 });

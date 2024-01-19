@@ -7,7 +7,7 @@ interface History {
   cursor?: Cursor
   latestOperation?: Partial<Types.UserOperation>
   operationsUpdateHook?: number
-};
+}
 
 const historyLocal = localStorage.getItem("history");
 

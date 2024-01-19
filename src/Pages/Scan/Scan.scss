@@ -80,6 +80,7 @@
     border-radius: 5px;
     z-index: 99;
     background-color: #ffffff00;
+    visibility: visible;
   }
 
   &_scanner {
@@ -106,6 +107,7 @@
     top: 50px;
     right: 30px;
     z-index: 9999;
+    visibility: visible;
   }
 
   &_result_input {
@@ -115,6 +117,7 @@
     right: 15vw;
     z-index: 999999;
     text-align: center;
+    visibility: visible;
 
     & input {
       font-family: Montserrat;
