@@ -33,7 +33,7 @@
 				justify-content: space-between;
 				border: 1px solid #383838;
 				border-radius: 5px;
-				padding: 5px 8px;
+				padding: 7px 10px;
 				span {
 					display: flex;
 					gap: 5px;
@@ -55,6 +55,8 @@
 				display: flex;
 				flex-direction: column;
 				gap: 5px;
+				border-width: 1.7px;
+				border-style: solid;
 				.top {
 					display: flex;
 					justify-content: space-between;
@@ -145,16 +147,16 @@
 
 				}
 				&.net {
-					border: 1px solid #43b960;
+					border-color: #43b960;
 				}
 				&.channels {
-					border: 1px solid #a012c7;
+					border-color: #a012c7;
 				}
 				&.top-channels {
-					border: 1px solid #baba06;
+					border-color: #baba06;
 				}
 				&.routing {
-					border: 1px solid #f59322;
+					border-color: #f59322;
 				}
 			}
 		}
