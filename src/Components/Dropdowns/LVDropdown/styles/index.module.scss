@@ -1,0 +1,65 @@
+.sort-order {
+	display: flex;
+	justify-content: flex-start;
+	text-transform: capitalize;
+	align-items: center;
+
+	p {
+		font-size: 16px;
+		font-weight: bold;
+	}
+	
+
+	
+	.expanded {
+		border-radius: 12px 12px 0 0 !important;
+		
+	}
+	.dropdown {
+		position: relative;
+		
+		text-align: center;
+		background-color: var(--secondary);
+		border-radius: 12px;
+		min-width: 6rem;
+		user-select: none;
+		cursor: pointer;
+		font-size: 16px;
+		font-weight: bold;
+		color: var(--white);
+	
+		
+		
+		
+		
+	
+		.options {
+	
+			position: absolute;
+			
+			left: 0;
+			
+			background-color: inherit;
+			color: inherit;
+			border-radius: 0 0 12px 12px;
+			width: 8rem;
+			z-index: 15;
+			background-color: rgb(22, 17, 17);
+			.option {
+				font-size: 16px;
+				font-weight: bold;
+				
+				
+				
+				padding: 12px 21px;
+				/* height: 1.5rem; */
+				&:hover {
+					background-color: #4285b9;
+					
+				}
+				display: hidden;
+			}
+		}
+		
+	}
+}
