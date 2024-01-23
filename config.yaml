@@ -1,0 +1,16 @@
+vars:
+  BUNDLE_ID:
+    default: shockwallet.app
+  PACKAGE_NAME:
+    default: shockwallet.app
+
+platforms:
+  ios:
+    targets:
+      App:
+        bundleId: $BUNDLE_ID
+
+        entitlements:
+          - com.apple.developer.associated-domains: ["appleinks:test.shockwallet.app"]
+  android:
+    packageName: $PACKAGE_NAME
