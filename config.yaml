@@ -11,6 +11,6 @@ platforms:
         bundleId: $BUNDLE_ID
 
         entitlements:
-          - com.apple.developer.associated-domains: ["appleinks:test.shockwallet.app"]
+          - com.apple.developer.associated-domains: ["appinks:test.shockwallet.app"]
   android:
     packageName: $PACKAGE_NAME
