@@ -76,14 +76,17 @@ export const NodeUp = () => {
       &quot;Add connection&quot; to link a node now.
       </div>
       <div className="NodeUp_manual">
-        <div onClick={toSourcePage} className="NodeUp_manual_text">
-          Add Connection
-        </div>
         <div className="NodeUp_manual_btn">
           <button onClick={toMainPage} id="continue-button">
             Continue
           </button>
         </div>
+        <div onClick={toSourcePage} className="NodeUp_manual_text">
+          Add Connection
+        </div>
+      </div>
+      <div className="NodeUp_terms">
+        By proceeding you acknowledge that this is bleeding-edge software, and agree to the providers <a href="https://docs.shock.network/terms/" target="_blank" rel="noreferrer">terms</a> regarding any services herein.
       </div>
     </div>
   )

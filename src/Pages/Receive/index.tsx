@@ -180,8 +180,12 @@ export const Receive = () => {
   }
 
   const updateInvoice = async () => {
-    console.log("the memo", invoiceMemo)
+    
     toggle();
+    if (!amount) {
+      openNotification("top", "Error", "You need to set an amount");
+      return;
+    }
     dispatch(toggleLoading({ loadingMessage: "Loading..." }))
     setAmountValue(amount);
     await configInvoice(amount);
@@ -253,6 +257,12 @@ export const Receive = () => {
           maxLength={90}
           style={{marginTop: "15px"}}
           id="invoice-memo"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              updateInvoice();
+            }
+
+          }}
           onChange={(e) => setInvoiceMemo(e.target.value)}
           placeholder="Description (optional)"
           value={invoiceMemo}
@@ -287,8 +297,14 @@ export const Receive = () => {
             &&
             <div>Cannot receive on-chain transactions</div> 
           }
-        <div className='Receive_copy'> 
-          {tag == 1 ? `${amount} ~$` + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag == 2 ? bitcoinAddText : lightningAdd}
+        <div className='Receive_copy'>
+          {
+            tag === 1
+            ?
+            `${amount} (${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} USD)`
+            :
+            tag == 2 ? bitcoinAddText : lightningAdd
+          }
         </div>
         {
           !(tag === 2 && !paySource[0].pasteField.includes("nprofile"))
