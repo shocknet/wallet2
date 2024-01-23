@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
@@ -45,7 +45,7 @@ export const NodeUp = () => {
       return;
     } else {
       const bootstrapBalance = "0";
-      const nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
+      const nprofile = nip19.nprofileEncode({ pubkey: localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) || NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
       dispatch(addPaySources(
         {
           id: 0,
@@ -80,7 +80,7 @@ export const NodeUp = () => {
           Add Connection
         </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={toMainPage}>
+          <button onClick={toMainPage} id="continue-button">
             Continue
           </button>
         </div>
