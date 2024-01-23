@@ -28,6 +28,9 @@ const AppUrlListener: React.FC<any> = () => {
     param = param.toLowerCase();
     const paramArr = param.split("://");
     switch (paramArr[1]) {
+      case "open":
+        router.push("/")
+        break;
       case "bitcoin":
         router.push("/send?url=" + paramArr[1])
         break;
