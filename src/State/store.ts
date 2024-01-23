@@ -11,6 +11,7 @@ import notificationSlice from './Slices/notificationSlice';
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
+import subscriptionsSlice from './Slices/subscriptionsSlice';
 
 const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ const store = configureStore({
     addressbook: addressbookSlice,
     history: historySlice,
     notify: notificationSlice,
+    subscriptions: subscriptionsSlice,
     generatedAssets,
     loadingOverlay
   },
