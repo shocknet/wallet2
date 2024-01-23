@@ -33,7 +33,7 @@
     },
     {
       "protocol": "https",
-      "host": "test.shockwallet.app",
+      "host": "shockwallet.app",
       "url": "./?address=%s"
     }
   ],

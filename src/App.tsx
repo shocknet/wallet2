@@ -51,6 +51,7 @@ setupIonicReact();
 
 const App: React.FC = () => {
   const [installPromptFlag, setInstallPromptFlag] = useState(true);
+  
   useEffect(() => {
     if (!isBrowser) setStatusBarColor();
 
@@ -58,16 +59,22 @@ const App: React.FC = () => {
       window.onbeforeunload = null;
       event.preventDefault();
       window.addEventListener("click", () => {
-        navigator.registerProtocolHandler('web+lightning', './?address=%s');
-        navigator.registerProtocolHandler('bitcoin', './?address=%s');
-        navigator.registerProtocolHandler('https', 'test.shockwallet.app');
-        if (installPromptFlag) {
-          installPWA(event);
-          setInstallPromptFlag(false);
-        }
+        // navigator.registerProtocolHandler('web+lightning', './?address=%s');
+        // navigator.registerProtocolHandler('bitcoin', './?address=%s');
+        // navigator.registerProtocolHandler('http', 'shockwallet');
+        // if (installPromptFlag) {
+        //   installPWA(event);
+        //   setInstallPromptFlag(false);
+        // }
+        openShcokWalletApp();
       });
     });
   }, []);
+
+  const openShcokWalletApp = () => {
+    window.open('shockwallet://open', '_blank');
+  }
+
   const installPWA = async (event: any) => {
     if (event !== null) {
       try {
