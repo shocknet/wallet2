@@ -114,6 +114,7 @@ export const Home = () => {
         <div className="Home_sats_name">sats</div>
         <div className="Home_sats_changes">~ ${money}</div>
       </div>
+      <a href="shockwallet://open" target="_blank">test deep link</a>
       <div className="Home_scroller scroller">
         <div className="Home_content">
           {transactionsToRender}

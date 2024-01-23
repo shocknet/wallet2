@@ -66,7 +66,7 @@ const App: React.FC = () => {
         //   installPWA(event);
         //   setInstallPromptFlag(false);
         // }
-        openShcokWalletApp();
+        // openShcokWalletApp();
       });
     });
   }, []);
