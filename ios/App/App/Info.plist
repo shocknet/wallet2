@@ -4,12 +4,6 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library for local storage.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>We need to access to the camera For QR Code Scanning.</string>
-	<key>LSApplicationCategoryType</key>
-	<string></string>
 	<key>CFBundleDisplayName</key>
 	<string>SHOCKWALLET</string>
 	<key>CFBundleExecutable</key>
@@ -24,10 +18,27 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.shockwallet</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>shockwallet</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access to the camera For QR Code Scanning.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library for local storage.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
