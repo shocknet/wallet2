@@ -6,6 +6,8 @@ import {
 } from '@ionic/react';
 import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
+import AppUrlListener from './Hooks/appUrlListener';
+import { DeeplinkService } from './Hooks/deeplink.service';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -40,50 +42,30 @@ import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect, useState } from 'react';
-import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
+import { link } from 'fs';
 
 setupIonicReact();
 
 const App: React.FC = () => {
   const [installPromptFlag, setInstallPromptFlag] = useState(true);
-  
+
+  // deep linking handler to open App
+  const handleDeepLink = (link: string) => {
+    DeeplinkService(link);
+  }
+
   useEffect(() => {
-    if (!isBrowser) setStatusBarColor();
-
-    window.addEventListener('beforeinstallprompt', (event) => {
-      window.onbeforeunload = null;
-      event.preventDefault();
-      window.addEventListener("click", () => {
-        // navigator.registerProtocolHandler('web+lightning', './?address=%s');
-        // navigator.registerProtocolHandler('bitcoin', './?address=%s');
-        // navigator.registerProtocolHandler('http', 'shockwallet');
-        // if (installPromptFlag) {
-        //   installPWA(event);
-        //   setInstallPromptFlag(false);
-        // }
-        // openShcokWalletApp();
-      });
-    });
+    if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
+    // call deep link
+    setTimeout(() => {
+      handleDeepLink('shockwallet://open');
+    }, 1000);
   }, []);
-
-  const openShcokWalletApp = () => {
-    window.open('shockwallet://open', '_blank');
-  }
-
-  const installPWA = async (event: any) => {
-    if (event !== null) {
-      try {
-        await event.prompt();
-      } catch (error) {
-        console.log(installPromptFlag);
-      }
-    }
-  }
 
   const setStatusBarColor = async () => {
     await StatusBar.setBackgroundColor({ color: '#16191c' }); // Replace with your desired color code

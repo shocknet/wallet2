@@ -79,15 +79,16 @@ export const Home = () => {
   }, [transactions])
 
   useEffect(() => {
+    
     if(openAppFlag){
       openAppFlag = !openAppFlag;
       setTimeout(() => {
-        const confirmBox = window.confirm(
-          "Do you want to open App?"
-        )
-        if (confirmBox === true) {
-          window.open('shockwallet://open', '_blank');
-        }
+        // const confirmBox = window.confirm(
+        //   "Do you want to open App?"
+        // )
+        // if (confirmBox === true) {
+        //   window.open('shockwallet://open', '_blank');
+        // }
       }, 1500);
     }
   }, [])
@@ -108,4 +109,3 @@ export const Home = () => {
     </div>
   )
 }
-
