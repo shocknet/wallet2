@@ -2,7 +2,7 @@
 Connect to multiple Lightning Nodes via LNURL and NOSTR. 
 
 Built with React and Ionic allowing builds for [PWA](https://test.shockwallet.app), [Android APK](https://cdn.shockwallet.app/shockwallet.apk), or iOS. 
-* iOS currently unbuilt and untested, help or donations requested
+* iOS: Contact us for Testflight access
 
 ![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
 
@@ -10,8 +10,7 @@ This is a reference wallet client for [Lightning.Pub](https://github.com/shockne
 
 <p style="text-align: center;"><img src="https://shockwallet.b-cdn.net/pub_home_ss.png" alt="Pub Dashboard" width="240"></p>
 
-#### ShockWallet and most of Lightning.Pub were developed as part of the [Bolt.Fun hackathon](https://bolt.fun/project/shocknet). If you would like to see continued development, please show your support there and help us win :)
-
+#### ShockWallet and Lightning.Pub are free software. If you would like to see continued development, please show your [support](https://github.com/sponsors/shocknet) :)
 
 
 # Try It
@@ -62,6 +61,16 @@ Build APK
 ```
 ionic cap build android --release
 ```
+### iOS
+
+```
+ionic cap build ios
+cd ios
+pod --install
+```
+
+Set your signing certificate and update the Bundle Identifier to match your Apple Developer account
+
 
 #### Debug Mode
 
