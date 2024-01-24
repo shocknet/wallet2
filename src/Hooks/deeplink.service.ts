@@ -3,12 +3,13 @@ export const DeeplinkService = (link: string) => {
     let isAndroid = ua.indexOf("android") > -1; // android check
     let isIphone = ua.indexOf("iphone") > -1; // ios check
     if (isIphone) {
+        alert('you are in iphone')
         const app = { 
             launchApp: () => {
                 setTimeout(() => {
                     window.location.href = "https://itunes.apple.com/us/app/shockwallet/app.shockwallet";
                 }, 25);
-                window.location.href = "bundlename://linkname"; //which page to open(now from mobile, check its authorization)
+                window.location.href = "shockwallet://open"; //which page to open(now from mobile, check its authorization)
             },
             openWebApp: () => {
                 window.location.href = "https://itunes.apple.com/us/app/shockwallet/app.shockwallet";
@@ -16,6 +17,7 @@ export const DeeplinkService = (link: string) => {
         };
         app.launchApp();
     } else if (isAndroid) {
+        alert('you are in android')
         // const app = { 
         //     launchApp: () => {
         //         window.location.replace("app.shockwallet://open"); //which page to open(now from mobile, check its authorization)
@@ -27,6 +29,6 @@ export const DeeplinkService = (link: string) => {
         // };
         // app.launchApp();
     } else{
-        //navigate to website url
+        window.location.href = "tg://" // for test deep link in web
     }
 }
