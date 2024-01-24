@@ -1,17 +1,17 @@
 // src/state/store.ts
 
 import { configureStore } from '@reduxjs/toolkit';
-import paySourcesReducer from './Slices/paySourcesSlice';
-import spendSourcesReducer from './Slices/spendSourcesSlice';
+import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic } from './Slices/paySourcesSlice';
+import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
-import prefsSlice from './Slices/prefsSlice';
-import addressbookSlice from './Slices/addressbookSlice';
-import historySlice from './Slices/HistorySlice';
-import notificationSlice from './Slices/notificationSlice';
+import prefsSlice, { storageKey as prefsStorageKey, mergeLogic as prefsMergeLogic } from './Slices/prefsSlice';
+import addressbookSlice, { storageKey as addressbookStorageKey, mergeLogic as addressbookMergeLogic } from './Slices/addressbookSlice';
+import historySlice, { storageKey as historyStorageKey, mergeLogic as historyMergeLogic } from './Slices/HistorySlice';
+import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from './Slices/notificationSlice';
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
+import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic } from './Slices/subscriptionsSlice';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
-import subscriptionsSlice from './Slices/subscriptionsSlice';
 
 const store = configureStore({
   reducer: {
@@ -37,3 +37,24 @@ export const useSelector = <TSelected = unknown>(
 ): TSelected => originalUseSelector<State, TSelected>(selector, equalityFn);
 
 export default store;
+
+export const findReducerMerger = (storageKey: string): ((l: string, r: string) => string) | null => {
+  switch (storageKey) {
+    case paySourcesStorageKey:
+      return paySourcesMergeLogic
+    case spendSourcesStorageKey:
+      return spendSourcesMergeLogic
+    case prefsStorageKey:
+      return prefsMergeLogic
+    case addressbookStorageKey:
+      return addressbookMergeLogic
+    case historyStorageKey:
+      return historyMergeLogic
+    case notificationStorageKey:
+      return notificationMergeLogic
+    case subscriptionsStorageKey:
+      return subscriptionsMergeLogic
+    default:
+      return null
+  }
+}

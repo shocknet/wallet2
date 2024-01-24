@@ -12,6 +12,9 @@ import { keyLinkClient } from '../../Api/keylink/http';
 import { keylinkAppId } from '../../constants';
 import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from '../../Api/tools/keys';
+import { fetchRemoteBackup } from '../../helpers/remoteBackups';
+import { useDispatch } from '../../State/store';
+import { setRemoteBackupNProfile } from '../../State/Slices/prefsSlice';
 
 const FILENAME = "shockw.dat";
 
@@ -38,8 +41,11 @@ export const Auth = () => {
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
+  const [remoteBackupProfile, setRemoteBackupProfile] = useState("");
+  const [remoteBackupToken, setRemoteBackupToken] = useState("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [api, contextHolder] = notification.useNotification();
+  const dispatch = useDispatch()
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
@@ -70,12 +76,21 @@ export const Auth = () => {
   }, [])
 
   const loginEmail = () => {
+    if (!email) {
+      console.log("no email provided")
+      return
+    }
     keyLinkClient.RequestUserAuth({
       app_id: keylinkAppId,
       email
     })
   }
   const signUpEmail = () => {
+    if (!email) {
+      console.log("no email provided")
+      return
+    }
+    throw new Error("use different key for link")
     const nsec = getNostrPrivateKey()!
     keyLinkClient.LinkAppUserToEmail({
       app_id: keylinkAppId,
@@ -191,6 +206,37 @@ export const Auth = () => {
     }
   }
 
+  const loadRemoteBackup = async () => {
+    const keyExists = getNostrPrivateKey()
+    if (keyExists) {
+      console.log("cannot load remote backups, key already exists")
+    }
+    if (!remoteBackupProfile) {
+      console.log("no remote backup npub provided")
+      return
+    }
+    if (!remoteBackupToken) {
+      console.log("no remote backup token provided")
+      return
+    }
+    const backup = await fetchRemoteBackup(remoteBackupProfile, remoteBackupToken)
+    if (!backup) {
+      console.log("no remote backup found for user")
+      return
+    }
+    const data = JSON.parse(backup);
+    const keys = Object.keys(data)
+    for (let i = 0; i < keys.length; i++) {
+      const element = keys[i];
+      localStorage.setItem(element, data[element])
+    }
+    dispatch(setRemoteBackupNProfile(remoteBackupProfile))
+    openNotification("top", "Success", "Backup is imported successfully.");
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
+  }
+
   const encryptBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Encrypt Backup</div>
     <div className='Auth_modal_description'>Set a passphrase for your backup file.</div>
@@ -260,6 +306,11 @@ export const Auth = () => {
         <div className='Auth_import'>
           <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
+        </div>
+        <div className='Auth_import'>
+          <input value={remoteBackupProfile} onChange={(e) => { setRemoteBackupProfile(e.target.value) }} type="text" placeholder="nprofile of remote signer" />
+          <input value={remoteBackupToken} onChange={(e) => { setRemoteBackupToken(e.target.value) }} type="text" placeholder="token of remote signer" />
+          <p onClick={() => loadRemoteBackup()}>Import Remote Backup</p>
         </div>
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>

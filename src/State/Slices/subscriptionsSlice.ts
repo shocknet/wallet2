@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { Destination } from '../../constants';
+import { mergeArrayValues, mergeRecords } from './dataMerge';
 export type SubscriptionPrice = { type: 'cents' | 'sats', amt: number }
 export type Subscription = {
   subId: string
@@ -21,17 +22,27 @@ interface Subscriptions {
   inactiveSubs: (Subscription & { unsubbedAtUnix: number, unsubReason: 'cancel' | 'expire' })[]
   payments: Record<string, SubscriptionPayment[]>
 }
-
+export const storageKey = "subscriptions"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as Subscriptions
+  const remote = JSON.parse(serialRemote) as Subscriptions
+  const merged: Subscriptions = {
+    activeSubs: mergeArrayValues(local.activeSubs, remote.activeSubs, v => v.subId),
+    inactiveSubs: mergeArrayValues(local.inactiveSubs, remote.inactiveSubs, v => v.subId),
+    payments: mergeRecords(local.payments, remote.payments, (l, r) => mergeArrayValues(l, r, v => v.operationId))
+  }
+  return JSON.stringify(merged)
+}
 const update = (value: Subscriptions) => {
   const save = JSON.stringify(value)
-  localStorage.setItem("subscriptions", save);
+  localStorage.setItem(storageKey, save);
 }
-const subsLocal = localStorage.getItem("subscriptions");
+const subsLocal = localStorage.getItem(storageKey);
 const iState: Subscriptions = { activeSubs: [], inactiveSubs: [], payments: {} };
 const initialState: Subscriptions = JSON.parse(subsLocal ?? JSON.stringify(iState));
 
 const subscriptionsSlice = createSlice({
-  name: 'subscriptions',
+  name: storageKey,
   initialState,
   reducers: {
     addSubPayment: (state, action: PayloadAction<{ payment: SubscriptionPayment }>) => {

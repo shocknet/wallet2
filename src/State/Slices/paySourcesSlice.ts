@@ -1,13 +1,20 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
+import { mergeArrayValues } from './dataMerge';
+export const storageKey = "payTo"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as PayTo[]
+  const remote = JSON.parse(serialRemote) as PayTo[]
+  const merged: PayTo[] = mergeArrayValues(local, remote, v => v.pasteField)
+  return JSON.stringify(merged)
+}
 
-
-const getPayToLocal = localStorage.getItem("payTo");
+const getPayToLocal = localStorage.getItem(storageKey);
 
 const initialState: PayTo[] = JSON.parse(getPayToLocal ?? "[]");
 
 const update = (value: PayTo[]) => {
-  localStorage.setItem("payTo", JSON.stringify(value));
+  localStorage.setItem(storageKey, JSON.stringify(value));
 }
 
 const paySourcesSlice = createSlice({

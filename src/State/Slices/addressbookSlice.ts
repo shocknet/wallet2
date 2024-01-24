@@ -1,22 +1,35 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-
+import { mergeBasicRecords } from './dataMerge';
+export const storageKey = "addressbook"
 type AddressBook = {
   contacts: Record<string, string>
   addressToContact: Record<string, string>
   identifierToAddress: Record<string, string>
   identifierToContact: Record<string, string>
 }
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as AddressBook
+  const remote = JSON.parse(serialRemote) as AddressBook
+  const merged: AddressBook = {
+    contacts: mergeBasicRecords(local.contacts, remote.contacts),
+    addressToContact: mergeBasicRecords(local.addressToContact, remote.addressToContact),
+    identifierToAddress: mergeBasicRecords(local.identifierToAddress, remote.identifierToAddress),
+    identifierToContact: mergeBasicRecords(local.identifierToContact, remote.identifierToContact)
+  }
+  return JSON.stringify(merged)
+}
+
 type AddressBookLink = { identifier?: string, address?: string, contact?: string }
-const addressbook = localStorage.getItem("addressbook");
+const addressbook = localStorage.getItem(storageKey);
 
 const update = (value: AddressBook) => {
-  localStorage.setItem("addressbook", JSON.stringify(value));
+  localStorage.setItem(storageKey, JSON.stringify(value));
 }
 const iState: AddressBook = { contacts: {}, addressToContact: {}, identifierToAddress: {}, identifierToContact: {} }
 const initialState: AddressBook = JSON.parse(addressbook ?? JSON.stringify(iState));
 
 const addressbookSlice = createSlice({
-  name: 'addressbook',
+  name: storageKey,
   initialState,
   reducers: {
     addAddressbookLink: (state, action: PayloadAction<AddressBookLink>) => {
