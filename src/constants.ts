@@ -6,12 +6,16 @@ import { decode } from "@gandlaf21/bolt11-decode";
 import { notification } from "antd";
 import { NotificationPlacement } from "antd/es/notification/interface";
 
- 
+
 export const locationRegex = new RegExp(/\w{1,}/g)
+
+export const keylinkUrl = "https://test-auth.shock.network"
+export const keylinkAppId = ""
 
 export const HTTP_ADMIN_TOKEN_STORAGE_KEY = "HTTP_ADMIN_TOKEN"
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
 export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
+export const NIP46_PRIVATE_KEY_STORAGE_KEY = "NIP46_PRIVATE_KEY"
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
 export const PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY = "PUB_NOSTR_PUBLIC_KEY";
 export const NOSTR_RELAYS = ["wss://strfry.shock.network"]
@@ -25,7 +29,7 @@ export const options: any = {
 }
 
 function padZero(number: number) {
-  return number.toString().padStart(2, '0');
+	return number.toString().padStart(2, '0');
 }
 
 export function getFormattedTime(timestamp: number) {
@@ -82,7 +86,7 @@ export const decodeLnurl = (lnurl: string) => {
 }
 
 export const parseBitcoinInput = async (input: string): Promise<Destination> => {
-  const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
+	const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
 	if (LN_INVOICE_REGEX.test(input)) {
 		const invoice = removePrefixIfExists(input, "lightning:");
@@ -116,8 +120,8 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			type: InputClassification.LNURL,
 			data: lnurl,
 			callback: res.data.callback,
-			min: lnurlType === "payRequest" ? Math.floor(res.data.minSendable / 1000) :  Math.floor(res.data.minWithdrawable / 1000),
-			max: lnurlType === "payRequest" ? Math.floor(res.data.maxSendable / 1000) :  Math.floor(res.data.maxWithdrawable / 1000),
+			min: lnurlType === "payRequest" ? Math.floor(res.data.minSendable / 1000) : Math.floor(res.data.minWithdrawable / 1000),
+			max: lnurlType === "payRequest" ? Math.floor(res.data.maxSendable / 1000) : Math.floor(res.data.maxWithdrawable / 1000),
 			lnurlType,
 			lnurlEndpoint,
 			domainName,
@@ -148,7 +152,7 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			max: Math.floor(res.data.maxSendable / 1000),
 			domainName: lnParts[1],
 			isPub: lnParts[1] === "lightning.pub"
-			
+
 		};
 	} else {
 		return { type: InputClassification.UNKNOWN, data: input };
@@ -171,16 +175,16 @@ export const openNotification = (placement: NotificationPlacement, header: strin
 
 
 export const stringToColor = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+	}
 
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).substr(-2);
-  }
+	let color = '#';
+	for (let i = 0; i < 3; i++) {
+		const value = (hash >> (i * 8)) & 0xFF;
+		color += ('00' + value.toString(16)).substr(-2);
+	}
 
-  return color;
+	return color;
 }

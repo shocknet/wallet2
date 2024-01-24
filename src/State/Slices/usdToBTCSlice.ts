@@ -1,26 +1,19 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 export interface Price {
-    buyPrice: number,
-    sellPrice: number,
+  buyPrice: number,
+  sellPrice: number,
 }
 
-const priceLocal = localStorage.getItem("price");
-
-const update = (value: Price) => {
-  localStorage.setItem("price", JSON.stringify(value));
-}
-
-const initialState: Price = JSON.parse(priceLocal??"{}");
+const initialState: Price = { buyPrice: 0, sellPrice: 0 }
 
 const usdToBTCSlice = createSlice({
   name: 'usdToBTC',
   initialState,
   reducers: {
     setAmount: (state, action: PayloadAction<Price>) => {
-        state.buyPrice = action.payload.buyPrice;
-        state.sellPrice = action.payload.sellPrice;
-        update(state)
+      state.buyPrice = action.payload.buyPrice;
+      state.sellPrice = action.payload.sellPrice;
     },
   },
 });

@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { Destination } from '../../constants';
+import { mergeArrayValues, mergeRecords } from './dataMerge';
 import { Interval } from '../../Pages/Automation/newSubModal';
 export type SubscriptionPrice = { type: 'cents' | 'sats', amt: number }
 export type Subscription = {
@@ -27,17 +28,26 @@ interface Subscriptions {
   activeSubs: Subscription[]
   payments: Record<string, SubscriptionPayment[]>
 }
-
+export const storageKey = "subscriptions"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as Subscriptions
+  const remote = JSON.parse(serialRemote) as Subscriptions
+  const merged: Subscriptions = {
+    activeSubs: mergeArrayValues(local.activeSubs, remote.activeSubs, v => v.subId),
+    payments: mergeRecords(local.payments, remote.payments, (l, r) => mergeArrayValues(l, r, v => v.operationId))
+  }
+  return JSON.stringify(merged)
+}
 const update = (value: Subscriptions) => {
   const save = JSON.stringify(value)
-  localStorage.setItem("subscriptions", save);
+  localStorage.setItem(storageKey, save);
 }
 const subsLocal = localStorage.getItem("subscriptions");
 const iState: Subscriptions = { activeSubs: [], payments: {} };
 const initialState: Subscriptions = JSON.parse(subsLocal ?? JSON.stringify(iState));
 
 const subscriptionsSlice = createSlice({
-  name: 'subscriptions',
+  name: storageKey,
   initialState,
   reducers: {
     addSubPayment: (state, action: PayloadAction<{ payment: SubscriptionPayment }>) => {
