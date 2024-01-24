@@ -1,5 +1,6 @@
 export const DeeplinkService = (link: string) => {
-    let ua = link.toLowerCase();
+    let ua = navigator.userAgent.toLowerCase();
+    console.log(ua, '---------------------------------------');
     let isAndroid = ua.indexOf("android") > -1; // android check
     let isIphone = ua.indexOf("iphone") > -1; // ios check
     if (isIphone) {
@@ -29,6 +30,7 @@ export const DeeplinkService = (link: string) => {
         // };
         // app.launchApp();
     } else{
-        window.location.href = "tg://" // for test deep link in web
+        alert('you are in desktop')
+        window.location.href = "shockwallet://" // for test deep link in web
     }
 }

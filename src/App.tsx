@@ -63,7 +63,7 @@ const App: React.FC = () => {
     if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
     // call deep link
     setTimeout(() => {
-      handleDeepLink('tg://');
+      handleDeepLink('shockwallet://');
     }, 1000);
   }, []);
 
