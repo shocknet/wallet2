@@ -43,7 +43,6 @@ Cypress.Commands.add("emptyDb", () => {
 })
 
 Cypress.Commands.add("payInvoice", ({ invoice }: { invoice: string }) => {
-	console.log("inside pay invoice", invoice)
 	cy.request({
 		method: "POST",
 		url: "http://localhost:18000/api/app/invoice/pay",
@@ -55,14 +54,13 @@ Cypress.Commands.add("payInvoice", ({ invoice }: { invoice: string }) => {
 		headers: {
 			"Authorization": window.localStorage.getItem('authToken')
 		},
-	}).then(res => console.log("here is the responKDJFKLDJFLK", res.body))
+	})
 })
 
 Cypress.Commands.add("populateLocalStorage", () => {
 	cy.window().then(win => {
 
 		const nprofile = nip19.nprofileEncode({ pubkey: win.localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) as string, relays: NOSTR_RELAYS });
-		console.log("the nprofile in populatelocalstorage", { nprofile })
 		const payTo = [
 			{
 				id: 0,
@@ -124,7 +122,6 @@ Cypress.Commands.add("getRemoteUserInvoice", () => {
 			"Authorization": window.localStorage.getItem('authToken')
 		},
 	}).then(res => {
-		console.log("the invoice to pay", res.body)
 		window.localStorage.setItem("invoice-to-pay", res.body.invoice)
 	})
 })
