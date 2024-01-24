@@ -26,6 +26,7 @@ const saveLog = (...args: any[]) => {
 }
 export const Header = () => {
   const [badge, setBadge] = useState(false);
+  const [logoClickCounter, setLogoClickCounter] = useState(0);
   const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
@@ -84,6 +85,29 @@ export const Header = () => {
   useEffect(() => {
     getNotifyBadge();
   }, []);
+
+
+  useEffect(() => {
+    let singleClickTimer: NodeJS.Timeout;
+    let tripeClickTimer: NodeJS.Timeout;
+    if (logoClickCounter === 1) {
+      singleClickTimer = setTimeout(() => {
+        router.push("/");
+        setLogoClickCounter(0);
+      }, 500);
+    } else {
+      if (logoClickCounter === 3) {
+        router.push("/metrics");
+      }
+      tripeClickTimer = setTimeout(() => {
+        setLogoClickCounter(0);
+      }, 500);
+    }
+    return () => {
+      clearTimeout(singleClickTimer)
+      clearTimeout(tripeClickTimer);
+    };
+  }, [logoClickCounter, router]);
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -162,7 +186,7 @@ export const Header = () => {
     <div className="Header">
       {(isNopeUp || isLoader) ? (
         <React.Fragment>
-          <button className="Header_logo_1" onClick={() => router.push("/")}>
+          <button className="Header_logo_1" onClick={() => setLogoClickCounter(prev => prev + 1)}>
             {Icons.Logo()}
           </button>
           <div className="Header_text">
@@ -175,7 +199,7 @@ export const Header = () => {
         ) : (
           isreceive ? (
             <React.Fragment>
-              <button className="Header_logo_2" onClick={() => router.push("/home")}>
+              <button className="Header_logo_2" onClick={() => setLogoClickCounter(prev => prev + 1)}>
                 {Icons.Logo()}
               </button>
               <div onClick={() => { router.push("/home") }} className="Header_menu">
@@ -184,7 +208,7 @@ export const Header = () => {
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <button className="Header_logo_2" onClick={() => router.push("/home")}>
+              <button className="Header_logo_2" onClick={() => setLogoClickCounter(prev => prev + 1)}>
                 {Icons.Logo()}
               </button>
               <button className="Header_menu" onClick={() => {

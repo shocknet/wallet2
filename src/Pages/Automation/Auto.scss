@@ -1,5 +1,41 @@
 .Automation {
 
+	&_add_button {
+    display: inline-flex;
+    margin-top: 15px;
+    z-index: 9999;
+		align-self: flex-end;
+
+    & button {
+			cursor: pointer;
+      display: flex;
+      align-items: center;
+			gap: 8px;
+      position: relative;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-family: Montserrat;
+      font-weight: bold;
+      padding: 4px 12px;
+      $border: 1px;
+      color: #FFF;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border transparent; /* !importanté */
+      border-radius: 5px;
+    
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0; left: 0;
+        z-index: -1;
+        margin: -$border; /* !importanté */
+        border-radius: 3px; /* !importanté */
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+      }
+    }
+  }
+
     &_container {
       width: 100%;
       padding-inline: 4%;
@@ -31,15 +67,27 @@
     }
 
     &_content {
-        margin-top: 10%;
+        margin: 0 auto;
+        margin-top: 4%;
+        width: 60%;
+        @media (max-width: 768px) {
+            width: 100%;
+        }
+        display: flex;
+        flex-direction: column;
+        
+        justify-self: center;
 
         &_title {
             font-size: 16px;
             color: #29abe2;
             display: flex;
+            justify-content: space-between;
+            width: 100%;
+            text-shadow: 0px 0px 2px rgba(0,0,0,1);
+            
 
             &_checkbox {
-                margin-left: auto;
                 width: 16px;
                 height: 16px;
                 border-radius: 5px;
@@ -52,6 +100,7 @@
         &_desc {
             font-size: 16px;
             color: #ffffff;
+            margin: 7px 0;
         }
 
         &_input {
@@ -66,6 +115,84 @@
             color: #999999;
             text-align: center;
         }
+				&_list_box {
+					margin-top: 5px;
+					border-radius: 7px;
+					max-height: 25vh;
+					overflow-y: auto;
+				}
+				&_item{
+					display: flex;
+					align-items: center;
+					height: 45px;
+					padding: 0 auto;
+					background-color: black;
+					margin-block: 3px;
+					border-radius: 6px;
+			
+			
+				}
+				&_item:hover {
+					z-index: 0;
+				}
+			
+				&_item_left{
+					height: 100%;
+					width: calc(100% - 80px);
+					display: inline-flex;
+					float: left;
+					overflow: hidden;
+				}
+        &_disabled {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: block;
+          background-color:#d90000;
+        }
+        &_enabled {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: block;
+          background-color: #00ff1e;
+        }
+        &_item_close{
+          width: 50%;
+          background-color: transparent;
+          margin-inline: 4px;
+          position: relative;
+          border: 0px solid transparent;
+        }
+				&_item_right{
+					display: inline-flex;
+					width: 75px;
+          justify-content: flex-end;
+				}
+			
+				&_modal_icon{
+					width: 30px;
+				}
+			
+				&_item_input{
+					text-align: center;
+					display: flex;
+					align-items: center;
+          gap: 5px;
+				}
+				&_item_icon {
+					margin-inline: 10px;
+					height: 100%;
+					display: flex;
+					align-items: center;
+			
+					& div {
+						width: 33px;
+						height: 33px;
+						display: inline-flex;
+						align-items: center;
+					}
+				}
     }
 
     &_buttons {
