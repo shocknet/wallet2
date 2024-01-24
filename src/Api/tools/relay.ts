@@ -66,22 +66,22 @@ export function relayInit(
         countTimeout?: number
     } = {},
 ): Relay {
-    let { listTimeout = 3000, getTimeout = 3000, countTimeout = 3000 } = options
+    const { listTimeout = 3000, getTimeout = 3000, countTimeout = 3000 } = options
 
-    var ws: WebSocket
-    var openSubs: { [id: string]: { filters: Filter[] } & SubscriptionOptions } = {}
-    var listeners = newListeners()
-    var subListeners: {
+    let ws: WebSocket
+    const openSubs: { [id: string]: { filters: Filter[] } & SubscriptionOptions } = {}
+    let listeners = newListeners()
+    let subListeners: {
         [subid: string]: { [TK in keyof SubEvent<any>]: SubEvent<any>[TK][] }
     } = {}
-    var pubListeners: {
+    let pubListeners: {
         [eventid: string]: {
             resolve: (_: unknown) => void
             reject: (err: Error) => void
         }
     } = {}
 
-    var connectionPromise: Promise<void> | undefined
+    let connectionPromise: Promise<void> | undefined
     async function connectRelay(): Promise<void> {
         if (connectionPromise) return connectionPromise
         connectionPromise = new Promise((resolve, reject) => {
@@ -122,27 +122,27 @@ export function relayInit(
                     return
                 }
 
-                var json = incomingMessageQueue.dequeue()
+                const json = incomingMessageQueue.dequeue()
                 if (!json) return
 
-                let subid = getSubscriptionId(json)
+                const subid = getSubscriptionId(json)
                 if (subid) {
-                    let so = openSubs[subid]
+                    const so = openSubs[subid]
                     if (so && so.alreadyHaveEvent && so.alreadyHaveEvent(getHex64(json, 'id'), url)) {
                         return
                     }
                 }
 
                 try {
-                    let data = JSON.parse(json)
+                    const data = JSON.parse(json)
 
                     // we won't do any checks against the data since all failures (i.e. invalid messages from relays)
                     // will naturally be caught by the encompassing try..catch block
 
                     switch (data[0]) {
                         case 'EVENT': {
-                            let id = data[1]
-                            let event = data[2]
+                            const id = data[1]
+                            const event = data[2]
                             if (
                                 validateEvent(event) &&
                                 openSubs[id] &&
@@ -155,14 +155,14 @@ export function relayInit(
                             return
                         }
                         case 'COUNT':
-                            let id = data[1]
-                            let payload = data[2]
+                            const id = data[1]
+                            const payload = data[2]
                             if (openSubs[id]) {
-                                ; (subListeners[id]?.count || []).forEach(cb => cb(payload))
+                                (subListeners[id]?.count || []).forEach(cb => cb(payload))
                             }
                             return
                         case 'EOSE': {
-                            let id = data[1]
+                            const id = data[1]
                             if (id in subListeners) {
                                 subListeners[id].eose.forEach(cb => cb())
                                 subListeners[id].eose = [] // 'eose' only happens once per sub, so stop listeners here
@@ -170,22 +170,22 @@ export function relayInit(
                             return
                         }
                         case 'OK': {
-                            let id: string = data[1]
-                            let ok: boolean = data[2]
-                            let reason: string = data[3] || ''
+                            const id: string = data[1]
+                            const ok: boolean = data[2]
+                            const reason: string = data[3] || ''
                             if (id in pubListeners) {
-                                let { resolve, reject } = pubListeners[id]
+                                const { resolve, reject } = pubListeners[id]
                                 if (ok) resolve(null)
                                 else reject(new Error(reason))
                             }
                             return
                         }
                         case 'NOTICE':
-                            let notice = data[1]
+                            const notice = data[1]
                             listeners.notice.forEach(cb => cb(notice))
                             return
                         case 'AUTH': {
-                            let challenge = data[1]
+                            const challenge = data[1]
                             listeners.auth?.forEach(cb => cb(challenge))
                             return
                         }
@@ -209,7 +209,7 @@ export function relayInit(
     }
 
     async function trySend(params: [string, ...any]) {
-        let msg = JSON.stringify(params)
+        const msg = JSON.stringify(params)
         if (!connected()) {
             await new Promise(resolve => setTimeout(resolve, 1000))
             if (!connected()) {
@@ -232,7 +232,7 @@ export function relayInit(
             id = Math.random().toString().slice(2),
         }: SubscriptionOptions = {},
     ): Sub<K> => {
-        let subid = id
+        const subid = id
 
         openSubs[subid] = {
             id: subid,
@@ -242,7 +242,7 @@ export function relayInit(
         }
         trySend([verb, subid, ...filters])
 
-        let subscription: Sub<K> = {
+        const subscription: Sub<K> = {
             sub: (newFilters, newOpts = {}) =>
                 sub(newFilters || filters, {
                     skipVerification: newOpts.skipVerification || skipVerification,
@@ -260,13 +260,11 @@ export function relayInit(
                     count: [],
                     eose: [],
                 }
-                //@ts-ignore
                 subListeners[subid][type].push(cb)
             },
             off: (type, cb): void => {
-                let listeners = subListeners[subid]
-                //@ts-ignore
-                let idx = listeners[type].indexOf(cb)
+                const listeners = subListeners[subid]
+                const idx = listeners[type].indexOf(cb)
                 if (idx >= 0) listeners[type].splice(idx, 1)
             },
             get events() {
@@ -284,7 +282,7 @@ export function relayInit(
                 return
             }
 
-            let id = event.id
+            const id = event.id
             trySend([type, event])
             pubListeners[id] = { resolve, reject }
         })
@@ -303,14 +301,14 @@ export function relayInit(
         },
         off: <T extends keyof RelayEvent, U extends RelayEvent[T]>(type: T, cb: U): void => {
             //@ts-ignore
-            let index = listeners[type].indexOf(cb)
+            const index = listeners[type].indexOf(cb)
             if (index !== -1) listeners[type].splice(index, 1)
         },
         list: (filters, opts?: SubscriptionOptions) =>
             new Promise(resolve => {
-                let s = sub(filters, opts)
-                let events: Event<any>[] = []
-                let timeout = setTimeout(() => {
+                const s = sub(filters, opts)
+                const events: Event<any>[] = []
+                const timeout = setTimeout(() => {
                     s.unsub()
                     resolve(events)
                 }, listTimeout)
@@ -325,8 +323,8 @@ export function relayInit(
             }),
         get: (filter, opts?: SubscriptionOptions) =>
             new Promise(resolve => {
-                let s = sub([filter], opts)
-                let timeout = setTimeout(() => {
+                const s = sub([filter], opts)
+                const timeout = setTimeout(() => {
                     s.unsub()
                     resolve(null)
                 }, getTimeout)
@@ -338,8 +336,8 @@ export function relayInit(
             }),
         count: (filters: Filter[]): Promise<CountPayload | null> =>
             new Promise(resolve => {
-                let s = sub(filters, { ...sub, verb: 'COUNT' })
-                let timeout = setTimeout(() => {
+                const s = sub(filters, { ...sub, verb: 'COUNT' })
+                const timeout = setTimeout(() => {
                     s.unsub()
                     resolve(null)
                 }, countTimeout)

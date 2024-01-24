@@ -49,18 +49,22 @@ export const SwItem = ({
     }
     return {
       priceImg: operation.inbound ? Icons.PriceUp : Icons.PriceDown,
-      station: label.length < 30 ? label : `${label.substring(0, 9)}...${label.substring(label.length - 9, label.length)}`,
+      station: label.length < 30 ? label : `${label.substring(0, 7)}...${label.substring(label.length - 7, label.length)}`,
       changes: `${operation.inbound ? "" : "-"}${operation.amount}`,
       date: !operation.confirmed ? "Pending" : moment(operation.paidAtUnix * 1000).fromNow(),
       price: Math.round(100 * operation.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: !operation.confirmed ? "linked" : "lightning",
     }
   }, [operation, addressbook, price]);
-  console.log("Operatinnnnnnnnnnnn", operation)
   
   return(
     <>
-      <motion.div className="SwItem" onClick={() => setShown(true)} layoutId={operation.operationId}>
+    <AnimatePresence>
+      <motion.div
+        className="SwItem"
+        onClick={() => setShown(true)}
+        layoutId={operation.operationId}
+      >
         <div className="SwItem_left">
           {stateIcons(transactionObject.stateIcon)}
           <div className="SwItem_text">
@@ -77,7 +81,7 @@ export const SwItem = ({
         </div>
       </motion.div>
       <div className={underline?"SwItem_divider" : ""}></div>
-      <AnimatePresence>
+      
         {
           shown
           &&

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@capacitor-mlkit/barcode-scanning": "^5.3.0",
@@ -66,6 +67,7 @@
     "nostr-tools": "^1.16.0",
     "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.12",
@@ -73,7 +75,8 @@
     "react-zxing": "^2.0.0",
     "reactjs-qr-reader": "^1.1.0",
     "sortablejs": "^1.15.1",
-    "styled-components": "^6.0.8"
+    "styled-components": "^6.0.8",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@capacitor/assets": "2.0.4",
@@ -83,12 +86,14 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-legacy": "^4.0.2",
     "@vitejs/plugin-react": "^4.0.1",
     "cypress": "^12.7.0",
     "eslint": "^8.55.0",
+    "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^22.1.0",

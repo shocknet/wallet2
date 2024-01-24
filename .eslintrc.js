@@ -3,7 +3,8 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true
+    node: true,
+    "cypress/globals": true
   },
   extends: [
     "eslint:recommended",
@@ -15,7 +16,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020
   },
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "cypress"],
   settings: {
     react: {
       version: "detect"
@@ -25,5 +26,6 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-namespace": "off"
   }
 }

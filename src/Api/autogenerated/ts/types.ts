@@ -387,12 +387,10 @@ export const MigrationUpdateValidate = (o?: MigrationUpdate, opts: MigrationUpda
         if (closureErr !== null) return closureErr
     }
 
-
     if (typeof o.relays === 'object' || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('relays')) {
         const relaysErr = RelaysMigrationValidate(o.relays, opts.relays_Options, `${path}.relays`)
         if (relaysErr !== null) return relaysErr
     }
-
 
     return null
 }
@@ -655,7 +653,6 @@ export const AuthAppValidate = (o?: AuthApp, opts: AuthAppOptions = {}, path: st
 
     const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
     if (appErr !== null) return appErr
-
 
     if (typeof o.auth_token !== 'string') return new Error(`${path}.auth_token: is not a string`)
     if (opts.auth_token_CustomCheck && !opts.auth_token_CustomCheck(o.auth_token)) return new Error(`${path}.auth_token: custom check failed`)
@@ -1267,6 +1264,9 @@ export const ClosureMigrationValidate = (o?: ClosureMigration, opts: ClosureMigr
     if (typeof o.closes_at_unix !== 'number') return new Error(`${path}.closes_at_unix: is not a number`)
     if (opts.closes_at_unix_CustomCheck && !opts.closes_at_unix_CustomCheck(o.closes_at_unix)) return new Error(`${path}.closes_at_unix: custom check failed`)
 
+    if (typeof o.npub !== 'string') return new Error(`${path}.npub: is not a string`)
+    if (opts.npub_CustomCheck && !opts.npub_CustomCheck(o.npub)) return new Error(`${path}.npub: custom check failed`)
+
     return null
 }
 
@@ -1520,23 +1520,25 @@ export const UserInfoValidate = (o?: UserInfo, opts: UserInfoOptions = {}, path:
     return null
 }
 
-export type RelaysMigration = {
-    relays: string[]
+export type LnurlLinkResponse = {
+    lnurl: string
+    k1: string
 }
-export const RelaysMigrationOptionalFields: [] = []
-export type RelaysMigrationOptions = OptionsBaseMessage & {
+export const LnurlLinkResponseOptionalFields: [] = []
+export type LnurlLinkResponseOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    relays_CustomCheck?: (v: string[]) => boolean
+    lnurl_CustomCheck?: (v: string) => boolean
+    k1_CustomCheck?: (v: string) => boolean
 }
-export const RelaysMigrationValidate = (o?: RelaysMigration, opts: RelaysMigrationOptions = {}, path: string = 'RelaysMigration::root.'): Error | null => {
+export const LnurlLinkResponseValidate = (o?: LnurlLinkResponse, opts: LnurlLinkResponseOptions = {}, path: string = 'LnurlLinkResponse::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (!Array.isArray(o.relays)) return new Error(`${path}.relays: is not an array`)
-    for (let index = 0; index < o.relays.length; index++) {
-        if (typeof o.relays[index] !== 'string') return new Error(`${path}.relays[${index}]: is not a string`)
-    }
-    if (opts.relays_CustomCheck && !opts.relays_CustomCheck(o.relays)) return new Error(`${path}.relays: custom check failed`)
+    if (typeof o.lnurl !== 'string') return new Error(`${path}.lnurl: is not a string`)
+    if (opts.lnurl_CustomCheck && !opts.lnurl_CustomCheck(o.lnurl)) return new Error(`${path}.lnurl: custom check failed`)
+
+    if (typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
+    if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
 
     return null
 }
@@ -1588,8 +1590,8 @@ export const ApplicationValidate = (o?: Application, opts: ApplicationOptions = 
     if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
     if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
 
-    if (typeof o.balance !== 'number') return new Error(`${path}.balance: is not a number`)
-    if (opts.balance_CustomCheck && !opts.balance_CustomCheck(o.balance)) return new Error(`${path}.balance: custom check failed`)
+    if (typeof o.latestOutgoingInvoice !== 'number') return new Error(`${path}.latestOutgoingInvoice: is not a number`)
+    if (opts.latestOutgoingInvoice_CustomCheck && !opts.latestOutgoingInvoice_CustomCheck(o.latestOutgoingInvoice)) return new Error(`${path}.latestOutgoingInvoice: custom check failed`)
 
     if (typeof o.npub !== 'string') return new Error(`${path}.npub: is not a string`)
     if (opts.npub_CustomCheck && !opts.npub_CustomCheck(o.npub)) return new Error(`${path}.npub: custom check failed`)
@@ -1679,8 +1681,14 @@ export const SetMockAppUserBalanceRequestValidate = (o?: SetMockAppUserBalanceRe
     if (typeof o.user_identifier !== 'string') return new Error(`${path}.user_identifier: is not a string`)
     if (opts.user_identifier_CustomCheck && !opts.user_identifier_CustomCheck(o.user_identifier)) return new Error(`${path}.user_identifier: custom check failed`)
 
-    if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
-    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+    if (typeof o.operation_id !== 'string') return new Error(`${path}.operation_id: is not a string`)
+    if (opts.operation_id_CustomCheck && !opts.operation_id_CustomCheck(o.operation_id)) return new Error(`${path}.operation_id: custom check failed`)
+
+    if (typeof o.service_fee !== 'number') return new Error(`${path}.service_fee: is not a number`)
+    if (opts.service_fee_CustomCheck && !opts.service_fee_CustomCheck(o.service_fee)) return new Error(`${path}.service_fee: custom check failed`)
+
+    if (typeof o.network_fee !== 'number') return new Error(`${path}.network_fee: is not a number`)
+    if (opts.network_fee_CustomCheck && !opts.network_fee_CustomCheck(o.network_fee)) return new Error(`${path}.network_fee: custom check failed`)
 
     return null
 }

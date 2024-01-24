@@ -45,6 +45,7 @@ import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
+import { Metrics } from './Pages/Metrics';
 
 setupIonicReact();
 
@@ -85,7 +86,7 @@ const App: React.FC = () => {
     <Provider store={store}>
       <IonApp className='safe-area'>
         <IonReactHashRouter>
-          <IonRouterOutlet>
+          <IonRouterOutlet style={{ position: "static" }}>
             <Layout>
               <>
                 <Background />
@@ -125,6 +126,9 @@ const App: React.FC = () => {
                 </Route>
                 <Route exact path="/notify">
                   <Notify />
+                </Route>
+                <Route exact path="/metrics">
+                  <Metrics />
                 </Route>
               </>
             </Layout>

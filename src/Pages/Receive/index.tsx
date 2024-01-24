@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { getNostrClient } from '../../Api'
@@ -66,6 +66,13 @@ export const Receive = () => {
   const [invoiceMemo, setInvoiceMemo] = useState("");
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isShown && amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
+  }, [isShown])
 
 
 
@@ -77,10 +84,8 @@ export const Receive = () => {
 
   useEffect(() => {
     if (paySource.length === 0) {
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
-      return openNotification("top", "Error", "You don't have any sources!");
+      openNotification("top", "Error", "You don't have any sources!");
+      router.push("/home");
     } else {
       configLNURL();
       if (paySource[0].pasteField.startsWith("nprofile")) {
@@ -175,8 +180,12 @@ export const Receive = () => {
   }
 
   const updateInvoice = async () => {
-    console.log("the memo", invoiceMemo)
+    
     toggle();
+    if (!amount) {
+      openNotification("top", "Error", "You need to set an amount");
+      return;
+    }
     dispatch(toggleLoading({ loadingMessage: "Loading..." }))
     setAmountValue(amount);
     await configInvoice(amount);
@@ -226,10 +235,12 @@ export const Receive = () => {
   };
 
   const setAmountContent = <React.Fragment>
-    <div className="Sources_notify">
+    <div className="Sources_notify" id="amount-modal">
       <div className="Sources_notify_title">Receive via Invoice</div>
       <div className="Receive_result_input">
         <input
+          ref={amountInputRef}
+					id="invoice-amount"
           type="number"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -245,7 +256,13 @@ export const Receive = () => {
           type="text"
           maxLength={90}
           style={{marginTop: "15px"}}
-          
+          id="invoice-memo"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              updateInvoice();
+            }
+
+          }}
           onChange={(e) => setInvoiceMemo(e.target.value)}
           placeholder="Description (optional)"
           value={invoiceMemo}
@@ -254,7 +271,7 @@ export const Receive = () => {
       <div className='Receive_modal_amount'>
         ~ ${parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
-      <button className="Sources_notify_button" onClick={updateInvoice}>OK</button>
+      <button className="Sources_notify_button" onClick={updateInvoice} id="confirm-invoice-amount">OK</button>
     </div>
   </React.Fragment>;
 
@@ -280,20 +297,30 @@ export const Receive = () => {
             &&
             <div>Cannot receive on-chain transactions</div> 
           }
-        <div className='Receive_copy'> 
-          {tag == 1 ? `${amount} ~$` + (parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)) : tag == 2 ? bitcoinAddText : lightningAdd}
+        <div className='Receive_copy'>
+          {
+            tag === 1
+            ?
+            `${amount} (${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} USD)`
+            :
+            tag == 2 ? bitcoinAddText : lightningAdd
+          }
         </div>
         {
           !(tag === 2 && !paySource[0].pasteField.includes("nprofile"))
           &&
           <>
-            <div className="Receive_set_amount">
-              <button onClick={toggle}>SET AMOUNT</button>
-            </div>
+            {
+              tag === 1
+              &&
+              <div className="Receive_set_amount">
+                <button id="set-amount-button" onClick={toggle}>SET AMOUNT</button>
+              </div>
+            }
             <div className="Receive_set_amount_copy">
-              <button onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+              <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
               <div style={{ width: "20px" }} />
-              <button onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+              <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
             </div>
           </>
         }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useSelector, useDispatch } from '../../State/store';
 import { useIonRouter } from '@ionic/react';
@@ -17,19 +17,20 @@ export interface ChainFeesInter {
   minimumFee: number,
 }
 
+const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+  notification.info({
+    message: header,
+    description:
+      text,
+    placement
+  });
+};
+
 export const Prefs = () => {
   const router = useIonRouter();
   const dispatch = useDispatch();
 
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-    api.info({
-      message: header,
-      description:
-        text,
-      placement
-    });
-  };
+
 
   //reducer
   const prefsRedux = useSelector((state) => state.prefs);
@@ -74,7 +75,8 @@ export const Prefs = () => {
           selected: chainFee
         }
       ));
-      return openNotification("top", "Success", "Successfully saved!");
+      openNotification("top", "Success", "Successfully saved!");
+      router.push("/home");
     } else {
       return openNotification("top", "Error", "Please insert correct endpoint!");
     }
@@ -149,7 +151,6 @@ export const Prefs = () => {
 
   return (
     <div className='Prefs_container'>
-      {contextHolder}
       <div className="Prefs">
         <div className="Prefs_header_text">Preferences</div>
         <div className="Prefs_chainfee">
@@ -157,15 +158,15 @@ export const Prefs = () => {
           <div className='Prefs_chainfee_options'>
             <div className='Prefs_chainfee_options_first'>
               <p className='Prefs_chainfee_options_top'>Economy</p>
-              <p className='Prefs_chainfee_options_bottom'>{chainFees.economyFee} sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.economyFee} sat/vByte</p>
             </div>
             <div className='Prefs_chainfee_options_second'>
               <p className='Prefs_chainfee_options_top'>Average</p>
-              <p className='Prefs_chainfee_options_bottom'>{Math.ceil((chainFees.hourFee + chainFees.halfHourFee) / 2)} sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{Math.ceil((chainFees.hourFee + chainFees.halfHourFee) / 2)} sat/vByte</p>
             </div>
             <div className='Prefs_chainfee_options_third'>
               <p className='Prefs_chainfee_options_top'>ASAP</p>
-              <p className='Prefs_chainfee_options_bottom'>{chainFees.fastestFee} sat/byte</p>
+              <p className='Prefs_chainfee_options_bottom'>{chainFees.fastestFee} sat/vByte</p>
             </div>
           </div>
           <div className='Prefs_chainfee_settings'>
