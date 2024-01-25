@@ -2,13 +2,12 @@ import { Route } from 'react-router-dom';
 import {
   IonApp,
   IonRouterOutlet,
-  setupIonicReact,
-  useIonRouter
+  setupIonicReact
 } from '@ionic/react';
 import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
 import AppUrlListener from './Hooks/appUrlListener';
-import { DeeplinkService, isAppInstalled, useInstallAppAlert } from './Hooks/deeplink.service';
+import { DeeplinkService } from './Hooks/deeplink.service';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -52,17 +51,9 @@ import { Metrics } from './Pages/Metrics';
 setupIonicReact();
 
 const App: React.FC = () => {
-  const router = useIonRouter();
-
   // deep linking handler to open App
-  const handleDeepLink = async (link: string = '') => {
-    const appInstalled = await isAppInstalled();
-    if(appInstalled) {
-      DeeplinkService(link);
-    } else {
-      const showAlert: string = useInstallAppAlert();
-      router.push(showAlert);
-    }
+  const handleDeepLink = (link: string = '') => {
+    DeeplinkService(link);
   }
 
   useEffect(() => {
@@ -71,10 +62,10 @@ const App: React.FC = () => {
     setTimeout(() => {
       handleDeepLink();
     }, 1000);
-  }, [router]);
+  }, []);
 
   const setStatusBarColor = async () => {
-    await StatusBar.setBackgroundColor({ color: '#16191c' }); // Replace with your desired color code
+    await StatusBar.setBackgroundColor({ color: '#16191c' });
   };
 
   return (
