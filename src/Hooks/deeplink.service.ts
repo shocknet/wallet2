@@ -14,7 +14,7 @@ export const DeeplinkService = (link: string) => {
     if(isiPhone) {
         window.location.href = appLink.toLowerCase();
         // window.location.href = 'https://test.shockwallet.app/open/';
-
+    }
     // try {
     //     window.location.href = appLink;
     //     return true;
