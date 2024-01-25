@@ -47,15 +47,12 @@ import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
-import { link } from 'fs';
 
 setupIonicReact();
 
 const App: React.FC = () => {
-  const [installPromptFlag, setInstallPromptFlag] = useState(true);
-
   // deep linking handler to open App
-  const handleDeepLink = (link: string) => {
+  const handleDeepLink = (link: string = '') => {
     DeeplinkService(link);
   }
 
@@ -63,7 +60,8 @@ const App: React.FC = () => {
     if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
     // call deep link
     setTimeout(() => {
-      handleDeepLink('shockwallet://');
+      handleDeepLink();
+      
     }, 1000);
   }, []);
 
