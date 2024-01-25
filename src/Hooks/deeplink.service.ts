@@ -5,7 +5,7 @@ import capacitorConfig from '../../capacitor.config';
 const { appName, appId } = capacitorConfig;
 const { Linking } = Capacitor.Plugins;
 
-const appLink = `${appName}/open`; // get app name
+const appLink = `${appName}://open`; // get app name
 
 export const DeeplinkService = (link: string) => {
     // const appInstalled = isAppInstalled(); // check app installation
@@ -13,7 +13,7 @@ export const DeeplinkService = (link: string) => {
     const isiPhone = /iPhone|iPod/.test(navigator.platform);
     if(isiPhone) {
         window.location.href = appLink.toLowerCase();
-        window.location.href = 'https://test.shockwallet.app/open/';
+        // window.location.href = 'https://test.shockwallet.app/open/';
 
     // try {
     //     window.location.href = appLink;
