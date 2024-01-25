@@ -12,8 +12,8 @@ export const DeeplinkService = (link: string) => {
     // Linking.openUrl.App.openUrl('tg://')
     const isiPhone = /iPhone|iPod/.test(navigator.platform);
     if(isiPhone) {
-        window.location.href = appLink.toLowerCase();
-        // window.location.href = 'https://test.shockwallet.app/open/';
+        // window.location.href = appLink.toLowerCase();
+        window.location.href = 'https://test.shockwallet.app/open/';
     }
     // try {
     //     window.location.href = appLink;
