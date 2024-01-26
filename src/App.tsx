@@ -7,7 +7,7 @@ import {
 import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
 import AppUrlListener from './Hooks/appUrlListener';
-import { DeeplinkService } from './Hooks/deeplink.service';
+// import { DeeplinkService } from './Hooks/deeplink.service';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -51,17 +51,9 @@ import { Metrics } from './Pages/Metrics';
 setupIonicReact();
 
 const App: React.FC = () => {
-  // deep linking handler to open App
-  const handleDeepLink = (link: string = '') => {
-    DeeplinkService(link);
-  }
 
   useEffect(() => {
     if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
-    // call deep link
-    setTimeout(() => {
-      handleDeepLink();
-    }, 1000);
   }, []);
 
   const setStatusBarColor = async () => {
