@@ -1,52 +1,34 @@
-import { getPublicKey } from "nostr-tools"
-import { getNip46PrivateKey, getNip46Sender, parseNprofile, setNip46PrivateKey } from "../Api/nostr"
-import { getAppBackup, saveAppBackup } from "../Api/nostrHandler"
+import { getAppBackup, newBackupEvent, publishNostrEvent } from "../Api/nostrHandler"
+import { getSanctumNostrExtention } from "./nip07Extention"
 
-const validateBackupData = (nprofile: string) => {
-    let nip46PrivateKey = getNip46PrivateKey()
-    if (!nip46PrivateKey) {
-        setNip46PrivateKey()
-        nip46PrivateKey = getNip46PrivateKey()
+export const fetchRemoteBackup = async (): Promise<{ result: 'accessTokenMissing' } | { result: 'success', decrypted: string }> => {
+    const ext = getSanctumNostrExtention()
+    if (!ext.valid) {
+        return { result: 'accessTokenMissing' }
     }
-    if (!nip46PrivateKey) {
-        throw new Error("no nip46 key found")
-    }
-    const nip46Pub = getPublicKey(nip46PrivateKey)
-    const { pubkey, relays } = parseNprofile(nprofile)
-    if (!relays) {
-        throw new Error("nprofile does not contain any relays")
-    }
-    return { pubkey, relays, nip46Pub, nip46Priv: nip46PrivateKey }
-}
-
-export const fetchRemoteBackup = async (nprofile: string, sanctumToken?: string): Promise<string | null> => {
-    const { pubkey, relays, nip46Pub } = validateBackupData(nprofile)
-    const sender = await getNip46Sender({ pubkey, relays })
-    if (sanctumToken) {
-        const connectRes = await sender({ method: 'connect', pubkey: nip46Pub, secret: sanctumToken })
-        if (connectRes.error) {
-            throw new Error("falied to connect to sanctum" + connectRes.error)
-        }
-    }
-    const backupEvent = await getAppBackup(pubkey, relays)
+    const pubkey = await ext.getPublicKey()
+    const relays = await ext.getRelays()
+    const backupEvent = await getAppBackup(pubkey, Object.keys(relays))
     if (!backupEvent) {
         console.log("no backups found")
-        return null
+        return { result: 'success', decrypted: "" }
     }
-
-    const decryptRes = await sender({ method: 'nip44_decrypt', pubkey, ciphertext: backupEvent.content })
-    if (decryptRes.error) {
-        throw new Error("failed to decrypt" + decryptRes.error)
-    }
-    return decryptRes.result
+    const decrypted = await ext.decrypt(pubkey, backupEvent.content)
+    return { result: 'success', decrypted }
 }
 
-export const saveRemoteBackup = async (nprofile: string, backup: string) => {
-    const { pubkey, relays, nip46Priv } = validateBackupData(nprofile)
-    const sender = await getNip46Sender({ pubkey, relays })
-    const encryptRes = await sender({ method: 'nip44_encrypt', pubkey, plaintext: backup })
-    if (encryptRes.error) {
-        throw new Error("failed to encrypt" + encryptRes.error)
+export const saveRemoteBackup = async (backup: string) => {
+    const ext = getSanctumNostrExtention()
+    if (!ext.valid) {
+        throw new Error('access token missing')
     }
-    await saveAppBackup(nip46Priv, pubkey, relays, backup)
+    const pubkey = await ext.getPublicKey()
+    const relays = await ext.getRelays()
+    const encrypted = await ext.encrypt(pubkey, backup)
+
+    const backupEvent = newBackupEvent(encrypted, pubkey)
+
+    const signed = await ext.signEvent(backupEvent)
+
+    await publishNostrEvent(signed, Object.keys(relays))
 }

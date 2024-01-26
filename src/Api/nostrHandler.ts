@@ -91,19 +91,18 @@ export default class Handler {
 const appTag = "shockwallet"
 export const getAppBackup = (pubkey: string, relays: string[]) => {
     const pool = new SimplePool()
-    const userKey = `${pubkey}@${appTag}`
-    return pool.get(relays, { kinds: [30078], '#d': [userKey] })
+    return pool.get(relays, { kinds: [30078], '#d': [appTag], authors: [pubkey] })
 }
-const newBackupEvent = (senderPrivateKey: string, ownerPublicKey: string, data: string) => {
-    return finishEvent({
+export const newBackupEvent = (data: string, pubkey: string) => {
+    return {
         content: data,
         created_at: Math.floor(Date.now() / 1000),
         kind: 30078,
-        tags: [["d", `${ownerPublicKey}@${appTag}`]]
-    }, senderPrivateKey)
+        tags: [["d", appTag]],
+        pubkey
+    }
 }
-export const saveAppBackup = (senderPrivateKey: string, ownerPublicKey: string, relays: string[], data: string) => {
-    const signed = newBackupEvent(senderPrivateKey, ownerPublicKey, data)
+export const publishNostrEvent = (data: Event, relays: string[]) => {
     const pool = new SimplePool()
-    return pool.publish(relays, signed)
+    return pool.publish(relays, data)
 }
