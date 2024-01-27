@@ -129,6 +129,7 @@ export interface SpendFrom {
   option: string;
   maxWithdrawable?: string; // Max sats payable to out of pub invoice
   disabled?: string // the error message
+  disconnected?: boolean
 }
 
 export interface PayTo {
@@ -137,4 +138,5 @@ export interface PayTo {
   pasteField: string;
   option: string;
   icon: string;
+  disconnected?: boolean
 }

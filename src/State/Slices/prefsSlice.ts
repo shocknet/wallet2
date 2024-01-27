@@ -6,17 +6,28 @@ interface PrefsInterface {
   selected: FeeOptions
   debugMode?: boolean
 }
-
-const prefs = localStorage.getItem("prefs");
+export const storageKey = "prefs"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as PrefsInterface
+  const remote = JSON.parse(serialRemote) as PrefsInterface
+  const merged: PrefsInterface = {
+    mempoolUrl: local.mempoolUrl || remote.mempoolUrl,
+    BTCUSDUrl: local.BTCUSDUrl || remote.BTCUSDUrl,
+    selected: local.selected || remote.selected,
+    debugMode: local.debugMode,
+  }
+  return JSON.stringify(merged)
+}
+const prefs = localStorage.getItem(storageKey);
 
 const update = (value: PrefsInterface) => {
-  localStorage.setItem("prefs", JSON.stringify(value));
+  localStorage.setItem(storageKey, JSON.stringify(value));
 }
 
 const initialState: PrefsInterface = JSON.parse(prefs ?? '{"selected":"","mempoolUrl":"", "BTCUSDUrl":""}');
 
 const prefsSlice = createSlice({
-  name: 'prefs',
+  name: storageKey,
   initialState,
   reducers: {
     setPrefs: (state, action: PayloadAction<PrefsInterface>) => {
@@ -28,7 +39,7 @@ const prefsSlice = createSlice({
     setDebugMode: (state, action: PayloadAction<boolean>) => {
       state.debugMode = action.payload
       update(state)
-    }
+    },
   },
 });
 

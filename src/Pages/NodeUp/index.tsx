@@ -32,6 +32,8 @@ export const NodeUp = () => {
   useEffect(() => {
     if (privateKey) {
       router.push("/home")
+    } else{
+      window.open('shockwallet://open', '_blank');
     }
   }, [router, privateKey]);
 

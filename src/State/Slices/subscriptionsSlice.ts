@@ -1,5 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { Destination } from '../../constants';
+import { mergeArrayValues, mergeRecords } from './dataMerge';
+import { Interval } from '../../Pages/Automation/newSubModal';
 export type SubscriptionPrice = { type: 'cents' | 'sats', amt: number }
 export type Subscription = {
   subId: string
@@ -7,6 +9,11 @@ export type Subscription = {
   subbedAtUnix: number
   price: SubscriptionPrice
   destionation: Destination
+  memo: string
+  enabled: boolean
+  interval: Interval
+  unsubbedAtUnix?: number
+  unsubReason?: 'cancel' | 'expire' | 'failure'
 }
 export type SubscriptionPayment = {
   subId: string
@@ -15,23 +22,32 @@ export type SubscriptionPayment = {
   periodStartUnix: number
   periodEndUnix: number
   paidSats: number
+  fake?: boolean
 }
 interface Subscriptions {
   activeSubs: Subscription[]
-  inactiveSubs: (Subscription & { unsubbedAtUnix: number, unsubReason: 'cancel' | 'expire' })[]
   payments: Record<string, SubscriptionPayment[]>
 }
-
+export const storageKey = "subscriptions"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as Subscriptions
+  const remote = JSON.parse(serialRemote) as Subscriptions
+  const merged: Subscriptions = {
+    activeSubs: mergeArrayValues(local.activeSubs, remote.activeSubs, v => v.subId),
+    payments: mergeRecords(local.payments, remote.payments, (l, r) => mergeArrayValues(l, r, v => v.operationId))
+  }
+  return JSON.stringify(merged)
+}
 const update = (value: Subscriptions) => {
   const save = JSON.stringify(value)
-  localStorage.setItem("subscriptions", save);
+  localStorage.setItem(storageKey, save);
 }
 const subsLocal = localStorage.getItem("subscriptions");
-const iState: Subscriptions = { activeSubs: [], inactiveSubs: [], payments: {} };
+const iState: Subscriptions = { activeSubs: [], payments: {} };
 const initialState: Subscriptions = JSON.parse(subsLocal ?? JSON.stringify(iState));
 
 const subscriptionsSlice = createSlice({
-  name: 'subscriptions',
+  name: storageKey,
   initialState,
   reducers: {
     addSubPayment: (state, action: PayloadAction<{ payment: SubscriptionPayment }>) => {
@@ -53,19 +69,8 @@ const subscriptionsSlice = createSlice({
       }
       update(state)
     },
-    removeActiveSub: (state, action: PayloadAction<{ subId: string, unsubReason: 'cancel' | 'expire' }>) => {
-      const { subId, unsubReason } = action.payload
-      const existingIndex = state.activeSubs.findIndex(s => s.subId === subId)
-      if (existingIndex === -1) {
-        console.log("tried to delete non existing Sub")
-        return
-      }
-      const [removed] = state.activeSubs.splice(existingIndex, 1)
-      state.inactiveSubs.push({ ...removed, unsubbedAtUnix: Math.floor(Date.now() / 1000), unsubReason })
-      update(state)
-    },
   }
 });
 
-export const { updateActiveSub, addSubPayment, removeActiveSub } = subscriptionsSlice.actions;
+export const { updateActiveSub, addSubPayment } = subscriptionsSlice.actions;
 export default subscriptionsSlice.reducer;
