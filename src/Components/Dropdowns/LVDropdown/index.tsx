@@ -4,6 +4,7 @@ import classNames from "classnames";
 import { useRef, useState } from "react";
 import { Period } from "../../../Pages/Metrics";
 import useClickOutside from "../../../Hooks/useClickOutside";
+import * as Icons from "../../../Assets/SvgIconLibrary";
 import { Interval } from "../../../Pages/Automation/newSubModal";
 
 interface Props<T> {
@@ -16,6 +17,9 @@ const Dropdown = <T extends "number" | "string" | Period | Interval>({ setState,
 	const [expand, setExpand] = useState(false);
 	const dropDownRef = useRef<HTMLDivElement>(null);
 	useClickOutside([dropDownRef], () => setExpand(false));
+
+	useClickOutside([dropDownRef], () => setExpand(false));
+
 
 	return (
 		<div className={styles["sort-order"]}>
