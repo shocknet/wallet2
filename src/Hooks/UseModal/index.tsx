@@ -7,4 +7,4 @@ export const UseModal = () => {
     isShown,
     toggle,
   };
-};
+}; 

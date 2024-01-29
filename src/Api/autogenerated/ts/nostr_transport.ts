@@ -23,12 +23,25 @@ const logErrorAndReturnResponse = (error: Error, response: string, res: NostrRes
 }
 export default (methods: Types.ServerMethods, opts: NostrOptions) => {
     const logger = opts.logger || { log: console.log, error: console.error }
-    return async (req: NostrRequest, res: NostrResponse, startString: string) => {
+    return async (req: NostrRequest, res: NostrResponse, startString: string, startMs: number) => {
         const startTime = BigInt(startString)
         const info: Types.RequestInfo = { rpcName: req.rpcName || 'unkown', batch: false, nostr: true, batchSize: 0 }
-        const stats: Types.RequestStats = { start: startTime, parse: process.hrtime.bigint(), guard: 0n, validate: 0n, handle: 0n }
+        const stats: Types.RequestStats = { startMs, start: startTime, parse: process.hrtime.bigint(), guard: 0n, validate: 0n, handle: 0n }
         let authCtx: Types.AuthContext = {}
         switch (req.rpcName) {
+            case 'UserHealth':
+                try {
+                    if (!methods.UserHealth) throw new Error('method: UserHealth is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK' })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
             case 'GetUserInfo':
                 try {
                     if (!methods.GetUserInfo) throw new Error('method: GetUserInfo is not implemented')
@@ -268,9 +281,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     for (let i = 0; i < requests.length; i++) {
                         const operation = requests[i]
                         const opInfo: Types.RequestInfo = { rpcName: operation.rpcName, batch: true, nostr: true, batchSize: 0 }
-                        const opStats: Types.RequestStats = { start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
+                        const opStats: Types.RequestStats = { startMs, start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
                         try {
                             switch (operation.rpcName) {
+                                case 'UserHealth':
+                                    if (!methods.UserHealth) {
+                                        throw new Error('method not defined: UserHealth')
+                                    } else {
+                                        opStats.validate = opStats.guard
+                                        await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK' })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
                                 case 'GetUserInfo':
                                     if (!methods.GetUserInfo) {
                                         throw new Error('method not defined: GetUserInfo')

@@ -15,6 +15,8 @@ import { parseNprofile } from "../Api/nostr";
 import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 import axios, { isAxiosError } from "axios";
 import { openNotification } from "../constants";
+import { SubscriptionsBackground } from "./BackgroundJobs/subscriptions";
+import { HealthCheck } from "./BackgroundJobs/HealthCheck";
 
 export const Background = () => {
 
@@ -259,6 +261,8 @@ export const Background = () => {
 	</React.Fragment>;
 
 	return <div id="focus_div">
+		<SubscriptionsBackground />
+		<HealthCheck />
 		<Modal isShown={isShown} hide={() => { toggle(); latestAckedClipboard.current = clipText; }} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }

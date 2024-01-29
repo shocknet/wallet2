@@ -1,29 +1,34 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
+export const storageKey = "generatedAssets"
 interface GeneratedAssets {
-  assets: string[]
+	assets: string[]
+}
+
+export const mergeLogic = (serialLocal: string, _: string): string => {
+	return serialLocal
 }
 
 const LIMIT = 5
 
-const assetsyLocal = localStorage.getItem("generatedAssets");
+const assetsyLocal = localStorage.getItem(storageKey);
 
 const update = (value: GeneratedAssets) => {
-  const save = JSON.stringify(value)
-  localStorage.setItem("generatedAssets", save);
+	const save = JSON.stringify(value)
+	localStorage.setItem(storageKey, save);
 }
 
 const initialState: GeneratedAssets = JSON.parse(assetsyLocal ?? "{}");
 
 
 const generatedAssetsSlice = createSlice({
-  name: 'generatedAssets',
-  initialState,
-  reducers: {
-    addAsset: (state, action: PayloadAction<{ asset: string }>) => {
+	name: storageKey,
+	initialState,
+	reducers: {
+		addAsset: (state, action: PayloadAction<{ asset: string }>) => {
 			const { asset } = action.payload;
 			if (!state.assets) {
-					state.assets = [];
+				state.assets = [];
 			}
 			if (state.assets.includes(asset)) return;
 			const array = [...state.assets];
@@ -35,8 +40,8 @@ const generatedAssetsSlice = createSlice({
 			state.assets = array;
 
 			update(state);
-    },
-  }
+		},
+	}
 });
 
 export const { addAsset } = generatedAssetsSlice.actions;

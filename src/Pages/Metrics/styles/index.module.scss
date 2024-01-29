@@ -15,7 +15,7 @@
 			height: 2px;
 			display: block;
 		}
-		width: 60%;
+		width: 50%;
 		padding: 0 15px;
 		@media (max-width: 768px) {
 			width: 100%;
@@ -33,12 +33,15 @@
 				justify-content: space-between;
 				border: 1px solid #383838;
 				border-radius: 5px;
-				padding: 5px;
+				padding: 7px 10px;
 				span {
 					display: flex;
 					gap: 5px;
 					align-items: center;
 					font-size: 16px;
+				}
+				.date {
+					color: #8c8c8c;
 				}
 			}
 		}
@@ -52,6 +55,8 @@
 				display: flex;
 				flex-direction: column;
 				gap: 5px;
+				border-width: 1.7px;
+				border-style: solid;
 				.top {
 					display: flex;
 					justify-content: space-between;
@@ -142,16 +147,16 @@
 
 				}
 				&.net {
-					border: 1px solid #43b960;
+					border-color: #43b960;
 				}
 				&.channels {
-					border: 1px solid #a012c7;
+					border-color: #a012c7;
 				}
 				&.top-channels {
-					border: 1px solid #baba06;
+					border-color: #baba06;
 				}
 				&.routing {
-					border: 1px solid #f59322;
+					border-color: #f59322;
 				}
 			}
 		}
@@ -165,7 +170,9 @@
 			justify-content: center;
 			align-items: center;
 			gap: 5px;
+			min-width: 8rem;
 		}
+		
 		.box {
 			border: 1px solid #2a3035;
 			border-radius: 5px;
@@ -199,6 +206,66 @@
 				z-index: -1;
 				border-radius: 4px;
 			}
+		}
+	}
+	
+}
+.column {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	width: 75%;
+	gap: 8px;
+	.input-container {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		label {
+			font-size: 16px;
+		}
+		input {
+			width: 70%;
+			outline: 0;
+			font-family: Montserrat;
+      font-size: 17px;
+      text-align: start;
+      background-color: transparent;
+      color: #a3a3a3;
+      box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
+			padding: 0 10px;
+      border: 1px solid #2cb0e9;
+      border-radius: 5px;
+		}
+	}
+	button {
+		max-width: 160px;
+		width: 140px;
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+		box-sizing: border-box;
+		font-size: 22px;
+		font-family: Montserrat;
+		font-weight: bold;
+		padding: 6px 15px;
+		$border: 1px;
+		color: #FFF;
+		background: #16191c;
+		background-clip: padding-box; /* !importanté */
+		border: solid $border transparent; /* !importanté */
+		border-radius: 5px;
+		margin-top: 3px;
+		cursor: pointer;
+		&:before {
+			content: '';
+			position: absolute;
+			top: 0; right: 0; bottom: 0; left: 0;
+			z-index: -1;
+			margin: -$border; /* !importanté */
+			border-radius: 3px; /* !importanté */
+			background: linear-gradient(150deg, #29ABE2, #B0B0B0);
 		}
 	}
 	

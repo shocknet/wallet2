@@ -1,10 +1,17 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { SpendFrom } from '../../globalTypes';
-
-const getSpendFromLocal = localStorage.getItem("spendFrom");
+import { mergeArrayValues } from './dataMerge';
+export const storageKey = "spendFrom"
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as SpendFrom[]
+  const remote = JSON.parse(serialRemote) as SpendFrom[]
+  const merged: SpendFrom[] = mergeArrayValues(local, remote, v => v.pasteField)
+  return JSON.stringify(merged)
+}
+const getSpendFromLocal = localStorage.getItem(storageKey);
 
 const update = (value: SpendFrom[]) => {
-  localStorage.setItem("spendFrom", JSON.stringify(value));
+  localStorage.setItem(storageKey, JSON.stringify(value));
 }
 
 const initialState: SpendFrom[] = JSON.parse(getSpendFromLocal ?? "[]");

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Chart as ChartJS, registerables, Legend } from 'chart.js';
 import { Bar, Line, Pie, Chart } from 'react-chartjs-2'
 ChartJS.register(...registerables, Legend);
@@ -10,6 +10,9 @@ import { BarGraph, LineGraph, LndGraphs, PieGraph, processData, processLnd } fro
 import styles from "./styles/index.module.scss";
 import classNames from 'classnames';
 import moment from 'moment';
+import { toggleLoading } from '../../State/Slices/loadingOverlay';
+import { openNotification, stringToColor } from '../../constants';
+import Dropdown from '../../Components/Dropdowns/LVDropdown';
 
 const trimText = (text: string) => {
 	return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -46,6 +49,51 @@ const getCreds = () => {
   }
   return JSON.parse(v) as Creds
 }
+
+ export enum Period {
+	THIS_WEEK = "This Week",
+	THIS_MONTH = "This Month",
+	THIS_YEAR = "This Year",
+	ALL_TIME = "All Time",
+}
+
+const periodOptionsArray = Object.values(Period);
+
+const  getUnixTimeRange = (period: Period) => {
+  const now = new Date();
+  let from_unix: number, to_unix: number;
+
+  switch (period) {
+    case Period.THIS_WEEK: {
+      const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0, 0, 0, 0);
+      const lastDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6)).setHours(23, 59, 59, 999);
+      from_unix = Math.floor(firstDayOfWeek / 1000);
+      to_unix = Math.floor(lastDayOfWeek / 1000);
+      break;
+    }
+
+    case Period.THIS_MONTH: {
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).setHours(23, 59, 59, 999);
+      from_unix = Math.floor(firstDayOfMonth / 1000);
+      to_unix = Math.floor(lastDayOfMonth / 1000);
+      break;
+    }
+
+    case Period.THIS_YEAR: {
+      const firstDayOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+      const lastDayOfYear = new Date(now.getFullYear(), 11, 31).setHours(23, 59, 59, 999);
+      from_unix = Math.floor(firstDayOfYear / 1000);
+      to_unix = Math.floor(lastDayOfYear / 1000);
+      break;
+    }
+    case Period.ALL_TIME:
+      return undefined
+  }
+
+  return { from_unix, to_unix };
+}
+
 export const Metrics = () => {
   const [url, setUrl] = useState("")
   const [metricsToken, setMetricsToken] = useState("")
@@ -54,20 +102,50 @@ export const Metrics = () => {
   const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
+  const [period, setPeriod] = useState<Period>(Period.ALL_TIME);
+  const [firstRender, setFirstRender] = useState(true);
+  const dispatch = useDispatch();
 
-  const fetchMetrics = async (fromCache?: boolean) => {
+  const otherOptions = periodOptionsArray.filter((o) => o !== period);
+
+  useEffect(() => {
+    if (firstRender) {
+      setFirstRender(false);
+      return;
+    }
+    fetchMetrics();
+  }, [period])
+
+  const fetchMetrics = useCallback(async (fromCache?: boolean) => {
     if (!url || !metricsToken) {
       console.log("token or url missing")
       return
     }
     setLoading(true)
+    dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
     const client = getHttpClient(url, { metricsToken })
+    const periodRange = getUnixTimeRange(period);
     const usage = await client.GetUsageMetrics()
-    const apps = await client.GetAppsMetrics({ include_operations: true })
-    const lnd = await client.GetLndMetrics({})
-    if (usage.status !== 'OK') throw new Error(usage.reason)
-    if (apps.status !== 'OK') throw new Error(apps.reason)
-    if (lnd.status !== 'OK') throw new Error(lnd.reason)
+    const apps = await client.GetAppsMetrics({ include_operations: true, ...periodRange });
+    const lnd = await client.GetLndMetrics({ ...periodRange });
+    if (usage.status !== 'OK') {
+      setLoading(false);
+      dispatch(toggleLoading({ loadingMessage: "" }));
+      openNotification("top", "Error", usage.reason)
+      return;
+    }
+    if (apps.status !== 'OK') {
+      setLoading(false);
+      dispatch(toggleLoading({ loadingMessage: "" }));
+      openNotification("top", "Error", apps.reason)
+      return;
+    }
+    if (lnd.status !== 'OK') {
+      setLoading(false);
+      dispatch(toggleLoading({ loadingMessage: "" }));
+      openNotification("top", "Error", lnd.reason)
+      return;
+    }
     if (!fromCache) saveCreds({ url, metricsToken })
     const lndGraphs = processLnd(lnd)
     setLndGraphsData(lndGraphs)
@@ -103,7 +181,9 @@ export const Metrics = () => {
       appsUsers
     })
     setReady(true)
-  }
+    dispatch(toggleLoading({ loadingMessage: "" }));
+  }, [dispatch, metricsToken, url, period]);
+
   useEffect(() => {
     const creds = getCreds()
     if (!creds) {
@@ -114,22 +194,25 @@ export const Metrics = () => {
     fetchMetrics(true)
   }, [])
   if (loading && !ready) {
-    return <div className=''>
-      loading...
-
-    </div>
+    return null
   }
   if (!ready) {
-    return <div className=''>
-      <label htmlFor="">URL</label>
-      <input type="text" value={url} onChange={e => setUrl(e.target.value)} />
-      <label htmlFor="">Metrics Token</label>
-      <input type="text" value={metricsToken} onChange={e => setMetricsToken(e.target.value)} />
-      <button onClick={() => fetchMetrics()}>fetch</button>
-      <div >
-
+    return (
+      <div className={styles["metrics-container"]}>
+        <div className={styles["column"]}>
+          <div className={styles["input-container"]}>
+            <label htmlFor="metrics-url">URL:</label>
+            <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} />
+          </div>
+          <div className={styles["input-container"]}>
+            <label htmlFor="metrics-token">Metrics Token:</label>
+            <input type="text" value={metricsToken} onChange={(e) => setMetricsToken(e.target.value)} />
+          </div>
+          <button onClick={() => fetchMetrics()}>Fetch</button>
+        </div>
       </div>
-    </div>
+    )
+
   }
   if (!lndGraphsData || !channelsInfo || !appsInfo) {
     return <div style={{ color: 'red' }}>
@@ -147,29 +230,40 @@ export const Metrics = () => {
 						responsive: true,
 						maintainAspectRatio: true,
 						aspectRatio: 16/9,
+            elements: {
+              line: {
+                borderWidth: 3,
+              },
+              point: {
+                radius: 0,
+              },
+            },
 						plugins: {
 							legend: {
 								display: true,
 								position: "chartArea",
 								align: "start",
-								fullSize: false,
 								maxWidth: 12,
 								labels: {
 									boxWidth: 10,
 									boxHeight: 10
-								}
-							} 
+								},
+                
+							},
 						},
 						scales: {
 							x: {
 								grid: {
 									color: "#383838"
-								}
+								},
 							},
 							y: {
 								grid: {
 									color: "#383838"
-								}
+								},
+                ticks: {
+                  display: false
+                }
 							}
 						},
 					}}
@@ -177,14 +271,19 @@ export const Metrics = () => {
       </div>
 			<div className={styles["section"]}>
 				<div className={styles["between"]}>
-					<div className={styles["center"]} style={{opacity: 0}}>
-						<div className={classNames(styles["center"], styles["box"])}>
+					<div className={styles["center"]}>
+            <Dropdown<Period>
+              setState={(value) => setPeriod(value)}
+              otherOptions={otherOptions}
+              jsx={<div className={classNames(styles["center"], styles["box"])}>
 							<span style={{ color: "#a012c7" }}>{Icons.Automation()}</span>
-							<span>This Week</span>
-						</div>
-						<div className={styles["arrows"]}>
+							<span>{period}</span>
+						</div>}
+						
+            />
+				{/* 		<div className={styles["arrows"]}>
 							Arrows
-						</div>
+						</div> */}
 					</div>
 					<div className={classNames(styles["box"], styles["border"])}>
 						Manage
@@ -197,10 +296,10 @@ export const Metrics = () => {
         <h3 className={styles["sub-title"]}>Events</h3>
         <div className={styles["column-flex"]}>
           {channelsInfo.openChannels.map(v => <>
-            <div className={styles["event-item"]}><span> {Icons.lightningIcon()} Channel Opened</span> <span>{getTimeAgo(v)}</span></div>
+            <div className={styles["event-item"]}><span> ⚡️&nbsp; Channel Opened</span> <span className={styles["date"]}>{getTimeAgo(v)}</span></div>
           </>)}
           {channelsInfo.closeChannels.map(v => <>
-            <div className={styles["event-item"]}><span> {Icons.Automation()} Channel Closed</span> <span>At block {v}</span></div>
+            <div className={styles["event-item"]}><span> 🚨&nbsp; Channel Closed</span> <span className={styles["date"]}>At block {v}</span></div>
           </>)}
         </div>
       </div>
@@ -256,7 +355,10 @@ export const Metrics = () => {
 					</div>
 					{
 						appsInfo.appsUsers.map(app => (
-							<div key={app.appName} className={classNames(styles["card"], styles["top-channels"])}>
+							<div key={app.appName}
+                className={classNames(styles["card"], styles["top-channels"])}
+                style={{ borderColor: stringToColor(app.appName)}}
+              >
 								<div className={styles["top"]}>
 									<h4 className={styles["card-label"]}>{app.appName}</h4>
 								</div>
