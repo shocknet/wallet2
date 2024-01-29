@@ -3,6 +3,21 @@
     font-family: Montserrat;
     width: 94%;
     margin-inline: auto;
+    &_terms {
+      font-size: 13px;
+      text-align: center;
+      width: 40%;
+      margin: 0 auto;
+      margin-top: 20px;
+      color: #999999;
+      @media (max-width: 425px) {
+        width: 80%;
+      }
+      a {
+        text-decoration: none;
+        color: #54bbe8;
+      }
+    }
   
     &__no-found{
       display: block;
@@ -37,6 +52,8 @@
       font-size: 80%;
       color: #268fbc;
       text-align: center;
+      margin-top: 20px;
+      cursor: pointer;
     }
 
     &_manual_text:hover {
@@ -44,7 +61,6 @@
     }
   
     &_manual_btn{
-      margin-top: 20px;
       text-align: center;
       padding: 0;
       width: 100%;
@@ -59,6 +75,7 @@
       padding: 10px;
       width: 220px;
       transition-duration: 400ms;
+      cursor: pointer;
     }
     
     &_manual_btn button:hover{

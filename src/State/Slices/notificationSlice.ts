@@ -1,21 +1,25 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { NotifyItemData } from '../../globalTypes';
+export const storageKey = "notifications"
 
 interface NotificationType {
   checkTime: number,
   notifications: NotifyItemData[],
 }
-
-const notifications = localStorage.getItem("notifications");
-
-const update = (value: NotificationType) => {
-  localStorage.setItem("notifications", JSON.stringify(value));
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  return serialLocal
 }
 
-const initialState: NotificationType = JSON.parse(notifications ?? JSON.stringify({checkTime:0,notifications:[]}));
+const notifications = localStorage.getItem(storageKey);
+
+const update = (value: NotificationType) => {
+  localStorage.setItem(storageKey, JSON.stringify(value));
+}
+
+const initialState: NotificationType = JSON.parse(notifications ?? JSON.stringify({ checkTime: 0, notifications: [] }));
 
 const notifySlice = createSlice({
-  name: 'notifications',
+  name: storageKey,
   initialState,
   reducers: {
     addNotification: (state, action: PayloadAction<NotifyItemData>) => {

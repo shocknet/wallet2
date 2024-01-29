@@ -11,7 +11,7 @@ import styles from "./styles/index.module.scss";
 import classNames from 'classnames';
 import moment from 'moment';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { openNotification } from '../../constants';
+import { openNotification, stringToColor } from '../../constants';
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
 
 const trimText = (text: string) => {
@@ -230,29 +230,40 @@ export const Metrics = () => {
 						responsive: true,
 						maintainAspectRatio: true,
 						aspectRatio: 16/9,
+            elements: {
+              line: {
+                borderWidth: 3,
+              },
+              point: {
+                radius: 0,
+              },
+            },
 						plugins: {
 							legend: {
 								display: true,
 								position: "chartArea",
 								align: "start",
-								fullSize: false,
 								maxWidth: 12,
 								labels: {
 									boxWidth: 10,
 									boxHeight: 10
-								}
-							} 
+								},
+                
+							},
 						},
 						scales: {
 							x: {
 								grid: {
 									color: "#383838"
-								}
+								},
 							},
 							y: {
 								grid: {
 									color: "#383838"
-								}
+								},
+                ticks: {
+                  display: false
+                }
 							}
 						},
 					}}
@@ -285,10 +296,10 @@ export const Metrics = () => {
         <h3 className={styles["sub-title"]}>Events</h3>
         <div className={styles["column-flex"]}>
           {channelsInfo.openChannels.map(v => <>
-            <div className={styles["event-item"]}><span> {Icons.lightningIcon()} Channel Opened</span> <span>{getTimeAgo(v)}</span></div>
+            <div className={styles["event-item"]}><span> ⚡️&nbsp; Channel Opened</span> <span className={styles["date"]}>{getTimeAgo(v)}</span></div>
           </>)}
           {channelsInfo.closeChannels.map(v => <>
-            <div className={styles["event-item"]}><span> {Icons.Automation()} Channel Closed</span> <span>At block {v}</span></div>
+            <div className={styles["event-item"]}><span> 🚨&nbsp; Channel Closed</span> <span className={styles["date"]}>At block {v}</span></div>
           </>)}
         </div>
       </div>
@@ -344,7 +355,10 @@ export const Metrics = () => {
 					</div>
 					{
 						appsInfo.appsUsers.map(app => (
-							<div key={app.appName} className={classNames(styles["card"], styles["top-channels"])}>
+							<div key={app.appName}
+                className={classNames(styles["card"], styles["top-channels"])}
+                style={{ borderColor: stringToColor(app.appName)}}
+              >
 								<div className={styles["top"]}>
 									<h4 className={styles["card-label"]}>{app.appName}</h4>
 								</div>

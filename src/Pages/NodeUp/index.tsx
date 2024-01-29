@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
@@ -32,6 +32,8 @@ export const NodeUp = () => {
   useEffect(() => {
     if (privateKey) {
       router.push("/home")
+    } else{
+      window.open('shockwallet://open', '_blank');
     }
   }, [router, privateKey]);
 
@@ -45,7 +47,7 @@ export const NodeUp = () => {
       return;
     } else {
       const bootstrapBalance = "0";
-      const nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
+      const nprofile = nip19.nprofileEncode({ pubkey: localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) || NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
       dispatch(addPaySources(
         {
           id: 0,
@@ -76,14 +78,17 @@ export const NodeUp = () => {
       &quot;Add connection&quot; to link a node now.
       </div>
       <div className="NodeUp_manual">
-        <div onClick={toSourcePage} className="NodeUp_manual_text">
-          Add Connection
-        </div>
         <div className="NodeUp_manual_btn">
-          <button onClick={toMainPage}>
+          <button onClick={toMainPage} id="continue-button">
             Continue
           </button>
         </div>
+        <div onClick={toSourcePage} className="NodeUp_manual_text">
+          Add Connection
+        </div>
+      </div>
+      <div className="NodeUp_terms">
+        By proceeding you acknowledge that this is bleeding-edge software, and agree to the providers <a href="https://docs.shock.network/terms/" target="_blank" rel="noreferrer">terms</a> regarding any services herein.
       </div>
     </div>
   )

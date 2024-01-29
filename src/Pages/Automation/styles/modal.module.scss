@@ -1,0 +1,67 @@
+.modal-header {
+	font-family: Montserrat;
+	border-radius: 8px 8px 0 0;
+	justify-content: space-between;
+	font-size: 24px;
+}
+.content {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	margin-top: 15px;
+	.input-container {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+
+		.input-element {
+			font-family: Montserrat;
+      font-size: 17px;
+      text-align: start;
+      width: 100%;
+      background-color: transparent;
+      color: #a3a3a3;
+      box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
+			padding: 6px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border: 1px solid #2cb0e9;
+      border-radius: 5px;
+		}
+		.label {
+			flex: 1;
+			text-align: right;
+			font-size: 16px;
+		}
+		.input {
+			flex: 3;
+			text-align: left;
+		}
+		.container {
+      width: 100%;
+      display: inline-flex;
+      border-bottom: 1px solid #a3a3a3;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      padding-bottom: 1px;
+      margin-left: 5px;
+			.input{
+				font-family: Montserrat;
+				font-size: 27px;
+				text-align: end;
+				margin-left: 5px;
+				width: 100%;
+				background-color: transparent;
+				color: #a3a3a3;
+				border: 0;
+				outline: 0;
+			}
+    }
+	}
+}

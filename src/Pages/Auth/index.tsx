@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useSelector } from '../../State/store';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { notification } from 'antd';
@@ -9,6 +8,13 @@ import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
+import { keyLinkClient } from '../../Api/keylink/http';
+import { keylinkAppId, keylinkUrl } from '../../constants';
+import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
+import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
+import { fetchRemoteBackup } from '../../helpers/remoteBackups';
+import { useDispatch } from '../../State/store';
+import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
 
 const FILENAME = "shockw.dat";
 
@@ -24,33 +30,62 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-
-
 export const Auth = () => {
   //reducer
-  const spendSources = useSelector((state) => state.spendSource).map((e) => { return { ...e } });
-
   const router = useIonRouter();
 
-  const [auth, setAuth] = useState("");
+  const [email, setEmail] = useState("");
+  const [sanctumNostrSecret, setSanctumNostrSecret] = useState("");
+  const [newPair, setNewPair] = useState(false);
   const [serviceCheck, setServiceCheck] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
+  const [retreiveAccessToken, setRetreiveAccessToken] = useState(false);
+  const [accessTokenRetreived, setAccessTokenRetreived] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [api, contextHolder] = notification.useNotification();
+  const dispatch = useDispatch()
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
       description:
-      text,
+        text,
       placement
     });
   };
 
   const { isShown, toggle } = UseModal();
-  const send = () => {
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const accessToken = urlParams.get("accessToken")
+    if (accessToken) {
+      setSanctumAccessToken(accessToken)
+      setAccessTokenRetreived(true)
+    }
+  }, [])
+
+  const signUpEmail = async () => {
+    if (!email) {
+      console.log("no email provided")
+      return
+    }
+    const nsec = newPair ? generatePrivateKey() : sanctumNostrSecret
+    if (!nsec) {
+      console.log("no nsec provided")
+      return
+    }
+    const res = await keyLinkClient.LinkAppUserToEmail({
+      app_id: keylinkAppId,
+      email,
+      identifier: getPublicKey(nsec),
+      nostr_secret: nsec
+    })
+    if (res.status === 'ERROR') {
+      openNotification("top", "Error", "Email link failed.");
+    }
+    openNotification("top", "Error", "Email linked succesfully.");
   }
 
   const openDownBackupModal = () => {
@@ -71,17 +106,17 @@ export const Auth = () => {
     }
 
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
-    const blob = new Blob([encodedString], {type: 'text/plain'});
+    const blob = new Blob([encodedString], { type: 'text/plain' });
     if (!isPlatform("hybrid")) {
       const link = document.createElement('a');
       link.download = FILENAME;
 
-      console.log({encodedString})
+      console.log({ encodedString })
 
       const reader = new FileReader();
       reader.readAsDataURL(blob);
 
-      reader.onload = function() {
+      reader.onload = function () {
         link.href = reader.result as string;
         link.click();
       };
@@ -93,7 +128,7 @@ export const Auth = () => {
           directory: Directory.Documents,
           recursive: true,
         });
-        console.log({savedFile})
+        console.log({ savedFile })
       } catch (e) {
         console.log(e)
       }
@@ -111,7 +146,7 @@ export const Auth = () => {
         if (event.target && event.target.result && typeof event.target.result === "string") {
           const content = event.target.result.split(",")[1];
           const decodedString = atob(content);
-          console.log({decodedString})
+          console.log({ decodedString })
           setDataFromFile(decodedString);
           setModalContent('decrypt');
           toggle();
@@ -126,7 +161,7 @@ export const Auth = () => {
     console.log(passphrase);
     if (!passphrase) return;
 
-    var decodedString: string = "";
+    let decodedString: string = "";
     try {
       decodedString = AES.decrypt(dataFromFile, passphrase).toString(enc.Utf8);
     } catch (error) {
@@ -157,6 +192,34 @@ export const Auth = () => {
       default:
         return encryptBackupModal;
     }
+  }
+
+  const loadRemoteBackup = async () => {
+    const keyExists = getNostrPrivateKey()
+    if (keyExists) {
+      openNotification("top", "Error", "Cannot load remote backups. User already exists.");
+      return
+    }
+    const backup = await fetchRemoteBackup()
+    if (backup.result === 'accessTokenMissing') {
+      console.log("access token missing")
+      setRetreiveAccessToken(true)
+      return
+    }
+    if (backup.decrypted === '') {
+      openNotification("top", "Error", "No backups found from the provided pair.");
+      return
+    }
+    const data = JSON.parse(backup.decrypted);
+    const keys = Object.keys(data)
+    for (let i = 0; i < keys.length; i++) {
+      const element = keys[i];
+      localStorage.setItem(element, data[element])
+    }
+    openNotification("top", "Success", "Backup is imported successfully.");
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
   }
 
   const encryptBackupModal = <React.Fragment>
@@ -204,10 +267,12 @@ export const Auth = () => {
           </div>
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
-            <input value={auth} onChange={(e) => { setAuth(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
+            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
+            <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
+            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" />
           </div>
           <div className="Auth_auth_send">
-            <button onClick={send}>{Icons.send()}SEND</button>
+            <button onClick={() => signUpEmail()}>{Icons.send()}SIGNUP</button>
           </div>
           <div className='Auth_border'>
             <p className='Auth_or'>or</p>
@@ -228,8 +293,20 @@ export const Auth = () => {
           <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
+        <div className='Auth_import'>
+          <p>Import remote backup</p>
+          {!retreiveAccessToken && <div>
+            {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
+            {accessTokenRetreived && <p>you are now linked to sanctum, click to retreive the backup</p>}
+            <button onClick={() => loadRemoteBackup()}>LOAD</button>
+          </div>}
+          {retreiveAccessToken && <div>
+            <p>no nip07 extion found, use Sanctum instead?</p>
+            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(window.location.origin + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
+          </div>}
+        </div>
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>
-    </div>
+    </div >
   )
 }
