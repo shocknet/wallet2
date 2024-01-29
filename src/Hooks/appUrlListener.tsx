@@ -13,10 +13,10 @@ const AppUrlListener: React.FC<any> = () => {
     lnurlWithdraw: "withdraw",
   }
 
+
   useEffect(() => {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
       const slug = event.url.split(".app").pop();
-      alert(slug)
       if (slug) {
         router.push(slug);
       }
@@ -25,6 +25,7 @@ const AppUrlListener: React.FC<any> = () => {
   }, []);
 
   const recogParam = (param: string) => {
+    console.log(param, '111111111111111111111111111')
     param = param.toLowerCase();
     const paramArr = param.split("/");
     switch (paramArr[0]) {
