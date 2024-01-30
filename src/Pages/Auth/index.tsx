@@ -89,8 +89,12 @@ export const Auth = () => {
   }
 
   const openDownBackupModal = () => {
-    setModalContent('encrypt');
     toggle();
+  }
+  
+  const understandWaning = () => {
+    setModalContent('encrypt');
+    // toggle();
   }
 
   const downloadBackUp = async () => {
@@ -182,7 +186,7 @@ export const Auth = () => {
   useEffect(() => {
   });
 
-  const [modalContent, setModalContent] = useState('encrypt');
+  const [modalContent, setModalContent] = useState<string>('');
   const switchModalContent = () => {
     switch (modalContent) {
       case 'encrypt':
@@ -190,7 +194,7 @@ export const Auth = () => {
       case 'decrypt':
         return decryptBackupModal;
       default:
-        return encryptBackupModal;
+        return infoBackupModal;
     }
   }
 
@@ -222,6 +226,19 @@ export const Auth = () => {
     }, 1000);
   }
 
+  const infoBackupModal = <React.Fragment>
+    <div className='Auth_modal_header'>Warning</div>
+    <div className='Auth_modal_description'>File-based backups are used for recovery of connection details in the event of lost/replaced devices.</div>
+    <div className='Auth_modal_description' style={{color: "#ff0000"}}>
+      Using file-backups to sync multiple devices may result in conflicts. 
+    </div>
+    <div className='Auth_modal_description'>If you require multiple devices to be in active sync, <b>use the sync service.</b></div>
+    <div className="Auth_modal_add_btn">
+      <button onClick={understandWaning}>I Understand</button>
+    </div>
+
+  </React.Fragment>;
+
   const encryptBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Encrypt Backup</div>
     <div className='Auth_modal_description'>Set a passphrase for your backup file.</div>
@@ -251,7 +268,7 @@ export const Auth = () => {
     <div className='Auth_container'>
       {contextHolder}
       <div className="Auth">
-        <div style={{ opacity: "0" }}>
+        <div style={{ opacity: "1" }}>
           <div className="Auth_header_text">Back-Up & Restore</div>
           <div className='Auth_description'>
             <p className='Auth_description_header'>
@@ -268,8 +285,8 @@ export const Auth = () => {
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
             <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
-            <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
-            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" />
+            {/* <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
+            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" /> */}
           </div>
           <div className="Auth_auth_send">
             <button onClick={() => signUpEmail()}>{Icons.send()}SIGNUP</button>
@@ -285,7 +302,7 @@ export const Auth = () => {
             </button>
           </div>
           <div className='Auth_description_note'>
-            <p className='Auth_description_note_header'>Note:</p> Be sure to download an updated file after adding or modifying connections.
+            <b>Note:</b> Be sure to download an updated file after adding or modifying connections.
           </div>
         </div>
         <div className='Auth_border'></div>
@@ -293,7 +310,7 @@ export const Auth = () => {
           <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
-        <div className='Auth_import'>
+        {/* <div className='Auth_import'>
           <p>Import remote backup</p>
           {!retreiveAccessToken && <div>
             {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
@@ -304,7 +321,7 @@ export const Auth = () => {
             <p>no nip07 extion found, use Sanctum instead?</p>
             <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(window.location.origin + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
           </div>}
-        </div>
+        </div> */}
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>
     </div >
