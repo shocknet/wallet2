@@ -60,7 +60,8 @@
     height: 50px;
     width: 50px;
     padding: 5px;
-    margin-left: calc(50% - 25px);
+    transform: translate(-50%, 0);
+    margin-left: 50%;
     margin-top: -25px;
     border-radius: 50%;
     background-color: #16191c;
