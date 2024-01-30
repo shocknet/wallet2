@@ -8,61 +8,42 @@ import { Buffer } from 'buffer';
 
 const AppUrlListener: React.FC<any> = () => {
   const router = useIonRouter();
-
   const requestTag = {
     lnurlPay: "pay",
     lnurlWithdraw: "withdraw",
   }
 
-
   useEffect(() => {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      const slug = event.url.split(".app").pop();
-      console.log(slug, '----------------------============================')
-      if (slug) {
-        router.push(slug);
-      }
-      recogParam(event.url)
+      const incomingUrl = event.url.toLowerCase();
+      const url = new URL(event.url);
+      const urlArr = incomingUrl.split(".app");
+      const redirectUrlArr = urlArr[1].split("#");
+      return router.push(redirectUrlArr[1]);
     });
   }, []);
 
-  const recogParam = (param: string) => {
-    param = param.toLowerCase();
-    const paramArr = param.split("/");
-    console.log(paramArr, '111111111111111111111111111')
-    switch (paramArr[1]) {
-      case "open":
-        router.push("/")
-        break;
-      case "send":
-        router.push("/send?url=" + paramArr[2])
-        break;
-      case "lightning":
-        decodeLNURL(paramArr[2])
-        break;
-    }
-  }
   //when get lnurl protocol
-  const decodeLNURL = (lnurl: string) => {
-    if ((lnurl[0] + lnurl[1]) == "ln") {
-      router.push("/send?url=" + lnurl)
-    } else {
-      try {
-        let { words: dataPart } = bech32.decode(lnurl, 2000);
-        let sourceURL = bech32.fromWords(dataPart);
-        const lnurlLink = Buffer.from(sourceURL).toString();
+  // const decodeLNURL = (lnurl: string) => {
+  //   if ((lnurl[0] + lnurl[1]) == "ln") {
+  //     router.push("/send?url=" + lnurl)
+  //   } else {
+  //     try {
+  //       let { words: dataPart } = bech32.decode(lnurl, 2000);
+  //       let sourceURL = bech32.fromWords(dataPart);
+  //       const lnurlLink = Buffer.from(sourceURL).toString();
 
-        if (lnurlLink.includes(requestTag.lnurlPay)) {
-          router.push("/send?url=" + lnurl)
-        } else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
-          router.push("/sources?url=" + lnurl)
-        }
-      } catch (error) {
-        console.log(error);
-        // router.push("/send?url="+lnurl);
-      }
-    }
-  }
+  //       if (lnurlLink.includes(requestTag.lnurlPay)) {
+  //         router.push("/send?url=" + lnurl)
+  //       } else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
+  //         router.push("/sources?url=" + lnurl)
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //       // router.push("/send?url="+lnurl);
+  //     }
+  //   }
+  // }
 
   return null;
 };
