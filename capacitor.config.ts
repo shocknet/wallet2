@@ -8,6 +8,12 @@ const config: CapacitorConfig = {
     androidScheme: 'https'/* ,
     url: "http://192.168.1.125:8100",
     cleartext: true */
+  },
+  plugins: {
+    App: {
+      iosScheme: "shockwallet",
+      androidScheme: "shockwallet"
+    }
   }
 };
 
