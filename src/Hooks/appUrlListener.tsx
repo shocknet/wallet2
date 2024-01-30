@@ -15,14 +15,12 @@ const AppUrlListener: React.FC<any> = () => {
 
   useEffect(() => {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      const incomingUrl = event.url.toLowerCase();
-      const url = new URL(event.url);
-      const urlArr = incomingUrl.split(".app");
-      const redirectUrlArr = urlArr[1].split("#");
-      return router.push(redirectUrlArr[1]);
+      const slug = event.url.split(".app").pop();
+      if (slug) {
+        router.push(slug);
+      }
     });
   }, []);
-  
   return null;
 };
 
