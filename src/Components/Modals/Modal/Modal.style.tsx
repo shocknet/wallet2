@@ -5,9 +5,9 @@ export const Wrapper = styled.div`
   width: 100% !important;
   position: fixed;
   text-align: center;
-  max-width: 350px;
   height: 0;
-  margin-left: calc((100% - 350px)/2);
+  transform: translate(-50%, 0);
+  margin-left: 50%;
   overflow: show;
   top: 20vh;
   left: auto;
@@ -29,10 +29,11 @@ export const Backdrop = styled.div`
 `;
 
 export const StyledModal = styled.div`
-  max-width: 350px;
+  width: 90%;
+  max-width: 600px;
   border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 25px 10px 0px 10px;
+  padding: 25px 20px 0px 20px;
   text-align: center;
   z-index: 100;
   font-size: 20px;
