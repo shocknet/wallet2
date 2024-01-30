@@ -50,10 +50,10 @@
 
         &_note {
             font-size: 18px;
+            display: inline-block;
             color: #a3a3a3;
             text-decoration: none solid rgb(163, 163, 163);
             margin-top: 20px;
-            display: inline-flex;
             & b {
                 color: #FF7700;
             }
