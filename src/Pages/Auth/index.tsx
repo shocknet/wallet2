@@ -58,13 +58,13 @@ export const Auth = () => {
   const { isShown, toggle } = UseModal();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(router.routeInfo.search)
     const accessToken = urlParams.get("accessToken")
     if (accessToken) {
       setSanctumAccessToken(accessToken)
       setAccessTokenRetreived(true)
     }
-  }, [])
+  }, [router])
 
   const signUpEmail = async () => {
     if (!email) {

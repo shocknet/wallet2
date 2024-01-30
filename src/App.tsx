@@ -64,11 +64,11 @@ const App: React.FC = () => {
     <Provider store={store}>
       <IonApp className='safe-area'>
         <IonReactHashRouter>
+          <AppUrlListener />
           <IonRouterOutlet style={{ position: "static" }}>
             <Layout>
               <>
                 <Background />
-                <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
                 </Route>
