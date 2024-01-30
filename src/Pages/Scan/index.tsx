@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { notification } from 'antd';
+import { bech32 } from 'bech32';
+
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from "../../Hooks/UseModal";
@@ -95,7 +97,6 @@ export const Scan = () => {
   useEffect(() => {
     let { words: dataPart } = bech32.decode("nprofile1qqswxpkytms203mj2s83mjytqrme6tfezzlagpr7jyzcfxvda8y790spzemhxue69uhhyetvv9ujuatwd94kkafwvdhk6l6jep0", 2000)
     let sourceURL = bech32.fromWords(dataPart);
-    console.log(Buffer.from(sourceURL).toString())
   }, [])
 
 
