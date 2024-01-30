@@ -275,7 +275,7 @@ export const Auth = () => {
               Recommended:
             </p>
             <p className='Auth_description_para'>
-              Use the built-in <u>storage service</u> to recover your connections in the event your device data gets lost. The 1000 sats a month supports open-source development.
+              Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
             </p>
           </div>
           <div className='Auth_service' onClick={() => { setServiceCheck(!serviceCheck) }}>
@@ -284,7 +284,7 @@ export const Auth = () => {
           </div>
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
-            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
+            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="email@address.here or nsec" />
             {/* <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
             <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" /> */}
           </div>
