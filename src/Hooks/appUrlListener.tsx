@@ -8,7 +8,6 @@ import { Buffer } from 'buffer';
 
 const AppUrlListener: React.FC<any> = () => {
   const router = useIonRouter();
-
   const requestTag = {
     lnurlPay: "pay",
     lnurlWithdraw: "withdraw",

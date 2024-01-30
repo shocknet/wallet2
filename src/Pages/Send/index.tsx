@@ -98,8 +98,6 @@ export const Send = () => {
   useEffect(() => {
     const addressSearch = new URLSearchParams(router.routeInfo.search);
     const data = addressSearch.get("url");
-    alert(data);
-    console.log(data, '----32-3-3-3-3-3-3')
     if (data) {
       setTo(data);
     }
