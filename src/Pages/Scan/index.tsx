@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { notification } from 'antd';
+import { bech32 } from 'bech32';
+
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from "../../Hooks/UseModal";
@@ -88,7 +90,6 @@ export const Scan = () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }));
     await handleSubmit(bardcode.toLowerCase())
   }
-
 
 
 

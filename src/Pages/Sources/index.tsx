@@ -10,8 +10,8 @@ import { UseModal } from "../../Hooks/UseModal";
 import * as icons from "../../Assets/SvgIconLibrary";
 import { questionMark } from '../../Assets/SvgIconLibrary';
 import { isAxiosError } from 'axios';
-//reducer
-import { useSelector, useDispatch } from '../../State/store';
+
+import { useSelector, useDispatch } from '../../State/store'; //import reducer
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
@@ -35,7 +35,6 @@ const openNotification = (placement: NotificationPlacement, header: string, text
   });
 };
 export const Sources = () => {
-
   //parameter in url when click protocol
 /*   const addressSearch = new URLSearchParams(useLocation().search);
   const urlParam = addressSearch.get("url"); */
@@ -46,7 +45,6 @@ export const Sources = () => {
   const notifications = useSelector(state => state.notify.notifications);
   
   useEffect(() => {
-
     const addressSearch = new URLSearchParams(router.routeInfo.search);
     const data = addressSearch.get("url");
     const erroringSourceId = addressSearch.get("sourceId");
@@ -91,9 +89,6 @@ export const Sources = () => {
   const [editSSourceId, setEditSSourceId] = useState<number>(0);
   const [processingSource, setProcessingSource] = useState(false);
  
-
-
-
   const { isShown, toggle } = UseModal();
 
   const openAddSourceModal = () => {
@@ -158,9 +153,6 @@ export const Sources = () => {
         return notifyContent
     }
   }
-
- 
-
 
   const addSource = useCallback( async() => {
     toggle();
@@ -365,7 +357,6 @@ export const Sources = () => {
     }
   }
 
-
   const sweepLnurl = useCallback(async () => {
     toggle();
     dispatch(toggleLoading({ loadingMessage: "Sweeping..." }));
@@ -517,19 +508,12 @@ export const Sources = () => {
 
   </React.Fragment>;
 
-
-
-
-
-
-
   const arrayMove = (arr: PayTo[] | SpendFrom[], oldIndex: number, newIndex: number) => {
     const newArr = arr.map(e => ({ ...e }));
     const item = newArr.splice(oldIndex, 1)[0];
     newArr.splice(newIndex, 0, item);
     return newArr;
   }
-
 
   useEffect(() => {
     const list = document.getElementById('spend-list');

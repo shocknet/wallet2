@@ -5,7 +5,6 @@ interface PrefsInterface {
   BTCUSDUrl: string,
   selected: FeeOptions
   debugMode?: boolean
-  remoteBackupNProfile?: string
 }
 export const storageKey = "prefs"
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
@@ -41,12 +40,8 @@ const prefsSlice = createSlice({
       state.debugMode = action.payload
       update(state)
     },
-    setRemoteBackupNProfile: (state, action: PayloadAction<string>) => {
-      state.remoteBackupNProfile = action.payload
-      update(state)
-    },
   },
 });
 
-export const { setPrefs, setDebugMode, setRemoteBackupNProfile } = prefsSlice.actions;
+export const { setPrefs, setDebugMode } = prefsSlice.actions;
 export default prefsSlice.reducer;

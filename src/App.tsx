@@ -6,6 +6,8 @@ import {
 } from '@ionic/react';
 import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
+import AppUrlListener from './Hooks/appUrlListener';
+// import { DeeplinkService } from './Hooks/deeplink.service';
 
 /* Core CSS required for Ionic components to work properly */
 // import '@ionic/react/css/core.css';
@@ -40,7 +42,6 @@ import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { useEffect, useState } from 'react';
-import AppUrlListener from './Hooks/appUrlListener';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
@@ -50,47 +51,24 @@ import { Metrics } from './Pages/Metrics';
 setupIonicReact();
 
 const App: React.FC = () => {
-  const [installPromptFlag, setInstallPromptFlag] = useState(true);
-  useEffect(() => {
-    if (!isBrowser) setStatusBarColor();
 
-    window.addEventListener('beforeinstallprompt', (event) => {
-      window.onbeforeunload = null;
-      event.preventDefault();
-      window.addEventListener("click", () => {
-        navigator.registerProtocolHandler('web+lightning', './?address=%s');
-        navigator.registerProtocolHandler('bitcoin', './?address=%s');
-        navigator.registerProtocolHandler('https', 'test.shockwallet.app');
-        if (installPromptFlag) {
-          installPWA(event);
-          setInstallPromptFlag(false);
-        }
-      });
-    });
+  useEffect(() => {
+    if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
   }, []);
-  const installPWA = async (event: any) => {
-    if (event !== null) {
-      try {
-        await event.prompt();
-      } catch (error) {
-        console.log(installPromptFlag);
-      }
-    }
-  }
 
   const setStatusBarColor = async () => {
-    await StatusBar.setBackgroundColor({ color: '#16191c' }); // Replace with your desired color code
+    await StatusBar.setBackgroundColor({ color: '#16191c' });
   };
 
   return (
     <Provider store={store}>
       <IonApp className='safe-area'>
         <IonReactHashRouter>
+          <AppUrlListener />
           <IonRouterOutlet style={{ position: "static" }}>
             <Layout>
               <>
                 <Background />
-                <AppUrlListener />
                 <Route exact path="/">
                   <NodeUp />
                 </Route>
