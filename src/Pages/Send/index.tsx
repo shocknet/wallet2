@@ -63,9 +63,6 @@ export const Send = () => {
   });
   const router = useIonRouter();
 
-
- 
-
   const updateSatsPerByte = useCallback(async () => {
     const res = await axios.get(mempoolUrl)
     const data = res.data as ChainFeesInter
@@ -91,9 +88,6 @@ export const Send = () => {
     }
   }, [mempoolUrl, selectedChainFee]);
 
-  
-
-
   useLayoutEffect(() => {
     if (spendSources.length === 0) {
       openNotification("top", "Error", "You don't have any sources!");
@@ -104,15 +98,10 @@ export const Send = () => {
   useEffect(() => {
     const addressSearch = new URLSearchParams(router.routeInfo.search);
     const data = addressSearch.get("url");
-    
     if (data) {
       setTo(data);
     }
   }, [router]);
-
-
-
-
 
   useEffect(() => {    
     const determineReceiver = async () => {

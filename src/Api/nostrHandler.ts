@@ -17,16 +17,40 @@ const allowedKinds = [21000, 24133]
 export default class Handler {
     pool: SimplePool = new SimplePool()
     settings: NostrSettings
+    eventCallback: (event: NostrEvent) => void
     constructor(settings: NostrSettings, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
         this.settings = settings
-        const sub = this.pool.sub(this.settings.relays, [
+        this.eventCallback = eventCallback
+
+        this.Connect(connectedCallback)
+    }
+
+    async Connect(connectedCallback?: () => void) {
+        const relay = relayInit(this.settings.relays[0]) // TODO: create multiple conns for multiple relays
+        try {
+            await relay.connect()
+        } catch (err) {
+            console.log("failed to connect to relay, will try again in 2 seconds")
+            setTimeout(() => {
+                this.Connect(connectedCallback)
+            }, 2000)
+            return
+        }
+        console.log("connected, subbing...")
+        relay.on('disconnect', () => {
+            console.log("relay disconnected, will try to reconnect")
+            relay.close()
+            this.Connect()
+        })
+
+        const sub = relay.sub([
             {
                 since: Math.ceil(Date.now() / 1000),
                 kinds: allowedKinds,
                 '#p': [this.settings.publicKey],
             }
         ])
-        sub.on('eose', () => { connectedCallback() })
+        sub.on('eose', () => { if (connectedCallback) connectedCallback() })
         sub.on("event", async (e) => {
             console.log({ nostrEvent: e })
 
@@ -43,14 +67,13 @@ export default class Handler {
             if (e.kind === 24133) {
                 const decryptedNip46 = await decrypt(this.settings.privateKey, e.pubkey, e.content)
                 console.log({ decryptedNip46 })
-                eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
+                this.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
             }
             const decoded = decodePayload(e.content)
             const content = await decryptData(decoded, getSharedSecret(this.settings.privateKey, e.pubkey))
             console.log({ decrypted: content })
-            eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
+            this.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
-
     }
 
     async SendNip46(pubKey: string, message: string) {
@@ -91,19 +114,18 @@ export default class Handler {
 const appTag = "shockwallet"
 export const getAppBackup = (pubkey: string, relays: string[]) => {
     const pool = new SimplePool()
-    const userKey = `${pubkey}@${appTag}`
-    return pool.get(relays, { kinds: [30078], '#d': [userKey] })
+    return pool.get(relays, { kinds: [30078], '#d': [appTag], authors: [pubkey] })
 }
-const newBackupEvent = (senderPrivateKey: string, ownerPublicKey: string, data: string) => {
-    return finishEvent({
+export const newBackupEvent = (data: string, pubkey: string) => {
+    return {
         content: data,
         created_at: Math.floor(Date.now() / 1000),
         kind: 30078,
-        tags: [["d", `${ownerPublicKey}@${appTag}`]]
-    }, senderPrivateKey)
+        tags: [["d", appTag]],
+        pubkey
+    }
 }
-export const saveAppBackup = (senderPrivateKey: string, ownerPublicKey: string, relays: string[], data: string) => {
-    const signed = newBackupEvent(senderPrivateKey, ownerPublicKey, data)
+export const publishNostrEvent = (data: Event, relays: string[]) => {
     const pool = new SimplePool()
-    return pool.publish(relays, signed)
+    return pool.publish(relays, data)
 }
