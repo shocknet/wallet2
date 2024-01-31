@@ -188,13 +188,13 @@ export const Scan = () => {
         <div className="Scan_square" />
       </div>
       <div className="Scan_result_input">
+        <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
           placeholder="... Or paste Clipboard"
           value={itemInput}
         />
-        <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
       </div>
       <Modal isShown={isShown} hide={() => console.log("no drop back")} modalContent={askSaveContent} headerText={''} />
     </div>
