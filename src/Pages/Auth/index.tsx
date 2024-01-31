@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
+import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { notification } from 'antd';
@@ -34,15 +35,16 @@ export const Auth = () => {
   //reducer
   const router = useIonRouter();
 
-  const [email, setEmail] = useState("");
-  const [sanctumNostrSecret, setSanctumNostrSecret] = useState("");
+  const [checked, setChecked] = useState<boolean>(true);
+  const [email, setEmail] = useState<string>("");
+  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
   const [newPair, setNewPair] = useState(false);
-  const [serviceCheck, setServiceCheck] = useState(false);
-  const [passphrase, setPassphrase] = useState("");
-  const [passphraseR, setPassphraseR] = useState("");
-  const [dataFromFile, setDataFromFile] = useState("");
-  const [retreiveAccessToken, setRetreiveAccessToken] = useState(false);
-  const [accessTokenRetreived, setAccessTokenRetreived] = useState(false);
+  const [serviceCheck, setServiceCheck] = useState<boolean>(false);
+  const [passphrase, setPassphrase] = useState<string>("");
+  const [passphraseR, setPassphraseR] = useState<string>("");
+  const [dataFromFile, setDataFromFile] = useState<string>("");
+  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
+  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch()
@@ -278,9 +280,11 @@ export const Auth = () => {
               Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
             </p>
           </div>
-          <div className='Auth_service' onClick={() => { setServiceCheck(!serviceCheck) }}>
+          <div className='Auth_service'>
             <p className='Auth_service_title'>Use Storage Service</p>
-            <input checked={serviceCheck} onChange={() => { setServiceCheck(!serviceCheck) }} className='Auth_service_box' type='checkbox' />
+            <label htmlFor="service-rule-check">
+              <Checkbox id="service-rule-check" state={serviceCheck} setState={(e) => setServiceCheck(e.target.checked)} />
+            </label>
           </div>
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
@@ -289,7 +293,7 @@ export const Auth = () => {
             <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" /> */}
           </div>
           <div className="Auth_auth_send">
-            <button onClick={() => signUpEmail()}>{Icons.send()}SIGNUP</button>
+            <button onClick={() => signUpEmail()}>{Icons.send()}SEND</button>
           </div>
           <div className='Auth_border'>
             <p className='Auth_or'>or</p>
