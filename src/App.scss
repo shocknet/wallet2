@@ -13,7 +13,7 @@ $clear-color: #E2E2E2;
   margin-left: env(safe-area-inset-left);
   margin-right: env(safe-area-inset-right);
 
-  &>ion-router-outlet>div:nth-child(3) {
+  &>ion-router-outlet>div>div:nth-child(3) {
     max-width: 800px;
     transform: translate(-50%, 0);
     margin-left: 50%;
@@ -66,7 +66,6 @@ input:focus-visible {
 
 body.barcode-scanner-active {
   visibility: hidden;
-  background: transparent;
   --background: transparent;
   --ion-background-color: transparent;
 }

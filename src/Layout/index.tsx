@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useIonRouter } from "@ionic/react";
 import { Header } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
@@ -21,6 +22,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const paySource = useSelector((state) => state.paySource).map((e) => { return { ...e } });
   const BTCUSDUrl = useSelector(({ prefs }) => prefs.BTCUSDUrl)
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"))
+  const router = useIonRouter();
+
+  const isscan: boolean = router.routeInfo.pathname === "/scan";
+
 
   const dispatch = useDispatch();
 
@@ -36,6 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(() => {
+    console.log(children, 'asdfasdfasdfasdfasdf')
     getPrice();
     setInterval(() => {
       getPrice();
@@ -54,11 +60,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }, []);
 
   return (
-    <React.Fragment>
-      <Header />
-      {children}
-      <LoadingOverlay />
-      <Footer />
-    </React.Fragment>
+    <div>
+      {isscan ? (
+        <React.Fragment>
+          {children}
+        </React.Fragment>
+      ) : 
+      (
+        <React.Fragment>
+          <Header />
+          {children}
+          <LoadingOverlay />
+          <Footer />
+        </React.Fragment>
+      )}
+    </div>
   )
 }
