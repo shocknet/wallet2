@@ -314,7 +314,7 @@ export const Receive = () => {
         {
           (showingLightningAddress)
           &&
-          <span>{isNostrSource}@shockwallet.app</span>
+          <div>{isNostrSource}@zap.page</div>
         }
         <div className='Receive_copy'>
           {

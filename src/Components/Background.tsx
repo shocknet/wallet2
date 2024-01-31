@@ -155,17 +155,16 @@ export const Background = () => {
 	useEffect(() => {
 		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile"));
 		nostrPayTos.forEach(source => {
-			console.log("here")
 			if (!source.vanityName) {
 				const { pubkey, relays } = parseNprofile(source.pasteField)
 				getNostrClient({ pubkey, relays }).then(c => {
-					c.GetUserInfo().then(infoRes => {
-						if (infoRes.status === 'ERROR') {
-							console.log("the error is herererer", infoRes.reason)
+					c.GetLnurlPayLink().then(pubRes => {
+						if (pubRes.status !== 'OK') {
+							console.log("Pub error: ", pubRes.reason);
 						} else {
-							bridge.current.GetOrCreateVanityName(infoRes.user_identifier).then(res => {
-								if (res.status === "OK") {
-									dispatch(editPaySources({ ...source, vanityName: res.vanity_name }));
+							bridge.current.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
+								if (bridgeRes.status === "OK") {
+									dispatch(editPaySources({ ...source, vanityName: bridgeRes.vanity_name }));
 								} else {
 									console.log("Vanity name error");
 								}
@@ -176,7 +175,7 @@ export const Background = () => {
 			}
 		})
 
-	}, [dispatch])
+	}, [dispatch, spendSource])
 
 
 	// reset spend for lnurl

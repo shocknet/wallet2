@@ -36,19 +36,19 @@ export const EmptyValidate = (o?: Empty, opts: EmptyOptions = {}, path: string =
 }
 
 export type GetOrCreateVanityNameRequest = {
-    user_id: string
+    k1: string
 }
 export const GetOrCreateVanityNameRequestOptionalFields: [] = []
 export type GetOrCreateVanityNameRequestOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    user_id_CustomCheck?: (v: string) => boolean
+    k1_CustomCheck?: (v: string) => boolean
 }
 export const GetOrCreateVanityNameRequestValidate = (o?: GetOrCreateVanityNameRequest, opts: GetOrCreateVanityNameRequestOptions = {}, path: string = 'GetOrCreateVanityNameRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
-    if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
+    if (typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
+    if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
 
     return null
 }
