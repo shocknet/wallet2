@@ -1,9 +1,11 @@
 .Header{
+  max-width: 800px;
   position: relative;
   padding: 0;
   height: 6vh;
   width: 94%;
-  margin-left: 3%;
+  transform: translate(-50%, 0);
+  margin-left: 50%;
   margin-top: 5vh;
   display: inline-block;
 
