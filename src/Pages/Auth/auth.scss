@@ -1,16 +1,23 @@
 .Auth{
     &_container {
-      // background-image: linear-gradient(320deg, #151d24 31%, #16191c 60%);
-      width: 100%;
-      padding-inline: 5%;
-      padding-bottom: 30px;
-      transition-duration: 500ms;
-      font-family: Montserrat;
-      justify-content: center;
-      position: fixed;
-      left: 0;
-      height: 100%;
+        max-width: 1000px;
+        transform: translate(-50%, 0);
+        margin-left: 50%;
+        width: 94%;
+        padding-bottom: 30px;
+        transition-duration: 500ms;
+        font-family: Montserrat;
+        justify-content: center;
+        position: fixed;
+        left: 0;
+        height: 100%;
     }
+
+    @media (min-width: 800px) {
+        &_container {
+            margin-top: 70px;
+        }
+      }
   
     &_header {
       display: inline-flex;
@@ -35,32 +42,33 @@
     }
     
     &_description {
-        margin-top: 20px;
+        margin-top: 40px;
         &_header {
             color: #FF7700;
-            font-size: 16px;
+            font-size: 18px;
             line-height: inherit;
         }
         &_para {
             color: #a3a3a3;
-            font-size: 16px;
+            font-size: 18px;
             text-decoration: none solid rgb(163, 163, 163);
             margin-top: 20px;
         }
 
         &_note {
-            font-size: 16px;
+            font-size: 18px;
+            display: inline-block;
             color: #a3a3a3;
             text-decoration: none solid rgb(163, 163, 163);
             margin-top: 20px;
-            display: inline-flex;
-            &_header {
+            & b {
                 color: #FF7700;
             }
         }
     }
 
     &_service {
+        font-size: 16px;
         margin-top: 20px;
         display: inline-flex;
         align-items: center;
@@ -76,9 +84,8 @@
         }
     }
     
-
     &_serviceauth {
-        margin-top: 15px;
+        margin-top: 30px;
         & header {
             font-family: Montserrat;
             font-size: 20px;
@@ -88,7 +95,7 @@
             font-weight: bold;
         }
         & input{
-            height: 40px;
+            height: 45px;
             margin-top: 5px;
             font-family: Montserrat;
             font-size: 15px;
@@ -123,7 +130,7 @@
         font-size: 22px;
         font-family: Montserrat;
         font-weight: bold;
-        padding: 6px 15px;
+        padding: 8px 15px;
         $border: 1px;
         color: #FFF;
         background: #16191c;
@@ -143,8 +150,6 @@
       }
     }
 
-   
-
     &_download {
         display: block;
         text-align: center;
@@ -155,7 +160,7 @@
             border-radius: 6px;
             color: white;
             font-size: 16px;
-            padding: 10px;
+            padding: 14px;
             width: 220px;
             transition-duration: 400ms;
         }
@@ -163,9 +168,10 @@
 
     &_import {
         color: #29abe2;
-        font-size: 18px;
+        font-size: 20px;
         width: 100%;
         text-align: center;
+        text-decoration: underline;
     }
 
     &_border {
@@ -212,7 +218,7 @@
 
         &_description {
             margin-top: 30px;
-            font-size: 16px;
+            font-size: 18px;
             color: white;
         }
     }

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { notification } from 'antd';
+import { bech32 } from 'bech32';
+
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from "../../Hooks/UseModal";
@@ -131,6 +133,7 @@ export const Scan = () => {
 
 
 
+
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;
     try {
@@ -190,13 +193,13 @@ export const Scan = () => {
         <div className="Scan_square" id="reader" />
       </div>
       <div className="Scan_result_input">
+        <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
         <input
           type="text"
           onChange={(e) => setItemInput(e.target.value)}
           placeholder="... Or paste Clipboard"
           value={itemInput}
         />
-        <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
       </div>
       <Modal isShown={isShown} hide={() => console.log("no drop back")} modalContent={askSaveContent} headerText={''} />
     </div>

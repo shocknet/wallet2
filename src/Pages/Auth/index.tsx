@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
+import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { notification } from 'antd';
@@ -9,12 +10,12 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
-import { keylinkAppId } from '../../constants';
+import { keylinkAppId, keylinkUrl } from '../../constants';
 import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
-import { getPublicKey } from '../../Api/tools/keys';
+import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { useDispatch } from '../../State/store';
-import { setRemoteBackupNProfile } from '../../State/Slices/prefsSlice';
+import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
 
 const FILENAME = "shockw.dat";
 
@@ -30,19 +31,20 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-
-
 export const Auth = () => {
   //reducer
   const router = useIonRouter();
 
-  const [email, setEmail] = useState("");
-  const [serviceCheck, setServiceCheck] = useState(false);
-  const [passphrase, setPassphrase] = useState("");
-  const [passphraseR, setPassphraseR] = useState("");
-  const [dataFromFile, setDataFromFile] = useState("");
-  const [remoteBackupProfile, setRemoteBackupProfile] = useState("");
-  const [remoteBackupToken, setRemoteBackupToken] = useState("");
+  const [checked, setChecked] = useState<boolean>(true);
+  const [email, setEmail] = useState<string>("");
+  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
+  const [newPair, setNewPair] = useState(false);
+  const [serviceCheck, setServiceCheck] = useState<boolean>(false);
+  const [passphrase, setPassphrase] = useState<string>("");
+  const [passphraseR, setPassphraseR] = useState<string>("");
+  const [dataFromFile, setDataFromFile] = useState<string>("");
+  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
+  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch()
@@ -58,51 +60,43 @@ export const Auth = () => {
   const { isShown, toggle } = UseModal();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const pubkey = urlParams.get("t")
-    if (!pubkey) {
-      return
+    const urlParams = new URLSearchParams(router.routeInfo.search)
+    const accessToken = urlParams.get("accessToken")
+    if (accessToken) {
+      setSanctumAccessToken(accessToken)
+      setAccessTokenRetreived(true)
     }
-    const nsec = urlParams.get("n")
-    if (!nsec || pubkey !== getPublicKey(nsec)) {
-      console.log("invalid pub/priv key recovered from keylink")
-      return
-    }
-    setNostrPrivateKey(nsec)
-    const destination = urlParams.get("d")
-    if (destination) {
-      router.push(destination)
-    }
-  }, [])
+  }, [router])
 
-  const loginEmail = () => {
+  const signUpEmail = async () => {
     if (!email) {
       console.log("no email provided")
       return
     }
-    keyLinkClient.RequestUserAuth({
-      app_id: keylinkAppId,
-      email
-    })
-  }
-  const signUpEmail = () => {
-    if (!email) {
-      console.log("no email provided")
+    const nsec = newPair ? generatePrivateKey() : sanctumNostrSecret
+    if (!nsec) {
+      console.log("no nsec provided")
       return
     }
-    throw new Error("use different key for link")
-    const nsec = getNostrPrivateKey()!
-    keyLinkClient.LinkAppUserToEmail({
+    const res = await keyLinkClient.LinkAppUserToEmail({
       app_id: keylinkAppId,
       email,
       identifier: getPublicKey(nsec),
       nostr_secret: nsec
     })
+    if (res.status === 'ERROR') {
+      openNotification("top", "Error", "Email link failed.");
+    }
+    openNotification("top", "Error", "Email linked succesfully.");
   }
 
   const openDownBackupModal = () => {
-    setModalContent('encrypt');
     toggle();
+  }
+  
+  const understandWaning = () => {
+    setModalContent('encrypt');
+    // toggle();
   }
 
   const downloadBackUp = async () => {
@@ -194,7 +188,7 @@ export const Auth = () => {
   useEffect(() => {
   });
 
-  const [modalContent, setModalContent] = useState('encrypt');
+  const [modalContent, setModalContent] = useState<string>('');
   const switchModalContent = () => {
     switch (modalContent) {
       case 'encrypt':
@@ -202,40 +196,50 @@ export const Auth = () => {
       case 'decrypt':
         return decryptBackupModal;
       default:
-        return encryptBackupModal;
+        return infoBackupModal;
     }
   }
 
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
-      console.log("cannot load remote backups, key already exists")
-    }
-    if (!remoteBackupProfile) {
-      console.log("no remote backup npub provided")
+      openNotification("top", "Error", "Cannot load remote backups. User already exists.");
       return
     }
-    if (!remoteBackupToken) {
-      console.log("no remote backup token provided")
+    const backup = await fetchRemoteBackup()
+    if (backup.result === 'accessTokenMissing') {
+      console.log("access token missing")
+      setRetreiveAccessToken(true)
       return
     }
-    const backup = await fetchRemoteBackup(remoteBackupProfile, remoteBackupToken)
-    if (!backup) {
-      console.log("no remote backup found for user")
+    if (backup.decrypted === '') {
+      openNotification("top", "Error", "No backups found from the provided pair.");
       return
     }
-    const data = JSON.parse(backup);
+    const data = JSON.parse(backup.decrypted);
     const keys = Object.keys(data)
     for (let i = 0; i < keys.length; i++) {
       const element = keys[i];
       localStorage.setItem(element, data[element])
     }
-    dispatch(setRemoteBackupNProfile(remoteBackupProfile))
     openNotification("top", "Success", "Backup is imported successfully.");
     setTimeout(() => {
       router.push("/home")
     }, 1000);
   }
+
+  const infoBackupModal = <React.Fragment>
+    <div className='Auth_modal_header'>Warning</div>
+    <div className='Auth_modal_description'>File-based backups are used for recovery of connection details in the event of lost/replaced devices.</div>
+    <div className='Auth_modal_description' style={{color: "#ff0000"}}>
+      Using file-backups to sync multiple devices may result in conflicts. 
+    </div>
+    <div className='Auth_modal_description'>If you require multiple devices to be in active sync, <b>use the sync service.</b></div>
+    <div className="Auth_modal_add_btn">
+      <button onClick={understandWaning}>I Understand</button>
+    </div>
+
+  </React.Fragment>;
 
   const encryptBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Encrypt Backup</div>
@@ -266,27 +270,30 @@ export const Auth = () => {
     <div className='Auth_container'>
       {contextHolder}
       <div className="Auth">
-        <div style={{ opacity: "0" }}>
+        <div style={{ opacity: "1" }}>
           <div className="Auth_header_text">Back-Up & Restore</div>
           <div className='Auth_description'>
             <p className='Auth_description_header'>
               Recommended:
             </p>
             <p className='Auth_description_para'>
-              Use the built-in <u>storage service</u> to recover your connections in the event your device data gets lost. The 1000 sats a month supports open-source development.
+              Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
             </p>
           </div>
-          <div className='Auth_service' onClick={() => { setServiceCheck(!serviceCheck) }}>
+          <div className='Auth_service'>
             <p className='Auth_service_title'>Use Storage Service</p>
-            <input checked={serviceCheck} onChange={() => { setServiceCheck(!serviceCheck) }} className='Auth_service_box' type='checkbox' />
+            <label htmlFor="service-rule-check">
+              <Checkbox id="service-rule-check" state={serviceCheck} setState={(e) => setServiceCheck(e.target.checked)} />
+            </label>
           </div>
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
-            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="Your npub or email@address.here" />
+            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="email@address.here or nsec" />
+            {/* <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
+            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" /> */}
           </div>
           <div className="Auth_auth_send">
-            <button onClick={() => loginEmail()}>{Icons.send()}LOGIN</button>
-            <button onClick={() => signUpEmail()}>{Icons.send()}SIGNUP</button>
+            <button onClick={() => signUpEmail()}>{Icons.send()}SEND</button>
           </div>
           <div className='Auth_border'>
             <p className='Auth_or'>or</p>
@@ -299,7 +306,7 @@ export const Auth = () => {
             </button>
           </div>
           <div className='Auth_description_note'>
-            <p className='Auth_description_note_header'>Note:</p> Be sure to download an updated file after adding or modifying connections.
+            <b>Note:</b> Be sure to download an updated file after adding or modifying connections.
           </div>
         </div>
         <div className='Auth_border'></div>
@@ -307,13 +314,20 @@ export const Auth = () => {
           <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
-        <div className='Auth_import'>
-          <input value={remoteBackupProfile} onChange={(e) => { setRemoteBackupProfile(e.target.value) }} type="text" placeholder="nprofile of remote signer" />
-          <input value={remoteBackupToken} onChange={(e) => { setRemoteBackupToken(e.target.value) }} type="text" placeholder="token of remote signer" />
-          <p onClick={() => loadRemoteBackup()}>Import Remote Backup</p>
-        </div>
+        {/* <div className='Auth_import'>
+          <p>Import remote backup</p>
+          {!retreiveAccessToken && <div>
+            {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
+            {accessTokenRetreived && <p>you are now linked to sanctum, click to retreive the backup</p>}
+            <button onClick={() => loadRemoteBackup()}>LOAD</button>
+          </div>}
+          {retreiveAccessToken && <div>
+            <p>no nip07 extion found, use Sanctum instead?</p>
+            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(window.location.origin + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
+          </div>}
+        </div> */}
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>
-    </div>
+    </div >
   )
 }

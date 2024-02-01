@@ -1029,6 +1029,13 @@ export const GetProductBuyLinkResponseValidate = (o?: GetProductBuyLinkResponse,
 
 export type DecodeInvoiceResponse = {
     amount: number
+    identifier: string
+    operationId: string
+    service_fee: number
+    network_fee: number
+    confirmed: boolean
+    tx_hash: string
+    internal: boolean
 }
 export const DecodeInvoiceResponseOptionalFields: [] = []
 export type DecodeInvoiceResponseOptions = OptionsBaseMessage & {

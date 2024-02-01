@@ -5,7 +5,7 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "app.shockwallet",
+            "package_name": "app.shockwallet.test",
             "sha256_cert_fingerprints": [
                 "E7:B6:C1:C1:13:CE:B1:A9:DF:89:6E:F7:BD:67:D2:2B:B6:7E:9B:E1:CA:8F:D7:CA:2C:1C:94:D4:EF:BF:16:64",
                 "6A:D2:CD:0A:09:BB:4E:AB:DC:4A:CA:9A:D2:97:3B:96:24:11:AF:A4:CB:10:B6:78:55:F3:73:7B:C1:0B:D9:49"

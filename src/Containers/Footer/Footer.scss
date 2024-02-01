@@ -1,4 +1,7 @@
 .Footer{
+  max-width: 800px;
+  transform: translate(-50%, 0);
+  margin-left: 50%;
   position: fixed;
   left: 0;
   bottom: 0;
@@ -25,6 +28,7 @@
       background-color: #151d24;
       border-top: 2px solid #268fbc;
       border-right: 2px solid #268fbc;
+      border-left: 2px solid #268fbc;
       color: white;
       font-weight: bold;
       width: calc(100% + 1px);
@@ -44,6 +48,7 @@
       border: none;
       background-color: #151d24;
       border-top: 2px solid #268fbc;
+      border-right: 2px solid #268fbc;
       color: white;
       font-weight: bold;
       width: 100%;
@@ -60,7 +65,8 @@
     height: 50px;
     width: 50px;
     padding: 5px;
-    margin-left: calc(50% - 25px);
+    transform: translate(-50%, 0);
+    margin-left: 50%;
     margin-top: -25px;
     border-radius: 50%;
     background-color: #16191c;

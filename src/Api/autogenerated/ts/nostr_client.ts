@@ -8,7 +8,8 @@ export type NostrClientParams = {
     retrieveNostrUserAuth: () => Promise<string | null>
     checkResult?: true
 }
-export default (params: NostrClientParams,  send: (to:string, message: NostrRequest) => Promise<any>, subscribe: (to:string, message: NostrRequest, cb:(res:any)=> void) => void) => ({
+
+export default (params: NostrClientParams, send: (to: string, message: NostrRequest) => Promise<any>, subscribe: (to: string, message: NostrRequest, cb: (res: any) => void) => void) => ({
     UserHealth: async (): Promise<ResultError | ({ status: 'OK' })> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
@@ -20,7 +21,7 @@ export default (params: NostrClientParams,  send: (to:string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' }& Types.UserInfo)> => {
+       GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' }& Types.UserInfo)> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
         const nostrRequest: NostrRequest = {}
