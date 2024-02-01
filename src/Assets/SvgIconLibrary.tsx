@@ -555,7 +555,7 @@ export const pasteIcon = () => {
 }
 
 export const copy = () => {
-    const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="222e8df40dad4212bc42e2b8efa83fd2" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
+    const svgCode = `<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-32 0 512 512" width="24" height="24"><path d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L400 115.9V320c0 8.8-7.2 16-16 16zM192 384H384c35.3 0 64-28.7 64-64V115.9c0-12.7-5.1-24.9-14.1-33.9L366.1 14.1c-9-9-21.2-14.1-33.9-14.1H192c-35.3 0-64 28.7-64 64V320c0 35.3 28.7 64 64 64zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H272v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16H96V128H64z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></svg>`;
     return (
         <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
