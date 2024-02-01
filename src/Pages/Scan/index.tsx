@@ -18,8 +18,6 @@ import { Destination, InputClassification, parseBitcoinInput } from "../../const
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 // import bolt11 from "bolt11";
 
-
-
 const scanSingleBarcode = async () => {
   return new Promise(resolve => {
     BarcodeScanner.addListener(
@@ -45,23 +43,6 @@ export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-  const videoRef = useRef(null);
-
-  // const startCamera = async () => {
-  //   try {
-  //     // Request access to the user's camera
-  //     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-  //     // Assign the camera stream to the video element
-  //     if (videoRef.current) {
-  //       videoRef.current.srcObject = stream;
-  //     }
-  //   } catch (error) {
-  //     console.error('Error accessing camera:', error);
-  //   }
-  // };
-
-
   const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");
@@ -80,11 +61,22 @@ export const Scan = () => {
 
   const [destiniation, setDestination] = useState<Destination>();
 
-  const setupScanner = async () => {
-    const { camera: result } = await BarcodeScanner.requestPermissions();
-    const { camera } = await BarcodeScanner.checkPermissions();
+  useEffect(() => {
+    document.body.classList.add("barcode-scanner-active");
+    setupScanner()
+    return () => {
+      document.body.classList.remove("barcode-scanner-active");
+      BarcodeScanner.stopScan();
+    }
+  }, [])
 
+
+  const setupScanner = async () => {
+
+    await BarcodeScanner.requestPermissions()
+    const { camera } = await BarcodeScanner.checkPermissions();
     if (camera !== "granted") {
+      const { camera: result } = await BarcodeScanner.requestPermissions();
       if (result !== "granted") {
         openNotification("top", "Error", "The scanner needs camera permissions");
         return;
@@ -98,12 +90,6 @@ export const Scan = () => {
   useEffect(() => {
     let { words: dataPart } = bech32.decode("nprofile1qqswxpkytms203mj2s83mjytqrme6tfezzlagpr7jyzcfxvda8y790spzemhxue69uhhyetvv9ujuatwd94kkafwvdhk6l6jep0", 2000)
     let sourceURL = bech32.fromWords(dataPart);
-    // document.body.classList.add("barcode-scanner-active");
-    setupScanner();
-    return () => {
-      document.body.classList.remove("barcode-scanner-active");
-      BarcodeScanner.stopScan();
-    }
   }, [])
 
   const handleSubmit = async (qrcode: string) => {
@@ -140,7 +126,6 @@ export const Scan = () => {
       openNotification("top", "Error", "Unrecognized QR code!");
     }
   }
-
 
   const askSaveContent = <React.Fragment>
     <div className='Sources_modal_header'>{destiniation?.domainName}</div>

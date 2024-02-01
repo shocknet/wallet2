@@ -61,8 +61,8 @@
   }
 
   &_wall {
-    width: 100%;
-    height: 75vh;
+    width: 100vw;
+    height: 100vh;
     background-color: #0000005b;
     z-index: 999;
   }
@@ -111,6 +111,7 @@
     width: 300px;
     transform: translate(-50%, 0);
     margin-left: 50vw;
+    margin-top: -20vh;
     z-index: 999999;
     text-align: center;
     visibility: visible;
