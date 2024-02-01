@@ -87,11 +87,6 @@ export const Scan = () => {
     await handleSubmit(bardcode.toLowerCase())
   }
 
-  useEffect(() => {
-    let { words: dataPart } = bech32.decode("nprofile1qqswxpkytms203mj2s83mjytqrme6tfezzlagpr7jyzcfxvda8y790spzemhxue69uhhyetvv9ujuatwd94kkafwvdhk6l6jep0", 2000)
-    let sourceURL = bech32.fromWords(dataPart);
-  }, [])
-
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;
     try {
