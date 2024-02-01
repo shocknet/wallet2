@@ -10,7 +10,9 @@
 
     &_container {
       width: 94%;
-      margin-left: 3%;
+      max-width: 800px;
+      transform: translate(-50%, 0);
+      margin-left: 50%;
       padding-bottom: 30px;
       transition-duration: 500ms;
       font-family: Montserrat;
