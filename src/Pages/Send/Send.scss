@@ -164,8 +164,9 @@
   &_not_clickable {
     & button {
       pointer-events: none;
-      filter: brightness(50%);
+      // filter: brightness(50%);
     }
+    opacity: 0.7;
   }
   &_set_amount_copy {
 
@@ -205,6 +206,9 @@
   }
 
   &_other_options {
+    max-width: 800px;
+    transform: translate(-50%, 0);
+    margin-left: 50%;
     font-size: 80%;
     left: 0;
     display: inline-flex;

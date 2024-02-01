@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { notification } from 'antd';
 import { bech32 } from 'bech32';
 
@@ -45,6 +45,21 @@ export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
+  const videoRef = useRef(null);
+
+  // const startCamera = async () => {
+  //   try {
+  //     // Request access to the user's camera
+  //     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+  //     // Assign the camera stream to the video element
+  //     if (videoRef.current) {
+  //       videoRef.current.srcObject = stream;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error accessing camera:', error);
+  //   }
+  // };
 
 
   const router = useIonRouter();
@@ -65,22 +80,11 @@ export const Scan = () => {
 
   const [destiniation, setDestination] = useState<Destination>();
 
-  useEffect(() => {
-    document.body.classList.add("barcode-scanner-active");
-    setupScanner()
-    return () => {
-      document.body.classList.remove("barcode-scanner-active");
-      BarcodeScanner.stopScan();
-    }
-  }, [])
-
-
   const setupScanner = async () => {
-
-    await BarcodeScanner.requestPermissions()
+    const { camera: result } = await BarcodeScanner.requestPermissions();
     const { camera } = await BarcodeScanner.checkPermissions();
+
     if (camera !== "granted") {
-      const { camera: result } = await BarcodeScanner.requestPermissions();
       if (result !== "granted") {
         openNotification("top", "Error", "The scanner needs camera permissions");
         return;
@@ -91,15 +95,16 @@ export const Scan = () => {
     await handleSubmit(bardcode.toLowerCase())
   }
 
-
-
-
   useEffect(() => {
     let { words: dataPart } = bech32.decode("nprofile1qqswxpkytms203mj2s83mjytqrme6tfezzlagpr7jyzcfxvda8y790spzemhxue69uhhyetvv9ujuatwd94kkafwvdhk6l6jep0", 2000)
     let sourceURL = bech32.fromWords(dataPart);
+    // document.body.classList.add("barcode-scanner-active");
+    setupScanner();
+    return () => {
+      document.body.classList.remove("barcode-scanner-active");
+      BarcodeScanner.stopScan();
+    }
   }, [])
-
-
 
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;
@@ -136,36 +141,6 @@ export const Scan = () => {
     }
   }
 
-
-
-
-
-
-
-  /*   if (error !== '') {
-      return <div className="Scan_error">
-        <div className="Scan_error_img">
-          {Icons.ErrorMessage()}
-        </div>
-        <div className="Scan_error_text">{error}</div>
-      </div>;
-    } */
-
-  /*   if (payOperation) {
-      let p
-      switch (payOperation.type) {
-        case 'payAddress':
-          p = <input type="number" placeholder="Pay amount to chain address" value={amountToPay} onChange={e => setAmountToPay(+e.target.value)} />
-          break
-        case 'payInvoice':
-          p = <div><p>You will pay: {payOperation.amount}sats to invoice</p></div>
-          break
-      }
-      return <div className="Scan_pay_operation">
-        {p}
-        <button onClick={() => { }}>OK</button>
-      </div>
-    } */
 
   const askSaveContent = <React.Fragment>
     <div className='Sources_modal_header'>{destiniation?.domainName}</div>
