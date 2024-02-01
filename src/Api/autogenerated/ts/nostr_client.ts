@@ -14,17 +14,6 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
         const nostrRequest: NostrRequest = {}
-        const data = await send(params.pubDestination, { rpcName: 'UserHealth', authIdentifier: auth, ...nostrRequest })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') {
-            return data
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' } & Types.UserInfo)> => {
-        const auth = await params.retrieveNostrUserAuth()
-        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
-        const nostrRequest: NostrRequest = {}
         const data = await send(params.pubDestination, {rpcName:'UserHealth',authIdentifier:auth, ...nostrRequest }) 
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 
@@ -32,7 +21,7 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' }& Types.UserInfo)> => {
+       GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' }& Types.UserInfo)> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
         const nostrRequest: NostrRequest = {}

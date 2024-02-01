@@ -78,6 +78,9 @@
     z-index: 99;
     background-color: #ffffff00;
     visibility: visible;
+    video {
+      height: 100%;
+    }
   }
 
   &_scanner {

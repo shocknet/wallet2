@@ -36,11 +36,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
+                    await methods.UserHealth({rpcName:'UserHealth', ctx:authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
+                    res({status: 'OK'})
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetUserInfo':
                 try {
@@ -279,14 +279,16 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                         const opInfo: Types.RequestInfo = { rpcName: operation.rpcName, batch: true, nostr: true, batchSize: 0 }
                         const opStats: Types.RequestStats = { startMs, start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
                         try {
-                            switch (operation.rpcName) {
+                            switch(operation.rpcName) {
                                 case 'UserHealth':
                                     if (!methods.UserHealth) {
                                         throw new Error('method not defined: UserHealth')
                                     } else {
                                         opStats.validate = opStats.guard
 
+
                                         await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK' })
+
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
