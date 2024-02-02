@@ -16,7 +16,8 @@ import {
 } from '@capacitor-mlkit/barcode-scanning';
 import { Destination, InputClassification, parseBitcoinInput } from "../../constants";
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
-// import bolt11 from "bolt11";
+import { isPlatform } from '@ionic/react';
+import { Html5Qrcode } from "html5-qrcode";
 
 const scanSingleBarcode = async () => {
   return new Promise(resolve => {
@@ -61,13 +62,51 @@ export const Scan = () => {
 
   const [destiniation, setDestination] = useState<Destination>();
 
+  
+  const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
+    html5QrCode.start(
+      cameraId, 
+      {
+        fps: 10,
+      },
+      (decodedText) => {
+        dispatch(toggleLoading({ loadingMessage: "Loading..." }));
+        handleSubmit(decodedText.toLowerCase())
+      },
+      (errorMessage) => {
+        console.log(errorMessage)
+      })
+    .catch((err: any) => {
+      openNotification("top", "Error", err.message)
+      router.goBack();
+    });
+  }
+
   useEffect(() => {
-    document.body.classList.add("barcode-scanner-active");
-    setupScanner()
-    return () => {
-      document.body.classList.remove("barcode-scanner-active");
-      BarcodeScanner.stopScan();
+    if(!isPlatform("hybrid")) {
+      let html5QrCode: Html5Qrcode | null = null;
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          const cameraId = devices[0].id;
+          html5QrCode = new Html5Qrcode("reader");
+          startDesktopCamera(html5QrCode, cameraId)
+        }
+      })
+      return () => {
+        if (html5QrCode) {
+          html5QrCode.stop()
+        }
+      }
+      
+    } else {
+      document.body.classList.add("barcode-scanner-active");
+      setupScanner();
+      return () => {
+        document.body.classList.remove("barcode-scanner-active");
+        BarcodeScanner.stopScan();
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
@@ -86,6 +125,10 @@ export const Scan = () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }));
     await handleSubmit(bardcode.toLowerCase())
   }
+
+
+
+
 
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;
@@ -122,6 +165,9 @@ export const Scan = () => {
     }
   }
 
+
+
+
   const askSaveContent = <React.Fragment>
     <div className='Sources_modal_header'>{destiniation?.domainName}</div>
     <div className='Sources_modal_discription'>Would you like to send sats to this Lnurl or add it as a source?</div>
@@ -140,7 +186,7 @@ export const Scan = () => {
         {Icons.closeIcon()}
       </div>
       <div className="Scan_wall">
-        <div className="Scan_square" />
+        <div className="Scan_square" id="reader" />
       </div>
       <div className="Scan_result_input">
         <span className="Scan_input_icon">{Icons.pasteIcon()}</span>
