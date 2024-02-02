@@ -315,7 +315,7 @@ export const Receive = () => {
           tag === 0 ? 
           (showingLightningAddress)
           &&
-          <div>{isNostrSource}@zap.page</div>
+          <p style={{fontSize: "24px"}}>{isNostrSource}@zap.page</p>
           : ''
         }
         <div className='Receive_copy'>

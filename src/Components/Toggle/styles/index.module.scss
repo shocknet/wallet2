@@ -1,34 +1,46 @@
 .toggle {
   position: relative;
-  width: 60px;
-  height: 30px;
+  width: 37px;
+  height: 20px;
   border-radius: 24px;
   background-color: #16191c;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid #2693c1;
+  border: 1px solid #b0b0b0;
 
   .indicator {
     position: absolute;
-    top: 4px;
-    bottom: 4px;
-    left: 4px;
-    width: 25px;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    width: 16px;
     background-color: #2693c1;
     border-radius: 50%;
     
 
     &On {
-      left: initial;
-      right: 4px;
+      right: initial;
+      left: 1px;
     }
 
     transition: width 0.25s ease;
   }
 
+  .backIcon {
+    & div {
+      & svg {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
   &:active {
     .indicator {
-      width: 35px;
+      width: 20px;
     }
   }
 
