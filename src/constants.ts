@@ -12,6 +12,7 @@ export const locationRegex = new RegExp(/\w{1,}/g)
 export const keylinkUrl = "https://test-auth.shock.network"
 export const keylinkAppId = ""
 
+export const DEVICE_ID_STORAGE_KEY = "DEVICE_ID"
 export const HTTP_ADMIN_TOKEN_STORAGE_KEY = "HTTP_ADMIN_TOKEN"
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
 export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
@@ -27,6 +28,7 @@ export const options: any = {
 	very: "Very well.",
 	mine: "It's my node.",
 }
+export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY]
 
 function padZero(number: number) {
 	return number.toString().padStart(2, '0');
@@ -187,4 +189,25 @@ export const stringToColor = (str: string) => {
 	}
 
 	return color;
+}
+
+export const getDeviceId = () => {
+	const stored = localStorage.getItem(DEVICE_ID_STORAGE_KEY)
+	if (stored) {
+		return stored
+	}
+	const newId = makeId(16)
+	localStorage.setItem(DEVICE_ID_STORAGE_KEY, newId)
+	return newId
+
+}
+
+export const makeId = (length: number) => {
+	var result = '';
+	var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+	for (var i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
 }

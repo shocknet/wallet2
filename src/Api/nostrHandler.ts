@@ -112,16 +112,16 @@ export default class Handler {
     }
 }
 const appTag = "shockwallet"
-export const getAppBackup = (pubkey: string, relays: string[]) => {
+export const getAppBackup = (pubkey: string, relays: string[], dTag = appTag) => {
     const pool = new SimplePool()
-    return pool.get(relays, { kinds: [30078], '#d': [appTag], authors: [pubkey] })
+    return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
 }
-export const newBackupEvent = (data: string, pubkey: string) => {
+export const newBackupEvent = (data: string, pubkey: string, dTag = appTag) => {
     return {
         content: data,
         created_at: Math.floor(Date.now() / 1000),
         kind: 30078,
-        tags: [["d", appTag]],
+        tags: [["d", dTag]],
         pubkey
     }
 }
