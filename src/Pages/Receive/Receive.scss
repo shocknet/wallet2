@@ -161,6 +161,9 @@
   }
 
   &_other_options {
+    max-width: 800px;
+    transform: translate(-50%, 0);
+    margin-left: 50%;
     font-size: 80%;
     left: 0;
     display: inline-flex;

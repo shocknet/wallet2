@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { notification } from 'antd';
 import { bech32 } from 'bech32';
 
@@ -18,8 +18,6 @@ import { Destination, InputClassification, parseBitcoinInput } from "../../const
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { isPlatform } from '@ionic/react';
 import { Html5Qrcode } from "html5-qrcode";
-
-
 
 const scanSingleBarcode = async () => {
   return new Promise(resolve => {
@@ -46,8 +44,6 @@ export const Scan = () => {
 
   //declaration about reducer
   const dispatch = useDispatch();
-
-
   const router = useIonRouter();
 
   const [itemInput, setItemInput] = useState("");

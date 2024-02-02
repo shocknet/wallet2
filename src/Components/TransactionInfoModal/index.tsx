@@ -152,7 +152,7 @@ const TextBox = ({ text }: { text: string }) => {
 			className={classNames({
 				[styles["right"]]: true,
 				[styles["data-box"]]: true,
-				[styles["expanded"]]: expanded
+				[styles["expanded"]]: expanded,
 			})}
 			onClick={() => setExpanded(!expanded)}
 		>
@@ -160,7 +160,7 @@ const TextBox = ({ text }: { text: string }) => {
 				e.stopPropagation();
 				copyToClip();
 			}}>{Icons.copy()}</span>
-			<span className={styles["copy-field"]}>{text}</span>
+			<div className={styles["copy-field"]}>{text}</div>
 		</div>
 	)
 }

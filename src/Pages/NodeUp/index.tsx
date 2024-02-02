@@ -29,6 +29,11 @@ export const NodeUp = () => {
     router.push("/sources")
   };
 
+  const toRecoverPage = () => {
+    setPrivateKey()
+    router.push("/auth")
+  }
+
   useEffect(() => {
     if (privateKey) {
       router.push("/home")
@@ -81,8 +86,14 @@ export const NodeUp = () => {
             Continue
           </button>
         </div>
-        <div onClick={toSourcePage} className="NodeUp_manual_text">
-          Add Connection
+        <div  className="NodeUp_manual_text">
+          <div onClick={toSourcePage}>
+            Add Connection
+          </div>
+          <span>|</span>
+          <div onClick={toRecoverPage}>
+          Recover Backup
+          </div>
         </div>
       </div>
       <div className="NodeUp_terms">

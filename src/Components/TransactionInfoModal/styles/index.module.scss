@@ -3,12 +3,17 @@
 	&, & * {
 		font-family: Montserrat;
 	}
-	width: 100% !important;
+
+	@media (max-width: 500px) {
+		width: 94%;
+	}
+
+	width: 94%;
 	position: fixed;
 	text-align: center;
-	max-width: 500px;
 	height: 0;
-	margin-left: calc((100% - 500px)/2);
+	transform: translate(-50%, 0);
+	margin-left: 50%;
 	overflow: show;
 	top: 20vh;
 	left: auto;
@@ -16,7 +21,7 @@
 	outline: 0;
 	visibility: visible;
 	.container {
-		max-width: 500px;
+		max-width: 600px;
 		border: 1px solid #29abe2;
 		font-family: Montserrat;
 		padding: 25px 10px 0px 10px;
@@ -79,19 +84,24 @@
 		max-height: unset;
 	}
 	.copy-field {
+		position: relative;
 		font-size: 16px;
 		font-weight: 500;
 		line-height: 1.5;
+		padding-right: 42px;
 		user-select: none;
 		font-family: 'Courier New', Courier, monospace;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
 	}
 
 	.hover {
 		position: absolute;
-		right: 5px;
-		bottom: 5px;
+		right: -1px;
+		bottom: 0px;
 		background-color: black;
-		padding: 0 12px;
+		padding: 5px 10px;
 		cursor: pointer;
 		user-select: none;
 	}

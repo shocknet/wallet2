@@ -41,7 +41,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(() => {
-    console.log(children, 'asdfasdfasdfasdfasdf')
     getPrice();
     setInterval(() => {
       getPrice();
