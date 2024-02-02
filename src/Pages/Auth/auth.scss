@@ -1,16 +1,23 @@
 .Auth{
     &_container {
-      // background-image: linear-gradient(320deg, #151d24 31%, #16191c 60%);
-      width: 100%;
-      padding-inline: 5%;
-      padding-bottom: 30px;
-      transition-duration: 500ms;
-      font-family: Montserrat;
-      justify-content: center;
-      position: fixed;
-      left: 0;
-      height: 100%;
+        max-width: 1000px;
+        transform: translate(-50%, 0);
+        margin-left: 50%;
+        width: 94%;
+        padding-bottom: 30px;
+        transition-duration: 500ms;
+        font-family: Montserrat;
+        justify-content: center;
+        position: fixed;
+        left: 0;
+        height: 100%;
     }
+
+    @media (min-width: 800px) {
+        &_container {
+            margin-top: 70px;
+        }
+      }
   
     &_header {
       display: inline-flex;
@@ -61,6 +68,7 @@
     }
 
     &_service {
+        font-size: 16px;
         margin-top: 20px;
         display: inline-flex;
         align-items: center;

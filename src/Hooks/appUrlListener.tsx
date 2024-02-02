@@ -21,7 +21,6 @@ const AppUrlListener: React.FC<any> = () => {
       }
     });
   }, []);
-
   return null;
 };
 

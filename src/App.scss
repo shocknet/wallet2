@@ -12,6 +12,12 @@ $clear-color: #E2E2E2;
   margin-bottom: env(safe-area-inset-bottom);
   margin-left: env(safe-area-inset-left);
   margin-right: env(safe-area-inset-right);
+
+  &>ion-router-outlet>div>div:nth-child(3) {
+    max-width: 800px;
+    transform: translate(-50%, 0);
+    margin-left: 50%;
+  }
 }
 body{
   background-color: #16191c;
@@ -23,7 +29,9 @@ body{
 
 #root{
   position: relative;
+  height: 100vh;
   min-height: 100vh;
+  max-height: 100vh;
 }
 
 .App{
@@ -58,7 +66,6 @@ input:focus-visible {
 
 body.barcode-scanner-active {
   visibility: hidden;
-  background: transparent;
   --background: transparent;
   --ion-background-color: transparent;
 }

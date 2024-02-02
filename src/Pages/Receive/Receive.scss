@@ -22,6 +22,10 @@
       color: white;
       font-size: 26px;
       font-family: Montserrat;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
 
     & canvas {
