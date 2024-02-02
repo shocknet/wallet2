@@ -3,6 +3,7 @@ import { findReducerMerger } from "../../State/store"
 
 import { getNostrPrivateKey } from "../../Api/nostr"
 import { fetchRemoteBackup, saveRemoteBackup } from "../../helpers/remoteBackups"
+import { ignoredStorageKeys } from "../../constants"
 export const RemoteBackup = () => {
     useEffect(() => {
         const keyExist = getNostrPrivateKey()
@@ -37,7 +38,9 @@ export const RemoteBackup = () => {
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i) ?? "null";
                 const value = localStorage.getItem(key);
-                data[key] = value;
+                if (value && !ignoredStorageKeys.includes(value)) {
+                    data[key] = value;
+                }
             }
         }
         await saveRemoteBackup(JSON.stringify(data))

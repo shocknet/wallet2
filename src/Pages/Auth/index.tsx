@@ -10,7 +10,7 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
-import { keylinkAppId, keylinkUrl } from '../../constants';
+import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
 import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
@@ -93,7 +93,7 @@ export const Auth = () => {
   const openDownBackupModal = () => {
     toggle();
   }
-  
+
   const understandWaning = () => {
     setModalContent('encrypt');
     // toggle();
@@ -108,7 +108,9 @@ export const Auth = () => {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i) ?? "null";
       const value = localStorage.getItem(key);
-      allData[key] = value;
+      if (value && !ignoredStorageKeys.includes(value)) {
+        allData[key] = value;
+      }
     }
 
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
@@ -176,7 +178,9 @@ export const Auth = () => {
     const data = JSON.parse(decodedString);
     for (let i = 0; i < Object.keys(data).length; i++) {
       const element = Object.keys(data)[i];
-      localStorage.setItem(element, data[element])
+      if (element && !ignoredStorageKeys.includes(element)) {
+        localStorage.setItem(element, data[element])
+      }
     }
     toggle();
     openNotification("top", "Success", "Backup is imported successfully.");
@@ -220,7 +224,9 @@ export const Auth = () => {
     const keys = Object.keys(data)
     for (let i = 0; i < keys.length; i++) {
       const element = keys[i];
-      localStorage.setItem(element, data[element])
+      if (element && !ignoredStorageKeys.includes(element)) {
+        localStorage.setItem(element, data[element])
+      }
     }
     openNotification("top", "Success", "Backup is imported successfully.");
     setTimeout(() => {
@@ -231,8 +237,8 @@ export const Auth = () => {
   const infoBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Warning</div>
     <div className='Auth_modal_description'>File-based backups are used for recovery of connection details in the event of lost/replaced devices.</div>
-    <div className='Auth_modal_description' style={{color: "#ff0000"}}>
-      Using file-backups to sync multiple devices may result in conflicts. 
+    <div className='Auth_modal_description' style={{ color: "#ff0000" }}>
+      Using file-backups to sync multiple devices may result in conflicts.
     </div>
     <div className='Auth_modal_description'>If you require multiple devices to be in active sync, <b>use the sync service.</b></div>
     <div className="Auth_modal_add_btn">
