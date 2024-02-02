@@ -320,7 +320,10 @@ export const Receive = () => {
           {
             tag === 1
             ?
-            `${amount} (${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} USD)`
+              <React.Fragment>
+                <div>{`${amount} sats`}</div>
+                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} USD`}</div>
+              </React.Fragment>
             :
             tag == 2 ? bitcoinAddText : lightningAdd
           }
