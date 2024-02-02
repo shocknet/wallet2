@@ -22,6 +22,7 @@ import { addAsset } from '../../State/Slices/generatedAssets';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
+import Toggle from '../../Components/Toggle';
 
 const headerText: string[] = [
   'LNURL',
@@ -67,6 +68,9 @@ export const Receive = () => {
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
+  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource[0].vanityName)
+
+  const isNostrSource = paySource[0].vanityName;
 
   useEffect(() => {
     if (isShown && amountInputRef.current) {
@@ -278,25 +282,40 @@ export const Receive = () => {
   return (
     <div>
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">{headerText[tag]}</div>
+        <div className="Receive_QR_text">
+          <span>{tag === 0 && showingLightningAddress ? "Lightning Address" : headerText[tag]}</span>
           {
-            valueQR
-            ?
-            <div className="Receive_QR" style={{ transform: deg }}>
-              <QRCodeSVG
-                style={{ textAlign: "center", transitionDuration: "500ms" }}
-                value={valueQR.toUpperCase()}
-                size={250}
-              />
-              <div className="Receive_logo_container">
-                {Icons.Logo()}
-              </div>
-            </div>
-            :
-            (tag === 2 && !paySource[0].pasteField.includes("nprofile"))
+            (tag === 0 && isNostrSource)
             &&
-            <div>Cannot receive on-chain transactions</div> 
+            <Toggle
+              value={!showingLightningAddress}
+              onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
+            />
           }
+        </div>
+        {
+          valueQR
+          ?
+          <div className="Receive_QR" style={{ transform: deg }}>
+            <QRCodeSVG
+              style={{ textAlign: "center", transitionDuration: "500ms" }}
+              value={valueQR.toUpperCase()}
+              size={250}
+            />
+            <div className="Receive_logo_container">
+              {Icons.Logo()}
+            </div>
+          </div>
+          :
+          (tag === 2 && !paySource[0].pasteField.includes("nprofile"))
+          &&
+          <div>Cannot receive on-chain transactions</div> 
+        }
+        {
+          (showingLightningAddress)
+          &&
+          <div>{isNostrSource}@zap.page</div>
+        }
         <div className='Receive_copy'>
           {
             tag === 1
