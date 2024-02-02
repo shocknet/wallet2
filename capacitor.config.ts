@@ -13,6 +13,9 @@ const config: CapacitorConfig = {
     App: {
       iosScheme: "shockwallet",
       androidScheme: "shockwallet"
+    },
+    BarcodeScanning: {
+      photoLibraryUsageDescription: "To scan QR codes using the camera"
     }
   }
 };

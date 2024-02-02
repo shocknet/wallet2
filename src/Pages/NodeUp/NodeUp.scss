@@ -4,11 +4,11 @@
     width: 94%;
     margin-inline: auto;
     &_terms {
+      max-width: 500px;
       font-size: 13px;
       text-align: center;
-      width: 40%;
       margin: 0 auto;
-      margin-top: 20px;
+      margin-top: 30px;
       color: #999999;
       @media (max-width: 425px) {
         width: 80%;
@@ -49,15 +49,21 @@
     }
   
     &_manual_text{
-      font-size: 80%;
-      color: #268fbc;
-      text-align: center;
-      margin-top: 20px;
-      cursor: pointer;
-    }
+      display: flex;
+      justify-content: center;
+      font-size: 13px;
+      margin-top: 10px;
 
-    &_manual_text:hover {
-      text-decoration: underline;
+      & div {
+        cursor: pointer;
+        color: #268fbc;
+        text-align: center;
+        // cursor: pointer;
+      }
+
+      & span {
+        margin: 0 7px;
+      }
     }
   
     &_manual_btn{

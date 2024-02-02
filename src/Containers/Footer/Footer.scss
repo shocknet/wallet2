@@ -28,7 +28,6 @@
       background-color: #151d24;
       border-top: 2px solid #268fbc;
       border-right: 2px solid #268fbc;
-      border-left: 2px solid #268fbc;
       color: white;
       font-weight: bold;
       width: calc(100% + 1px);
@@ -36,6 +35,12 @@
       font-family: Montserrat;
       font-size: 1.3rem;
       text-shadow: rgb(0, 0, 0) 1px 1px 1.16667px !important;
+    }
+
+    @media screen and (min-width: 800px){
+      & button{
+        border-left: 2px solid #268fbc;
+      }
     }
   }
 
@@ -48,13 +53,18 @@
       border: none;
       background-color: #151d24;
       border-top: 2px solid #268fbc;
-      border-right: 2px solid #268fbc;
       color: white;
       font-weight: bold;
       width: 100%;
       font-family: Montserrat;
       height: 100%; 
       font-size: 1.3rem;
+    }
+
+    @media screen and (min-width: 800px){
+      & button{
+        border-right: 2px solid #268fbc;
+      }
     }
   }
 
