@@ -312,9 +312,11 @@ export const Receive = () => {
           <div>Cannot receive on-chain transactions</div> 
         }
         {
+          tag === 0 ? 
           (showingLightningAddress)
           &&
           <div>{isNostrSource}@zap.page</div>
+          : ''
         }
         <div className='Receive_copy'>
           {
