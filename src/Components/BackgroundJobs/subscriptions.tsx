@@ -13,11 +13,9 @@ const SubsCheckIntervalSeconds = 60 * 60
 export const SubscriptionsBackground = () => {
 	const activeSubs = useSelector(({ subscriptions }) => subscriptions.activeSubs.filter(s => s.enabled))
 	const payments = useSelector(({ subscriptions }) => subscriptions.payments)
-	const BTCUSDUrl = useSelector(({ prefs }) => prefs.BTCUSDUrl)
+	const fiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
 	const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
 	const dispatch = useDispatch();
-
-
 
 	const sendSubPayment = useCallback(async (sub: Subscription, latestPayment: SubscriptionPayment | null) => {
 		if (sub.destionation.type !== InputClassification.LN_ADDRESS) {
@@ -47,10 +45,10 @@ export const SubscriptionsBackground = () => {
 			let sats = sub.price.amt
 			const spendSource = spendSources[0]
 			if (sub.price.type === 'cents') {
-				const { data } = await axios.get(BTCUSDUrl || usdToBTCSpotLink);
-				const btcUsd = data.amount as number
-				const satsUsd = btcUsd / 100_000_000
-				sats = (sub.price.amt / 100) / satsUsd
+				const { data } = await axios.get(fiatUnit.url || usdToBTCSpotLink);
+				const btcFiatCurrency = data.amount as number
+				const satsFiatCurrency = btcFiatCurrency / 100_000_000
+				sats = (sub.price.amt / 100) / satsFiatCurrency
 			}
 			const invoice = await createLnurlInvoice(sats, sub.destionation);
 			const payRes = await handlePayInvoice(invoice, spendSource.pasteField);
@@ -89,7 +87,7 @@ export const SubscriptionsBackground = () => {
 			return
 		}
 		openNotification("top", "Success", "Subscription renewed.");
-	}, [BTCUSDUrl, dispatch, spendSources])
+	}, [fiatUnit, dispatch, spendSources])
 
 	const checkSubsState = useCallback(() => {
 		console.log("checking subscriptions state...")
