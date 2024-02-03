@@ -36,7 +36,6 @@ export const Background = () => {
 	const { isShown, toggle } = UseModal();
 	const latestAckedClipboard = useRef("");
 	const isShownRef = useRef(false);
-	const bridge = useRef<Bridge>(new Bridge());
 	
 
 	useEffect(() => {
@@ -69,7 +68,6 @@ export const Background = () => {
 			getNostrClient({ pubkey, relays }).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
-						console.log("New operation", newOp)
 						openNotification("top", "Payments", "You received payment.");
 						dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
 					} else {
@@ -129,7 +127,6 @@ export const Background = () => {
 					if (operationsResponse.status === 'ERROR') {
 						console.log(operationsResponse.reason)
 					} else {
-						console.log((operationsResponse), "ops")
 						const totalHistory = parseOperationsResponse(operationsResponse);
 						const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
 						const payments = totalHistory.operations.filter((e) => e.inbound && e.paidAtUnix * 1000 > lastTimestamp)
@@ -155,14 +152,15 @@ export const Background = () => {
 	useEffect(() => {
 		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile"));
 		nostrPayTos.forEach(source => {
-			if (!source.vanityName) {
+			if (!source.vanityName && source.bridgeUrl) {
 				const { pubkey, relays } = parseNprofile(source.pasteField)
 				getNostrClient({ pubkey, relays }).then(c => {
 					c.GetLnurlPayLink().then(pubRes => {
 						if (pubRes.status !== 'OK') {
 							console.log("Pub error: ", pubRes.reason);
 						} else {
-							bridge.current.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
+							const bridge = new Bridge(source.bridgeUrl as string);
+							bridge.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
 								if (bridgeRes.status === "OK") {
 									dispatch(editPaySources({ ...source, vanityName: bridgeRes.vanity_name }));
 								} else {
@@ -333,6 +331,5 @@ const parseOperationsResponse = (r: Types.GetUserOperationsResponse): { cursor: 
 		...r.latestIncomingUserToUserPayemnts.operations,
 		...r.latestOutgoingUserToUserPayemnts.operations,
 	]
-	console.log({ operations })
 	return { cursor, operations }
 }

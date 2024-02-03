@@ -315,7 +315,7 @@ export const Receive = () => {
           tag === 0 ? 
           (showingLightningAddress)
           &&
-          <div>{isNostrSource}@zap.page</div>
+          <div>{`${isNostrSource}@${paySource[0].bridgeUrl}`}</div>
           : ''
         }
         <div className='Receive_copy'>

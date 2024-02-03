@@ -8,7 +8,6 @@ export type TransactionInfo = Types.UserOperation & { source: string };
 export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const spendSources = useSelector((state) => state.spendSource);
-  console.log(spendSources, 'asdfasdfasdf444444444444444444')
   const operationGroups = useSelector(({ history }) => history.operations) || {}
   const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook) || 0
 

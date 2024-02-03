@@ -1,8 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { notification } from 'antd';
-import { bech32 } from 'bech32';
-
-//It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from "../../Hooks/UseModal";
 import { useDispatch } from '../../State/store';
@@ -18,6 +15,7 @@ import { Destination, InputClassification, parseBitcoinInput } from "../../const
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { isPlatform } from '@ionic/react';
 import { Html5Qrcode } from "html5-qrcode";
+import { useHistory } from "react-router";
 
 const scanSingleBarcode = async () => {
   return new Promise(resolve => {
@@ -41,10 +39,10 @@ const scanSingleBarcode = async () => {
 };
 
 export const Scan = () => {
-
-  //declaration about reducer
+  
   const dispatch = useDispatch();
   const router = useIonRouter();
+  const history = useHistory();
 
   const [itemInput, setItemInput] = useState("");
 
@@ -100,7 +98,7 @@ export const Scan = () => {
       
     } else {
       document.body.classList.add("barcode-scanner-active");
-      setupScanner();
+      setupMobileScanner();
       return () => {
         document.body.classList.remove("barcode-scanner-active");
         BarcodeScanner.stopScan();
@@ -110,7 +108,7 @@ export const Scan = () => {
   }, [])
 
 
-  const setupScanner = async () => {
+  const setupMobileScanner = async () => {
 
     await BarcodeScanner.requestPermissions()
     const { camera } = await BarcodeScanner.checkPermissions();
@@ -155,11 +153,19 @@ export const Scan = () => {
       ||
       parsed.type === InputClassification.LN_ADDRESS
     ) {
-      router.push(`/send?url=${parsed.data}`);
+      history.push({
+        pathname: "/send",
+        state: parsed
+      })
     } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest") {
       toggle();
     } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "withdrawRequest") {
-      router.push(`/sources?url=${parsed.data}`);
+      history.push({
+        pathname: "/sources",
+        state: {
+          data: parsed
+        }
+      });
     } else if (parsed.type === InputClassification.UNKNOWN) {
       openNotification("top", "Error", "Unrecognized QR code!");
     }
@@ -172,8 +178,12 @@ export const Scan = () => {
     <div className='Sources_modal_header'>{destiniation?.domainName}</div>
     <div className='Sources_modal_discription'>Would you like to send sats to this Lnurl or add it as a source?</div>
     <div className="Sources_modal_add_btn">
-      <button onClick={() => router.push(`/send?url=${destiniation?.data}`)}>Send</button>
-      <button onClick={() => router.push(`/sources?url=${destiniation?.data}`)}>Add as source</button>
+      <button
+        onClick={() => history.push({ pathname: "/send", state: destiniation })}
+      >Send</button>
+      <button
+        onClick={() => history.push({ pathname: "/sources", state: destiniation })}
+      >Add as source</button>
     </div>
   </React.Fragment>;
 

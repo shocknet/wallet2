@@ -58,6 +58,7 @@ export const NodeUp = () => {
           pasteField: nprofile,
           option: options.little,
           icon: "0",
+          bridgeUrl: "zap.page"
         }
       ));
       dispatch(addSpendSources(

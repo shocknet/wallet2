@@ -140,4 +140,5 @@ export interface PayTo {
   icon: string;
   disconnected?: boolean
   vanityName?: string;
+  bridgeUrl?: string;
 }
