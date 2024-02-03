@@ -3,6 +3,9 @@ import classNames from "classnames";
 import React, { useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { LayoutGroup, motion } from "framer-motion";
+import * as Icons from "../../Assets/SvgIconLibrary";
+import { icons } from "antd/es/image/PreviewGroup";
+
 
 interface Props {
   value?: boolean;
@@ -41,6 +44,11 @@ const Toggle: React.FC<Props> = ({ onCheck, value }) => {
             layoutScroll
           />
         )}
+        <div
+          className={classNames(styles.backIcon)}
+        >
+          {Icons.switchToggle()}
+        </div>
       </LayoutGroup>
     </div>
   );

@@ -10,7 +10,7 @@
     align-items: center;
     justify-content: center;
     max-width: 300px;
-    width: 40vh;
+    width: 45vh;
     margin: auto;
     aspect-ratio : 1 / 1;
     background-color: white;
@@ -18,14 +18,32 @@
     border-radius: 10px;
     &_text{
       margin-block: 10px;
+      transform: translate(-50%, 0);
+      margin-left: 50%;
       text-align: center;
       color: white;
-      font-size: 26px;
+      font-size: 22px;
       font-family: Montserrat;
       display: flex;
       gap: 8px;
       align-items: center;
+      width: 300px;
+      position: relative;
+      display: flex;
       justify-content: center;
+
+      & span {
+        display: flex;
+        text-align: center;
+        margin-block: 10px;
+        justify-content: center;
+        // transform: translate(-50%, 0);
+        // margin-left: 50%;
+      }
+      & div {
+        position: absolute;
+        right: 0px;
+      }
     }
 
     & canvas {

@@ -644,3 +644,10 @@ export const pending = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+export const switchToggle = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 632 632" width="11" height="11"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M315.7,0C142.1,0,0,142.1,0,315.7s142.1,315.7,315.7,315.7c47.4,0,92.1-10.5,131.5-28.9v-28.9  c-39.5,21-84.2,31.6-131.5,31.6c-160.5,0-289.4-128.9-289.4-289.4S155.2,26.3,315.7,26.3s289.4,128.9,289.4,289.4  c0,47.4-10.5,92.1-31.6,131.5h-100V315.7c0-86.8-71-157.9-157.9-157.9s-157.9,71-157.9,157.9s71,157.9,157.9,157.9  c55.2,0,102.6-28.9,131.5-71v71h110.5h21h10.5c26.3-47.4,42.1-100,42.1-157.9C631.4,142.1,489.3,0,315.7,0z M315.7,447.3  c-73.7,0-131.5-57.9-131.5-131.5S242,184.2,315.7,184.2S447.3,242,447.3,315.7S389.4,447.3,315.7,447.3z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>'
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
