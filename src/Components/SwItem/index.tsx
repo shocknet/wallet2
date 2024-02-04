@@ -85,7 +85,7 @@ export const SwItem = ({
         {
           shown
           &&
-          <TransactionInfoModal operation={operation} hide={() => setShown(true)} price={price} />
+          <TransactionInfoModal operation={operation} hide={() => setShown(!shown)} price={price} />
         }
       </AnimatePresence>
     </>
