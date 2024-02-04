@@ -15,7 +15,7 @@ import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
 
 const getRightSideValueString = (amount: number, negative: boolean, price: Price) => {
-  return `${negative ? "" : "-"} ${amount} sats (${Math.round(100 * amount * price.sellPrice / (100 * 1000 * 1000)) / 100} USD)`;
+  return `${negative ? "" : "-"} ${amount} sats`;
 }
 
 interface Props {
