@@ -303,7 +303,10 @@ export const Automation = () => {
           <span className='Automation_content_desc'>
             Move balances when the cost of doing so is less than %
             <input className='Automation_content_input' type='number' value={value} onChange={(e) => {
-              setValue(parseInt(e.target.value))
+				if(parseInt(e.target.value)>100){
+					return;
+				}
+              	setValue(parseInt(e.target.value))
             }} />
           </span>
         </div>

@@ -35,14 +35,10 @@ export const Footer = () => {
           <React.Fragment>
             <footer className="Footer">
               <div className="Footer_receive_btn">
-                <button>
-                  <div className="" onClick={() => { router.push("/home") }}>Cancel</div>
-                </button>
+                <button onClick={() => { router.push("/home") }}>Cancel</button>
               </div>
               <div className="Footer_send_btn">
-                <button>
-                  <div className="" onClick={() => { router.push("/home") }}>OK</div>
-                </button>
+                <button onClick={() => { router.push("/home") }}>OK</button>
               </div>
               <div className="Footer_QR" onClick={() => { router.push("/scan") }}>
                 {Icons.QR()}
