@@ -8,7 +8,6 @@ export type TransactionInfo = Types.UserOperation & { source: string };
 export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const spendSources = useSelector((state) => state.spendSource);
-  console.log(spendSources, 'asdfasdfasdf444444444444444444')
   const operationGroups = useSelector(({ history }) => history.operations) || {}
   const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook) || 0
 
@@ -18,26 +17,6 @@ export const Home = () => {
   const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
 
   let openAppFlag = true; 
-
-  const dumyDat = {
-    paidAtUnix: 1,
-    type: {
-      INCOMING_TX :'INCOMING_TX',
-      OUTGOING_TX : 'OUTGOING_TX',
-      INCOMING_INVOICE: 'INCOMING_INVOICE',
-      OUTGOING_INVOICE: 'OUTGOING_INVOICE',
-      OUTGOING_USER_TO_USER: 'OUTGOING_USER_TO_USER',
-      INCOMING_USER_TO_USER: 'INCOMING_USER_TO_USER',
-    },
-    inbound: true,
-    amount: 10,
-    identifier: 'string',
-    operationId: 'string',
-    service_fee: 10,
-    network_fee: 44,
-    confirmed: true,
-    source: '22'
-  }
   useEffect(() => {
     if (!operationGroups) {
       return
@@ -124,8 +103,7 @@ export const Home = () => {
       </div>
       <div className="Home_scroller scroller">
         <div className="Home_content">
-        <SwItem operation={dumyDat} underline={true}/>
-          {/* {transactionsToRender} */}
+          {transactionsToRender}
         </div>
       </div>
     </div>
