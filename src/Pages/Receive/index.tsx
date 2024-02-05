@@ -113,8 +113,9 @@ export const Receive = () => {
 
 
   const copyToClip = async () => {
+    const clipboardStr = valueQR.split(":")[1];
     await Clipboard.write({
-      string: valueQR
+      string: clipboardStr
     })
     dispatch(addAsset({ asset: valueQR }));
     return openNotification("top", "Success", "Copied!");
