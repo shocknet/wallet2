@@ -15,13 +15,13 @@ const stateIcons = (icon?: string) => {
   switch (icon) {
     case 'lightning':
       return lightningIcon();
-  
+
     case 'linked':
       return linkIcon();
   }
 }
 interface Props {
-  operation:  TransactionInfo;
+  operation: TransactionInfo;
   underline: boolean;
 
 }
@@ -47,41 +47,46 @@ export const SwItem = ({
         label = description.value;
       }
     }
+    const isChain = operation.type === Types.UserOperationType.OUTGOING_TX || operation.type === Types.UserOperationType.INCOMING_TX
+    let date = "Pending"
+    if (!isChain || operation.confirmed) {
+      date = moment(operation.paidAtUnix * 1000).fromNow()
+    }
     return {
       priceImg: operation.inbound ? Icons.PriceUp : Icons.PriceDown,
       station: label.length < 30 ? label : `${label.substring(0, 7)}...${label.substring(label.length - 7, label.length)}`,
       changes: `${operation.inbound ? "" : "-"}${operation.amount}`,
-      date: !operation.confirmed ? "Pending" : moment(operation.paidAtUnix * 1000).fromNow(),
+      date,
       price: Math.round(100 * operation.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
-      stateIcon: !operation.confirmed ? "linked" : "lightning",
+      stateIcon: isChain ? "linked" : "lightning",
     }
   }, [operation, addressbook, price]);
-  
-  return(
+
+  return (
     <>
-    <AnimatePresence>
-      <motion.div
-        className="SwItem"
-        onClick={() => setShown(true)}
-        layoutId={operation.operationId}
-      >
-        <div className="SwItem_left">
-          {stateIcons(transactionObject.stateIcon)}
-          <div className="SwItem_text">
-            <div className="SwItem_date">{transactionObject.date}</div>
-            <div className="SwItem_station">{transactionObject.station}</div>
+      <AnimatePresence>
+        <motion.div
+          className="SwItem"
+          onClick={() => setShown(true)}
+          layoutId={operation.operationId}
+        >
+          <div className="SwItem_left">
+            {stateIcons(transactionObject.stateIcon)}
+            <div className="SwItem_text">
+              <div className="SwItem_date">{transactionObject.date}</div>
+              <div className="SwItem_station">{transactionObject.station}</div>
+            </div>
           </div>
-        </div>
-        <div className="SwItem_right">
-          <div className="SwItem_price">
-            <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
-            <div className="SwItem_price_text">{transactionObject.changes}</div>
+          <div className="SwItem_right">
+            <div className="SwItem_price">
+              <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
+              <div className="SwItem_price_text">{transactionObject.changes}</div>
+            </div>
+            <div className="SwItem_changes">~ ${transactionObject.price}</div>
           </div>
-          <div className="SwItem_changes">~ ${transactionObject.price}</div>
-        </div>
-      </motion.div>
-      <div className={underline?"SwItem_divider" : ""}></div>
-      
+        </motion.div>
+        <div className={underline ? "SwItem_divider" : ""}></div>
+
         {
           shown
           &&
