@@ -109,7 +109,6 @@ export const Scan = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-
   const setupScanner = async () => {
 
     await BarcodeScanner.requestPermissions()
@@ -125,10 +124,6 @@ export const Scan = () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }));
     await handleSubmit(bardcode.toLowerCase())
   }
-
-
-
-
 
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;
