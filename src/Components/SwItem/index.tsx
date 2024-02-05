@@ -37,21 +37,34 @@ export const SwItem = ({
 
   const [shown, setShown] = useState(false);
 
-
-  const transactionObject = useMemo(() => {
-    let label = getIdentifierLink(addressbook, operation.identifier);
-    if (label === operation.identifier && operation.type === Types.UserOperationType.INCOMING_INVOICE) {
+  const getOperationLabel = () => {
+    const note = (addressbook.identifierToMemo || {})[operation.identifier]
+    if (note) {
+      return note
+    }
+    const link = getIdentifierLink(addressbook, operation.identifier);
+    if (link !== operation.identifier) {
+      return link
+    }
+    if (operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) {
       const decodedInvoice = decode(operation.identifier);
       const description = decodedInvoice.sections.find(section => section.name === "description");
       if (description) {
-        label = description.value;
+        return description.value;
       }
+      return link
     }
+  }
+
+
+  const transactionObject = useMemo(() => {
+
     const isChain = operation.type === Types.UserOperationType.OUTGOING_TX || operation.type === Types.UserOperationType.INCOMING_TX
     let date = "Pending"
     if (!isChain || operation.confirmed) {
       date = moment(operation.paidAtUnix * 1000).fromNow()
     }
+    const label = getOperationLabel()
     return {
       priceImg: operation.inbound ? Icons.PriceUp : Icons.PriceDown,
       station: label.length < 30 ? label : `${label.substring(0, 7)}...${label.substring(label.length - 7, label.length)}`,

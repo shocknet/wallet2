@@ -6,6 +6,7 @@ type AddressBook = {
   addressToContact: Record<string, string>
   identifierToAddress: Record<string, string>
   identifierToContact: Record<string, string>
+  identifierToMemo?: Record<string, string>
 }
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   const local = JSON.parse(serialLocal) as AddressBook
@@ -14,7 +15,8 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
     contacts: mergeBasicRecords(local.contacts, remote.contacts),
     addressToContact: mergeBasicRecords(local.addressToContact, remote.addressToContact),
     identifierToAddress: mergeBasicRecords(local.identifierToAddress, remote.identifierToAddress),
-    identifierToContact: mergeBasicRecords(local.identifierToContact, remote.identifierToContact)
+    identifierToContact: mergeBasicRecords(local.identifierToContact, remote.identifierToContact),
+    identifierToMemo: mergeBasicRecords(local.identifierToMemo || {}, remote.identifierToMemo || {}),
   }
   return JSON.stringify(merged)
 }
@@ -25,7 +27,7 @@ const addressbook = localStorage.getItem(storageKey);
 const update = (value: AddressBook) => {
   localStorage.setItem(storageKey, JSON.stringify(value));
 }
-const iState: AddressBook = { contacts: {}, addressToContact: {}, identifierToAddress: {}, identifierToContact: {} }
+const iState: AddressBook = { contacts: {}, addressToContact: {}, identifierToAddress: {}, identifierToContact: {}, identifierToMemo: {} }
 const initialState: AddressBook = JSON.parse(addressbook ?? JSON.stringify(iState));
 
 const addressbookSlice = createSlice({
@@ -51,10 +53,19 @@ const addressbookSlice = createSlice({
       }
       update(state)
     },
+    addIdentifierMemo: (state, action: PayloadAction<{ identifier: string, memo: string }>) => {
+      const { identifier, memo } = action.payload
+      if (!state.identifierToMemo) {
+        state.identifierToMemo = { [identifier]: memo }
+      } else {
+        state.identifierToMemo[identifier] = memo
+      }
+      update(state)
+    }
   },
 });
 
-export const { addAddressbookLink } = addressbookSlice.actions;
+export const { addAddressbookLink, addIdentifierMemo } = addressbookSlice.actions;
 export default addressbookSlice.reducer;
 
 export const getIdentifierLink = (state: AddressBook, identifier: string) => {
