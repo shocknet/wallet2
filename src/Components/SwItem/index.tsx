@@ -47,14 +47,7 @@ export const SwItem = ({
     if (link !== operation.identifier) {
       return link
     }
-    if (operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) {
-      const decodedInvoice = decode(operation.identifier);
-      const description = decodedInvoice.sections.find(section => section.name === "description");
-      if (description) {
-        return description.value;
-      }
-      return link
-    }
+    return `From ${operation.sourceLabel} source`
   }
 
 
