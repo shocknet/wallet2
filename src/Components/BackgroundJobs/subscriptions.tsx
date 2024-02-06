@@ -13,11 +13,9 @@ const SubsCheckIntervalSeconds = 60 * 60
 export const SubscriptionsBackground = () => {
 	const activeSubs = useSelector(({ subscriptions }) => subscriptions.activeSubs.filter(s => s.enabled))
 	const payments = useSelector(({ subscriptions }) => subscriptions.payments)
-	const BTCUSDUrl = useSelector(({ prefs }) => prefs.BTCUSDUrl)
+	const BTCUSDUrl = useSelector(({ prefs }) => prefs.Fiaturl.USD)
 	const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
 	const dispatch = useDispatch();
-
-
 
 	const sendSubPayment = useCallback(async (sub: Subscription, latestPayment: SubscriptionPayment | null) => {
 		if (sub.destionation.type !== InputClassification.LN_ADDRESS) {

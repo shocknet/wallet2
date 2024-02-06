@@ -40,7 +40,7 @@ export const Prefs = () => {
   const prefsRedux = useSelector((state) => state.prefs);
 
   const screenWidth = window.innerWidth * 0.88 - 23;
-  const [mempool, setMempool] = useState(prefsRedux.mempoolUrl || "");
+  const [mempool, setMempool] = useState(prefsRedux.mempoolUrl || "https://mempool.space/api/v1/fees/recommended");
   const [fiatCurreny, setFiatCurreny] = useState<string>('USD');
   const [fiat, setFiat] = useState<string>('https://api.coinbase.com/v2/prices/BTC-USD/spot');
   const [chainFees, setChainFees] = useState<ChainFeesInter>({
@@ -71,11 +71,12 @@ export const Prefs = () => {
     }
     const mempoolBool = (mempool === "" || mempoolInfo.data.halfHourFee);
     const fiatBool = (fiat === "" || fiatInfo.data.data.amount);
+    const updateFiatURL = {}
     if (mempoolBool && fiatBool) {
       dispatch(setPrefs(
         {
           mempoolUrl: mempool,
-          BTCUSDUrl: fiat,
+          Fiaturl: {...prefsRedux.Fiaturl, [fiatCurreny]: fiat},
           selected: chainFee
         }
       ));
@@ -87,6 +88,7 @@ export const Prefs = () => {
   }
 
   useEffect(() => {
+    console.log(prefsRedux, '-----3333333333333333333333333333333------')
     switch (chainFee) {
       case "":
       case "eco":
@@ -155,7 +157,7 @@ export const Prefs = () => {
 
   const handleChangeFiatCurrency = (currency: string) => {
     setFiatCurreny(currency);
-    const selectedFiat: Types.FiatCurrency = fiatCurrencies.find(item => item.currency === currency);
+    const selectedFiat = fiatCurrencies.find(item => item.currency === currency) as Types.FiatCurrency;
     setFiat(selectedFiat?.url);
   }
 
@@ -196,7 +198,7 @@ export const Prefs = () => {
         </div>
         <div className='Prefs_mempool'>
           <header>Mempool Provider</header>
-          <input value={mempool} onChange={(e) => { setMempool(e.target.value) }} type="text" placeholder="https://mempool.space/api/v1/fees/recommended" />
+          <input value={mempool} onChange={(e) => { setMempool(e.target.value) }} type="text" placeholder="example: https://mempool.space/api/v1/fees/recommended" />
         </div>
         <div className='Prefs_fiat'>
           <header>Fiat Estimates</header>
@@ -206,7 +208,7 @@ export const Prefs = () => {
                 return (<option value={e.currency} key={i}>{e.currency}</option>);
               })}
             </select>
-            <input value={fiat} type="text" placeholder="exsmaple: https://api.coinbase.com/v2/prices/BTC-USD/spot" />
+            <input value={fiat} onChange={(e) => setFiat(e.target.value)} type="text" placeholder="exsmaple: https://api.coinbase.com/v2/prices/BTC-USD/spot" />
           </div>
         </div>
         <div className='Prefs_buttons'>

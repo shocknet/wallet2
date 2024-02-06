@@ -235,7 +235,6 @@ export const Background = () => {
 		if (savedAssets?.includes(text)) {
 			return;
 		}
-		text = text.replaceAll('lightning:', "")
 		if (!text.length) {
 			return
 		}

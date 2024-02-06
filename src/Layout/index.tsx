@@ -20,7 +20,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   //reducer
   const paySource = useSelector((state) => state.paySource).map((e) => { return { ...e } });
-  const BTCUSDUrl = useSelector(({ prefs }) => prefs.BTCUSDUrl)
+  const BTCUSDUrl = useSelector(({ prefs }) => prefs.Fiaturl.USD)
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"))
   const router = useIonRouter();
 
