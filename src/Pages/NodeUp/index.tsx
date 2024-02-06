@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
@@ -50,7 +50,7 @@ export const NodeUp = () => {
       return;
     } else {
       const bootstrapBalance = "0";
-      const nprofile = nip19.nprofileEncode({ pubkey: localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) || NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
+      const nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
       dispatch(addPaySources(
         {
           id: 0,
@@ -77,8 +77,8 @@ export const NodeUp = () => {
     <div className="NodeUp">
       <div className="NodeUp_title">Node Up</div>
       <div className="NodeUp_textBox">
-      &quot;Continue&quot; to bootstrap the wallet with a trusted server and add a node later<br /><br /><br />
-      &quot;Add connection&quot; to link a node now.
+        &quot;Continue&quot; to bootstrap the wallet with a trusted server and add a node later<br /><br /><br />
+        &quot;Add connection&quot; to link a node now.
       </div>
       <div className="NodeUp_manual">
         <div className="NodeUp_manual_btn">
@@ -86,13 +86,13 @@ export const NodeUp = () => {
             Continue
           </button>
         </div>
-        <div  className="NodeUp_manual_text">
+        <div className="NodeUp_manual_text">
           <div onClick={toSourcePage}>
             Add Connection
           </div>
           <span>|</span>
           <div onClick={toRecoverPage}>
-          Recover Backup
+            Recover Backup
           </div>
         </div>
       </div>
