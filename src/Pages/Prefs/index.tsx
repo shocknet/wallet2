@@ -101,7 +101,7 @@ export const Prefs = () => {
   }
 
   useEffect(() => {
-    console.log(prefsRedux, '-----3333333333333333333333333333333------')
+    console.log(prefsRedux, 'switch chainFee')
     switch (chainFee) {
       case "":
       case "eco":
@@ -221,7 +221,7 @@ export const Prefs = () => {
                 return (<option value={e.currency} key={i}>{e.currency}</option>);
               })}
             </select>
-            <input value={fiat} onChange={(e) => setFiat(e.target.value)} type="text" placeholder="exsmaple: https://api.coinbase.com/v2/prices/BTC-USD/spot" />
+            <input value={fiat} onChange={(e) => setFiat(e.target.value)} type="text" placeholder="https://api.coinbase.com/v2/prices/BTC-USD/spot" />
           </div>
         </div>
         <div className='Prefs_buttons'>
