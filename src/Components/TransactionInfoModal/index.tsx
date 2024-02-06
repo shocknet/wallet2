@@ -11,6 +11,7 @@ import moment from "moment";
 import classNames from "classnames";
 import axios from "axios";
 import * as Icons from "../../Assets/SvgIconLibrary";
+import * as utility  from '../../Hooks/utility';
 import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
 
@@ -141,7 +142,9 @@ const TextBox = ({ text }: { text: string }) => {
 	const copyToClip = async () => {
     await Clipboard.write({
       string: text
-    })
+    }).then(() => {
+      utility.setCookie('lastCopiedAddr', text, 1);
+    });
     return openNotification("top", "Success", "Copied!");
   };
 

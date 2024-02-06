@@ -32,6 +32,7 @@ export const SwItem = ({
 }: Props): JSX.Element => {
   const addressbook = useSelector(({ addressbook }) => addressbook);
   const price = useSelector((state) => state.usdToBTC);
+  const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
 
   underline = underline ?? true;
 
@@ -95,11 +96,11 @@ export const SwItem = ({
               <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
               <div className="SwItem_price_text">{transactionObject.changes}</div>
             </div>
-            <div className="SwItem_changes">~ ${transactionObject.price}</div>
-          </div>
-        </motion.div>
-        <div className={underline ? "SwItem_divider" : ""}></div>
-
+          <div className="SwItem_changes">~ {fiatUnit.symbol} {transactionObject.price}</div>
+        </div>
+      </motion.div>
+      <div className={underline?"SwItem_divider" : ""}></div>
+      
         {
           shown
           &&
