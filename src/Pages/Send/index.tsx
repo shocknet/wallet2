@@ -20,7 +20,7 @@ import useDebounce from '../../Hooks/useDebounce';
 import classnames from "classnames";
 import { createLnurlInvoice, handlePayBitcoinAddress, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { addAddressbookLink } from '../../State/Slices/addressbookSlice';
+import { addAddressbookLink, addIdentifierMemo } from '../../State/Slices/addressbookSlice';
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -52,10 +52,10 @@ export const Send = () => {
   const [selectedSource, setSelectedSource] = useState(spendSources[0]);
   const [sendRunning, setSendRunning] = useState(false);
 
-  
+
   const [satsPerByte, setSatsPerByte] = useState(0)
 
-  
+
   const [to, setTo] = useState("");
   const debouncedTo = useDebounce(to, 500);
   const [destination, setDestination] = useState<Destination>({
@@ -104,14 +104,14 @@ export const Send = () => {
     }
   }, [router]);
 
-  useEffect(() => {    
+  useEffect(() => {
     const determineReceiver = async () => {
       try {
         const parsedInput = await parseBitcoinInput(debouncedTo);
         console.log("parsedInput", parsedInput);
 
-        if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
-          throw new Error ("Lnurl cannot be a lnurl-withdraw");
+        if (parsedInput.type === InputClassification.LNURL && parsedInput.lnurlType !== "payRequest") {
+          throw new Error("Lnurl cannot be a lnurl-withdraw");
         }
 
         if (parsedInput.type === InputClassification.LN_INVOICE) {
@@ -141,21 +141,21 @@ export const Send = () => {
     }
   }, [debouncedTo])
 
-/*   const checkDebugModeInput = () => {
-    if (to === 'howdoyouturnthison') {
-      dispatch(setDebugMode(true))
-      router.push("/home")
-      return true
-    }
-    if (to === 'howdoyouturnthisoff') {
-      dispatch(setDebugMode(false))
-      router.push("/home")
-      return true
-    }
-    return false
-  } */
+  /*   const checkDebugModeInput = () => {
+      if (to === 'howdoyouturnthison') {
+        dispatch(setDebugMode(true))
+        router.push("/home")
+        return true
+      }
+      if (to === 'howdoyouturnthisoff') {
+        dispatch(setDebugMode(false))
+        router.push("/home")
+        return true
+      }
+      return false
+    } */
 
-  
+
   /* In addition to adding to the transaction history this function also adds to the addressbook.
   *  If there is a note (memo) that's prioritized.
   */
@@ -171,15 +171,14 @@ export const Send = () => {
         }
       }))
     }
-    
     if (note) {
-      dispatch(addAddressbookLink({ identifier, address: note }));
-    } else if (destination.type === InputClassification.LNURL) {
-      dispatch(addAddressbookLink({ identifier, contact: destination.domainName , address: destination.data }))
+      dispatch(addIdentifierMemo({ identifier, memo: note }));
+    }
+    if (destination.type === InputClassification.LNURL) {
+      dispatch(addAddressbookLink({ identifier, contact: destination.domainName, address: destination.data }))
     } else if (destination.type === InputClassification.LN_ADDRESS) {
       dispatch(addAddressbookLink({ identifier, contact: destination.data }))
     }
-
     openNotification("top", "Success", "Transaction sent.");
     router.push("/home")
 
@@ -193,9 +192,9 @@ export const Send = () => {
       return;
     }
     setSendRunning(true);
-  /*   if (checkDebugModeInput()) {
-      return
-    } */
+    /*   if (checkDebugModeInput()) {
+        return
+      } */
     dispatch(toggleLoading({ loadingMessage: "Sending..." }));
     try {
       switch (destination.type) {
