@@ -154,7 +154,7 @@ export const Background = () => {
 
 	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
 	useEffect(() => {
-		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile"));
+		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile") && s.id == 0 && s.label === "Bootstrap Node");
 		nostrPayTos.forEach(source => {
 			if (!source.vanityName) {
 				const { pubkey, relays } = parseNprofile(source.pasteField)
