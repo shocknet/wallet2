@@ -14,17 +14,17 @@ export const fiatCurrencies: Types.FiatCurrency[] = [
     {
         url: 'https://api.coinbase.com/v2/prices/btc-cad/spot',
         currency: 'CAD',
-        symbol: 'CAD'
+        symbol: '$'
     },
     {
         url: 'https://api.coinbase.com/v2/prices/btc-brl/spot',
         currency: 'BRL',
-        symbol: 'BRL'
+        symbol: '$'
     },
     {
         url: 'https://api.coinbase.com/v2/prices/btc-mxp/spot',
         currency: 'MXP',
-        symbol: 'MXP'
+        symbol: '$'
     },
     {
         url: 'https://api.coinbase.com/v2/prices/btc-gbp/spot',
@@ -44,6 +44,6 @@ export const fiatCurrencies: Types.FiatCurrency[] = [
     {
         url: 'https://api.coinbase.com/v2/prices/btc-aud/spot',
         currency: 'AUD',
-        symbol: 'AUD'
+        symbol: '$'
     }
 ]
