@@ -38,7 +38,6 @@ export const Home = () => {
   }, [operationsUpdateHook]);
 
   useEffect(() => {
-    console.log(fiatUnit, '-------')
     let totalAmount = 0;
     for (let i = 0; i < spendSources.length; i++) {
       const eachAmount = spendSources[i].balance;

@@ -101,7 +101,6 @@ export const Prefs = () => {
   }
 
   useEffect(() => {
-    console.log(prefsRedux, 'switch chainFee')
     switch (chainFee) {
       case "":
       case "eco":
