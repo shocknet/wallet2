@@ -51,6 +51,7 @@ export const Receive = () => {
   //reducer
   const paySource = useSelector((state) => state.paySource)
   const receiveHistory = useSelector((state) => state.history);
+  const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
 
   const price = useSelector((state) => state.usdToBTC);
   const [deg, setDeg] = useState("rotate(0deg)");
@@ -277,7 +278,7 @@ export const Receive = () => {
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ ${parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
+        ~ {fiatUnit.symbol} {parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice} id="confirm-invoice-amount">OK</button>
     </div>
@@ -328,7 +329,7 @@ export const Receive = () => {
             ?
               <React.Fragment>
                 <div>{`${amount} sats`}</div>
-                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} USD`}</div>
+                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatUnit.symbol}`}</div>
               </React.Fragment>
             :
             tag == 2 ? bitcoinAddText : lightningAdd

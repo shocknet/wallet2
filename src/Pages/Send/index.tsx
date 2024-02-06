@@ -41,6 +41,7 @@ export const Send = () => {
   const dispatch = useDispatch();
   const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
   const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
+  const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const selectedChainFee = useSelector(({ prefs }) => prefs.selected);
 
   const [vReceive, setVReceive] = useState(1);
@@ -276,7 +277,7 @@ export const Send = () => {
               Sats per vByte
             </div>}
             <p className='Send_available_amount_amount'>
-              ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+              ~ {fiatUnit.symbol} {amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
             </p>
           </div>
           <div className="Send_to">

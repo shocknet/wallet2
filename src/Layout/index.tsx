@@ -20,7 +20,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   //reducer
   const paySource = useSelector((state) => state.paySource).map((e) => { return { ...e } });
-  const BTCUSDUrl = useSelector(({ prefs }) => prefs.Fiaturl.USD)
+  const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"))
   const router = useIonRouter();
 
@@ -30,12 +30,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const dispatch = useDispatch();
 
   const getPrice = async () => {
-    const buyInfo = await axios.get<any>(BTCUSDUrl || usdToBTCSpotLink);
+    const buyInfo = await axios.get<any>(BTCFiatUnit.url || usdToBTCSpotLink);
 
     dispatch(setAmount(
       {
         buyPrice: buyInfo.data.data.amount,
-        sellPrice: buyInfo.data.data.amount
+        sellPrice: buyInfo.data.data.amount,
       } as Price
     ))
   }
@@ -45,17 +45,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
     setInterval(() => {
       getPrice();
     }, 5 * 60 * 1000)
-  }, []);
-
-  useEffect(() => {
-    // Listen for the appUrlOpen event
-    const listener = App.addListener("appUrlOpen", (data) => {
-      console.log("appurlopen");
-
-      // Get the bitcoin URI from the data
-      const bitcoinUri = data.url;
-      // Do something with the bitcoin URI, such as parsing it or sending it to another component
-    });
   }, []);
 
   return (

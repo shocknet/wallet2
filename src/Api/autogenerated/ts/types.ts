@@ -2124,5 +2124,6 @@ export const DecodeInvoiceRequestValidate = (o?: DecodeInvoiceRequest, opts: Dec
 export type FiatCurrency = {
     currency: string
     url: string
+    symbol: string
 }
 
