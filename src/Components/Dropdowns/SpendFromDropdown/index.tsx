@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
@@ -15,15 +15,20 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   callback,
 }: DropDownProps): JSX.Element => {
 
-  const box = values.filter((e) => e.id !== value.id );
   
   const [value, setValue] = useState<SpendFrom>(initialValue);
-  const [allValue, setAllValue] = useState<SpendFrom[]>(box);
+  const [allValue, setAllValue] = useState<SpendFrom[]>();
 
   const [display, setDisplay] = useState<number>(0);
   const [rotation, setRotation] = useState<number>(0);
 
   const showDropDown: boolean = false;
+
+  useEffect(() => {
+    const box = values.filter((e) => e.id !== value.id );
+    setAllValue(box);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const arrangeIcon = (value?: string) => {
     switch (value) {
