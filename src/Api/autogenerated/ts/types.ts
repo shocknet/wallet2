@@ -2126,3 +2126,8 @@ export const GetUserOperationsResponseValidate = (o?: GetUserOperationsResponse,
     return null
 }
 
+export type FiatCurrency = {
+    url: string
+    currency: string
+    symbol: string
+}
