@@ -4,7 +4,6 @@ import { Header } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
 import axios from "axios";
-import { usdToBTCSpotLink } from "../constants";
 import { useDispatch, useSelector } from "../State/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
 import LoadingOverlay from "../Components/LoadingOverlay";
@@ -31,7 +30,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   useEffect(() => {
 
     const getPrice = async () => {
-      const buyInfo = await axios.get<any>(BTCFiatUnit.url || usdToBTCSpotLink);
+      const buyInfo = await axios.get<any>(BTCFiatUnit.url);
       dispatch(setAmount(
         {
           buyPrice: buyInfo.data.data.amount,
@@ -51,15 +50,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
         <React.Fragment>
           {children}
         </React.Fragment>
-      ) : 
-      (
-        <React.Fragment>
-          <Header />
-          {children}
-          <LoadingOverlay />
-          <Footer />
-        </React.Fragment>
-      )}
+      ) :
+        (
+          <React.Fragment>
+            <Header />
+            {children}
+            <LoadingOverlay />
+            <Footer />
+          </React.Fragment>
+        )}
     </div>
   )
 }
