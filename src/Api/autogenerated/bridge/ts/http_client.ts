@@ -15,7 +15,7 @@ export default (params: ClientParams) => ({
     GetOrCreateVanityName: async (request: Types.GetOrCreateVanityNameRequest): Promise<ResultError | ({ status: 'OK' }& Types.GetOrCreateVanityNameResponse)> => {
         const auth = await params.retrieveGuestAuth()
         if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/v1/vanity'
+        const finalRoute = '/api/v1/vanity'
         const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 

@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
@@ -14,17 +14,16 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   initialValue,
   callback,
 }: DropDownProps): JSX.Element => {
-  const [showDropDown, setShowDropDown] = useState<boolean>(false);
-  const [value, setValue] = useState(initialValue);
-  const [allValue, setAllValue] = useState(values);
-  const [display, setDisplay] = useState(0);
-  const [rotation, setRotation] = useState(0);
 
-  useEffect(() => {
-    setShowDropDown(showDropDown);
-    const box = allValue.filter((e) => e.id !== value.id );
-    setAllValue(box);
-  }, [showDropDown]);
+  const box = values.filter((e) => e.id !== value.id );
+  
+  const [value, setValue] = useState<SpendFrom>(initialValue);
+  const [allValue, setAllValue] = useState<SpendFrom[]>(box);
+
+  const [display, setDisplay] = useState<number>(0);
+  const [rotation, setRotation] = useState<number>(0);
+
+  const showDropDown: boolean = false;
 
   const arrangeIcon = (value?: string) => {
     switch (value) {

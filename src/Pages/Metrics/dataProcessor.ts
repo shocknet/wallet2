@@ -44,6 +44,7 @@ export const ProcessLndData = () => {
 
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const processApps = (apps: Types.AppsMetrics, timeFrame: TimeFrame): { appsBalances: PieGraph, feesPaid: BarGraph, movingSats: BarGraph } => {
     const appsLabels: string[] = []
     const balances: number[] = []
@@ -142,6 +143,7 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     })
     const labels = generateTimeSeriesLabels(minBlock, maxBlock)
     const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: `chain balance node ${i + 1}` }))
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const remoteChannels = Object.entries(channelsBalanceRemote).map(([k, data]) => ({ data, label: `remote balance ch ${k}` }))
     const localChannels = Object.entries(channelsBalanceLocal).map(([k, data]) => ({ data, label: `local balance ch ${k}` }))
     return {

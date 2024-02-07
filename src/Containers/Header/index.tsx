@@ -40,11 +40,7 @@ export const Header = () => {
   const isscan: boolean = router.routeInfo.pathname === "/scan";
   const isreceive: boolean = router.routeInfo.pathname === "/receive";
 
-  const getNotifyBadge = () => {
-    if (notifications && notifications.notifications.length) {
-      setBadge(notifications.notifications[notifications.notifications.length - 1].date > notifications.checkTime)
-    }
-  }
+  
   useEffect(() => {
     if (!debugMode) {
       logs = []
@@ -80,12 +76,13 @@ export const Header = () => {
   }, [isDebugShown])
 
   useEffect(() => {
+    const getNotifyBadge = () => {
+      if (notifications && notifications.notifications.length) {
+        setBadge(notifications.notifications[notifications.notifications.length - 1].date > notifications.checkTime)
+      }
+    }
     getNotifyBadge();
   }, [notifications])
-  useEffect(() => {
-    getNotifyBadge();
-  }, []);
-
 
   useEffect(() => {
     let singleClickTimer: NodeJS.Timeout;

@@ -91,7 +91,7 @@ export function reducer(state: StateInterface, action: ActionType): StateInterfa
 
     case "SEARCHING":
       state.filteredItems = state.items.filter(item => {
-        let searching: string = payload as string
+        const searching: string = payload as string
         return item.title.toLowerCase().includes(searching.toLowerCase())
       })
       return{

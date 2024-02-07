@@ -15,6 +15,7 @@ import * as utility  from '../../Hooks/utility';
 import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRightSideValueString = (amount: number, negative: boolean, price: Price) => {
   return `${negative ? "" : "-"} ${amount} sats`;
 }
@@ -34,6 +35,7 @@ interface ApiRes {
 
 const TransactionInfoModal = ({ operation, hide, price } : Props) => {
   const onChain = operation.type === Types.UserOperationType.INCOMING_TX || operation.type === Types.UserOperationType.OUTGOING_TX;
+  // @ts-expect-error xxx
   const { internal, amount, inbound, confirmed } = operation;
 	const totalFee = operation.service_fee + operation.network_fee;
 
@@ -47,6 +49,7 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
 
   useEffect(() => {
     const getOnChainTxInfo = async () => {  
+      // @ts-expect-error xxx
 			const res = await axios.get(`https://mempool.space/api/tx/${operation.tx_hash}`);
 			const { data: lastBlock } = await axios.get("https://mempool.space/api/blocks/tip/height");			
 			setmempoolres({ ...res.data, blockHeight: res.data.status.block_height, lastBlock });
@@ -56,6 +59,7 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
     if (loading) {
       getOnChainTxInfo();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading])
 
   const modal = 
@@ -120,6 +124,7 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
 									&&
 									<div className={classNames(styles["info-item"], styles["info-item-databox"])}>
                     <span className={styles["left"]}>Txid</span>
+                    {/* @ts-expect-error xxx */}
 										<TextBox text={operation.tx_hash}/>
                   </div>
 								}

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { notification } from 'antd';
-import { bech32 } from 'bech32';
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";

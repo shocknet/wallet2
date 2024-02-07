@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Chart as ChartJS, registerables, Legend } from 'chart.js';
-import { Bar, Line, Pie, Chart } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2'
 ChartJS.register(...registerables, Legend);
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { useSelector, useDispatch } from '../../State/store';
-import { useIonRouter } from '@ionic/react';
+import { useDispatch } from '../../State/store';
 import { getHttpClient } from '../../Api';
-import { BarGraph, LineGraph, LndGraphs, PieGraph, processData, processLnd } from './dataProcessor';
+import { LndGraphs, processLnd } from './dataProcessor';
 import styles from "./styles/index.module.scss";
 import classNames from 'classnames';
 import moment from 'moment';
@@ -21,7 +20,6 @@ const trimText = (text: string) => {
 const getTimeAgo = (secondsAgo: number) => {
 	return moment().subtract(secondsAgo, 'seconds').fromNow();
 }
-
 
 
 type Creds = { url: string, metricsToken: string }
@@ -114,7 +112,8 @@ export const Metrics = () => {
       return;
     }
     fetchMetrics();
-  }, [period])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstRender])
 
   const fetchMetrics = useCallback(async (fromCache?: boolean) => {
     if (!url || !metricsToken) {
@@ -192,6 +191,7 @@ export const Metrics = () => {
     setUrl(creds.url)
     setMetricsToken(creds.metricsToken)
     fetchMetrics(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   if (loading && !ready) {
     return null

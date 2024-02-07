@@ -24,10 +24,10 @@ export function matchFilter(filter: Filter<number>, event: Event<number>): boole
         }
     }
 
-    for (let f in filter) {
+    for (const f in filter) {
         if (f[0] === '#') {
-            let tagName = f.slice(1)
-            let values = filter[`#${tagName}`]
+            const tagName = f.slice(1)
+            const values = filter[`#${tagName}`]
             if (values && !event.tags.find(([t, v]) => t === f.slice(1) && values!.indexOf(v) !== -1)) return false
         }
     }
@@ -46,18 +46,18 @@ export function matchFilters(filters: Filter<number>[], event: Event<number>): b
 }
 
 export function mergeFilters(...filters: Filter<number>[]): Filter<number> {
-    let result: Filter<number> = {}
+    const result: Filter<number> = {}
     for (let i = 0; i < filters.length; i++) {
-        let filter = filters[i]
+        const filter = filters[i]
         Object.entries(filter).forEach(([property, values]) => {
             if (property === 'kinds' || property === 'ids' || property === 'authors' || property[0] === '#') {
-                // @ts-ignore
+                // @ts-expect-error xxx
                 result[property] = result[property] || []
-                // @ts-ignore
+                // @ts-expect-error xxx
                 for (let v = 0; v < values.length; v++) {
-                    // @ts-ignore
-                    let value = values[v]
-                    // @ts-ignore
+                    // @ts-expect-error xxxx
+                    const value = values[v]
+                    // @ts-expect-error xxx
                     if (!result[property].includes(value)) result[property].push(value)
                 }
             }

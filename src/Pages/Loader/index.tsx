@@ -14,8 +14,7 @@ export const Loader = () => {
     setTimeout(() => {
       router.push("/home");
     }, 500);
-  }, []);
-
+  }, [router]);
 
   return(
     <section className="Loader">

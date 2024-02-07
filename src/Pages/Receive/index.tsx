@@ -54,25 +54,25 @@ export const Receive = () => {
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
 
   const price = useSelector((state) => state.usdToBTC);
-  const [deg, setDeg] = useState("rotate(0deg)");
-  const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
-  const [amount, setAmount] = useState("");
-  const [amountValue, setAmountValue] = useState("");
-  const [LNInvoice, setLNInvoice] = useState("");
-  const [LNurl, setLNurl] = useState("");
-  const [valueQR, setQR] = useState("");
-  const [lightningAdd, setLightningAdd] = useState("");
-  const [tag, setTag] = useState(0);
-  const [bitcoinAdd, setBitcoinAdd] = useState("");
-  const [bitcoinAddText, setBitcoinAddText] = useState("");
-  const [invoiceMemo, setInvoiceMemo] = useState("");
+  const [amount, setAmount] = useState<string>("");
+  const [amountValue, setAmountValue] = useState<string>("");
+  const [LNInvoice, setLNInvoice] = useState<string>("");
+  const [LNurl, setLNurl] = useState<string>("");
+  const [valueQR, setQR] = useState<string>("");
+  const [lightningAdd, setLightningAdd] = useState<string>("");
+  const [tag, setTag] = useState<number>(0);
+  const [bitcoinAdd, setBitcoinAdd] = useState<string>("");
+  const [bitcoinAddText, setBitcoinAddText] = useState<string>("");
+  const [invoiceMemo, setInvoiceMemo] = useState<string>("");
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource[0].vanityName)
 
   const isNostrSource = paySource[0].vanityName;
+  const vReceive = 1;
+  const deg = "rotate(0deg)";
 
   useEffect(() => {
     if (isShown && amountInputRef.current) {
@@ -109,6 +109,7 @@ export const Receive = () => {
         router.push("/home");
       }, 1000);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receiveHistory.latestOperation])
 
 

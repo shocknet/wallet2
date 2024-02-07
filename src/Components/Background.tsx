@@ -150,6 +150,7 @@ export const Background = () => {
 				})
 			})
 		})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [latestOp, initialFetch])
 
 	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
@@ -157,7 +158,7 @@ export const Background = () => {
 		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile") && s.id == 0 && s.label === "Bootstrap Node");
 		nostrPayTos.forEach(source => {
 			if (!source.vanityName) {
-				const { pubkey, relays } = parseNprofile(source.pasteField)
+				const { pubkey, relays } = parseNprofile(source.pasteField)	
 				getNostrClient({ pubkey, relays }).then(c => {
 					c.GetLnurlPayLink().then(pubRes => {
 						if (pubRes.status !== 'OK') {
@@ -175,7 +176,7 @@ export const Background = () => {
 				})
 			}
 		})
-
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [dispatch, spendSource])
 
 

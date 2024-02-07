@@ -6,6 +6,8 @@ interface NotificationType {
   checkTime: number,
   notifications: NotifyItemData[],
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   return serialLocal
 }

@@ -25,7 +25,7 @@ export interface ChainFeesInter {
 interface Price {
   buyPrice: number,
   sellPrice: number,
-};
+}
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -101,8 +101,11 @@ export const Prefs = () => {
   }
 
   useEffect(() => {
+    const getChainFee = async () => {
+      const getFee = await axios.get(prefsRedux.mempoolUrl || defaultMempool);
+      setChainFees(getFee.data);
+    }
     switch (chainFee) {
-      case "":
       case "eco":
         setPos(23)
         break;
@@ -112,20 +115,17 @@ export const Prefs = () => {
       case "asap":
         setPos(screenWidth - 23)
         break;
+      default:
+        break;
     }
     getChainFee();
-  }, [prefsRedux]);
+  }, [prefsRedux, chainFee, screenWidth]);
 
   useEffect(() => {
     window.addEventListener("mouseup", () => {
       // touchEndSlide();
     })
   }, [])
-
-  const getChainFee = async () => {
-    const getFee = await axios.get(prefsRedux.mempoolUrl || defaultMempool);
-    setChainFees(getFee.data);
-  }
 
   const touchMoveSlide = (e: any) => {
     let positionX = 0;

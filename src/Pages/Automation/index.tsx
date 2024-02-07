@@ -23,6 +23,15 @@ export enum Interval {
 	MONTHLY = "Monthly",
 }
 
+interface Inputs {
+	memo: string,
+	endpoint: string,
+	schedule: Interval,
+	enabled: boolean,
+	amount: number,
+	now: boolean
+}
+
 const periods = Object.values(Interval);
 
 
@@ -43,20 +52,22 @@ export const Automation = () => {
   //reducer
   //const spendSources = useSelector((state) => state.spendSource).map((e: any) => { return { ...e } });
   const subs = useSelector(({ subscriptions }) => subscriptions.activeSubs)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const payments = useSelector(({ subscriptions }) => subscriptions.payments)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useIonRouter();
 
-  const [checked, setChecked] = useState(true);
-  const [value, setValue] = useState(1);
+  const [checked, setChecked] = useState<boolean>(true);
+  const [value, setValue] = useState<number>(1);
   const { isShown, toggle } = UseModal();
-  const [editSubId, setEditSubId] = useState("");
-  const [inputs, setInputs] = useState({
+  const [editSubId, setEditSubId] = useState<string>("");
+  const [inputs, setInputs] = useState<Inputs>({
 		memo: "",
 		endpoint: "",
 		schedule: Interval.MONTHLY,
 		enabled: true,
 		amount: 0,
-    now: true
+		now: true
 	});
 
   useEffect(() => {
@@ -64,15 +75,16 @@ export const Automation = () => {
       const sub = subs.find(s => s.subId === editSubId);
       if (sub) {
         setInputs({
-					memo: sub.memo,
-					endpoint: sub.destionation.data,
-					schedule: sub.interval,
-					enabled: sub.enabled,
-					amount: sub.price.amt,
-          now: true
-				})
+			memo: sub.memo,
+			endpoint: sub.destionation.data,
+			schedule: sub.interval,
+			enabled: sub.enabled,
+			amount: sub.price.amt,
+			now: true
+		})
       }
     }
+	// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editSubId])
 
   const otherOptions = periods.filter(p => p !== inputs.schedule);
@@ -306,6 +318,7 @@ export const Automation = () => {
 				if(parseInt(e.target.value)>100){
 					return;
 				}
+				// eslint-disable-next-line no-mixed-spaces-and-tabs
               	setValue(parseInt(e.target.value))
             }} />
           </span>

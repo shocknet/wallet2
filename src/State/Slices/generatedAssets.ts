@@ -5,6 +5,7 @@ interface GeneratedAssets {
 	assets: string[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const mergeLogic = (serialLocal: string, _: string): string => {
 	return serialLocal
 }

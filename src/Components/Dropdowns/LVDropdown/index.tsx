@@ -4,8 +4,7 @@ import classNames from "classnames";
 import { useRef, useState } from "react";
 import { Period } from "../../../Pages/Metrics";
 import useClickOutside from "../../../Hooks/useClickOutside";
-import * as Icons from "../../../Assets/SvgIconLibrary";
-import { Interval } from "../../../Pages/Automation/newSubModal";
+import { Interval } from "../../../Pages/Automation";
 
 interface Props<T> {
 	setState: (data: T) => void;
