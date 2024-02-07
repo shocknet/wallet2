@@ -108,7 +108,7 @@ export const Receive = () => {
         router.push("/home");
       }, 1000);
     }
-  }, [receiveHistory.latestOperation, LNInvoice])
+  }, [receiveHistory.latestOperation, LNInvoice, router])
 
 
 
