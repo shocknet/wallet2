@@ -3,9 +3,9 @@ import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
-import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
+import { encodeNprofile } from "../../custom-nip19";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -50,7 +50,11 @@ export const NodeUp = () => {
       return;
     } else {
       const bootstrapBalance = "0";
-      const nprofile = nip19.nprofileEncode({ pubkey: localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) || NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
+      const nprofile = encodeNprofile({
+        pubkey: localStorage.getItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY) || NOSTR_PUB_DESTINATION,
+        relays: NOSTR_RELAYS,
+        bridge: ["https://zap.page"]
+      })
       dispatch(addPaySources(
         {
           id: 0,
@@ -58,7 +62,6 @@ export const NodeUp = () => {
           pasteField: nprofile,
           option: options.little,
           icon: "0",
-          bridgeUrl: "zap.page"
         }
       ));
       dispatch(addSpendSources(
