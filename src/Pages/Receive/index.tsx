@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { getNostrClient } from '../../Api'
@@ -24,6 +24,7 @@ import { createLnurlInvoice, createNostrInvoice, createNostrPayLink } from '../.
 import { parseBitcoinInput } from '../../constants';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import Toggle from '../../Components/Toggle';
+import { decodeNprofile } from '../../custom-nip19';
 
 const headerText: string[] = [
   'LNURL',
@@ -72,7 +73,30 @@ export const Receive = () => {
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource[0].vanityName)
 
-  const isNostrSource = paySource[0].vanityName;
+
+  const lnaddrData = useMemo(() => {
+    if (paySource.length > 0) {
+      const topPaySource = paySource[0]
+      if (topPaySource.vanityName) {
+        const decoded = decodeNprofile(topPaySource.pasteField);
+        const url = decoded.bridge![0];
+
+        const hostName = new URL(url);
+        const parts = hostName.hostname.split(".");
+        const domainName = parts.slice(-2).join('.');
+        return {
+          vanityName: topPaySource.vanityName,
+          url: domainName
+        }
+      } else {
+        return null
+      }
+
+    } else {
+      return null
+    }
+
+  }, [paySource])
 
   useEffect(() => {
     if (isShown && amountInputRef.current) {
@@ -290,7 +314,7 @@ export const Receive = () => {
         <div className="Receive_QR_text">
           <span>{tag === 0 && showingLightningAddress ? "Lightning Address" : headerText[tag]}</span>
           {
-            (tag === 0 && isNostrSource)
+            (tag === 0 && lnaddrData !== null)
             &&
             <Toggle
               value={!showingLightningAddress}
@@ -318,9 +342,9 @@ export const Receive = () => {
         }
         {
           tag === 0 ? 
-          (showingLightningAddress)
+          (showingLightningAddress && lnaddrData !== null)
           &&
-          <p style={{fontSize: "24px"}}>{isNostrSource}@zap.page</p>
+          <div style={{fontSize: "24px"}}>{`${lnaddrData?.vanityName}@${lnaddrData?.url}`}</div>
           : ''
         }
         <div className='Receive_copy'>

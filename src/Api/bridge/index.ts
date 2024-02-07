@@ -1,8 +1,8 @@
 import CreateBridgeHttpClient, { BridgeHttpClient } from "./http"
 
 export default class Handler {
-	constructor() {
-		this.bridgeHttp = CreateBridgeHttpClient("https://zap.page");
+	constructor(bridgeUrl: string) {
+		this.bridgeHttp = CreateBridgeHttpClient(bridgeUrl);
 	}
 	bridgeHttp: BridgeHttpClient;
 

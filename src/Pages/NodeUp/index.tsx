@@ -3,9 +3,9 @@ import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
-import { nip19 } from "nostr-tools";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
+import { encodeNprofile } from "../../custom-nip19";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -50,7 +50,12 @@ export const NodeUp = () => {
       return;
     } else {
       const bootstrapBalance = "0";
-      const nprofile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
+      const nprofile = encodeNprofile({
+        pubkey: NOSTR_PUB_DESTINATION,
+        relays: NOSTR_RELAYS,
+        bridge: ["https://zap.page"]
+      })
+
       dispatch(addPaySources(
         {
           id: 0,

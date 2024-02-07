@@ -18,8 +18,7 @@ import axios, { isAxiosError } from "axios";
 import { openNotification } from "../constants";
 import { SubscriptionsBackground } from "./BackgroundJobs/subscriptions";
 import { HealthCheck } from "./BackgroundJobs/HealthCheck";
-import Bridge from "../Api/bridge";
-import { editPaySources } from "../State/Slices/paySourcesSlice";
+import { LnAddressCheck } from "./BackgroundJobs/LnAddressCheck";
 import { SpendFrom } from "../globalTypes";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
 
@@ -39,8 +38,6 @@ export const Background = () => {
 	const { isShown, toggle } = UseModal();
 	const latestAckedClipboard = useRef("");
 	const isShownRef = useRef(false);
-	const bridge = useRef<Bridge>(new Bridge());
-
 
 	useEffect(() => {
 		isShownRef.current = isShown;
@@ -72,7 +69,6 @@ export const Background = () => {
 			getNostrClient({ pubkey, relays }).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
-						console.log("New operation", newOp)
 						openNotification("top", "Payments", "You received payment.");
 						dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
 					} else {
@@ -150,6 +146,7 @@ export const Background = () => {
 		}
 
 		setInitialFetch(false)
+
 		nostrSource.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
 			const client = await getNostrClient({ pubkey, relays })
@@ -158,31 +155,8 @@ export const Background = () => {
 		})
 	}, [latestOp, initialFetch])
 
-	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
-	useEffect(() => {
-		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile") && s.id == 0 && s.label === "Bootstrap Node");
-		nostrPayTos.forEach(source => {
-			if (!source.vanityName) {
-				const { pubkey, relays } = parseNprofile(source.pasteField)
-				getNostrClient({ pubkey, relays }).then(c => {
-					c.GetLnurlPayLink().then(pubRes => {
-						if (pubRes.status !== 'OK') {
-							console.log("Pub error: ", pubRes.reason);
-						} else {
-							bridge.current.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
-								if (bridgeRes.status === "OK") {
-									dispatch(editPaySources({ ...source, vanityName: bridgeRes.vanity_name }));
-								} else {
-									console.log("Vanity name error");
-								}
-							})
-						}
-					})
-				})
-			}
-		})
+	
 
-	}, [dispatch, spendSource])
 
 
 	// reset spend for lnurl
@@ -304,6 +278,7 @@ export const Background = () => {
 		<SubscriptionsBackground />
 		<HealthCheck />
 		<NewSourceCheck />
+		<LnAddressCheck />
 		<Modal isShown={isShown} hide={() => { toggle(); latestAckedClipboard.current = clipText; }} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }
@@ -347,6 +322,7 @@ const parseOperationsResponse = (r: Types.GetUserOperationsResponse): { cursor: 
 		...r.latestIncomingUserToUserPayemnts.operations,
 		...r.latestOutgoingUserToUserPayemnts.operations,
 	]
+
 	console.log({ operations })
 	const needMoreData = isAnyArrayLong([
 		r.latestIncomingInvoiceOperations.operations,
