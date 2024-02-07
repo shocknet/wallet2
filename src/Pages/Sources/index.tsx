@@ -23,6 +23,7 @@ import { useIonRouter } from '@ionic/react';
 import { createLnurlInvoice, createNostrInvoice, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
+import { useLocation } from 'react-router';
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -33,44 +34,56 @@ const openNotification = (placement: NotificationPlacement, header: string, text
   });
 };
 export const Sources = () => {
-  //parameter in url when click protocol
-/*   const addressSearch = new URLSearchParams(useLocation().search);
-  const urlParam = addressSearch.get("url"); */
+
   const router = useIonRouter();
+  const location = useLocation();
 
   const [tempParsedWithdraw, setTempParsedWithdraw] = useState<Destination>();
   const [notifySourceId, setNotifySourceId] = useState("");
   const notifications = useSelector(state => state.notify.notifications);
+
+  const processParsedInput = (destination: Destination) => {
+    const promptSweep = 
+      destination.type === InputClassification.LNURL
+      &&
+      destination.lnurlType === "withdrawRequest"
+      &&
+      destination.max && destination.max > 0
+      &&
+      paySources.length > 0;
+
+    if (promptSweep) {
+      setTempParsedWithdraw(destination);
+      setModalContent("promptSweep");
+      toggle();
+    } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
+      setSourcePasteField(destination.data);
+      openAddSourceModal();
+    }
+  }
   
   useEffect(() => {
-    const addressSearch = new URLSearchParams(router.routeInfo.search);
-    const data = addressSearch.get("url");
-    const erroringSourceId = addressSearch.get("sourceId");
-    if (data) {
-      parseBitcoinInput(data).then(parsed => {
-        const promptSweep = 
-          parsed.type === InputClassification.LNURL
-          &&
-          parsed.lnurlType === "withdrawRequest"
-          &&
-          parsed.max && parsed.max > 0
-          &&
-          paySources.length > 0;
-
-        if (promptSweep) {
-          setTempParsedWithdraw(parsed);
-          setModalContent("promptSweep");
-          toggle();
-        } else if (data.includes("nprofile") || parsed.type === InputClassification.LNURL || parsed.type === InputClassification.LN_ADDRESS) {
-          setSourcePasteField(parsed.data);
-          openAddSourceModal();
-        }
-      })
-    } else if (erroringSourceId) {
-      EditSourceSpend_Modal(parseInt(erroringSourceId));
+    if (location.state) {
+      const receivedDestination = location.state as Destination;
+      processParsedInput(receivedDestination);
+    } else {
+      const addressSearch = new URLSearchParams(location.search);
+      const data = addressSearch.get("url");
+      const erroringSourceId = addressSearch.get("sourceId");
+      const bridgeUrl = addressSearch.get("bridge");
+      if (bridgeUrl && typeof bridgeUrl === "string") {
+        setBridgeUrl(bridgeUrl);
+      }
+      if (data) {
+        parseBitcoinInput(data).then(parsed => {
+          processParsedInput(parsed)
+        })
+      } else if (erroringSourceId) {
+        EditSourceSpend_Modal(parseInt(erroringSourceId));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, [location]);
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -78,6 +91,7 @@ export const Sources = () => {
   const spendSources = useSelector((state) => state.spendSource);
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
+  const [bridgeUrl, setBridgeUrl] = useState("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
 
@@ -196,6 +210,7 @@ export const Sources = () => {
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
+        bridgeUrl: bridgeUrl || undefined
       } as PayTo;
       dispatch(addPaySources(addedPaySource));
       const addedSpendSource = {
@@ -267,7 +282,7 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
     
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource]);
+  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, bridgeUrl]);
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {

@@ -285,10 +285,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: UserHealth')
                                     } else {
                                         opStats.validate = opStats.guard
-
-
-                                        await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK' })
-
+                                        await methods.UserHealth({...operation, ctx}); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }

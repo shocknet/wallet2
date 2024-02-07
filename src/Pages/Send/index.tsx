@@ -20,7 +20,8 @@ import useDebounce from '../../Hooks/useDebounce';
 import classnames from "classnames";
 import { createLnurlInvoice, handlePayBitcoinAddress, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { addAddressbookLink } from '../../State/Slices/addressbookSlice';
+import { useLocation } from 'react-router';
+import { addAddressbookLink, addIdentifierMemo } from '../../State/Slices/addressbookSlice';
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -36,6 +37,7 @@ const openNotification = (placement: NotificationPlacement, header: string, text
 export const Send = () => {
 
   const price = useSelector((state) => state.usdToBTC);
+  const location = useLocation();
 
   //reducer
   const dispatch = useDispatch();
@@ -51,14 +53,17 @@ export const Send = () => {
   const [selectedSource, setSelectedSource] = useState(spendSources[0]);
   const [sendRunning, setSendRunning] = useState(false);
 
-  
+
   const [satsPerByte, setSatsPerByte] = useState(0)
 
   const vReceive: number = 1
 
   
-  const [to, setTo] = useState("");
-  const debouncedTo = useDebounce(to, 500);
+  const [to, setTo] = useState({
+    input: "",
+    parse: false
+  });
+  const debouncedTo = useDebounce(to.input, 500);
   const [destination, setDestination] = useState<Destination>({
     type: InputClassification.UNKNOWN,
     data: "",
@@ -98,34 +103,50 @@ export const Send = () => {
   }, [router, spendSources]);
 
   useEffect(() => {
-    const addressSearch = new URLSearchParams(router.routeInfo.search);
-    const data = addressSearch.get("url");
-    if (data) {
-      setTo(data);
+    if (location.state) {
+      const receivedDestination = location.state as Destination;
+      processParsedDestination(receivedDestination);
+      setTo({
+        input: receivedDestination.data,
+        parse: false
+      });
+    } else {
+      const addressSearch = new URLSearchParams(location.search);
+      const data = addressSearch.get("url");
+      if (data) {
+        setTo({
+          input: data,
+          parse: true
+        });
+      }
     }
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
 
-  useEffect(() => {    
+  const processParsedDestination = async (parsedInput: Destination) => {
+    if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
+      throw new Error ("Lnurl cannot be a lnurl-withdraw");
+    }
+
+    if (parsedInput.type === InputClassification.LN_INVOICE) {
+      setAmount(parsedInput.amount as number);
+      if (parsedInput.memo) {
+        setNote(parsedInput.memo);
+      }
+    }
+    if (parsedInput.type === InputClassification.BITCOIN_ADDRESS) {
+      await updateSatsPerByte();
+    }
+
+    setDestination(parsedInput);
+  }
+
+  useEffect(() => {
     const determineReceiver = async () => {
       try {
         const parsedInput = await parseBitcoinInput(debouncedTo);
-        console.log("parsedInput", parsedInput);
+        await processParsedDestination(parsedInput);
 
-        if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
-          throw new Error ("Lnurl cannot be a lnurl-withdraw");
-        }
-
-        if (parsedInput.type === InputClassification.LN_INVOICE) {
-          setAmount(parsedInput.amount as number);
-          if (parsedInput.memo) {
-            setNote(parsedInput.memo);
-          }
-        }
-        if (parsedInput.type === InputClassification.BITCOIN_ADDRESS) {
-          await updateSatsPerByte();
-        }
-
-        setDestination(parsedInput);
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
           openNotification("top", "Error", err.response.data.reason);
@@ -137,27 +158,14 @@ export const Send = () => {
       }
     }
 
-    if (debouncedTo) {
+    if (debouncedTo && to.parse) {
       determineReceiver();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedTo])
 
-/*   const checkDebugModeInput = () => {
-    if (to === 'howdoyouturnthison') {
-      dispatch(setDebugMode(true))
-      router.push("/home")
-      return true
-    }
-    if (to === 'howdoyouturnthisoff') {
-      dispatch(setDebugMode(false))
-      router.push("/home")
-      return true
-    }
-    return false
-  } */
 
-  
+
   /* In addition to adding to the transaction history this function also adds to the addressbook.
   *  If there is a note (memo) that's prioritized.
   */
@@ -180,15 +188,14 @@ export const Send = () => {
         }
       }))
     }
-    
     if (note) {
-      dispatch(addAddressbookLink({ identifier, address: note }));
-    } else if (destination.type === InputClassification.LNURL) {
-      dispatch(addAddressbookLink({ identifier, contact: destination.domainName , address: destination.data }))
+      dispatch(addIdentifierMemo({ identifier, memo: note }));
+    }
+    if (destination.type === InputClassification.LNURL) {
+      dispatch(addAddressbookLink({ identifier, contact: destination.domainName, address: destination.data }))
     } else if (destination.type === InputClassification.LN_ADDRESS) {
       dispatch(addAddressbookLink({ identifier, contact: destination.data }))
     }
-
     openNotification("top", "Success", "Transaction sent.");
     router.push("/home")
 
@@ -202,9 +209,7 @@ export const Send = () => {
       return;
     }
     setSendRunning(true);
-  /*   if (checkDebugModeInput()) {
-      return
-    } */
+
     dispatch(toggleLoading({ loadingMessage: "Sending..." }));
     try {
       switch (destination.type) {
@@ -291,7 +296,7 @@ export const Send = () => {
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input id="bitcoin-input" type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to} onChange={(e) => setTo(e.target.value.toLocaleLowerCase())} />
+            <input id="bitcoin-input" type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to.input} onChange={(e) => setTo({input: e.target.value.toLocaleLowerCase(), parse: true})} />
           </div>
           <div className="Send_for">
             <p>For:</p>
