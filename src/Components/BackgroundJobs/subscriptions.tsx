@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react"
 import { useDispatch, useSelector } from "../../State/store"
 import { Subscription, SubscriptionPayment, addSubPayment, updateActiveSub } from "../../State/Slices/subscriptionsSlice"
-import { InputClassification, openNotification, usdToBTCSpotLink } from "../../constants"
+import { InputClassification, openNotification } from "../../constants"
 import { createLnurlInvoice, handlePayInvoice } from "../../Api/helpers"
 import axios from "axios"
 import { parseNprofile } from "../../Api/nostr"
@@ -45,7 +45,7 @@ export const SubscriptionsBackground = () => {
 			let sats = sub.price.amt
 			const spendSource = spendSources[0]
 			if (sub.price.type === 'cents') {
-				const { data } = await axios.get(fiatUnit.url || usdToBTCSpotLink);
+				const { data } = await axios.get(fiatUnit.url);
 				const btcFiatCurrency = data.amount as number
 				const satsFiatCurrency = btcFiatCurrency / 100_000_000
 				sats = (sub.price.amt / 100) / satsFiatCurrency
