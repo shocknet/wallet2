@@ -19,8 +19,8 @@ import useDebounce from '../../Hooks/useDebounce';
 import classnames from "classnames";
 import { createLnurlInvoice, handlePayBitcoinAddress, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { addAddressbookLink } from '../../State/Slices/addressbookSlice';
 import { useLocation } from 'react-router';
+import { addAddressbookLink, addIdentifierMemo } from '../../State/Slices/addressbookSlice';
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -42,6 +42,7 @@ export const Send = () => {
   const dispatch = useDispatch();
   const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
   const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
+  const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const selectedChainFee = useSelector(({ prefs }) => prefs.selected);
 
   const [vReceive, setVReceive] = useState(1);
@@ -52,7 +53,7 @@ export const Send = () => {
   const [selectedSource, setSelectedSource] = useState(spendSources[0]);
   const [sendRunning, setSendRunning] = useState(false);
 
-  
+
   const [satsPerByte, setSatsPerByte] = useState(0)
 
   
@@ -138,11 +139,12 @@ export const Send = () => {
     setDestination(parsedInput);
   }
 
-  useEffect(() => {    
+  useEffect(() => {
     const determineReceiver = async () => {
       try {
         const parsedInput = await parseBitcoinInput(debouncedTo);
         await processParsedDestination(parsedInput);
+
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
           openNotification("top", "Error", err.response.data.reason);
@@ -161,7 +163,7 @@ export const Send = () => {
   }, [debouncedTo])
 
 
-  
+
   /* In addition to adding to the transaction history this function also adds to the addressbook.
   *  If there is a note (memo) that's prioritized.
   */
@@ -177,15 +179,14 @@ export const Send = () => {
         }
       }))
     }
-    
     if (note) {
-      dispatch(addAddressbookLink({ identifier, address: note }));
-    } else if (destination.type === InputClassification.LNURL) {
-      dispatch(addAddressbookLink({ identifier, contact: destination.domainName , address: destination.data }))
+      dispatch(addIdentifierMemo({ identifier, memo: note }));
+    }
+    if (destination.type === InputClassification.LNURL) {
+      dispatch(addAddressbookLink({ identifier, contact: destination.domainName, address: destination.data }))
     } else if (destination.type === InputClassification.LN_ADDRESS) {
       dispatch(addAddressbookLink({ identifier, contact: destination.data }))
     }
-
     openNotification("top", "Success", "Transaction sent.");
     router.push("/home")
 
@@ -199,6 +200,7 @@ export const Send = () => {
       return;
     }
     setSendRunning(true);
+
     dispatch(toggleLoading({ loadingMessage: "Sending..." }));
     try {
       switch (destination.type) {
@@ -280,7 +282,7 @@ export const Send = () => {
               Sats per vByte
             </div>}
             <p className='Send_available_amount_amount'>
-              ~ ${amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+              ~ {fiatUnit.symbol} {amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
             </p>
           </div>
           <div className="Send_to">

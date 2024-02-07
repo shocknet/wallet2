@@ -66,6 +66,7 @@ input:focus-visible {
 
 body.barcode-scanner-active {
   visibility: hidden;
+  background: transparent;
   --background: transparent;
   --ion-background-color: transparent;
 }

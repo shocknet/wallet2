@@ -110,6 +110,7 @@ export const Scan = () => {
 
   const setupMobileScanner = async () => {
 
+
     await BarcodeScanner.requestPermissions()
     const { camera } = await BarcodeScanner.checkPermissions();
     if (camera !== "granted") {
@@ -123,10 +124,6 @@ export const Scan = () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }));
     await handleSubmit(bardcode.toLowerCase())
   }
-
-
-
-
 
   const handleSubmit = async (qrcode: string) => {
     let parsed: Destination | null = null;

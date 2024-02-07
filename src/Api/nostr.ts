@@ -24,7 +24,7 @@ export const getNip46PrivateKey = () => {
 }
 */
 
-type Client = ReturnType<typeof NewNostrClient>
+export type Client = ReturnType<typeof NewNostrClient>
 type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
 type ReadyClient = { type: 'client', client: Client, disconnectCalls: () => void }
 type StoredClient = PendingClient | ReadyClient
