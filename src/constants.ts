@@ -9,7 +9,7 @@ import { NotificationPlacement } from "antd/es/notification/interface";
 
 export const locationRegex = new RegExp(/\w{1,}/g)
 
-export const keylinkUrl = "https://test-auth.shock.network"
+export const keylinkUrl = "https://auth.shock.network"
 export const keylinkAppId = ""
 
 export const DEVICE_ID_STORAGE_KEY = "DEVICE_ID"
@@ -20,8 +20,7 @@ export const SANCTUM_ACCESS_TOKEN_STORAGE_KEY = "SANCTUM_ACCESS_TOKEN"
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
 export const NOSTR_RELAYS = ["wss://strfry.shock.network"]
 export const OLD_NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
-export const NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
-export const usdToBTCSpotLink = "https://api.coinbase.com/v2/prices/BTC-USD/spot";
+export const NOSTR_PUB_DESTINATION = "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const options: any = {
 	little: "A little.",
