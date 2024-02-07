@@ -38,7 +38,7 @@ Cypress.Commands.add("emptyDb", () => {
 		}
 		window.localStorage.setItem(PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY, res.body.pub_key)
 		window.localStorage.setItem('authToken', res.body.auth_token);
-		
+
 	})
 })
 
@@ -82,7 +82,7 @@ Cypress.Commands.add("populateLocalStorage", () => {
 		]
 		const privKey = generatePrivateKey();
 		const pubkKey = getPublicKey(privKey);
-	
+
 		win.localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, privKey);
 		win.localStorage.setItem(NOSTR_PUBLIC_KEY_STORAGE_KEY, pubkKey);
 		win.localStorage.setItem("TEST_NPROFILE", nprofile);
@@ -110,7 +110,7 @@ Cypress.Commands.add("getRemoteUserInvoice", () => {
 		url: "http://localhost:18000/api/app/user/add/invoice",
 		method: "POST",
 		body: {
-			receiver_identifier:"mockUser",
+			receiver_identifier: "mockUser",
 			payer_identifier: "none",
 			http_callback_url: "none",
 			invoice_req: {
