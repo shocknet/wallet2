@@ -4,13 +4,11 @@ import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS, OLD_NOSTR_PUB_DESTINATION, options
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice"
 import { nip19 } from "nostr-tools"
 export const NewSourceCheck = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const paySource = useSelector(({ paySource }) => paySource)
     const spendSource = useSelector(({ spendSource }) => spendSource)
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (OLD_NOSTR_PUB_DESTINATION === NOSTR_PUB_DESTINATION) {
+        if (NOSTR_PUB_DESTINATION.startsWith(OLD_NOSTR_PUB_DESTINATION)) {
             return
         }
         const newProfile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS })

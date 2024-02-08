@@ -79,15 +79,49 @@ export const Receive = () => {
     }
   }, [isShown])
 
-
-
   const setValueQR = (param: string) => {
     setQR(param/* .toUpperCase() */);
   }
 
-
-
   useEffect(() => {
+    const ChainAddress = async () => {
+      if (bitcoinAdd !== '') return;
+      if (!nostrSource.length) return;
+      const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+      if (res.status !== 'OK') {
+        openNotification("top", "Error", res.reason);
+        setTag(0);
+        return
+      }
+      setBitcoinAdd(res.address);
+      setBitcoinAddText(
+        res.address.substr(0, 5) + "..." + res.address.substr(res.address.length - 5, 5)
+      )
+    }
+
+    const configLNURL = async () => {
+      if (LNurl !== "") return;
+      dispatch(toggleLoading({ loadingMessage: "Loading..." }))
+      const topPayToSource = paySource[0];
+      if (topPayToSource.pasteField.includes("nprofile")) {
+        const lnurl = await createNostrPayLink(topPayToSource.pasteField);
+        setLNurl("lightning:" + lnurl);
+        setValueQR("lightning:" + lnurl);
+      } else if (paySource[0].pasteField.includes("@")) {
+        const endpoint = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
+        const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
+        const lnurl = bech32.encode("lnurl", words, 999999);
+        setLightningAdd(topPayToSource.label);
+        setLNurl(`lightning:${lnurl}`);
+        setValueQR(`lightning:${lnurl}`);
+      } else {
+        setLightningAdd(topPayToSource.label);
+        setLNurl(`lightning:${topPayToSource.pasteField}`);
+        setValueQR(`lightning:${topPayToSource.pasteField}`);
+      }
+      dispatch(toggleLoading({ loadingMessage: "" }));
+    }
+    
     if (paySource.length === 0) {
       openNotification("top", "Error", "You don't have any sources!");
       router.push("/home");
@@ -100,7 +134,6 @@ export const Receive = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   useEffect(() => {
     if (receiveHistory.latestOperation !== undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
       console.log("got thats what I was looking for")
@@ -110,9 +143,6 @@ export const Receive = () => {
     }
   }, [receiveHistory.latestOperation, LNInvoice, router])
 
-
-
-
   const copyToClip = async () => {
     await Clipboard.write({
       string: valueQR
@@ -120,7 +150,6 @@ export const Receive = () => {
     dispatch(addAsset({ asset: valueQR }));
     return openNotification("top", "Success", "Copied!");
   };
-
 
   const configInvoice = useCallback(async (amountToRecive: string) => {
     const topPaySource = paySource[0];
@@ -145,47 +174,7 @@ export const Receive = () => {
     }
   }, [paySource, invoiceMemo]);
 
-  const configLNURL = useCallback(async () => {
-    dispatch(toggleLoading({ loadingMessage: "Loading..." }))
-    if (LNurl !== "") return;
-    const topPayToSource = paySource[0];
-    if (topPayToSource.pasteField.includes("nprofile")) {
-      const lnurl = await createNostrPayLink(topPayToSource.pasteField);
-      setLNurl("lightning:" + lnurl);
-      setValueQR("lightning:" + lnurl);
-    } else if (paySource[0].pasteField.includes("@")) {
-      const endpoint = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
-      const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
-      const lnurl = bech32.encode("lnurl", words, 999999);
-      setLightningAdd(topPayToSource.label);
-      setLNurl(`lightning:${lnurl}`);
-      setValueQR(`lightning:${lnurl}`);
-    } else {
-      setLightningAdd(topPayToSource.label);
-      setLNurl(`lightning:${topPayToSource.pasteField}`);
-      setValueQR(`lightning:${topPayToSource.pasteField}`);
-    }
-    dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [LNurl, paySource, dispatch]);
-
-
-  const ChainAddress = async () => {
-    if (bitcoinAdd !== '') return;
-    if (!nostrSource.length) return;
-    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
-    if (res.status !== 'OK') {
-      openNotification("top", "Error", res.reason);
-      setTag(0);
-      return
-    }
-    setBitcoinAdd(res.address);
-    setBitcoinAddText(
-      res.address.substr(0, 5) + "..." + res.address.substr(res.address.length - 5, 5)
-    )
-  }
-
   const updateInvoice = async () => {
-    
     toggle();
     if (!amount) {
       openNotification("top", "Error", "You need to set an amount");

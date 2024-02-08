@@ -15,8 +15,7 @@ import * as utility  from '../../Hooks/utility';
 import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getRightSideValueString = (amount: number, negative: boolean, price: Price) => {
+const getRightSideValueString = (amount: number, negative: boolean) => {
   return `${negative ? "" : "-"} ${amount} sats`;
 }
 
@@ -33,9 +32,8 @@ interface ApiRes {
   blockHeight: number;
 }
 
-const TransactionInfoModal = ({ operation, hide, price } : Props) => {
+const TransactionInfoModal = ({ operation, hide } : Props) => {
   const onChain = operation.type === Types.UserOperationType.INCOMING_TX || operation.type === Types.UserOperationType.OUTGOING_TX;
-  // @ts-expect-error xxx
   const { internal, amount, inbound, confirmed } = operation;
 	const totalFee = operation.service_fee + operation.network_fee;
 
@@ -49,7 +47,6 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
 
   useEffect(() => {
     const getOnChainTxInfo = async () => {  
-      // @ts-expect-error xxx
 			const res = await axios.get(`https://mempool.space/api/tx/${operation.tx_hash}`);
 			const { data: lastBlock } = await axios.get("https://mempool.space/api/blocks/tip/height");			
 			setmempoolres({ ...res.data, blockHeight: res.data.status.block_height, lastBlock });
@@ -59,8 +56,7 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
     if (loading) {
       getOnChainTxInfo();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading])
+  }, [loading, operation.tx_hash])
 
   const modal = 
     <React.Fragment>
@@ -83,11 +79,11 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
               <div className={styles["info-container"]}>
                 <div className={styles["info-item"]}>
                   <span className={styles["left"]}>{operation.inbound ? "Amount received" : "Amount sent"}</span>
-                  <span className={styles["right"]}>{getRightSideValueString(amount, inbound, price)}</span>
+                  <span className={styles["right"]}>{getRightSideValueString(amount, inbound)}</span>
                 </div>
                 <div className={styles["info-item"]}>
                   <span className={styles["left"]}>Total fees</span>
-                  <span className={styles["right"]}>{getRightSideValueString(onChain && !internal ? mempoolres!.fee : totalFee, true, price)}</span>
+                  <span className={styles["right"]}>{getRightSideValueString(onChain && !internal ? mempoolres!.fee : totalFee, true)}</span>
                 </div>
 								{
 									(onChain && !internal)
@@ -124,7 +120,6 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
 									&&
 									<div className={classNames(styles["info-item"], styles["info-item-databox"])}>
                     <span className={styles["left"]}>Txid</span>
-                    {/* @ts-expect-error xxx */}
 										<TextBox text={operation.tx_hash}/>
                   </div>
 								}

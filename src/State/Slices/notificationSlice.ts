@@ -7,8 +7,7 @@ interface NotificationType {
   notifications: NotifyItemData[],
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+export const mergeLogic = (serialLocal: string): string => {
   return serialLocal
 }
 

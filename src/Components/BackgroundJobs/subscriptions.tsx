@@ -54,9 +54,15 @@ export const SubscriptionsBackground = () => {
 			const payRes = await handlePayInvoice(invoice, spendSource.pasteField);
 			const now = Date.now() / 1000
 			dispatch(setLatestOperation({
-				pub: parseNprofile(spendSource.pasteField).pubkey, operation: {
-					amount: sats, identifier: invoice, inbound: false, operationId: payRes.operation_id,
-					paidAtUnix: now, type: UserOperationType.OUTGOING_INVOICE, network_fee: payRes.network_fee, service_fee: payRes.service_fee,
+				pub: parseNprofile(spendSource.pasteField).pubkey, 
+				operation: {
+					amount: sats, 
+					identifier: invoice, 
+					inbound: false, 
+					operationId: payRes.operation_id,
+					paidAtUnix: now, 
+					type: UserOperationType.OUTGOING_INVOICE, 
+					network_fee: payRes.network_fee, 
 					confirmed: true,
 				}
 			}))
@@ -126,7 +132,8 @@ export const SubscriptionsBackground = () => {
 			const { sub, payment } = neededPayment as { sub: Subscription, payment: SubscriptionPayment | null }
 			sendSubPayment(sub, payment)
 		}
-	}, [activeSubs, dispatch, payments, sendSubPayment])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [sendSubPayment])
 
 	useEffect(() => {
 		const interval = setInterval(() => {

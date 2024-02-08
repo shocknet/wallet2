@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { notification } from 'antd';
 
 //It import svg icons library
@@ -51,38 +51,95 @@ export const Scan = () => {
   const { isShown, toggle } = UseModal();
 
   const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
+  const openNotification = useCallback((placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
       description:
         text,
       placement
     });
-  };
+  }, [api])
 
   const [destiniation, setDestination] = useState<Destination>();
 
-  
-  const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
-    html5QrCode.start(
-      cameraId, 
-      {
-        fps: 10,
-      },
-      (decodedText) => {
-        dispatch(toggleLoading({ loadingMessage: "Loading..." }));
-        handleSubmit(decodedText.toLowerCase())
-      },
-      (errorMessage) => {
-        console.log(errorMessage)
-      })
-    .catch((err: any) => {
-      openNotification("top", "Error", err.message)
-      router.goBack();
-    });
-  }
-
   useEffect(() => {
+    const handleSubmit = async (qrcode: string) => {
+      let parsed: Destination | null = null;
+      try {
+        parsed = await parseBitcoinInput(qrcode);
+        setDestination(parsed);
+      } catch (err: any) {
+        if (isAxiosError(err) && err.response) {
+          openNotification("top", "Error", err.response.data.reason);
+        } else if (err instanceof Error) {
+          openNotification("top", "Error", err.message);
+        } else {
+          console.log("Unknown error occured", err);
+        }
+        router.push("/home");
+        dispatch(toggleLoading({ loadingMessage: "" }));
+        return;
+      }
+      dispatch(toggleLoading({ loadingMessage: "" }));
+      if (
+        parsed.type === InputClassification.BITCOIN_ADDRESS
+        ||
+        parsed.type === InputClassification.LN_INVOICE
+        ||
+        parsed.type === InputClassification.LN_ADDRESS
+      ) {
+        history.push({
+          pathname: "/send",
+          state: parsed
+        })
+      } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest") {
+        toggle();
+      } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "withdrawRequest") {
+        history.push({
+          pathname: "/sources",
+          state: {
+            data: parsed
+          }
+        });
+      } else if (parsed.type === InputClassification.UNKNOWN) {
+        openNotification("top", "Error", "Unrecognized QR code!");
+      }
+    }
+
+    const setupMobileScanner = async () => {
+      await BarcodeScanner.requestPermissions()
+      const { camera } = await BarcodeScanner.checkPermissions();
+      if (camera !== "granted") {
+        const { camera: result } = await BarcodeScanner.requestPermissions();
+        if (result !== "granted") {
+          openNotification("top", "Error", "The scanner needs camera permissions");
+          return;
+        }
+      }
+      const bardcode = await scanSingleBarcode() as string;
+      dispatch(toggleLoading({ loadingMessage: "Loading..." }));
+      await handleSubmit(bardcode.toLowerCase())
+    }
+
+    const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
+      html5QrCode.start(
+        cameraId, 
+        {
+          fps: 10,
+        },
+        (decodedText) => {
+          dispatch(toggleLoading({ loadingMessage: "Loading..." }));
+          handleSubmit(decodedText.toLowerCase())
+        },
+        (errorMessage) => {
+          console.log(errorMessage)
+        })
+      .catch((err: any) => {
+        openNotification("top", "Error", err.message)
+        router.goBack();
+      });
+    }
+
     if(!isPlatform("hybrid")) {
       let html5QrCode: Html5Qrcode | null = null;
       Html5Qrcode.getCameras().then(devices => {
@@ -106,72 +163,7 @@ export const Scan = () => {
         BarcodeScanner.stopScan();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-
-  const setupMobileScanner = async () => {
-
-
-    await BarcodeScanner.requestPermissions()
-    const { camera } = await BarcodeScanner.checkPermissions();
-    if (camera !== "granted") {
-      const { camera: result } = await BarcodeScanner.requestPermissions();
-      if (result !== "granted") {
-        openNotification("top", "Error", "The scanner needs camera permissions");
-        return;
-      }
-    }
-    const bardcode = await scanSingleBarcode() as string;
-    dispatch(toggleLoading({ loadingMessage: "Loading..." }));
-    await handleSubmit(bardcode.toLowerCase())
-  }
-
-  const handleSubmit = async (qrcode: string) => {
-    let parsed: Destination | null = null;
-    try {
-      parsed = await parseBitcoinInput(qrcode);
-      setDestination(parsed);
-    } catch (err: any) {
-      if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data.reason);
-      } else if (err instanceof Error) {
-        openNotification("top", "Error", err.message);
-      } else {
-        console.log("Unknown error occured", err);
-      }
-      router.push("/home");
-      dispatch(toggleLoading({ loadingMessage: "" }));
-      return;
-    }
-    dispatch(toggleLoading({ loadingMessage: "" }));
-    if (
-      parsed.type === InputClassification.BITCOIN_ADDRESS
-      ||
-      parsed.type === InputClassification.LN_INVOICE
-      ||
-      parsed.type === InputClassification.LN_ADDRESS
-    ) {
-      history.push({
-        pathname: "/send",
-        state: parsed
-      })
-    } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest") {
-      toggle();
-    } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "withdrawRequest") {
-      history.push({
-        pathname: "/sources",
-        state: {
-          data: parsed
-        }
-      });
-    } else if (parsed.type === InputClassification.UNKNOWN) {
-      openNotification("top", "Error", "Unrecognized QR code!");
-    }
-  }
-
-
-
+  }, [dispatch, openNotification, toggle, router, history])
 
   const askSaveContent = <React.Fragment>
     <div className='Sources_modal_header'>{destiniation?.domainName}</div>

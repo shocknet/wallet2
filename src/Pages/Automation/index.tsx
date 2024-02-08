@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useDispatch, useSelector } from '../../State/store';
-import { useIonRouter } from '@ionic/react';
 import Checkbox from '../../Components/Checkbox';
 import { arrangeIcon } from '../../jsxHelpers';
 import { UseModal } from '../../Hooks/UseModal';
@@ -50,12 +49,7 @@ export const Automation = () => {
   const dispatch = useDispatch();
 
   //reducer
-  //const spendSources = useSelector((state) => state.spendSource).map((e: any) => { return { ...e } });
   const subs = useSelector(({ subscriptions }) => subscriptions.activeSubs)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const payments = useSelector(({ subscriptions }) => subscriptions.payments)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const router = useIonRouter();
 
   const [checked, setChecked] = useState<boolean>(true);
   const [value, setValue] = useState<number>(1);
@@ -84,8 +78,7 @@ export const Automation = () => {
 		})
       }
     }
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editSubId])
+  }, [editSubId, subs])
 
   const otherOptions = periods.filter(p => p !== inputs.schedule);
 

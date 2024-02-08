@@ -42,49 +42,6 @@ export const Sources = () => {
   const [notifySourceId, setNotifySourceId] = useState("");
   const notifications = useSelector(state => state.notify.notifications);
 
-  const processParsedInput = (destination: Destination) => {
-    const promptSweep = 
-      destination.type === InputClassification.LNURL
-      &&
-      destination.lnurlType === "withdrawRequest"
-      &&
-      destination.max && destination.max > 0
-      &&
-      paySources.length > 0;
-
-    if (promptSweep) {
-      setTempParsedWithdraw(destination);
-      setModalContent("promptSweep");
-      toggle();
-    } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
-      setSourcePasteField(destination.data);
-      openAddSourceModal();
-    }
-  }
-  
-  useEffect(() => {
-    if (location.state) {
-      const receivedDestination = location.state as Destination;
-      processParsedInput(receivedDestination);
-    } else {
-      const addressSearch = new URLSearchParams(location.search);
-      const data = addressSearch.get("url");
-      const erroringSourceId = addressSearch.get("sourceId");
-      const bridgeUrl = addressSearch.get("bridge");
-      if (bridgeUrl && typeof bridgeUrl === "string") {
-        setBridgeUrl(bridgeUrl);
-      }
-      if (data) {
-        parseBitcoinInput(data).then(parsed => {
-          processParsedInput(parsed)
-        })
-      } else if (erroringSourceId) {
-        EditSourceSpend_Modal(parseInt(erroringSourceId));
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location]);
-
   //declaration about reducer
   const dispatch = useDispatch();
   const paySources = useSelector((state) => state.paySource);
@@ -104,10 +61,63 @@ export const Sources = () => {
  
   const { isShown, toggle } = UseModal();
 
-  const openAddSourceModal = () => {
+  const openAddSourceModal = useCallback(() => {
     setModalContent("addSource");
     toggle();
-  };
+  }, [toggle])
+
+  const EditSourceSpend_Modal = useCallback((id: number) => {
+    const source = spendSources.find(s => s.id === id);
+    if (source) {
+      setEditSSourceId(id);
+      setOptional(source.option || '');
+      setSourceLabel(source.label || '');
+      setModalContent("editSourcespend");
+      toggle();
+    }
+  }, [spendSources, toggle])
+
+  useEffect(() => {
+    const processParsedInput = (destination: Destination) => {
+      const promptSweep = 
+        destination.type === InputClassification.LNURL
+        &&
+        destination.lnurlType === "withdrawRequest"
+        &&
+        destination.max && destination.max > 0
+        &&
+        paySources.length > 0;
+  
+      if (promptSweep) {
+        setTempParsedWithdraw(destination);
+        setModalContent("promptSweep");
+        toggle();
+      } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
+        setSourcePasteField(destination.data);
+        openAddSourceModal();
+      }
+    }
+
+    if (location.state) {
+      const receivedDestination = location.state as Destination;
+      processParsedInput(receivedDestination);
+    } else {
+      const addressSearch = new URLSearchParams(location.search);
+      const data = addressSearch.get("url");
+      const erroringSourceId = addressSearch.get("sourceId");
+      const bridgeUrl = addressSearch.get("bridge");
+      if (bridgeUrl && typeof bridgeUrl === "string") {
+        setBridgeUrl(bridgeUrl);
+      }
+      if (data) {
+        parseBitcoinInput(data).then(parsed => {
+          processParsedInput(parsed)
+        })
+      } else if (erroringSourceId) {
+        EditSourceSpend_Modal(parseInt(erroringSourceId));
+      }
+    }
+  }, [location, paySources.length, toggle, EditSourceSpend_Modal, openAddSourceModal]);
 
   const openEditSourcePay = (id: number) => {
     const source = paySources.find(s => s.id === id);
@@ -116,17 +126,6 @@ export const Sources = () => {
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcepay");
-      toggle();
-    }
-  };
-
-  const EditSourceSpend_Modal = (id: number) => {
-    const source = spendSources.find(s => s.id === id);
-    if (source) {
-      setEditSSourceId(id);
-      setOptional(source.option || '');
-      setSourceLabel(source.label || '');
-      setModalContent("editSourcespend");
       toggle();
     }
   };

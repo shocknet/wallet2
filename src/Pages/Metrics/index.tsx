@@ -106,15 +106,6 @@ export const Metrics = () => {
 
   const otherOptions = periodOptionsArray.filter((o) => o !== period);
 
-  useEffect(() => {
-    if (firstRender) {
-      setFirstRender(false);
-      return;
-    }
-    fetchMetrics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firstRender])
-
   const fetchMetrics = useCallback(async (fromCache?: boolean) => {
     if (!url || !metricsToken) {
       console.log("token or url missing")
@@ -184,6 +175,14 @@ export const Metrics = () => {
   }, [dispatch, metricsToken, url, period]);
 
   useEffect(() => {
+    if (firstRender) {
+      setFirstRender(false);
+      return;
+    }
+    fetchMetrics();
+  }, [firstRender, fetchMetrics])
+
+  useEffect(() => {
     const creds = getCreds()
     if (!creds) {
       return
@@ -191,8 +190,7 @@ export const Metrics = () => {
     setUrl(creds.url)
     setMetricsToken(creds.metricsToken)
     fetchMetrics(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchMetrics])
   if (loading && !ready) {
     return null
   }

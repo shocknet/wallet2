@@ -546,10 +546,8 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    GetLiveUserOperations: async (cb: (v:ResultError | ({ status: 'OK' }& Types.LiveUserOperation)) => void): Promise<void> => { throw  new Error('http streams are not supported')},
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    GetMigrationUpdate: async (cb: (v:ResultError | ({ status: 'OK' }& Types.MigrationUpdate)) => void): Promise<void> => { throw  new Error('http streams are not supported')},
+    GetLiveUserOperations: async (): Promise<void> => { throw  new Error('http streams are not supported')},
+    GetMigrationUpdate: async (): Promise<void> => { throw  new Error('http streams are not supported')},
     BatchUser: async (requests:Types.UserMethodInputs[]): Promise<ResultError | ({ status: 'OK', responses:( Types.UserMethodOutputs)[] })> => {
         const auth = await params.retrieveUserAuth()
         if (auth === null) throw new Error('retrieveUserAuth() returned null')

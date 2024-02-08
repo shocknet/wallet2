@@ -69,31 +69,49 @@ export const Send = () => {
     data: "",
   });
   const router = useIonRouter();
-
-  const updateSatsPerByte = useCallback(async () => {
-    const res = await axios.get(mempoolUrl)
-    const data = res.data as ChainFeesInter
-    if (!selectedChainFee) {
-      setSatsPerByte(data.economyFee)
-      return
-    }
-    switch (selectedChainFee) {
-      case "eco": {
-        console.log("eco!")
+  
+  const processParsedDestination = useCallback(async (parsedInput: Destination) => {
+    const updateSatsPerByte = async () => {
+      const res = await axios.get(mempoolUrl)
+      const data = res.data as ChainFeesInter
+      if (!selectedChainFee) {
         setSatsPerByte(data.economyFee)
-        break
+        return
       }
-      case "avg": {
-        console.log("avg!")
-        setSatsPerByte(Math.ceil((data.hourFee + data.halfHourFee) / 2))
-        break
-      }
-      case "asap": {
-        console.log("asap!")
-        setSatsPerByte(data.fastestFee)
+      switch (selectedChainFee) {
+        case "eco": {
+          console.log("eco!")
+          setSatsPerByte(data.economyFee)
+          break
+        }
+        case "avg": {
+          console.log("avg!")
+          setSatsPerByte(Math.ceil((data.hourFee + data.halfHourFee) / 2))
+          break
+        }
+        case "asap": {
+          console.log("asap!")
+          setSatsPerByte(data.fastestFee)
+        }
       }
     }
-  }, [mempoolUrl, selectedChainFee]);
+
+    if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
+      throw new Error ("Lnurl cannot be a lnurl-withdraw");
+    }
+
+    if (parsedInput.type === InputClassification.LN_INVOICE) {
+      setAmount(parsedInput.amount as number);
+      if (parsedInput.memo) {
+        setNote(parsedInput.memo);
+      }
+    }
+    if (parsedInput.type === InputClassification.BITCOIN_ADDRESS) {
+      await updateSatsPerByte();
+    }
+
+    setDestination(parsedInput);
+  }, [mempoolUrl, selectedChainFee])
 
   useLayoutEffect(() => {
     if (spendSources.length === 0) {
@@ -120,26 +138,7 @@ export const Send = () => {
         });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location]);
-
-  const processParsedDestination = async (parsedInput: Destination) => {
-    if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
-      throw new Error ("Lnurl cannot be a lnurl-withdraw");
-    }
-
-    if (parsedInput.type === InputClassification.LN_INVOICE) {
-      setAmount(parsedInput.amount as number);
-      if (parsedInput.memo) {
-        setNote(parsedInput.memo);
-      }
-    }
-    if (parsedInput.type === InputClassification.BITCOIN_ADDRESS) {
-      await updateSatsPerByte();
-    }
-
-    setDestination(parsedInput);
-  }
+  }, [location, processParsedDestination]);
 
   useEffect(() => {
     const determineReceiver = async () => {
@@ -161,8 +160,7 @@ export const Send = () => {
     if (debouncedTo && to.parse) {
       determineReceiver();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedTo])
+  }, [debouncedTo, to.parse, processParsedDestination])
 
 
 

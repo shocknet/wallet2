@@ -1678,11 +1678,11 @@ export type UserOperation = {
     amount: number
     identifier: string
     operationId: string
-    service_fee: number
+    service_fee?: number
     network_fee: number
     confirmed: boolean
-    tx_hash: string
-    internal: boolean
+    tx_hash?: string
+    internal?: boolean
 }
 export const UserOperationOptionalFields: [] = []
 export type UserOperationOptions = OptionsBaseMessage & {

@@ -17,7 +17,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
 
   
   const [value, setValue] = useState<SpendFrom>(initialValue);
-  const [allValue, setAllValue] = useState<SpendFrom[]>();
+  const [allValue, setAllValue] = useState<SpendFrom[]>([]);
 
   const [display, setDisplay] = useState<number>(0);
   const [rotation, setRotation] = useState<number>(0);
@@ -27,8 +27,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   useEffect(() => {
     const box = values.filter((e) => e.id !== value.id );
     setAllValue(box);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [value.id, values])
 
   const arrangeIcon = (value?: string) => {
     switch (value) {

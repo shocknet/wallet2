@@ -16,11 +16,8 @@ interface Price {
 export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   //reducer
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const paySource = useSelector((state) => state.paySource).map((e) => { return { ...e } });
   const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit);
 
-  // const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"))
   const router = useIonRouter();
   const dispatch = useDispatch();
 

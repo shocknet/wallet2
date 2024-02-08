@@ -9,15 +9,16 @@ export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const spendSources = useSelector((state) => state.spendSource);
-  const operationGroups = useSelector(({ history }) => history.operations) || {}
-  const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook) || 0
 
   const [balance, setBalance] = useState('0.00')
   const [money, setMoney] = useState("0")
 
   const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
+  const operationGroups = useSelector(({ history }) => history.operations) || {};
+
 
   useEffect(() => {
+
     if (!operationGroups) {
       return
     }
@@ -37,7 +38,7 @@ export const Home = () => {
     collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
     setTransactions(collapsed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [operationsUpdateHook]);
+  }, [spendSources]);
 
   useEffect(() => {
     let totalAmount = 0;

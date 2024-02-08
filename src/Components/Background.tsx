@@ -43,7 +43,6 @@ export const Background = () => {
 		isShownRef.current = isShown;
 	}, [isShown])
 
-
 	window.onbeforeunload = function () { return null; };
 
 	useEffect(() => {
@@ -62,7 +61,6 @@ export const Background = () => {
 	}, []);
 
 	useEffect(() => {
-
 		nostrSource.forEach(source => {
 			const { pubkey, relays } = parseNprofile(source.pasteField)
 
@@ -100,14 +98,6 @@ export const Background = () => {
 		}
 	}, [paySource, spendSource, dispatch, router])
 
-	const getSourceInfo = async (source: SpendFrom, client: NostrClient) => {
-		const res = await client.GetUserInfo()
-		if (res.status === 'ERROR') {
-			console.log(res.reason)
-			return
-		}
-		dispatch(editSpendSources({ ...source, balance: `${res.balance}`, maxWithdrawable: `${res.max_withdrawable}` }));
-	}
 	const fetchSourceHistory = async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor)
 		const res = await client.GetUserOperations(req)
@@ -140,13 +130,20 @@ export const Background = () => {
 		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
 	}
 
+	const getSourceInfo = async (source: SpendFrom, client: NostrClient) => {
+		const res = await client.GetUserInfo()
+		if (res.status === 'ERROR') {
+			console.log(res.reason)
+			return
+		}
+		dispatch(editSpendSources({ ...source, balance: `${res.balance}`, maxWithdrawable: `${res.max_withdrawable}` }));
+	}
+
 	useEffect(() => {
 		if (Object.entries(latestOp).length === 0 && !initialFetch) {
 			return
 		}
-
 		setInitialFetch(false)
-
 		nostrSource.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
 			const client = await getNostrClient({ pubkey, relays })
@@ -154,7 +151,7 @@ export const Background = () => {
 			await fetchSourceHistory(s, client, pubkey)
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [latestOp, initialFetch])
+	}, [latestOp, initialFetch, nostrSource])
 
 	// reset spend for lnurl
 	useEffect(() => {
@@ -188,8 +185,6 @@ export const Background = () => {
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router, dispatch])
-
-
 
 	const checkClipboard = useCallback(async () => {
 		window.onbeforeunload = null;
