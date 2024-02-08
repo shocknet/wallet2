@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { DEFAULT_BRIDGE_URL, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
@@ -53,7 +53,7 @@ export const NodeUp = () => {
       const nprofile = encodeNprofile({
         pubkey: NOSTR_PUB_DESTINATION,
         relays: NOSTR_RELAYS,
-        bridge: ["https://zap.page"]
+        bridge: [DEFAULT_BRIDGE_URL]
       })
 
       dispatch(addPaySources(

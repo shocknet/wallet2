@@ -20,7 +20,8 @@ export const SANCTUM_ACCESS_TOKEN_STORAGE_KEY = "SANCTUM_ACCESS_TOKEN"
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
 export const NOSTR_RELAYS = ["wss://strfry.shock.network"]
 export const OLD_NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
-export const NOSTR_PUB_DESTINATION = "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
+export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION || "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
+export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const options: any = {
 	little: "A little.",
