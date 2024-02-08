@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "../../State/store"
-import { Subscription, SubscriptionPayment, addSubPayment, removeActiveSub } from "../../State/Slices/subscriptionsSlice"
-import { InputClassification, openNotification, usdToBTCSpotLink } from "../../constants"
+import { Subscription, SubscriptionPayment, addSubPayment } from "../../State/Slices/subscriptionsSlice"
+import { InputClassification, openNotification } from "../../constants"
 import { createLnurlInvoice, handlePayInvoice } from "../../Api/helpers"
 import axios from "axios"
 import { disconnectNostrClientCalls, getNostrClient, parseNprofile } from "../../Api/nostr"
@@ -16,16 +16,18 @@ export const HealthCheck = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        let unmountCb = () => { }
         const interval = setInterval(() => {
-            checkHealth()
+            unmountCb = checkHealth()
         }, SubsCheckIntervalSeconds * 1000)
         checkHealth()
         return () => {
+            unmountCb()
             clearInterval(interval)
         }
     }, [])
 
-    const checkHealth = async () => {
+    const checkHealth = () => {
         console.log("checking sources state...")
         const sourcesToCheckMap: Record<string, boolean> = {}
         const checkFunc = (s: { pasteField: string }) => {
@@ -35,12 +37,14 @@ export const HealthCheck = () => {
         }
         paySource.forEach(checkFunc)
         spendSource.forEach(checkFunc)
+        let mounted = true
         const sourcesToCheck = Object.keys(sourcesToCheckMap)
-        await Promise.all(sourcesToCheck.map(async s => {
+        sourcesToCheck.map(async s => {
             const { pubkey, relays } = parseNprofile(s)
             const c = await getNostrClient({ pubkey, relays })
             const healthPromise = c.UserHealth()
             const timeout = setTimeout(() => {
+                if (!mounted) return
                 console.log("cannot connect to", pubkey, { relays })
                 openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
                 disconnectNostrClientCalls(s)
@@ -49,7 +53,8 @@ export const HealthCheck = () => {
             await healthPromise
             clearTimeout(timeout)
             updateSubState(s, true)
-        }))
+        })
+        return () => { mounted = false }
     }
 
     const updateSubState = (source: string, connected: boolean) => {
