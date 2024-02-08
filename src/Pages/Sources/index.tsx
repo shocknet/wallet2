@@ -68,12 +68,8 @@ export const Sources = () => {
       processParsedInput(receivedDestination);
     } else {
       const addressSearch = new URLSearchParams(location.search);
-      const data = addressSearch.get("url");
+      const data = addressSearch.get("addSource");
       const erroringSourceId = addressSearch.get("sourceId");
-      const bridgeUrl = addressSearch.get("bridge");
-      if (bridgeUrl && typeof bridgeUrl === "string") {
-        setBridgeUrl(bridgeUrl);
-      }
       if (data) {
         parseBitcoinInput(data).then(parsed => {
           processParsedInput(parsed)
@@ -91,7 +87,6 @@ export const Sources = () => {
   const spendSources = useSelector((state) => state.spendSource);
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
-  const [bridgeUrl, setBridgeUrl] = useState("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
 
@@ -210,7 +205,6 @@ export const Sources = () => {
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
-        bridgeUrl: bridgeUrl || undefined
       } as PayTo;
       dispatch(addPaySources(addedPaySource));
       const addedSpendSource = {
@@ -282,7 +276,7 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
     
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, bridgeUrl]);
+  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource]);
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {
