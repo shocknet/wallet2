@@ -40,7 +40,47 @@ export const Sources = () => {
 
   const [tempParsedWithdraw, setTempParsedWithdraw] = useState<Destination>();
   const [notifySourceId, setNotifySourceId] = useState("");
+
   const notifications = useSelector(state => state.notify.notifications);
+
+  const processParsedInput = (destination: Destination) => {
+    const promptSweep = 
+      destination.type === InputClassification.LNURL
+      &&
+      destination.lnurlType === "withdrawRequest"
+      &&
+      destination.max && destination.max > 0
+      &&
+      paySources.length > 0;
+
+    if (promptSweep) {
+      setTempParsedWithdraw(destination);
+      setModalContent("promptSweep");
+      toggle();
+    } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
+      setSourcePasteField(destination.data);
+      openAddSourceModal();
+    }
+  }
+  
+  useEffect(() => {
+    if (location.state) {
+      const receivedDestination = location.state as Destination;
+      processParsedInput(receivedDestination);
+    } else {
+      const addressSearch = new URLSearchParams(location.search);
+      const data = addressSearch.get("addSource");
+      const erroringSourceId = addressSearch.get("sourceId");
+      if (data) {
+        parseBitcoinInput(data).then(parsed => {
+          processParsedInput(parsed)
+        })
+      } else if (erroringSourceId) {
+        EditSourceSpend_Modal(parseInt(erroringSourceId));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
 
   //declaration about reducer
   const dispatch = useDispatch();
@@ -48,7 +88,6 @@ export const Sources = () => {
   const spendSources = useSelector((state) => state.spendSource);
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
-  const [bridgeUrl, setBridgeUrl] = useState("");
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
 
@@ -105,10 +144,6 @@ export const Sources = () => {
       const addressSearch = new URLSearchParams(location.search);
       const data = addressSearch.get("url");
       const erroringSourceId = addressSearch.get("sourceId");
-      const bridgeUrl = addressSearch.get("bridge");
-      if (bridgeUrl && typeof bridgeUrl === "string") {
-        setBridgeUrl(bridgeUrl);
-      }
       if (data) {
         parseBitcoinInput(data).then(parsed => {
           processParsedInput(parsed)
@@ -209,7 +244,6 @@ export const Sources = () => {
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
-        bridgeUrl: bridgeUrl || undefined
       } as PayTo;
       dispatch(addPaySources(addedPaySource));
       const addedSpendSource = {
@@ -281,7 +315,7 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
     
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, bridgeUrl]);
+  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource]);
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {
