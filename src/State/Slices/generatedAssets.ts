@@ -5,7 +5,7 @@ interface GeneratedAssets {
 	assets: string[]
 }
 
-export const mergeLogic = (serialLocal: string, _: string): string => {
+export const mergeLogic = (serialLocal: string): string => {
 	return serialLocal
 }
 

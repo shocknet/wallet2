@@ -6,7 +6,7 @@ interface NotificationType {
   checkTime: number,
   notifications: NotifyItemData[],
 }
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+export const mergeLogic = (serialLocal: string): string => {
   return serialLocal
 }
 

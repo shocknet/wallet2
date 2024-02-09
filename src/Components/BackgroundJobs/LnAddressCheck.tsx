@@ -39,7 +39,6 @@ export const LnAddressCheck = () => {
 		/* spendSource in the dependency array instead of paySource to avoid infinite loop
 			adding a nostr source is both an addition of paySource and spendSource, so it's a hacky trick
 		*/
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [dispatch, spendSource]);
 
 	return null;

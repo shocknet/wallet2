@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import { NotifyItemData, PageProps } from "../../globalTypes";
+import { useEffect } from 'react';
+import { NotifyItemData } from "../../globalTypes";
 
 import { useSelector, useDispatch } from '../../State/store';
 import { NotifyItem } from '../../Components/NotifyItem';

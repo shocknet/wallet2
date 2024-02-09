@@ -1,24 +1,18 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import ReactDOM from 'react-dom';
 
 import {
   Wrapper,
-  Header,
   StyledModal,
-  HeaderText,
-  CloseButton,
   Content,
   Backdrop,
 } from './MenuList';
 import { ModalProps } from '../../../globalTypes';
 
-
-
 export const MenuList: FunctionComponent<ModalProps> = ({
   isShown,
   hide,
   modalContent,
-  headerText,
 }) => {
   const modal = (
     <React.Fragment>

@@ -1,16 +1,12 @@
-import React, { useContext } from "react";
+import React from "react";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { HeaderProps } from "./types";
-import { Ctx } from "../../Context";
 import { useIonRouter } from "@ionic/react";
 
 export const Footer = () => {
   const router = useIonRouter();
-  const state = useContext(Ctx)
 
-  const isSources: boolean = router.routeInfo.pathname === "/sources";
   const ishome: boolean = router.routeInfo.pathname === "/home";
   const receive: boolean = router.routeInfo.pathname === "/receive";
 

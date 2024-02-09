@@ -10,12 +10,11 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
-import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
-import { getNostrPrivateKey, setNostrPrivateKey } from '../../Api/nostr';
+import { ignoredStorageKeys, keylinkAppId } from '../../constants';
+import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
-import { useDispatch } from '../../State/store';
-import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
+import { setSanctumAccessToken } from '../../Api/sanctum';
 
 const FILENAME = "shockw.dat";
 
@@ -35,19 +34,19 @@ export const Auth = () => {
   //reducer
   const router = useIonRouter();
 
-  const [checked, setChecked] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>("");
-  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
-  const [newPair, setNewPair] = useState(false);
-  const [serviceCheck, setServiceCheck] = useState<boolean>(false);
-  const [passphrase, setPassphrase] = useState<string>("");
-  const [passphraseR, setPassphraseR] = useState<string>("");
-  const [dataFromFile, setDataFromFile] = useState<string>("");
-  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
-  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
+  const [email, setEmail] = useState("");
+  const [serviceCheck, setServiceCheck] = useState(false);
+  const [passphrase, setPassphrase] = useState("");
+  const [passphraseR, setPassphraseR] = useState("");
+  const [dataFromFile, setDataFromFile] = useState("");
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const sanctumNostrSecret = "";
+  const newPair = false;
+
   const [api, contextHolder] = notification.useNotification();
-  const dispatch = useDispatch()
+
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
     api.info({
       message: header,
@@ -64,7 +63,6 @@ export const Auth = () => {
     const accessToken = urlParams.get("accessToken")
     if (accessToken) {
       setSanctumAccessToken(accessToken)
-      setAccessTokenRetreived(true)
     }
   }, [router])
 
@@ -204,6 +202,7 @@ export const Auth = () => {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
@@ -213,7 +212,6 @@ export const Auth = () => {
     const backup = await fetchRemoteBackup()
     if (backup.result === 'accessTokenMissing') {
       console.log("access token missing")
-      setRetreiveAccessToken(true)
       return
     }
     if (backup.decrypted === '') {

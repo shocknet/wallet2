@@ -1,4 +1,4 @@
-import { SimplePool, Sub, Event, UnsignedEvent, finishEvent, relayInit } from './tools'
+import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 import { decrypt, encrypt } from './tools/nip04'
 const handledEvents: string[] = [] // TODO: - big memory leak here, add TTL

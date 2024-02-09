@@ -78,7 +78,6 @@ export const Sources = () => {
         EditSourceSpend_Modal(parseInt(erroringSourceId));
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   //declaration about reducer
