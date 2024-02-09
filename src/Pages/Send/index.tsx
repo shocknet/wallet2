@@ -118,7 +118,6 @@ export const Send = () => {
         });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   const processParsedDestination = async (parsedInput: Destination) => {
@@ -159,7 +158,6 @@ export const Send = () => {
     if (debouncedTo && to.parse) {
       determineReceiver();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedTo])
 
 

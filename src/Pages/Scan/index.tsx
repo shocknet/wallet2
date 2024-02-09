@@ -104,7 +104,6 @@ export const Scan = () => {
         BarcodeScanner.stopScan();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
