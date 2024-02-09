@@ -11,9 +11,10 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
 import { ignoredStorageKeys, keylinkAppId } from '../../constants';
-// import { getNostrPrivateKey } from '../../Api/nostr';
+import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
-// import { fetchRemoteBackup } from '../../helpers/remoteBackups';
+import { fetchRemoteBackup } from '../../helpers/remoteBackups';
+import { useDispatch } from '../../State/store';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 
 const FILENAME = "shockw.dat";
@@ -202,34 +203,35 @@ export const Auth = () => {
     }
   }
 
-  // const loadRemoteBackup = async () => {
-  //   const keyExists = getNostrPrivateKey()
-  //   if (keyExists) {
-  //     openNotification("top", "Error", "Cannot load remote backups. User already exists.");
-  //     return
-  //   }
-  //   const backup = await fetchRemoteBackup()
-  //   if (backup.result === 'accessTokenMissing') {
-  //     console.log("access token missing")
-  //     return
-  //   }
-  //   if (backup.decrypted === '') {
-  //     openNotification("top", "Error", "No backups found from the provided pair.");
-  //     return
-  //   }
-  //   const data = JSON.parse(backup.decrypted);
-  //   const keys = Object.keys(data)
-  //   for (let i = 0; i < keys.length; i++) {
-  //     const element = keys[i];
-  //     if (element && !ignoredStorageKeys.includes(element)) {
-  //       localStorage.setItem(element, data[element])
-  //     }
-  //   }
-  //   openNotification("top", "Success", "Backup is imported successfully.");
-  //   setTimeout(() => {
-  //     router.push("/home")
-  //   }, 1000);
-  // }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars (now it is not using. when we need to use it, remove this line)
+  const loadRemoteBackup = async () => {
+    const keyExists = getNostrPrivateKey()
+    if (keyExists) {
+      openNotification("top", "Error", "Cannot load remote backups. User already exists.");
+      return
+    }
+    const backup = await fetchRemoteBackup()
+    if (backup.result === 'accessTokenMissing') {
+      console.log("access token missing")
+      return
+    }
+    if (backup.decrypted === '') {
+      openNotification("top", "Error", "No backups found from the provided pair.");
+      return
+    }
+    const data = JSON.parse(backup.decrypted);
+    const keys = Object.keys(data)
+    for (let i = 0; i < keys.length; i++) {
+      const element = keys[i];
+      if (element && !ignoredStorageKeys.includes(element)) {
+        localStorage.setItem(element, data[element])
+      }
+    }
+    openNotification("top", "Success", "Backup is imported successfully.");
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
+  }
 
   const infoBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Warning</div>
