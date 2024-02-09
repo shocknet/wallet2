@@ -14,7 +14,6 @@ import { ignoredStorageKeys, keylinkAppId } from '../../constants';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
-import { useDispatch } from '../../State/store';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 
 const FILENAME = "shockw.dat";
@@ -203,7 +202,7 @@ export const Auth = () => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars (now it is not using. when we need to use it, remove this line)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
