@@ -67,7 +67,6 @@ export const lockSubscriptionPayment = async (id: string): Promise<PaymentLock> 
     if (updated.result === 'accessTokenMissing') {
         throw new Error("remote sync not enabled")
     }
-    const updatedSubs = existing.decrypted ? (JSON.parse(existing.decrypted) as SubsPayments) : {}
     const updatedEntry = subs[id]
     if (updatedEntry.clientId === myDeviceId) {
         return PaymentLock.SUCCESSFULLY_LOCKED

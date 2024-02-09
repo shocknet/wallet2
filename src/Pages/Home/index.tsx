@@ -17,7 +17,6 @@ export const Home = () => {
 
   const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
 
-  let openAppFlag = true;
   useEffect(() => {
     if (!operationGroups) {
       return
@@ -54,21 +53,6 @@ export const Home = () => {
       return <SwItem operation={o} key={o.operationId} underline={i !== transactions.length - 1} />
     })
   }, [transactions])
-
-  useEffect(() => {
-
-    if (openAppFlag) {
-      openAppFlag = !openAppFlag;
-      setTimeout(() => {
-        // const confirmBox = window.confirm(
-        //   "Do you want to open App?"
-        // )
-        // if (confirmBox === true) {
-        //   window.open('shockwallet://open', '_blank');
-        // }
-      }, 1500);
-    }
-  }, [])
 
   return (
     <div className="Home">

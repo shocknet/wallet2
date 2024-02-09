@@ -45,7 +45,6 @@ export const Send = () => {
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const selectedChainFee = useSelector(({ prefs }) => prefs.selected);
 
-  const [vReceive, setVReceive] = useState(1);
   const [amountAssets, setAmountAssets] = useState("sats");
   const [amount, setAmount] = useState(0);
   const [note, setNote] = useState("");
@@ -53,19 +52,20 @@ export const Send = () => {
   const [selectedSource, setSelectedSource] = useState(spendSources[0]);
   const [sendRunning, setSendRunning] = useState(false);
 
-
   const [satsPerByte, setSatsPerByte] = useState(0)
-
   
   const [to, setTo] = useState({
     input: "",
     parse: false
   });
+  
   const debouncedTo = useDebounce(to.input, 500);
   const [destination, setDestination] = useState<Destination>({
     type: InputClassification.UNKNOWN,
     data: "",
   });
+
+  const vReceive = 1;
   const router = useIonRouter();
 
   const updateSatsPerByte = useCallback(async () => {

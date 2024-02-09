@@ -55,8 +55,6 @@ export const Receive = () => {
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
 
   const price = useSelector((state) => state.usdToBTC);
-  const [deg, setDeg] = useState("rotate(0deg)");
-  const [vReceive, setVReceive] = useState(1);
   const { isShown, toggle } = UseModal();
   const [amount, setAmount] = useState("");
   const [amountValue, setAmountValue] = useState("");
@@ -72,6 +70,9 @@ export const Receive = () => {
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource[0].vanityName)
+
+  const deg = "rotate(0deg)";
+  const vReceive = 1;
 
 
   const lnaddrData = useMemo(() => {

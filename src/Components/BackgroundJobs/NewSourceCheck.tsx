@@ -4,7 +4,6 @@ import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS, OLD_NOSTR_PUB_DESTINATION, options
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice"
 import { nip19 } from "nostr-tools"
 export const NewSourceCheck = () => {
-    const paySource = useSelector(({ paySource }) => paySource)
     const spendSource = useSelector(({ spendSource }) => spendSource)
     const dispatch = useDispatch();
 

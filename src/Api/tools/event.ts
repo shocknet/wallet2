@@ -87,7 +87,7 @@ export function serializeEvent(evt: UnsignedEvent<number>): string {
 }
 
 export function getEventHash(event: UnsignedEvent<number>): string {
-    let eventHash = sha256(utf8Encoder.encode(serializeEvent(event)))
+    const eventHash = sha256(utf8Encoder.encode(serializeEvent(event)))
     return bytesToHex(eventHash)
 }
 
@@ -99,11 +99,11 @@ export function validateEvent<T>(event: T): event is T & UnsignedEvent<number> {
     if (typeof event.content !== 'string') return false
     if (typeof event.created_at !== 'number') return false
     if (typeof event.pubkey !== 'string') return false
-    if (!event.pubkey.match(/^[a-f0-9]{64}$/)) return false
+    if (!event.pubkey.match(/^[a-f0-9]{64}$/)) return false 
 
     if (!Array.isArray(event.tags)) return false
     for (let i = 0; i < event.tags.length; i++) {
-        let tag = event.tags[i]
+        const    tag = event.tags[i]
         if (!Array.isArray(tag)) return false
         for (let j = 0; j < tag.length; j++) {
             if (typeof tag[j] === 'object') return false
@@ -115,7 +115,6 @@ export function validateEvent<T>(event: T): event is T & UnsignedEvent<number> {
 
 /** Verify the event's signature. This function mutates the event with a `verified` symbol, making it idempotent. */
 export function verifySignature<K extends number>(event: Event<K>): event is VerifiedEvent<K> {
-    //@ts-ignore
     if (typeof event[verifiedSymbol] === 'boolean') return event[verifiedSymbol]
 
     const hash = getEventHash(event)

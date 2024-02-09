@@ -4,7 +4,8 @@ export const utf8Decoder = new TextDecoder('utf-8')
 export const utf8Encoder = new TextEncoder()
 
 export function normalizeURL(url: string): string {
-    let p = new URL(url)
+    const p = new URL(url)
+
     p.pathname = p.pathname.replace(/\/+/g, '/')
     if (p.pathname.endsWith('/')) p.pathname = p.pathname.slice(0, -1)
     if ((p.port === '80' && p.protocol === 'ws:') || (p.port === '443' && p.protocol === 'wss:')) p.port = ''
@@ -29,7 +30,7 @@ export function insertEventIntoDescendingList(sortedArray: Event<number>[], even
     } else if (event.created_at >= sortedArray[start].created_at) {
         position = start
     } else
-        while (true) {
+        while (position != end) {
             if (end <= start + 1) {
                 position = end
                 break
@@ -67,7 +68,7 @@ export function insertEventIntoAscendingList(sortedArray: Event<number>[], event
     } else if (event.created_at <= sortedArray[start].created_at) {
         position = start
     } else
-        while (true) {
+        while (position != end) {
             if (end <= start + 1) {
                 position = end
                 break
@@ -159,7 +160,7 @@ export class MessageQueue {
     dequeue(): string | null {
         if (this._size === 0 || !this._first) return null
 
-        let prev = this._first
+        const prev = this._first
         this._first = prev.next
         prev.next = null
 

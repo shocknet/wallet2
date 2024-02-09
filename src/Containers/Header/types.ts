@@ -1,5 +1,5 @@
 import React from "react";
-import { ActionType, StateInterface } from "../../globalTypes"
+import { ActionType } from "../../globalTypes"
 
 export interface HeaderProps{
   dispatch: React.Dispatch<ActionType>

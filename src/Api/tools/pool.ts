@@ -38,7 +38,7 @@ export class SimplePool {
 
     close(relays: string[]): void {
         relays.forEach(url => {
-            let relay = this._conn[normalizeURL(url)]
+            const relay = this._conn[normalizeURL(url)]
             if (relay) relay.close()
         })
     }
@@ -59,30 +59,30 @@ export class SimplePool {
     }
 
     sub<K extends number = number>(relays: string[], filters: Filter<K>[], opts?: SubscriptionOptions): Sub<K> {
-        let _knownIds: Set<string> = new Set()
-        let modifiedOpts = { ...(opts || {}) }
+        const _knownIds: Set<string> = new Set()
+        const modifiedOpts = { ...(opts || {}) }
         modifiedOpts.alreadyHaveEvent = (id, url) => {
             if (opts?.alreadyHaveEvent?.(id, url)) {
                 return true
             }
             if (this.seenOnEnabled) {
-                let set = this._seenOn[id] || new Set()
+                const set = this._seenOn[id] || new Set()
                 set.add(url)
                 this._seenOn[id] = set
             }
             return _knownIds.has(id)
         }
 
-        let subs: Sub[] = []
-        let eventListeners: Set<any> = new Set()
-        let eoseListeners: Set<() => void> = new Set()
+        const subs: Sub[] = []
+        const eventListeners: Set<any> = new Set()
+        const eoseListeners: Set<() => void> = new Set()
         let eosesMissing = relays.length
 
         let eoseSent = false
-        let eoseTimeout = setTimeout(
+        const eoseTimeout = setTimeout(
             () => {
                 eoseSent = true
-                for (let cb of eoseListeners.values()) cb()
+                for (const cb of eoseListeners.values()) cb()
             },
             opts?.eoseSubTimeout || this.eoseSubTimeout,
         )
@@ -98,10 +98,10 @@ export class SimplePool {
                     return
                 }
                 if (!r) return
-                let s = r.sub(filters, modifiedOpts)
+                const s = r.sub(filters, modifiedOpts)
                 s.on('event', event => {
                     _knownIds.add(event.id as string)
-                    for (let cb of eventListeners.values()) cb(event)
+                    for (const cb of eventListeners.values()) cb(event)
                 })
                 s.on('eose', () => {
                     if (eoseSent) return
@@ -113,12 +113,12 @@ export class SimplePool {
                     eosesMissing--
                     if (eosesMissing === 0) {
                         clearTimeout(eoseTimeout)
-                        for (let cb of eoseListeners.values()) cb()
+                        for (const cb of eoseListeners.values()) cb()
                     }
                 }
             })
 
-        let greaterSub: Sub<K> = {
+            const greaterSub: Sub<K> = {
             sub(filters, opts) {
                 subs.forEach(sub => sub.sub(filters, opts))
                 return greaterSub as any
@@ -152,8 +152,8 @@ export class SimplePool {
         opts?: SubscriptionOptions,
     ): Promise<Event<K> | null> {
         return new Promise(resolve => {
-            let sub = this.sub(relays, [filter], opts)
-            let timeout = setTimeout(() => {
+            const sub = this.sub(relays, [filter], opts)
+            const timeout = setTimeout(() => {
                 sub.unsub()
                 resolve(null)
             }, this.getTimeout)
@@ -171,8 +171,8 @@ export class SimplePool {
         opts?: SubscriptionOptions,
     ): Promise<Event<K>[]> {
         return new Promise(resolve => {
-            let events: Event<K>[] = []
-            let sub = this.sub(relays, filters, opts)
+            const events: Event<K>[] = []
+            const sub = this.sub(relays, filters, opts)
 
             sub.on('event', event => {
                 events.push(event)
@@ -238,7 +238,7 @@ export class SimplePool {
 
     publish(relays: string[], event: Event<number>): Promise<void>[] {
         return relays.map(async relay => {
-            let r = await this.ensureRelay(relay)
+            const r = await this.ensureRelay(relay)
             return r.publish(event)
         })
     }

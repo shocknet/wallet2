@@ -1,5 +1,7 @@
 import React from "react";
 
+type PriceImgFunction = (arg1: string, arg2: number) => string;
+
 export interface ChangeQuantityInterface {
   id: number;
   quantity: number
@@ -62,7 +64,7 @@ export interface sw_item {
   changes?: string;
   stateIcon?: string;
   date?: string;
-  priceImg: Function;
+  priceImg: PriceImgFunction;
   price?: number;
   underline?: boolean;
 }
@@ -71,7 +73,7 @@ export interface ModalProps {
   isShown: boolean;
   hide: () => void;
   modalContent: JSX.Element;
-  headerText: string;
+  headerText?: string;
 }
 
 export interface ModalProps {
@@ -85,7 +87,7 @@ export interface SwItemData {
   changes?: string;
   stateIcon?: string;
   date?: string;
-  priceImg: Function;
+  priceImg: PriceImgFunction;
   price?: number;
   underline?: boolean;
 }
@@ -140,4 +142,10 @@ export interface PayTo {
   icon: string;
   disconnected?: boolean
   vanityName?: string;
+}
+
+export interface FiatCurrency {
+  url: string;
+  currency: string;
+  symbol: string;
 }

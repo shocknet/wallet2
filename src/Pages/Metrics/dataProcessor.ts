@@ -32,7 +32,7 @@ export const processData = (data: SourceData, timeFrame: TimeFrame): Graphs => {
 
     const usageGraphs = processUsage(usage, timeFrame)
     const lndGraphs = processLnd(lnd)
-    const appsGraphs = processApps(apps, timeFrame)
+    const appsGraphs = processApps(apps)
     return {
         ...usageGraphs,
         ...lndGraphs,
@@ -44,7 +44,7 @@ export const ProcessLndData = () => {
 
 }
 
-const processApps = (apps: Types.AppsMetrics, timeFrame: TimeFrame): { appsBalances: PieGraph, feesPaid: BarGraph, movingSats: BarGraph } => {
+const processApps = (apps: Types.AppsMetrics): { appsBalances: PieGraph, feesPaid: BarGraph, movingSats: BarGraph } => {
     const appsLabels: string[] = []
     const balances: number[] = []
     const feesPaid: Record<string, { x: string, y: number }[]> = {}
@@ -142,7 +142,6 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     })
     const labels = generateTimeSeriesLabels(minBlock, maxBlock)
     const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: `chain balance node ${i + 1}` }))
-    const remoteChannels = Object.entries(channelsBalanceRemote).map(([k, data]) => ({ data, label: `remote balance ch ${k}` }))
     const localChannels = Object.entries(channelsBalanceLocal).map(([k, data]) => ({ data, label: `local balance ch ${k}` }))
     return {
         balanceEvents: {

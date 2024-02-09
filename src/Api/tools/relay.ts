@@ -105,7 +105,7 @@ export function relayInit(
                 listeners.disconnect.forEach(cb => cb())
             }
 
-            let incomingMessageQueue: MessageQueue = new MessageQueue()
+            const incomingMessageQueue: MessageQueue = new MessageQueue()
             let handleNextInterval: any
 
             ws.onmessage = e => {
@@ -154,13 +154,14 @@ export function relayInit(
                             }
                             return
                         }
-                        case 'COUNT':
+                        case 'COUNT': {
                             const id = data[1]
                             const payload = data[2]
                             if (openSubs[id]) {
                                 (subListeners[id]?.count || []).forEach(cb => cb(payload))
                             }
                             return
+                        }
                         case 'EOSE': {
                             const id = data[1]
                             if (id in subListeners) {
@@ -180,15 +181,18 @@ export function relayInit(
                             }
                             return
                         }
-                        case 'NOTICE':
+                        case 'NOTICE': {
                             const notice = data[1]
                             listeners.notice.forEach(cb => cb(notice))
                             return
+                        }
                         case 'AUTH': {
                             const challenge = data[1]
                             listeners.auth?.forEach(cb => cb(challenge))
                             return
                         }
+                        default:
+                            return
                     }
                 } catch (err) {
                     return
@@ -292,15 +296,13 @@ export function relayInit(
         url,
         sub,
         on: <T extends keyof RelayEvent, U extends RelayEvent[T]>(type: T, cb: U): void => {
-            //@ts-ignore
             listeners[type].push(cb)
             if (type === 'connect' && ws?.readyState === 1) {
                 // i would love to know why we need this
-                ; (cb as () => void)()
+                (cb as () => void)()
             }
         },
         off: <T extends keyof RelayEvent, U extends RelayEvent[T]>(type: T, cb: U): void => {
-            //@ts-ignore
             const index = listeners[type].indexOf(cb)
             if (index !== -1) listeners[type].splice(index, 1)
         },

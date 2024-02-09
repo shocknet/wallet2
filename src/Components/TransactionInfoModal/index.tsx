@@ -15,7 +15,7 @@ import * as utility  from '../../Hooks/utility';
 import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
 
-const getRightSideValueString = (amount: number, negative: boolean, price: Price) => {
+const getRightSideValueString = (amount: number, negative: boolean) => {
   return `${negative ? "" : "-"} ${amount} sats`;
 }
 
@@ -32,7 +32,7 @@ interface ApiRes {
   blockHeight: number;
 }
 
-const TransactionInfoModal = ({ operation, hide, price } : Props) => {
+const TransactionInfoModal = ({ operation, hide } : Props) => {
   const onChain = operation.type === Types.UserOperationType.INCOMING_TX || operation.type === Types.UserOperationType.OUTGOING_TX;
   const { internal, amount, inbound, confirmed } = operation;
 	const totalFee = operation.service_fee + operation.network_fee;
@@ -79,11 +79,11 @@ const TransactionInfoModal = ({ operation, hide, price } : Props) => {
               <div className={styles["info-container"]}>
                 <div className={styles["info-item"]}>
                   <span className={styles["left"]}>{operation.inbound ? "Amount received" : "Amount sent"}</span>
-                  <span className={styles["right"]}>{getRightSideValueString(amount, inbound, price)}</span>
+                  <span className={styles["right"]}>{getRightSideValueString(amount, inbound)}</span>
                 </div>
                 <div className={styles["info-item"]}>
                   <span className={styles["left"]}>Total fees</span>
-                  <span className={styles["right"]}>{getRightSideValueString(onChain && !internal ? mempoolres!.fee : totalFee, true, price)}</span>
+                  <span className={styles["right"]}>{getRightSideValueString(onChain && !internal ? mempoolres!.fee : totalFee, true)}</span>
                 </div>
 								{
 									(onChain && !internal)

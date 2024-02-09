@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useDispatch, useSelector } from '../../State/store';
-import { useIonRouter } from '@ionic/react';
 import Checkbox from '../../Components/Checkbox';
 import { arrangeIcon } from '../../jsxHelpers';
 import { UseModal } from '../../Hooks/UseModal';
@@ -43,8 +42,6 @@ export const Automation = () => {
   //reducer
   //const spendSources = useSelector((state) => state.spendSource).map((e: any) => { return { ...e } });
   const subs = useSelector(({ subscriptions }) => subscriptions.activeSubs)
-  const payments = useSelector(({ subscriptions }) => subscriptions.payments)
-  const router = useIonRouter();
 
   const [checked, setChecked] = useState(true);
   const [value, setValue] = useState(1);
@@ -305,8 +302,9 @@ export const Automation = () => {
             <input className='Automation_content_input' type='number' value={value} onChange={(e) => {
 				if(parseInt(e.target.value)>100){
 					return;
+				} else{
+					setValue(parseInt(e.target.value))
 				}
-              	setValue(parseInt(e.target.value))
             }} />
           </span>
         </div>

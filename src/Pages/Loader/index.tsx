@@ -6,16 +6,16 @@ import { useIonRouter } from '@ionic/react';
 
 export const Loader = () => {
   const router = useIonRouter();
+  
   useEffect(() => {
-    /*
-      It is test for redirects page to "Home" page when loaded all require data
-      We can change this function with async function after complete this part 
-    */
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       router.push("/home");
     }, 500);
+  
+    return () => {
+      clearTimeout(timeoutId); // Clear the timeout when the component unmounts
+    };
   }, []);
-
 
   return(
     <section className="Loader">

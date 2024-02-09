@@ -4,7 +4,6 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { useMemo, useState } from "react";
 import { useSelector } from "../../State/store";
 import { getIdentifierLink } from "../../State/Slices/addressbookSlice";
-import { decode } from "@gandlaf21/bolt11-decode";
 import moment from 'moment';
 import { AnimatePresence, motion } from "framer-motion";
 import { TransactionInfo } from "../../Pages/Home";
