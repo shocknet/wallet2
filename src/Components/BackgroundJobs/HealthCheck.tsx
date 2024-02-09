@@ -37,6 +37,7 @@ export const HealthCheck = () => {
         sourcesToCheck.map(async s => {
             const { pubkey, relays } = parseNprofile(s)
             const c = await getNostrClient({ pubkey, relays })
+            console.log("checking source state...", pubkey)
             const healthPromise = c.UserHealth()
             const timeout = setTimeout(() => {
                 if (!mounted) return
@@ -46,6 +47,7 @@ export const HealthCheck = () => {
                 updateSubState(s, false)
             }, 30 * 1000);
             await healthPromise
+            console.log("connected to", pubkey)
             clearTimeout(timeout)
             updateSubState(s, true)
         })
