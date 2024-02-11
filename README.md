@@ -1,7 +1,7 @@
 # wallet2
 Connect to multiple Lightning Nodes via LNURL and NOSTR. 
 
-Built with React and Ionic allowing builds for [PWA](https://test.shockwallet.app), [Android APK](https://cdn.shockwallet.app/shockwallet.apk), or iOS. 
+Built with React and Ionic allowing builds for [PWA](https://test.shockwallet.app), [Android APK](https://dl.shockwallet.app/shockwallet.apk), or iOS. 
 * iOS: Contact us for Testflight access
 
 ![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
@@ -17,7 +17,7 @@ This is a reference wallet client for [Lightning.Pub](https://github.com/shockne
 
 A development instance of the PWA is up at https://test.shockwallet.app 
 
-or [Download Android APK](https://cdn.shockwallet.app/shockwallet.apk)
+or [Download Android APK](https://dl.shockwallet.app/shockwallet.apk)
 
 The bootstrap node is on mainnet, but has minimal liquidity.
 
@@ -70,12 +70,3 @@ pod --install
 ```
 
 Set your signing certificate and update the Bundle Identifier to match your Apple Developer account
-
-
-#### Debug Mode
-
-From to send screen, type `howdoyouturnthison` into on the destination and press send
-
-This will cause the "Help/About" button in the menu to instead show the debug modal
-
-To disable, go back to send screen and type `howdoyouturnthisoff` int othe destination and press send
