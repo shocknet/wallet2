@@ -99,6 +99,7 @@ export const Prefs = () => {
   }
 
   useEffect(() => {
+    console.log(prefsRedux, 'test')
     switch (chainFee) {
       case "":
       case "eco":
@@ -112,13 +113,12 @@ export const Prefs = () => {
         break;
     }
     getChainFee();
-  }, [prefsRedux]);
+  }, []);
 
   useEffect(() => {
-    window.addEventListener("mouseup", () => {
-      // touchEndSlide();
-    })
-  }, [])
+    setFiatCurreny(prefsRedux.FiatUnit.currency)
+    setFiat(prefsRedux.FiatUnit.url);
+  }, [prefsRedux])
 
   const getChainFee = async () => {
     const getFee = await axios.get(prefsRedux.mempoolUrl || defaultMempool);
