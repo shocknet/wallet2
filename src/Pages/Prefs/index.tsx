@@ -7,6 +7,7 @@ import { setPrefs } from '../../State/Slices/prefsSlice';
 import { setAmount } from "../../State/Slices/usdToBTCSlice";
 import axios from 'axios';
 import { notification } from 'antd';
+import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import * as Types from "../../globalTypes";
 import { fiatCurrencies } from "./fiatCurrency";
@@ -91,8 +92,12 @@ export const Prefs = () => {
           sellPrice: fiatInfo.data.data.amount,
         } as Price
       ))
-      openNotification("top", "Success", "Successfully saved!");
-      router.push("/home");
+      dispatch(toggleLoading({ loadingMessage: "Saving..." }))
+      setTimeout(() => {
+        dispatch(toggleLoading({ loadingMessage: "" }));
+        openNotification("top", "Success", "Successfully saved!");
+        router.push("/home");
+      }, 1500);
     } else {
       return openNotification("top", "Error", "Please insert correct endpoint!");
     }
