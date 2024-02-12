@@ -53,6 +53,7 @@ export const Send = () => {
   const [sendRunning, setSendRunning] = useState(false);
 
   const [satsPerByte, setSatsPerByte] = useState(0)
+  const [fiatSymbol, setFiatSymbol] = useState('$')
   
   const [to, setTo] = useState({
     input: "",
@@ -92,6 +93,12 @@ export const Send = () => {
       }
     }
   }, [mempoolUrl, selectedChainFee]);
+
+  useEffect(() => {
+    if (fiatUnit.symbol) {
+      setFiatSymbol(fiatUnit.symbol);
+    }
+  }, [fiatUnit])
 
   useLayoutEffect(() => {
     if (spendSources.length === 0) {
@@ -280,7 +287,7 @@ export const Send = () => {
               Sats per vByte
             </div>}
             <p className='Send_available_amount_amount'>
-              ~ {fiatUnit.symbol} {amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+              ~ {fiatSymbol} {amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
             </p>
           </div>
           <div className="Send_to">

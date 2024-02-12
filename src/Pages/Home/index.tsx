@@ -13,9 +13,16 @@ export const Home = () => {
   const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook) || 0
 
   const [balance, setBalance] = useState('0.00')
+  const [fiatSymbol, setFiatSymbol] = useState('$')
   const [money, setMoney] = useState("0")
 
   const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
+
+  useEffect(() => {
+    if (fiatUnit.symbol) {
+      setFiatSymbol(fiatUnit.symbol);
+    }
+  }, [fiatUnit])
 
   useEffect(() => {
     if (!operationGroups) {
@@ -60,7 +67,7 @@ export const Home = () => {
         {/* {!!onTheWay && <p>{onTheWay} sats are on the way!</p>} */}
         <div className="Home_sats_amount">{balance}</div>
         <div className="Home_sats_name">sats</div>
-        <div className="Home_sats_changes">~ {fiatUnit.symbol} {money}</div>
+        <div className="Home_sats_changes">~ {fiatSymbol} {money}</div>
       </div>
       <div className="Home_scroller scroller">
         <div className="Home_content">
