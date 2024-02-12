@@ -32,26 +32,25 @@ export const HealthCheck = () => {
         }
         paySource.forEach(checkFunc)
         spendSource.forEach(checkFunc)
-        let mounted = true
+        let shouldDisconnect = true
         const sourcesToCheck = Object.keys(sourcesToCheckMap)
         sourcesToCheck.map(async s => {
             const { pubkey, relays } = parseNprofile(s)
             const c = await getNostrClient({ pubkey, relays })
             console.log("checking source state...", pubkey)
-            const healthPromise = c.UserHealth()
-            const timeout = setTimeout(() => {
-                if (!mounted) return
+            const res = await Promise.any([c.UserHealth(), new Promise<{ status: "TIMEOUT" }>((res) => setTimeout(() => res({ status: "TIMEOUT" }), 15 * 1000))])
+            if (res.status === "TIMEOUT") {
+                if (!shouldDisconnect) return
                 console.log("cannot connect to", pubkey, { relays })
                 openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
                 disconnectNostrClientCalls(s)
                 updateSubState(s, false)
-            }, 30 * 1000);
-            await healthPromise
+                return
+            }
             console.log("connected to", pubkey)
-            clearTimeout(timeout)
             updateSubState(s, true)
         })
-        return () => { mounted = false }
+        return () => { shouldDisconnect = false }
     }
 
     const updateSubState = (source: string, connected: boolean) => {
