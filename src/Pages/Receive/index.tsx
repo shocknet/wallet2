@@ -65,6 +65,8 @@ export const Receive = () => {
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const [bitcoinAddText, setBitcoinAddText] = useState("");
   const [invoiceMemo, setInvoiceMemo] = useState("");
+  const [fiatSymbol, setFiatSymbol] = useState('$')
+
   const router = useIonRouter();
   const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +99,12 @@ export const Receive = () => {
     }
 
   }, [paySource])
+
+  useEffect(() => {
+    if (fiatUnit.symbol) {
+      setFiatSymbol(fiatUnit.symbol);
+    }
+  }, [fiatUnit])
 
   useEffect(() => {
     if (isShown && amountInputRef.current) {
@@ -301,7 +309,7 @@ export const Receive = () => {
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ {fiatUnit.symbol} {parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
+        ~ {fiatSymbol} {parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice} id="confirm-invoice-amount">OK</button>
     </div>
@@ -352,7 +360,7 @@ export const Receive = () => {
             ?
               <React.Fragment>
                 <div>{`${amount} sats`}</div>
-                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatUnit.symbol}`}</div>
+                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatSymbol}`}</div>
               </React.Fragment>
             :
             tag == 2 ? bitcoinAddText : lightningAdd
