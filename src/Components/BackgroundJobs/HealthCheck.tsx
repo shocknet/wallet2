@@ -43,7 +43,7 @@ export const HealthCheck = () => {
                 console.log("latest response is less than 10 seconds old")
                 return
             }
-            if (state.latestHelthReqAtMillis < state.latestResponseAtMillis) {
+            if (state.latestHelthReqAtMillis <= state.latestResponseAtMillis) {
                 console.log("no health req was sent since last response, sending health req")
                 state.sendHelthRequest()
                 return
