@@ -24,8 +24,14 @@ export const getNip46PrivateKey = () => {
 */
 
 export type Client = ReturnType<typeof NewNostrClient>
+type ClientState = {
+    latestResponseAtMillis: number;
+    latestHelthReqAtMillis: number;
+    clientCbs: [string, nostrCallback<any>][];
+    sendHelthRequest: () => void;
+}
 type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
-type ReadyClient = { type: 'client', client: Client, disconnectCalls: () => void }
+type ReadyClient = { type: 'client', client: Client, disconnectCalls: () => void, getClientState: () => ClientState }
 type StoredClient = PendingClient | ReadyClient
 const clients: Record<string, StoredClient> = {}
 
@@ -47,6 +53,10 @@ export const parseNprofile = (nprofile: string) => {
     const dataBox = JSON.parse(dataString);
 
     return dataBox as ProfilePointer;
+}
+
+export const getAllNostrClients = () => {
+    return Object.entries(clients).filter(([_, c]) => c.type === 'client').map(([pubkey, c]) => ({ pubkey, client: c as ReadyClient }))
 }
 
 export const disconnectNostrClientCalls = async (nProfile: { pubkey: string, relays?: string[] } | string) => {
@@ -73,23 +83,28 @@ export const getNostrClient = async (nProfile: { pubkey: string, relays?: string
         throw new Error("cannot create client if no relays are provided")
     }
     clients[pubkey] = { type: 'promise', queue: [] }
-    const { readyClient, disconnectCalls } = await createNostrClient(pubkey, relays)
+    const { readyClient, disconnectCalls, getClientState } = await createNostrClient(pubkey, relays)
     const queue = (clients[pubkey] as PendingClient).queue
-    clients[pubkey] = { type: 'client', client: readyClient, disconnectCalls }
+    clients[pubkey] = { type: 'client', client: readyClient, disconnectCalls, getClientState }
     queue.forEach(f => f(readyClient))
     return readyClient
 }
 
-type nostrCallback<T> = { type: 'single' | 'stream', f: (res: T) => void }
+export type nostrCallback<T> = { startedAtMillis: number, type: 'single' | 'stream', f: (res: T) => void }
 const createNostrClient = async (pubDestination: string, relays: string[]) => {
     const clientCbs: Record<string, nostrCallback<any>> = {}
+    let latestResponseAtMillis = 0
+    let latestHelthReqAtMillis = 0
     const disconnectCalls = () => {
         for (const key in clientCbs) {
             const element = clientCbs[key]
             element.f({ status: "ERROR", reason: "nostr connection timeout" })
             delete clientCbs[key]
         }
+        latestResponseAtMillis = 0
+        latestHelthReqAtMillis = 0
     }
+
     let connected = false
     const privateKey = getNostrPrivateKey()
     if (!privateKey) {
@@ -130,8 +145,9 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
         console.log("subbing  to single send", reqId)
         return new Promise(res => {
             clientCbs[reqId] = {
+                startedAtMillis: Date.now(),
                 type: 'single',
-                f: (response: any) => { res(response) },
+                f: (response: any) => { latestResponseAtMillis = Date.now(); res(response) },
             }
         })
     }
@@ -145,8 +161,9 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
         }
         if (clientCbs[reqId]) {
             clientCbs[reqId] = {
+                startedAtMillis: Date.now(),
                 type: 'stream',
-                f: (response: any) => { cb(response) },
+                f: (response: any) => { latestResponseAtMillis = Date.now(); cb(response) },
             }
             console.log("sub for", reqId, "was already registered, overriding")
             return
@@ -154,85 +171,22 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
         handler.Send(to, JSON.stringify(message))
         console.log("subbing  to stream", reqId)
         clientCbs[reqId] = {
+            startedAtMillis: Date.now(),
             type: 'stream',
-            f: (response: any) => { cb(response) }
+            f: (response: any) => { latestResponseAtMillis = Date.now(); cb(response) }
         }
     }
     const readyClient = NewNostrClient({
         retrieveNostrUserAuth: async () => { return publicKey },
         pubDestination,
     }, clientSend, clientSub)
-    return { readyClient, disconnectCalls }
-}
-
-/*
-export const getNip46Sender = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Nip46Sender> => {
-    const { pubkey, relays } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
-    const c = nip46Senders[pubkey]
-    if (c && c.type === 'sender') {
-        return c.sender
-    }
-    if (c && c.type === 'promise') {
-        return new Promise<Nip46Sender>((res) => {
-            (nip46Senders[pubkey] as PendingNip46Sender).queue.push(res)
-        })
-    }
-    if (!relays) {
-        throw new Error("cannot create client if no relays are provided")
-    }
-    nip46Senders[pubkey] = { type: 'promise', queue: [] }
-    const { sendNip46 } = await newNip46Sender(pubkey, relays)
-    const queue = (nip46Senders[pubkey] as PendingNip46Sender).queue
-    nip46Senders[pubkey] = { type: 'sender', sender: sendNip46 }
-    queue.forEach(f => f(sendNip46))
-    return sendNip46
-}
-
-export const newNip46Sender = async (pubDestination: string, relays: string[]) => {
-    const privateKey = getNip46PrivateKey()
-    if (!privateKey) {
-        throw new Error("nip46 client not initialized correctly")
-    }
-    const clientCbs: Record<string, nostrCallback<Nip46Response>> = {}
-    const publicKey = getPublicKey(privateKey)
-    let connected = false
-    const handler = await new Promise<NostrHandler>((res) => {
-        const h = new NostrHandler({
-            privateKey,
-            publicKey,
-            relays
-        },
-            () => { if (!connected) { connected = true; res(h) } },
-            e => {
-                const res = JSON.parse(e.content) as Nip46Response
-                if (clientCbs[res.id]) {
-                    const cb = clientCbs[res.id]
-
-                    cb.f(res)
-                    if (cb.type === 'single') {
-                        delete clientCbs[res.id]
-                    }
-                } else {
-                    console.log("cb not found for", res)
-                }
-            })
-    })
-    const sendNip46 = (req: Nip46Request): Promise<Nip46Response> => {
-        const reqId = makeId(16)
-        const message = serializeNip46Event(reqId, req)
-        if (clientCbs[reqId]) {
-            throw new Error("request was already sent")
+    const getClientState = () => {
+        return {
+            latestResponseAtMillis,
+            latestHelthReqAtMillis,
+            clientCbs: Object.entries(clientCbs),
+            sendHelthRequest: () => { latestHelthReqAtMillis = Date.now(); readyClient.UserHealth() },
         }
-        handler.SendNip46(pubDestination, message)
-
-        console.log("subbing  to single send", reqId)
-        return new Promise(res => {
-            clientCbs[reqId] = {
-                type: 'single',
-                f: (response: Nip46Response) => { res(response) },
-            }
-        })
     }
-    return { sendNip46 }
+    return { readyClient, disconnectCalls, getClientState }
 }
-*/
