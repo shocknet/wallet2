@@ -48,6 +48,35 @@ body{
   background-color: transparent;
 }
 
+.error-page {
+  text-align: center;
+  padding: 20px;
+  margin-top: 40vh;
+
+  &>div {
+    position: fixed;
+    top: 4%;
+    left: 5%;
+
+    &>button {
+      @include buttonPrimary;
+      font-size: 20px;
+      color: #a3a3a3;
+      text-decoration: underline;
+    }
+  }
+  &>h2 {
+    font-size: 25px;
+  }
+
+  &>button {
+    @include buttonPrimary;
+    font-size: 18px;
+    color: #ffff;
+    text-decoration: underline;
+  }
+}
+
 input:focus-visible {
   outline: 1px solid #2693c1;
 }
