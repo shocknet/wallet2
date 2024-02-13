@@ -351,7 +351,7 @@ export const Receive = () => {
           tag === 0 ? 
           (showingLightningAddress && lnaddrData !== null)
           &&
-          <div style={{fontSize: "24px"}}>{`${lnaddrData?.vanityName}@${lnaddrData?.url}`}</div>
+          <div style={{fontSize: "17px", marginTop: "12px"}}>{`${lnaddrData?.vanityName}@${lnaddrData?.url}`}</div>
           : ''
         }
         <div className='Receive_copy'>
