@@ -4,7 +4,7 @@ import { openNotification } from "../../constants"
 import { disconnectNostrClientCalls, getAllNostrClients, getNostrClient, nostrCallback, parseNprofile } from "../../Api/nostr"
 import { editPaySources } from "../../State/Slices/paySourcesSlice"
 import { editSpendSources } from "../../State/Slices/spendSourcesSlice"
-const SubsCheckIntervalSeconds = 10 * 60
+const SubsCheckIntervalSeconds = 60
 export const HealthCheck = () => {
     // const paySource = useSelector(({ paySource }) => paySource)
     // const spendSource = useSelector(({ spendSource }) => spendSource)
