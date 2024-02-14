@@ -1,6 +1,12 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
 import { mergeArrayValues } from './dataMerge';
+import applyMigrations, { PAYTO_VERSION, PayToMigrations } from './migrations';
+
+
+
+
+
 export const storageKey = "payTo"
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   const local = JSON.parse(serialLocal) as PayTo[]
@@ -9,13 +15,36 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   return JSON.stringify(merged)
 }
 
-const getPayToLocal = localStorage.getItem(storageKey);
-
-const initialState: PayTo[] = JSON.parse(getPayToLocal ?? "[]");
 
 const update = (value: PayTo[]) => {
-  localStorage.setItem(storageKey, JSON.stringify(value));
+  const stateToSave = {
+    version: PAYTO_VERSION,
+    paySources: value,
+  };
+  localStorage.setItem(storageKey, JSON.stringify(stateToSave));
 }
+
+
+const loadInitialState = () => {
+  const storedData = localStorage.getItem(storageKey);
+  if (storedData) {
+    const parsedData = JSON.parse(storedData);
+    let migrationResult: any = null;
+    if (parsedData.version === undefined) {
+      migrationResult = applyMigrations(parsedData, 0, PayToMigrations)
+    } else {
+      migrationResult = applyMigrations(parsedData.paySources, parsedData.version, PayToMigrations)
+    }
+    update(migrationResult)
+    return migrationResult || [];
+  }
+  return [];
+};
+
+
+const initialState: PayTo[] = loadInitialState();
+
+
 
 const paySourcesSlice = createSlice({
   name: 'paySources',
