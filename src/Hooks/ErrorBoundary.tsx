@@ -6,18 +6,20 @@ interface ErrorBoundaryProps {
 
 const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
   const [hasError, setHasError] = useState(false);
+  const [errorMSG, setErrorMSG] = useState('');
 
-    useEffect(() => {
-        const errorHandler = (): void => {
-            setHasError(true);
-        };
+  useEffect(() => {
+    const errorHandler = (err: any): void => {
+      setErrorMSG(err.message);
+      setHasError(true);
+    };
 
-        window.addEventListener('error', errorHandler);
+    window.addEventListener('error', errorHandler);
 
-        return () => {
-            window.removeEventListener('error', errorHandler);
-        };
-    }, []);
+    return () => {
+      window.removeEventListener('error', errorHandler);
+    };
+  }, []);
 
   const GoBack = () => {
     setHasError(false);
@@ -27,13 +29,15 @@ const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
   if (hasError) {
     // Render the error page here
     return (
-        <div className='error-page'>
-            <div>
-                <button onClick={GoBack}>Go back</button>
-            </div>
-            <h2>Oops, something went wrong.</h2>
-            <button onClick={() => setHasError(false)}>Try again?</button>
-        </div>
+      <div className='error-page'>
+          <div>
+              <button onClick={GoBack}>Go back</button>
+          </div>
+          <h2>Oops, something went wrong.</h2>
+          <br />
+          <p>{errorMSG}</p>
+          <button onClick={() => setHasError(false)}>Send report</button>
+      </div>
     );
   }
 

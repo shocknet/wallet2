@@ -51,7 +51,7 @@ body{
 .error-page {
   text-align: center;
   padding: 20px;
-  margin-top: 40vh;
+  margin-top: 35vh;
 
   &>div {
     position: fixed;
@@ -74,6 +74,11 @@ body{
     font-size: 18px;
     color: #ffff;
     text-decoration: underline;
+  }
+
+  &>p {
+    font-size: 20px;
+    color: #ab4747;
   }
 }
 

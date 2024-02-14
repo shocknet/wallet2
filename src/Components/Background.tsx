@@ -129,7 +129,7 @@ export const Background = () => {
 			dispatch(addNotification({
 				header: 'Payments',
 				icon: '⚡',
-				desc: 'You received ' + payments.length + ' payments since ' + getFormattedTime(lastTimestamp),
+				desc: 'You received ' + payments.length + ' payments since you have been away.',
 				date: Date.now(),
 				link: '/home',
 			}))
