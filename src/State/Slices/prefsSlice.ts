@@ -52,8 +52,16 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   });
   
 }
-
-
+const prefs = localStorage.getItem(storageKey);
+const initialDataStructure = {
+  selected: "", 
+  mempoolUrl: "", 
+  FiatUnit: {
+    url: "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+    symbol: "$", 
+    currency: "USD"
+  }
+}
 
 const update = (value: PrefsInterface) => {
   const stateToSave = {
@@ -63,14 +71,7 @@ const update = (value: PrefsInterface) => {
   localStorage.setItem(storageKey, JSON.stringify(stateToSave));
 }
 
-
-
-const initialState: PrefsInterface = loadInitialState(
-  storageKey,
-  '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
-  migrations,
-  update
-);
+const initialState: PrefsInterface = {...initialDataStructure, ...JSON.parse(prefs ?? "{}")}
 
 const prefsSlice = createSlice({
   name: storageKey,
