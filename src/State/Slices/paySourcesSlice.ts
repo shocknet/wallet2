@@ -1,7 +1,9 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
 import { mergeArrayValues } from './dataMerge';
-import applyMigrations, { PAYTO_VERSION, PayToMigrations } from './migrations';
+import applyMigrations, { MigrationFunction } from './migrations';
+import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
+import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 
 
 
@@ -15,10 +17,40 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   return JSON.stringify(merged)
 }
 
+export const VERSION = 1;
+export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
+  // the bridge url encoded in nprofile migration
+  1: (data) => {
+		console.log("running migration v1 of payToSources");
+    const state = data as PayTo[];
+    const newState = state.map(source => {
+      if (!source.pasteField.startsWith("nprofile") || source.label !== "Bootstrap Node") {
+        return source
+      } else if (decodeNprofile(source.pasteField).bridge) {
+        return source;
+      } else {
+        const decoded = decodeNprofile(source.pasteField);
+        const newNprofile = encodeNprofile({
+          pubkey: decoded.pubkey,
+          relays: decoded.relays,
+          bridge: decoded.pubkey === OLD_NOSTR_PUB_DESTINATION ? ["https://zap.page"] : ["https://shockwallet.app"]
+        })
+        return {
+          ...source,
+          pasteField: newNprofile
+        }
+      }
+
+    })
+    return newState;
+  },
+
+};
+
 
 const update = (value: PayTo[]) => {
   const stateToSave = {
-    version: PAYTO_VERSION,
+    version: VERSION,
     paySources: value,
   };
   localStorage.setItem(storageKey, JSON.stringify(stateToSave));
@@ -31,12 +63,12 @@ const loadInitialState = () => {
     const parsedData = JSON.parse(storedData);
     let migrationResult: any = null;
     if (parsedData.version === undefined) {
-      migrationResult = applyMigrations(parsedData, 0, PayToMigrations)
+      migrationResult = applyMigrations(parsedData, 0, migrations)
     } else {
-      migrationResult = applyMigrations(parsedData.paySources, parsedData.version, PayToMigrations)
+      migrationResult = applyMigrations(parsedData.paySources, parsedData.version, migrations)
     }
     update(migrationResult)
-    return migrationResult || [];
+    return migrationResult;
   }
   return [];
 };
