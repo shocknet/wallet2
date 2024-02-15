@@ -10,13 +10,6 @@ import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 
 
 export const storageKey = "payTo"
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
-  const local = JSON.parse(serialLocal) as PayTo[]
-  const remote = JSON.parse(serialRemote) as PayTo[]
-  const merged: PayTo[] = mergeArrayValues(local, remote, v => v.pasteField)
-  return JSON.stringify(merged)
-}
-
 export const VERSION = 1;
 export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
   // the bridge url encoded in nprofile migration
@@ -47,6 +40,29 @@ export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
 
 };
 
+const handleVersioning = (parsedData: any) =>{
+  let migrationResult: any = null;
+  if (parsedData.version === undefined) {
+    migrationResult = applyMigrations(parsedData, 0, migrations)
+  } else {
+    migrationResult = applyMigrations(parsedData.paySources, parsedData.version, migrations)
+  }
+  return migrationResult;
+}
+
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as PayTo[]
+  const remote = JSON.parse(serialRemote)
+  const migratedRemote = handleVersioning(remote) as PayTo[]
+  const merged: PayTo[] = mergeArrayValues(local, migratedRemote, v => v.pasteField)
+  return JSON.stringify(merged)
+}
+
+
+
+
+
+
 
 const update = (value: PayTo[]) => {
   const stateToSave = {
@@ -61,12 +77,7 @@ const loadInitialState = () => {
   const storedData = localStorage.getItem(storageKey);
   if (storedData) {
     const parsedData = JSON.parse(storedData);
-    let migrationResult: any = null;
-    if (parsedData.version === undefined) {
-      migrationResult = applyMigrations(parsedData, 0, migrations)
-    } else {
-      migrationResult = applyMigrations(parsedData.paySources, parsedData.version, migrations)
-    }
+    const migrationResult = handleVersioning(parsedData)
     update(migrationResult)
     return migrationResult;
   }

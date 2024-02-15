@@ -14,20 +14,6 @@ interface PrefsInterface {
 }
 
 export const storageKey = "prefs"
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
-  const local = JSON.parse(serialLocal) as PrefsInterface
-  const remote = JSON.parse(serialRemote) as PrefsInterface
-  const merged: PrefsInterface = {
-    mempoolUrl: local.mempoolUrl || remote.mempoolUrl,
-    FiatUnit: local.FiatUnit || remote.FiatUnit,
-    selected: local.selected || remote.selected,
-    debugMode: local.debugMode,
-  }
-  return JSON.stringify(merged)
-  
-}
-
-
 export const VERSION = 1;
 export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
   // the Fiaturl to FiatUni migration
@@ -41,19 +27,44 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
     }
     
   },
-
 };
+
+const handleVersioning = (parsedData: any) =>{
+  let migrationResult: any = null;
+  if (parsedData.version === undefined) {
+    migrationResult = applyMigrations(parsedData, 0, migrations)
+  } else {
+    migrationResult = applyMigrations(parsedData.prefs, parsedData.version, migrations)
+  }
+  return migrationResult;
+}
+
+export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+  const local = JSON.parse(serialLocal) as PrefsInterface
+  const remote = JSON.parse(serialRemote)
+  const migratedRemote = handleVersioning(remote) as PrefsInterface
+
+  const merged: PrefsInterface = {
+    mempoolUrl: local.mempoolUrl || migratedRemote.mempoolUrl,
+    FiatUnit: local.FiatUnit || migratedRemote.FiatUnit,
+    selected: local.selected || migratedRemote.selected,
+    debugMode: local.debugMode,
+  }
+  return JSON.stringify(merged)
+  
+}
+
+
+
+
+
+
 
 const loadInitialState = () => {
   const storedData = localStorage.getItem(storageKey);
   if (storedData) {
     const parsedData = JSON.parse(storedData);
-    let migrationResult: any = null;
-    if (parsedData.version === undefined) {
-      migrationResult = applyMigrations(parsedData, 0, migrations)
-    } else {
-      migrationResult = applyMigrations(parsedData.prefs, parsedData.version, migrations)
-    }
+    const migrationResult = handleVersioning(parsedData)
     update(migrationResult)
     return migrationResult;
   }
