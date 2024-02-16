@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
 import { mergeArrayValues } from './dataMerge';
-import applyMigrations, { MigrationFunction } from './migrations';
+import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 
@@ -19,7 +19,7 @@ export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
     const newState = state.map(source => {
       if (!source.pasteField.startsWith("nprofile") || source.label !== "Bootstrap Node") {
         return source
-      } else if (decodeNprofile(source.pasteField).bridge) {
+      } else if (decodeNprofile(source.pasteField).bridge?.length) {
         return source;
       } else {
         const decoded = decodeNprofile(source.pasteField);
@@ -28,6 +28,7 @@ export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
           relays: decoded.relays,
           bridge: decoded.pubkey === OLD_NOSTR_PUB_DESTINATION ? ["https://zap.page"] : ["https://shockwallet.app"]
         })
+        
         return {
           ...source,
           pasteField: newNprofile
@@ -40,23 +41,17 @@ export const migrations: Record<number, MigrationFunction<PayTo[]>> = {
 
 };
 
-const handleVersioning = (parsedData: any) =>{
-  let migrationResult: any = null;
-  if (parsedData.version === undefined) {
-    migrationResult = applyMigrations(parsedData, 0, migrations)
-  } else {
-    migrationResult = applyMigrations(parsedData.paySources, parsedData.version, migrations)
-  }
-  return migrationResult;
-}
+
 
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
-  const local = JSON.parse(serialLocal) as PayTo[]
-  const remote = JSON.parse(serialRemote)
-  const migratedRemote = handleVersioning(remote) as PayTo[]
-  const merged: PayTo[] = mergeArrayValues(local, migratedRemote, v => v.pasteField)
+  const local = getStateAndVersion(serialLocal)
+  const remote = getStateAndVersion(serialRemote)
+  const migratedRemote = applyMigrations(remote.state, remote.version, migrations);
+  
+  const merged: PayTo[] = mergeArrayValues(local.state as PayTo[], migratedRemote, v => v.pasteField)
   return JSON.stringify(merged)
 }
+
 
 
 
@@ -73,19 +68,10 @@ const update = (value: PayTo[]) => {
 }
 
 
-const loadInitialState = () => {
-  const storedData = localStorage.getItem(storageKey);
-  if (storedData) {
-    const parsedData = JSON.parse(storedData);
-    const migrationResult = handleVersioning(parsedData)
-    update(migrationResult)
-    return migrationResult;
-  }
-  return [];
-};
 
 
-const initialState: PayTo[] = loadInitialState();
+
+const initialState: PayTo[] = loadInitialState(storageKey, "[]", migrations, update);
 
 
 
