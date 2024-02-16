@@ -48,7 +48,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   }
   return JSON.stringify({
     version: VERSION,
-    prefs: merged
+    data: merged
   });
   
 }
@@ -58,7 +58,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
 const update = (value: PrefsInterface) => {
   const stateToSave = {
     version: VERSION,
-    prefs: value,
+    data: value,
   };
   localStorage.setItem(storageKey, JSON.stringify(stateToSave));
 }
