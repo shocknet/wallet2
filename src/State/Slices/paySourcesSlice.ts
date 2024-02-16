@@ -47,13 +47,14 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   const local = getStateAndVersion(serialLocal)
   const remote = getStateAndVersion(serialRemote)
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations);
+  const migratedLocal = applyMigrations(local.state, local.version, migrations);
   
-  const merged: PayTo[] = mergeArrayValues(local.state as PayTo[], migratedRemote, v => v.pasteField)
-  return JSON.stringify(merged)
+  const merged: PayTo[] = mergeArrayValues(migratedLocal, migratedRemote, v => v.pasteField)
+  return JSON.stringify({
+    version: VERSION,
+    paySources: merged
+  });
 }
-
-
-
 
 
 
