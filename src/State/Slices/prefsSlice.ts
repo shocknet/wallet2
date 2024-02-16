@@ -38,14 +38,18 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   const remote = getStateAndVersion(serialRemote);
 
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations);
+  const migratedLocal = applyMigrations(local.state, local.version, migrations);
 
   const merged: PrefsInterface = {
-    mempoolUrl: local.state.mempoolUrl || migratedRemote.mempoolUrl,
-    FiatUnit: local.state.FiatUnit || migratedRemote.FiatUnit,
-    selected: local.state.selected || migratedRemote.selected,
-    debugMode: local.state.debugMode,
+    mempoolUrl: migratedLocal.mempoolUrl || migratedRemote.mempoolUrl,
+    FiatUnit: migratedLocal.FiatUnit || migratedRemote.FiatUnit,
+    selected: migratedLocal.selected || migratedRemote.selected,
+    debugMode: migratedLocal.debugMode,
   }
-  return JSON.stringify(merged)
+  return JSON.stringify({
+    version: VERSION,
+    prefs: merged
+  });
   
 }
 
