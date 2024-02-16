@@ -10,7 +10,7 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
-import { ignoredStorageKeys, keylinkAppId } from '../../constants';
+import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
@@ -39,11 +39,12 @@ export const Auth = () => {
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
+  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
+  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
+  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
+  const [newPair, setNewPair] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const sanctumNostrSecret = "";
-  const newPair = false;
 
   const [api, contextHolder] = notification.useNotification();
 
@@ -63,6 +64,7 @@ export const Auth = () => {
     const accessToken = urlParams.get("accessToken")
     if (accessToken) {
       setSanctumAccessToken(accessToken)
+      setAccessTokenRetreived(true)
     }
   }, [router])
 
@@ -202,7 +204,6 @@ export const Auth = () => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
@@ -212,6 +213,7 @@ export const Auth = () => {
     const backup = await fetchRemoteBackup()
     if (backup.result === 'accessTokenMissing') {
       console.log("access token missing")
+      setRetreiveAccessToken(true)
       return
     }
     if (backup.decrypted === '') {
@@ -293,8 +295,8 @@ export const Auth = () => {
           <div className='Auth_serviceauth'>
             <header>Service Auth</header>
             <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="email@address.here or nsec" />
-            {/* <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
-            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" /> */}
+            <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
+            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" />
           </div>
           <div className="Auth_auth_send">
             <button onClick={() => signUpEmail()}>{Icons.send()}SEND</button>
@@ -318,7 +320,7 @@ export const Auth = () => {
           <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
           <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
         </div>
-        {/* <div className='Auth_import'>
+        <div className='Auth_import'>
           <p>Import remote backup</p>
           {!retreiveAccessToken && <div>
             {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
@@ -327,9 +329,9 @@ export const Auth = () => {
           </div>}
           {retreiveAccessToken && <div>
             <p>no nip07 extion found, use Sanctum instead?</p>
-            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(window.location.origin + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
+            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(import.meta.env.VITE_APP_URL + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
           </div>}
-        </div> */}
+        </div>
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>
     </div >
