@@ -7,8 +7,7 @@ export const getStateAndVersion = (json: string): { state: any, version: number 
   if (!("version" in parsedData)) {
     return { state: parsedData, version: 0 }
   } else {
-    const stateKey = Object.keys(parsedData).find(k => k !== "version") as string;
-    return { state: parsedData[stateKey], version: parsedData.version }
+    return { state: parsedData.data, version: parsedData.version }
   }
 }
 

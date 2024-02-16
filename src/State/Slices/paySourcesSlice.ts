@@ -52,7 +52,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   const merged: PayTo[] = mergeArrayValues(migratedLocal, migratedRemote, v => v.pasteField)
   return JSON.stringify({
     version: VERSION,
-    paySources: merged
+    data: merged
   });
 }
 
@@ -63,7 +63,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
 const update = (value: PayTo[]) => {
   const stateToSave = {
     version: VERSION,
-    paySources: value,
+    data: value,
   };
   localStorage.setItem(storageKey, JSON.stringify(stateToSave));
 }
