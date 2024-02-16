@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import applyMigrations, { MigrationFunction } from './migrations';
+import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 type FeeOptions = "asap" | "avg" | "eco" | ""
 type FiatCurrencyUrl = {
   url: string
@@ -29,47 +29,27 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
   },
 };
 
-const handleVersioning = (parsedData: any) =>{
-  let migrationResult: any = null;
-  if (parsedData.version === undefined) {
-    migrationResult = applyMigrations(parsedData, 0, migrations)
-  } else {
-    migrationResult = applyMigrations(parsedData.prefs, parsedData.version, migrations)
-  }
-  return migrationResult;
-}
+
 
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
-  const local = JSON.parse(serialLocal) as PrefsInterface
-  const remote = JSON.parse(serialRemote)
-  const migratedRemote = handleVersioning(remote) as PrefsInterface
+  /* const local = JSON.parse(serialLocal) as PrefsInterface
+  const remote = JSON.parse(serialRemote) */
+  const local = getStateAndVersion(serialLocal);
+  const remote = getStateAndVersion(serialRemote);
+
+  const migratedRemote = applyMigrations(remote.state, remote.version, migrations);
 
   const merged: PrefsInterface = {
-    mempoolUrl: local.mempoolUrl || migratedRemote.mempoolUrl,
-    FiatUnit: local.FiatUnit || migratedRemote.FiatUnit,
-    selected: local.selected || migratedRemote.selected,
-    debugMode: local.debugMode,
+    mempoolUrl: local.state.mempoolUrl || migratedRemote.mempoolUrl,
+    FiatUnit: local.state.FiatUnit || migratedRemote.FiatUnit,
+    selected: local.state.selected || migratedRemote.selected,
+    debugMode: local.state.debugMode,
   }
   return JSON.stringify(merged)
   
 }
 
 
-
-
-
-
-
-const loadInitialState = () => {
-  const storedData = localStorage.getItem(storageKey);
-  if (storedData) {
-    const parsedData = JSON.parse(storedData);
-    const migrationResult = handleVersioning(parsedData)
-    update(migrationResult)
-    return migrationResult;
-  }
-  return JSON.parse('{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}');
-};
 
 const update = (value: PrefsInterface) => {
   const stateToSave = {
@@ -81,7 +61,12 @@ const update = (value: PrefsInterface) => {
 
 
 
-const initialState: PrefsInterface = loadInitialState()
+const initialState: PrefsInterface = loadInitialState(
+  storageKey,
+  '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
+  migrations,
+  update
+);
 
 const prefsSlice = createSlice({
   name: storageKey,
