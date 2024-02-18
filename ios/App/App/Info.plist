@@ -22,10 +22,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>app.shockwallet</string>
+			<string>test.shockwallet.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>shockwallet</string>
+				<string>https</string>
 			</array>
 		</dict>
 	</array>
