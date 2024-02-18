@@ -6,6 +6,7 @@ android {
     defaultConfig {
         applicationId "app.shockwallet.test"
         minSdkVersion rootProject.ext.minSdkVersion
+        appUrl "test.shockwallet.app"
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
