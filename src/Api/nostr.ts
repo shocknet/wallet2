@@ -95,10 +95,10 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
     const clientCbs: Record<string, nostrCallback<any>> = {}
     let latestResponseAtMillis = 0
     let latestHelthReqAtMillis = 0
-    const disconnectCalls = () => {
+    const disconnectCalls = (reason?: string) => {
         for (const key in clientCbs) {
             const element = clientCbs[key]
-            element.f({ status: "ERROR", reason: "nostr connection timeout" })
+            element.f({ status: "ERROR", reason: reason ? reason : "nostr connection timeout" })
             delete clientCbs[key]
         }
         latestResponseAtMillis = 0
@@ -130,7 +130,7 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
                 } else {
                     console.log("cb not found for", res)
                 }
-            })
+            }, () => { disconnectCalls("relay disconnected") })
     })
     const clientSend = (to: string, message: NostrRequest): Promise<any> => {
         if (!message.requestId) {
