@@ -33,12 +33,11 @@ export const Home = () => {
       console.log("No operations to display");
       return;
     }
-    const sourceToLabel: Record<string, string> = {}
-    spendSources.forEach(s => { sourceToLabel[s.pasteField] = s.label })
+
 
     const collapsed: (Types.UserOperation & { source: string, sourceLabel: string })[] = []
     populatedEntries.forEach(([source, operations]) => {
-      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: sourceToLabel[source] || "unkown" })))
+      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source].label || "unkown" })))
     })
     console.log("collpased:", collapsed)
     collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
@@ -47,8 +46,8 @@ export const Home = () => {
 
   useEffect(() => {
     let totalAmount = 0;
-    for (let i = 0; i < spendSources.length; i++) {
-      const eachAmount = spendSources[i].balance;
+    for (let i = 0; i < spendSources.order.length; i++) {
+      const eachAmount = spendSources.sources[spendSources.order[i]].balance;
       totalAmount += parseInt(eachAmount);
     }
     setBalance(totalAmount.toString());

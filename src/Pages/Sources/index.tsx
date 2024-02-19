@@ -17,13 +17,21 @@ import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources 
 import { Modal } from '../../Components/Modals/Modal';
 import { Destination, InputClassification, options, parseBitcoinInput } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
-import { nip19 } from 'nostr-tools';
 import Sortable from 'sortablejs';
 import { useIonRouter } from '@ionic/react';
 import { createLnurlInvoice, createNostrInvoice, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
+import { v4 as uuidv4 } from "uuid";
+import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
+
+const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
+  const newArr = arr.map(e => e);
+  const item = newArr.splice(oldIndex, 1)[0];
+  newArr.splice(newIndex, 0, item);
+  return newArr;
+}
 
 const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
   notification.info({
@@ -50,7 +58,7 @@ export const Sources = () => {
       &&
       destination.max && destination.max > 0
       &&
-      paySources.length > 0;
+      Object.values(paySources.sources).length > 0;
 
     if (promptSweep) {
       setTempParsedWithdraw(destination);
@@ -69,13 +77,13 @@ export const Sources = () => {
     } else {
       const addressSearch = new URLSearchParams(location.search);
       const data = addressSearch.get("addSource");
-      const erroringSourceId = addressSearch.get("sourceId");
+      const erroringSourceKey = addressSearch.get("sourceId");
       if (data) {
         parseBitcoinInput(data).then(parsed => {
           processParsedInput(parsed)
         })
-      } else if (erroringSourceId) {
-        EditSourceSpend_Modal(parseInt(erroringSourceId));
+      } else if (erroringSourceKey) {
+        EditSourceSpend_Modal(erroringSourceKey);
       }
     }
   }, [location]);
@@ -92,8 +100,8 @@ export const Sources = () => {
   const [modalContent, setModalContent] = useState<string>("");
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
-  const [editPSourceId, setEditPSourceId] = useState<number>(0);
-  const [editSSourceId, setEditSSourceId] = useState<number>(0);
+  const [editPSourceId, setEditPSourceId] = useState("");
+  const [editSSourceId, setEditSSourceId] = useState("");
   const [processingSource, setProcessingSource] = useState(false);
  
   const { isShown, toggle } = UseModal();
@@ -103,10 +111,10 @@ export const Sources = () => {
     toggle();
   };
 
-  const openEditSourcePay = (id: number) => {
-    const source = paySources.find(s => s.id === id);
+  const openEditSourcePay = (key: string) => {
+    const source = paySources.sources[key]
     if (source) {
-      setEditPSourceId(id);
+      setEditPSourceId(key);
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcepay");
@@ -114,10 +122,10 @@ export const Sources = () => {
     }
   };
 
-  const EditSourceSpend_Modal = (id: number) => {
-    const source = spendSources.find(s => s.id === id);
+  const EditSourceSpend_Modal = (key: string) => {
+    const source = paySources.sources[key];
     if (source) {
-      setEditSSourceId(id);
+      setEditSSourceId(key);
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcespend");
@@ -130,8 +138,8 @@ export const Sources = () => {
     toggle();
   };
 
-  const notifyAboutDisabledSpendSource = (sourceId: number) => {
-    setNotifySourceId(sourceId.toString());
+  const notifyAboutDisabledSpendSource = (key: string) => {
+    setNotifySourceId(key);
     setModalContent("sourceNotify");
     toggle();
   }
@@ -172,7 +180,8 @@ export const Sources = () => {
       openNotification("top", "Error", "Please Write Data Correctly!");
       return;
     }
-    if (spendSources.find(s => s.pasteField === sourcePasteField) || paySources.find(s => s.pasteField === sourcePasteField)) {
+    // more thorough this way because doing spendSources[sourcePasteField] will not catch pub sources since the keys are npub and not the nprofile
+    if (Object.values(spendSources.sources).find(s => s.pasteField === sourcePasteField) || Object.values(paySources.sources).find(s => s.pasteField === sourcePasteField)) {
       openNotification("top", "Error", "Source already exists.");
       return;
     }
@@ -180,41 +189,45 @@ export const Sources = () => {
     setProcessingSource(true);
     dispatch(toggleLoading({ loadingMessage: "Setting up source..." }))
     let parsed: Destination | null = null;
-    if (sourcePasteField.includes("nprofile")) {
+    if (sourcePasteField.startsWith("nprofile")) {
       // nprofile
-      let { data }: Partial<nip19.DecodeResult> = {};
+      let data: CustomProfilePointer | null = null;
       try {
-        ({  data } = nip19.decode(sourcePasteField));
+        (data  = decodeNprofile(sourcePasteField));
       } catch (err: any) {
         openNotification("top", "Error", err.message);
         setProcessingSource(false);
         return;
       }
 
-      // are these JSON operations necessary?
-      const dataString = JSON.stringify(data);
-      const dataBox = JSON.parse(dataString);
 
-      const resultLnurl = new URL(dataBox.relays[0]);
+      const resultLnurl = new URL(data.relays[0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
+      const uuid = uuidv4()
       const addedPaySource = {
-        id: paySources.length,
+        id: uuid,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
       } as PayTo;
-      dispatch(addPaySources(addedPaySource));
+      dispatch(addPaySources({
+        source: addedPaySource,
+        key: data.pubkey
+      }))
       const addedSpendSource = {
-        id: spendSources.length,
+        id: uuid,
         label: resultLnurl.hostname,
         option: optional,
         icon: sndleveldomain,
         balance: "0",
         pasteField: sourcePasteField,
       } as SpendFrom;
-      dispatch(addSpendSources(addedSpendSource));
+      dispatch(addSpendSources({
+        source: addedSpendSource,
+        key: data.pubkey
+      }));
     } else {
       // not nprofile, now checking for other cases
       
@@ -234,34 +247,43 @@ export const Sources = () => {
       if (parsed.type === InputClassification.LNURL && parsed.lnurlEndpoint && parsed.max !== undefined) {
         if (parsed.lnurlType === "payRequest") {
           const addedSource = {
-            id: paySources.length,
+            id: uuidv4(),
             option: optional,
             icon: parsed.domainName,
             label: parsed.hostName,
             pasteField: parsed.data,
           } as PayTo;
-          dispatch(addPaySources(addedSource));
+          dispatch(addPaySources({
+            source: addedSource,
+            key: parsed.data
+          }));
         } else {
           // lnurl-withdraw
           const addedSource = {
-            id: spendSources.length,
+            id: uuidv4(),
             label: parsed.hostName,
             option: optional,
             icon: parsed.domainName,
             balance: parsed.max.toString(),
             pasteField: parsed.data,
           } as SpendFrom;
-          dispatch(addSpendSources(addedSource));
+          dispatch(addSpendSources({
+            source: addedSource,
+            key: parsed.data
+          }));
         }
       } else if (parsed.type === InputClassification.LN_ADDRESS) {
         const addedSource = {
-          id: paySources.length,
+          id: uuidv4(),
           option: optional,
           icon: parsed.domainName,
           label: parsed.data,
           pasteField: parsed.data,
         } as PayTo;
-        dispatch(addPaySources(addedSource));
+        dispatch(addPaySources({
+          source: addedSource,
+          key: parsed.data
+        }));
       } else {
         openNotification("top", "Error", "Input not recognized");
         setProcessingSource(false);
@@ -281,43 +303,47 @@ export const Sources = () => {
     if (!sourceLabel || !optional) {
       return openNotification("top", "Error", "Please Write Data Correctly!")
     }
-    const source = paySources.find(s => s.id === editPSourceId);
-    if (source) {
-      const paySourceToEdit = {
-        ...source,
-        option: optional,
-        label: sourceLabel,
-      };
-      dispatch(editPaySources(paySourceToEdit))
-      resetValue();
-      toggle();
-    }
+    const paySourceToEdit: PayTo = {
+      ...paySources.sources[editPSourceId],
+      option: optional,
+      label: sourceLabel,
+    };
+    dispatch(editPaySources({
+      source: paySourceToEdit,
+      key: editPSourceId
+    }))
+    resetValue();
+    toggle();
+    
   };
 
   const editSpendSource = () => {
     if (!sourceLabel || !optional) {
       return openNotification("top", "Error", "Please Write Data Correctly!")
     }
-    const spendSourceToEdit = {
-      ...spendSources[editSSourceId],
+    const spendSourceToEdit: SpendFrom = {
+      ...spendSources.sources[editSSourceId],
       option: optional,
       label: sourceLabel
     };
 
-    dispatch(editSpendSources(spendSourceToEdit))
+    dispatch(editSpendSources({
+      source: spendSourceToEdit,
+      key: editSSourceId
+    }))
     resetValue();
     toggle();
   };
 
   const deletePaySource = () => {
-    setEditPSourceId(0);
+    setEditPSourceId("");
     dispatch(deletePaySources(editPSourceId))
     resetValue();
     toggle();
   };
 
   const deleteSpendSource = () => {
-    setEditSSourceId(0);
+    setEditSSourceId("");
     const associatedNotification = notifications.find(n => n.link === `/sources?sourceId=${editSSourceId}`);
     if (associatedNotification) {
       dispatch(removeNotify(associatedNotification.date));
@@ -367,7 +393,7 @@ export const Sources = () => {
   const sweepLnurl = useCallback(async () => {
     toggle();
     dispatch(toggleLoading({ loadingMessage: "Sweeping..." }));
-    const topPaySource = paySources[0];
+    const topPaySource = paySources.sources[paySources.order[0]];
     let invoice = "";
     const isNprofile = topPaySource.pasteField.includes("nprofile");
     if (tempParsedWithdraw && tempParsedWithdraw.max) {
@@ -432,7 +458,7 @@ export const Sources = () => {
     <div className="Sources_modal_add_btn">
       <button onClick={addSource}>Add</button>
     </div>
-    {(paySources.filter((e) => e.icon != "0").length == 0 && spendSources.filter((e) => e.icon != "0").length == 0) ? (<div className="Sources_modal_add_btn_bottom">
+    {(Object.values(paySources.sources).filter((e) => e.icon != "0").length == 0 && Object.values(spendSources.sources).filter((e) => e.icon != "0").length == 0) ? (<div className="Sources_modal_add_btn_bottom">
       <p>or</p>
       <button onClick={() => { router.push("/auth") }}>Recover Backup</button>
     </div>) : null}
@@ -484,7 +510,7 @@ export const Sources = () => {
     <div className="Sources_notify">
       <div className="Sources_notify_title">Disabled Spend Source</div>
       <p className="Sources_notify_textBox">
-        This spend source is erroring with the following message: {spendSources.find(s => s.id === +notifySourceId)?.disabled}
+        This spend source is erroring with the following message: {spendSources.sources[notifySourceId]?.disabled}
       </p>
       <button className="Sources_notify_button" onClick={toggle}>OK</button>
     </div>
@@ -506,7 +532,7 @@ export const Sources = () => {
 
   const sweepLnurlModal = <React.Fragment>
     <div className='Sources_modal_header'>Sweep LNURL Withdraw</div>
-    <div className='Sources_modal_discription'>Sweeping {tempParsedWithdraw?.max} Sats from {tempParsedWithdraw?.domainName} to {paySources[0]?.label}.</div>
+    <div className='Sources_modal_discription'>Sweeping {tempParsedWithdraw?.max} Sats from {tempParsedWithdraw?.domainName} to {paySources.sources[paySources.order[0]]?.label}.</div>
     <div className="Sources_modal_add_btn">
       <button onClick={toggle}>Cancel</button>
       <button
@@ -515,12 +541,7 @@ export const Sources = () => {
 
   </React.Fragment>;
 
-  const arrayMove = (arr: PayTo[] | SpendFrom[], oldIndex: number, newIndex: number) => {
-    const newArr = arr.map(e => ({ ...e }));
-    const item = newArr.splice(oldIndex, 1)[0];
-    newArr.splice(newIndex, 0, item);
-    return newArr;
-  }
+  
 
   useEffect(() => {
     const list = document.getElementById('spend-list');
@@ -529,7 +550,7 @@ export const Sources = () => {
       sortable = new Sortable(list, {
         onEnd: function (event) {
           const { oldIndex, newIndex } = event;
-          const reorderedItems = arrayMove(spendSources, oldIndex as number, newIndex as number) as SpendFrom[];
+          const reorderedItems = arrayMove(spendSources.order, oldIndex as number, newIndex as number);
           dispatch(setSpendSources(reorderedItems))
         },
         animation: 150,
@@ -557,7 +578,7 @@ export const Sources = () => {
       sortable = new Sortable(list, {
         onEnd: function (event) {
           const { oldIndex, newIndex } = event;
-          const reorderedItems = arrayMove(paySources, oldIndex as number, newIndex as number) as PayTo[];
+          const reorderedItems = arrayMove(paySources.order, oldIndex as number, newIndex as number);
           dispatch(setPaySources(reorderedItems))
         },
         animation: 150,
@@ -587,7 +608,8 @@ export const Sources = () => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <ul id='pay-list' className="Sources_list_box">
-            {paySources.map((item) => {
+            {paySources.order.map((key) => {
+              const item = paySources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">
@@ -615,7 +637,8 @@ export const Sources = () => {
             <button className="Sources_question_mark" onClick={Notify_Modal}>{questionMark()}</button>
           </div>
           <ul id='spend-list' className="Sources_list_box">
-            {spendSources.map((item) => {
+            {spendSources.order.map((key) => {
+              const item = spendSources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">

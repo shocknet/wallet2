@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { encodeNprofile } from "../../custom-nip19";
+import { v4 as uuidv4 } from "uuid";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -46,7 +47,7 @@ export const NodeUp = () => {
 
 
   const addBootStrapSources = async () => {
-    if (paySources.length != 0 && spendSources.length != 0) {
+    if (Object.values(paySources.sources || {}).length !== 0 && Object.values(spendSources.sources || {}).length !== 0) {
       return;
     } else {
       const bootstrapBalance = "0";
@@ -56,23 +57,31 @@ export const NodeUp = () => {
         bridge: [DEFAULT_BRIDGE_URL]
       })
 
+			const uuid = uuidv4();
+
       dispatch(addPaySources(
         {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
+					source: {
+						id: uuid,
+						label: "Bootstrap Node",
+						pasteField: nprofile,
+						option: options.little,
+						icon: "0",
+					},
+					key: NOSTR_PUB_DESTINATION
         }
       ));
       dispatch(addSpendSources(
         {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
-          balance: bootstrapBalance,
+					source: {
+						id: uuid,
+						label: "Bootstrap Node",
+						pasteField: nprofile,
+						option: options.little,
+						icon: "0",
+						balance: bootstrapBalance,
+					},
+					key: NOSTR_PUB_DESTINATION
         }
       ))
     }

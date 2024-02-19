@@ -68,17 +68,17 @@ export const Receive = () => {
   const [fiatSymbol, setFiatSymbol] = useState('$')
 
   const router = useIonRouter();
-  const nostrSource = paySource.filter((e) => e.pasteField.includes("nprofile"));
+  const nostrSource = Object.values(paySource.sources).filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
-  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource[0].vanityName)
+  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource.sources[paySource.order[0]].vanityName)
 
   const deg = "rotate(0deg)";
   const vReceive = 1;
 
 
   const lnaddrData = useMemo(() => {
-    if (paySource.length > 0) {
-      const topPaySource = paySource[0]
+    if (paySource.order.length > 0) {
+      const topPaySource = paySource.sources[paySource.order[0]];
       if (topPaySource.vanityName) {
         const decoded = decodeNprofile(topPaySource.pasteField);
         const url = decoded.bridge![0];
@@ -121,12 +121,12 @@ export const Receive = () => {
 
 
   useEffect(() => {
-    if (paySource.length === 0) {
+    if (paySource.order.length === 0) {
       openNotification("top", "Error", "You don't have any sources!");
       router.push("/home");
     } else {
       configLNURL();
-      if (paySource[0].pasteField.startsWith("nprofile")) {
+      if (paySource.sources[paySource.order[0]].pasteField.startsWith("nprofile")) {
         ChainAddress();
       }
     }
@@ -158,7 +158,7 @@ export const Receive = () => {
 
 
   const configInvoice = useCallback(async (amountToRecive: string) => {
-    const topPaySource = paySource[0];
+    const topPaySource = paySource.sources[paySource.order[0]];
     let invoice = "";
     try {
       if (topPaySource.pasteField.includes("nprofile")) {
@@ -183,13 +183,13 @@ export const Receive = () => {
   const configLNURL = useCallback(async () => {
     dispatch(toggleLoading({ loadingMessage: "Loading..." }))
     if (LNurl !== "") return;
-    const topPayToSource = paySource[0];
+    const topPayToSource = paySource.sources[paySource.order[0]];
     if (topPayToSource.pasteField.includes("nprofile")) {
       const lnurl = await createNostrPayLink(topPayToSource.pasteField);
       setLNurl("lightning:" + lnurl);
       setValueQR("lightning:" + lnurl);
-    } else if (paySource[0].pasteField.includes("@")) {
-      const endpoint = "https://" + paySource[0].pasteField.split("@")[1] + "/.well-known/lnurlp/" + paySource[0].pasteField.split("@")[0];
+    } else if (topPayToSource.pasteField.includes("@")) {
+      const endpoint = "https://" + topPayToSource.pasteField.split("@")[1] + "/.well-known/lnurlp/" + topPayToSource.pasteField.split("@")[0];
       const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
       const lnurl = bech32.encode("lnurl", words, 999999);
       setLightningAdd(topPayToSource.label);
@@ -343,7 +343,7 @@ export const Receive = () => {
             </div>
           </div>
           :
-          (tag === 2 && !paySource[0].pasteField.includes("nprofile"))
+          (tag === 2 && !paySource.sources[paySource.order[0]].pasteField.includes("nprofile"))
           &&
           <div>Cannot receive on-chain transactions</div> 
         }
@@ -367,7 +367,7 @@ export const Receive = () => {
           }
         </div>
         {
-          !(tag === 2 && !paySource[0].pasteField.includes("nprofile"))
+          !(tag === 2 && !paySource.sources[paySource.order[0]].pasteField.includes("nprofile"))
           &&
           <>
             {

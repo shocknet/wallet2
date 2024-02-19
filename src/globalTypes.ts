@@ -123,7 +123,7 @@ export const totalAmountInitial: ITotalAmount = {
 }
 
 export interface SpendFrom {
-  id: number;
+  id: string;
   label: string;
   pasteField: string;
   icon: string;
@@ -135,7 +135,7 @@ export interface SpendFrom {
 }
 
 export interface PayTo {
-  id: number;
+  id: string;
   label: string;
   pasteField: string;
   option: string;

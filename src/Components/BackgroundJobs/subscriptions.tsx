@@ -14,7 +14,7 @@ export const SubscriptionsBackground = () => {
 	const activeSubs = useSelector(({ subscriptions }) => subscriptions.activeSubs.filter(s => s.enabled))
 	const payments = useSelector(({ subscriptions }) => subscriptions.payments)
 	const fiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
-	const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
+	const spendSources = useSelector((state) => Object.values(state.spendSource.sources).filter(s => !s.disabled));
 	const dispatch = useDispatch();
 
 	const sendSubPayment = useCallback(async (sub: Subscription, latestPayment: SubscriptionPayment | null) => {
@@ -57,7 +57,7 @@ export const SubscriptionsBackground = () => {
 				pub: parseNprofile(spendSource.pasteField).pubkey, operation: {
 					amount: sats, identifier: invoice, inbound: false, operationId: payRes.operation_id,
 					paidAtUnix: now, type: UserOperationType.OUTGOING_INVOICE, network_fee: payRes.network_fee, service_fee: payRes.service_fee,
-					confirmed: true,
+					confirmed: true, tx_hash: "", internal: false
 				}
 			}))
 			const periodNumber = latestPayment ? latestPayment.periodNumber + 1 : 1

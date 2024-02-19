@@ -12,10 +12,11 @@ export const LnAddressCheck = () => {
 
 	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
 	useEffect(() => {
-		const nostrPayTos = paySource.filter(s => s.pasteField.includes("nprofile"));
+		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pasteField.includes("nprofile"))
 		nostrPayTos.forEach(source => {
 			if (!source.vanityName) {
 				const { pubkey, relays, bridge } = decodeNprofile(source.pasteField)
+				console.log({pubkey, relays, bridge})
 				if (bridge && bridge.length > 0) {
 					getNostrClient({ pubkey, relays }).then(c => {
 						c.GetLnurlPayLink().then(pubRes => {
@@ -25,7 +26,7 @@ export const LnAddressCheck = () => {
 								const bridgeHandler = new Bridge(bridge[0]);
 								bridgeHandler.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
 									if (bridgeRes.status === "OK") {
-										dispatch(editPaySources({ ...source, vanityName: bridgeRes.vanity_name }));
+										dispatch(editPaySources({ source: { ...source, vanityName: bridgeRes.vanity_name }, key: pubkey }));
 									} else {
 										console.log("Vanity name error");
 									}
