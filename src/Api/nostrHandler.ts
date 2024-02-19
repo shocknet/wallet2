@@ -40,6 +40,7 @@ export default class Handler {
         relay.on('disconnect', () => {
             console.log("relay disconnected, will try to reconnect")
             relay.close()
+            disconnectCallback()
             this.Connect(disconnectCallback)
         })
 
