@@ -18,21 +18,21 @@ export default class Handler {
     pool: SimplePool = new SimplePool()
     settings: NostrSettings
     eventCallback: (event: NostrEvent) => void
-    constructor(settings: NostrSettings, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void) {
+    constructor(settings: NostrSettings, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
         this.settings = settings
         this.eventCallback = eventCallback
 
-        this.Connect(connectedCallback)
+        this.Connect(disconnectCallback, connectedCallback)
     }
 
-    async Connect(connectedCallback?: () => void) {
+    async Connect(disconnectCallback: () => void, connectedCallback?: () => void) {
         const relay = relayInit(this.settings.relays[0]) // TODO: create multiple conns for multiple relays
         try {
             await relay.connect()
         } catch (err) {
             console.log("failed to connect to relay, will try again in 2 seconds")
             setTimeout(() => {
-                this.Connect(connectedCallback)
+                this.Connect(disconnectCallback, connectedCallback)
             }, 2000)
             return
         }
@@ -40,7 +40,8 @@ export default class Handler {
         relay.on('disconnect', () => {
             console.log("relay disconnected, will try to reconnect")
             relay.close()
-            this.Connect()
+            disconnectCallback()
+            this.Connect(disconnectCallback)
         })
 
         const sub = relay.sub([

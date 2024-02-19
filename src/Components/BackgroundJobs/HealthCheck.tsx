@@ -35,10 +35,12 @@ export const HealthCheck = () => {
                 return
             }
             const now = Date.now()
-            if (now - (oldestSingleSub as nostrCallback<any>).startedAtMillis < 10 * 1000) {
+            const startedAtMillis = (oldestSingleSub as nostrCallback<any>).startedAtMillis
+            if (now - startedAtMillis < 10 * 1000) {
                 console.log("oldest single sub is less than 10 seconds old")
                 return
             }
+            console.log("oldest sub is", (startedAtMillis - now) / 1000, "seconds old!")
             if (now - state.latestResponseAtMillis < 10 * 1000) {
                 console.log("latest response is less than 10 seconds old")
                 return
