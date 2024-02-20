@@ -55,7 +55,7 @@ export class ClientsCluster {
             this.clients[pubkey] = new NostrClient(pubkey, this.settings.publicKey, relays ? relays : [], (relays, to, message) => this.relayCluster.Send(relays, to, message))
         }
         const c = this.clients[pubkey]
-        console.log("getting client:", c.getId())
+        console.log("getting client:", c.getId(), "for", c.getPubDst())
         return c.Get()
     }
 
@@ -99,6 +99,9 @@ export class NostrClient {
 
     getId = () => {
         return this.clientId
+    }
+    getPubDst = () => {
+        return this.pubDestination
     }
 
     Get = async () => {
