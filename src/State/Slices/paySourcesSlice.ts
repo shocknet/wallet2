@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
-import { mergeArrayValues, mergeBasicRecords} from './dataMerge';
+import { mergeArrayValuesWithOrder, mergeBasicRecords} from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
@@ -49,11 +49,11 @@ const migrations: Record<number, MigrationFunction<any>> = {
     const order: string[] = [];
     const payToRecord = state.reduce((record: PaySourceRecord, source) => {
       if (!source.pasteField.startsWith("nprofile")) {
-        record[source.pasteField] = source;
+        record[source.pasteField] = { ...source, id: source.pasteField };
         order.push(source.pasteField)
       } else {
         const decoded = decodeNprofile(source.pasteField);
-        record[decoded.pubkey] = source
+        record[decoded.pubkey] = { ...source, pubSource: true, id: decoded.pubkey };
         order.push(decoded.pubkey);
       }
       return record;
@@ -74,7 +74,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   const migratedLocal = applyMigrations(local.state, local.version, migrations) as PaySourceState;
   const merged: PaySourceState = {
     sources: mergeBasicRecords(migratedLocal.sources, migratedRemote.sources),
-    order: mergeArrayValues(migratedLocal.order, migratedRemote.order, v => v)
+    order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, v => v)
   }
   
   return JSON.stringify({
@@ -107,14 +107,14 @@ const paySourcesSlice = createSlice({
   name: 'paySources',
   initialState,
   reducers: {
-    addPaySources: (state: PaySourceState, action: PayloadAction<{source: PayTo, key: string}>) => {
-      state.sources[action.payload.key] = action.payload.source;
-      state.order.push(action.payload.key);
+    addPaySources: (state: PaySourceState, action: PayloadAction<PayTo>) => {
+      state.sources[action.payload.id] = action.payload;
+      state.order.push(action.payload.id);
       update(state);
       return state;
     },
-    editPaySources: (state: PaySourceState, action: PayloadAction<{source: PayTo, key: string}>) => {
-      state.sources[action.payload.key] = action.payload.source
+    editPaySources: (state: PaySourceState, action: PayloadAction<PayTo>) => {
+      state.sources[action.payload.id] = action.payload
       update(state);
       return state;
     },

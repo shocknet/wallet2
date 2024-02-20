@@ -23,13 +23,13 @@ import { createLnurlInvoice, createNostrInvoice, handlePayInvoice } from '../../
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
-import { v4 as uuidv4 } from "uuid";
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
-  const item = newArr.splice(oldIndex, 1)[0];
-  newArr.splice(newIndex, 0, item);
+  const t = newArr[oldIndex]
+  newArr[oldIndex]= newArr[newIndex]
+  newArr[newIndex]= t
   return newArr;
 }
 
@@ -201,33 +201,29 @@ export const Sources = () => {
       }
 
 
-      const resultLnurl = new URL(data.relays[0]);
+      const resultLnurl = new URL(data.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
-      const uuid = uuidv4()
+
       const addedPaySource = {
-        id: uuid,
+        id: data.pubkey,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
+        pubSource: true
       } as PayTo;
-      dispatch(addPaySources({
-        source: addedPaySource,
-        key: data.pubkey
-      }))
+      dispatch(addPaySources(addedPaySource))
       const addedSpendSource = {
-        id: uuid,
+        id: data.pubkey,
         label: resultLnurl.hostname,
         option: optional,
         icon: sndleveldomain,
         balance: "0",
         pasteField: sourcePasteField,
+        pubSource: true
       } as SpendFrom;
-      dispatch(addSpendSources({
-        source: addedSpendSource,
-        key: data.pubkey
-      }));
+      dispatch(addSpendSources(addedSpendSource));
     } else {
       // not nprofile, now checking for other cases
       
@@ -247,43 +243,34 @@ export const Sources = () => {
       if (parsed.type === InputClassification.LNURL && parsed.lnurlEndpoint && parsed.max !== undefined) {
         if (parsed.lnurlType === "payRequest") {
           const addedSource = {
-            id: uuidv4(),
+            id: parsed.data,
             option: optional,
             icon: parsed.domainName,
             label: parsed.hostName,
             pasteField: parsed.data,
           } as PayTo;
-          dispatch(addPaySources({
-            source: addedSource,
-            key: parsed.data
-          }));
+          dispatch(addPaySources(addedSource));
         } else {
           // lnurl-withdraw
           const addedSource = {
-            id: uuidv4(),
+            id: parsed.data,
             label: parsed.hostName,
             option: optional,
             icon: parsed.domainName,
             balance: parsed.max.toString(),
             pasteField: parsed.data,
           } as SpendFrom;
-          dispatch(addSpendSources({
-            source: addedSource,
-            key: parsed.data
-          }));
+          dispatch(addSpendSources(addedSource));
         }
       } else if (parsed.type === InputClassification.LN_ADDRESS) {
         const addedSource = {
-          id: uuidv4(),
+          id: parsed.data,
           option: optional,
           icon: parsed.domainName,
           label: parsed.data,
           pasteField: parsed.data,
         } as PayTo;
-        dispatch(addPaySources({
-          source: addedSource,
-          key: parsed.data
-        }));
+        dispatch(addPaySources(addedSource));
       } else {
         openNotification("top", "Error", "Input not recognized");
         setProcessingSource(false);
@@ -308,10 +295,7 @@ export const Sources = () => {
       option: optional,
       label: sourceLabel,
     };
-    dispatch(editPaySources({
-      source: paySourceToEdit,
-      key: editPSourceId
-    }))
+    dispatch(editPaySources(paySourceToEdit))
     resetValue();
     toggle();
     
@@ -327,10 +311,7 @@ export const Sources = () => {
       label: sourceLabel
     };
 
-    dispatch(editSpendSources({
-      source: spendSourceToEdit,
-      key: editSSourceId
-    }))
+    dispatch(editSpendSources(spendSourceToEdit))
     resetValue();
     toggle();
   };

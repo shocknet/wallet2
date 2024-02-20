@@ -23,3 +23,10 @@ export const mergeArrayValues = <T>(local: T[], remote: T[], getId: (v: T) => st
     remote.forEach(r => record[getId(r)] = r)
     return Object.values(record)
 }
+
+export const mergeArrayValuesWithOrder = <T>(local: T[], remote: T[], getId: (v: T) => string): T[] => {
+    const map = new Map<string, T>();
+    remote.forEach(r => map.set(getId(r), r));
+    local.forEach(l => map.set(getId(l), l));
+    return Array.from(map.values());
+}

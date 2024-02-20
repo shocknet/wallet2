@@ -131,7 +131,8 @@ export interface SpendFrom {
   option: string;
   maxWithdrawable?: string; // Max sats payable to out of pub invoice
   disabled?: string // the error message
-  disconnected?: boolean
+  disconnected?: boolean;
+  pubSource?: boolean
 }
 
 export interface PayTo {
@@ -142,6 +143,7 @@ export interface PayTo {
   icon: string;
   disconnected?: boolean
   vanityName?: string;
+  pubSource?: boolean;
 }
 
 export interface FiatCurrency {

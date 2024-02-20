@@ -28,7 +28,7 @@ export const Background = () => {
 	//reducer
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
-	const nostrSource = useSelector((state) => Object.values(state.spendSource.sources).filter((e) => e.pasteField.includes("nprofile")));
+	const nostrSource = useSelector((state) => Object.values(state.spendSource.sources).filter((e) => e.pubSource));
 	const paySource = useSelector((state) => state.paySource)
 	const cursor = useSelector(({ history }) => history.cursor) || {}
 	const latestOp = useSelector(({ history }) => history.latestOperation) || {}
@@ -78,9 +78,9 @@ export const Background = () => {
 	}, [nostrSource, dispatch])
 
 	useEffect(() => {
-		const nostrSpends = Object.values(spendSource.sources).filter((e) => e.pasteField.includes("nprofile"));
-		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pasteField.includes("nprofile"));
-		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pasteField.includes("nprofile"));
+		const nostrSpends = Object.values(spendSource.sources).filter((e) => e.pubSource);
+		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pubSource);
+		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pubSource);
 
 		if ((nostrSpends.length !== 0 && nostrSpends[0].balance !== "0") || (otherPaySources.length > 0 || otherSpendSources.length > 0)) {
 			if (localStorage.getItem("isBackUp") == "1") {
@@ -98,19 +98,16 @@ export const Background = () => {
 		}
 	}, [paySource, spendSource, dispatch, router])
 
-	const getSourceInfo = async (source: SpendFrom, sourceKey: string, client: NostrClient) => {
+	const getSourceInfo = async (source: SpendFrom, client: NostrClient) => {
 		const res = await client.GetUserInfo()
 		if (res.status === 'ERROR') {
 			console.log(res.reason)
 			return
 		}
 		dispatch(editSpendSources({
-			source: {
-				...source,
-				balance: `${res.balance}`,
-				maxWithdrawable: `${res.max_withdrawable}`
-			},
-			key: sourceKey
+			...source,
+			balance: `${res.balance}`,
+			maxWithdrawable: `${res.max_withdrawable}`
 		}))
 	}
 	const fetchSourceHistory = async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
@@ -155,7 +152,7 @@ export const Background = () => {
 		nostrSource.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
 			const client = await getNostrClient({ pubkey, relays })
-			await getSourceInfo(s, pubkey, client)
+			await getSourceInfo(s, client)
 			await fetchSourceHistory(s, client, pubkey)
 		})
 	}, [latestOp, initialFetch])
@@ -173,7 +170,7 @@ export const Background = () => {
 					const lnurlEndpoint = decodeLnurl(source.pasteField);
 					const response = await axios.get(lnurlEndpoint);
 					source.balance = Math.round(response.data.maxWithdrawable / 1000).toString();
-					dispatch(editSpendSources({ source, key: source.pasteField }));
+					dispatch(editSpendSources(source));
 				} catch (err) {
 					if (isAxiosError(err) && err.response) {
 						dispatch(addNotification({
@@ -185,7 +182,7 @@ export const Background = () => {
 						}))
 						// update the erroring source
 						source.disabled = err.response.data.reason;
-						dispatch(editSpendSources({ source, key: source.pasteField }));
+						dispatch(editSpendSources(source));
 					} else if (err instanceof Error) {
 						openNotification("top", "Error", err.message);
 					} else {

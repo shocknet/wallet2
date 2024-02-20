@@ -11,7 +11,7 @@ import { bech32 } from 'bech32';
 
 export type CustomProfilePointer = {
   pubkey: string
-  relays: string[]
+  relays?: string[]
 	bridge?: string[] // one bridge
 }
 
