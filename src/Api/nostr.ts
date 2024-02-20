@@ -33,11 +33,13 @@ export class ClientsCluster {
     clients: Record<string, NostrClient> = {}
     GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
         const { pubkey, relays } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
-        const c = this.clients[pubkey]
+
         if (!this.clients[pubkey]) {
             this.clients[pubkey] = new NostrClient(pubkey, relays ? relays : [])
         }
-        return this.clients[pubkey].Get()
+        const c = this.clients[pubkey]
+        console.log("getting client:", c.getId())
+        return c.Get()
     }
 
     GetAllNostrClients = () => {
@@ -82,6 +84,10 @@ export class NostrClient {
                     console.log("cb not found for", res)
                 }
             }, () => { this.disconnectCalls("relay disconnected") })
+    }
+
+    getId = () => {
+        return this.clientId
     }
 
     Get = async () => {
