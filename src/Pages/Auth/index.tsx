@@ -329,7 +329,7 @@ export const Auth = () => {
           </div>}
           {retreiveAccessToken && <div>
             <p>no nip07 extion found, use Sanctum instead?</p>
-            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent(import.meta.env.VITE_APP_URL + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
+            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent("https://" + import.meta.env.VITE_APP_URL + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
           </div>}
         </div>
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
