@@ -40,7 +40,7 @@ export const Send = () => {
 
   //reducer
   const dispatch = useDispatch();
-  const spendSources = useSelector((state) => state.spendSource.filter(s => !s.disabled));
+  const spendSources = useSelector((state) => Object.values(state.spendSource.sources).filter(s => !s.disabled));
   const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const selectedChainFee = useSelector(({ prefs }) => prefs.selected);

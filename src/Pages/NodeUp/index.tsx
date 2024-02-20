@@ -46,7 +46,7 @@ export const NodeUp = () => {
 
 
   const addBootStrapSources = async () => {
-    if (paySources.length != 0 && spendSources.length != 0) {
+    if (Object.values(paySources.sources || {}).length !== 0 && Object.values(spendSources.sources || {}).length !== 0) {
       return;
     } else {
       const bootstrapBalance = "0";
@@ -56,25 +56,24 @@ export const NodeUp = () => {
         bridge: [DEFAULT_BRIDGE_URL]
       })
 
-      dispatch(addPaySources(
-        {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
-        }
-      ));
-      dispatch(addSpendSources(
-        {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
-          balance: bootstrapBalance,
-        }
-      ))
+
+      dispatch(addPaySources({
+        id: NOSTR_PUB_DESTINATION,
+        label: "Bootstrap Node",
+        pasteField: nprofile,
+        option: options.little,
+        icon: "0",
+        pubSource: true
+      }));
+      dispatch(addSpendSources({
+        id: NOSTR_PUB_DESTINATION,
+        label: "Bootstrap Node",
+        pasteField: nprofile,
+        option: options.little,
+        icon: "0",
+        balance: bootstrapBalance,
+        pubSource: true
+      }));
     }
   }
 

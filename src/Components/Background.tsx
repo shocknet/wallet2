@@ -28,7 +28,7 @@ export const Background = () => {
 	//reducer
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
-	const nostrSource = useSelector((state) => state.spendSource).filter((e) => e.pasteField.includes("nprofile"));
+	const nostrSource = useSelector((state) => Object.values(state.spendSource.sources).filter((e) => e.pubSource));
 	const paySource = useSelector((state) => state.paySource)
 	const cursor = useSelector(({ history }) => history.cursor) || {}
 	const latestOp = useSelector(({ history }) => history.latestOperation) || {}
@@ -78,9 +78,9 @@ export const Background = () => {
 	}, [nostrSource, dispatch])
 
 	useEffect(() => {
-		const nostrSpends = spendSource.filter((e) => e.pasteField.includes("nprofile"));
-		const otherPaySources = paySource.filter((e) => !e.pasteField.includes("nprofile"));
-		const otherSpendSources = spendSource.filter((e) => !e.pasteField.includes("nprofile"));
+		const nostrSpends = Object.values(spendSource.sources).filter((e) => e.pubSource);
+		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pubSource);
+		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pubSource);
 
 		if ((nostrSpends.length !== 0 && nostrSpends[0].balance !== "0") || (otherPaySources.length > 0 || otherSpendSources.length > 0)) {
 			if (localStorage.getItem("isBackUp") == "1") {
@@ -104,7 +104,11 @@ export const Background = () => {
 			console.log(res.reason)
 			return
 		}
-		dispatch(editSpendSources({ ...source, balance: `${res.balance}`, maxWithdrawable: `${res.max_withdrawable}` }));
+		dispatch(editSpendSources({
+			...source,
+			balance: `${res.balance}`,
+			maxWithdrawable: `${res.max_withdrawable}`
+		}))
 	}
 	const fetchSourceHistory = async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor)
@@ -159,9 +163,9 @@ export const Background = () => {
 
 	// reset spend for lnurl
 	useEffect(() => {
-		const sources = spendSource.map(s => ({ ...s }));
+		const sources = Object.values(spendSource.sources).map(s => ({ ...s }));
 		sources.filter(s => !s.disabled).forEach(async source => {
-			if (!source.pasteField.includes("nprofile")) {
+			if (!source.pasteField.startsWith("nprofile")) {
 				try {
 					const lnurlEndpoint = decodeLnurl(source.pasteField);
 					const response = await axios.get(lnurlEndpoint);
