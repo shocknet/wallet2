@@ -1,8 +1,8 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <resources>
-    <string name="app_name">SHOCKWALLET</string>
-    <string name="title_activity_main">SHOCKWALLET</string>
-    <string name="package_name">app.shockwallet.test</string>
-    <string name="custom_url_scheme">app.shockwallet.test</string>
-    <string name="app_url">test.shockwallet.app</string>
+  <string name="app_name">SHOCKWALLET</string>
+  <string name="title_activity_main">SHOCKWALLET</string>
+  <string name="package_name">app.shockwallet.test</string>
+  <string name="custom_url_scheme">app.shockwallet.test</string>
+  <string name="app_url">test.shockwallet.app</string>
 </resources>
