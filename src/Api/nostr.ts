@@ -22,136 +22,146 @@ export const getNip46PrivateKey = () => {
     return localStorage.getItem(NIP46_PRIVATE_KEY_STORAGE_KEY)
 }
 */
-
-export type Client = ReturnType<typeof NewNostrClient>
-type ClientState = {
-    latestResponseAtMillis: number;
-    latestHelthReqAtMillis: number;
-    clientCbs: [string, nostrCallback<any>][];
-    sendHelthRequest: () => void;
-}
-type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
-type ReadyClient = { type: 'client', client: Client, disconnectCalls: () => void, getClientState: () => ClientState }
-type StoredClient = PendingClient | ReadyClient
-const clients: Record<string, StoredClient> = {}
-
-/*
-type Nip46Sender = (req: Nip46Request) => Promise<Nip46Response>
-type PendingNip46Sender = { type: 'promise', queue: ((c: Nip46Sender) => void)[] }
-type ReadyNip46Sender = { type: 'sender', sender: Nip46Sender }
-type StoredNip46Sender = PendingNip46Sender | ReadyNip46Sender
-const nip46Senders: Record<string, StoredNip46Sender> = {}
-*/
-
-export const parseNprofile = (nprofile: string) => {
-    const { type, data } = nip19.decode(nprofile)
-    //console.log({ newNprofile: nip19.nprofileEncode({ pubkey: "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be", relays: ['wss://strfry.shock.network'] }) })
-    if (type !== "nprofile") {
-        throw new Error("invalid bech32 this is not a nprofile")
-    }
-    const dataString = JSON.stringify(data);
-    const dataBox = JSON.parse(dataString);
-
-    return dataBox as ProfilePointer;
-}
-
-export const getAllNostrClients = () => {
-    return Object.entries(clients).filter(([_, c]) => c.type === 'client').map(([pubkey, c]) => ({ pubkey, client: c as ReadyClient }))
-}
-
-export const disconnectNostrClientCalls = async (nProfile: { pubkey: string, relays?: string[] } | string) => {
-    const { pubkey } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
-    const c = clients[pubkey]
-    if (c.type !== 'client') {
-        return
-    }
-    c.disconnectCalls()
-}
-
-export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
-    const { pubkey, relays } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
-    const c = clients[pubkey]
-    if (c && c.type === 'client') {
-        return c.client
-    }
-    if (c && c.type === 'promise') {
-        return new Promise<Client>((res) => {
-            (clients[pubkey] as PendingClient).queue.push(res)
-        })
-    }
-    if (!relays) {
-        throw new Error("cannot create client if no relays are provided")
-    }
-    clients[pubkey] = { type: 'promise', queue: [] }
-    const { readyClient, disconnectCalls, getClientState } = await createNostrClient(pubkey, relays)
-    const queue = (clients[pubkey] as PendingClient).queue
-    clients[pubkey] = { type: 'client', client: readyClient, disconnectCalls, getClientState }
-    queue.forEach(f => f(readyClient))
-    return readyClient
-}
-
 export type nostrCallback<T> = { startedAtMillis: number, type: 'single' | 'stream', f: (res: T) => void }
-const createNostrClient = async (pubDestination: string, relays: string[]) => {
-    const clientCbs: Record<string, nostrCallback<any>> = {}
-    let latestResponseAtMillis = 0
-    let latestHelthReqAtMillis = 0
-    const disconnectCalls = (reason?: string) => {
-        for (const key in clientCbs) {
-            const element = clientCbs[key]
-            element.f({ status: "ERROR", reason: reason ? reason : "nostr connection timeout" })
-            delete clientCbs[key]
+export type Client = ReturnType<typeof NewNostrClient>
+type PendingClient = { type: 'promise', queue: ((c: Client) => void)[] }
+type ReadyClient = { type: 'client', client: Client }
+type StoredClient = PendingClient | ReadyClient
+
+
+export class ClientsCluster {
+    clients: Record<string, NostrClient> = {}
+    GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
+        const { pubkey, relays } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
+        const c = this.clients[pubkey]
+        if (!this.clients[pubkey]) {
+            this.clients[pubkey] = new NostrClient(pubkey, relays ? relays : [])
         }
-        latestResponseAtMillis = 0
-        latestHelthReqAtMillis = 0
+        return this.clients[pubkey].Get()
     }
 
-    let connected = false
-    const privateKey = getNostrPrivateKey()
-    if (!privateKey) {
-        throw new Error("client not initialized correctly")
+    GetAllNostrClients = () => {
+        return Object.entries(this.clients).filter(([_, c]) => c.ready()).map(([pubkey, c]) => ({ pubkey, wrapper: c }))
     }
-    const publicKey = getPublicKey(privateKey)
-    const handler = await new Promise<NostrHandler>((res) => {
+}
+
+export class NostrClient {
+    clientId = makeId(16)
+    client: StoredClient = { type: 'promise', queue: [] }
+    handler?: NostrHandler
+    clientCbs: Record<string, nostrCallback<any>> = {}
+    pubDestination: string
+    clientPubKey: string
+    latestResponseAtMillis = 0
+    latestHelthReqAtMillis = 0
+
+    constructor(pubDestination: string, relays: string[]) {
+        this.pubDestination = pubDestination
+        const privateKey = getNostrPrivateKey()
+        if (!privateKey) {
+            throw new Error("client not initialized correctly")
+        }
+        this.clientPubKey = getPublicKey(privateKey)
         const h = new NostrHandler({
             privateKey,
-            publicKey,
+            publicKey: this.clientPubKey,
             relays
         },
-            () => { if (!connected) { connected = true; res(h) } },
+            () => { this.onConnect(h) },
             e => {
                 const res = JSON.parse(e.content) as { requestId: string }
-                if (clientCbs[res.requestId]) {
-                    const cb = clientCbs[res.requestId]
+                if (this.clientCbs[res.requestId]) {
+                    const cb = this.clientCbs[res.requestId]
 
                     cb.f(res)
                     if (cb.type === 'single') {
-                        delete clientCbs[res.requestId]
+                        delete this.clientCbs[res.requestId]
+                        console.log(this.getSingleSubs(), "single subs left")
                     }
                 } else {
                     console.log("cb not found for", res)
                 }
-            }, () => { disconnectCalls("relay disconnected") })
-    })
-    const clientSend = (to: string, message: NostrRequest): Promise<any> => {
+            }, () => { this.disconnectCalls("relay disconnected") })
+    }
+
+    Get = async () => {
+        if (this.client.type === 'client') {
+            return this.client.client
+        }
+        return new Promise<Client>((res) => {
+            (this.client as PendingClient).queue.push(res)
+        })
+    }
+
+    ready = () => {
+        return this.client.type === 'client'
+    }
+
+
+
+    onConnect = (handler: NostrHandler) => {
+        if (this.client.type === 'promise') {
+            const client = this.wrapClientAroundHandler(handler)
+            this.client.queue.forEach(f => f(client))
+        }
+    }
+
+    wrapClientAroundHandler = (handler: NostrHandler) => {
+        this.handler = handler
+        const readyClient = NewNostrClient({
+            retrieveNostrUserAuth: async () => { return this.clientPubKey },
+            pubDestination: this.pubDestination,
+        }, this.clientSend, this.clientSub)
+        this.client = { type: 'client', client: readyClient }
+        return readyClient
+    }
+
+    getClientState = () => {
+        return {
+            latestResponseAtMillis: this.latestResponseAtMillis,
+            latestHelthReqAtMillis: this.latestHelthReqAtMillis,
+        }
+    }
+
+    sendHelthRequest = () => {
+        if (this.client.type !== 'client') {
+            throw new Error("client not ready")
+        }
+        this.latestHelthReqAtMillis = Date.now()
+        this.client.client.UserHealth()
+    }
+
+    getSingleSubs = () => {
+        return Object.entries(this.clientCbs).filter(([_, cb]) => cb.type === 'single')
+    }
+
+    getHandler = () => {
+        if (!this.handler) {
+            throw new Error("handler not initialized")
+        }
+        return this.handler
+    }
+
+    clientSend = (to: string, message: NostrRequest): Promise<any> => {
         if (!message.requestId) {
             message.requestId = makeId(16)
         }
         const reqId = message.requestId
-        if (clientCbs[reqId]) {
+        if (this.clientCbs[reqId]) {
             throw new Error("request was already sent")
         }
-        handler.Send(to, JSON.stringify(message))
+        this.getHandler().Send(to, JSON.stringify(message))
 
         console.log("subbing  to single send", reqId)
         return new Promise(res => {
-            clientCbs[reqId] = {
+            this.clientCbs[reqId] = {
                 startedAtMillis: Date.now(),
                 type: 'single',
-                f: (response: any) => { latestResponseAtMillis = Date.now(); res(response) },
+                f: (response: any) => { this.latestResponseAtMillis = Date.now(); res(response) },
             }
         })
     }
-    const clientSub = (to: string, message: NostrRequest, cb: (res: any) => void): void => {
+    clientSub = (to: string, message: NostrRequest, cb: (res: any) => void): void => {
         if (!message.requestId) {
             message.requestId = message.rpcName
         }
@@ -159,34 +169,54 @@ const createNostrClient = async (pubDestination: string, relays: string[]) => {
         if (!reqId) {
             throw new Error("invalid sub")
         }
-        if (clientCbs[reqId]) {
-            clientCbs[reqId] = {
+        if (this.clientCbs[reqId]) {
+            this.clientCbs[reqId] = {
                 startedAtMillis: Date.now(),
                 type: 'stream',
-                f: (response: any) => { latestResponseAtMillis = Date.now(); cb(response) },
+                f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) },
             }
             console.log("sub for", reqId, "was already registered, overriding")
             return
         }
-        handler.Send(to, JSON.stringify(message))
+        this.getHandler().Send(to, JSON.stringify(message))
         console.log("subbing  to stream", reqId)
-        clientCbs[reqId] = {
+        this.clientCbs[reqId] = {
             startedAtMillis: Date.now(),
             type: 'stream',
-            f: (response: any) => { latestResponseAtMillis = Date.now(); cb(response) }
+            f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) }
         }
     }
-    const readyClient = NewNostrClient({
-        retrieveNostrUserAuth: async () => { return publicKey },
-        pubDestination,
-    }, clientSend, clientSub)
-    const getClientState = () => {
-        return {
-            latestResponseAtMillis,
-            latestHelthReqAtMillis,
-            clientCbs: Object.entries(clientCbs),
-            sendHelthRequest: () => { latestHelthReqAtMillis = Date.now(); readyClient.UserHealth() },
+
+    disconnectCalls = (reason?: string) => {
+        for (const key in this.clientCbs) {
+            const element = this.clientCbs[key]
+            element.f({ status: "ERROR", reason: reason ? reason : "nostr connection timeout" })
+            delete this.clientCbs[key]
         }
+        this.latestResponseAtMillis = 0
+        this.latestHelthReqAtMillis = 0
     }
-    return { readyClient, disconnectCalls, getClientState }
+}
+
+
+
+const cluster: ClientsCluster = new ClientsCluster()
+
+export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
+    return cluster.GetNostrClient(nProfile)
+}
+
+export const getAllNostrClients = () => {
+    return cluster.GetAllNostrClients()
+}
+
+export const parseNprofile = (nprofile: string) => {
+    const { type, data } = nip19.decode(nprofile)
+    if (type !== "nprofile") {
+        throw new Error("invalid bech32 this is not a nprofile")
+    }
+    const dataString = JSON.stringify(data);
+    const dataBox = JSON.parse(dataString);
+
+    return dataBox as ProfilePointer;
 }

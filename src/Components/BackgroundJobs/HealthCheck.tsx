@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "../../State/store"
 import { openNotification } from "../../constants"
-import { disconnectNostrClientCalls, getAllNostrClients, getNostrClient, nostrCallback, parseNprofile } from "../../Api/nostr"
+import { getAllNostrClients, getNostrClient, nostrCallback, parseNprofile } from "../../Api/nostr"
 import { editPaySources } from "../../State/Slices/paySourcesSlice"
 import { editSpendSources } from "../../State/Slices/spendSourcesSlice"
 const SubsCheckIntervalSeconds = 60
@@ -20,14 +20,12 @@ export const HealthCheck = () => {
     }, [])
 
     const checkHealth = () => {
-        getAllNostrClients().forEach(({ pubkey, client }) => {
-            const state = client.getClientState()
+        getAllNostrClients().forEach(({ pubkey, wrapper }) => {
+            const state = wrapper.getClientState()
             let oldestSingleSub: nostrCallback<any> | undefined = undefined
-            state.clientCbs.forEach(([_, cb]) => {
-                if (cb.type === 'single') {
-                    if (!oldestSingleSub || oldestSingleSub.startedAtMillis > cb.startedAtMillis) {
-                        oldestSingleSub = cb
-                    }
+            wrapper.getSingleSubs().forEach(([_, cb]) => {
+                if (!oldestSingleSub || oldestSingleSub.startedAtMillis > cb.startedAtMillis) {
+                    oldestSingleSub = cb
                 }
             })
             if (!oldestSingleSub) {
@@ -47,7 +45,7 @@ export const HealthCheck = () => {
             }
             if (state.latestHelthReqAtMillis <= state.latestResponseAtMillis) {
                 console.log("no health req was sent since last response, sending health req")
-                state.sendHelthRequest()
+                wrapper.sendHelthRequest()
                 return
             }
             if (now - state.latestHelthReqAtMillis < 10 * 1000) {
@@ -55,7 +53,7 @@ export const HealthCheck = () => {
                 return
             }
             console.log("no response for more than 10 seconds, disconnecting")
-            client.disconnectCalls()
+            wrapper.disconnectCalls()
             openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
         })
     }
