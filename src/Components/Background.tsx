@@ -27,6 +27,7 @@ export const Background = () => {
 	const router = useIonRouter();
 	//reducer
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
+	const operationGroups = useSelector(({ history }) => history.operations) || {}
 	const spendSource = useSelector((state) => state.spendSource)
 	const nostrSource = useSelector((state) => state.spendSource).filter((e) => e.pasteField.includes("nprofile"));
 	const paySource = useSelector((state) => state.paySource)
@@ -41,24 +42,6 @@ export const Background = () => {
 	useEffect(() => {
 		isShownRef.current = isShown;
 	}, [isShown])
-
-
-	window.onbeforeunload = function () { return null; };
-
-	useEffect(() => {
-		const handleBeforeUnload = () => {
-			// Call your function here
-			localStorage.setItem("lastOnline", Date.now().toString())
-			localStorage.setItem("getHistory", "false");
-			return false;
-		};
-
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
-		return () => {
-			return window.removeEventListener('beforeunload', handleBeforeUnload);
-		}
-	}, []);
 
 	useEffect(() => {
 		nostrSource.forEach(source => {
@@ -121,11 +104,20 @@ export const Background = () => {
 			fetchSourceHistory(source, client, pubkey, totalHistory.cursor, totalHistory.operations)
 			return
 		}
+		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
+		if (populatedEntries.length === 0) {
+		  console.log("No operations to display");
+		  return;
+		}
 
-		const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
-		const payments = totalData.filter((e) => e.inbound && e.paidAtUnix * 1000 > lastTimestamp)
+		const collapsed: Types.UserOperation[] = []
+		populatedEntries.forEach(([, operations]) => {
+		  if (operations) collapsed.push(...operations.map(o => o))
+		})
+		const setCollapsed = new Set(collapsed.map(item => JSON.stringify(item)));
+		const payments = [...totalData.filter(e => e.inbound && !setCollapsed.has(JSON.stringify(e)))];
+
 		if (payments.length > 0) {
-			if (localStorage.getItem("getHistory") === "true") return;
 			dispatch(addNotification({
 				header: 'Payments',
 				icon: '⚡',
@@ -133,7 +125,6 @@ export const Background = () => {
 				date: Date.now(),
 				link: '/home',
 			}))
-			localStorage.setItem("getHistory", "true");
 		}
 		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
 	}
