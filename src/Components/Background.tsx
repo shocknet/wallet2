@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Plugins } from '@capacitor/core';
+
 import { useDispatch, useSelector } from "../State/store";
 import { setLatestOperation, setSourceHistory } from "../State/Slices/HistorySlice";
 import { addAsset } from '../State/Slices/generatedAssets';
@@ -23,6 +25,7 @@ import { SpendFrom } from "../globalTypes";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
 
 export const Background = () => {
+	const { Network } = Plugins;
 
 	const router = useIonRouter();
 	//reducer
@@ -42,6 +45,20 @@ export const Background = () => {
 	useEffect(() => {
 		isShownRef.current = isShown;
 	}, [isShown])
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			localStorage.setItem("userStatus", "offline");
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+
+		return () => {
+			return window.removeEventListener('beforeunload', handleBeforeUnload);
+		}
+
+	}, []);
+	
 
 	useEffect(() => {
 		nostrSource.forEach(source => {
@@ -117,7 +134,7 @@ export const Background = () => {
 		const setCollapsed = new Set(collapsed.map(item => JSON.stringify(item)));
 		const payments = [...totalData.filter(e => e.inbound && !setCollapsed.has(JSON.stringify(e)))];
 
-		if (payments.length > 0) {
+		if (payments.length > 0 && localStorage.getItem("userStatus") === "offline") {
 			dispatch(addNotification({
 				header: 'Payments',
 				icon: '⚡',
@@ -125,6 +142,7 @@ export const Background = () => {
 				date: Date.now(),
 				link: '/home',
 			}))
+			localStorage.setItem("userStatus", "online");
 		}
 		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
 	}
