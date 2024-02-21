@@ -85,18 +85,21 @@ export class NostrClient {
 
     onEvent = (event: NostrEvent) => {
         const res = JSON.parse(event.content) as { requestId: string }
+        if (event.pub !== this.pubDestination) {
+            return false
+        }
         if (this.clientCbs[res.requestId]) {
             const cb = this.clientCbs[res.requestId]
             cb.f(res)
             if (cb.type === 'single') {
-                delete this.clientCbs[res.requestId]
-                console.log(this.getSingleSubs(), "single subs left")
+                const deleteOk = (delete this.clientCbs[res.requestId])
+                console.log(this.getSingleSubs(), "single subs left", deleteOk)
             }
             return true
         }
         return false
     }
-
+    // changes
     getId = () => {
         return this.clientId
     }
