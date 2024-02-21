@@ -1,14 +1,11 @@
 import { useEffect } from "react"
-import { useDispatch, useSelector } from "../../State/store"
 import { openNotification } from "../../constants"
-import { getAllNostrClients, getNostrClient, nostrCallback, parseNprofile } from "../../Api/nostr"
-import { editPaySources } from "../../State/Slices/paySourcesSlice"
-import { editSpendSources } from "../../State/Slices/spendSourcesSlice"
+import { getAllNostrClients, nostrCallback } from "../../Api/nostr"
 const SubsCheckIntervalSeconds = 60
 export const HealthCheck = () => {
     // const paySource = useSelector(({ paySource }) => paySource)
     // const spendSource = useSelector(({ spendSource }) => spendSource)
-    const dispatch = useDispatch();
+    //const dispatch = useDispatch();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -20,7 +17,7 @@ export const HealthCheck = () => {
     }, [])
 
     const checkHealth = () => {
-        getAllNostrClients().forEach(({ pubkey, wrapper }) => {
+        getAllNostrClients().forEach((wrapper) => {
             const state = wrapper.getClientState()
             let oldestSingleSub: nostrCallback<any> | undefined = undefined
             wrapper.getSingleSubs().forEach(([_, cb]) => {
@@ -54,7 +51,7 @@ export const HealthCheck = () => {
             }
             console.log("no response for more than 10 seconds, disconnecting")
             wrapper.disconnectCalls()
-            openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
+            openNotification("top", "Error", "cannot connect to source: " + wrapper.getPubDst().slice(0, 10))
         })
     }
     /*

@@ -16,9 +16,12 @@ export const getNostrPrivateKey = () => {
 export type nostrCallback<T> = { startedAtMillis: number, type: 'single' | 'stream', f: (res: T) => void }
 export type Client = ReturnType<typeof NewNostrClient>
 
+type NostrClientQueue = { type: "queue", queue: ((client: NostrClient) => void)[] }
+type NostrReadyClient = { type: "client", client: NostrClient }
+type NostrClientHolder = NostrReadyClient | NostrClientQueue
 
 export class ClientsCluster {
-    clients: Record<string, NostrClient> = {}
+    clients: Record<string, NostrClientHolder> = {}
     relayCluster: NostrRelayCluster
     settings: NostrSettings
     constructor() {
@@ -35,7 +38,7 @@ export class ClientsCluster {
         const res = JSON.parse(event.content) as { requestId: string }
         for (const key in this.clients) {
             const c = this.clients[key]
-            if (c.onEvent(event)) {
+            if (c.type === 'client' && c.client.onEvent(event)) {
                 return
             }
         }
@@ -50,17 +53,36 @@ export class ClientsCluster {
 
     GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string): Promise<Client> => {
         const { pubkey, relays } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
-        if (!this.clients[pubkey]) {
-            await this.SyncClusterRelays(relays ? relays : [])
-            this.clients[pubkey] = new NostrClient(pubkey, this.settings.publicKey, relays ? relays : [], (relays, to, message) => this.relayCluster.Send(relays, to, message))
-        }
+        console.log("getting client for", pubkey)
         const c = this.clients[pubkey]
-        console.log("getting client:", c.getId(), "for", c.getPubDst())
-        return c.Get()
+        if (c && c.type === "client") {
+            const nostrClient = c.client
+            console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
+            return nostrClient.Get()
+        }
+        if (c && c.type === "queue") {
+            return new Promise(res => {
+                (this.clients[pubkey] as NostrClientQueue).queue.push((client) => {
+                    console.log("got client for", client.getPubDst(), ":", client.getId())
+                    res(client.Get())
+                })
+            })
+        }
+        if (!relays) {
+            throw new Error("cannot create client if no relays are provided")
+        }
+        this.clients[pubkey] = { type: "queue", queue: [] }
+        await this.SyncClusterRelays(relays ? relays : [])
+        const nostrClient = new NostrClient(pubkey, this.settings.publicKey, relays ? relays : [], (relays, to, message) => this.relayCluster.Send(relays, to, message))
+        const queue = (this.clients[pubkey] as NostrClientQueue).queue
+        this.clients[pubkey] = { type: "client", client: nostrClient }
+        queue.forEach(q => q(nostrClient))
+        console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
+        return nostrClient.Get()
     }
 
     GetAllNostrClients = () => {
-        return Object.entries(this.clients).map(([pubkey, c]) => ({ pubkey, wrapper: c }))
+        return Object.values(this.clients).filter(c => c.type === "client").map(c => (c as NostrReadyClient).client)
     }
 }
 
@@ -90,7 +112,7 @@ export class NostrClient {
             cb.f(res)
             if (cb.type === 'single') {
                 delete this.clientCbs[res.requestId]
-                console.log(this.getSingleSubs(), "single subs left")
+                console.log(this.getSingleSubs().length, "single subs left")
             }
             return true
         }
@@ -104,7 +126,7 @@ export class NostrClient {
         return this.pubDestination
     }
 
-    Get = async () => {
+    Get = () => {
         return this.client
     }
 
@@ -134,7 +156,7 @@ export class NostrClient {
         }
         this.send(this.relays, to, JSON.stringify(message))
 
-        console.log("subbing  to single send", reqId)
+        console.log("subbing  to single send", reqId, message.rpcName)
         return new Promise(res => {
             this.clientCbs[reqId] = {
                 startedAtMillis: Date.now(),
