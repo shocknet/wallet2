@@ -26,12 +26,13 @@ export default class RelayCluster {
     addRelays = (relayUrls: string[], connectedCallback: (connectedRelayUrl: string) => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: (disconnectedRelayUrl: string) => void) => {
         const relaysToAdd = relayUrls.filter(r => !this.relays[r])
         const alreadyConnected = relaysToAdd.length !== relayUrls.length
+        console.log("existing relays:", Object.keys(this.relays), "relay urls", relayUrls, "relays to add:", relaysToAdd)
         if (alreadyConnected) {
             connectedCallback(relayUrls.find(r => this.relays[r]) as string)
         }
         let batchConnected = false
         const onConnect = (relay: string) => {
-            if (!alreadyConnected) {
+            if (alreadyConnected) {
                 console.log("connected to:", relay, "not triggering callback, as another relay is already connected")
                 return
             }
