@@ -2,7 +2,7 @@
 <resources>
   <string name="app_name">SHOCKWALLET</string>
   <string name="title_activity_main">SHOCKWALLET</string>
-  <string name="package_name">app.shockwallet.test</string>
-  <string name="custom_url_scheme">app.shockwallet.test</string>
+  <string name="package_name">app.shockwallet</string>
+  <string name="custom_url_scheme">app.shockwallet</string>
   <string name="app_url">test.shockwallet.app</string>
 </resources>
