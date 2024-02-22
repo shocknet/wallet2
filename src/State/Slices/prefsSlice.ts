@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
+import { syncRedux } from '../store';
 type FeeOptions = "asap" | "avg" | "eco" | ""
 type FiatCurrencyUrl = {
   url: string
@@ -87,6 +88,16 @@ const prefsSlice = createSlice({
       update(state)
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return loadInitialState(
+        storageKey,
+        '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
+        migrations,
+        update
+      );
+    })
+  }
 });
 
 export const { setPrefs, setDebugMode } = prefsSlice.actions;

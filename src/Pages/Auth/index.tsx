@@ -15,6 +15,8 @@ import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { setSanctumAccessToken } from '../../Api/sanctum';
+import { useStore } from 'react-redux';
+import { syncRedux } from '../../State/store';
 
 const FILENAME = "shockw.dat";
 
@@ -33,6 +35,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 export const Auth = () => {
   //reducer
   const router = useIonRouter();
+  const store = useStore();
 
   const [email, setEmail] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
@@ -182,6 +185,7 @@ export const Auth = () => {
         localStorage.setItem(element, data[element])
       }
     }
+    store.dispatch(syncRedux());
     toggle();
     openNotification("top", "Success", "Backup is imported successfully.");
     setTimeout(() => {
@@ -228,6 +232,7 @@ export const Auth = () => {
         localStorage.setItem(element, data[element])
       }
     }
+    store.dispatch(syncRedux());
     openNotification("top", "Success", "Backup is imported successfully.");
     setTimeout(() => {
       router.push("/home")

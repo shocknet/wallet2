@@ -3,8 +3,9 @@ import { SpendFrom } from '../../globalTypes';
 import { mergeArrayValuesWithOrder, mergeBasicRecords } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 import { decodeNprofile } from '../../custom-nip19';
+import { syncRedux } from '../store';
 export const storageKey = "spendFrom"
-const VERSION = 1;
+export const VERSION = 1;
 
 type SpendSourceRecord = Record<string, SpendFrom>;
 
@@ -13,7 +14,7 @@ interface SpendSourceState {
   order: string[];
 }
 
-const migrations: Record<number, MigrationFunction<any>> = {
+export const migrations: Record<number, MigrationFunction<any>> = {
   // the array to record sources migration
   1: (data) => {
     console.log("running migration v1 of SpendFromSources")
@@ -88,6 +89,11 @@ const spendSourcesSlice = createSlice({
       return state;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
+    })
+  }
 });
 
 export const { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } = spendSourcesSlice.actions;

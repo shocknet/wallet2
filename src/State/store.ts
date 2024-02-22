@@ -1,6 +1,6 @@
 // src/state/store.ts
 
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, createAction } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic } from './Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
@@ -12,6 +12,11 @@ import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic } from './Slices/subscriptionsSlice';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
+import { MigrationFunction } from './Slices/migrations';
+import { migrations as paySourceMigrations, VERSION as paySourceVersion } from './Slices/paySourcesSlice';
+import { migrations as spendSourceMigrations, VERSION as spendSourceVersion } from './Slices/spendSourcesSlice';
+import { migrations as prefsMigrations, VERSION as prefsVersion } from './Slices/prefsSlice';
+export const syncRedux = createAction('SYNC_REDUX');
 
 const store = configureStore({
   reducer: {
@@ -36,6 +41,8 @@ export const useSelector = <TSelected = unknown>(
   equalityFn?: (left: TSelected, right: TSelected) => boolean
 ): TSelected => originalUseSelector<State, TSelected>(selector, equalityFn);
 
+
+
 export default store;
 
 export const findReducerMerger = (storageKey: string): ((l: string, r: string) => string) | null => {
@@ -56,5 +63,23 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
       return subscriptionsMergeLogic
     default:
       return null
+  }
+}
+
+// was going to be used for import file backup, can stay for future use maybe
+type MigrationsReturnType = {
+  migrations: Record<number, MigrationFunction<any>>,
+  version: number
+} | null
+export const findReducerMigrations = (storageKey: string): MigrationsReturnType => {
+  switch (storageKey) {
+    case paySourcesStorageKey:
+      return { migrations: paySourceMigrations, version: paySourceVersion }
+    case spendSourcesStorageKey:
+      return { migrations: spendSourceMigrations, version: spendSourceVersion }
+    case prefsStorageKey:
+      return { migrations: prefsMigrations, version: prefsVersion }
+    default:
+      return null;
   }
 }

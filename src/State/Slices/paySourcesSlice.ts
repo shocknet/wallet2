@@ -4,6 +4,7 @@ import { mergeArrayValuesWithOrder, mergeBasicRecords} from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
+import { syncRedux } from '../store';
 
 
 type PaySourceRecord = Record<string, PayTo>;
@@ -16,7 +17,7 @@ interface PaySourceState {
 
 export const storageKey = "payTo"
 export const VERSION = 2;
-const migrations: Record<number, MigrationFunction<any>> = {
+export const migrations: Record<number, MigrationFunction<any>> = {
   // the bridge url encoded in nprofile migration
   1: (data) => {
 		console.log("running migration v1 of payToSources");
@@ -132,6 +133,11 @@ const paySourcesSlice = createSlice({
       return state;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
+    })
+  }
 });
 
 export const { addPaySources, editPaySources, deletePaySources, setPaySources } = paySourcesSlice.actions;

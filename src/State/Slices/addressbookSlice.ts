@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { mergeBasicRecords } from './dataMerge';
+import { syncRedux } from '../store';
 export const storageKey = "addressbook"
 type AddressBook = {
   contacts: Record<string, string>
@@ -63,6 +64,11 @@ const addressbookSlice = createSlice({
       update(state)
     }
   },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return JSON.parse(localStorage.getItem(storageKey) ?? JSON.stringify(iState));
+    })
+  }
 });
 
 export const { addAddressbookLink, addIdentifierMemo } = addressbookSlice.actions;

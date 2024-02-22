@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { notification } from 'antd';
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { UseModal } from "../../Hooks/UseModal";
 import { useDispatch } from '../../State/store';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { isAxiosError } from "axios";
 import { useIonRouter } from "@ionic/react";
-import { Modal } from "../../Components/Modals/Modal";
 import {
   BarcodeScanner,
   BarcodeFormat,
@@ -46,7 +44,6 @@ export const Scan = () => {
 
   const [itemInput, setItemInput] = useState("");
 
-  const { isShown, toggle } = UseModal();
 
   const [api, contextHolder] = notification.useNotification();
   const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
@@ -58,7 +55,6 @@ export const Scan = () => {
     });
   };
 
-  const [destiniation, setDestination] = useState<Destination>();
 
   
   const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
@@ -128,7 +124,6 @@ export const Scan = () => {
     let parsed: Destination | null = null;
     try {
       parsed = await parseBitcoinInput(qrcode);
-      setDestination(parsed);
     } catch (err: any) {
       if (isAxiosError(err) && err.response) {
         openNotification("top", "Error", err.response.data.reason);
@@ -148,13 +143,13 @@ export const Scan = () => {
       parsed.type === InputClassification.LN_INVOICE
       ||
       parsed.type === InputClassification.LN_ADDRESS
+      ||
+      (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
     ) {
       history.push({
         pathname: "/send",
         state: parsed
       })
-    } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest") {
-      toggle();
     } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "withdrawRequest") {
       history.push({
         pathname: "/sources",
@@ -170,18 +165,7 @@ export const Scan = () => {
 
 
 
-  const askSaveContent = <React.Fragment>
-    <div className='Sources_modal_header'>{destiniation?.domainName}</div>
-    <div className='Sources_modal_discription'>Would you like to send sats to this Lnurl or add it as a source?</div>
-    <div className="Sources_modal_add_btn">
-      <button
-        onClick={() => history.push({ pathname: "/send", state: destiniation })}
-      >Send</button>
-      <button
-        onClick={() => history.push({ pathname: "/sources", state: destiniation })}
-      >Add as source</button>
-    </div>
-  </React.Fragment>;
+
 
   return (
     <div className="Scan scan-layout">
@@ -203,7 +187,6 @@ export const Scan = () => {
           value={itemInput}
         />
       </div>
-      <Modal isShown={isShown} hide={() => console.log("no drop back")} modalContent={askSaveContent} headerText={''} />
     </div>
   )
 }
