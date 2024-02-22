@@ -2,6 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { Destination } from '../../constants';
 import { mergeArrayValues, mergeRecords } from './dataMerge';
 import { Interval } from '../../Pages/Automation/newSubModal';
+import { syncRedux } from '../store';
 export type SubscriptionPrice = { type: 'cents' | 'sats', amt: number }
 export type Subscription = {
   subId: string
@@ -69,6 +70,11 @@ const subscriptionsSlice = createSlice({
       }
       update(state)
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return JSON.parse(localStorage.getItem(storageKey) ?? JSON.stringify(iState));
+    })
   }
 });
 

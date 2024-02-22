@@ -21,6 +21,7 @@ import { HealthCheck } from "./BackgroundJobs/HealthCheck";
 import { LnAddressCheck } from "./BackgroundJobs/LnAddressCheck";
 import { SpendFrom } from "../globalTypes";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
+import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
 
 export const Background = () => {
 
@@ -273,6 +274,7 @@ export const Background = () => {
 		<HealthCheck />
 		<NewSourceCheck />
 		<LnAddressCheck />
+		<NodeUpCheck />
 		<Modal isShown={isShown} hide={() => { toggle()}} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }
