@@ -23,7 +23,6 @@ import { SpendFrom } from "../globalTypes";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
 
 export const Background = () => {
-
 	const router = useIonRouter();
 	//reducer
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
