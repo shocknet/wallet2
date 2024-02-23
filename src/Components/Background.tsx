@@ -132,13 +132,15 @@ export const Background = () => {
 		  return;
 		}
 
-		const collapsed: Types.UserOperation[] = []
+		let collapsed: Types.UserOperation[] = []
 		populatedEntries.forEach(([, operations]) => {
-		  if (operations) collapsed.push(...operations.map(o => o))
+		  if (operations) collapsed = operations.concat(collapsed)
 		})
 
-		const setCollapsed = new Set(collapsed.map(item => JSON.stringify(item)));
-		const payments = [...totalData.filter(e => e.inbound && !setCollapsed.has(JSON.stringify(e)))];
+		const record:Record<string,boolean>={}
+		collapsed.forEach(c => record[c.operationId]=true)
+
+		const payments = [...totalData.filter(e => e.inbound && !record[e.operationId])];
 		
 		if (payments.length > 0 && localStorage.getItem("userStatus") === "offline") {
 			dispatch(addNotification({
