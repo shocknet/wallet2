@@ -27,6 +27,7 @@ export const Background = () => {
 
 	const router = useIonRouter();
 	//reducer
+	const operationGroups = useSelector(({ history }) => history.operations) || {}
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
 	const nostrSource = useSelector((state) => Object.values(state.spendSource.sources).filter((e) => e.pubSource));
@@ -49,8 +50,7 @@ export const Background = () => {
 	useEffect(() => {
 		const handleBeforeUnload = () => {
 			// Call your function here
-			localStorage.setItem("lastOnline", Date.now().toString())
-			localStorage.setItem("getHistory", "false");
+			localStorage.setItem("userStatus", "offline");
 			return false;
 		};
 
@@ -126,19 +126,29 @@ export const Background = () => {
 			fetchSourceHistory(source, client, pubkey, totalHistory.cursor, totalHistory.operations)
 			return
 		}
+		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
+		if (populatedEntries.length === 0) {
+		  console.log("No operations to display");
+		  return;
+		}
 
-		const lastTimestamp = parseInt(localStorage.getItem('lastOnline') ?? "0")
-		const payments = totalData.filter((e) => e.inbound && e.paidAtUnix * 1000 > lastTimestamp)
-		if (payments.length > 0) {
-			if (localStorage.getItem("getHistory") === "true") return;
+		const collapsed: Types.UserOperation[] = []
+		populatedEntries.forEach(([, operations]) => {
+		  if (operations) collapsed.push(...operations.map(o => o))
+		})
+
+		const setCollapsed = new Set(collapsed.map(item => JSON.stringify(item)));
+		const payments = [...totalData.filter(e => e.inbound && !setCollapsed.has(JSON.stringify(e)))];
+		
+		if (payments.length > 0 && localStorage.getItem("userStatus") === "offline") {
 			dispatch(addNotification({
 				header: 'Payments',
 				icon: '⚡',
-				desc: 'You received ' + payments.length + ' payments since ' + getFormattedTime(lastTimestamp),
+				desc: 'You received ' + payments.length + ' payments since you have been away.',
 				date: Date.now(),
 				link: '/home',
 			}))
-			localStorage.setItem("getHistory", "true");
+			localStorage.setItem("userStatus", "online");
 		}
 		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
 	}
