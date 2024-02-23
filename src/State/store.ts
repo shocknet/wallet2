@@ -10,6 +10,7 @@ import historySlice, { storageKey as historyStorageKey, mergeLogic as historyMer
 import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from './Slices/notificationSlice';
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
+import nodedUpSlice from './Slices/nodedUpSlice';
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic } from './Slices/subscriptionsSlice';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import { MigrationFunction } from './Slices/migrations';
@@ -29,8 +30,8 @@ const store = configureStore({
     notify: notificationSlice,
     subscriptions: subscriptionsSlice,
     generatedAssets,
-
-    loadingOverlay
+    loadingOverlay,
+    nodedUpSlice
   },
 });
 export type State = ReturnType<typeof store.getState>
