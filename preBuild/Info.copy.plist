@@ -22,7 +22,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>test.shockwallet.app</string>
+			<string>${appUrl}</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>shockwallet</string>

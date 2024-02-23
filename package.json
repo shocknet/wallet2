@@ -6,7 +6,7 @@
     "start": "vite",
     "start:22k": "vite --port 22000",
     "dev": "vite",
-    "build": "node preBuild.ts && ionic cap build",
+    "build": "node ./preBuild/preBuild.ts && ionic cap build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
