@@ -1,47 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
+interface ErrorBoundaryState {
+  hasError: boolean;
+  errorMSG: string;
 }
 
-const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
-  const [hasError, setHasError] = useState(false);
-  const [errorMSG, setErrorMSG] = useState('');
+class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
+    constructor(props: any) {
+        super(props);
 
-  useEffect(() => {
-    const errorHandler = (err: any): void => {
-      setErrorMSG(err.message);
-      setHasError(true);
-    };
+        this.state = { 
+          hasError: false,
+          errorMSG: ''
+        };
+    }
 
-    window.addEventListener('error', errorHandler);
+    componentDidCatch(error: any, errorInfo: any) {
+      console.log({ error, errorInfo });
+      this.setState({ hasError: true, errorMSG: error.toString() });
+    }
 
-    return () => {
-      window.removeEventListener('error', errorHandler);
-    };
-  }, []);
+    GoBack = () => {
+      this.setState({ hasError: false });
+      window.history.back();
+    }
 
-  const GoBack = () => {
-    setHasError(false);
-    window.history.back();
-  }
+    render() {
+      if (this.state.hasError) {
+          return (
+            <div className='error-page'>
+              <div>
+                  <button onClick={this.GoBack}>Go back</button>
+              </div>
+              <h2>Oops, something went wrong.</h2>
+              <br />
+              <p>{this.state.errorMSG}</p>
+              <button onClick={() => this.setState({ hasError: false })}>Send report</button>
+            </div>
+          )
+      }
 
-  if (hasError) {
-    // Render the error page here
-    return (
-      <div className='error-page'>
-          <div>
-              <button onClick={GoBack}>Go back</button>
-          </div>
-          <h2>Oops, something went wrong.</h2>
-          <br />
-          <p>{errorMSG}</p>
-          <button onClick={() => setHasError(false)}>Send report</button>
-      </div>
-    );
-  }
-
-  return children;
-};
+      return this.props.children;
+    }
+}
 
 export default ErrorBoundary;
