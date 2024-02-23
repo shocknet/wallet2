@@ -14,11 +14,11 @@ import { openNotification, stringToColor } from '../../constants';
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
 
 const trimText = (text: string) => {
-	return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
+  return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
 }
 
 const getTimeAgo = (secondsAgo: number) => {
-	return moment().subtract(secondsAgo, 'seconds').fromNow();
+  return moment().subtract(secondsAgo, 'seconds').fromNow();
 }
 
 
@@ -36,7 +36,9 @@ type ChannelsInfo = {
 }
 type AppsInfo = {
   totalBalance: number
-  appsUsers: { appName: string, users: number }[]
+  totalGainAmt: number
+  totalGainPct: number
+  appsUsers: { appName: string, users: number, invoices: number }[]
 }
 const saveCreds = (creds: Creds) => {
   localStorage.setItem("metrics-creds", JSON.stringify(creds))
@@ -49,16 +51,16 @@ const getCreds = () => {
   return JSON.parse(v) as Creds
 }
 
- export enum Period {
-	THIS_WEEK = "This Week",
-	THIS_MONTH = "This Month",
-	THIS_YEAR = "This Year",
-	ALL_TIME = "All Time",
+export enum Period {
+  THIS_WEEK = "This Week",
+  THIS_MONTH = "This Month",
+  THIS_YEAR = "This Year",
+  ALL_TIME = "All Time",
 }
 
 const periodOptionsArray = Object.values(Period);
 
-const  getUnixTimeRange = (period: Period) => {
+const getUnixTimeRange = (period: Period) => {
   const now = new Date();
   let from_unix: number, to_unix: number;
 
@@ -148,7 +150,7 @@ export const Metrics = () => {
     if (!fromCache) saveCreds({ url, metricsToken })
     const lndGraphs = processLnd(lnd)
     setLndGraphsData(lndGraphs)
-		console.log({lndGraphs})
+    console.log({ lndGraphs })
     const bestLocal = { n: "", v: 0 }
     const bestRemote = { n: "", v: 0 }
     const openChannels = lnd.nodes[0].open_channels.map(c => {
@@ -170,13 +172,17 @@ export const Metrics = () => {
       bestLocalChan: bestLocal.n,
       bestRemoteChan: bestRemote.n
     })
-    let totalAppsBalance = 0
+    let totalAppsFees = 0
+    let appsFeesInFrame = 0
     const appsUsers = apps.apps.map(app => {
-      totalAppsBalance += app.app.balance
-      return { appName: app.app.name, users: app.users.total }
+      totalAppsFees += app.total_fees
+      appsFeesInFrame += app.fees
+      return { appName: app.app.name, users: app.users.total, invoices: app.invoices }
     })
     setAppsInfo({
-      totalBalance: totalAppsBalance,
+      totalBalance: totalAppsFees,
+      totalGainAmt: appsFeesInFrame,
+      totalGainPct: (appsFeesInFrame / totalAppsFees) * 100,
       appsUsers
     })
     setReady(true)
@@ -222,13 +228,13 @@ export const Metrics = () => {
   return <div>
     <div className={styles["metrics-container"]}>
 
-      <div  className={classNames(styles["section"], styles["chart"])}>
+      <div className={classNames(styles["section"], styles["chart"])}>
         <Line
-					data={lndGraphsData.balanceEvents}
-					options={{
-						responsive: true,
-						maintainAspectRatio: true,
-						aspectRatio: 16/9,
+          data={lndGraphsData.balanceEvents}
+          options={{
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 16 / 9,
             elements: {
               line: {
                 borderWidth: 3,
@@ -237,59 +243,59 @@ export const Metrics = () => {
                 radius: 0,
               },
             },
-						plugins: {
-							legend: {
-								display: true,
-								position: "chartArea",
-								align: "start",
-								maxWidth: 12,
-								labels: {
-									boxWidth: 10,
-									boxHeight: 10
-								},
-                
-							},
-						},
-						scales: {
-							x: {
-								grid: {
-									color: "#383838"
-								},
-							},
-							y: {
-								grid: {
-									color: "#383838"
-								},
+            plugins: {
+              legend: {
+                display: true,
+                position: "chartArea",
+                align: "start",
+                maxWidth: 12,
+                labels: {
+                  boxWidth: 10,
+                  boxHeight: 10
+                },
+
+              },
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: "#383838"
+                },
+              },
+              y: {
+                grid: {
+                  color: "#383838"
+                },
                 ticks: {
                   display: false
                 }
-							}
-						},
-					}}
-				/>
+              }
+            },
+          }}
+        />
       </div>
-			<div className={styles["section"]}>
-				<div className={styles["between"]}>
-					<div className={styles["center"]}>
+      <div className={styles["section"]}>
+        <div className={styles["between"]}>
+          <div className={styles["center"]}>
             <Dropdown<Period>
               setState={(value) => setPeriod(value)}
               otherOptions={otherOptions}
               jsx={<div className={classNames(styles["center"], styles["box"])}>
-							<span style={{ color: "#a012c7" }}>{Icons.Automation()}</span>
-							<span>{period}</span>
-						</div>}
-						
+                <span style={{ color: "#a012c7" }}>{Icons.Automation()}</span>
+                <span>{period}</span>
+              </div>}
+
             />
-				{/* 		<div className={styles["arrows"]}>
+            {/* 		<div className={styles["arrows"]}>
 							Arrows
 						</div> */}
-					</div>
-					<div className={classNames(styles["box"], styles["border"])}>
-						Manage
-					</div>
+          </div>
+          <div className={classNames(styles["box"], styles["border"])}>
+            Manage
+          </div>
 
-				</div>
-			</div>
+        </div>
+      </div>
       <div className={styles["section"]}><span className={styles["separator"]}></span></div>
       <div className={styles["section"]}>
         <h3 className={styles["sub-title"]}>Events</h3>
@@ -306,72 +312,78 @@ export const Metrics = () => {
         <h3 className={styles["sub-title"]}>Highlights</h3>
         <div className={styles["cards-container"]}>
           <div className={classNames(styles["card"], styles["net"])}>
-            <div className={styles["top"]}>    
+            <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Net</h4>
               <span className={styles["number"]}> {
-								new Intl.NumberFormat('fr-FR').format(appsInfo.totalBalance)
-							}</span>
+                new Intl.NumberFormat('fr-FR').format(appsInfo.totalBalance)
+              }</span>
+              <span className={styles["number"]}> {
+                new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainPct)
+              }%</span>
+              <span className={styles["number"]}> {
+                new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainAmt)
+              }</span>
             </div>
           </div>
-					<div className={classNames(styles["card"], styles["channels"])}>
-						<div className={styles["top"]}>
-							<h4 className={styles["card-label"]}>Channels</h4>
-						</div>
-						<div className={classNames(styles["bot"], styles["channels-grid"])}>
-							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.onlineChannels} online</span></div>
-							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.pendingChannels} pending</span></div>
-							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.offlineChannels} offline</span></div>
-							<div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.closingChannels} closing</span></div>
-						</div>
-					</div>
-					<div className={classNames(styles["card"], styles["top-channels"])}>
-						<div className={styles["top"]}>
-							<h4 className={styles["card-label"]}>Top Channels</h4>
-						</div>
-						<div className={classNames(styles["bot"], styles["top-channels"])}>
-							<div className={styles["row"]}>
-								<span className={styles["label"]}>In:&nbsp;</span>
-								<span>{trimText(channelsInfo.bestLocalChan)}</span>
-							</div>
-							<div className={styles["row"]}>
-								<span className={styles["label"]}>Out:&nbsp;</span>
-								<span> {trimText(channelsInfo.bestRemoteChan)}</span>
-							</div>
-						</div>
-					</div>
-					<div className={classNames(styles["card"], styles["top-channels"], styles["routing"])}>
-						<div className={styles["top"]}>
-							<h4 className={styles["card-label"]}>Routing</h4>
-						</div>
-						<div className={classNames(styles["bot"], styles["top-channels"])}>
-							<div className={styles["row"]}>
-								{lndGraphsData.forwardedEvents} forwards
-							</div>
-							<div className={styles["row"]}>
-								{lndGraphsData.forwardRevenue} sats
-							</div>
-						</div>
-					</div>
-					{
-						appsInfo.appsUsers.map(app => (
-							<div key={app.appName}
+          <div className={classNames(styles["card"], styles["channels"])}>
+            <div className={styles["top"]}>
+              <h4 className={styles["card-label"]}>Channels</h4>
+            </div>
+            <div className={classNames(styles["bot"], styles["channels-grid"])}>
+              <div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.onlineChannels} online</span></div>
+              <div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.pendingChannels} pending</span></div>
+              <div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.offlineChannels} offline</span></div>
+              <div className={styles["channel"]}><span className={styles["dot"]}></span><span>{channelsInfo.closingChannels} closing</span></div>
+            </div>
+          </div>
+          <div className={classNames(styles["card"], styles["top-channels"])}>
+            <div className={styles["top"]}>
+              <h4 className={styles["card-label"]}>Top Channels</h4>
+            </div>
+            <div className={classNames(styles["bot"], styles["top-channels"])}>
+              <div className={styles["row"]}>
+                <span className={styles["label"]}>In:&nbsp;</span>
+                <span>{trimText(channelsInfo.bestLocalChan)}</span>
+              </div>
+              <div className={styles["row"]}>
+                <span className={styles["label"]}>Out:&nbsp;</span>
+                <span> {trimText(channelsInfo.bestRemoteChan)}</span>
+              </div>
+            </div>
+          </div>
+          <div className={classNames(styles["card"], styles["top-channels"], styles["routing"])}>
+            <div className={styles["top"]}>
+              <h4 className={styles["card-label"]}>Routing</h4>
+            </div>
+            <div className={classNames(styles["bot"], styles["top-channels"])}>
+              <div className={styles["row"]}>
+                {lndGraphsData.forwardedEvents} forwards
+              </div>
+              <div className={styles["row"]}>
+                {lndGraphsData.forwardRevenue} sats
+              </div>
+            </div>
+          </div>
+          {
+            appsInfo.appsUsers.map(app => (
+              <div key={app.appName}
                 className={classNames(styles["card"], styles["top-channels"])}
-                style={{ borderColor: stringToColor(app.appName)}}
+                style={{ borderColor: stringToColor(app.appName) }}
               >
-								<div className={styles["top"]}>
-									<h4 className={styles["card-label"]}>{app.appName}</h4>
-								</div>
-								<div className={classNames(styles["bot"], styles["top-channels"])}>
-									<div className={styles["row"]}>
-										{app.users} users
-									</div>
-									<div className={styles["row"]}>
-										invoices
-									</div>
-								</div>
-							</div>
-						))
-					}
+                <div className={styles["top"]}>
+                  <h4 className={styles["card-label"]}>{app.appName}</h4>
+                </div>
+                <div className={classNames(styles["bot"], styles["top-channels"])}>
+                  <div className={styles["row"]}>
+                    {app.users} users
+                  </div>
+                  <div className={styles["row"]}>
+                    {app.invoices} invoices
+                  </div>
+                </div>
+              </div>
+            ))
+          }
         </div>
       </div>
     </div>
