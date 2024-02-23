@@ -1,18 +1,28 @@
-import { useEffect } from "react";
-import { useSelector } from "../../State/store";
-import { NODED_UP_STORAGE_KEY } from "../../constants";
+import { useEffect, useLayoutEffect } from "react";
+import { useDispatch, useSelector } from "../../State/store";
+import { flagAsNodedUp } from "../../State/Slices/nodedUpSlice";
+import { useHistory } from "react-router";
 
 
 export const NodeUpCheck = () => {
+	const history = useHistory()
+	const dispatch = useDispatch();
 	const paySource = useSelector((state) => state.paySource);
 	const spendSource = useSelector(state => state.spendSource);
-	const nodedUp = localStorage.getItem(NODED_UP_STORAGE_KEY);
+	const nodedUp = useSelector(state => state.nodedUpSlice);
 
 	useEffect(() => {
 		if (!nodedUp && (paySource.order.length > 0 || spendSource.order.length > 0)) {
-			localStorage.setItem(NODED_UP_STORAGE_KEY, "true");
+			dispatch(flagAsNodedUp());
 		}
-	}, [nodedUp, paySource, spendSource])
+	}, [paySource, spendSource])
+
+	useLayoutEffect(() => {
+		const routes = ["/", "/sources", "/auth"];
+		if (!nodedUp && !routes.includes(history.location.pathname)) {
+			history.push("/");
+		}
+	}, [history.location, nodedUp])
 
 	return null;
 }
