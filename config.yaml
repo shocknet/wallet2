@@ -1,16 +1,51 @@
-vars:
-  BUNDLE_ID:
-    default: shockwallet.app
-  PACKAGE_NAME:
-    default: shockwallet.app
-
 platforms:
   ios:
     targets:
       App:
-        bundleId: $BUNDLE_ID
-
+        bundleId: <%= process.env.VITE_BUNDLE_ID %>
+        plist:
+          replace: true
+          entries:
+            - CFBundleURLTypes:
+              - CFBundleURLSchemes: <%= process.env.VITE_BUNDLE_URL_SCHEME %>
+              - CFBundleURLName: <%= process.env.VITE_BUNDLE_URL_NAME %>
+            - NSCameraUsageDescription: <%= process.env.VITE_CAMERA_USAGE_DESCRIPTION %>
+            - NSPhotoLibraryUsageDescription: <%= process.env.VITE_PHOTOLIBRARY_USAGE_DESCRIPTION %>
         entitlements:
-          - com.apple.developer.associated-domains: ["appinks:test.shockwallet.app"]
+          - com.apple.developer.associated-domains: <%= process.env.VITE_ASSOCIATED_DOMAINS %>
   android:
     packageName: $PACKAGE_NAME
+    incrementVersionCode: true
+    manifest:
+      - file: AndroidManifest.xml 
+        target: manifest/application
+        attrs:
+          android:name: <%= process.env.VITE_APP_NAME %>
+
+      - file: AndroidManifest.xml
+        target: activity
+        inject:
+          <intent-filter android:autoVerify="true">
+              <action android:name="android.intent.action.VIEW" />
+
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+
+              <data android:scheme="bitcoin"/>
+          </intent-filter>
+
+          <intent-filter android:autoVerify="true">
+              <action android:name="android.intent.action.VIEW" />
+
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+
+              <data android:scheme="lightning"/>
+          </intent-filter>
+
+          <intent-filter android:autoVerify="true">
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="https" android:host="<%= process.env.VITE_APP_URL %>" />
+          </intent-filter>
