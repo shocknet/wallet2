@@ -1,68 +1,70 @@
 import { useEffect } from "react"
-import { useDispatch, useSelector } from "../../State/store"
 import { openNotification } from "../../constants"
-import { disconnectNostrClientCalls, getNostrClient, parseNprofile } from "../../Api/nostr"
-import { editPaySources } from "../../State/Slices/paySourcesSlice"
-import { editSpendSources } from "../../State/Slices/spendSourcesSlice"
-const SubsCheckIntervalSeconds = 10 * 60
+import { getAllNostrClients, nostrCallback } from "../../Api/nostr"
+const SubsCheckIntervalSeconds = 60
 export const HealthCheck = () => {
-    const paySource = useSelector(({ paySource }) => paySource)
-    const spendSource = useSelector(({ spendSource }) => spendSource)
-    const dispatch = useDispatch();
+    // const paySource = useSelector(({ paySource }) => paySource)
+    // const spendSource = useSelector(({ spendSource }) => spendSource)
+    //const dispatch = useDispatch();
 
     useEffect(() => {
-        let unmountCb = () => { }
         const interval = setInterval(() => {
-            unmountCb = checkHealth()
+            checkHealth()
         }, SubsCheckIntervalSeconds * 1000)
-        checkHealth()
         return () => {
-            unmountCb()
             clearInterval(interval)
         }
     }, [])
 
     const checkHealth = () => {
-        console.log("checking sources state...")
-        const sourcesToCheckMap: Record<string, boolean> = {}
-        const checkFunc = (s: { pasteField: string }) => {
-            if (s.pasteField.startsWith("nprofile")) {
-                sourcesToCheckMap[s.pasteField] = true
-            }
-        }
-        paySource.forEach(checkFunc)
-        spendSource.forEach(checkFunc)
-        let shouldDisconnect = true
-        const sourcesToCheck = Object.keys(sourcesToCheckMap)
-        sourcesToCheck.map(async s => {
-            const { pubkey, relays } = parseNprofile(s)
-            const c = await getNostrClient({ pubkey, relays })
-            console.log("checking source state...", pubkey)
-            const res = await Promise.any([c.UserHealth(), new Promise<{ status: "TIMEOUT" }>((res) => setTimeout(() => res({ status: "TIMEOUT" }), 15 * 1000))])
-            if (res.status === "TIMEOUT") {
-                if (!shouldDisconnect) return
-                console.log("cannot connect to", pubkey, { relays })
-                openNotification("top", "Error", "cannot connect to source: " + pubkey.slice(0, 10))
-                disconnectNostrClientCalls(s)
-                updateSubState(s, false)
+        getAllNostrClients().forEach((wrapper) => {
+            const state = wrapper.getClientState()
+            let oldestSingleSub: nostrCallback<any> | undefined = undefined
+            wrapper.getSingleSubs().forEach(([_, cb]) => {
+                if (!oldestSingleSub || oldestSingleSub.startedAtMillis > cb.startedAtMillis) {
+                    oldestSingleSub = cb
+                }
+            })
+            if (!oldestSingleSub) {
+                console.log("no active single subs")
                 return
             }
-            console.log("connected to", pubkey)
-            updateSubState(s, true)
+            const now = Date.now()
+            const startedAtMillis = (oldestSingleSub as nostrCallback<any>).startedAtMillis
+            if (now - startedAtMillis < 10 * 1000) {
+                console.log("oldest single sub is less than 10 seconds old")
+                return
+            }
+            console.log("oldest sub is", (startedAtMillis - now) / 1000, "seconds old!")
+            if (now - state.latestResponseAtMillis < 10 * 1000) {
+                console.log("latest response is less than 10 seconds old")
+                return
+            }
+            if (state.latestHelthReqAtMillis <= state.latestResponseAtMillis) {
+                console.log("no health req was sent since last response, sending health req")
+                wrapper.sendHelthRequest()
+                return
+            }
+            if (now - state.latestHelthReqAtMillis < 10 * 1000) {
+                console.log("latest health req is less than 10 seconds old")
+                return
+            }
+            console.log("no response for more than 10 seconds, disconnecting")
+            wrapper.disconnectCalls()
+            openNotification("top", "Error", "cannot connect to source: " + wrapper.getPubDst().slice(0, 10))
         })
-        return () => { shouldDisconnect = false }
     }
-
-    const updateSubState = (source: string, connected: boolean) => {
-        const payEntry = paySource.find(s => s.pasteField === source)
-        if (payEntry) {
-            dispatch(editPaySources({ ...payEntry, disconnected: !connected }))
+    /*
+        const updateSourceState = (source: string, connected: boolean) => {
+            const payEntry = paySource.find(s => s.pasteField === source)
+            if (payEntry) {
+                dispatch(editPaySources({ ...payEntry, disconnected: !connected }))
+            }
+            const spendEntry = spendSource.find(s => s.pasteField === source)
+            if (spendEntry) {
+                dispatch(editSpendSources({ ...spendEntry, disconnected: !connected }))
+            }
         }
-        const spendEntry = spendSource.find(s => s.pasteField === source)
-        if (spendEntry) {
-            dispatch(editSpendSources({ ...spendEntry, disconnected: !connected }))
-        }
-    }
-
+    */
     return null
 }

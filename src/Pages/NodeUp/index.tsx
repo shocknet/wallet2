@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIonRouter } from '@ionic/react';
 import { setNostrPrivateKey } from "../../Api/nostr";
-import { DEFAULT_BRIDGE_URL, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { DEFAULT_BRIDGE_URL, NODED_UP_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
@@ -10,14 +10,14 @@ import { encodeNprofile } from "../../custom-nip19";
 export const NodeUp = () => {
   const router = useIonRouter();
 
-  const privateKey = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+  const nodedUp = localStorage.getItem(NODED_UP_STORAGE_KEY);
   const dispatch = useDispatch();
   const paySources = useSelector((state) => state.spendSource);
   const spendSources = useSelector((state) => state.spendSource);
   const toMainPage = () => {
-    setPrivateKey();
+    setNostrPrivateKey();
     addBootStrapSources();
-    if (privateKey) {
+    if (nodedUp) {
       router.push("/home");
     } else {
       router.push("/loader")
@@ -25,28 +25,26 @@ export const NodeUp = () => {
   };
 
   const toSourcePage = () => {
-    setPrivateKey()
+    setNostrPrivateKey()
     router.push("/sources")
   };
 
   const toRecoverPage = () => {
-    setPrivateKey()
+    setNostrPrivateKey()
     router.push("/auth")
   }
 
   useEffect(() => {
-    if (privateKey) {
+    if (nodedUp) {
       router.push("/home")
     }
-  }, [router, privateKey]);
+  }, [router, nodedUp]);
 
-  const setPrivateKey = () => {
-    setNostrPrivateKey();
-  }
+
 
 
   const addBootStrapSources = async () => {
-    if (paySources.length != 0 && spendSources.length != 0) {
+    if (Object.values(paySources.sources || {}).length !== 0 && Object.values(spendSources.sources || {}).length !== 0) {
       return;
     } else {
       const bootstrapBalance = "0";
@@ -56,25 +54,24 @@ export const NodeUp = () => {
         bridge: [DEFAULT_BRIDGE_URL]
       })
 
-      dispatch(addPaySources(
-        {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
-        }
-      ));
-      dispatch(addSpendSources(
-        {
-          id: 0,
-          label: "Bootstrap Node",
-          pasteField: nprofile,
-          option: options.little,
-          icon: "0",
-          balance: bootstrapBalance,
-        }
-      ))
+
+      dispatch(addPaySources({
+        id: NOSTR_PUB_DESTINATION,
+        label: "Bootstrap Node",
+        pasteField: nprofile,
+        option: options.little,
+        icon: "0",
+        pubSource: true
+      }));
+      dispatch(addSpendSources({
+        id: NOSTR_PUB_DESTINATION,
+        label: "Bootstrap Node",
+        pasteField: nprofile,
+        option: options.little,
+        icon: "0",
+        balance: bootstrapBalance,
+        pubSource: true
+      }));
     }
   }
 

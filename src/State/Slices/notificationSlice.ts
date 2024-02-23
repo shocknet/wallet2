@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { NotifyItemData } from '../../globalTypes';
+import { syncRedux } from '../store';
 export const storageKey = "notifications"
 
 interface NotificationType {
@@ -38,6 +39,11 @@ const notifySlice = createSlice({
       update(state)
     }
   },
+  extraReducers: (builder) => {
+    builder.addCase(syncRedux, () => {
+      return JSON.parse(localStorage.getItem(storageKey) ?? JSON.stringify({ checkTime: 0, notifications: [] }));
+    })
+  }
 });
 
 export const { addNotification, updateCheckTime, removeNotify } = notifySlice.actions;
