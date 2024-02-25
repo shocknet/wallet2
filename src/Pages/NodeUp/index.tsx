@@ -81,8 +81,8 @@ export const NodeUp = () => {
     <div className="NodeUp">
       <div className="NodeUp_title">Node Up</div>
       <div className="NodeUp_textBox">
-        &quot;Continue&quot; to bootstrap the wallet with a trusted server and add a node later<br /><br /><br />
-        &quot;Add connection&quot; to link a node now.
+        Continue to bootstrap the wallet with a trusted server, you may add a node later.<br /><br /><br />
+        Add connection to link a node now, or recover from backup.
       </div>
       <div className="NodeUp_manual">
         <div className="NodeUp_manual_btn">
