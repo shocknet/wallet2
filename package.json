@@ -76,6 +76,7 @@
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.12",
     "react-redux": "^8.1.2",
+    "react-toastify": "^10.0.4",
     "react-zxing": "^2.0.0",
     "reactjs-qr-reader": "^1.1.0",
     "sortablejs": "^1.15.1",

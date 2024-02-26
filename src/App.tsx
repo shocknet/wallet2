@@ -1,4 +1,5 @@
 import { Route } from 'react-router-dom';
+import React from 'react';
 import {
   IonApp,
   IonRouterOutlet,
@@ -29,6 +30,25 @@ import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
 
+/* Core CSS required for Ionic components to work properly */
+import "@ionic/react/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+import "@ionic/react/css/normalize.css";
+import "@ionic/react/css/structure.css";
+import "@ionic/react/css/typography.css";
+
+/* Optional CSS utils that can be commented out */
+import "@ionic/react/css/padding.css";
+import "@ionic/react/css/float-elements.css";
+import "@ionic/react/css/text-alignment.css";
+import "@ionic/react/css/text-transformation.css";
+import "@ionic/react/css/flex-utils.css";
+import "@ionic/react/css/display.css";
+
+import LoadingOverlay from './Components/LoadingOverlay';
+
+
 setupIonicReact();
 
 const App: React.FC = () => {
@@ -43,54 +63,77 @@ const App: React.FC = () => {
 
   return (
     <Provider store={store}>
-      <IonApp className='safe-area'>
+      <IonApp className="safe-area">
         <IonReactHashRouter>
           <AppUrlListener />
+          <Background />
+          <LoadingOverlay />
           <IonRouterOutlet>
-            <Layout>
-              <>
-                <Background />
-                <Route exact path="/">
-                  <NodeUp />
-                </Route>
-                <Route exact path="/loader">
-                  <Loader />
-                </Route>
-                <Route exact path="/home">
-                  <Home />
-                </Route>
-                <Route exact path="/receive">
-                  <Receive />
-                </Route>
-                <Route exact path="/send">
-                  <Send />
-                </Route>
-                <Route exact path="/scan">
-                  <Scan />
-                </Route>
-                <Route exact path="/sources">
-                  <Sources />
-                </Route>
-                <Route exact path="/automation">
-                  <Automation />
-                </Route>
-                <Route exact path="/prefs">
-                  <Prefs />
-                </Route>
-                <Route exact path="/contacts">
-                  <Contacts />
-                </Route>
-                <Route exact path="/auth">
-                  <Auth />
-                </Route>
-                <Route exact path="/notify">
-                  <Notify />
-                </Route>
-                <Route exact path="/metrics">
-                  <Metrics />
-                </Route>
-              </>
-            </Layout>
+            <Route exact path="/">
+              <Layout>
+                <NodeUp />
+              </Layout>
+            </Route>
+            <Route exact path="/loader">
+              <Layout>
+                <Loader />
+              </Layout>
+            </Route>
+            <Route exact path="/home">
+              <Layout>
+                <Home />
+              </Layout>
+            </Route>
+            <Route exact path="/receive">
+              <Layout>
+                <Receive />
+              </Layout>
+            </Route>
+            <Route exact path="/send">
+              <Layout>
+                <Send />
+              </Layout>
+            </Route>
+            <Route exact path="/scan">
+              <Layout>
+                <Scan />
+              </Layout>
+            </Route>
+            <Route exact path="/sources">
+              <Layout>
+                <Sources />
+              </Layout>
+            </Route>
+            <Route exact path="/automation">
+              <Layout>
+                <Automation />
+              </Layout>
+            </Route>
+            <Route exact path="/prefs">
+              <Layout>
+                <Prefs />
+              </Layout>
+            </Route>
+            <Route exact path="/contacts">
+              <Layout>
+                <Contacts />
+              </Layout>
+            </Route>
+            <Route exact path="/auth">
+              <Layout>
+                <Auth />
+              </Layout>
+            </Route>
+            <Route exact path="/notify">
+              <Layout>
+                <Notify />
+              </Layout>
+            </Route>
+            <Route exact path="/metrics">
+              <Layout>
+                <Metrics />
+              </Layout>
+            </Route>
           </IonRouterOutlet>
         </IonReactHashRouter>
       </IonApp>

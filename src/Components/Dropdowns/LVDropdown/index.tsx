@@ -15,9 +15,9 @@ interface Props<T> {
 const Dropdown = <T extends "number" | "string" | Period | Interval>({ setState, jsx, otherOptions }: Props<T>) => {
 	const [expand, setExpand] = useState(false);
 	const dropDownRef = useRef<HTMLDivElement>(null);
-	useClickOutside([dropDownRef], () => setExpand(false));
+	useClickOutside([dropDownRef], () => setExpand(false), false);
 
-	useClickOutside([dropDownRef], () => setExpand(false));
+	useClickOutside([dropDownRef], () => setExpand(false), false);
 
 
 	return (
