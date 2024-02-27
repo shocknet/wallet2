@@ -24,12 +24,24 @@ body {
   color: #fcfcfc;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 162.5%;
+
   text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
 
   // ion variables override
   --ion-background-color: #16191c;
   --ion-text-color: #fcfcfc;
   --ion-font-family: Arial, Helvetica, sans-serif;
+
+  //toastify
+  --toastify-color-success: #32a852;
+  --toastify-toast-width: 400px;
+  .Toastify__toast-body {
+    font-weight: bolder;
+    font-size: 21px;
+    color: #fcfcfd;
+    font-family: Montserrat;
+    text-shadow: none;
+  }
 }
 
 #root{
@@ -124,6 +136,8 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+
 
 
 @import "./Pages/Home/Home.scss";

@@ -2,8 +2,6 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
-import { notification } from 'antd';
-import { NotificationPlacement } from 'antd/es/notification/interface';
 import { UseModal } from '../../Hooks/UseModal';
 import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
@@ -17,6 +15,8 @@ import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 import { useStore } from 'react-redux';
 import { syncRedux } from '../../State/store';
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 const FILENAME = "shockw.dat";
 
@@ -49,16 +49,8 @@ export const Auth = () => {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const [api, contextHolder] = notification.useNotification();
 
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-    api.info({
-      message: header,
-      description:
-        text,
-      placement
-    });
-  };
+
 
   const { isShown, toggle } = UseModal();
 
@@ -88,9 +80,9 @@ export const Auth = () => {
       nostr_secret: nsec
     })
     if (res.status === 'ERROR') {
-      openNotification("top", "Error", "Email link failed.");
+      toast.error(<Toast title="Email Signup Error" message="Email link Failed."  />)
     }
-    openNotification("top", "Error", "Email linked succesfully.");
+    toast.success(<Toast title="Email Signup" message="Email linked successfully." />)
   }
 
   const openDownBackupModal = () => {
@@ -104,7 +96,8 @@ export const Auth = () => {
 
   const downloadBackUp = async () => {
     if (passphrase != passphraseR || passphrase == "") {
-      return openNotification("top", "Error", "Please insert same sentence.");
+      toast.error(<Toast title="Error" message="Passwords do not match."  />)
+      return;
     }
 
     const allData: Record<string, string | null> = {};
@@ -176,7 +169,8 @@ export const Auth = () => {
     try {
       decodedString = AES.decrypt(dataFromFile, passphrase).toString(enc.Utf8);
     } catch (error) {
-      return openNotification("top", "Error", "Passphrase is not correct.");
+      toast.error(<Toast title="Error" message="Passphrase is not correct."  />)
+      return;
     }
     const data = JSON.parse(decodedString);
     for (let i = 0; i < Object.keys(data).length; i++) {
@@ -187,14 +181,12 @@ export const Auth = () => {
     }
     store.dispatch(syncRedux());
     toggle();
-    openNotification("top", "Success", "Backup is imported successfully.");
+    toast.success(<Toast title="Backup" message="Backup imported successfully. "  />)
     setTimeout(() => {
       router.push("/home")
     }, 1000);
   }
 
-  useEffect(() => {
-  });
 
   const [modalContent, setModalContent] = useState<string>('');
   const switchModalContent = () => {
@@ -211,7 +203,7 @@ export const Auth = () => {
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
-      openNotification("top", "Error", "Cannot load remote backups. User already exists.");
+      toast.error(<Toast title="Backup" message="Cannot load remote backup. User already exists." />)
       return
     }
     const backup = await fetchRemoteBackup()
@@ -221,7 +213,7 @@ export const Auth = () => {
       return
     }
     if (backup.decrypted === '') {
-      openNotification("top", "Error", "No backups found from the provided pair.");
+      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
       return
     }
     const data = JSON.parse(backup.decrypted);
@@ -233,7 +225,7 @@ export const Auth = () => {
       }
     }
     store.dispatch(syncRedux());
-    openNotification("top", "Success", "Backup is imported successfully.");
+    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
     setTimeout(() => {
       router.push("/home")
     }, 1000);
@@ -279,7 +271,6 @@ export const Auth = () => {
 
   return (
     <div className='Auth_container'>
-      {contextHolder}
       <div className="Auth">
         <div style={{ opacity: "1" }}>
           <div className="Auth_header_text">Back-Up & Restore</div>

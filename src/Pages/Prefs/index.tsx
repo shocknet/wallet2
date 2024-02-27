@@ -6,11 +6,11 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { setPrefs } from '../../State/Slices/prefsSlice';
 import { setAmount } from "../../State/Slices/usdToBTCSlice";
 import axios from 'axios';
-import { notification } from 'antd';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { NotificationPlacement } from 'antd/es/notification/interface';
 import * as Types from "../../globalTypes";
 import { fiatCurrencies } from "./fiatCurrency";
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 
 import { defaultMempool } from '../../constants';
@@ -28,14 +28,7 @@ interface Price {
   sellPrice: number,
 }
 
-const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-  notification.info({
-    message: header,
-    description:
-      text,
-    placement
-  });
-};
+
 
 export const Prefs = () => {
   const router = useIonRouter();
@@ -95,11 +88,12 @@ export const Prefs = () => {
       dispatch(toggleLoading({ loadingMessage: "Saving..." }))
       setTimeout(() => {
         dispatch(toggleLoading({ loadingMessage: "" }));
-        openNotification("top", "Success", "Successfully saved!");
+        toast.success(<Toast title="Preferences" message="Successfully saved." />)
         router.push("/home");
       }, 1500);
     } else {
-      return openNotification("top", "Error", "Please insert correct endpoint!");
+      toast.error(<Toast title="Error" message="Please input correct endpoint." />)
+      return;
     }
   }
 

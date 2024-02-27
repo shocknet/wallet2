@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { notification } from 'antd';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useDispatch } from '../../State/store';
-import { NotificationPlacement } from "antd/es/notification/interface";
 import { isAxiosError } from "axios";
 import { useIonRouter } from "@ionic/react";
 import {
@@ -14,6 +12,8 @@ import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { isPlatform } from '@ionic/react';
 import { Html5Qrcode } from "html5-qrcode";
 import { useHistory } from "react-router";
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 const scanSingleBarcode = async () => {
   return new Promise(resolve => {
@@ -45,15 +45,7 @@ export const Scan = () => {
   const [itemInput, setItemInput] = useState("");
 
 
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-    api.info({
-      message: header,
-      description:
-        text,
-      placement
-    });
-  };
+
 
 
   
@@ -71,7 +63,7 @@ export const Scan = () => {
         console.log(errorMessage)
       })
     .catch((err: any) => {
-      openNotification("top", "Error", err.message)
+      toast.error(<Toast title="Error" message={err.message} />)
       router.goBack();
     });
   }
@@ -111,7 +103,7 @@ export const Scan = () => {
     if (camera !== "granted") {
       const { camera: result } = await BarcodeScanner.requestPermissions();
       if (result !== "granted") {
-        openNotification("top", "Error", "The scanner needs camera permissions");
+        toast.error(<Toast title="Error" message="Need camera permissions" />)
         return;
       }
     }
@@ -126,9 +118,9 @@ export const Scan = () => {
       parsed = await parseBitcoinInput(qrcode);
     } catch (err: any) {
       if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data.reason);
+        toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
       } else if (err instanceof Error) {
-        openNotification("top", "Error", err.message);
+        toast.error(<Toast title="Source Error" message={err.message} />)
       } else {
         console.log("Unknown error occured", err);
       }
@@ -158,7 +150,7 @@ export const Scan = () => {
         }
       });
     } else if (parsed.type === InputClassification.UNKNOWN) {
-      openNotification("top", "Error", "Unrecognized QR code!");
+      toast.error(<Toast title="Error" message="Unrecognized QR code." />)
     }
   }
 
@@ -169,9 +161,6 @@ export const Scan = () => {
 
   return (
     <div className="Scan scan-layout">
-      <div style={{ visibility: "visible" }}>
-        {contextHolder}
-      </div>
       <div onClick={() => { router.goBack() }} className="Scan_back">
         {Icons.closeIcon()}
       </div>
