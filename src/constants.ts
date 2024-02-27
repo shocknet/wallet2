@@ -3,8 +3,7 @@ import { bech32 } from 'bech32';
 import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
-import { notification } from "antd";
-import { NotificationPlacement } from "antd/es/notification/interface";
+
 
 
 export const locationRegex = new RegExp(/\w{1,}/g)
@@ -165,15 +164,6 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 
 
 
-export const openNotification = (placement: NotificationPlacement, header: string, text: string, onClick?: (() => void) | undefined) => {
-	notification.info({
-		message: header,
-		description:
-			text,
-		placement,
-		onClick: onClick,
-	});
-};
 
 
 export const stringToColor = (str: string) => {

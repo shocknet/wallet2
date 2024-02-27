@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { notification } from 'antd';
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from '../../Hooks/UseModal';
 import { useSelector, useDispatch } from '../../State/store';
-import type { NotificationPlacement } from 'antd/es/notification/interface';
 import axios, { isAxiosError } from 'axios';
 import { useIonRouter } from '@ionic/react';
 import { Modal } from '../../Components/Modals/Modal';
@@ -21,15 +19,10 @@ import { createLnurlInvoice, handlePayBitcoinAddress, handlePayInvoice } from '.
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { useLocation } from 'react-router';
 import { addAddressbookLink, addIdentifierMemo } from '../../State/Slices/addressbookSlice';
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
-const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-  notification.info({
-    message: header,
-    description:
-      text,
-    placement
-  });
-};
+
 
 
 
@@ -102,7 +95,7 @@ export const Send = () => {
 
   useLayoutEffect(() => {
     if (spendSources.length === 0) {
-      openNotification("top", "Error", "You don't have any sources!");
+      toast.error(<Toast title="Error" message="You don't have any sources." />)
       router.push("/home");
     }
   }, [router, spendSources]);
@@ -153,9 +146,9 @@ export const Send = () => {
 
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data.reason);
+          toast.error(<Toast title="Error" message={err.response.data.reason} />)
         } else if (err instanceof Error) {
-          openNotification("top", "Error", err.message);
+          toast.error(<Toast title="Error" message={err.message} />)
         } else {
           console.log("Unknown error occured", err);
         }
@@ -192,7 +185,7 @@ export const Send = () => {
     } else if (destination.type === InputClassification.LN_ADDRESS) {
       dispatch(addAddressbookLink({ identifier, contact: destination.data }))
     }
-    openNotification("top", "Success", "Transaction sent.");
+    toast.success(<Toast title="Payment" message="Transaction sent." />)
     router.push("/home")
 
   }, [dispatch, router, selectedSource, note, destination])
@@ -233,9 +226,9 @@ export const Send = () => {
       }
     } catch (err: any) {
       if (isAxiosError(err) && err.response) {
-        openNotification("top", "Error", err.response.data.reason);
+        toast.error(<Toast title="Error" message={err.response.data.reason} />)
       } else if (err instanceof Error) {
-        openNotification("top", "Error", err.message);
+        toast.error(<Toast title="Error" message={err.message} />)
       } else {
         console.log("Unknown error occured", err);
       }

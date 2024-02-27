@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { notification } from 'antd';
-import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { PayTo, SpendFrom } from "../../globalTypes";
 
 //It import modal component
@@ -24,6 +22,8 @@ import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -33,14 +33,6 @@ const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   return newArr;
 }
 
-const openNotification = (placement: NotificationPlacement, header: string, text: string) => {
-  notification.info({
-    message: header,
-    description:
-      text,
-    placement
-  });
-};
 export const Sources = () => {
 
   const router = useIonRouter();
@@ -177,12 +169,12 @@ export const Sources = () => {
     }
     
     if (!sourcePasteField || !optional) {
-      openNotification("top", "Error", "Please Write Data Correctly!");
+      toast.error(<Toast title="Error" message="Please write data correctly." />)
       return;
     }
     // more thorough this way because doing spendSources[sourcePasteField] will not catch pub sources since the keys are npub and not the nprofile
     if (Object.values(spendSources.sources).find(s => s.pasteField === sourcePasteField) || Object.values(paySources.sources).find(s => s.pasteField === sourcePasteField)) {
-      openNotification("top", "Error", "Source already exists.");
+      toast.error(<Toast title="Error" message="Source already exists." />)
       return;
     }
     
@@ -195,7 +187,7 @@ export const Sources = () => {
       try {
         (data  = decodeNprofile(sourcePasteField));
       } catch (err: any) {
-        openNotification("top", "Error", err.message);
+        toast.error(<Toast title="Error" message={err.message} />)
         setProcessingSource(false);
         return;
       }
@@ -231,9 +223,9 @@ export const Sources = () => {
         parsed = await parseBitcoinInput(sourcePasteField);
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data.reason);
+          toast.error(<Toast title="Error" message={err.response.data.reason} />)
         } else if (err instanceof Error) {
-          openNotification("top", "Error", err.message);
+          toast.error(<Toast title="Error" message={err.message} />)
         } else {
           console.log("Unknown error occured", err);
         }
@@ -272,14 +264,13 @@ export const Sources = () => {
         } as PayTo;
         dispatch(addPaySources(addedSource));
       } else {
-        openNotification("top", "Error", "Input not recognized");
+        toast.error(<Toast title="Error" message="Input not recognized." />)
         setProcessingSource(false);
         dispatch(toggleLoading({ loadingMessage: "" }))
         return
       }
-
     }
-    openNotification("top", "Success", `${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`);
+    toast.success(<Toast title="Sources" message={`${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`} />)
     resetValue();
     dispatch(toggleLoading({ loadingMessage: "" }))
     
@@ -288,7 +279,8 @@ export const Sources = () => {
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {
-      return openNotification("top", "Error", "Please Write Data Correctly!")
+      toast.error(<Toast title="Error" message="Please write data correctly." />)
+      return;
     }
     const paySourceToEdit: PayTo = {
       ...paySources.sources[editPSourceId],
@@ -303,7 +295,8 @@ export const Sources = () => {
 
   const editSpendSource = () => {
     if (!sourceLabel || !optional) {
-      return openNotification("top", "Error", "Please Write Data Correctly!")
+      toast.error(<Toast title="Error" message="Please write data correctly." />)
+      return
     }
     const spendSourceToEdit: SpendFrom = {
       ...spendSources.sources[editSSourceId],
@@ -387,7 +380,7 @@ export const Sources = () => {
         await handlePayInvoice(invoice, tempParsedWithdraw!.data);
 
         
-        openNotification("top", "Success", `Withdraw request successfuly sent to ${tempParsedWithdraw.domainName}.`);
+        toast.success(<Toast title="Withdraw" message={`Withdraw request successfuly sent to ${tempParsedWithdraw.domainName}.`} />)
         setTimeout(() => {
           router.push("/home");
         }, 1000);
@@ -395,9 +388,9 @@ export const Sources = () => {
       catch (err) {
         console.log(err)
         if (isAxiosError(err) && err.response) {
-          openNotification("top", "Error", err.response.data.reason);
+          toast.error(<Toast title="Error" message={err.response.data.reason} />)
         } else if (err instanceof Error) {
-          openNotification("top", "Error", err.message);
+          toast.error(<Toast title="Error" message={err.message} />)
         } else {
           console.log("Unknown error occured", err);
         }

@@ -29,6 +29,8 @@ import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 setupIonicReact();
 
@@ -96,6 +98,15 @@ const App: React.FC = () => {
             </IonRouterOutlet>
           </IonReactHashRouter>
         </ErrorBoundary>
+        <ToastContainer
+          theme="colored"
+          position="top-center"
+          closeOnClick
+          pauseOnHover
+          autoClose={4000}
+          limit={2}
+          pauseOnFocusLoss={false}
+        />
       </IonApp>
     </Provider>
   )

@@ -1,6 +1,8 @@
 import { useEffect } from "react"
-import { openNotification } from "../../constants"
 import { getAllNostrClients, nostrCallback } from "../../Api/nostr"
+import { toast } from "react-toastify";
+import Toast from "../Toast";
+
 const SubsCheckIntervalSeconds = 60
 export const HealthCheck = () => {
     // const paySource = useSelector(({ paySource }) => paySource)
@@ -51,7 +53,7 @@ export const HealthCheck = () => {
             }
             console.log("no response for more than 10 seconds, disconnecting")
             wrapper.disconnectCalls()
-            openNotification("top", "Error", "cannot connect to source: " + wrapper.getPubDst().slice(0, 10))
+            toast.error(<Toast title="Source Error" message={`Cannot connect to source: ${wrapper.getPubDst().slice(0, 10)}.`} />)
         })
     }
     /*

@@ -6,13 +6,15 @@ import { arrangeIcon } from '../../jsxHelpers';
 import { UseModal } from '../../Hooks/UseModal';
 import { Modal } from '../../Components/Modals/Modal';
 import { Subscription, addSubPayment, updateActiveSub } from '../../State/Slices/subscriptionsSlice';
-import { Destination, InputClassification, openNotification, parseBitcoinInput } from '../../constants';
+import { Destination, InputClassification,parseBitcoinInput } from '../../constants';
 import { isAxiosError } from 'axios';
 import { v4 as uuid } from "uuid";
 import styles from "./styles/modal.module.scss";
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
 import classNames from 'classnames';
 import moment from 'moment';
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 
 
@@ -76,7 +78,7 @@ export const Automation = () => {
 
   const handleSubmit = async () => {
 		if (!inputs.memo || !inputs.endpoint || !inputs.amount) {
-			openNotification("top", "Error", "Please input data correctly");
+			toast.error(<Toast title="Error" message="Please input data correctly." />)
 			return;
 		}
 		let bitcoinInput: Destination | null = null;
@@ -84,9 +86,9 @@ export const Automation = () => {
 			bitcoinInput = await parseBitcoinInput(inputs.endpoint);
 		} catch (err: any) {
 			if (isAxiosError(err) && err.response) {
-				openNotification("top", "Error", err.response.data.reason);
+				toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
 			} else if (err instanceof Error) {
-				openNotification("top", "Error", err.message);
+				toast.error(<Toast title="Source Error" message={err.message} />)
 			} else {
 				console.log("Unknown error occured", err);
 			}
@@ -99,7 +101,7 @@ export const Automation = () => {
 			&&
 			(bitcoinInput.type !== InputClassification.LN_ADDRESS)
 		) {
-			openNotification("top", "Error", "Invalid recurring payment destination");
+			toast.error(<Toast title="Source Error" message="Invalid recurring payment destination." />)
       setEditSubId("");
 			toggle();
 			return;
@@ -124,7 +126,7 @@ export const Automation = () => {
 				}))
         setEditSubId("")
 				toggle()
-				openNotification("top", "Success", "Recurring payment updated");
+				toast.success(<Toast title="Automation" message="Recurring payments updated." />)
 				return;
 			}
 		}
@@ -159,7 +161,7 @@ export const Automation = () => {
 			}))
     }
 		dispatch(updateActiveSub({ sub: subObject }));
-		openNotification("top", "Success", "Recurring payment added");
+		toast.success(<Toast title="Automation" message="Recurring payment added." />)
 		toggle();
 	}
 
