@@ -10,8 +10,10 @@ import styles from "./styles/index.module.scss";
 import classNames from 'classnames';
 import moment from 'moment';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { openNotification, stringToColor } from '../../constants';
+import { stringToColor } from '../../constants';
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -132,19 +134,19 @@ export const Metrics = () => {
     if (usage.status !== 'OK') {
       setLoading(false);
       dispatch(toggleLoading({ loadingMessage: "" }));
-      openNotification("top", "Error", usage.reason)
+      toast.error(<Toast title="Metrics Error" message={usage.reason} />);
       return;
     }
     if (apps.status !== 'OK') {
       setLoading(false);
       dispatch(toggleLoading({ loadingMessage: "" }));
-      openNotification("top", "Error", apps.reason)
+      toast.error(<Toast title="Metrics Error" message={apps.reason} />);
       return;
     }
     if (lnd.status !== 'OK') {
       setLoading(false);
       dispatch(toggleLoading({ loadingMessage: "" }));
-      openNotification("top", "Error", lnd.reason)
+      toast.error(<Toast title="Metrics Error" message={lnd.reason} />);
       return;
     }
     if (!fromCache) saveCreds({ url, metricsToken })
