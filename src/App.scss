@@ -19,12 +19,18 @@ $clear-color: #E2E2E2;
   //   margin-left: 50%;
   // }
 }
-body{
+body {
   background-color: #16191c;
   color: #fcfcfc;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 162.5%;
-  text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px;
+
+  text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
+
+  // ion variables override
+  --ion-background-color: #16191c;
+  --ion-text-color: #fcfcfc;
+  --ion-font-family: Arial, Helvetica, sans-serif;
 
   //toastify
   --toastify-color-success: #32a852;

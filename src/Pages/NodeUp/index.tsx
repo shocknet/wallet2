@@ -1,7 +1,6 @@
 import { useLayoutEffect } from "react";
 import { useIonRouter } from '@ionic/react';
-import { setNostrPrivateKey } from "../../Api/nostr";
-import { DEFAULT_BRIDGE_URL, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { DEFAULT_BRIDGE_URL, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
@@ -12,14 +11,13 @@ export const NodeUp = () => {
 
   // from local storage means the value here isn't updated upon doing an option
   // which serves the purpose of allowing the loader screen to show without immediately going to /home
-  const nodedUpFromStorage = JSON.parse(localStorage.getItem("NODE_UP") ?? "false");
+  const privateKeyFromStorage = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
   
   const dispatch = useDispatch();
   const paySources = useSelector((state) => state.spendSource);
   const spendSources = useSelector((state) => state.spendSource);
   const toMainPage = () => {
-    setNostrPrivateKey();
     addBootStrapSources();
     setTimeout(() => {      
       router.push("/loader")
@@ -27,17 +25,15 @@ export const NodeUp = () => {
   };
 
   const toSourcePage = () => {
-    setNostrPrivateKey()
     router.push("/sources")
   };
 
   const toRecoverPage = () => {
-    setNostrPrivateKey()
     router.push("/auth")
   }
 
   useLayoutEffect(() => {
-    if (nodedUpFromStorage) {
+    if (privateKeyFromStorage) {
       router.push("/home")
     }
   }, []);
