@@ -8,6 +8,7 @@ import {
 import { IonReactHashRouter } from '@ionic/react-router';
 import { StatusBar } from '@capacitor/status-bar';
 import AppUrlListener from './Hooks/appUrlListener';
+import ErrorBoundary from './Hooks/ErrorBoundary';
 
 import './App.scss';
 import store from './State/store';
@@ -64,78 +65,80 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <IonApp className="safe-area">
-        <IonReactHashRouter>
-          <AppUrlListener />
-          <Background />
-          <LoadingOverlay />
-          <IonRouterOutlet>
-            <Route exact path="/">
-              <Layout>
-                <NodeUp />
-              </Layout>
-            </Route>
-            <Route exact path="/loader">
-              <Layout>
-                <Loader />
-              </Layout>
-            </Route>
-            <Route exact path="/home">
-              <Layout>
-                <Home />
-              </Layout>
-            </Route>
-            <Route exact path="/receive">
-              <Layout>
-                <Receive />
-              </Layout>
-            </Route>
-            <Route exact path="/send">
-              <Layout>
-                <Send />
-              </Layout>
-            </Route>
-            <Route exact path="/scan">
-              <Layout>
-                <Scan />
-              </Layout>
-            </Route>
-            <Route exact path="/sources">
-              <Layout>
-                <Sources />
-              </Layout>
-            </Route>
-            <Route exact path="/automation">
-              <Layout>
-                <Automation />
-              </Layout>
-            </Route>
-            <Route exact path="/prefs">
-              <Layout>
-                <Prefs />
-              </Layout>
-            </Route>
-            <Route exact path="/contacts">
-              <Layout>
-                <Contacts />
-              </Layout>
-            </Route>
-            <Route exact path="/auth">
-              <Layout>
-                <Auth />
-              </Layout>
-            </Route>
-            <Route exact path="/notify">
-              <Layout>
-                <Notify />
-              </Layout>
-            </Route>
-            <Route exact path="/metrics">
-              <Layout>
-                <Metrics />
-              </Layout>
-            </Route>
-          </IonRouterOutlet>
-        </IonReactHashRouter>
+        <ErrorBoundary>
+          <IonReactHashRouter>
+            <AppUrlListener />
+            <Background />
+            <LoadingOverlay />
+            <IonRouterOutlet>
+              <Route exact path="/">
+                <Layout>
+                  <NodeUp />
+                </Layout>
+              </Route>
+              <Route exact path="/loader">
+                <Layout>
+                  <Loader />
+                </Layout>
+              </Route>
+              <Route exact path="/home">
+                <Layout>
+                  <Home />
+                </Layout>
+              </Route>
+              <Route exact path="/receive">
+                <Layout>
+                  <Receive />
+                </Layout>
+              </Route>
+              <Route exact path="/send">
+                <Layout>
+                  <Send />
+                </Layout>
+              </Route>
+              <Route exact path="/scan">
+                <Layout>
+                  <Scan />
+                </Layout>
+              </Route>
+              <Route exact path="/sources">
+                <Layout>
+                  <Sources />
+                </Layout>
+              </Route>
+              <Route exact path="/automation">
+                <Layout>
+                  <Automation />
+                </Layout>
+              </Route>
+              <Route exact path="/prefs">
+                <Layout>
+                  <Prefs />
+                </Layout>
+              </Route>
+              <Route exact path="/contacts">
+                <Layout>
+                  <Contacts />
+                </Layout>
+              </Route>
+              <Route exact path="/auth">
+                <Layout>
+                  <Auth />
+                </Layout>
+              </Route>
+              <Route exact path="/notify">
+                <Layout>
+                  <Notify />
+                </Layout>
+              </Route>
+              <Route exact path="/metrics">
+                <Layout>
+                  <Metrics />
+                </Layout>
+              </Route>
+            </IonRouterOutlet>
+          </IonReactHashRouter>
+        </ErrorBoundary>
       </IonApp>
     </Provider>
   )
