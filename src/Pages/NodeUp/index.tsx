@@ -15,7 +15,7 @@ export const NodeUp = () => {
 
   
   const dispatch = useDispatch();
-  const paySources = useSelector((state) => state.spendSource);
+  const paySources = useSelector((state) => state.paySource);
   const spendSources = useSelector((state) => state.spendSource);
   const toMainPage = () => {
     addBootStrapSources();

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "../State/store";
+import { selectNostrSpends, useDispatch, useSelector } from "../State/store";
 import { setLatestOperation, setSourceHistory } from "../State/Slices/HistorySlice";
 import { addAsset } from '../State/Slices/generatedAssets';
 import { getNostrClient } from "../Api";
@@ -29,13 +29,13 @@ export const Background = () => {
 
 	const router = useIonRouter();
 	//reducer
-	const operationGroups = useSelector(({ history }) => history.operations) || {}
+	const operationGroups = useSelector(({ history }) => history.operations)
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
-	const nostrSource = useSelector((state) => Object.values(state.spendSource.sources).filter((e) => e.pubSource));
+	const nostrSpends = useSelector(selectNostrSpends);
 	const paySource = useSelector((state) => state.paySource)
-	const cursor = useSelector(({ history }) => history.cursor) || {}
-	const latestOp = useSelector(({ history }) => history.latestOperation) || {}
+	const cursor = useSelector(({ history }) => history.cursor)
+	const latestOp = useSelector(({ history }) => history.latestOperation)
 	const dispatch = useDispatch();
 	const [initialFetch, setInitialFetch] = useState(true)
 	const [clipText, setClipText] = useState("")
@@ -64,7 +64,7 @@ export const Background = () => {
 	}, []);
 
 	useEffect(() => {
-		nostrSource.forEach(source => {
+		nostrSpends.forEach(source => {
 			const { pubkey, relays } = parseNprofile(source.pasteField)
 
 			getNostrClient({ pubkey, relays }).then(c => {
@@ -78,10 +78,9 @@ export const Background = () => {
 				})
 			})
 		});
-	}, [nostrSource, dispatch])
+	}, [nostrSpends, dispatch])
 
 	useEffect(() => {
-		const nostrSpends = Object.values(spendSource.sources).filter((e) => e.pubSource);
 		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pubSource);
 		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pubSource);
 
@@ -138,13 +137,13 @@ export const Background = () => {
 		}
 		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
 		if (populatedEntries.length === 0) {
-		  console.log("No operations to display");
-		  return;
+			dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
+			return;
 		}
 
 		let collapsed: Types.UserOperation[] = []
 		populatedEntries.forEach(([, operations]) => {
-		  if (operations) collapsed = operations.concat(collapsed)
+			if (operations) collapsed = operations.concat(collapsed)
 		})
 
 		const record:Record<string,boolean>={}
@@ -172,13 +171,13 @@ export const Background = () => {
 
 		setInitialFetch(false)
 
-		nostrSource.forEach(async s => {
+		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
 			const client = await getNostrClient({ pubkey, relays })
 			await getSourceInfo(s, client)
 			await fetchSourceHistory(s, client, pubkey)
 		})
-	}, [latestOp, initialFetch])
+	}, [latestOp])
 
 	
 
@@ -186,14 +185,15 @@ export const Background = () => {
 
 	// reset spend for lnurl
 	useEffect(() => {
-		const sources = Object.values(spendSource.sources).map(s => ({ ...s }));
+		const sources = Object.values(spendSource.sources);
 		sources.filter(s => !s.disabled).forEach(async source => {
-			if (!source.pasteField.startsWith("nprofile")) {
+			if (!source.pubSource) {
 				try {
 					const lnurlEndpoint = decodeLnurl(source.pasteField);
 					const response = await axios.get(lnurlEndpoint);
-					source.balance = Math.round(response.data.maxWithdrawable / 1000).toString();
-					dispatch(editSpendSources(source));
+					const updatedSource = { ...source };
+					updatedSource.balance = Math.round(response.data.maxWithdrawable / 1000).toString();
+					dispatch(editSpendSources(updatedSource));
 				} catch (err) {
 					if (isAxiosError(err) && err.response) {
 						dispatch(addNotification({
@@ -204,8 +204,7 @@ export const Background = () => {
 							link: `/sources?sourceId=${source.id}`,
 						}))
 						// update the erroring source
-						source.disabled = err.response.data.reason;
-						dispatch(editSpendSources(source));
+						dispatch(editSpendSources({ ...source, disabled: err.response.data.reason }));
 					} else if (err instanceof Error) {
 						toast.error(<Toast title="Source Error" message={err.message} />)
 					} else {
@@ -244,9 +243,9 @@ export const Background = () => {
 		const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 		const boolLnAddress = expression.test(text);
 		let boolLnInvoice = false;
-		if (text.startsWith("ln") && nostrSource.length > 0) {
+		if (text.startsWith("ln") && nostrSpends.length > 0) {
 
-			const result = await (await getNostrClient(nostrSource[0].pasteField)).DecodeInvoice({ invoice: text });
+			const result = await (await getNostrClient(nostrSpends[0].pasteField)).DecodeInvoice({ invoice: text });
 			boolLnInvoice = result.status == "OK";
 		}
 		const boolAddress = validate(text);
@@ -311,13 +310,6 @@ const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Type
 		latestOutgoingTx: p.latestOutgoingTx || 0,
 		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment || 0,
 		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment || 0,
-
-		// latestIncomingInvoice: 0,
-		// latestOutgoingInvoice: 0,
-		// latestIncomingTx: 0,
-		// latestOutgoingTx: 0,
-		// latestIncomingUserToUserPayment: 0,
-		// latestOutgoingUserToUserPayment: 0,
 		max_size: 10
 	}
 }

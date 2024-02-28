@@ -8,7 +8,7 @@ import moment from 'moment';
 import { AnimatePresence, motion } from "framer-motion";
 import { TransactionInfo } from "../../Pages/Home";
 import TransactionInfoModal from "../TransactionInfoModal";
-
+import { decode } from "@gandlaf21/bolt11-decode";
 
 const stateIcons = (icon?: string) => {
   switch (icon) {
@@ -47,7 +47,14 @@ export const SwItem = ({
     if (link !== operation.identifier) {
       return link
     }
-    return `From ${operation.sourceLabel} source`
+    if (operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) {
+      const decodedInvoice = decode(operation.identifier);
+      const description = decodedInvoice.sections.find(section => section.name === "description");
+      if (description.value) {
+        return description.value;
+      }
+    }
+    return operation.sourceLabel
   }
 
   useEffect(() => {
@@ -75,14 +82,14 @@ export const SwItem = ({
   }, [operation, addressbook, price]);
 
   return (
-    <>
-      <AnimatePresence>
-        <motion.div
-          className="SwItem"
-          onClick={() => setShown(true)}
-          layoutId={operation.operationId}
-        >
-          <div className="SwItem_left">
+    <AnimatePresence key={operation.operationId}>
+      <motion.div
+        className="SwItem"
+        onClick={() => setShown(true)}
+        layoutId={operation.operationId}
+        key={operation.operationId}
+      >
+        <div className="SwItem_left">
             {stateIcons(transactionObject.stateIcon)}
             <div className="SwItem_text">
               <div className="SwItem_date">{transactionObject.date}</div>
@@ -98,13 +105,11 @@ export const SwItem = ({
         </div>
       </motion.div>
       <div className={underline?"SwItem_divider" : ""}></div>
-      
         {
           shown
           &&
-          <TransactionInfoModal operation={operation} hide={() => setShown(!shown)} price={price} />
+          <TransactionInfoModal key={operation.operationId} operation={operation} hide={() => setShown(!shown)} price={price} />
         }
-      </AnimatePresence>
-    </>
+    </AnimatePresence>
   )
 }

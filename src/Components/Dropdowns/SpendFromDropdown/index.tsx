@@ -62,7 +62,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     setRotation( rotation === 0 ? 90 : 0 )
   }
 
-  const selectOption = (id?: number) => {
+  const selectOption = (id?: string) => {
     const selected = values.filter((e) => e.id === id );
     setValue(selected[0]);
     const remainValues = values.filter((e) => e.id !== id );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react"
-import { useDispatch, useSelector } from "../../State/store"
+import { selectActiveSubs, selectEnabledSpends, useDispatch, useSelector } from "../../State/store"
 import { Subscription, SubscriptionPayment, addSubPayment, updateActiveSub } from "../../State/Slices/subscriptionsSlice"
 import { InputClassification } from "../../constants"
 import { createLnurlInvoice, handlePayInvoice } from "../../Api/helpers"
@@ -14,10 +14,10 @@ import Toast from "../Toast";
 import { PaymentLock, lockSubscriptionPayment, unlockSubscriptionPayment } from "../../helpers/remoteBackups"
 const SubsCheckIntervalSeconds = 60 * 60
 export const SubscriptionsBackground = () => {
-	const activeSubs = useSelector(({ subscriptions }) => subscriptions.activeSubs.filter(s => s.enabled))
+	const activeSubs = useSelector(selectActiveSubs);
 	const payments = useSelector(({ subscriptions }) => subscriptions.payments)
 	const fiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
-	const spendSources = useSelector((state) => Object.values(state.spendSource.sources).filter(s => !s.disabled));
+	const spendSources = useSelector(selectEnabledSpends);
 	const dispatch = useDispatch();
 
 	const sendSubPayment = useCallback(async (sub: Subscription, latestPayment: SubscriptionPayment | null) => {

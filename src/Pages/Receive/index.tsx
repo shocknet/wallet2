@@ -61,7 +61,6 @@ export const Receive = () => {
   const [fiatSymbol, setFiatSymbol] = useState('$')
 
   const router = useIonRouter();
-  const nostrSource = Object.values(paySource.sources).filter((e) => e.pasteField.includes("nprofile"));
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource.sources[paySource.order[0]].vanityName)
 
@@ -199,8 +198,8 @@ export const Receive = () => {
 
   const ChainAddress = async () => {
     if (bitcoinAdd !== '') return;
-    if (!nostrSource.length) return;
-    const res = await (await getNostrClient(nostrSource[0].pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
+    const topPaySource = paySource.sources[paySource.order[0]];
+    const res = await (await getNostrClient(topPaySource.pasteField)).NewAddress({ addressType: AddressType.WITNESS_PUBKEY_HASH })
     if (res.status !== 'OK') {
       toast.error(<Toast title="Source Error" message={res.reason} />)
       setTag(0);

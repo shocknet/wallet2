@@ -15,7 +15,7 @@ interface PrefsInterface {
 }
 
 export const storageKey = "prefs"
-export const VERSION = 1;
+export const VERSION = 2;
 export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
   // the Fiaturl to FiatUni migration
   1: (state) => {
@@ -26,8 +26,15 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
     } else {
       return state
     }
-    
   },
+  // Neither Fiaturl or FiatUnit existing at all migration
+  2: (state) => {
+    if (!state.FiatUnit) {
+      state.FiatUnit = {url: "https://api.coinbase.com/v2/prices/BTC-USD/spot", symbol: "$", currency: "USD"};
+      return state;
+    }
+    return state;
+  }
 };
 
 

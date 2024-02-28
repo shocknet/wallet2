@@ -12,7 +12,7 @@ export const LnAddressCheck = () => {
 
 	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
 	useEffect(() => {
-		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pasteField.includes("nprofile"))
+		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pubSource)
 		nostrPayTos.forEach(source => {
 			if (!source.vanityName) {
 				const { pubkey, relays, bridge } = decodeNprofile(source.pasteField)
