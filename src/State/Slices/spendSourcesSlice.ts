@@ -9,7 +9,7 @@ export const VERSION = 1;
 
 type SpendSourceRecord = Record<string, SpendFrom>;
 
-interface SpendSourceState {
+export interface SpendSourceState {
   sources: SpendSourceRecord;
   order: string[];
 }

@@ -123,7 +123,7 @@ export const Sources = () => {
   };
 
   const EditSourceSpend_Modal = (key: string) => {
-    const source = paySources.sources[key];
+    const source = spendSources.sources[key];
     if (source) {
       setEditSSourceId(key);
       setOptional(source.option || '');

@@ -6,10 +6,10 @@ export const storageKey = "history"
 type SourceOperations = Record<string /*nprofile*/, Types.UserOperation[]>
 type Cursor = Partial<Types.GetUserOperationsRequest>
 interface History {
-  operations?: SourceOperations
-  cursor?: Cursor
-  latestOperation?: Partial<Types.UserOperation>
-  operationsUpdateHook?: number
+  operations: SourceOperations
+  cursor: Cursor
+  latestOperation: Partial<Types.UserOperation>
+  operationsUpdateHook: number
 }
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   const local = JSON.parse(serialLocal) as History
@@ -30,7 +30,7 @@ const update = (value: History) => {
   localStorage.setItem(storageKey, save);
 }
 
-const initialState: History = JSON.parse(historyLocal ?? "{}");
+const initialState: History = JSON.parse(historyLocal ?? JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0 }));
 // const ops: SourceOperations = {}
 // Object.entries(initialState.operations || {}).forEach(([k, o]) => {
 //   if (!Array.isArray(o)) {
@@ -43,12 +43,10 @@ const historySlice = createSlice({
   name: storageKey,
   initialState,
   reducers: {
-    setSourceHistory: (state, action: PayloadAction<{ pub: string, operations: Types.UserOperation[], cursor: Cursor }>) => {
+    setSourceHistory: (state: History, action: PayloadAction<{ pub: string, operations: Types.UserOperation[], cursor: Cursor }>) => {
       const { pub, operations, cursor } = action.payload
-      if (!state.operations) {
-        state.operations = {}
-      }
-      state.operations[pub] = operations
+      const stateOperations = state.operations[pub] || [];
+      state.operations[pub] = stateOperations.concat(operations.filter(o =>  !stateOperations.find(op => op.operationId === o.operationId)));
       state.cursor = { ...cursor }
       state.operationsUpdateHook = Math.random()
       update(state)
@@ -56,9 +54,6 @@ const historySlice = createSlice({
     setLatestOperation: (state, action: PayloadAction<{ pub: string, operation: Types.UserOperation }>) => {
       const { pub, operation } = action.payload
       state.latestOperation = { ...operation }
-      if (!state.operations) {
-        state.operations = {}
-      }
       if (!state.operations[pub]) {
         state.operations[pub] = [operation]
       } else {
@@ -75,7 +70,7 @@ const historySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(syncRedux, () => {
-      return JSON.parse(localStorage.getItem(storageKey) ?? "{}");
+      return JSON.parse(localStorage.getItem(storageKey) ?? JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0 }));
     })
   }
 });

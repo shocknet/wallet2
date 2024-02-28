@@ -25,7 +25,7 @@ export type SubscriptionPayment = {
   paidSats: number
   fake?: boolean
 }
-interface Subscriptions {
+export interface Subscriptions {
   activeSubs: Subscription[]
   payments: Record<string, SubscriptionPayment[]>
 }

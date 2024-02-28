@@ -9,7 +9,7 @@ import { syncRedux } from '../store';
 
 type PaySourceRecord = Record<string, PayTo>;
 
-interface PaySourceState {
+export interface PaySourceState {
   sources: PaySourceRecord;
   order: string[];
 }

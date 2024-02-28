@@ -9,14 +9,13 @@ export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const spendSources = useSelector((state) => state.spendSource);
-  const operationGroups = useSelector(({ history }) => history.operations) || {}
-  const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook) || 0
+  const operationGroups = useSelector(({ history }) => history.operations)
+  const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook)
 
   const [balance, setBalance] = useState('0.00')
   const [fiatSymbol, setFiatSymbol] = useState('$')
   const [money, setMoney] = useState("0")
 
-  const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
 
   useEffect(() => {
     if (fiatUnit.symbol) {
@@ -24,25 +23,28 @@ export const Home = () => {
     }
   }, [fiatUnit])
 
-  useEffect(() => {
+  const transactionsToRender = useMemo(() => {
     if (!operationGroups) {
-      return
+      return null
     }
     const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
     if (populatedEntries.length === 0) {
       console.log("No operations to display");
-      return;
+      return null;
     }
 
 
     const collapsed: (Types.UserOperation & { source: string, sourceLabel: string })[] = []
     populatedEntries.forEach(([source, operations]) => {
-      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source].label || "unkown" })))
+      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source]?.label || "Deleted Source" })))
     })
     console.log("collpased:", collapsed)
     collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
-    setTransactions(collapsed);
+    return collapsed.map((o, i) =>
+      <SwItem operation={o} key={o.operationId} underline={i !== collapsed.length - 1} />
+    )
   }, [operationsUpdateHook]);
+  
 
   useEffect(() => {
     let totalAmount = 0;
@@ -54,11 +56,6 @@ export const Home = () => {
     setMoney(totalAmount == 0 ? "0" : (totalAmount * price.buyPrice * 0.00000001).toFixed(2))
   }, [spendSources, price]);
 
-  const transactionsToRender = useMemo(() => {
-    return transactions.map((o, i) => {
-      return <SwItem operation={o} key={o.operationId} underline={i !== transactions.length - 1} />
-    })
-  }, [transactions])
 
   return (
     <div className="Home">
