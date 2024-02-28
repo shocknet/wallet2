@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "../../State/store";
-import { flagAsNodedUp } from "../../State/Slices/nodedUpSlice";
+import { setPrivateKey } from "../../State/Slices/nostrPrivateKey";
 import { useHistory } from "react-router";
 
 
@@ -9,11 +9,11 @@ export const NodeUpCheck = () => {
 	const dispatch = useDispatch();
 	const paySource = useSelector((state) => state.paySource);
 	const spendSource = useSelector(state => state.spendSource);
-	const nodedUp = useSelector(state => state.nodedUpSlice);
+	const nodedUp = useSelector(state => state.nostrPrivateKey);
 
 	useEffect(() => {
 		if (!nodedUp && (paySource.order.length > 0 || spendSource.order.length > 0)) {
-			dispatch(flagAsNodedUp());
+			dispatch(setPrivateKey());
 		}
 	}, [paySource, spendSource])
 

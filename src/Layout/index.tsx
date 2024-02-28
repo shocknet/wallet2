@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
-import { useIonRouter } from "@ionic/react";
+import { IonContent, IonFooter, IonHeader, useIonRouter } from "@ionic/react";
 import { Header } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
 import axios from "axios";
 import { useDispatch, useSelector } from "../State/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
-import LoadingOverlay from "../Components/LoadingOverlay";
 
 interface Price {
   buyPrice: number,
@@ -53,20 +52,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
 
   return (
-    <div>
-      {isscan ? (
-        <React.Fragment>
-          {children}
-        </React.Fragment>
-      ) :
-        (
-          <React.Fragment>
-            <Header />
-            {children}
-            <LoadingOverlay />
-            <Footer />
-          </React.Fragment>
-        )}
+    <div className="ion-page">
+      {
+        !isscan
+        &&
+        <IonHeader style={{boxShadow: "none"}}>
+          <Header />
+        </IonHeader>
+      }
+      <IonContent className="ion-padding">
+        {children}
+      </IonContent>
+      {
+        !isscan
+        &&
+        <IonFooter>
+          <Footer />
+        </IonFooter>
+      }
     </div>
   )
 }

@@ -15,13 +15,15 @@ import { validate } from 'bitcoin-address-validation';
 import { Client as NostrClient, parseNprofile } from "../Api/nostr";
 import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 import axios, { isAxiosError } from "axios";
-import { openNotification } from "../constants";
 import { SubscriptionsBackground } from "./BackgroundJobs/subscriptions";
 import { HealthCheck } from "./BackgroundJobs/HealthCheck";
 import { LnAddressCheck } from "./BackgroundJobs/LnAddressCheck";
 import { SpendFrom } from "../globalTypes";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
 import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
+import { toast } from "react-toastify";
+import Toast from "./Toast";
+
 
 export const Background = () => {
 
@@ -68,7 +70,7 @@ export const Background = () => {
 			getNostrClient({ pubkey, relays }).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
-						openNotification("top", "Payments", "You received payment.");
+						toast.info(<Toast title="Payments" message="You received payment." />)
 						dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
 					} else {
 						console.log(newOp.reason)
@@ -94,7 +96,15 @@ export const Background = () => {
 				link: '/auth',
 			}))
 			localStorage.setItem("isBackUp", "1")
-			openNotification("top", "Reminder", "Please back up your credentials!", () => { router.push("/auth") });
+			toast.warn(
+				<Toast
+					title="Reminder"
+					message="Please back up your credentials"
+				/>,
+				{
+					onClick: () => router.push("/auth")
+				}
+			)
 		}
 	}, [paySource, spendSource, dispatch, router])
 
@@ -196,7 +206,7 @@ export const Background = () => {
 						// update the erroring source
 						dispatch(editSpendSources({ ...source, disabled: err.response.data.reason }));
 					} else if (err instanceof Error) {
-						openNotification("top", "Error", err.message);
+						toast.error(<Toast title="Source Error" message={err.message} />)
 					} else {
 						console.log("Unknown error occured", err);
 					}

@@ -8,6 +8,7 @@ import { ProfilePointer } from 'nostr-tools/lib/nip19'
 export const setNostrPrivateKey = (nsec?: string) => {
     const key = nsec ? nsec : generatePrivateKey()
     localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, key)
+    return key;
 }
 export const getNostrPrivateKey = () => {
     return localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)

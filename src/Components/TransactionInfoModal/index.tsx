@@ -13,8 +13,8 @@ import moment from "moment";
 import classNames from "classnames";
 import axios from "axios";
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { openNotification } from "../../constants";
 import { Clipboard } from '@capacitor/clipboard';
+import { toast } from "react-toastify";
 
 const getRightSideValueString = (amount: number, negative: boolean) => {
   return `${negative ? "" : "-"} ${amount} sats`;
@@ -147,7 +147,7 @@ const TextBox = ({ text }: { text: string }) => {
     }).then(() => {
       dispatch(addAsset({ asset: text }));
     });
-    return openNotification("top", "Success", "Copied!");
+    toast.success("Copied to clibpoard!");
   };
 
 

@@ -36,7 +36,8 @@ export const Home = () => {
 
     const collapsed: (Types.UserOperation & { source: string, sourceLabel: string })[] = []
     populatedEntries.forEach(([source, operations]) => {
-      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source]?.label || "Deleted Source" })))
+
+      if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source]?.label || "a deleted" })))
     })
     console.log("collpased:", collapsed)
     collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
