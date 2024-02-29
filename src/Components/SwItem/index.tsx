@@ -50,7 +50,7 @@ export const SwItem = ({
     if (operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) {
       const decodedInvoice = decode(operation.identifier);
       const description = decodedInvoice.sections.find(section => section.name === "description");
-      if (description.value) {
+      if (description && description.value) {
         return description.value;
       }
     }
