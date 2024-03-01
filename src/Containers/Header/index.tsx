@@ -154,7 +154,7 @@ export const Header = () => {
         <div className="Header_modal_content_item">
           <hr />
         </div>
-        <div className="Header_modal_content_item" onClick={() => {
+{/*         <div className="Header_modal_content_item" onClick={() => {
           router.push("/sources");
           toggle();
         }}>
@@ -162,7 +162,7 @@ export const Header = () => {
             {Icons.BuyCryptoIcon()}
           </div>
           <div className="Header_modal_content_item_text">Buy Bitcoin</div>
-        </div>
+        </div> */}
         <div className="Header_modal_content_item" onClick={() => {
           if (debugMode) {
             toggleDebugShown()

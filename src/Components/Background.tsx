@@ -28,14 +28,11 @@ import Toast from "./Toast";
 export const Background = () => {
 
 	const router = useIonRouter();
-	//reducer
-	const operationGroups = useSelector(({ history }) => history.operations)
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
 	const nostrSpends = useSelector(selectNostrSpends);
 	const paySource = useSelector((state) => state.paySource)
-	const cursor = useSelector(({ history }) => history.cursor)
-	const latestOp = useSelector(({ history }) => history.latestOperation)
+	const { cursor, latestOperation: latestOp, operations: operationGroups } = useSelector(state => state.history)
 	const dispatch = useDispatch();
 	const [initialFetch, setInitialFetch] = useState(true)
 	const [clipText, setClipText] = useState("")

@@ -82,12 +82,11 @@ export const SwItem = ({
   }, [operation, addressbook, price]);
 
   return (
-    <AnimatePresence key={operation.operationId}>
+    <>
       <motion.div
         className="SwItem"
         onClick={() => setShown(true)}
         layoutId={operation.operationId}
-        key={operation.operationId}
       >
         <div className="SwItem_left">
             {stateIcons(transactionObject.stateIcon)}
@@ -110,6 +109,6 @@ export const SwItem = ({
           &&
           <TransactionInfoModal key={operation.operationId} operation={operation} hide={() => setShown(!shown)} price={price} />
         }
-    </AnimatePresence>
+    </>
   )
 }
