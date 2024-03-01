@@ -13,7 +13,7 @@ interface History {
   operationsUpdateHook: number
 }
 
-export const VERSION = 1;
+export const VERSION = 2;
 export const migrations: Record<number, MigrationFunction<History>> = {
   // the missing latestOperation migration
   1: (state) => {
@@ -31,6 +31,10 @@ export const migrations: Record<number, MigrationFunction<History>> = {
     })
     return state
   },
+  2: (state: History) => {
+    state.cursor = {};
+    return state;
+  }
 };
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   const local = getStateAndVersion(serialLocal);
@@ -67,6 +71,8 @@ const initialState: History = loadInitialState(
   update
 );
 
+
+
 const historySlice = createSlice({
   name: storageKey,
   initialState,
@@ -74,7 +80,21 @@ const historySlice = createSlice({
     setSourceHistory: (state: History, action: PayloadAction<{ pub: string, operations: Types.UserOperation[], cursor: Cursor }>) => {
       const { pub, operations, cursor } = action.payload
       const stateOperations = state.operations[pub] || [];
-      state.operations[pub] = stateOperations.concat(operations.filter(o =>  !stateOperations.find(op => op.operationId === o.operationId)));
+      /* 
+        Merge the two arrays, giving precedence to the dispatched operations
+        to replace existing elements in state.operations.
+        This is to update entries that were inserted with setLatestOperation
+        where the status could be "Pending" and the fees inaccurate.
+        This change is complimented by migration v2 that resets the cursor object
+        to fix old operations from still being shown as "Pending"
+      */
+      const merged = [
+        ...operations,
+        ...stateOperations.filter(
+          op1 => !operations.some(op2 => op2.operationId === op1.operationId)
+        )
+      ]
+      state.operations[pub] = merged
       state.cursor = { ...cursor }
       state.operationsUpdateHook = Math.random()
       update(state)
