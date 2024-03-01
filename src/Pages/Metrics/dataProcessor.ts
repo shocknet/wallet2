@@ -109,7 +109,7 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     let minBlock = Number.MAX_SAFE_INTEGER
     let maxBlock = 0
     let forwardedEvents = 0
-    let forwardedMSats = 0
+    let forwardedSats = 0
     const totalChainEvents: { x: number; y: number; }[][] = []
     const channelsBalanceRemote: Record<string, { x: number; y: number; }[]> = {}
     const channelsBalanceLocal: Record<string, { x: number; y: number; }[]> = {}
@@ -133,11 +133,9 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
             }
         })
 
-        node.routing_events.forEach(e => {
-            if (e.incoming_amt_msat && e.outgoing_amt_msat) {
-                forwardedEvents++
-                forwardedMSats += e.incoming_amt_msat - e.outgoing_amt_msat
-            }
+        node.channel_routing.forEach(e => {
+            forwardedEvents += e.events_number
+            forwardedSats += e.missed_forward_fee_as_output
         })
     })
     const labels = generateTimeSeriesLabels(minBlock, maxBlock)
@@ -148,8 +146,8 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
             datasets: [...chainDatasets, ...localChannels],
             labels
         },
-        forwardedEvents,
-        forwardRevenue: Math.floor(forwardedMSats / 1000)
+        forwardedEvents: Math.floor(forwardedEvents / 2),
+        forwardRevenue: forwardedSats
     }
 }
 
