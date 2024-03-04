@@ -100,7 +100,7 @@ export const SwItem = ({
               <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
               <div className="SwItem_price_text">{transactionObject.changes}</div>
             </div>
-          <div className="SwItem_changes">~ {fiatSymbol} {transactionObject.price}</div>
+          <div className="SwItem_changes">~ {fiatSymbol}{transactionObject.price}</div>
         </div>
       </motion.div>
       <div className={underline?"SwItem_divider" : ""}></div>

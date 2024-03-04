@@ -301,7 +301,7 @@ export const Receive = () => {
         />
       </div>
       <div className='Receive_modal_amount'>
-        ~ {fiatSymbol} {parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
+        ~ {fiatSymbol}{parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
       </div>
       <button className="Sources_notify_button" onClick={updateInvoice} id="confirm-invoice-amount">OK</button>
     </div>

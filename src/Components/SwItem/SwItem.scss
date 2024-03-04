@@ -25,13 +25,13 @@
   }
 
   &_right{
-    margin-right: 10px;
+    margin-right: 5px;
     float: right;
     margin-top: 5px;
   }
 
   &_text{
-    margin-left: 10px;
+    margin-left: 5px;
   }
 
   &_date{
@@ -47,10 +47,6 @@
 
   &_price{
     display: flex;
-  }
-  
-  &_price_img{
-    margin-right: 5px;
   }
   
   &_price_text{

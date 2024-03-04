@@ -37,6 +37,10 @@
       display: flex;
       justify-content: center;
 
+      @media screen and (max-height: 700px) {
+        width: 42vh;
+      }
+
       & span {
         display: flex;
         text-align: center;
