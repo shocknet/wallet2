@@ -16,6 +16,11 @@
     background-color: white;
     border: 1px solid #2693c1;
     border-radius: 10px;
+
+    @media screen and (max-height: 700px) {
+      width: 42vh;
+    }
+    
     &_text{
       margin-block: 10px;
       transform: translate(-50%, 0);
@@ -35,7 +40,6 @@
       & span {
         display: flex;
         text-align: center;
-        margin-block: 10px;
         justify-content: center;
         // transform: translate(-50%, 0);
         // margin-left: 50%;
