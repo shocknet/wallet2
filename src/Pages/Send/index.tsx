@@ -279,7 +279,7 @@ export const Send = () => {
               Sats per vByte
             </div>}
             <p className='Send_available_amount_amount'>
-              ~ {fiatSymbol} {amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
+              ~ {fiatSymbol}{amount === 0 ? 0 : (amount * price.buyPrice * (amountAssets === "BTC" ? 1 : 0.00000001)).toFixed(2)}
             </p>
           </div>
           <div className="Send_to">
