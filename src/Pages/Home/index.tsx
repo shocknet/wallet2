@@ -9,8 +9,7 @@ export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const spendSources = useSelector((state) => state.spendSource);
-  const operationGroups = useSelector(({ history }) => history.operations)
-  const operationsUpdateHook = useSelector(({ history }) => history.operationsUpdateHook)
+  const { operations: operationGroups, operationsUpdateHook, optimisticOperations } = useSelector(state => state.history)
 
   const [balance, setBalance] = useState('0.00')
   const [fiatSymbol, setFiatSymbol] = useState('$')
@@ -39,12 +38,15 @@ export const Home = () => {
 
       if (operations) collapsed.push(...operations.map(o => ({ ...o, source, sourceLabel: spendSources.sources[source]?.label || "a deleted" })))
     })
-    console.log("collpased:", collapsed)
-    collapsed.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
-    return collapsed.map((o, i) =>
+    console.log("collapsed:", collapsed)
+
+    const newarray = collapsed.concat(optimisticOperations)
+
+    newarray.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
+    return newarray.map((o, i) =>
       <SwItem operation={o} key={o.operationId} underline={i !== collapsed.length - 1} />
     )
-  }, [operationsUpdateHook]);
+  }, [operationsUpdateHook, optimisticOperations]);
   
 
   useEffect(() => {

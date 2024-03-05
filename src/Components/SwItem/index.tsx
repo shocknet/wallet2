@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useSelector } from "../../State/store";
 import { getIdentifierLink } from "../../State/Slices/addressbookSlice";
 import moment from 'moment';
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { TransactionInfo } from "../../Pages/Home";
 import TransactionInfoModal from "../TransactionInfoModal";
 import { decode } from "@gandlaf21/bolt11-decode";
@@ -47,7 +47,7 @@ export const SwItem = ({
     if (link !== operation.identifier) {
       return link
     }
-    if (operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) {
+    if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) && !operation.operationId.startsWith("opt-op")) {
       const decodedInvoice = decode(operation.identifier);
       const description = decodedInvoice.sections.find(section => section.name === "description");
       if (description && description.value) {

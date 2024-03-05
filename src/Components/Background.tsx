@@ -189,7 +189,9 @@ export const Background = () => {
 					const lnurlEndpoint = decodeLnurl(source.pasteField);
 					const response = await axios.get(lnurlEndpoint);
 					const updatedSource = { ...source };
-					updatedSource.balance = Math.round(response.data.maxWithdrawable / 1000).toString();
+					const amount = Math.round(response.data.maxWithdrawable / 1000).toString()
+					updatedSource.balance = amount;
+					updatedSource.maxWithdrawable = amount;
 					dispatch(editSpendSources(updatedSource));
 				} catch (err) {
 					if (isAxiosError(err) && err.response) {
