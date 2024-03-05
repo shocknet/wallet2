@@ -46,7 +46,7 @@ export const Home = () => {
     return newarray.map((o, i) =>
       <SwItem operation={o} key={o.operationId} underline={i !== collapsed.length - 1} />
     )
-  }, [operationsUpdateHook, optimisticOperations]);
+  }, [operationsUpdateHook, optimisticOperations, spendSources]);
   
 
   useEffect(() => {

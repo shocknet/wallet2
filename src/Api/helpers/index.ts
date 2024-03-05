@@ -88,7 +88,7 @@ export const handlePayInvoice = async (invoice: string, sourcePasteField: string
 			throw new Error(res.data.reason);
 		}
 		
-		return { operation_id: `lnurl-withdraw${Date.now()}`, service_fee: 0, network_fee: 0, data: invoice }
+		return { operation_id: `lnurl-withdraw-${Date.now()}`, service_fee: 0, network_fee: 0, data: invoice }
 	}
 };
 
