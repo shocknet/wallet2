@@ -132,9 +132,15 @@ export const Background = () => {
 			fetchSourceHistory(source, client, pubkey, totalHistory.cursor, totalHistory.operations)
 			return
 		}
+
+		const accumulatedHistory = {
+			operations: totalData,
+			cursor: totalHistory.cursor
+		};
+
 		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
 		if (populatedEntries.length === 0) {
-			dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
+			dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
 			return;
 		}
 
@@ -158,7 +164,7 @@ export const Background = () => {
 			}))
 			localStorage.setItem("userStatus", "online");
 		}
-		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
+		dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
 	}
 
 	useEffect(() => {
