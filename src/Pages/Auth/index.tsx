@@ -48,7 +48,8 @@ export const Auth = () => {
   const [newPair, setNewPair] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
+  const arrowIconRef = React.useRef<HTMLInputElement>(null);
+  const backupFileRef = React.useRef<HTMLInputElement>(null);
 
 
 
@@ -187,6 +188,20 @@ export const Auth = () => {
     }, 1000);
   }
 
+  const notRcommendedToggle = () => {
+    if (arrowIconRef.current?.style && backupFileRef.current?.style) {
+      if(arrowIconRef.current.style.transform === "rotate(270deg) translate(-13px, 13px)") {
+        arrowIconRef.current.style.transform = "rotate(0deg)";
+        backupFileRef.current.style.opacity = "1";
+        backupFileRef.current.style.visibility = "initial";
+      }else{
+        arrowIconRef.current.style.transform = "rotate(270deg) translate(-13px, 13px)";
+        backupFileRef.current.style.opacity = "0";
+        backupFileRef.current.style.visibility = "hidden";
+      }
+    }
+  }
+
 
   const [modalContent, setModalContent] = useState<string>('');
   const switchModalContent = () => {
@@ -288,45 +303,36 @@ export const Auth = () => {
               <Checkbox id="service-rule-check" state={serviceCheck} setState={(e) => setServiceCheck(e.target.checked)} />
             </label>
           </div>
-          <div className='Auth_serviceauth'>
-            <header>Service Auth</header>
-            <input value={email} onChange={(e) => { setEmail(e.target.value) }} type="text" placeholder="email@address.here or nsec" />
-            <input type='checkbox' checked={newPair} onChange={e => setNewPair(e.target.checked)} />
-            <input value={sanctumNostrSecret} onChange={(e) => { setSanctumNostrSecret(e.target.value) }} type="text" placeholder="Nostr secret to put in Sanctum" />
-          </div>
-          <div className="Auth_auth_send">
-            <button onClick={() => signUpEmail()}>{Icons.send()}SEND</button>
-          </div>
-          <div className='Auth_border'>
-            <p className='Auth_or'>or</p>
+        </div>
+        <div className='Auth_loginWithEmail'>
+          <a href='https://auth.boufnichel.dev/'>Log-In with Email or Nostr</a>
+        </div>
+        <div className='Auth_sanctum-logo'>
+          <p>Powered by</p>
+          <div>
+            <img src='/santum_huge.png' alt='Sanctum Logo' />
           </div>
         </div>
-        <div className='Auth_download'>
+        <div className='Auth_border'>
+          <p className='Auth_or'>or</p>
+        </div>
+        <div className='Auth_notRecommended' onClick={notRcommendedToggle}>
+          <p>Not recommended</p>
+          <div ref={arrowIconRef}>{Icons.arrowToggle()}</div>
+        </div>
+        <div ref={backupFileRef} className='Auth_download'>
           <div className="Auth_download_button">
             <button onClick={() => { openDownBackupModal() }}>
               Download File Backup
             </button>
           </div>
-          <div className='Auth_description_note'>
-            <b>Note:</b> Be sure to download an updated file after adding or modifying connections.
+          <div className='Auth_import'>
+            <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
+            <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
           </div>
-        </div>
-        <div className='Auth_border'></div>
-        <div className='Auth_import'>
-          <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
-          <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
-        </div>
-        <div className='Auth_import'>
-          <p>Import remote backup</p>
-          {!retreiveAccessToken && <div>
-            {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
-            {accessTokenRetreived && <p>you are now linked to sanctum, click to retreive the backup</p>}
-            <button onClick={() => loadRemoteBackup()}>LOAD</button>
-          </div>}
-          {retreiveAccessToken && <div>
-            <p>no nip07 extion found, use Sanctum instead?</p>
-            <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent("https://" + import.meta.env.VITE_APP_URL + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
-          </div>}
+          <div className='Auth_download_note'>
+            Note: you must download an updated file after adding or modifying node sources. Limited syncing functionality.
+          </div>
         </div>
         <Modal isShown={isShown} hide={toggle} modalContent={switchModalContent()} headerText={''} />
       </div>

@@ -651,3 +651,11 @@ export const switchToggle = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+
+export const arrowToggle = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" style="fill: rgb(255, 119, 0);" vector-effect="non-scaling-stroke"/></g></svg>'
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}
