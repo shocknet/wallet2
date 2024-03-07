@@ -67,7 +67,12 @@ export const Background = () => {
 			getNostrClient({ pubkey, relays }).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
-						toast.info(<Toast title="Payments" message="You received payment." />)
+						// receiving external on-chain txs causes two getLiveUserOperations procs
+						// the history state takes care of this repetition,
+						// but we have to deal with the toast not appearing twice here
+						if (!operationGroups[pubkey].find(op => op.operationId === newOp.operation.operationId)) {
+							toast.info(<Toast title="Payments" message="You received payment." />)
+						}
 						dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
 					} else {
 						console.log(newOp.reason)
@@ -75,7 +80,7 @@ export const Background = () => {
 				})
 			})
 		});
-	}, [nostrSpends, dispatch])
+	}, [nostrSpends, dispatch, operationGroups])
 
 	useEffect(() => {
 		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pubSource);
@@ -117,7 +122,7 @@ export const Background = () => {
 			maxWithdrawable: `${res.max_withdrawable}`
 		}))
 	}
-	const fetchSourceHistory = async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
+	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor)
 		const res = await client.GetUserOperations(req)
 		if (res.status === 'ERROR') {
@@ -132,9 +137,15 @@ export const Background = () => {
 			fetchSourceHistory(source, client, pubkey, totalHistory.cursor, totalHistory.operations)
 			return
 		}
+
+		const accumulatedHistory = {
+			operations: totalData,
+			cursor: totalHistory.cursor
+		};
+
 		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
 		if (populatedEntries.length === 0) {
-			dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
+			dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
 			return;
 		}
 
@@ -158,8 +169,8 @@ export const Background = () => {
 			}))
 			localStorage.setItem("userStatus", "online");
 		}
-		dispatch(setSourceHistory({ pub: pubkey, ...totalHistory }));
-	}
+		dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
+	}, [cursor, dispatch, operationGroups]);
 
 	useEffect(() => {
 		if (Object.entries(latestOp).length === 0 && !initialFetch) {
@@ -189,7 +200,9 @@ export const Background = () => {
 					const lnurlEndpoint = decodeLnurl(source.pasteField);
 					const response = await axios.get(lnurlEndpoint);
 					const updatedSource = { ...source };
-					updatedSource.balance = Math.round(response.data.maxWithdrawable / 1000).toString();
+					const amount = Math.round(response.data.maxWithdrawable / 1000).toString()
+					updatedSource.balance = amount;
+					updatedSource.maxWithdrawable = amount;
 					dispatch(editSpendSources(updatedSource));
 				} catch (err) {
 					if (isAxiosError(err) && err.response) {
@@ -301,12 +314,12 @@ export const Background = () => {
 const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>): Types.GetUserOperationsRequest => {
 	console.log(p)
 	return {
-		latestIncomingInvoice: p.latestIncomingInvoice || 0,
-		latestOutgoingInvoice: p.latestOutgoingInvoice || 0,
-		latestIncomingTx: p.latestIncomingTx || 0,
-		latestOutgoingTx: p.latestOutgoingTx || 0,
-		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment || 0,
-		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment || 0,
+		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice + 1 : 0,
+		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice + 1 : 0,
+		latestIncomingTx: p.latestIncomingTx ? p.latestIncomingTx + 1 : 0,
+		latestOutgoingTx: p.latestOutgoingTx ? p.latestOutgoingTx + 1 : 0,
+		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ? p.latestIncomingUserToUserPayment + 1 : 0,
+		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ? p.latestOutgoingUserToUserPayment + 1 : 0,
 		max_size: 10
 	}
 }

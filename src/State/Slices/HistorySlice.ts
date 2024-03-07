@@ -10,10 +10,11 @@ interface History {
   operations: SourceOperations
   cursor: Cursor
   latestOperation: Partial<Types.UserOperation>
-  operationsUpdateHook: number
+  operationsUpdateHook: number;
+  optimisticOperations: (Types.UserOperation & { source: string, sourceLabel: string })[]
 }
 
-export const VERSION = 2;
+export const VERSION = 3;
 export const migrations: Record<number, MigrationFunction<History>> = {
   // the missing latestOperation migration
   1: (state) => {
@@ -21,7 +22,8 @@ export const migrations: Record<number, MigrationFunction<History>> = {
       operations: {},
       cursor: {},
       latestOperation: {},
-      operationsUpdateHook: 0
+      operationsUpdateHook: 0,
+      optimisticOperations: []
     }
     const interfaceKeys = Object.keys(dummy);
     interfaceKeys.forEach(key => {
@@ -34,7 +36,23 @@ export const migrations: Record<number, MigrationFunction<History>> = {
   2: (state: History) => {
     state.cursor = {};
     return state;
-  }
+  },
+  3: (state) => {
+    const dummy: Record<string, any> = {
+      operations: {},
+      cursor: {},
+      latestOperation: {},
+      operationsUpdateHook: 0,
+      optimisticOperations: []
+    }
+    const interfaceKeys = Object.keys(dummy);
+    interfaceKeys.forEach(key => {
+      if (state[key] === undefined) {
+        state[key] = dummy[key]
+      }
+    })
+    return state
+  },
 };
 export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
   const local = getStateAndVersion(serialLocal);
@@ -47,7 +65,8 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
     operations: mergeRecords<Types.UserOperation[]>(migratedLocal.operations || {}, migratedRemote.operations || {}, (l, r) => mergeArrayValues(l, r, v => v.operationId)),
     cursor: migratedLocal.cursor,
     latestOperation: migratedLocal.latestOperation,
-    operationsUpdateHook: migratedLocal.operationsUpdateHook
+    operationsUpdateHook: migratedLocal.operationsUpdateHook,
+    optimisticOperations: migratedLocal.optimisticOperations
   }
   return JSON.stringify({
     version: VERSION,
@@ -66,7 +85,7 @@ const update = (value: History) => {
 
 const initialState: History = loadInitialState(
   storageKey,
-  JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0 }),
+  JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0, optimisticOperations: [] }),
   migrations,
   update
 );
@@ -115,12 +134,18 @@ const historySlice = createSlice({
       state.operationsUpdateHook = Math.random()
       update(state)
     },
+    updateOptimisticOperation: (state, action: PayloadAction<(Types.UserOperation & { source: string, sourceLabel: string })[]>) =>{
+      state.optimisticOperations = action.payload;
+    },
+    removeOptimisticOperation: (state, action: PayloadAction<string>) => {
+      state.optimisticOperations = state.optimisticOperations.filter(op => op.operationId !== action.payload)
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(syncRedux, () => {
       return loadInitialState(
         storageKey,
-        JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0 }),
+        JSON.stringify({ cursor: {}, operations: {}, latestOperation: {}, operationsUpdateHook: 0, optimisticOperation: [] }),
         migrations,
         update
       );
@@ -128,5 +153,5 @@ const historySlice = createSlice({
   }
 });
 
-export const { setSourceHistory, setLatestOperation } = historySlice.actions;
+export const { setSourceHistory, setLatestOperation, updateOptimisticOperation, removeOptimisticOperation } = historySlice.actions;
 export default historySlice.reducer;

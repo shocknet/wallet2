@@ -74,7 +74,6 @@ export interface Destination {
 	lnurlEndpoint?: string,
 	domainName?: string,
 	hostName?: string,
-	isPub?: boolean,
 	memo?: string
 }
 
@@ -127,7 +126,6 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			lnurlEndpoint,
 			domainName,
 			hostName: hostName.hostname,
-			isPub: domainName === "lightning.pub"
 		};
 	} else if (BITCOIN_ADDRESS_REGEX.test(input)) {
 		const btcAddress = removePrefixIfExists(input, "bitcoin:");
@@ -152,7 +150,6 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			min: Math.floor(res.data.minSendable / 1000),
 			max: Math.floor(res.data.maxSendable / 1000),
 			domainName: lnParts[1],
-			isPub: lnParts[1] === "lightning.pub"
 
 		};
 	} else {

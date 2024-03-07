@@ -65,7 +65,7 @@ export const handlePayInvoice = async (invoice: string, sourcePasteField: string
 			amount: 0,
 		})
 		if (payRes.status == "OK") {
-			return payRes;
+			return { ...payRes, data: invoice };
 		} else {
 			throw new Error(payRes.reason);
 		}
@@ -88,7 +88,7 @@ export const handlePayInvoice = async (invoice: string, sourcePasteField: string
 			throw new Error(res.data.reason);
 		}
 		
-		return { operation_id: `lnurl-withdraw${Date.now()}`, service_fee: 0, network_fee: 0 }
+		return { operation_id: `lnurl-withdraw-${Date.now()}`, service_fee: 0, network_fee: 0, data: invoice }
 	}
 };
 
@@ -102,7 +102,7 @@ export const handlePayBitcoinAddress = async (sourcePasteField: string, address:
 	})
 	
 	if (payRes.status == "OK") {
-		return payRes;
+		return { ...payRes, data: address  };
 	} else {
 		throw new Error(payRes.reason);
 	}
