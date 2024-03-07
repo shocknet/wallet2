@@ -58,15 +58,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
-    
-    // set top value of footer
-    setTimeout(() => {
-      var footer = document.querySelector('.Footer') as HTMLElement;
-      var viewportHeight = window.innerHeight;
-      if (footer) {
-        footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
-      }
-    }, 30);
   }, []);
 
   const setStatusBarColor = async () => {
