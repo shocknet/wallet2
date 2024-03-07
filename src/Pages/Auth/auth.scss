@@ -32,7 +32,7 @@
         margin-block: 10px;
         text-align: center;
         color: white;
-        font-size: 26px;
+        font-size: 24px;
         font-family: Montserrat;
       }
   
@@ -42,28 +42,78 @@
     }
     
     &_description {
-        margin-top: 40px;
+        margin-block-start: 30px;
+
         &_header {
-            color: #FF7700;
-            font-size: 18px;
+            color: #2693c1;
+            font-size: 16px;
             line-height: inherit;
         }
         &_para {
             color: #a3a3a3;
-            font-size: 18px;
+            font-size: 16px;
             text-decoration: none solid rgb(163, 163, 163);
             margin-top: 20px;
+            text-align: justify;
+        }
+    }
+
+    &_loginWithEmail {
+        margin-block-start: 30px;
+        text-align: center;
+        cursor: pointer;
+        
+        &>a {
+            font-size: 24px;
+            color: #2aabe1;
+            text-decoration: underline solid rgb(42, 171, 225);
+        }
+    }
+
+    &_sanctum-logo {
+        margin-block: 20px;
+
+        &>p {
+            font-size: 12px;
+            color: #ffffff;
+            text-align: center;
         }
 
-        &_note {
-            font-size: 18px;
-            display: inline-block;
-            color: #a3a3a3;
-            text-decoration: none solid rgb(163, 163, 163);
-            margin-top: 20px;
-            & b {
-                color: #FF7700;
+        &>div {
+            display: flex;
+            justify-content: center;
+            margin-block-start: 3px;
+            padding: 9px 5px;
+            width: 116px;
+            margin-left: calc(50% - 58px);
+            border-radius: 10px;
+            box-shadow: 0px 0px 2px rgba(153,153,153,1);
+
+            &>img {
+                width: 104px;
+                height: 12px;
             }
+        }
+    }
+
+    &_notRecommended {
+        display: flex;
+        gap: 5px;
+        font-size: 16px;
+        color: #ff7700;
+        text-align: center;
+
+        &>p {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &>div {
+            height: 24px;
+            width: 24px;
+            transform-origin: left;
+            transition-duration: 500ms;
         }
     }
 
@@ -75,8 +125,9 @@
         width: 100%;
         justify-content: end;
         &_title {
-            color: #29abe2;
-            font-size: 20px;
+            color: #a3a3a3;
+            font-weight: bold;
+            font-size: 18px;
             margin-right: 10px;
         }
         &_box {
@@ -112,46 +163,10 @@
         }
     }
 
-    &_auth_send {
-        display: inline-flex;
-        align-items: center;
-        justify-content: end;
-        margin-top: 6px;
-        margin-left: auto;
-        width: 100%;
-  
-      & button {
-        width: 140px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        box-sizing: border-box;
-        font-size: 22px;
-        font-family: Montserrat;
-        font-weight: bold;
-        padding: 8px 15px;
-        $border: 1px;
-        color: #FFF;
-        background: #16191c;
-        background-clip: padding-box; /* !importanté */
-        border: solid $border transparent; /* !importanté */
-        border-radius: 5px;
-      
-        &:before {
-          content: '';
-          position: absolute;
-          top: 0; right: 0; bottom: 0; left: 0;
-          z-index: -1;
-          margin: -$border; /* !importanté */
-          border-radius: 3px; /* !importanté */
-          background: linear-gradient(150deg, #29ABE2, #B0B0B0);
-        }
-      }
-    }
-
     &_download {
         display: block;
+        margin-block-start: 15px;
+        transition-duration: 500ms;
         text-align: center;
         width: 100%;
         &_button button{
@@ -164,19 +179,27 @@
             width: 220px;
             transition-duration: 400ms;
         }
+
+        &_note {
+            font-size: 12px;
+            display: inline-block;
+            color: #a3a3a3;
+            text-decoration: none solid rgb(163, 163, 163);
+            margin-block-start: 10px;
+        }
     }
 
     &_import {
+        margin-block-start: 10px;
         color: #29abe2;
-        font-size: 20px;
+        font-size: 18px;
         width: 100%;
         text-align: center;
-        text-decoration: underline;
     }
 
     &_border {
         border-top: 1px solid #999999;
-        margin-block: 15px;
+        margin-block: 20px;
         display: inline-flex;
         width: 100%;
         justify-content: center;
