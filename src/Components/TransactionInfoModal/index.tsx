@@ -63,7 +63,14 @@ const TransactionInfoModal = ({ operation, hide } : Props) => {
     if (operation.operationId.startsWith("lnurl-withdraw")) { // lnurl-w spend source
       return "Sent (lnurl-w)"
     }
-    return confirmed ? (onChain && !internal ? `${mempoolres!.lastBlock - mempoolres!.blockHeight} confirmations` : "Confirmed") : "Pending"
+    if (!confirmed) {
+      return "Pending"
+    }
+    if (confirmed && onChain && !internal && mempoolres) {
+      return `${mempoolres.lastBlock - mempoolres.blockHeight} confirmations`;
+    } else {
+      return "Confirmed"
+    }
   }, [confirmed, internal, mempoolres, onChain, operation])
 
   const modal = 
@@ -128,7 +135,7 @@ const TransactionInfoModal = ({ operation, hide } : Props) => {
 									&&
 									<div className={classNames(styles["info-item"], styles["info-item-databox"])}>
                     <span className={styles["left"]}>Txid</span>
-										<TextBox text={operation.tx_hash}/>
+										<TextBox text={operation.tx_hash} />
                   </div>
 								}
               </div>
@@ -146,14 +153,12 @@ const TransactionInfoModal = ({ operation, hide } : Props) => {
 const TextBox = ({ text }: { text: string }) => {
   const dispatch = useDispatch();
 	
-	const [expanded, setExpanded] = useState(false);
 
 	const copyToClip = async () => {
     await Clipboard.write({
       string: text
-    }).then(() => {
-      dispatch(addAsset({ asset: text }));
-    });
+    })
+    dispatch(addAsset({ asset: text }))
     toast.success("Copied to clibpoard!");
   };
 
@@ -164,9 +169,7 @@ const TextBox = ({ text }: { text: string }) => {
 			className={classNames({
 				[styles["right"]]: true,
 				[styles["data-box"]]: true,
-				[styles["expanded"]]: expanded,
 			})}
-			onClick={() => setExpanded(!expanded)}
 		>
 			<span className={styles["hover"]} onClick={(e) => {
 				e.stopPropagation();

@@ -60,6 +60,7 @@ export const Send = () => {
 
   const [satsPerByte, setSatsPerByte] = useState(0)
   const [fiatSymbol, setFiatSymbol] = useState('$')
+  const [sendRunning, setSendRunning] = useState(false);
   
   const [to, setTo] = useState({
     input: "",
@@ -224,6 +225,12 @@ export const Send = () => {
       return;
     }
 
+    if (sendRunning) {
+      return
+    }
+
+    setSendRunning(true)
+
     const optimisticOperationId = `opt-op-${Date.now().toString()}`;
 
     const operationType = determineOperationType(destination.type)
@@ -256,8 +263,9 @@ export const Send = () => {
       }
       dispatch(removeOptimisticOperation(optimisticOperationId));
     }
+    setSendRunning(false);
 
-  }, [amount, destination, paymentSuccess, dispatch, selectedSource, satsPerByte, setOptimisticOperation]);
+  }, [amount, destination, paymentSuccess, dispatch, selectedSource, satsPerByte, setOptimisticOperation, sendRunning]);
 
 
 
@@ -270,6 +278,10 @@ export const Send = () => {
   </React.Fragment>;
 
   const setMaxValue = () => {
+    if (destination.type === InputClassification.LNURL && destination.max && selectedSource.maxWithdrawable) {
+      setAmount(Math.min(destination.max, parseInt(selectedSource.maxWithdrawable)))
+      return;
+    }
     if(selectedSource.maxWithdrawable) {
       setAmount(parseInt(selectedSource.maxWithdrawable))
     }
