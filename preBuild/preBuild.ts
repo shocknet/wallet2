@@ -6,7 +6,6 @@ require('dotenv').config();
 const androidManifestPath = 'android/app/src/main/AndroidManifest.xml';
 let androidManifest = fs.readFileSync('preBuild/AndroidManifest.copy.xml', 'utf8');
 androidManifest = androidManifest.replace('${appUrl}', process.env.VITE_APP_URL);
-androidManifest = androidManifest.replace('${appUrl2}', process.env.VITE_APP_URL2);
 androidManifest = androidManifest.replace('${appName}', process.env.VITE_APP_NAME);
 fs.writeFileSync(androidManifestPath, androidManifest);
 
