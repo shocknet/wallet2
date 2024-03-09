@@ -26,6 +26,8 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>shockwallet</string>
+				<string>bitcoin</string>
+				<string>lightning</string>
 			</array>
 		</dict>
 	</array>
