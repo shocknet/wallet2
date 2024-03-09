@@ -17,6 +17,8 @@ const stateIcons = (icon?: string) => {
 
     case 'linked':
       return linkIcon();
+    case "hour":
+      return Icons.hourGlass()
   }
 }
 interface Props {
@@ -39,6 +41,9 @@ export const SwItem = ({
   const [fiatSymbol, setFiatSymbol] = useState('$')
 
   const getOperationLabel = useCallback(() => {
+    if (operation.operationId.startsWith("opt-op")) {
+      return operation.optLabel || operation.sourceLabel || "Deleted Source"
+    }
     const note = (addressbook.identifierToMemo || {})[operation.identifier]
     if (note) {
       return note
@@ -47,10 +52,19 @@ export const SwItem = ({
     if (link !== operation.identifier) {
       return link
     }
-    if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) && !operation.operationId.startsWith("opt-op")) {
+    if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE)) {
       const decodedInvoice = decode(operation.identifier);
       const description = decodedInvoice.sections.find(section => section.name === "description");
       if (description && description.value) {
+        try {
+          const parsedDescription = JSON.parse(description.value);
+          if (Array.isArray(parsedDescription) && Array.isArray(parsedDescription[0])) {
+            const memo = parsedDescription[0][1];
+            return memo;
+          }
+        } catch {
+          console.log("")
+        }
         return description.value;
       }
     }
@@ -67,7 +81,7 @@ export const SwItem = ({
 
     const isChain = operation.type === Types.UserOperationType.OUTGOING_TX || operation.type === Types.UserOperationType.INCOMING_TX
     let date = "Pending"
-    if (!isChain || operation.confirmed) {
+    if (operation.confirmed) {
       date = moment(operation.paidAtUnix * 1000).fromNow()
     }
     const label = getOperationLabel()
@@ -77,7 +91,7 @@ export const SwItem = ({
       changes: `${operation.inbound ? "" : "-"}${operation.amount}`,
       date,
       price: Math.round(100 * operation.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
-      stateIcon: isChain ? "linked" : "lightning",
+      stateIcon: !operation.confirmed ? "hour" : isChain ? "linked" : "lightning",
     }
   }, [operation, price, getOperationLabel]);
 
