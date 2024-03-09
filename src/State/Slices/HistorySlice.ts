@@ -11,7 +11,7 @@ interface History {
   cursor: Cursor
   latestOperation: Partial<Types.UserOperation>
   operationsUpdateHook: number;
-  optimisticOperations: (Types.UserOperation & { source: string, sourceLabel: string })[]
+  optimisticOperations: (Types.UserOperation & { source: string, sourceLabel: string, optLabel?: string })[]
 }
 
 export const VERSION = 3;
@@ -115,7 +115,6 @@ const historySlice = createSlice({
       ]
       state.operations[pub] = merged
       state.cursor = { ...cursor }
-      state.operationsUpdateHook = Math.random()
       update(state)
     },
     setLatestOperation: (state, action: PayloadAction<{ pub: string, operation: Types.UserOperation }>) => {
@@ -131,14 +130,16 @@ const historySlice = createSlice({
           state.operations[pub].push(operation)
         }
       }
-      state.operationsUpdateHook = Math.random()
       update(state)
     },
-    updateOptimisticOperation: (state, action: PayloadAction<(Types.UserOperation & { source: string, sourceLabel: string })[]>) =>{
+    updateOptimisticOperation: (state, action: PayloadAction<(Types.UserOperation & { source: string, sourceLabel: string, optLabel?: string })[]>) =>{
       state.optimisticOperations = action.payload;
     },
     removeOptimisticOperation: (state, action: PayloadAction<string>) => {
-      state.optimisticOperations = state.optimisticOperations.filter(op => op.operationId !== action.payload)
+      state.optimisticOperations = state.optimisticOperations.filter(op => op.source !== action.payload)
+    },
+    procOperationsUpdateHook: (state) => {
+      state.operationsUpdateHook = Math.random()
     }
   },
   extraReducers: (builder) => {
@@ -153,5 +154,5 @@ const historySlice = createSlice({
   }
 });
 
-export const { setSourceHistory, setLatestOperation, updateOptimisticOperation, removeOptimisticOperation } = historySlice.actions;
+export const { setSourceHistory, setLatestOperation, updateOptimisticOperation, removeOptimisticOperation, procOperationsUpdateHook } = historySlice.actions;
 export default historySlice.reducer;

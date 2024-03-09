@@ -8,10 +8,14 @@ import { editPaySources } from "../../State/Slices/paySourcesSlice";
 export const LnAddressCheck = () => {
 	const paySource = useSelector((state) => state.paySource);
 	const spendSource = useSelector(state => state.spendSource);
+	const nodedUp = useSelector(state => state.nostrPrivateKey)
 	const dispatch = useDispatch();
 
 	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
 	useEffect(() => {
+		if (!nodedUp) {
+			return;
+		}
 		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pubSource)
 		nostrPayTos.forEach(source => {
 			if (!source.vanityName) {
@@ -39,7 +43,7 @@ export const LnAddressCheck = () => {
 		/* spendSource in the dependency array instead of paySource to avoid infinite loop
 			adding a nostr source is both an addition of paySource and spendSource, so it's a hacky trick
 		*/
-	}, [dispatch, spendSource]);
+	}, [dispatch, spendSource, nodedUp]);
 
 	return null;
 }
