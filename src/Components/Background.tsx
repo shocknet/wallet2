@@ -261,7 +261,7 @@ export const Background = () => {
 				text = value;
 			}
 		} catch (error) {
-			return console.error('Error reading clipboard data:', error);
+			return console.error("Cannot read clipboard");
 		}
 		if (savedAssets?.includes(text)) {
 			return;

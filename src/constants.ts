@@ -127,7 +127,7 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			domainName,
 			hostName: hostName.hostname,
 		};
-	} else if (BITCOIN_ADDRESS_REGEX.test(input)) {
+	/* } else if (BITCOIN_ADDRESS_REGEX.test(input)) {
 		const btcAddress = removePrefixIfExists(input, "bitcoin:");
 		const isValidAddress = validate(btcAddress);
 		if (!isValidAddress) {
@@ -136,7 +136,7 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 		return {
 			type: InputClassification.BITCOIN_ADDRESS,
 			data: btcAddress
-		};
+		}; */
 	} else if (LN_ADDRESS_REGEX.test(input)) {
 		const lnParts = input.split("@");
 

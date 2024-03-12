@@ -317,7 +317,7 @@ export const Send = () => {
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input id="bitcoin-input" type="text" placeholder="Invoice, Bitcoin or Lightning Address, nPub, Email" value={to.input} onChange={(e) => setTo({input: e.target.value.toLocaleLowerCase(), parse: true})} />
+            <input id="bitcoin-input" type="text" placeholder="Invoice, Lnurl-p or Lightning Address" value={to.input} onChange={(e) => setTo({input: e.target.value.toLocaleLowerCase(), parse: true})} />
           </div>
           <div className="Send_for">
             <p>For:</p>
