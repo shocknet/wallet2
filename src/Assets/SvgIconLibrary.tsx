@@ -462,6 +462,14 @@ export const linkIcon = () => {
     )
 };
 
+export const hourGlass = () => {
+    return (
+        <div className="SwItem_stateIcon">⌛</div>
+    )
+};
+
+
+
 export const mynode = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="e32536c924714fcda0ee8c743c7c05a7" style="overflow: visible;width: 33px;height: 33px;opacity: 1;mix-blend-mode: normal><defs><path id="path-169271476228410641" d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z"></path><pattern id="pattern-169271476234011279" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675274%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.0582010582010582, 0.0582010582010582)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234011279&quot;);"></path></g></svg>`;
     return (
