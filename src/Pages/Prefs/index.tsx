@@ -124,7 +124,7 @@ export const Prefs = () => {
     setChainFees(getFee.data);
   }
 
-  const touchMoveSlide = (e: any) => {
+/*   const touchMoveSlide = (e: any) => {
     let positionX = 0;
     if (e.type.includes("mouse")) {
       positionX = e.pageX - window.innerWidth * 0.06 - 12;
@@ -141,9 +141,9 @@ export const Prefs = () => {
       positionX = window.innerWidth * 0.88 - 23;
     }
     setPos(positionX);
-  }
+  } */
 
-  const touchEndSlide = () => {
+/*   const touchEndSlide = () => {
     const feeValue = pos * 2 / screenWidth;
     switch (Math.round(feeValue)) {
       case 0:
@@ -162,7 +162,7 @@ export const Prefs = () => {
         break;
     }
     setClick(false);
-  }
+  } */
 
   const handleChangeFiatCurrency = (currency: string) => {
     setFiatCurreny(currency);
@@ -174,7 +174,7 @@ export const Prefs = () => {
     <div className='Prefs_container'>
       <div className="Prefs">
         <div className="Prefs_header_text">Preferences</div>
-        <div className="Prefs_chainfee">
+        {/* <div className="Prefs_chainfee">
           <header>Default Chain Fee</header>
           <div className='Prefs_chainfee_options'>
             <div className='Prefs_chainfee_options_first'>
@@ -204,7 +204,7 @@ export const Prefs = () => {
               {Icons.prefsSetting()}
             </div>
           </div>
-        </div>
+        </div> */}
         <div className='Prefs_mempool'>
           <header>Mempool Provider</header>
           <input value={mempool} onChange={(e) => { setMempool(e.target.value) }} type="text" placeholder="example: https://mempool.space/api/v1/fees/recommended" />
