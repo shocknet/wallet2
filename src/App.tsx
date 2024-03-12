@@ -1,5 +1,5 @@
 import { Route } from 'react-router-dom';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   IonApp,
   IonRouterOutlet,
@@ -24,7 +24,6 @@ import { Sources } from './Pages/Sources';
 import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
-import { useEffect } from 'react';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'

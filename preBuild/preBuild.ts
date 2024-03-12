@@ -12,9 +12,16 @@ fs.writeFileSync(androidManifestPath, androidManifest);
 // Read and modify the Info.plist file
 const infoPlistPath = 'ios/App/App/Info.plist';
 let infoPlist = fs.readFileSync('preBuild/Info.copy.plist', 'utf8');
-console.log(infoPlist);
 
 infoPlist = infoPlist.replace('${appUrl}', process.env.VITE_APP_URL);
+
 fs.writeFileSync(infoPlistPath, infoPlist);
+
+// Read and modify the App.entitlements file
+const entitlementsPath = 'ios/App/App/App.entitlements';
+let entitlements = fs.readFileSync('preBuild/App.entitlements.copy', 'utf8');
+entitlements = entitlements.replace('${appUrl}', process.env.VITE_APP_URL);
+
+fs.writeFileSync(entitlementsPath, entitlements);
 
 console.log('Pre-build script completed');

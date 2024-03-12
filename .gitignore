@@ -34,3 +34,4 @@ yarn-error.log*
 .env.production
 android/app/src/main/AndroidManifest.xml
 ios/App/App/Info.plist
+ios/App/App/App.entitlements

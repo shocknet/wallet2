@@ -4,8 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:test.shockwallet.app</string>
-		<string>applinks:my.shockwallet.app</string>
+		<string>applinks:${appUrl}</string>
 	</array>
 </dict>
 </plist>

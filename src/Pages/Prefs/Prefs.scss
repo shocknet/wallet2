@@ -3,23 +3,19 @@
         width: 24px;
         height: 24px;
         margin-top: -14px;
-        // margin-inline: auto;
         background-color: #16191c;
-        // transform: translateX(100%);
     }
 
     &_container {
-      width: 94%;
+      width: 100%;
       max-width: 800px;
-      transform: translate(-50%, 0);
-      margin-left: 50%;
       padding-bottom: 30px;
       transition-duration: 500ms;
       font-family: Montserrat;
       justify-content: center;
-      position: fixed;
       left: 0;
       height: 100%;
+      margin: 0 auto;
     }
   
     &_header {
