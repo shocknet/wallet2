@@ -5,7 +5,7 @@ import { UseModal } from "../../Hooks/UseModal";
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import SWText from "../../Assets/Images/sw_text.png";
-import { useIonRouter } from "@ionic/react";
+import { useIonRouter,isPlatform } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
@@ -108,6 +108,17 @@ export const Header = () => {
       clearTimeout(tripeClickTimer);
     };
   }, [logoClickCounter, router]);
+
+  useEffect(() => {
+    if (isPlatform('ios')) {
+      setTimeout(() => {
+        var header = document.querySelector('.Header') as HTMLElement;
+        if (header) {
+          header.style.marginTop = '5vh';
+        }
+      }, 30)
+    }
+  }, []);
 
   const content = <React.Fragment>
     <div className="Header_modal">

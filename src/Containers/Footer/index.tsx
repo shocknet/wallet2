@@ -2,7 +2,7 @@ import React, {useEffect} from "react";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { useIonRouter } from "@ionic/react";
+import { useIonRouter, isPlatform } from "@ionic/react";
 
 export const Footer = () => {
   const router = useIonRouter();
@@ -11,14 +11,16 @@ export const Footer = () => {
   const receive: boolean = router.routeInfo.pathname === "/receive";
 
   useEffect(() => {
-    setTimeout(() => {
-      var footer = document.querySelector('.Footer') as HTMLElement;
-      var viewportHeight = window.innerHeight;
-      if (footer) {
-        footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
-      }
-    }, 30)
-  }, [])
+    if (isPlatform('android')) {
+      setTimeout(() => {
+        var footer = document.querySelector('.Footer') as HTMLElement;
+        var viewportHeight = window.innerHeight;
+        if (footer) {
+          footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
+        }
+      }, 30)
+    }
+  }, []);
 
   return (
     <div>
