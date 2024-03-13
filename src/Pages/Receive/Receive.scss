@@ -19,6 +19,11 @@
 
     @media screen and (max-height: 700px) {
       width: 42vh;
+      
+      &>svg {
+        width: 230px;
+        height: 230px;
+      }
     }
     
     &_text{
@@ -39,6 +44,7 @@
 
       @media screen and (max-height: 700px) {
         width: 42vh;
+        margin-block-start: -10px;
       }
 
       & span {
