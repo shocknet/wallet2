@@ -5,11 +5,12 @@ import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { encodeNprofile } from "../../custom-nip19";
+import { generatePrivateKey, getPublicKey } from "nostr-tools";
 
 export const NodeUp = () => {
   const router = useIonRouter();
 
-  // from local storage means the value here isn't updated upon doing an option
+  // from local storage, as opposed to from redux, means the value here isn't updated upon doing an option
   // which serves the purpose of allowing the loader screen to show without immediately going to /home
   const privateKeyFromStorage = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
@@ -42,6 +43,8 @@ export const NodeUp = () => {
 
 
   const addBootStrapSources = async () => {
+    const privateKey = generatePrivateKey()
+    const publicKey = getPublicKey(privateKey);
     if (Object.values(paySources.sources || {}).length !== 0 && Object.values(spendSources.sources || {}).length !== 0) {
       return;
     } else {
@@ -59,7 +62,11 @@ export const NodeUp = () => {
         pasteField: nprofile,
         option: options.little,
         icon: "0",
-        pubSource: true
+        pubSource: true,
+        keys: {
+          privateKey,
+          publicKey
+        }
       }));
       dispatch(addSpendSources({
         id: NOSTR_PUB_DESTINATION,
@@ -68,7 +75,11 @@ export const NodeUp = () => {
         option: options.little,
         icon: "0",
         balance: bootstrapBalance,
-        pubSource: true
+        pubSource: true,
+        keys: {
+          privateKey,
+          publicKey
+        }
       }));
     }
   }

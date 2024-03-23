@@ -148,8 +148,8 @@ export const Receive = () => {
     const topPaySource = paySource.sources[paySource.order[0]];
     let invoice = "";
     try {
-      if (topPaySource.pasteField.includes("nprofile")) {
-        invoice = await createNostrInvoice(topPaySource.pasteField, +amountToRecive, invoiceMemo);
+      if (topPaySource.pubSource && topPaySource.keys) {
+        invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, +amountToRecive, invoiceMemo);
       } else {
         const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
         invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
@@ -173,8 +173,8 @@ export const Receive = () => {
     const topPayToSource = paySource.sources[paySource.order[0]];
 
     try {
-      if (topPayToSource.pubSource) {
-        const lnurl = await createNostrPayLink(topPayToSource.pasteField);
+      if (topPayToSource.pubSource && topPayToSource.keys) {
+        const lnurl = await createNostrPayLink(topPayToSource.pasteField, topPayToSource.keys);
         setLNurl("lightning:" + lnurl);
         setValueQR("lightning:" + lnurl);
       } else if (topPayToSource.pasteField.includes("@")) {
@@ -191,9 +191,9 @@ export const Receive = () => {
       }
 
       // btc address
-      if (topPayToSource.pubSource) {
+      if (topPayToSource.pubSource && topPayToSource.keys) {
         if (bitcoinAdd !== '') return;
-        const address = await getNostrBtcAddress(topPayToSource.pasteField);
+        const address = await getNostrBtcAddress(topPayToSource.pasteField, topPayToSource.keys);
 
         setBitcoinAdd(address);
         setBitcoinAddText(

@@ -5,6 +5,8 @@ import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigration
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 import { syncRedux } from '../store';
+import { getNostrPrivateKey } from '../../Api/nostr';
+import { getPublicKey } from 'nostr-tools';
 
 
 type PaySourceRecord = Record<string, PayTo>;
@@ -16,7 +18,7 @@ export interface PaySourceState {
 
 
 export const storageKey = "payTo"
-export const VERSION = 2;
+export const VERSION = 3;
 export const migrations: Record<number, MigrationFunction<any>> = {
   // the bridge url encoded in nprofile migration
   1: (data) => {
@@ -63,6 +65,22 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       sources: payToRecord,
       order
     } as PaySourceState;
+  },
+   // key pair per source migration
+   3: (state) => {
+    const privateKey = getNostrPrivateKey()
+    if (!privateKey) return state;
+    if (state.sources) {
+      for (const key in state.sources) {
+        if (state.sources[key].pubSource && !state.sources[key].keys) {
+          state.sources[key].keys = {
+            privateKey,
+            publicKey: getPublicKey(privateKey)
+          }
+        }
+      }
+    }
+    return state
   }
 };
 
