@@ -24,6 +24,7 @@ import { useLocation } from 'react-router';
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { generatePrivateKey, getPublicKey } from 'nostr-tools';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -196,14 +197,19 @@ export const Sources = () => {
       const resultLnurl = new URL(data.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
-
+      const privateKey = generatePrivateKey();
+      const publicKey = getPublicKey(privateKey)
       const addedPaySource = {
         id: data.pubkey,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: sourcePasteField,
-        pubSource: true
+        pubSource: true,
+        keys: {
+          publicKey,
+          privateKey
+        }
       } as PayTo;
       dispatch(addPaySources(addedPaySource))
       const addedSpendSource = {
@@ -213,7 +219,11 @@ export const Sources = () => {
         icon: sndleveldomain,
         balance: "0",
         pasteField: sourcePasteField,
-        pubSource: true
+        pubSource: true,
+        keys: {
+          publicKey,
+          privateKey
+        }
       } as SpendFrom;
       dispatch(addSpendSources(addedSpendSource));
     } else {
@@ -369,11 +379,10 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "Sweeping..." }));
     const topPaySource = paySources.sources[paySources.order[0]];
     let invoice = "";
-    const isNprofile = topPaySource.pasteField.includes("nprofile");
     if (tempParsedWithdraw && tempParsedWithdraw.max) {
       try {
-        if (isNprofile) {
-          invoice = await createNostrInvoice(topPaySource.pasteField, tempParsedWithdraw.max);
+        if (topPaySource.pubSource && topPaySource.keys) {
+          invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, tempParsedWithdraw.max);
         } else {
           invoice = await createLnurlInvoice(tempParsedWithdraw.max, await parseBitcoinInput(topPaySource.pasteField));
         }

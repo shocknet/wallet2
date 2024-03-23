@@ -1,4 +1,5 @@
 import React from "react";
+import { NostrKeyPair } from "./Api/nostrHandler";
 
 type PriceImgFunction = (arg1: string, arg2: number) => string;
 
@@ -132,7 +133,8 @@ export interface SpendFrom {
   maxWithdrawable?: string; // Max sats payable to out of pub invoice
   disabled?: string // the error message
   disconnected?: boolean;
-  pubSource?: boolean
+  pubSource?: boolean,
+  keys?: NostrKeyPair
 }
 
 export interface PayTo {
@@ -143,7 +145,8 @@ export interface PayTo {
   icon: string;
   disconnected?: boolean
   vanityName?: string;
-  pubSource?: boolean;
+  pubSource?: boolean,
+  keys?: NostrKeyPair
 }
 
 export interface FiatCurrency {

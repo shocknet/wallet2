@@ -229,17 +229,17 @@ export const Send = () => {
       let payRes;
       switch (destination.type) {
         case InputClassification.LN_INVOICE: {
-          payRes = await handlePayInvoice(destination.data, selectedSource.pasteField);
+          payRes = await handlePayInvoice(destination.data, selectedSource);
           break;
         }
         case InputClassification.LN_ADDRESS:
         case InputClassification.LNURL: {
           const invoice = await createLnurlInvoice(amount, destination);
-          payRes = await handlePayInvoice(invoice, selectedSource.pasteField);
+          payRes = await handlePayInvoice(invoice, selectedSource);
           break;
         }
         case InputClassification.BITCOIN_ADDRESS: {
-          payRes = await handlePayBitcoinAddress(selectedSource.pasteField, destination.data, amount, satsPerByte)
+          payRes = await handlePayBitcoinAddress(selectedSource, destination.data, amount, satsPerByte)
         }
       }
       
