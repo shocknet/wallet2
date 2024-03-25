@@ -18,10 +18,10 @@ export const LnAddressCheck = () => {
 		}
 		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pubSource)
 		nostrPayTos.forEach(source => {
-			if (!source.vanityName) {
+			if (!source.vanityName && source.keys) {
 				const { pubkey, relays, bridge } = decodeNprofile(source.pasteField)
 				if (bridge && bridge.length > 0) {
-					getNostrClient({ pubkey, relays }).then(c => {
+					getNostrClient({ pubkey, relays }, source.keys).then(c => {
 						c.GetLnurlPayLink().then(pubRes => {
 							if (pubRes.status !== 'OK') {
 								console.log("Pub error: ", pubRes.reason);

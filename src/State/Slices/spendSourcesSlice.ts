@@ -4,8 +4,10 @@ import { mergeArrayValuesWithOrder, mergeBasicRecords } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 import { decodeNprofile } from '../../custom-nip19';
 import { syncRedux } from '../store';
+import { getNostrPrivateKey } from '../../Api/nostr';
+import { getPublicKey } from 'nostr-tools';
 export const storageKey = "spendFrom"
-export const VERSION = 1;
+export const VERSION = 2;
 
 type SpendSourceRecord = Record<string, SpendFrom>;
 
@@ -35,6 +37,22 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       sources: payToRecord,
       order
     } as SpendSourceState;
+  },
+  // key pair per source migration
+  2: (state) => {
+    const privateKey = getNostrPrivateKey()
+    if (!privateKey) return state;
+    if (state.sources) {
+      for (const key in state.sources) {
+        if (state.sources[key].pubSource && !state.sources[key].keys) {
+          state.sources[key].keys = {
+            privateKey,
+            publicKey: getPublicKey(privateKey)
+          }
+        }
+      }
+    }
+    return state
   }
 };
 

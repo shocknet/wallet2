@@ -54,7 +54,7 @@ export const SubscriptionsBackground = () => {
 				sats = (sub.price.amt / 100) / satsFiatCurrency
 			}
 			const invoice = await createLnurlInvoice(sats, sub.destionation);
-			const payRes = await handlePayInvoice(invoice, spendSource.pasteField);
+			const payRes = await handlePayInvoice(invoice, spendSource);
 			const now = Date.now() / 1000
 			dispatch(setLatestOperation({
 				pub: parseNprofile(spendSource.pasteField).pubkey, operation: {

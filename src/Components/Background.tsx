@@ -70,7 +70,7 @@ export const Background = () => {
 		nostrSpends.forEach(source => {
 			const { pubkey, relays } = parseNprofile(source.pasteField)
 
-			getNostrClient({ pubkey, relays }).then(c => {
+			getNostrClient({ pubkey, relays }, source.keys!).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
 						// receiving external on-chain txs causes two getLiveUserOperations procs
@@ -186,7 +186,7 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			const client = await getNostrClient({ pubkey, relays })
+			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await getSourceInfo(s, client)
 		})
 	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp])
@@ -198,7 +198,7 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			const client = await getNostrClient({ pubkey, relays })
+			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await fetchSourceHistory(s, client, pubkey)
 		})
 	}, [operationsUpdateHook, nostrSpends.length, nodedUp])
