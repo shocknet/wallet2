@@ -33,6 +33,7 @@ type ChannelsInfo = {
   closingChannels: number
   openChannels: number[]
   closeChannels: number[]
+  ChainCreditRoot: number[]
   bestLocalChan: string
   bestRemoteChan: string
 }
@@ -171,6 +172,7 @@ export const Metrics = () => {
       pendingChannels: lnd.nodes[0].pending_channels,
       closeChannels: lnd.nodes[0].closed_channels.map(c => c.closed_height),
       openChannels,
+      ChainCreditRoot: [],
       bestLocalChan: bestLocal.n,
       bestRemoteChan: bestRemote.n
     })
@@ -235,8 +237,8 @@ export const Metrics = () => {
           data={lndGraphsData.balanceEvents}
           options={{
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 16 / 9,
+            maintainAspectRatio: false,
+            aspectRatio: 5 / 2,
             elements: {
               line: {
                 borderWidth: 3,
@@ -288,9 +290,9 @@ export const Metrics = () => {
               </div>}
 
             />
-            {/* 		<div className={styles["arrows"]}>
-							Arrows
-						</div> */}
+            <div className={classNames(styles["arrows"], styles["box"])}>
+							{Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
+ 						</div>
           </div>
           <div className={classNames(styles["box"], styles["border"])}>
             Manage
@@ -302,12 +304,15 @@ export const Metrics = () => {
       <div className={styles["section"]}>
         <h3 className={styles["sub-title"]}>Events</h3>
         <div className={styles["column-flex"]}>
-          {channelsInfo.openChannels.map(v => <>
-            <div className={styles["event-item"]}><span> ⚡️&nbsp; Channel Opened</span> <span className={styles["date"]}>{getTimeAgo(v)}</span></div>
-          </>)}
-          {channelsInfo.closeChannels.map(v => <>
-            <div className={styles["event-item"]}><span> 🚨&nbsp; Channel Closed</span> <span className={styles["date"]}>At block {v}</span></div>
-          </>)}
+          {
+            <div className={styles["event-item"]}><span> ⚡️&nbsp; Channel Opened</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.openChannels))}</span></div>
+          }
+          {
+            <div className={styles["event-item"]}><span> 🚨&nbsp; Channel Closed</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.closeChannels))}</span></div>
+          }
+          {
+            <div className={styles["event-item"]}><span> 🔗&nbsp; Chain credit to root</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.ChainCreditRoot))}</span></div>
+          }
         </div>
       </div>
       <div className={styles["section"]}>
@@ -315,16 +320,23 @@ export const Metrics = () => {
         <div className={styles["cards-container"]}>
           <div className={classNames(styles["card"], styles["net"])}>
             <div className={styles["top"]}>
-              <h4 className={styles["card-label"]}>Net</h4>
-              <span className={styles["number"]}> {
-                new Intl.NumberFormat('fr-FR').format(appsInfo.totalBalance)
-              }</span>
-              <span className={styles["number"]}> {
-                new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainPct)
-              }%</span>
-              <span className={styles["number"]}> {
-                new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainAmt)
-              }</span>
+              <div className={styles["flx-column"]}>
+                <h4 className={styles["card-label"]}>Net</h4>
+                <span className={styles["number"]}> +{
+                  new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainPct)
+                }%</span>
+              </div>
+              <div className={styles["flx-column"]}>
+                <span className={classNames(styles["number"], styles["text-right"])}> {
+                  new Intl.NumberFormat('fr-FR').format(appsInfo.totalBalance)
+                }</span>
+                <div className={classNames(styles["price"], styles["flex-row"])}> 
+                  {
+                    appsInfo.totalGainAmt < 0 ? Icons.PriceDown() : Icons.PriceUp()
+                  }
+                  <span>{appsInfo.totalGainAmt > 0 ? '+' + new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainAmt): new Intl.NumberFormat('fr-FR').format(appsInfo.totalGainAmt)}</span>
+                </div>
+              </div>
             </div>
           </div>
           <div className={classNames(styles["card"], styles["channels"])}>
@@ -387,6 +399,10 @@ export const Metrics = () => {
             ))
           }
         </div>
+      </div>
+      <br />
+      <div className='metric-footer'>
+        <i>Connected to <br/>npub123456</i>
       </div>
     </div>
   </div>
