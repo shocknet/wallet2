@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from '../../State/store'; //import reducer
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
-import { Destination, InputClassification, options, parseBitcoinInput } from '../../constants';
+import { Destination, InputClassification, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options, parseBitcoinInput } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import Sortable from 'sortablejs';
 import { useIonRouter } from '@ionic/react';
@@ -25,6 +25,7 @@ import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { generatePrivateKey, getPublicKey } from 'nostr-tools';
+import { getNostrClient } from '../../Api';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -42,6 +43,7 @@ export const Sources = () => {
   const [tempParsedWithdraw, setTempParsedWithdraw] = useState<Destination>();
   const [notifySourceId, setNotifySourceId] = useState("");
   const notifications = useSelector(state => state.notify.notifications);
+  const [linkingToken, setLinkingToken] = useState("");
 
   const processParsedInput = (destination: Destination) => {
     const promptSweep = 
@@ -71,6 +73,10 @@ export const Sources = () => {
       const addressSearch = new URLSearchParams(location.search);
       const data = addressSearch.get("addSource");
       const erroringSourceKey = addressSearch.get("sourceId");
+      const token = addressSearch.get("token");
+      if (token) {
+        setLinkingToken(token);
+      }
       if (data) {
         parseBitcoinInput(data).then(parsed => {
           processParsedInput(parsed)
@@ -190,15 +196,33 @@ export const Sources = () => {
       } catch (err: any) {
         toast.error(<Toast title="Error" message={err.message} />)
         setProcessingSource(false);
+        dispatch(toggleLoading({ loadingMessage: "" }))
         return;
+      }
+
+      const privateKey = generatePrivateKey();
+      const publicKey = getPublicKey(privateKey)
+ 
+      if (linkingToken) {
+        const res = await (await getNostrClient({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }, { privateKey, publicKey }))
+          .LinkNPubThroughToken({
+            token: linkingToken,
+            nostr_pub: publicKey
+          });
+        
+        if (res.status !== "OK") {
+          toast.error(<Toast title="Error" message={res.reason} />)
+          setProcessingSource(false);
+          dispatch(toggleLoading({ loadingMessage: "" }))
+          return;
+        }
       }
 
 
       const resultLnurl = new URL(data.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
-      const privateKey = generatePrivateKey();
-      const publicKey = getPublicKey(privateKey)
+      
       const addedPaySource = {
         id: data.pubkey,
         option: optional,
@@ -240,6 +264,7 @@ export const Sources = () => {
           console.log("Unknown error occured", err);
         }
         setProcessingSource(false);
+        dispatch(toggleLoading({ loadingMessage: "" }))
         return;
       }
       if (parsed.type === InputClassification.LNURL && parsed.lnurlEndpoint && parsed.max !== undefined) {
@@ -285,7 +310,7 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
     
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource]);
+  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, linkingToken]);
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {
