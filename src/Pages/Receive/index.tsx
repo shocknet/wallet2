@@ -66,28 +66,28 @@ export const Receive = () => {
   const vReceive = 1;
 
 
-  const lnaddrData = useMemo(() => {
-    if (paySource.order.length > 0) {
-      const topPaySource = paySource.sources[paySource.order[0]];
-      if (topPaySource.vanityName) {
-        const decoded = decodeNprofile(topPaySource.pasteField);
-        const url = decoded.bridge![0];
-
-        const hostName = new URL(url);
-        const parts = hostName.hostname.split(".");
-        const domainName = parts.slice(-2).join('.');
-        return {
-          vanityName: topPaySource.vanityName,
-          url: domainName
-        }
-      } else {
-        return null
-      }
-
-    } else {
-      return null
+  const lnAddress = useMemo(() => {
+    if (paySource.order.length === 0) {
+      return null;
     }
 
+    const topPaySource = paySource.sources[paySource.order[0]];
+    const vanityName = topPaySource.vanityName
+    if (!vanityName) {
+      return null;
+    }
+
+    if (vanityName.includes("@")) { // lnAddress from LV integration
+      return vanityName
+    } else {
+      const decoded = decodeNprofile(topPaySource.pasteField);
+      const url = decoded.bridge![0];
+
+      const hostName = new URL(url);
+      const parts = hostName.hostname.split(".");
+      const domainName = parts.slice(-2).join('.');
+      return `${vanityName}@${domainName}`
+    }
   }, [paySource])
 
   useEffect(() => {
@@ -116,6 +116,9 @@ export const Receive = () => {
       router.push("/home");
     } else {
       configLnurlAndBtcAddress();
+    }
+    return () => {
+      dispatch(toggleLoading({ loadingMessage: "" }))
     }
   }, []);
 
@@ -312,7 +315,7 @@ export const Receive = () => {
         <div className="Receive_QR_text">
           <span>{tag === 0 && showingLightningAddress ? "Lightning Address" : headerText[tag]}</span>
           {
-            (tag === 0 && lnaddrData !== null)
+            (tag === 0 && lnAddress !== null)
             &&
             <Toggle
               value={!showingLightningAddress}
@@ -340,9 +343,9 @@ export const Receive = () => {
         }
         {
           tag === 0 ? 
-          (showingLightningAddress && lnaddrData !== null)
+          (showingLightningAddress && lnAddress !== null)
           &&
-          <div style={{fontSize: "17px", marginTop: "12px"}}>{`${lnaddrData?.vanityName}@${lnaddrData?.url}`}</div>
+          <div style={{fontSize: "17px", marginTop: "12px"}}>{lnAddress}</div>
           : ''
         }
         <div className='Receive_copy'>
