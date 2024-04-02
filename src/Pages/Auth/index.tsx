@@ -329,6 +329,15 @@ export const Auth = () => {
           <div className='Auth_import'>
             <input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
             <p onClick={() => fileInputRef.current?.click()}>Import File Backup</p>
+            {!retreiveAccessToken && <div>
+              {!accessTokenRetreived && <p>click to retreive a remote backup if you have one, if a nip07 extention is found, it will be used</p>}
+              {accessTokenRetreived && <p>you are now linked to sanctum, click to retreive the backup</p>}
+              <button onClick={() => loadRemoteBackup()}>LOAD</button>
+            </div>}
+            {retreiveAccessToken && <div>
+              <p>no nip07 extion found, use Sanctum instead?</p>
+              <a href={`${keylinkUrl}/sanctum?app=${keylinkAppId}&cb=${encodeURIComponent("https://" + import.meta.env.VITE_APP_URL + window.location.pathname)}`}><button>OPEN SANCTUM AUTH</button></a>
+            </div>}
           </div>
           <div className='Auth_download_note'>
             Note: you must download an updated file after adding or modifying node sources. Limited syncing functionality.
