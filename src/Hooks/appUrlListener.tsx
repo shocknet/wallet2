@@ -42,8 +42,8 @@ const AppUrlListener: React.FC<any> = () => {
       router.push("/send?url=" + lnurl)
     } else {
       try {
-        let { words: dataPart } = bech32.decode(lnurl, 2000);
-        let sourceURL = bech32.fromWords(dataPart);
+        const { words: dataPart } = bech32.decode(lnurl, 2000);
+        const sourceURL = bech32.fromWords(dataPart);
         const lnurlLink = Buffer.from(sourceURL).toString();
 
         if (lnurlLink.includes(requestTag.lnurlPay)) {

@@ -13,8 +13,8 @@ export const Footer = () => {
   useEffect(() => {
     if (isPlatform('android')) {
       setTimeout(() => {
-        var footer = document.querySelector('.Footer') as HTMLElement;
-        var viewportHeight = window.innerHeight;
+        const footer = document.querySelector('.Footer') as HTMLElement;
+        const viewportHeight = window.innerHeight;
         if (footer) {
           footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
         }

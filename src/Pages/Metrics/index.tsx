@@ -289,13 +289,14 @@ export const Metrics = () => {
               </div>}
             />
             <div className={classNames(styles["arrows"], styles["box"])}>
-							{Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
- 						</div>
+							{Icons.pathLeft()}
+							{Icons.verticalLine()}
+							{Icons.pathLeft()}
+						</div>
           </div>
           <div className={classNames(styles["box"], styles["border"])}>
             Manage
           </div>
-
         </div>
       </div>
       <div className={styles["section"]}><span className={styles["separator"]}></span></div>

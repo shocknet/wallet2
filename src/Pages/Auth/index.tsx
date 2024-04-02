@@ -7,11 +7,7 @@ import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
-import { keyLinkClient } from '../../Api/keylink/http';
-import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
-import { getNostrPrivateKey } from '../../Api/nostr';
-import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
-import { fetchRemoteBackup } from '../../helpers/remoteBackups';
+import { ignoredStorageKeys } from '../../constants';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 import { useStore } from 'react-redux';
 import { syncRedux } from '../../State/store';
@@ -37,15 +33,10 @@ export const Auth = () => {
   const router = useIonRouter();
   const store = useStore();
 
-  const [email, setEmail] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
-  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
-  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
-  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
-  const [newPair, setNewPair] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
@@ -60,31 +51,8 @@ export const Auth = () => {
     const accessToken = urlParams.get("accessToken")
     if (accessToken) {
       setSanctumAccessToken(accessToken)
-      setAccessTokenRetreived(true)
     }
   }, [router])
-
-  const signUpEmail = async () => {
-    if (!email) {
-      console.log("no email provided")
-      return
-    }
-    const nsec = newPair ? generatePrivateKey() : sanctumNostrSecret
-    if (!nsec) {
-      console.log("no nsec provided")
-      return
-    }
-    const res = await keyLinkClient.LinkAppUserToEmail({
-      app_id: keylinkAppId,
-      email,
-      identifier: getPublicKey(nsec),
-      nostr_secret: nsec
-    })
-    if (res.status === 'ERROR') {
-      toast.error(<Toast title="Email Signup Error" message="Email link Failed."  />)
-    }
-    toast.success(<Toast title="Email Signup" message="Email linked successfully." />)
-  }
 
   const openDownBackupModal = () => {
     toggle();
@@ -213,37 +181,6 @@ export const Auth = () => {
       default:
         return infoBackupModal;
     }
-  }
-
-  const loadRemoteBackup = async () => {
-    const keyExists = getNostrPrivateKey()
-    if (keyExists) {
-      toast.error(<Toast title="Backup" message="Cannot load remote backup. User already exists." />)
-      return
-    }
-    const backup = await fetchRemoteBackup()
-    if (backup.result === 'accessTokenMissing') {
-      console.log("access token missing")
-      setRetreiveAccessToken(true)
-      return
-    }
-    if (backup.decrypted === '') {
-      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
-      return
-    }
-    const data = JSON.parse(backup.decrypted);
-    const keys = Object.keys(data)
-    for (let i = 0; i < keys.length; i++) {
-      const element = keys[i];
-      if (element && !ignoredStorageKeys.includes(element)) {
-        localStorage.setItem(element, data[element])
-      }
-    }
-    store.dispatch(syncRedux());
-    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
-    setTimeout(() => {
-      router.push("/home")
-    }, 1000);
   }
 
   const infoBackupModal = <React.Fragment>

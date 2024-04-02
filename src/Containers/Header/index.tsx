@@ -112,7 +112,7 @@ export const Header = () => {
   useEffect(() => {
     if (isPlatform('ios')) {
       setTimeout(() => {
-        var header = document.querySelector('.Header') as HTMLElement;
+        const header = document.querySelector('.Header') as HTMLElement;
         if (header) {
           header.style.marginTop = '5vh';
         }
@@ -245,100 +245,11 @@ export const Header = () => {
 }
 
 export const PubHeader = () => {
-  const [badge, setBadge] = useState(false);
-  const [logoClickCounter, setLogoClickCounter] = useState(0);
   const router = useIonRouter();
-  const notifications = useSelector(({ notify }) => notify);
-  const debugMode = useSelector(({ prefs }) => prefs.debugMode);
 
   const { isShown, toggle } = UseModal();
-  const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
-  const isNopeUp: boolean = router.routeInfo.pathname === "/";
   router.routeInfo;
-  const isLoader: boolean = router.routeInfo.pathname === "/loader";
-  const isscan: boolean = router.routeInfo.pathname === "/scan";
-  const isreceive: boolean = router.routeInfo.pathname === "/receive";
-
-  const getNotifyBadge = () => {
-    if (notifications && notifications.notifications.length) {
-      setBadge(notifications.notifications[notifications.notifications.length - 1].date > notifications.checkTime)
-    }
-  }
-  useEffect(() => {
-    if (!debugMode) {
-      logs = []
-      return
-    }
-    const { log, warn, error } = console
-    const newConsole = {
-      log: (...args: any[]) => {
-        saveLog(...args)
-        log(...args)
-      },
-      warn: (...args: any[]) => {
-        saveLog(...args)
-        warn(...args)
-      },
-      error: (...args: any[]) => {
-        saveLog(...args)
-        error(...args)
-      },
-    }
-    console.log = newConsole.log
-    console.warn = newConsole.warn
-    console.error = newConsole.error
-  }, [debugMode])
-
-  const debugLines = useMemo(() => {
-    if (!isDebugShown) {
-      return <></>
-    }
-    const lines = logs.map((log, i) => <p key={i}>{log}</p>)
-    return <>{lines}</>
-
-  }, [isDebugShown])
-
-  useEffect(() => {
-    getNotifyBadge();
-  }, [notifications])
-  useEffect(() => {
-    getNotifyBadge();
-  }, []);
-
-
-  useEffect(() => {
-    let singleClickTimer: NodeJS.Timeout;
-    let tripeClickTimer: NodeJS.Timeout;
-    if (logoClickCounter === 1) {
-      singleClickTimer = setTimeout(() => {
-        router.push("/");
-        setLogoClickCounter(0);
-      }, 500);
-    } else {
-      if (logoClickCounter === 3) {
-        router.push("/metrics");
-      }
-      tripeClickTimer = setTimeout(() => {
-        setLogoClickCounter(0);
-      }, 500);
-    }
-    return () => {
-      clearTimeout(singleClickTimer)
-      clearTimeout(tripeClickTimer);
-    };
-  }, [logoClickCounter, router]);
-
-  useEffect(() => {
-    if (isPlatform('ios')) {
-      setTimeout(() => {
-        var header = document.querySelector('.Header') as HTMLElement;
-        if (header) {
-          header.style.marginTop = '5vh';
-        }
-      }, 30)
-    }
-  }, []);
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -385,23 +296,7 @@ export const PubHeader = () => {
         <div className="Header_modal_content_item">
           <hr />
         </div>
-{/*         <div className="Header_modal_content_item" onClick={() => {
-          router.push("/sources");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.BuyCryptoIcon()}
-          </div>
-          <div className="Header_modal_content_item_text">Buy Bitcoin</div>
-        </div> */}
-        <div className="Header_modal_content_item" onClick={() => {
-          if (debugMode) {
-            toggleDebugShown()
-          } else {
-            window.open('https://docs.shock.network/', '_blank');
-            toggle();
-          }
-        }}>
+        <div className="Header_modal_content_item">
           <div className="Header_modal_content_item_img" onClick={() => {
             window.location.href ='https://docs.shock.network/';
           }}>
@@ -415,7 +310,7 @@ export const PubHeader = () => {
 
   return (
     <div className="Header pub_header">
-      <button className="Header_logo_2" onClick={() => setLogoClickCounter(prev => prev + 1)}>
+      <button className="Header_logo_2">
         <img src="/pub_logo.png" width={147} height={26} alt="logo" />
       </button>
       <button className="Header_menu" onClick={() => {
@@ -425,7 +320,6 @@ export const PubHeader = () => {
         {Icons.pubNavMenu()}
       </button>
       <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
-      <Modal isShown={isDebugShown} headerText="debug" hide={() => toggleDebugShown()} modalContent={debugLines} />
     </div>
   )
 }

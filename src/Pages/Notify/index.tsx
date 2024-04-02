@@ -9,7 +9,7 @@ export const Notify = () => {
   const dispatch = useDispatch();
   useEffect(()=>{
     dispatch(updateCheckTime(Date.now()))
-  }, []);
+  }, [dispatch]);
 
   const notifications = useSelector(({notify}) => notify);
   const notify: NotifyItemData[] = [];
