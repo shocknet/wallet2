@@ -153,7 +153,6 @@ export const Metrics = () => {
     if (!fromCache) saveCreds({ url, metricsToken })
     const lndGraphs = processLnd(lnd)
     setLndGraphsData(lndGraphs)
-    console.log({ lndGraphs })
     const bestLocal = { n: "", v: 0 }
     const bestRemote = { n: "", v: 0 }
     const openChannels = lnd.nodes[0].open_channels.map(c => {
@@ -285,10 +284,9 @@ export const Metrics = () => {
               setState={(value) => setPeriod(value)}
               otherOptions={otherOptions}
               jsx={<div className={classNames(styles["center"], styles["box"])}>
-                <span style={{ color: "#a012c7" }}>{Icons.Automation()}</span>
+                <span className={styles["icon_pub"]}>{Icons.Automation()}</span>
                 <span>{period}</span>
               </div>}
-
             />
             <div className={classNames(styles["arrows"], styles["box"])}>
 							{Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}

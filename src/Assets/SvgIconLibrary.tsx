@@ -688,3 +688,10 @@ export const verticalLine = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}}/>
     )
 }
+
+export const pubNavMenu = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="27" height="23"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" style="fill: rgb(160, 18, 199);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+    )
+}

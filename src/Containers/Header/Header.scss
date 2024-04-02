@@ -231,3 +231,12 @@
     margin-left: -19px;
   }
 }
+
+.pub_header {
+  max-width: 500px !important;
+  height: 3vh;
+
+  @media (min-width: 800px) {
+    zoom: 1.2;
+  }
+}

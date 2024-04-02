@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { IonContent, IonFooter, IonHeader, useIonRouter } from "@ionic/react";
-import { Header } from "../Containers/Header";
+import { Header, PubHeader } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
 import axios from "axios";
@@ -18,7 +18,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
   const router = useIonRouter();
 
-  const isscan: boolean = router.routeInfo.pathname === "/scan";
+  const isScan: boolean = router.routeInfo.pathname === "/scan";
+  const isMetrics: boolean = router.routeInfo.pathname === "/metrics";
 
 
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(() => {
+    console.log(isMetrics, 'test')
     getPrice();
 
     const interval = setInterval(() => {
@@ -54,8 +56,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   return (
     <div className="ion-page">
       {
-        !isscan
-        &&
+        !isScan
+        && 
+        isMetrics ?
+        <IonHeader style={{boxShadow: "none"}}>
+          <PubHeader />
+        </IonHeader>
+        :
         <IonHeader style={{boxShadow: "none"}}>
           <Header />
         </IonHeader>
@@ -64,7 +71,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
         {children}
       </IonContent>
       {
-        !isscan
+        !isScan
         &&
         <IonFooter>
           <Footer />
