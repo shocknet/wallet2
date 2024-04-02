@@ -129,9 +129,18 @@ export const Metrics = () => {
     dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
     const client = getHttpClient(url, { metricsToken })
     const periodRange = getUnixTimeRange(period);
-    const usage = await client.GetUsageMetrics()
-    const apps = await client.GetAppsMetrics({ include_operations: true, ...periodRange });
-    const lnd = await client.GetLndMetrics({ ...periodRange });
+    let usage, apps, lnd;
+    try {
+      usage = await client.GetUsageMetrics()
+      apps = await client.GetAppsMetrics({ include_operations: true, ...periodRange });
+      lnd = await client.GetLndMetrics({ ...periodRange });
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      dispatch(toggleLoading({ loadingMessage: "" }));
+      toast.error(<Toast title="Metrics Error" message={`Failed to fetch metrics. ${error instanceof Error ? error.message : ""}`} />);
+      return;
+    }
     if (usage.status !== 'OK') {
       setLoading(false);
       dispatch(toggleLoading({ loadingMessage: "" }));
