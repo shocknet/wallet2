@@ -108,6 +108,7 @@ const processApps = (apps: Types.AppsMetrics): { appsBalances: PieGraph, feesPai
 export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     let minBlock = Number.MAX_SAFE_INTEGER
     let maxBlock = 0
+    let labels: string[] = []
     let forwardedEvents = 0
     let forwardedSats = 0
     const totalChainEvents: { x: number; y: number; }[][] = []
@@ -118,14 +119,15 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
     const channelsBalanceLocal: Record<string, { x: number; y: number; }> = {}
     lnd.nodes.forEach((node, i) => {
         const chainEvents = node.chain_balance_events.map(e => {
-            if (e.block_height > maxBlock) maxBlock = e.block_height
-            if (e.block_height < minBlock) minBlock = e.block_height
+            labels.push(e.block_height.toString())
+            // if (e.block_height > maxBlock) maxBlock = e.block_height
+            // if (e.block_height < minBlock) minBlock = e.block_height
             return { x: e.block_height, y: e.confirmed_balance }
         })
         totalChainEvents.push(chainEvents)
         node.channels_balance_events.map(e => {
-            if (e.block_height > maxBlock) maxBlock = e.block_height
-            if (e.block_height < minBlock) minBlock = e.block_height
+            // if (e.block_height > maxBlock) maxBlock = e.block_height
+            // if (e.block_height < minBlock) minBlock = e.block_height
             const datasetId = `${i + 1}:${e.block_height}`
             if (channelsBalanceRemote[datasetId]) {
                 channelsBalanceRemote[datasetId].y += e.remote_balance_sats
@@ -141,12 +143,12 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
             forwardedSats += e.missed_forward_fee_as_output
         })
     })
-    const labels = generateTimeSeriesLabels(minBlock, maxBlock)
-    const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: 'Chain' }))
+    // const labels = generateTimeSeriesLabels(minBlock, maxBlock)
+    const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: 'Chain',  borderColor: '#ff7700', backgroundColor: '#ff7700', borderWidth: 2 }))
     const tmp = Object.entries(channelsBalanceLocal).map(([k, data]) => data)
     channelEvents.push(tmp);
 
-    const localChannelBalance = channelEvents.map((events, i) => ({ data: events, label: 'Channels' }))
+    const localChannelBalance = channelEvents.map((events, i) => ({ data: events, label: 'Channels', borderColor: '#c740c7', backgroundColor: '#c740c7', borderWidth: 2 }))
     return {
         balanceEvents: {
             datasets: [...chainDatasets, ...localChannelBalance],

@@ -40,7 +40,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(() => {
-    console.log(isMetrics, 'test')
     getPrice();
 
     const interval = setInterval(() => {

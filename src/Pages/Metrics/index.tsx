@@ -264,7 +264,8 @@ export const Metrics = () => {
                 maxWidth: 12,
                 labels: {
                   boxWidth: 10,
-                  boxHeight: 10
+                  boxHeight: 10,
+                  color: "#ffffff"
                 },
 
               },
@@ -387,7 +388,9 @@ export const Metrics = () => {
             </div>
           </div>
           {
-            appsInfo.appsUsers.map(app => (
+            appsInfo.appsUsers.map(app => {
+              if(app.appName === "unlinked to app") return;
+              return (
               <div key={app.appName}
                 className={classNames(styles["card"], styles["top-channels"])}
                 style={{ borderColor: stringToColor(app.appName) }}
@@ -404,7 +407,7 @@ export const Metrics = () => {
                   </div>
                 </div>
               </div>
-            ))
+            )})
           }
         </div>
       </div>
