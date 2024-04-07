@@ -13,12 +13,15 @@ import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { setSanctumAccessToken } from '../../Api/sanctum';
+import { SANCTUM_URL } from "../../constants";
+
 import { useStore } from 'react-redux';
 import { syncRedux } from '../../State/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 
 const FILENAME = "shockw.dat";
+const startTimerValue = 15*60;
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -45,6 +48,10 @@ export const Auth = () => {
   const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
   const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
   const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
+  const [seconds, setSeconds] = useState<number>(startTimerValue);
+  const [loginStatus, setLoginStatus] = useState<null | "loading" | "awaiting" | "confirmed">();
+  
+
   const [newPair, setNewPair] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -63,6 +70,23 @@ export const Auth = () => {
       setAccessTokenRetreived(true)
     }
   }, [router])
+
+  useEffect(() => {
+    if(loginStatus === "awaiting") {
+      window.open(SANCTUM_URL, '_blank')
+      const timer = setInterval(() => {
+        setSeconds(seconds => seconds - 1)
+      }, 1000)
+      
+      return () => clearInterval(timer)
+    }
+  }, [loginStatus])
+
+  useEffect(() => {
+    if(seconds < 15*60 - 5) {
+      setLoginStatus("confirmed")
+    }
+  }, [seconds])
 
   const signUpEmail = async () => {
     if (!email) {
@@ -215,6 +239,19 @@ export const Auth = () => {
     }
   }
 
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+  
+    return `${minutes
+      .toString()
+      .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const rotateIcon = () => {
+    
+  }
+
   const loadRemoteBackup = async () => {
     const keyExists = getNostrPrivateKey()
     if (keyExists) {
@@ -244,6 +281,44 @@ export const Auth = () => {
     setTimeout(() => {
       router.push("/home")
     }, 1000);
+  }
+
+  const loginByEMail = () => {
+    setLoginStatus('loading')
+    setTimeout(() => {
+      setLoginStatus('awaiting')
+    }, 3000)
+  }
+  const loginContent = () => {
+    switch(loginStatus) {
+      case 'loading':
+        return <React.Fragment>
+          <div className='loading'>{Icons.sanctumSetting()}</div>
+        </React.Fragment>
+      case 'awaiting':
+        return <React.Fragment>
+          <div className='timer_description'>Awaiting User Confirmation</div>
+          <div className='timer'>
+            {Icons.sandClock()}
+            <div className='timer-num'>{formatTime(seconds)}</div>
+          </div>
+          <p>client_id-12345abcdeffgggg</p>
+        </React.Fragment>
+      case "confirmed":
+        return <React.Fragment>
+          <div className='confirmed'>
+            {Icons.sanctumChecked()}
+            <p>client_id-12345abcdeffgggg</p>
+          </div>
+        </React.Fragment>
+      default:
+        return <React.Fragment>
+          <div className='btn-group'>
+            <button className='EMail' onClick={loginByEMail} >EMail</button>
+            <button className='Nostr' onClick={() => { window.open(SANCTUM_URL, '_blank') }} >Nostr</button>
+          </div>
+        </React.Fragment>
+    }
   }
 
   const infoBackupModal = <React.Fragment>
@@ -304,13 +379,14 @@ export const Auth = () => {
             </label>
           </div>
         </div>
-        <div className='Auth_loginWithEmail'>
-          <a href='https://auth.boufnichel.dev/'>Log-In with Email or Nostr</a>
-        </div>
-        <div className='Auth_sanctum-logo'>
-          <p>Powered by</p>
-          <div>
-            <img src='/santum_huge.png' alt='Sanctum Logo' />
+        <div className='Auth_login_title'>Log-In</div>
+        <div className='Auth_login'>
+          {loginContent()}
+          <div className='Auth_sanctum-logo'>
+            <p>Powered by</p>
+            <div>
+              <img src='/santum_huge.png' alt='Sanctum Logo' />
+            </div>
           </div>
         </div>
         <div className='Auth_border'>
