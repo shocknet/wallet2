@@ -183,8 +183,27 @@ export const Sources = () => {
       toast.error(<Toast title="Error" message="Please write data correctly." />)
       return;
     }
-    // more thorough this way because doing spendSources[sourcePasteField] will not catch pub sources since the keys are npub and not the nprofile
-    if (Object.values(spendSources.sources).find(s => s.pasteField === sourcePasteField) || Object.values(paySources.sources).find(s => s.pasteField === sourcePasteField)) {
+
+    let data: CustomProfilePointer | null = null;
+    // check that no source exists with the same lpk
+    if (sourcePasteField.startsWith("nprofile")) {
+      // nprofile
+      
+      try {
+        (data  = decodeNprofile(sourcePasteField));
+        if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
+          toast.error(<Toast title="Error" message="Source already exists." />)
+          return;
+        }
+      } catch (err: any) {
+        toast.error(<Toast title="Error" message={err.message} />)
+        setProcessingSource(false);
+        dispatch(toggleLoading({ loadingMessage: "" }))
+        return;
+      }
+    }
+    // none pub source are checked directly with the sourcePasteField
+    if (spendSources.sources[sourcePasteField] || paySources.sources[sourcePasteField]) {
       toast.error(<Toast title="Error" message="Source already exists." />)
       return;
     }
@@ -194,15 +213,6 @@ export const Sources = () => {
     let parsed: Destination | null = null;
     if (sourcePasteField.startsWith("nprofile")) {
       // nprofile
-      let data: CustomProfilePointer | null = null;
-      try {
-        (data  = decodeNprofile(sourcePasteField));
-      } catch (err: any) {
-        toast.error(<Toast title="Error" message={err.message} />)
-        setProcessingSource(false);
-        dispatch(toggleLoading({ loadingMessage: "" }))
-        return;
-      }
 
 
       const newSourceKeyPair = generateNewKeyPair();
@@ -228,12 +238,12 @@ export const Sources = () => {
       }
 
 
-      const resultLnurl = new URL(data.relays![0]);
+      const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
       
       const addedPaySource = {
-        id: data.pubkey,
+        id: data!.pubkey,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
@@ -244,7 +254,7 @@ export const Sources = () => {
       } as PayTo;
       dispatch(addPaySources(addedPaySource))
       const addedSpendSource = {
-        id: data.pubkey,
+        id: data!.pubkey,
         label: resultLnurl.hostname,
         option: optional,
         icon: sndleveldomain,
