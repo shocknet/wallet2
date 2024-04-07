@@ -13,6 +13,8 @@ import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { setSanctumAccessToken } from '../../Api/sanctum';
+import { SANCTUM_URL } from "../../constants";
+
 import { useStore } from 'react-redux';
 import { syncRedux } from '../../State/store';
 import { toast } from "react-toastify";
@@ -71,7 +73,7 @@ export const Auth = () => {
 
   useEffect(() => {
     if(loginStatus === "awaiting") {
-      window.open('https://auth.boufnichel.dev/', '_blank')
+      window.open(SANCTUM_URL, '_blank')
       const timer = setInterval(() => {
         setSeconds(seconds => seconds - 1)
       }, 1000)
@@ -313,7 +315,7 @@ export const Auth = () => {
         return <React.Fragment>
           <div className='btn-group'>
             <button className='EMail' onClick={loginByEMail} >EMail</button>
-            <button className='Nostr' onClick={() => { window.open('https://auth.boufnichel.dev/', '_blank') }} >Nostr</button>
+            <button className='Nostr' onClick={() => { window.open(SANCTUM_URL, '_blank') }} >Nostr</button>
           </div>
         </React.Fragment>
     }
