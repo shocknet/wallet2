@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
@@ -12,11 +12,13 @@ import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
-import { setSanctumAccessToken } from '../../Api/sanctum';
+import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
 import { useStore } from 'react-redux';
-import { syncRedux } from '../../State/store';
+import { syncRedux, useDispatch } from '../../State/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { newSocket } from '../../Api/helpers';
+import { toggleLoading } from '../../State/Slices/loadingOverlay';
 
 const FILENAME = "shockw.dat";
 
@@ -36,6 +38,7 @@ export const Auth = () => {
   //reducer
   const router = useIonRouter();
   const store = useStore();
+  const dispatch = useDispatch()
 
   const [email, setEmail] = useState("");
   const [serviceCheck, setServiceCheck] = useState(false);
@@ -46,6 +49,8 @@ export const Auth = () => {
   const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
   const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
   const [newPair, setNewPair] = useState(false);
+  const [requestToken, setRequestToken] = useState("");
+  const [reOpenSocket, setReopenSocket] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
@@ -246,6 +251,43 @@ export const Auth = () => {
     }, 1000);
   }
 
+  useEffect(() => {
+
+  }, [requestToken])
+
+  const handleSanctumRequest = useCallback(() => {
+    if (getSanctumAccessToken()) {
+      console.log("Access token already exists")
+      return;
+    }
+    dispatch(toggleLoading({ loadingMessage: "Loading..." }));
+
+    newSocket({
+      sendOnOpen: {},
+      onError: (reason) => {
+        console.log("ERROR socket", reason)
+        dispatch(toggleLoading({ loadingMessage: "" }));
+      },
+      onSuccess: (data) => {
+        setSanctumAccessToken(data.accessToken);
+        dispatch(toggleLoading({ loadingMessage: "Loading..." }));
+      },
+      onToStartSanctum: (receivedRequestToken) => {
+        window.open(`${keylinkUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
+      },
+      onUnexpectedClosure: () => {
+        setReopenSocket(true);
+      }
+    });
+  }, [dispatch])
+
+  useEffect(() => {
+    if (reOpenSocket) {
+      setReopenSocket(false);
+      handleSanctumRequest();
+    }
+  }, [reOpenSocket, handleSanctumRequest]);
+
   const infoBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Warning</div>
     <div className='Auth_modal_description'>File-based backups are used for recovery of connection details in the event of lost/replaced devices.</div>
@@ -305,7 +347,7 @@ export const Auth = () => {
           </div>
         </div>
         <div className='Auth_loginWithEmail'>
-          <a href='https://auth.boufnichel.dev/'>Log-In with Email or Nostr</a>
+          <div onClick={handleSanctumRequest}>Log-In with Email or Nostr</div>
         </div>
         <div className='Auth_sanctum-logo'>
           <p>Powered by</p>
