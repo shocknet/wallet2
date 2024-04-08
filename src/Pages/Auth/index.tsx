@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState, useCallback } from 'react';
 import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
@@ -8,17 +8,19 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { keyLinkClient } from '../../Api/keylink/http';
-import { ignoredStorageKeys, keylinkAppId, keylinkUrl } from '../../constants';
+import { ignoredStorageKeys, keylinkAppId } from '../../constants';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
-import { setSanctumAccessToken } from '../../Api/sanctum';
+import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
 import { SANCTUM_URL } from "../../constants";
 
 import { useStore } from 'react-redux';
-import { syncRedux } from '../../State/store';
+import { syncRedux, useDispatch } from '../../State/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { newSocket } from '../../Api/helpers';
+
 
 const FILENAME = "shockw.dat";
 const startTimerValue = 15*60;
@@ -39,6 +41,7 @@ export const Auth = () => {
   //reducer
   const router = useIonRouter();
   const store = useStore();
+  const dispatch = useDispatch()
 
   const [email, setEmail] = useState("");
   const [serviceCheck, setServiceCheck] = useState(true);
@@ -50,9 +53,9 @@ export const Auth = () => {
   const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
   const [seconds, setSeconds] = useState<number>(startTimerValue);
   const [loginStatus, setLoginStatus] = useState<null | "loading" | "awaiting" | "confirmed">();
-  
-
   const [newPair, setNewPair] = useState(false);
+  const [requestToken, setRequestToken] = useState("");
+  const [reOpenSocket, setReopenSocket] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
@@ -73,7 +76,6 @@ export const Auth = () => {
 
   useEffect(() => {
     if(loginStatus === "awaiting") {
-      window.open(SANCTUM_URL, '_blank')
       const timer = setInterval(() => {
         setSeconds(seconds => seconds - 1)
       }, 1000)
@@ -82,11 +84,11 @@ export const Auth = () => {
     }
   }, [loginStatus])
 
-  useEffect(() => {
+  /* useEffect(() => {
     if(seconds < 15*60 - 5) {
-      setLoginStatus("confirmed")
+      setLoginStatus(null)
     }
-  }, [seconds])
+  }, [seconds]) */
 
   const signUpEmail = async () => {
     if (!email) {
@@ -283,12 +285,7 @@ export const Auth = () => {
     }, 1000);
   }
 
-  const loginByEMail = () => {
-    setLoginStatus('loading')
-    setTimeout(() => {
-      setLoginStatus('awaiting')
-    }, 3000)
-  }
+
   const loginContent = () => {
     switch(loginStatus) {
       case 'loading':
@@ -314,12 +311,50 @@ export const Auth = () => {
       default:
         return <React.Fragment>
           <div className='btn-group'>
-            <button className='EMail' onClick={loginByEMail} >EMail</button>
-            <button className='Nostr' onClick={() => { window.open(SANCTUM_URL, '_blank') }} >Nostr</button>
+            <button className='EMail' onClick={handleSanctumRequest} >EMail</button>
+            <button className='Nostr' onClick={() => { console.log("Nostr?") }} >Nostr</button>
           </div>
         </React.Fragment>
     }
   }
+
+
+
+
+
+  const handleSanctumRequest = useCallback(() => {
+    if (getSanctumAccessToken()) {
+      console.log("Access token already exists")
+      return;
+    }
+    setLoginStatus("loading");
+
+    newSocket({
+      sendOnOpen: {},
+      onError: (reason) => {
+        toast.error(<Toast title="Login Error" message={reason}  />)
+        setLoginStatus(null);
+      },
+      onSuccess: (data) => {
+        setSanctumAccessToken(data.accessToken);
+        setLoginStatus("confirmed");
+      },
+      onToStartSanctum: (receivedRequestToken) => {
+        setLoginStatus("awaiting");
+        window.open(`${SANCTUM_URL}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
+      },
+      onUnexpectedClosure: () => {
+        setReopenSocket(true);
+      }
+    });
+  }, [])
+
+  useEffect(() => {
+    if (reOpenSocket) {
+      setReopenSocket(false);
+      handleSanctumRequest();
+    }
+  }, [reOpenSocket, handleSanctumRequest]);
 
   const infoBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Warning</div>
