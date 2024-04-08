@@ -41,7 +41,7 @@ export const Auth = () => {
   const store = useStore();
 
   const [email, setEmail] = useState("");
-  const [serviceCheck, setServiceCheck] = useState(false);
+  const [serviceCheck, setServiceCheck] = useState(true);
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
@@ -394,9 +394,9 @@ export const Auth = () => {
         </div>
         <div className='Auth_notRecommended' onClick={notRcommendedToggle}>
           <p>Not recommended</p>
-          <div ref={arrowIconRef}>{Icons.arrowToggle()}</div>
+          <div ref={arrowIconRef} style={{ transform: "rotate(270deg) translate(-13px, 13px)" }}>{Icons.arrowToggle()}</div>
         </div>
-        <div ref={backupFileRef} className='Auth_download'>
+        <div ref={backupFileRef} className='Auth_download' style={{visibility: "hidden", opacity: "0"}}>
           <div className="Auth_download_button">
             <button onClick={() => { openDownBackupModal() }}>
               Download File Backup
