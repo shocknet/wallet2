@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState, useCallback } from 'react';
+import React, { ChangeEvent, useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import Checkbox from '../../Components/Checkbox';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
@@ -48,7 +48,6 @@ export const Auth = () => {
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
-  const [retreiveAccessToken, setRetreiveAccessToken] = useState<boolean>(false);
   const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
   const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
   const [seconds, setSeconds] = useState<number>(startTimerValue);
@@ -56,23 +55,25 @@ export const Auth = () => {
   const [newPair, setNewPair] = useState(false);
   const [requestToken, setRequestToken] = useState("");
   const [reOpenSocket, setReopenSocket] = useState(false);
+  const [accessToken, setAccessToken] = useState("")
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
   const backupFileRef = React.useRef<HTMLInputElement>(null);
 
+  useLayoutEffect(() => {
+    const localToken = getSanctumAccessToken();
+    if (localToken) {
+      setAccessToken(localToken)
+      setLoginStatus("confirmed");
+    }
+  }, [])
+
 
 
   const { isShown, toggle } = UseModal();
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(router.routeInfo.search)
-    const accessToken = urlParams.get("accessToken")
-    if (accessToken) {
-      setSanctumAccessToken(accessToken)
-      setAccessTokenRetreived(true)
-    }
-  }, [router])
+
 
   useEffect(() => {
     if(loginStatus === "awaiting") {
@@ -263,7 +264,7 @@ export const Auth = () => {
     const backup = await fetchRemoteBackup()
     if (backup.result === 'accessTokenMissing') {
       console.log("access token missing")
-      setRetreiveAccessToken(true)
+  /*     setRetreiveAccessToken(true) */
       return
     }
     if (backup.decrypted === '') {
