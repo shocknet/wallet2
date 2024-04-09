@@ -88,7 +88,7 @@ export default class RelayCluster {
                 content,
                 created_at: Math.floor(Date.now() / 1000),
                 kind: 21000,
-                pubkey: keys.privateKey,
+                pubkey: keys.publicKey,
                 tags: [['p', pubKey]]
             },
             keys.privateKey
