@@ -25,7 +25,7 @@ type NostrClientHolder = NostrReadyClient
 
 export class ClientsCluster {
     clients: Record<string, NostrClientHolder> = {}
-		tempClients: Record<string, NostrClientHolder> = {}
+    tempClients: Record<string, NostrClientHolder> = {}
     relayCluster: NostrRelayCluster
     queueManager: QueueManager;
 
@@ -42,12 +42,12 @@ export class ClientsCluster {
                 return
             }
         }
-				for (const key in this.tempClients) {
-					const c = this.tempClients[key]
-					if (c.client.onEvent(event)) {
-						return
-					}
-				}
+        for (const key in this.tempClients) {
+            const c = this.tempClients[key]
+            if (c.client.onEvent(event)) {
+                return
+            }
+        }
         console.log("no client found for", res.requestId)
     }
 
@@ -61,34 +61,34 @@ export class ClientsCluster {
         const { pubkey, relays }: { pubkey: string, relays?: string[] } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
         console.log("getting client for", pubkey)
 
-				if (!relays) {
-					throw new Error("cannot create client if no relays are provided")
-				}
-        
-				const relaysSettings: RelaysSettings = {
-						relays: relays.filter((item, index, self) => self.indexOf(item) === index),
-						keys
-				};
-				return new Promise((res) => {
-					this.queueManager.pushToQueue(async () => {
-						const c = this.clients[pubkey]
-						if (c && !temp) {
-								const nostrClient = c.client
-								console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
-								res(nostrClient.Get())
-								return;
-						}
-						await this.SyncClusterRelays(relaysSettings)
-						const nostrClient = new NostrClient(pubkey, keys, relays ? relays : [], (relays, to, message, keys) => this.relayCluster.Send(relays, to, message, keys))
-						if (temp) {
-							this.tempClients[pubkey] = { client: nostrClient }
-						} else {
-							this.clients[pubkey] = { client: nostrClient }
-						}
-						console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
-						res(nostrClient.Get())
-					})
-				})
+        if (!relays) {
+            throw new Error("cannot create client if no relays are provided")
+        }
+
+        const relaysSettings: RelaysSettings = {
+            relays: relays.filter((item, index, self) => self.indexOf(item) === index),
+            keys
+        };
+        return new Promise((res) => {
+            this.queueManager.pushToQueue(async () => {
+                const c = this.clients[pubkey]
+                if (c && !temp) {
+                    const nostrClient = c.client
+                    console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
+                    res(nostrClient.Get())
+                    return;
+                }
+                await this.SyncClusterRelays(relaysSettings)
+                const nostrClient = new NostrClient(pubkey, keys, relays ? relays : [], (relays, to, message, keys) => this.relayCluster.Send(relays, to, message, keys))
+                if (temp) {
+                    this.tempClients[pubkey] = { client: nostrClient }
+                } else {
+                    this.clients[pubkey] = { client: nostrClient }
+                }
+                console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
+                res(nostrClient.Get())
+            })
+        })
     }
 
     GetAllNostrClients = () => {
@@ -220,7 +220,7 @@ export class NostrClient {
 
 
 let cluster: ClientsCluster | null = null
- 
+
 export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair, temp?: boolean): Promise<Client> => {
     if (!cluster) {
         cluster = new ClientsCluster()
@@ -249,32 +249,32 @@ export const parseNprofile = (nprofile: string) => {
 type Task = () => Promise<any>;
 
 class QueueManager {
-  private queue: Task[] = [];
-	private busy = false;
+    private queue: Task[] = [];
+    private busy = false;
 
-  pushToQueue(task: Task) {
-    
-    this.queue.push(task);
-    
-    if (!this.busy) {
-      this.executeAndRemove();
+    pushToQueue(task: Task) {
+
+        this.queue.push(task);
+
+        if (!this.busy) {
+            this.executeAndRemove();
+        }
     }
-  }
 
-  private async executeAndRemove() {
-    while (this.queue.length > 0) {
-			const task = this.queue.shift();
-			if (task) {
-					this.busy = true;
-					try {
-							await task();
-					} catch (error) {
-							console.error("Error executing task:", error);
-					}
-					this.busy = false;
-			}
-		}
-		console.log("Clients queue empty")
-  }
+    private async executeAndRemove() {
+        while (this.queue.length > 0) {
+            const task = this.queue.shift();
+            if (task) {
+                this.busy = true;
+                try {
+                    await task();
+                } catch (error) {
+                    console.error("Error executing task:", error);
+                }
+                this.busy = false;
+            }
+        }
+        console.log("Clients queue empty")
+    }
 }
 
