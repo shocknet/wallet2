@@ -29,8 +29,8 @@ import { getNostrClient } from '../../Api';
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
   const t = newArr[oldIndex]
-  newArr[oldIndex]= newArr[newIndex]
-  newArr[newIndex]= t
+  newArr[oldIndex] = newArr[newIndex]
+  newArr[newIndex] = t
   return newArr;
 }
 
@@ -49,7 +49,7 @@ export const Sources = () => {
 
 
   const processParsedInput = (destination: Destination) => {
-    const promptSweep = 
+    const promptSweep =
       destination.type === InputClassification.LNURL
       &&
       destination.lnurlType === "withdrawRequest"
@@ -67,7 +67,7 @@ export const Sources = () => {
       openAddSourceModal();
     }
   }
-  
+
   useEffect(() => {
     if (location.state) {
       const receivedDestination = location.state as Destination;
@@ -106,7 +106,7 @@ export const Sources = () => {
   const [editPSourceId, setEditPSourceId] = useState("");
   const [editSSourceId, setEditSSourceId] = useState("");
   const [processingSource, setProcessingSource] = useState(false);
- 
+
   const { isShown, toggle } = UseModal();
 
   const openAddSourceModal = () => {
@@ -172,13 +172,13 @@ export const Sources = () => {
     }
   }
 
-  const addSource = useCallback( async() => {
+  const addSource = useCallback(async () => {
     toggle();
-    
+
     if (processingSource) {
       return;
     }
-    
+
     if (!sourcePasteField || !optional) {
       toast.error(<Toast title="Error" message="Please write data correctly." />)
       return;
@@ -188,9 +188,9 @@ export const Sources = () => {
     // check that no source exists with the same lpk
     if (sourcePasteField.startsWith("nprofile")) {
       // nprofile
-      
+
       try {
-        (data  = decodeNprofile(sourcePasteField));
+        (data = decodeNprofile(sourcePasteField));
         if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
           toast.error(<Toast title="Error" message="Source already exists." />)
           return;
@@ -207,7 +207,7 @@ export const Sources = () => {
       toast.error(<Toast title="Error" message="Source already exists." />)
       return;
     }
-    
+
     setProcessingSource(true);
     dispatch(toggleLoading({ loadingMessage: "Setting up source..." }))
     let parsed: Destination | null = null;
@@ -216,18 +216,16 @@ export const Sources = () => {
 
 
       const newSourceKeyPair = generateNewKeyPair();
-      const tempPair = generateNewKeyPair();
-      
+
       let vanityName: string | undefined = undefined;
- 
+
       // integration to an existing pub account
       if (integrationData.token) {
-        const res = await (await getNostrClient({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }, tempPair, true))
+        const res = await (await getNostrClient({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }, newSourceKeyPair))
           .LinkNPubThroughToken({
-            token: integrationData.token,
-            nostr_pub: newSourceKeyPair.publicKey
+            token: integrationData.token
           });
-        
+
         if (res.status !== "OK") {
           toast.error(<Toast title="Error" message={res.reason} />)
           setProcessingSource(false);
@@ -241,7 +239,7 @@ export const Sources = () => {
       const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
-      
+
       const addedPaySource = {
         id: data!.pubkey,
         option: optional,
@@ -266,7 +264,7 @@ export const Sources = () => {
       dispatch(addSpendSources(addedSpendSource));
     } else {
       // not nprofile, now checking for other cases
-      
+
       try {
         parsed = await parseBitcoinInput(sourcePasteField);
       } catch (err: any) {
@@ -322,7 +320,7 @@ export const Sources = () => {
     toast.success(<Toast title="Sources" message={`${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`} />)
     resetValue();
     dispatch(toggleLoading({ loadingMessage: "" }))
-    
+
     setProcessingSource(false);
   }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, integrationData]);
 
@@ -339,7 +337,7 @@ export const Sources = () => {
     dispatch(editPaySources(paySourceToEdit))
     resetValue();
     toggle();
-    
+
   };
 
   const editSpendSource = () => {
@@ -427,7 +425,7 @@ export const Sources = () => {
         }
         await handlePayInvoice(invoice, tempParsedWithdraw!.data);
 
-        
+
         toast.success(<Toast title="Withdraw" message={`Withdraw request successfuly sent to ${tempParsedWithdraw.domainName}.`} />)
         setTimeout(() => {
           router.push("/home");
@@ -547,7 +545,7 @@ export const Sources = () => {
         onClick={() => {
           setModalContent("sweepLnurlModal");
         }
-      }>Sweep</button>
+        }>Sweep</button>
     </div>
 
   </React.Fragment>;
@@ -563,7 +561,7 @@ export const Sources = () => {
 
   </React.Fragment>;
 
-  
+
 
   useEffect(() => {
     const list = document.getElementById('spend-list');

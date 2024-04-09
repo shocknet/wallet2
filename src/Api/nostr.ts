@@ -25,7 +25,6 @@ type NostrClientHolder = NostrReadyClient
 
 export class ClientsCluster {
     clients: Record<string, NostrClientHolder> = {}
-    tempClients: Record<string, NostrClientHolder> = {}
     relayCluster: NostrRelayCluster
     queueManager: QueueManager;
 
@@ -42,12 +41,6 @@ export class ClientsCluster {
                 return
             }
         }
-        for (const key in this.tempClients) {
-            const c = this.tempClients[key]
-            if (c.client.onEvent(event)) {
-                return
-            }
-        }
         console.log("no client found for", res.requestId)
     }
 
@@ -57,7 +50,7 @@ export class ClientsCluster {
         })
     }
 
-    GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair, temp?: boolean): Promise<Client> => {
+    GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair): Promise<Client> => {
         const { pubkey, relays }: { pubkey: string, relays?: string[] } = typeof nProfile === 'string' ? parseNprofile(nProfile) : nProfile
         console.log("getting client for", pubkey)
 
@@ -72,7 +65,7 @@ export class ClientsCluster {
         return new Promise((res) => {
             this.queueManager.pushToQueue(async () => {
                 const c = this.clients[pubkey]
-                if (c && !temp) {
+                if (c) {
                     const nostrClient = c.client
                     console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
                     res(nostrClient.Get())
@@ -80,11 +73,7 @@ export class ClientsCluster {
                 }
                 await this.SyncClusterRelays(relaysSettings)
                 const nostrClient = new NostrClient(pubkey, keys, relays ? relays : [], (relays, to, message, keys) => this.relayCluster.Send(relays, to, message, keys))
-                if (temp) {
-                    this.tempClients[pubkey] = { client: nostrClient }
-                } else {
-                    this.clients[pubkey] = { client: nostrClient }
-                }
+                this.clients[pubkey] = { client: nostrClient }
                 console.log("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
                 res(nostrClient.Get())
             })
@@ -221,11 +210,11 @@ export class NostrClient {
 
 let cluster: ClientsCluster | null = null
 
-export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair, temp?: boolean): Promise<Client> => {
+export const getNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair): Promise<Client> => {
     if (!cluster) {
         cluster = new ClientsCluster()
     }
-    return cluster.GetNostrClient(nProfile, keys, temp)
+    return cluster.GetNostrClient(nProfile, keys)
 }
 
 export const getAllNostrClients = () => {
