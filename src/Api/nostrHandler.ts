@@ -181,7 +181,6 @@ class RelayHandler {
 
         if (keys) { // new keys to sub with
             console.log("renewing sub")
-            const oldSub = this.sub;
             this.subbedPairs.push(keys);
             this.sub = this.sub.sub([
                 {
@@ -190,14 +189,7 @@ class RelayHandler {
                     '#p': this.subbedPairs.map(k => k.publicKey),
                 }
             ], {})
-            /* 
-                close the old sub only after a delay from openning the new one so as to not miss
-                potential new events in this period.
-                Any duplicates in this overlap period will be handled by the handledEvents array check
-            */
-            setTimeout(() => {
-                oldSub.unsub();
-            }, 500);
+
         }
         this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
         this.sub.on("event", async (e) => {
@@ -232,7 +224,9 @@ class RelayHandler {
             this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
         if (keys && connectedCallback) {
-            connectedCallback()
+					setTimeout(() => {
+						connectedCallback()
+					}, 1000)
         }
     }
 }
