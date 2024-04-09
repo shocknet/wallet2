@@ -178,23 +178,14 @@ class RelayHandler {
 
 				if (keys) { // new keys to sub with
 					console.log("renewing sub")
-					const oldSub = this.sub;
 					this.subbedPairs.push(keys);
 					this.sub = this.sub.sub([
 						{
-								since: Math.ceil(Date.now() / 1000),
+								since: Math.ceil((Date.now() / 1000) - 3), // 3 secs leeway for potential events when resubbing, handledEvents will handle duplicates
 								kinds: allowedKinds,
 								'#p': this.subbedPairs.map(k => k.publicKey),
 						}
 					], {})
-					/* 
-						close the old sub only after a delay from openning the new one so as to not miss
-						potential new events in this period.
-						Any duplicates in this overlap period will be handled by the handledEvents array check
-					*/
-					setTimeout(() => {
-						oldSub.unsub();
-					}, 500);
 				}
         this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
         this.sub.on("event", async (e) => {
