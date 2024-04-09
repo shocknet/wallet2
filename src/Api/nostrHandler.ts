@@ -44,18 +44,15 @@ export default class RelayCluster {
         const onConnect = (relay: string) => {
             connectedCallback(relay)
         }
-        let relayNeedsConnect = false
         relayUrls.forEach(r => {
-            relayNeedsConnect = this.addRelay(r, relaysSettings.keys, () => onConnect(r), eventCallback, () => disconnectCallback(r))
+            this.addRelay(r, relaysSettings.keys, () => onConnect(r), eventCallback, () => disconnectCallback(r))
         })
-        return relayNeedsConnect
     }
 
     addRelay = (relayUrl: string, keys: NostrKeyPair, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) => {
         if (this.relays[relayUrl] && !this.relays[relayUrl].subbedPairs.find(s => s.privateKey === keys.privateKey)) {
             this.relays[relayUrl].SubToEvents(false, keys, connectedCallback)
-
-            return false;
+            return
         }
 
         this.relays[relayUrl] = new RelayHandler({
@@ -64,7 +61,7 @@ export default class RelayCluster {
             eventCallback,
             disconnectCallback
         }, keys)
-        return true
+        return
     }
 
     SendNip46 = async (relays: string[], pubKey: string, message: string, keys: NostrKeyPair) => {
@@ -135,7 +132,10 @@ class RelayHandler {
     onConnect = (triggerConnectCb: boolean) => {
         this.connected = true
         if (triggerConnectCb) {
-            this.args.connectedCallback()
+            setTimeout(() => {
+                this.args.connectedCallback()
+            }, 1000)
+
         }
     }
 

@@ -53,13 +53,7 @@ export class ClientsCluster {
 
     SyncClusterRelays = (relays: RelaysSettings) => {
         return new Promise<void>(res => {
-            const needConnect = this.relayCluster.addRelays(relays, () => {
-                if (needConnect) {
-                    setTimeout(res, 1000)
-                } else {
-                    res()
-                }
-            }, (e) => this.onRelayEvent(e), (r) => console.log("disconnected from relay", r))
+            this.relayCluster.addRelays(relays, () => res(), (e) => this.onRelayEvent(e), (r) => console.log("disconnected from relay", r))
         })
     }
 
