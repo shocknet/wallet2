@@ -52,16 +52,16 @@ export default class RelayCluster {
     addRelay = (relayUrl: string, keys: NostrKeyPair, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) => {
         if (this.relays[relayUrl] && !this.relays[relayUrl].subbedPairs.find(s => s.privateKey === keys.privateKey)) {
             this.relays[relayUrl].SubToEvents(false, keys, connectedCallback)
-						
-						return;
+            return
         }
-				
+
         this.relays[relayUrl] = new RelayHandler({
             relay: relayUrl,
             connectedCallback,
             eventCallback,
             disconnectCallback
         }, keys)
+        return
     }
 
     SendNip46 = async (relays: string[], pubKey: string, message: string, keys: NostrKeyPair) => {
@@ -88,7 +88,7 @@ export default class RelayCluster {
                 content,
                 created_at: Math.floor(Date.now() / 1000),
                 kind: 21000,
-                pubkey: keys.privateKey,
+                pubkey: keys.publicKey,
                 tags: [['p', pubKey]]
             },
             keys.privateKey
@@ -116,8 +116,8 @@ type RelayArgs = {
 }
 
 class RelayHandler {
-		sub: Sub | null = null;
-		subbedPairs: NostrKeyPair[] = [];
+    sub: Sub | null = null;
+    subbedPairs: NostrKeyPair[] = [];
     args: RelayArgs
     connected = false
     constructor(args: RelayArgs, keys: NostrKeyPair) {
@@ -132,13 +132,16 @@ class RelayHandler {
     onConnect = (triggerConnectCb: boolean) => {
         this.connected = true
         if (triggerConnectCb) {
-            this.args.connectedCallback()
+            setTimeout(() => {
+                this.args.connectedCallback()
+            }, 1000)
+
         }
     }
 
     Connect = async (triggerConnectCb: boolean, keys: NostrKeyPair) => {
         const relay = relayInit(this.args.relay)
-				this.subbedPairs.push(keys);
+        this.subbedPairs.push(keys);
 
         try {
             await relay.connect()
@@ -152,50 +155,50 @@ class RelayHandler {
         console.log("connected, subbing...")
         relay.on('disconnect', () => {
             console.log("relay disconnected, will try to reconnect")
-						if (this.sub) {
-							this.sub.unsub()
-						}
+            if (this.sub) {
+                this.sub.unsub()
+            }
             relay.close()
             this.connected = false
             this.args.disconnectCallback()
             this.Connect(false, keys)
         })
-				this.sub = relay.sub([
-					{
-							since: Math.ceil(Date.now() / 1000),
-							kinds: allowedKinds,
-							'#p': this.subbedPairs.map(k => k.publicKey),
-					}
-				])
-				this.SubToEvents(triggerConnectCb)
+        this.sub = relay.sub([
+            {
+                since: Math.ceil(Date.now() / 1000),
+                kinds: allowedKinds,
+                '#p': this.subbedPairs.map(k => k.publicKey),
+            }
+        ])
+        this.SubToEvents(triggerConnectCb)
 
     }
-		
+
 
     SubToEvents = async (triggerConnectCb: boolean, keys?: NostrKeyPair, connectedCallback?: () => void) => {
         if (!this.sub) return // should never happen becuase of the queue in getNostrClient,
-				//just appeasing ts
+        //just appeasing ts
 
-				if (keys) { // new keys to sub with
-					console.log("renewing sub")
-					const oldSub = this.sub;
-					this.subbedPairs.push(keys);
-					this.sub = this.sub.sub([
-						{
-								since: Math.ceil(Date.now() / 1000),
-								kinds: allowedKinds,
-								'#p': this.subbedPairs.map(k => k.publicKey),
-						}
-					], {})
-					/* 
-						close the old sub only after a delay from openning the new one so as to not miss
-						potential new events in this period.
-						Any duplicates in this overlap period will be handled by the handledEvents array check
-					*/
-					setTimeout(() => {
-						oldSub.unsub();
-					}, 500);
-				}
+        if (keys) { // new keys to sub with
+            console.log("renewing sub")
+            const oldSub = this.sub;
+            this.subbedPairs.push(keys);
+            this.sub = this.sub.sub([
+                {
+                    since: Math.ceil(Date.now() / 1000),
+                    kinds: allowedKinds,
+                    '#p': this.subbedPairs.map(k => k.publicKey),
+                }
+            ], {})
+            /* 
+                close the old sub only after a delay from openning the new one so as to not miss
+                potential new events in this period.
+                Any duplicates in this overlap period will be handled by the handledEvents array check
+            */
+            setTimeout(() => {
+                oldSub.unsub();
+            }, 500);
+        }
         this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
         this.sub.on("event", async (e) => {
             console.log({ nostrEvent: e })
@@ -208,15 +211,15 @@ class RelayHandler {
                 console.log("event already handled")
                 return
             }
-            handledEvents.push({eventId, addedAtUnix: Date.now()});
+            handledEvents.push({ eventId, addedAtUnix: Date.now() });
 
-						let addressedKeyPair: NostrKeyPair | null | undefined = null;
-						for (const tag of e.tags) {
-							if (tag[0] === 'p') {
-									const pubkey = tag[1];
-									addressedKeyPair = this.subbedPairs.find(p => p.publicKey === pubkey);
-							}
-						}
+            let addressedKeyPair: NostrKeyPair | null | undefined = null;
+            for (const tag of e.tags) {
+                if (tag[0] === 'p') {
+                    const pubkey = tag[1];
+                    addressedKeyPair = this.subbedPairs.find(p => p.publicKey === pubkey);
+                }
+            }
 
             if (e.kind === 24133) {
                 const decryptedNip46 = await decrypt(addressedKeyPair!.privateKey, e.pubkey, e.content)
@@ -228,9 +231,9 @@ class RelayHandler {
             console.log({ decrypted: content })
             this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
-				if (keys && connectedCallback) {
-					connectedCallback()
-				}
+        if (keys && connectedCallback) {
+            connectedCallback()
+        }
     }
 }
 const appTag = "shockwallet"
