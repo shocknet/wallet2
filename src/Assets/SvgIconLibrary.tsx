@@ -716,3 +716,17 @@ export const sanctumChecked = () => {
         <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
+
+export const acceptInvite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 18 22" width="18" height="22"><g transform="translate(0, 0)"><g transform="translate(0, 0) rotate(0)"><path d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g><defs><path id="path-171274089491557637" d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vector-effect="non-scaling-stroke"/></defs></g></svg>';
+    return (
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const declineInvite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
