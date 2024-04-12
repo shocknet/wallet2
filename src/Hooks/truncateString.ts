@@ -5,7 +5,3 @@ export const truncateString = (str: string, maxLength: number): string => {
         return str;
     }
 }
-
-const longString: string = "kajslkdjfklasjdlfjasl;dkjfal;skjdlfkj";
-const truncatedString: string = truncateString(longString, 10);
-console.log(truncatedString)
