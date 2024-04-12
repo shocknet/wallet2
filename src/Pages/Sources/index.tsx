@@ -24,6 +24,8 @@ import { useLocation } from 'react-router';
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { generatePrivateKey, getPublicKey } from 'nostr-tools';
+import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
@@ -60,11 +62,11 @@ export const Sources = () => {
 
     if (promptSweep) {
       setTempParsedWithdraw(destination);
-      setModalContent("promptSweep");
+      setModalContent("acceptInvite");
       toggle();
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
-      openAddSourceModal();
+      openAcceptInviteModal();
     }
   }
   
@@ -100,7 +102,7 @@ export const Sources = () => {
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
 
-  const [modalContent, setModalContent] = useState<string>("");
+  const [modalContent, setModalContent] = useState<undefined | null | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite">();
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
   const [editPSourceId, setEditPSourceId] = useState("");
@@ -111,6 +113,11 @@ export const Sources = () => {
 
   const openAddSourceModal = () => {
     setModalContent("addSource");
+    toggle();
+  };
+
+  const openAcceptInviteModal = () => {
+    setModalContent("acceptInvite");
     toggle();
   };
 
@@ -147,7 +154,7 @@ export const Sources = () => {
     toggle();
   }
 
-  const switchContent = (value: string) => {
+  const switchContent = (value: null | undefined | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite") => {
     switch (value) {
       case 'promptSweep':
         return promptSweep
@@ -166,6 +173,9 @@ export const Sources = () => {
         return notifyContent
       case "sourceNotify":
         return disabledSpendSourceInfo
+
+      case "acceptInvite":
+        return acceptInviteContent
 
       default:
         return notifyContent
@@ -563,6 +573,19 @@ export const Sources = () => {
 
   </React.Fragment>;
 
+  const acceptInviteContent = <React.Fragment>
+    <div className='Sources_modal_header'>Accept Invite?</div>
+    <div className='Sources_modal_discription'>Lightning.video</div>
+    <div className='Sources_modal_link'>{truncateString(sourcePasteField, 30)}</div>
+    <div className="Sources_modal_add_btn">
+      <button 
+        className='margin-0' 
+        onClick={toggle}>{icons.declineInvite()}DECLINE</button>
+      <button
+        className='margin-0'
+        onClick={addSource}>{icons.acceptInvite()}ACCEPT</button>
+    </div>
+  </React.Fragment>
   
 
   useEffect(() => {
