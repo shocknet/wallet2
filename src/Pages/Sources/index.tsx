@@ -605,8 +605,8 @@ export const Sources = () => {
         touchStartThreshold: 3.,
         swapThreshold: 5,
         fallbackTolerance: 4,
-        delay: 300,
-
+        delay: 150,
+        handle: ".grab-handler"
       });
     }
     return () => {
@@ -633,7 +633,8 @@ export const Sources = () => {
         touchStartThreshold: 3.,
         swapThreshold: 5,
         fallbackTolerance: 4,
-        delay: 300,
+        delay: 150,
+        handle: ".grab-handler"
       });
     }
     return () => {
@@ -669,6 +670,7 @@ export const Sources = () => {
                     </button>
                     <button className="Sources_item_menu">
                       {icons.SourceItemMenu()}
+                      <div className="Sources_item_handle grab-handler" />
                     </button>
                   </div>
                 </li>
@@ -705,6 +707,7 @@ export const Sources = () => {
                     </button>
                     <button className="Sources_item_menu">
                       {icons.SourceItemMenu()}
+                      <div className="Sources_item_handle grab-handler" />
                     </button>
                   </div>
                 </li>
