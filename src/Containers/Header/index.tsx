@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -9,6 +9,7 @@ import { useIonRouter,isPlatform } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
+import { getSanctumAccessToken } from "../../Api/sanctum";
 let logs: string[] = []
 const saveLog = (...args: any[]) => {
   const line = args.map(m => {
@@ -27,6 +28,7 @@ const saveLog = (...args: any[]) => {
 export const Header = () => {
   const [badge, setBadge] = useState(false);
   const [logoClickCounter, setLogoClickCounter] = useState(0);
+  const [accessToken, setAccessToken] = useState(false);
   const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
@@ -120,6 +122,13 @@ export const Header = () => {
     }
   }, []);
 
+  useLayoutEffect(() => {
+    const localToken = getSanctumAccessToken();
+    if (localToken) {
+      setAccessToken(true)
+    }
+  }, [])
+
   const content = <React.Fragment>
     <div className="Header_modal">
       <div className="Header_modal_close" onClick={() => toggle()}>
@@ -162,6 +171,19 @@ export const Header = () => {
           </div>
           <div className="Header_modal_content_item_text">Manage Sources</div>
         </div>
+        {
+          !accessToken
+          &&
+          <div className="Header_modal_content_item" onClick={() => {
+            router.push("/auth");
+            toggle();
+          }}>
+            <div className="Header_modal_content_item_img">
+              {Icons.Key()}
+            </div>
+            <div className="Header_modal_content_item_text">Auth</div>
+          </div>
+        }
         <div className="Header_modal_content_item">
           <hr />
         </div>

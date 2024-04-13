@@ -39,6 +39,7 @@ export const Background = () => {
     type: InputClassification.UNKNOWN,
     data: "",
   });
+	const [refresh, setRefresh] = useState<number | null>(null);
 	const { isShown, toggle } = UseModal();
 	const isShownRef = useRef(false);
 
@@ -189,7 +190,7 @@ export const Background = () => {
 			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await getSourceInfo(s, client)
 		})
-	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp])
+	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
 
 	useEffect(() => {
@@ -201,7 +202,7 @@ export const Background = () => {
 			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await fetchSourceHistory(s, client, pubkey)
 		})
-	}, [operationsUpdateHook, nostrSpends.length, nodedUp])
+	}, [operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
 	
 
@@ -295,11 +296,18 @@ export const Background = () => {
 	}, [savedAssets, nodedUp]);
 
 	useEffect(() => {
-		window.addEventListener("visibilitychange", checkClipboard);
+
+		const visiblityHandler = () => {
+			if (document.visibilityState === "visible") {
+				setRefresh(Math.random())
+			}
+			checkClipboard();
+		}
+		window.addEventListener("visibilitychange", visiblityHandler)
 		window.addEventListener("focus", checkClipboard);
 
 		return () => {
-			window.removeEventListener("visibilitychange", checkClipboard);
+			window.removeEventListener("visibilitychange", visiblityHandler);
 			window.removeEventListener("focus", checkClipboard);
 		};
 	}, [checkClipboard])

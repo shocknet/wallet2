@@ -72,7 +72,7 @@ export const selectNostrSpends = createSelector(
 export const selectEnabledSpends = createSelector(
   (state: State) => state.spendSource,
   (spendSource: SpendSourceState) =>
-    Object.values(spendSource.sources).filter((s) => !s.disabled)
+    spendSource.order.map(id => spendSource.sources[id]).filter(source => !source.disabled)
 )
 
 export const selectActiveSubs = createSelector(

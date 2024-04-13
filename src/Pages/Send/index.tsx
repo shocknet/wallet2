@@ -56,7 +56,18 @@ export const Send = () => {
   const [amount, setAmount] = useState(0);
   const [note, setNote] = useState("");
   const { isShown, toggle } = UseModal();
-  const [selectedSource, setSelectedSource] = useState(spendSources.sources[spendSources.order[0]]);
+  const [selectedSource, setSelectedSource] = useState(enabledSpendSources[0]);
+
+
+  useEffect(() => {
+    if (selectedSource && Number(selectedSource.balance) === 0) {
+      const foundOneWithBalance = enabledSpendSources.find(s => Number(s.balance) > 0);
+      console.log({foundOneWithBalance})
+      if (foundOneWithBalance) {
+        setSelectedSource(foundOneWithBalance)
+      }
+    } 
+  }, [enabledSpendSources, selectedSource])
 
   const [satsPerByte, setSatsPerByte] = useState(0)
   const [fiatSymbol, setFiatSymbol] = useState('$')
@@ -112,7 +123,7 @@ export const Send = () => {
       toast.error(<Toast title="Error" message="You don't have any sources." />)
       router.push("/home");
     }
-  }, [router, enabledSpendSources]);
+  }, [enabledSpendSources]);
 
   useEffect(() => {
     if (location.state) {
@@ -325,7 +336,7 @@ export const Send = () => {
           </div>
           <div className="Send_from">
             <p>Spend From:</p>
-            <SpendFromDropdown values={enabledSpendSources} initialValue={spendSources.sources[spendSources.order[0]]} callback={setSelectedSource} />
+            <SpendFromDropdown values={enabledSpendSources} value={selectedSource} callback={setSelectedSource} />
           </div>
         </div>
       </div>
