@@ -3,7 +3,7 @@ import { getAllNostrClients, nostrCallback } from "../../Api/nostr"
 import { toast } from "react-toastify";
 import Toast from "../Toast";
 
-const SubsCheckIntervalSeconds = 20
+const SubsCheckIntervalSeconds = 10
 export const HealthCheck = () => {
     // const paySource = useSelector(({ paySource }) => paySource)
     // const spendSource = useSelector(({ spendSource }) => spendSource)
