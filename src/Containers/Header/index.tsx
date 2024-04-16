@@ -115,8 +115,14 @@ export const Header = () => {
     if (isPlatform('ios')) {
       setTimeout(() => {
         var header = document.querySelector('.Header') as HTMLElement;
-        if (header) {
-          header.style.marginTop = '5vh';
+        if (window.location.href.indexOf('http://') === 0 || window.location.href.indexOf('https://') === 0) {
+          if (header) {
+            return header.style.marginTop = '0';
+          }
+        } else {
+          if (header) {
+            return header.style.marginTop = '5vh';
+          }
         }
       }, 30)
     }

@@ -11,7 +11,7 @@ export const Footer = () => {
   const receive: boolean = router.routeInfo.pathname === "/receive";
 
   useEffect(() => {
-    if (isPlatform('android')) {
+    if (isPlatform('android') || isPlatform('ios')) {
       setTimeout(() => {
         var footer = document.querySelector('.Footer') as HTMLElement;
         var viewportHeight = window.innerHeight;
@@ -20,6 +20,29 @@ export const Footer = () => {
         }
       }, 30)
     }
+  }, []);
+
+  useEffect(() => {
+    // Create a new resize event
+    const resizeEvent = new Event('resize');
+    window.dispatchEvent(resizeEvent);
+  }, []);
+
+  const handleResize = () => {
+    var footer = document.querySelector('.Footer') as HTMLElement;
+    var viewportHeight = window.innerHeight;
+    if (footer) {
+      footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
+    }
+  };
+
+  useEffect(() => {
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   return (
