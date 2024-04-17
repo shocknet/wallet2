@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SandClock, SanctumSetting, SanctumChecked } from "./icons";
 import newSocket, { Creds } from "./socket";
+import { Browser } from '@capacitor/browser';
 import { formatTime, getClientKey } from "./helpers";
 import styles from "./styles/index.module.scss";
 import SANCTUM_LOGO from "./santum_huge.png"
@@ -66,9 +67,10 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 				successCallback(data)
 				setLoginStatus("confirmed");
 			},
-			onToStartSanctum: (receivedRequestToken) => {
+			onToStartSanctum: async (receivedRequestToken) => {
 				setLoginStatus("awaiting");
-				window.open(`${sanctumUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
+				await Browser.open({ url: `${sanctumUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}` });
+				// window.open(`${sanctumUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
 			},
 			onUnexpectedClosure: () => {
 				setReopenSocket(true);
