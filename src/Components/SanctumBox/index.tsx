@@ -68,9 +68,8 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 				setLoginStatus("confirmed");
 			},
 			onToStartSanctum: async (receivedRequestToken) => {
-				setLoginStatus("awaiting");
 				await Browser.open({ url: `${sanctumUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}` });
-				// window.open(`${sanctumUrl}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
+				setLoginStatus("awaiting");
 			},
 			onUnexpectedClosure: () => {
 				setReopenSocket(true);
