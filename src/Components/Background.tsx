@@ -9,6 +9,7 @@ import { Destination, InputClassification, decodeLnurl, getFormattedTime, parseB
 import { useIonRouter } from "@ionic/react";
 import { Modal } from "./Modals/Modal";
 import { UseModal } from "../Hooks/UseModal";
+import { truncateString } from '../Hooks/truncateString';
 import * as icons from '../Assets/SvgIconLibrary';
 import { Clipboard } from '@capacitor/clipboard';
 import { Client as NostrClient, parseNprofile } from "../Api/nostr";
@@ -264,6 +265,7 @@ export const Background = () => {
 		} catch (error) {
 			return console.error("Cannot read clipboard");
 		}
+		console.log(savedAssets, 'test')
 		if (savedAssets?.includes(text)) {
 			return;
 		}
@@ -274,21 +276,21 @@ export const Background = () => {
 		let parsed: Destination | null = null;
 
 		try {
-      parsed = await parseBitcoinInput(text);
-    } catch (err: any) {
-      console.log(err)
-			return;
-    }
+      		parsed = await parseBitcoinInput(text);
+		} catch (err: any) {
+		console.log(err)
+				return;
+		}
 
-		if (
-      parsed.type === InputClassification.BITCOIN_ADDRESS
-      ||
-      parsed.type === InputClassification.LN_INVOICE
-      ||
-      parsed.type === InputClassification.LN_ADDRESS
-      ||
-      (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
-    ) {
+			if (
+		parsed.type === InputClassification.BITCOIN_ADDRESS
+		||
+		parsed.type === InputClassification.LN_INVOICE
+		||
+		parsed.type === InputClassification.LN_ADDRESS
+		||
+		(parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
+		) {
 			setParsedClipbaord(parsed);
 			toggle()
 		}
@@ -321,7 +323,7 @@ export const Background = () => {
 	const clipBoardContent = <React.Fragment>
 		<div className='Home_modal_header'>Clipboard Detected</div>
 		<div className='Home_modal_discription'>Would you like to use it?</div>
-		<div className='Home_modal_clipboard'>{parsedClipboard.data}</div>
+		<div className='Home_modal_clipboard'>{truncateString(parsedClipboard.data, 30)}</div>
 		<div className="Home_add_btn">
 			<div className='Home_add_btn_container'>
 				<button onClick={() => { toggle(); dispatch(addAsset({ asset: parsedClipboard.data }));}}>
@@ -330,6 +332,7 @@ export const Background = () => {
 			</div>
 			<div className='Home_add_btn_container'>
 				<button onClick={() => {
+					dispatch(addAsset({ asset: parsedClipboard.data }));
 					toggle();
 					history.push({
 						pathname: "/send",
