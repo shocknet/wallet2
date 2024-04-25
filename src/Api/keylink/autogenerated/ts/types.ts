@@ -9,8 +9,8 @@ export type AppContext = {
     app_id: string
 }
 export type UserContext = {
-    app_id: string
     app_user_id: string
+    app_id: string
 }
 export type AuthContext = GuestContext | AdminContext | AppContext | UserContext
 
@@ -131,6 +131,16 @@ export type Nip44Encrypt_Query = {
 export type Nip44Encrypt_RouteParams = {
 }
 export type Nip44Encrypt_Context = Nip44Encrypt_Query & Nip44Encrypt_RouteParams & UserContext
+export type RequestCallback_Query = {
+}
+export type RequestCallback_RouteParams = {
+}
+export type RequestCallback_Context = RequestCallback_Query & RequestCallback_RouteParams & GuestContext
+export type AuthorizeRequestToken_Query = {
+}
+export type AuthorizeRequestToken_RouteParams = {
+}
+export type AuthorizeRequestToken_Context = AuthorizeRequestToken_Query & AuthorizeRequestToken_RouteParams & GuestContext
 export type ServerMethods = {
     Health?: (ctx: Health_Context) => Promise<void>
     AddApp?: (ctx: AddApp_Context, req: AddAppRequest) => Promise<AuthApp>
@@ -142,9 +152,9 @@ export type ServerMethods = {
     GenerateSanctumToken?: (ctx: GenerateSanctumToken_Context, req: SanctumTokenRequest) => Promise<SanctumToken>
     ValidateAuthCode?: (ctx: ValidateAuthCode_Context, req: ValidateAuthCode) => Promise<AppUser>
     AddNsecToAppUser?: (ctx: AddNsecToAppUser_Context, req: AddNsecToAppUser) => Promise<AppUser>
-    RequestUserAuth?: (ctx: RequestUserAuth_Context, req: RequestUserAuth) => Promise<void>
+    RequestUserAuth?: (ctx: RequestUserAuth_Context, req: RequestUserAuth) => Promise<RequestUserAuthResponse>
     GetAppInfo?: (ctx: GetAppInfo_Context, req: GetAppInfo) => Promise<Application>
-    LinkAppUserToEmail?: (ctx: LinkAppUserToEmail_Context, req: LinkAppUserToEmail) => Promise<void>
+    LinkAppUserToEmail?: (ctx: LinkAppUserToEmail_Context, req: LinkAppUserToEmail) => Promise<LinkAppUserToEmailResponse>
     AuthCallback?: (ctx: AuthCallback_Context) => Promise<RedirectResponse>
     LinkCallback?: (ctx: LinkCallback_Context) => Promise<void>
     AuthInfo?: (ctx: AuthInfo_Context, req: AuthInfoRequest) => Promise<AuthInfoResponse>
@@ -155,6 +165,8 @@ export type ServerMethods = {
     SignNostrEvent?: (ctx: SignNostrEvent_Context, req: NostrSignRequest) => Promise<NostrSignResponse>
     Nip44Decrypt?: (ctx: Nip44Decrypt_Context, req: Nip44DecryptRequest) => Promise<Nip44DecryptResponse>
     Nip44Encrypt?: (ctx: Nip44Encrypt_Context, req: Nip44EncryptRequest) => Promise<Nip44EncryptResponse>
+    RequestCallback?: (ctx: RequestCallback_Context, req: RequestCallbackRequest) => Promise<RequestCallbackResponse>
+    AuthorizeRequestToken?: (ctx: AuthorizeRequestToken_Context, req: AuthorizeRequestTokenRequest) => Promise<void>
 }
 
 
@@ -162,461 +174,25 @@ export type OptionsBaseMessage = {
     allOptionalsAreSet?: true
 }
 
-export type UserNostrPubKey = {
-    pubkey: string
-}
-export const UserNostrPubKeyOptionalFields: [] = []
-export type UserNostrPubKeyOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    pubkey_CustomCheck?: (v: string) => boolean
-}
-export const UserNostrPubKeyValidate = (o?: UserNostrPubKey, opts: UserNostrPubKeyOptions = {}, path: string = 'UserNostrPubKey::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
-    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
-
-    return null
-}
-
-export type GetUserAccessTokenResponse = {
-    access_token: string
-}
-export const GetUserAccessTokenResponseOptionalFields: [] = []
-export type GetUserAccessTokenResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    access_token_CustomCheck?: (v: string) => boolean
-}
-export const GetUserAccessTokenResponseValidate = (o?: GetUserAccessTokenResponse, opts: GetUserAccessTokenResponseOptions = {}, path: string = 'GetUserAccessTokenResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.access_token !== 'string') return new Error(`${path}.access_token: is not a string`)
-    if (opts.access_token_CustomCheck && !opts.access_token_CustomCheck(o.access_token)) return new Error(`${path}.access_token: custom check failed`)
-
-    return null
-}
-
-export type Application = {
+export type AddAppRequest = {
     name: string
-    id: string
     callback_url: string
 }
-export const ApplicationOptionalFields: [] = []
-export type ApplicationOptions = OptionsBaseMessage & {
+export const AddAppRequestOptionalFields: [] = []
+export type AddAppRequestOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
     name_CustomCheck?: (v: string) => boolean
-    id_CustomCheck?: (v: string) => boolean
     callback_url_CustomCheck?: (v: string) => boolean
 }
-export const ApplicationValidate = (o?: Application, opts: ApplicationOptions = {}, path: string = 'Application::root.'): Error | null => {
+export const AddAppRequestValidate = (o?: AddAppRequest, opts: AddAppRequestOptions = {}, path: string = 'AddAppRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
     if (typeof o.name !== 'string') return new Error(`${path}.name: is not a string`)
     if (opts.name_CustomCheck && !opts.name_CustomCheck(o.name)) return new Error(`${path}.name: custom check failed`)
 
-    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
-    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
-
     if (typeof o.callback_url !== 'string') return new Error(`${path}.callback_url: is not a string`)
     if (opts.callback_url_CustomCheck && !opts.callback_url_CustomCheck(o.callback_url)) return new Error(`${path}.callback_url: custom check failed`)
-
-    return null
-}
-
-export type MergeAppUsers = {
-    from_user_identifier: string
-    to_user_identifier: string
-}
-export const MergeAppUsersOptionalFields: [] = []
-export type MergeAppUsersOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    from_user_identifier_CustomCheck?: (v: string) => boolean
-    to_user_identifier_CustomCheck?: (v: string) => boolean
-}
-export const MergeAppUsersValidate = (o?: MergeAppUsers, opts: MergeAppUsersOptions = {}, path: string = 'MergeAppUsers::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.from_user_identifier !== 'string') return new Error(`${path}.from_user_identifier: is not a string`)
-    if (opts.from_user_identifier_CustomCheck && !opts.from_user_identifier_CustomCheck(o.from_user_identifier)) return new Error(`${path}.from_user_identifier: custom check failed`)
-
-    if (typeof o.to_user_identifier !== 'string') return new Error(`${path}.to_user_identifier: is not a string`)
-    if (opts.to_user_identifier_CustomCheck && !opts.to_user_identifier_CustomCheck(o.to_user_identifier)) return new Error(`${path}.to_user_identifier: custom check failed`)
-
-    return null
-}
-
-export type RequestUserAuth = {
-    email: string
-    app_id: string
-    destination?: string
-    code_only?: boolean
-}
-export type RequestUserAuthOptionalField = 'destination' | 'code_only'
-export const RequestUserAuthOptionalFields: RequestUserAuthOptionalField[] = ['destination', 'code_only']
-export type RequestUserAuthOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: RequestUserAuthOptionalField[]
-    email_CustomCheck?: (v: string) => boolean
-    app_id_CustomCheck?: (v: string) => boolean
-    destination_CustomCheck?: (v?: string) => boolean
-    code_only_CustomCheck?: (v?: boolean) => boolean
-}
-export const RequestUserAuthValidate = (o?: RequestUserAuth, opts: RequestUserAuthOptions = {}, path: string = 'RequestUserAuth::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
-    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
-
-    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
-    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
-
-    if ((o.destination || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('destination')) && typeof o.destination !== 'string') return new Error(`${path}.destination: is not a string`)
-    if (opts.destination_CustomCheck && !opts.destination_CustomCheck(o.destination)) return new Error(`${path}.destination: custom check failed`)
-
-    if ((o.code_only || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('code_only')) && typeof o.code_only !== 'boolean') return new Error(`${path}.code_only: is not a boolean`)
-    if (opts.code_only_CustomCheck && !opts.code_only_CustomCheck(o.code_only)) return new Error(`${path}.code_only: custom check failed`)
-
-    return null
-}
-
-export type SanctumToken = {
-    token: string
-}
-export const SanctumTokenOptionalFields: [] = []
-export type SanctumTokenOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    token_CustomCheck?: (v: string) => boolean
-}
-export const SanctumTokenValidate = (o?: SanctumToken, opts: SanctumTokenOptions = {}, path: string = 'SanctumToken::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.token !== 'string') return new Error(`${path}.token: is not a string`)
-    if (opts.token_CustomCheck && !opts.token_CustomCheck(o.token)) return new Error(`${path}.token: custom check failed`)
-
-    return null
-}
-
-export type Nip44EncryptRequest = {
-    plaintext: string
-    pubkey: string
-}
-export const Nip44EncryptRequestOptionalFields: [] = []
-export type Nip44EncryptRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    plaintext_CustomCheck?: (v: string) => boolean
-    pubkey_CustomCheck?: (v: string) => boolean
-}
-export const Nip44EncryptRequestValidate = (o?: Nip44EncryptRequest, opts: Nip44EncryptRequestOptions = {}, path: string = 'Nip44EncryptRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.plaintext !== 'string') return new Error(`${path}.plaintext: is not a string`)
-    if (opts.plaintext_CustomCheck && !opts.plaintext_CustomCheck(o.plaintext)) return new Error(`${path}.plaintext: custom check failed`)
-
-    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
-    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
-
-    return null
-}
-
-export type RedirectResponse = {
-    url: string
-}
-export const RedirectResponseOptionalFields: [] = []
-export type RedirectResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    url_CustomCheck?: (v: string) => boolean
-}
-export const RedirectResponseValidate = (o?: RedirectResponse, opts: RedirectResponseOptions = {}, path: string = 'RedirectResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.url !== 'string') return new Error(`${path}.url: is not a string`)
-    if (opts.url_CustomCheck && !opts.url_CustomCheck(o.url)) return new Error(`${path}.url: custom check failed`)
-
-    return null
-}
-
-export type SanctumTokenRequest = {
-    identifier: string
-}
-export const SanctumTokenRequestOptionalFields: [] = []
-export type SanctumTokenRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    identifier_CustomCheck?: (v: string) => boolean
-}
-export const SanctumTokenRequestValidate = (o?: SanctumTokenRequest, opts: SanctumTokenRequestOptions = {}, path: string = 'SanctumTokenRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
-    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
-
-    return null
-}
-
-export type RelayPolicy = {
-    read: boolean
-    write: boolean
-}
-export const RelayPolicyOptionalFields: [] = []
-export type RelayPolicyOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    read_CustomCheck?: (v: boolean) => boolean
-    write_CustomCheck?: (v: boolean) => boolean
-}
-export const RelayPolicyValidate = (o?: RelayPolicy, opts: RelayPolicyOptions = {}, path: string = 'RelayPolicy::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.read !== 'boolean') return new Error(`${path}.read: is not a boolean`)
-    if (opts.read_CustomCheck && !opts.read_CustomCheck(o.read)) return new Error(`${path}.read: custom check failed`)
-
-    if (typeof o.write !== 'boolean') return new Error(`${path}.write: is not a boolean`)
-    if (opts.write_CustomCheck && !opts.write_CustomCheck(o.write)) return new Error(`${path}.write: custom check failed`)
-
-    return null
-}
-
-export type NostrRelays = {
-    relays: Record<string, RelayPolicy>
-}
-export const NostrRelaysOptionalFields: [] = []
-export type NostrRelaysOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    relays_EntryOptions?: RelayPolicyOptions
-    relays_CustomCheck?: (v: Record<string, RelayPolicy>) => boolean
-}
-export const NostrRelaysValidate = (o?: NostrRelays, opts: NostrRelaysOptions = {}, path: string = 'NostrRelays::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.relays !== 'object' || o.relays === null) return new Error(`${path}.relays: is not an object or is null`)
-    for (const key in o.relays) {
-        const relaysErr = RelayPolicyValidate(o.relays[key], opts.relays_EntryOptions, `${path}.relays['${key}']`)
-        if (relaysErr !== null) return relaysErr
-    }
-
-    return null
-}
-
-export type Nip44DecryptRequest = {
-    ciphertext: string
-    pubkey: string
-}
-export const Nip44DecryptRequestOptionalFields: [] = []
-export type Nip44DecryptRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    ciphertext_CustomCheck?: (v: string) => boolean
-    pubkey_CustomCheck?: (v: string) => boolean
-}
-export const Nip44DecryptRequestValidate = (o?: Nip44DecryptRequest, opts: Nip44DecryptRequestOptions = {}, path: string = 'Nip44DecryptRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.ciphertext !== 'string') return new Error(`${path}.ciphertext: is not a string`)
-    if (opts.ciphertext_CustomCheck && !opts.ciphertext_CustomCheck(o.ciphertext)) return new Error(`${path}.ciphertext: custom check failed`)
-
-    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
-    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
-
-    return null
-}
-
-export type Nip44DecryptResponse = {
-    plaintext: string
-}
-export const Nip44DecryptResponseOptionalFields: [] = []
-export type Nip44DecryptResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    plaintext_CustomCheck?: (v: string) => boolean
-}
-export const Nip44DecryptResponseValidate = (o?: Nip44DecryptResponse, opts: Nip44DecryptResponseOptions = {}, path: string = 'Nip44DecryptResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.plaintext !== 'string') return new Error(`${path}.plaintext: is not a string`)
-    if (opts.plaintext_CustomCheck && !opts.plaintext_CustomCheck(o.plaintext)) return new Error(`${path}.plaintext: custom check failed`)
-
-    return null
-}
-
-export type GetUserAccessTokenRequest = {
-    app_id: string
-    sanctum_token: string
-}
-export const GetUserAccessTokenRequestOptionalFields: [] = []
-export type GetUserAccessTokenRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    app_id_CustomCheck?: (v: string) => boolean
-    sanctum_token_CustomCheck?: (v: string) => boolean
-}
-export const GetUserAccessTokenRequestValidate = (o?: GetUserAccessTokenRequest, opts: GetUserAccessTokenRequestOptions = {}, path: string = 'GetUserAccessTokenRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
-    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
-
-    if (typeof o.sanctum_token !== 'string') return new Error(`${path}.sanctum_token: is not a string`)
-    if (opts.sanctum_token_CustomCheck && !opts.sanctum_token_CustomCheck(o.sanctum_token)) return new Error(`${path}.sanctum_token: custom check failed`)
-
-    return null
-}
-
-export type AddAppUserRequest = {
-    identifier: string
-    fail_if_exists: boolean
-}
-export const AddAppUserRequestOptionalFields: [] = []
-export type AddAppUserRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    identifier_CustomCheck?: (v: string) => boolean
-    fail_if_exists_CustomCheck?: (v: boolean) => boolean
-}
-export const AddAppUserRequestValidate = (o?: AddAppUserRequest, opts: AddAppUserRequestOptions = {}, path: string = 'AddAppUserRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
-    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
-
-    if (typeof o.fail_if_exists !== 'boolean') return new Error(`${path}.fail_if_exists: is not a boolean`)
-    if (opts.fail_if_exists_CustomCheck && !opts.fail_if_exists_CustomCheck(o.fail_if_exists)) return new Error(`${path}.fail_if_exists: custom check failed`)
-
-    return null
-}
-
-export type GetAppUserRequest = {
-    user_identifier: string
-}
-export const GetAppUserRequestOptionalFields: [] = []
-export type GetAppUserRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    user_identifier_CustomCheck?: (v: string) => boolean
-}
-export const GetAppUserRequestValidate = (o?: GetAppUserRequest, opts: GetAppUserRequestOptions = {}, path: string = 'GetAppUserRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.user_identifier !== 'string') return new Error(`${path}.user_identifier: is not a string`)
-    if (opts.user_identifier_CustomCheck && !opts.user_identifier_CustomCheck(o.user_identifier)) return new Error(`${path}.user_identifier: custom check failed`)
-
-    return null
-}
-
-export type LinkAppUserToEmail = {
-    identifier: string
-    email: string
-    app_id: string
-    nostr_secret?: string
-}
-export type LinkAppUserToEmailOptionalField = 'nostr_secret'
-export const LinkAppUserToEmailOptionalFields: LinkAppUserToEmailOptionalField[] = ['nostr_secret']
-export type LinkAppUserToEmailOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: LinkAppUserToEmailOptionalField[]
-    identifier_CustomCheck?: (v: string) => boolean
-    email_CustomCheck?: (v: string) => boolean
-    app_id_CustomCheck?: (v: string) => boolean
-    nostr_secret_CustomCheck?: (v?: string) => boolean
-}
-export const LinkAppUserToEmailValidate = (o?: LinkAppUserToEmail, opts: LinkAppUserToEmailOptions = {}, path: string = 'LinkAppUserToEmail::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
-    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
-
-    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
-    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
-
-    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
-    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
-
-    if ((o.nostr_secret || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nostr_secret')) && typeof o.nostr_secret !== 'string') return new Error(`${path}.nostr_secret: is not a string`)
-    if (opts.nostr_secret_CustomCheck && !opts.nostr_secret_CustomCheck(o.nostr_secret)) return new Error(`${path}.nostr_secret: custom check failed`)
-
-    return null
-}
-
-export type NostrSignResponse = {
-    signedEvent: string
-}
-export const NostrSignResponseOptionalFields: [] = []
-export type NostrSignResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    signedEvent_CustomCheck?: (v: string) => boolean
-}
-export const NostrSignResponseValidate = (o?: NostrSignResponse, opts: NostrSignResponseOptions = {}, path: string = 'NostrSignResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.signedEvent !== 'string') return new Error(`${path}.signedEvent: is not a string`)
-    if (opts.signedEvent_CustomCheck && !opts.signedEvent_CustomCheck(o.signedEvent)) return new Error(`${path}.signedEvent: custom check failed`)
-
-    return null
-}
-
-export type RequestSanctumTokenRequest = {
-    email: string
-    app_id: string
-}
-export const RequestSanctumTokenRequestOptionalFields: [] = []
-export type RequestSanctumTokenRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    email_CustomCheck?: (v: string) => boolean
-    app_id_CustomCheck?: (v: string) => boolean
-}
-export const RequestSanctumTokenRequestValidate = (o?: RequestSanctumTokenRequest, opts: RequestSanctumTokenRequestOptions = {}, path: string = 'RequestSanctumTokenRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
-    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
-
-    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
-    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
-
-    return null
-}
-
-export type Empty = {
-}
-export const EmptyOptionalFields: [] = []
-export type EmptyOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-}
-export const EmptyValidate = (o?: Empty, opts: EmptyOptions = {}, path: string = 'Empty::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    return null
-}
-
-export type UserInfo = {
-    userId: string
-    email: string
-}
-export const UserInfoOptionalFields: [] = []
-export type UserInfoOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    userId_CustomCheck?: (v: string) => boolean
-    email_CustomCheck?: (v: string) => boolean
-}
-export const UserInfoValidate = (o?: UserInfo, opts: UserInfoOptions = {}, path: string = 'UserInfo::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.userId !== 'string') return new Error(`${path}.userId: is not a string`)
-    if (opts.userId_CustomCheck && !opts.userId_CustomCheck(o.userId)) return new Error(`${path}.userId: custom check failed`)
-
-    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
-    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
 
     return null
 }
@@ -645,6 +221,106 @@ export const AuthAppRequestValidate = (o?: AuthAppRequest, opts: AuthAppRequestO
     return null
 }
 
+export type AddAppUserRequest = {
+    identifier: string
+    fail_if_exists: boolean
+}
+export const AddAppUserRequestOptionalFields: [] = []
+export type AddAppUserRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    identifier_CustomCheck?: (v: string) => boolean
+    fail_if_exists_CustomCheck?: (v: boolean) => boolean
+}
+export const AddAppUserRequestValidate = (o?: AddAppUserRequest, opts: AddAppUserRequestOptions = {}, path: string = 'AddAppUserRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
+    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
+
+    if (typeof o.fail_if_exists !== 'boolean') return new Error(`${path}.fail_if_exists: is not a boolean`)
+    if (opts.fail_if_exists_CustomCheck && !opts.fail_if_exists_CustomCheck(o.fail_if_exists)) return new Error(`${path}.fail_if_exists: custom check failed`)
+
+    return null
+}
+
+export type AuthInfoRequest = {
+    id: string
+}
+export const AuthInfoRequestOptionalFields: [] = []
+export type AuthInfoRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    id_CustomCheck?: (v: string) => boolean
+}
+export const AuthInfoRequestValidate = (o?: AuthInfoRequest, opts: AuthInfoRequestOptions = {}, path: string = 'AuthInfoRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
+    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
+
+    return null
+}
+
+export type SanctumTokenRequest = {
+    identifier: string
+}
+export const SanctumTokenRequestOptionalFields: [] = []
+export type SanctumTokenRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    identifier_CustomCheck?: (v: string) => boolean
+}
+export const SanctumTokenRequestValidate = (o?: SanctumTokenRequest, opts: SanctumTokenRequestOptions = {}, path: string = 'SanctumTokenRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
+    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
+
+    return null
+}
+
+export type Nip44DecryptRequest = {
+    ciphertext: string
+    pubkey: string
+}
+export const Nip44DecryptRequestOptionalFields: [] = []
+export type Nip44DecryptRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    ciphertext_CustomCheck?: (v: string) => boolean
+    pubkey_CustomCheck?: (v: string) => boolean
+}
+export const Nip44DecryptRequestValidate = (o?: Nip44DecryptRequest, opts: Nip44DecryptRequestOptions = {}, path: string = 'Nip44DecryptRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.ciphertext !== 'string') return new Error(`${path}.ciphertext: is not a string`)
+    if (opts.ciphertext_CustomCheck && !opts.ciphertext_CustomCheck(o.ciphertext)) return new Error(`${path}.ciphertext: custom check failed`)
+
+    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
+    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
+
+    return null
+}
+
+export type GetAppInfo = {
+    id: string
+}
+export const GetAppInfoOptionalFields: [] = []
+export type GetAppInfoOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    id_CustomCheck?: (v: string) => boolean
+}
+export const GetAppInfoValidate = (o?: GetAppInfo, opts: GetAppInfoOptions = {}, path: string = 'GetAppInfo::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
+    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
+
+    return null
+}
+
 export type ValidateAuthCode = {
     code: string
 }
@@ -663,30 +339,165 @@ export const ValidateAuthCodeValidate = (o?: ValidateAuthCode, opts: ValidateAut
     return null
 }
 
-export type AuthInfoResponse = {
-    app_name: string
-    email: string
-    is_link: boolean
+export type RequestUserAuthResponse = {
+    submit_token: string
 }
-export const AuthInfoResponseOptionalFields: [] = []
-export type AuthInfoResponseOptions = OptionsBaseMessage & {
+export const RequestUserAuthResponseOptionalFields: [] = []
+export type RequestUserAuthResponseOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    app_name_CustomCheck?: (v: string) => boolean
-    email_CustomCheck?: (v: string) => boolean
-    is_link_CustomCheck?: (v: boolean) => boolean
+    submit_token_CustomCheck?: (v: string) => boolean
 }
-export const AuthInfoResponseValidate = (o?: AuthInfoResponse, opts: AuthInfoResponseOptions = {}, path: string = 'AuthInfoResponse::root.'): Error | null => {
+export const RequestUserAuthResponseValidate = (o?: RequestUserAuthResponse, opts: RequestUserAuthResponseOptions = {}, path: string = 'RequestUserAuthResponse::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.app_name !== 'string') return new Error(`${path}.app_name: is not a string`)
-    if (opts.app_name_CustomCheck && !opts.app_name_CustomCheck(o.app_name)) return new Error(`${path}.app_name: custom check failed`)
+    if (typeof o.submit_token !== 'string') return new Error(`${path}.submit_token: is not a string`)
+    if (opts.submit_token_CustomCheck && !opts.submit_token_CustomCheck(o.submit_token)) return new Error(`${path}.submit_token: custom check failed`)
+
+    return null
+}
+
+export type Nip44EncryptRequest = {
+    plaintext: string
+    pubkey: string
+}
+export const Nip44EncryptRequestOptionalFields: [] = []
+export type Nip44EncryptRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    plaintext_CustomCheck?: (v: string) => boolean
+    pubkey_CustomCheck?: (v: string) => boolean
+}
+export const Nip44EncryptRequestValidate = (o?: Nip44EncryptRequest, opts: Nip44EncryptRequestOptions = {}, path: string = 'Nip44EncryptRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.plaintext !== 'string') return new Error(`${path}.plaintext: is not a string`)
+    if (opts.plaintext_CustomCheck && !opts.plaintext_CustomCheck(o.plaintext)) return new Error(`${path}.plaintext: custom check failed`)
+
+    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
+    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
+
+    return null
+}
+
+export type Empty = {
+}
+export const EmptyOptionalFields: [] = []
+export type EmptyOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+}
+export const EmptyValidate = (o?: Empty, opts: EmptyOptions = {}, path: string = 'Empty::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    return null
+}
+
+export type LinkAppUserToEmail = {
+    identifier: string
+    email: string
+    app_id: string
+    nostr_secret?: string
+    request_token?: string
+}
+export type LinkAppUserToEmailOptionalField = 'nostr_secret' | 'request_token'
+export const LinkAppUserToEmailOptionalFields: LinkAppUserToEmailOptionalField[] = ['nostr_secret', 'request_token']
+export type LinkAppUserToEmailOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: LinkAppUserToEmailOptionalField[]
+    identifier_CustomCheck?: (v: string) => boolean
+    email_CustomCheck?: (v: string) => boolean
+    app_id_CustomCheck?: (v: string) => boolean
+    nostr_secret_CustomCheck?: (v?: string) => boolean
+    request_token_CustomCheck?: (v?: string) => boolean
+}
+export const LinkAppUserToEmailValidate = (o?: LinkAppUserToEmail, opts: LinkAppUserToEmailOptions = {}, path: string = 'LinkAppUserToEmail::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.identifier !== 'string') return new Error(`${path}.identifier: is not a string`)
+    if (opts.identifier_CustomCheck && !opts.identifier_CustomCheck(o.identifier)) return new Error(`${path}.identifier: custom check failed`)
 
     if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
     if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
 
-    if (typeof o.is_link !== 'boolean') return new Error(`${path}.is_link: is not a boolean`)
-    if (opts.is_link_CustomCheck && !opts.is_link_CustomCheck(o.is_link)) return new Error(`${path}.is_link: custom check failed`)
+    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    if ((o.nostr_secret || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nostr_secret')) && typeof o.nostr_secret !== 'string') return new Error(`${path}.nostr_secret: is not a string`)
+    if (opts.nostr_secret_CustomCheck && !opts.nostr_secret_CustomCheck(o.nostr_secret)) return new Error(`${path}.nostr_secret: custom check failed`)
+
+    if ((o.request_token || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('request_token')) && typeof o.request_token !== 'string') return new Error(`${path}.request_token: is not a string`)
+    if (opts.request_token_CustomCheck && !opts.request_token_CustomCheck(o.request_token)) return new Error(`${path}.request_token: custom check failed`)
+
+    return null
+}
+
+export type UserInfo = {
+    userId: string
+    email: string
+}
+export const UserInfoOptionalFields: [] = []
+export type UserInfoOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    userId_CustomCheck?: (v: string) => boolean
+    email_CustomCheck?: (v: string) => boolean
+}
+export const UserInfoValidate = (o?: UserInfo, opts: UserInfoOptions = {}, path: string = 'UserInfo::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.userId !== 'string') return new Error(`${path}.userId: is not a string`)
+    if (opts.userId_CustomCheck && !opts.userId_CustomCheck(o.userId)) return new Error(`${path}.userId: custom check failed`)
+
+    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
+    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
+
+    return null
+}
+
+export type GetAppUserRequest = {
+    user_identifier: string
+}
+export const GetAppUserRequestOptionalFields: [] = []
+export type GetAppUserRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    user_identifier_CustomCheck?: (v: string) => boolean
+}
+export const GetAppUserRequestValidate = (o?: GetAppUserRequest, opts: GetAppUserRequestOptions = {}, path: string = 'GetAppUserRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.user_identifier !== 'string') return new Error(`${path}.user_identifier: is not a string`)
+    if (opts.user_identifier_CustomCheck && !opts.user_identifier_CustomCheck(o.user_identifier)) return new Error(`${path}.user_identifier: custom check failed`)
+
+    return null
+}
+
+export type RequestUserAuth = {
+    email: string
+    app_id: string
+    request_token?: string
+}
+export type RequestUserAuthOptionalField = 'request_token'
+export const RequestUserAuthOptionalFields: RequestUserAuthOptionalField[] = ['request_token']
+export type RequestUserAuthOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: RequestUserAuthOptionalField[]
+    email_CustomCheck?: (v: string) => boolean
+    app_id_CustomCheck?: (v: string) => boolean
+    request_token_CustomCheck?: (v?: string) => boolean
+}
+export const RequestUserAuthValidate = (o?: RequestUserAuth, opts: RequestUserAuthOptions = {}, path: string = 'RequestUserAuth::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
+    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
+
+    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    if ((o.request_token || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('request_token')) && typeof o.request_token !== 'string') return new Error(`${path}.request_token: is not a string`)
+    if (opts.request_token_CustomCheck && !opts.request_token_CustomCheck(o.request_token)) return new Error(`${path}.request_token: custom check failed`)
 
     return null
 }
@@ -719,85 +530,125 @@ export const AddNsecToAppUserValidate = (o?: AddNsecToAppUser, opts: AddNsecToAp
     return null
 }
 
-export type AddAppRequest = {
-    name: string
-    callback_url: string
+export type SanctumToken = {
+    token: string
 }
-export const AddAppRequestOptionalFields: [] = []
-export type AddAppRequestOptions = OptionsBaseMessage & {
+export const SanctumTokenOptionalFields: [] = []
+export type SanctumTokenOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    name_CustomCheck?: (v: string) => boolean
-    callback_url_CustomCheck?: (v: string) => boolean
+    token_CustomCheck?: (v: string) => boolean
 }
-export const AddAppRequestValidate = (o?: AddAppRequest, opts: AddAppRequestOptions = {}, path: string = 'AddAppRequest::root.'): Error | null => {
+export const SanctumTokenValidate = (o?: SanctumToken, opts: SanctumTokenOptions = {}, path: string = 'SanctumToken::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.name !== 'string') return new Error(`${path}.name: is not a string`)
-    if (opts.name_CustomCheck && !opts.name_CustomCheck(o.name)) return new Error(`${path}.name: custom check failed`)
-
-    if (typeof o.callback_url !== 'string') return new Error(`${path}.callback_url: is not a string`)
-    if (opts.callback_url_CustomCheck && !opts.callback_url_CustomCheck(o.callback_url)) return new Error(`${path}.callback_url: custom check failed`)
+    if (typeof o.token !== 'string') return new Error(`${path}.token: is not a string`)
+    if (opts.token_CustomCheck && !opts.token_CustomCheck(o.token)) return new Error(`${path}.token: custom check failed`)
 
     return null
 }
 
-export type GetAppInfo = {
-    id: string
+export type UserNostrPubKey = {
+    pubkey: string
 }
-export const GetAppInfoOptionalFields: [] = []
-export type GetAppInfoOptions = OptionsBaseMessage & {
+export const UserNostrPubKeyOptionalFields: [] = []
+export type UserNostrPubKeyOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    id_CustomCheck?: (v: string) => boolean
+    pubkey_CustomCheck?: (v: string) => boolean
 }
-export const GetAppInfoValidate = (o?: GetAppInfo, opts: GetAppInfoOptions = {}, path: string = 'GetAppInfo::root.'): Error | null => {
+export const UserNostrPubKeyValidate = (o?: UserNostrPubKey, opts: UserNostrPubKeyOptions = {}, path: string = 'UserNostrPubKey::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
-    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
+    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
+    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
 
     return null
 }
 
-export type AuthInfoRequest = {
-    id: string
+export type Nip44EncryptResponse = {
+    ciphertext: string
 }
-export const AuthInfoRequestOptionalFields: [] = []
-export type AuthInfoRequestOptions = OptionsBaseMessage & {
+export const Nip44EncryptResponseOptionalFields: [] = []
+export type Nip44EncryptResponseOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    id_CustomCheck?: (v: string) => boolean
+    ciphertext_CustomCheck?: (v: string) => boolean
 }
-export const AuthInfoRequestValidate = (o?: AuthInfoRequest, opts: AuthInfoRequestOptions = {}, path: string = 'AuthInfoRequest::root.'): Error | null => {
+export const Nip44EncryptResponseValidate = (o?: Nip44EncryptResponse, opts: Nip44EncryptResponseOptions = {}, path: string = 'Nip44EncryptResponse::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
-    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
+    if (typeof o.ciphertext !== 'string') return new Error(`${path}.ciphertext: is not a string`)
+    if (opts.ciphertext_CustomCheck && !opts.ciphertext_CustomCheck(o.ciphertext)) return new Error(`${path}.ciphertext: custom check failed`)
 
     return null
 }
 
-export type AuthApp = {
-    app: Application
-    auth_token: string
+export type AuthInfoResponse = {
+    app_name: string
+    email: string
+    is_link: boolean
 }
-export const AuthAppOptionalFields: [] = []
-export type AuthAppOptions = OptionsBaseMessage & {
+export const AuthInfoResponseOptionalFields: [] = []
+export type AuthInfoResponseOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    app_Options?: ApplicationOptions
-    auth_token_CustomCheck?: (v: string) => boolean
+    app_name_CustomCheck?: (v: string) => boolean
+    email_CustomCheck?: (v: string) => boolean
+    is_link_CustomCheck?: (v: boolean) => boolean
 }
-export const AuthAppValidate = (o?: AuthApp, opts: AuthAppOptions = {}, path: string = 'AuthApp::root.'): Error | null => {
+export const AuthInfoResponseValidate = (o?: AuthInfoResponse, opts: AuthInfoResponseOptions = {}, path: string = 'AuthInfoResponse::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
-    if (appErr !== null) return appErr
-    
+    if (typeof o.app_name !== 'string') return new Error(`${path}.app_name: is not a string`)
+    if (opts.app_name_CustomCheck && !opts.app_name_CustomCheck(o.app_name)) return new Error(`${path}.app_name: custom check failed`)
 
-    if (typeof o.auth_token !== 'string') return new Error(`${path}.auth_token: is not a string`)
-    if (opts.auth_token_CustomCheck && !opts.auth_token_CustomCheck(o.auth_token)) return new Error(`${path}.auth_token: custom check failed`)
+    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
+    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
+
+    if (typeof o.is_link !== 'boolean') return new Error(`${path}.is_link: is not a boolean`)
+    if (opts.is_link_CustomCheck && !opts.is_link_CustomCheck(o.is_link)) return new Error(`${path}.is_link: custom check failed`)
+
+    return null
+}
+
+export type RelayPolicy = {
+    read: boolean
+    write: boolean
+}
+export const RelayPolicyOptionalFields: [] = []
+export type RelayPolicyOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    read_CustomCheck?: (v: boolean) => boolean
+    write_CustomCheck?: (v: boolean) => boolean
+}
+export const RelayPolicyValidate = (o?: RelayPolicy, opts: RelayPolicyOptions = {}, path: string = 'RelayPolicy::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.read !== 'boolean') return new Error(`${path}.read: is not a boolean`)
+    if (opts.read_CustomCheck && !opts.read_CustomCheck(o.read)) return new Error(`${path}.read: custom check failed`)
+
+    if (typeof o.write !== 'boolean') return new Error(`${path}.write: is not a boolean`)
+    if (opts.write_CustomCheck && !opts.write_CustomCheck(o.write)) return new Error(`${path}.write: custom check failed`)
+
+    return null
+}
+
+export type GetUserAccessTokenResponse = {
+    access_token: string
+}
+export const GetUserAccessTokenResponseOptionalFields: [] = []
+export type GetUserAccessTokenResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    access_token_CustomCheck?: (v: string) => boolean
+}
+export const GetUserAccessTokenResponseValidate = (o?: GetUserAccessTokenResponse, opts: GetUserAccessTokenResponseOptions = {}, path: string = 'GetUserAccessTokenResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.access_token !== 'string') return new Error(`${path}.access_token: is not a string`)
+    if (opts.access_token_CustomCheck && !opts.access_token_CustomCheck(o.access_token)) return new Error(`${path}.access_token: custom check failed`)
 
     return null
 }
@@ -826,6 +677,226 @@ export const AppUserValidate = (o?: AppUser, opts: AppUserOptions = {}, path: st
     return null
 }
 
+export type MergeAppUsers = {
+    from_user_identifier: string
+    to_user_identifier: string
+}
+export const MergeAppUsersOptionalFields: [] = []
+export type MergeAppUsersOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    from_user_identifier_CustomCheck?: (v: string) => boolean
+    to_user_identifier_CustomCheck?: (v: string) => boolean
+}
+export const MergeAppUsersValidate = (o?: MergeAppUsers, opts: MergeAppUsersOptions = {}, path: string = 'MergeAppUsers::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.from_user_identifier !== 'string') return new Error(`${path}.from_user_identifier: is not a string`)
+    if (opts.from_user_identifier_CustomCheck && !opts.from_user_identifier_CustomCheck(o.from_user_identifier)) return new Error(`${path}.from_user_identifier: custom check failed`)
+
+    if (typeof o.to_user_identifier !== 'string') return new Error(`${path}.to_user_identifier: is not a string`)
+    if (opts.to_user_identifier_CustomCheck && !opts.to_user_identifier_CustomCheck(o.to_user_identifier)) return new Error(`${path}.to_user_identifier: custom check failed`)
+
+    return null
+}
+
+export type NostrRelays = {
+    relays: Record<string, RelayPolicy>
+}
+export const NostrRelaysOptionalFields: [] = []
+export type NostrRelaysOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    relays_EntryOptions?: RelayPolicyOptions
+    relays_CustomCheck?: (v: Record<string, RelayPolicy>) => boolean
+}
+export const NostrRelaysValidate = (o?: NostrRelays, opts: NostrRelaysOptions = {}, path: string = 'NostrRelays::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.relays !== 'object' || o.relays === null) return new Error(`${path}.relays: is not an object or is null`)
+    for (const key in o.relays) {
+        const relaysErr = RelayPolicyValidate(o.relays[key], opts.relays_EntryOptions, `${path}.relays['${key}']`)
+        if (relaysErr !== null) return relaysErr
+    }
+
+    return null
+}
+
+export type AuthorizeRequestTokenRequest = {
+    sanctum_token: string
+    request_token: string
+    app_id: string
+}
+export const AuthorizeRequestTokenRequestOptionalFields: [] = []
+export type AuthorizeRequestTokenRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    sanctum_token_CustomCheck?: (v: string) => boolean
+    request_token_CustomCheck?: (v: string) => boolean
+    app_id_CustomCheck?: (v: string) => boolean
+}
+export const AuthorizeRequestTokenRequestValidate = (o?: AuthorizeRequestTokenRequest, opts: AuthorizeRequestTokenRequestOptions = {}, path: string = 'AuthorizeRequestTokenRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.sanctum_token !== 'string') return new Error(`${path}.sanctum_token: is not a string`)
+    if (opts.sanctum_token_CustomCheck && !opts.sanctum_token_CustomCheck(o.sanctum_token)) return new Error(`${path}.sanctum_token: custom check failed`)
+
+    if (typeof o.request_token !== 'string') return new Error(`${path}.request_token: is not a string`)
+    if (opts.request_token_CustomCheck && !opts.request_token_CustomCheck(o.request_token)) return new Error(`${path}.request_token: custom check failed`)
+
+    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    return null
+}
+
+export type AuthApp = {
+    app: Application
+    auth_token: string
+}
+export const AuthAppOptionalFields: [] = []
+export type AuthAppOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    app_Options?: ApplicationOptions
+    auth_token_CustomCheck?: (v: string) => boolean
+}
+export const AuthAppValidate = (o?: AuthApp, opts: AuthAppOptions = {}, path: string = 'AuthApp::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
+    if (appErr !== null) return appErr
+    
+
+    if (typeof o.auth_token !== 'string') return new Error(`${path}.auth_token: is not a string`)
+    if (opts.auth_token_CustomCheck && !opts.auth_token_CustomCheck(o.auth_token)) return new Error(`${path}.auth_token: custom check failed`)
+
+    return null
+}
+
+export type NostrSignResponse = {
+    signedEvent: string
+}
+export const NostrSignResponseOptionalFields: [] = []
+export type NostrSignResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    signedEvent_CustomCheck?: (v: string) => boolean
+}
+export const NostrSignResponseValidate = (o?: NostrSignResponse, opts: NostrSignResponseOptions = {}, path: string = 'NostrSignResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.signedEvent !== 'string') return new Error(`${path}.signedEvent: is not a string`)
+    if (opts.signedEvent_CustomCheck && !opts.signedEvent_CustomCheck(o.signedEvent)) return new Error(`${path}.signedEvent: custom check failed`)
+
+    return null
+}
+
+export type Nip44DecryptResponse = {
+    plaintext: string
+}
+export const Nip44DecryptResponseOptionalFields: [] = []
+export type Nip44DecryptResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    plaintext_CustomCheck?: (v: string) => boolean
+}
+export const Nip44DecryptResponseValidate = (o?: Nip44DecryptResponse, opts: Nip44DecryptResponseOptions = {}, path: string = 'Nip44DecryptResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.plaintext !== 'string') return new Error(`${path}.plaintext: is not a string`)
+    if (opts.plaintext_CustomCheck && !opts.plaintext_CustomCheck(o.plaintext)) return new Error(`${path}.plaintext: custom check failed`)
+
+    return null
+}
+
+export type RequestCallbackResponse = {
+    sanctum_token: string
+    auth: boolean
+}
+export const RequestCallbackResponseOptionalFields: [] = []
+export type RequestCallbackResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    sanctum_token_CustomCheck?: (v: string) => boolean
+    auth_CustomCheck?: (v: boolean) => boolean
+}
+export const RequestCallbackResponseValidate = (o?: RequestCallbackResponse, opts: RequestCallbackResponseOptions = {}, path: string = 'RequestCallbackResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.sanctum_token !== 'string') return new Error(`${path}.sanctum_token: is not a string`)
+    if (opts.sanctum_token_CustomCheck && !opts.sanctum_token_CustomCheck(o.sanctum_token)) return new Error(`${path}.sanctum_token: custom check failed`)
+
+    if (typeof o.auth !== 'boolean') return new Error(`${path}.auth: is not a boolean`)
+    if (opts.auth_CustomCheck && !opts.auth_CustomCheck(o.auth)) return new Error(`${path}.auth: custom check failed`)
+
+    return null
+}
+
+export type Application = {
+    name: string
+    id: string
+    callback_url: string
+}
+export const ApplicationOptionalFields: [] = []
+export type ApplicationOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    name_CustomCheck?: (v: string) => boolean
+    id_CustomCheck?: (v: string) => boolean
+    callback_url_CustomCheck?: (v: string) => boolean
+}
+export const ApplicationValidate = (o?: Application, opts: ApplicationOptions = {}, path: string = 'Application::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.name !== 'string') return new Error(`${path}.name: is not a string`)
+    if (opts.name_CustomCheck && !opts.name_CustomCheck(o.name)) return new Error(`${path}.name: custom check failed`)
+
+    if (typeof o.id !== 'string') return new Error(`${path}.id: is not a string`)
+    if (opts.id_CustomCheck && !opts.id_CustomCheck(o.id)) return new Error(`${path}.id: custom check failed`)
+
+    if (typeof o.callback_url !== 'string') return new Error(`${path}.callback_url: is not a string`)
+    if (opts.callback_url_CustomCheck && !opts.callback_url_CustomCheck(o.callback_url)) return new Error(`${path}.callback_url: custom check failed`)
+
+    return null
+}
+
+export type LinkAppUserToEmailResponse = {
+    submit_token: string
+}
+export const LinkAppUserToEmailResponseOptionalFields: [] = []
+export type LinkAppUserToEmailResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    submit_token_CustomCheck?: (v: string) => boolean
+}
+export const LinkAppUserToEmailResponseValidate = (o?: LinkAppUserToEmailResponse, opts: LinkAppUserToEmailResponseOptions = {}, path: string = 'LinkAppUserToEmailResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.submit_token !== 'string') return new Error(`${path}.submit_token: is not a string`)
+    if (opts.submit_token_CustomCheck && !opts.submit_token_CustomCheck(o.submit_token)) return new Error(`${path}.submit_token: custom check failed`)
+
+    return null
+}
+
+export type RedirectResponse = {
+    url: string
+}
+export const RedirectResponseOptionalFields: [] = []
+export type RedirectResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    url_CustomCheck?: (v: string) => boolean
+}
+export const RedirectResponseValidate = (o?: RedirectResponse, opts: RedirectResponseOptions = {}, path: string = 'RedirectResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.url !== 'string') return new Error(`${path}.url: is not a string`)
+    if (opts.url_CustomCheck && !opts.url_CustomCheck(o.url)) return new Error(`${path}.url: custom check failed`)
+
+    return null
+}
+
 export type NostrSignRequest = {
     usignedEvent: string
 }
@@ -844,20 +915,71 @@ export const NostrSignRequestValidate = (o?: NostrSignRequest, opts: NostrSignRe
     return null
 }
 
-export type Nip44EncryptResponse = {
-    ciphertext: string
+export type GetUserAccessTokenRequest = {
+    app_id: string
+    sanctum_token: string
 }
-export const Nip44EncryptResponseOptionalFields: [] = []
-export type Nip44EncryptResponseOptions = OptionsBaseMessage & {
+export const GetUserAccessTokenRequestOptionalFields: [] = []
+export type GetUserAccessTokenRequestOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    ciphertext_CustomCheck?: (v: string) => boolean
+    app_id_CustomCheck?: (v: string) => boolean
+    sanctum_token_CustomCheck?: (v: string) => boolean
 }
-export const Nip44EncryptResponseValidate = (o?: Nip44EncryptResponse, opts: Nip44EncryptResponseOptions = {}, path: string = 'Nip44EncryptResponse::root.'): Error | null => {
+export const GetUserAccessTokenRequestValidate = (o?: GetUserAccessTokenRequest, opts: GetUserAccessTokenRequestOptions = {}, path: string = 'GetUserAccessTokenRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.ciphertext !== 'string') return new Error(`${path}.ciphertext: is not a string`)
-    if (opts.ciphertext_CustomCheck && !opts.ciphertext_CustomCheck(o.ciphertext)) return new Error(`${path}.ciphertext: custom check failed`)
+    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    if (typeof o.sanctum_token !== 'string') return new Error(`${path}.sanctum_token: is not a string`)
+    if (opts.sanctum_token_CustomCheck && !opts.sanctum_token_CustomCheck(o.sanctum_token)) return new Error(`${path}.sanctum_token: custom check failed`)
+
+    return null
+}
+
+export type RequestSanctumTokenRequest = {
+    email: string
+    app_id: string
+}
+export const RequestSanctumTokenRequestOptionalFields: [] = []
+export type RequestSanctumTokenRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    email_CustomCheck?: (v: string) => boolean
+    app_id_CustomCheck?: (v: string) => boolean
+}
+export const RequestSanctumTokenRequestValidate = (o?: RequestSanctumTokenRequest, opts: RequestSanctumTokenRequestOptions = {}, path: string = 'RequestSanctumTokenRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.email !== 'string') return new Error(`${path}.email: is not a string`)
+    if (opts.email_CustomCheck && !opts.email_CustomCheck(o.email)) return new Error(`${path}.email: custom check failed`)
+
+    if (typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    return null
+}
+
+export type RequestCallbackRequest = {
+    token: string
+    otp: string
+}
+export const RequestCallbackRequestOptionalFields: [] = []
+export type RequestCallbackRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    token_CustomCheck?: (v: string) => boolean
+    otp_CustomCheck?: (v: string) => boolean
+}
+export const RequestCallbackRequestValidate = (o?: RequestCallbackRequest, opts: RequestCallbackRequestOptions = {}, path: string = 'RequestCallbackRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.token !== 'string') return new Error(`${path}.token: is not a string`)
+    if (opts.token_CustomCheck && !opts.token_CustomCheck(o.token)) return new Error(`${path}.token: custom check failed`)
+
+    if (typeof o.otp !== 'string') return new Error(`${path}.otp: is not a string`)
+    if (opts.otp_CustomCheck && !opts.otp_CustomCheck(o.otp)) return new Error(`${path}.otp: custom check failed`)
 
     return null
 }

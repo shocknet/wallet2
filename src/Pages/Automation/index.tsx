@@ -27,7 +27,7 @@ export enum Interval {
 const periods = Object.values(Interval);
 
 
-const getPeriodSeconds = (interval: Interval) => {
+export const getPeriodSeconds = (interval: Interval) => {
 	switch(interval) {
 		case Interval.DAILY:
 			return 24 * 60 * 60;

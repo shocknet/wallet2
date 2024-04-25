@@ -149,14 +149,17 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    RequestUserAuth: async (request: Types.RequestUserAuth): Promise<ResultError | ({ status: 'OK' })> => {
+    RequestUserAuth: async (request: Types.RequestUserAuth): Promise<ResultError | ({ status: 'OK' }& Types.RequestUserAuthResponse)> => {
         const auth = await params.retrieveGuestAuth()
         if (auth === null) throw new Error('retrieveGuestAuth() returned null')
         let finalRoute = '/api/guest/user/auth'
         const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 
-            return data
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.RequestUserAuthResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
@@ -174,14 +177,17 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    LinkAppUserToEmail: async (request: Types.LinkAppUserToEmail): Promise<ResultError | ({ status: 'OK' })> => {
+    LinkAppUserToEmail: async (request: Types.LinkAppUserToEmail): Promise<ResultError | ({ status: 'OK' }& Types.LinkAppUserToEmailResponse)> => {
         const auth = await params.retrieveGuestAuth()
         if (auth === null) throw new Error('retrieveGuestAuth() returned null')
         let finalRoute = '/api/guest/user/link'
         const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 
-            return data
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.LinkAppUserToEmailResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
@@ -270,7 +276,7 @@ export default (params: ClientParams) => ({
     GetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' }& Types.NostrRelays)> => {
         const auth = await params.retrieveUserAuth()
         if (auth === null) throw new Error('retrieveUserAuth() returned null')
-        let finalRoute = '/api/user/pubkey'
+        let finalRoute = '/api/user/relays'
         const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 
@@ -320,6 +326,31 @@ export default (params: ClientParams) => ({
             if(!params.checkResult) return { status: 'OK', ...result }
             const error = Types.Nip44EncryptResponseValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    RequestCallback: async (request: Types.RequestCallbackRequest): Promise<ResultError | ({ status: 'OK' }& Types.RequestCallbackResponse)> => {
+        const auth = await params.retrieveGuestAuth()
+        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+        let finalRoute = '/api/guest/user/request/callback'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.RequestCallbackResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    AuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveGuestAuth()
+        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+        let finalRoute = '/api/guest/user/request/authorize'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            return data
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },

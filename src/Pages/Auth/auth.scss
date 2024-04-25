@@ -216,7 +216,37 @@
         display: inline-flex;
         align-items: center;
         width: 100%;
-        justify-content: end;
+        justify-content: center;
+        gap: 15px;
+        &_option_button {
+            margin-top: 10px;
+            & button {
+              display: inline-flex;
+              align-items: center;
+              position: relative;
+              box-sizing: border-box;
+              font-size: 16px;
+              font-family: Montserrat;
+              font-weight: bold;
+              padding: 2px 10px;
+              $border: 1px;
+              color: #FFF;
+              background: #16191c;
+              background-clip: padding-box; /* !importanté */
+              border: solid $border transparent; /* !importanté */
+              border-radius: 5px;
+            
+              &:before {
+                content: '';
+                position: absolute;
+                top: 0; right: 0; bottom: 0; left: 0;
+                z-index: -1;
+                margin: -$border; /* !importanté */
+                border-radius: 3px; /* !importanté */
+                background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+              }
+            }
+          }
         &_title {
             color: #a3a3a3;
             font-weight: bold;
