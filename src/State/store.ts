@@ -13,6 +13,7 @@ import loadingOverlay from './Slices/loadingOverlay';
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic, Subscriptions } from './Slices/subscriptionsSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
+import backupStateSlice from './Slices/backupState';
 export const syncRedux = createAction('SYNC_REDUX');
 
 const store = configureStore({
@@ -27,7 +28,8 @@ const store = configureStore({
     subscriptions: subscriptionsSlice,
     generatedAssets,
     loadingOverlay,
-    nostrPrivateKey
+    nostrPrivateKey,
+    backupStateSlice
   },
 });
 export type State = ReturnType<typeof store.getState>

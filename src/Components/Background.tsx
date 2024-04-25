@@ -24,6 +24,7 @@ import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
 import { toast } from "react-toastify";
 import Toast from "./Toast";
 import { useHistory } from "react-router";
+import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 
 
 export const Background = () => {
@@ -351,6 +352,7 @@ export const Background = () => {
 		<NewSourceCheck />
 		<LnAddressCheck />
 		<NodeUpCheck />
+		<RemoteBackup />
 		<Modal isShown={isShown} hide={() => { toggle()}} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }

@@ -65,7 +65,10 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
     sources: mergeBasicRecords(migratedLocal.sources, migratedRemote.sources),
     order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, v => v)
   }
-  return JSON.stringify(merged)
+  return JSON.stringify({
+    version: VERSION,
+    data: merged
+  });
 }
 
 const update = (value: SpendSourceState) => {
