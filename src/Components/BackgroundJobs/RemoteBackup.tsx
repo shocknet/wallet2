@@ -7,10 +7,13 @@ export const RemoteBackup = () => {
 
     useEffect(() => {
         if (!backupStates.subbedToBackUp) {
-            console.log("instance not initialized yet to sync backups")
+            alert("instance not initialized yet to sync backups")
             return
         }
-        syncBackups().then(() => console.log("backups synced succesfully")).catch((e) => console.log("failed to sync backups", e))
+        syncBackups().then(() => alert("backups synced succesfully")).catch((e) => {
+            alert("failed to sync back up")
+            alert(e.reason)
+        })
     }, [backupStates])
     const syncBackups = async () => {
         const backup = await fetchRemoteBackup()
