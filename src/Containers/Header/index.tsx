@@ -9,7 +9,7 @@ import { useIonRouter,isPlatform } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
-import { getSanctumAccessToken } from "../../Api/sanctum";
+
 let logs: string[] = []
 const saveLog = (...args: any[]) => {
   const line = args.map(m => {
@@ -28,7 +28,7 @@ const saveLog = (...args: any[]) => {
 export const Header = () => {
   const [badge, setBadge] = useState(false);
   const [logoClickCounter, setLogoClickCounter] = useState(0);
-  const [accessToken, setAccessToken] = useState(false);
+  const backUpStates = useSelector(state => state.backupStateSlice);
   const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
@@ -128,12 +128,7 @@ export const Header = () => {
     }
   }, []);
 
-  useLayoutEffect(() => {
-    const localToken = getSanctumAccessToken();
-    if (localToken) {
-      setAccessToken(true)
-    }
-  }, [])
+  
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -178,7 +173,7 @@ export const Header = () => {
           <div className="Header_modal_content_item_text">Manage Sources</div>
         </div>
         {
-          !accessToken
+          !backUpStates.subbedToBackUp
           &&
           <div className="Header_modal_content_item" onClick={() => {
             router.push("/auth");
