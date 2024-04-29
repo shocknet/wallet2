@@ -33,6 +33,18 @@ const buttonText: string[] = [
 ]
 
 
+const ErrorMessage = ({ text }: { text: string }) => {
+  return (
+    <div style={{ display: "flex", width: "100%", height: "70vh", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", fontSize: "1.2em", color: "#268fbc" }}>
+        <span>{text}</span>
+        <span>😕</span>
+      </div>
+    </div>
+  )
+}
+
+
 
 export const Receive = () => {
   const dispatch = useDispatch();
@@ -332,7 +344,7 @@ export const Receive = () => {
             {
               lnurlDisabled
               ?
-              <div>Lnurl Disabled</div>
+              <ErrorMessage text="LNURL Disabled" />
               :
               <>
                 <div className="Receive_QR_text">
@@ -416,7 +428,7 @@ export const Receive = () => {
             {
               btcDisabled
               ?
-              <div>Cannot receive on-chain transactions</div> 
+              <ErrorMessage text="Cannot receive on-chain transactions" />
               :
               <>
                 <div className="Receive_QR_text">
