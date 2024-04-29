@@ -212,7 +212,7 @@ export const Receive = () => {
       if (err instanceof Error) {
         if (err.message.includes("Lnurl not enabled")) {
           setLnurlDisabled(true)
-          toast.error(<Toast title="Lnurl Error" message={"Lnurl not enabled in Lightning.Pub"} />)
+          toast.error(<Toast title="Lnurl Error" message={"No LNURL enabled sources"} />)
 
         }
       }
@@ -344,7 +344,7 @@ export const Receive = () => {
             {
               lnurlDisabled
               ?
-              <ErrorMessage text="LNURL Disabled" />
+              <ErrorMessage text="No LNURL Enabled Sources" />
               :
               <>
                 <div className="Receive_QR_text">
@@ -428,7 +428,7 @@ export const Receive = () => {
             {
               btcDisabled
               ?
-              <ErrorMessage text="Cannot receive on-chain transactions" />
+              <ErrorMessage text="No chain source is configured" />
               :
               <>
                 <div className="Receive_QR_text">
