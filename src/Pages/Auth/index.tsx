@@ -285,7 +285,6 @@ export const Auth = () => {
     const ext = getNostrExtention();
     if (ext || gotSanctum) {
       const backup = await fetchRemoteBackup()
-      console.log({ loglog: backup, ext });
       if (backup.result === "success" && backup.decrypted === "") { // no backups yet, i.e. sole device
         await subscribeToBackupService() // sub to payments for back up service
       } else if (backup.result === "success" && backup.decrypted !== "") {

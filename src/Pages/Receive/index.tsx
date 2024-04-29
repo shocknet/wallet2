@@ -22,18 +22,27 @@ import Toggle from '../../Components/Toggle';
 import { decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { Tab, Tabs } from '../../Components/ReceiveScreenTabs';
 
-const headerText: string[] = [
-  'LNURL',
-  'Lightning Invoice',
-  'On-chain Address'
-]
+
 
 const buttonText: string[] = [
   'LNURL',
   'INVOICE',
   'CHAIN'
 ]
+
+
+const ErrorMessage = ({ text }: { text: string }) => {
+  return (
+    <div style={{ display: "flex", width: "100%", height: "70vh", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", fontSize: "1.2em", color: "#268fbc" }}>
+        <span>{text}</span>
+        <span>😕</span>
+      </div>
+    </div>
+  )
+}
 
 
 
@@ -56,14 +65,21 @@ export const Receive = () => {
   const [bitcoinAdd, setBitcoinAdd] = useState("");
   const [bitcoinAddText, setBitcoinAddText] = useState("");
   const [invoiceMemo, setInvoiceMemo] = useState("");
-  const [fiatSymbol, setFiatSymbol] = useState('$')
+  const [fiatSymbol, setFiatSymbol] = useState('$');
+  const [btcDisabled, setBTCDisabled] = useState(false);
+  const [lnurlDisabled, setLnurlDisabled] = useState(false)
+
+
+
 
   const router = useIonRouter();
   const amountInputRef = useRef<HTMLInputElement>(null);
-  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource.sources[paySource.order[0]].vanityName)
+  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource.sources[paySource.order[0]]?.vanityName)
 
   const deg = "rotate(0deg)";
   const vReceive = 1;
+
+  const tabsRef = useRef<any>();
 
 
   const lnAddress = useMemo(() => {
@@ -192,7 +208,17 @@ export const Receive = () => {
         setLNurl(`lightning:${topPayToSource.pasteField}`);
         setValueQR(`lightning:${topPayToSource.pasteField}`);
       }
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.includes("Lnurl not enabled")) {
+          setLnurlDisabled(true)
+          toast.error(<Toast title="Lnurl Error" message={"No LNURL enabled sources"} />)
 
+        }
+      }
+    }
+
+    try {
       // btc address
       if (topPayToSource.pubSource && topPayToSource.keys) {
         if (bitcoinAdd !== '') return;
@@ -200,15 +226,16 @@ export const Receive = () => {
 
         setBitcoinAdd(address);
         setBitcoinAddText(
-          address.substr(0, 5) + "..." + address.substr(address.length - 5, 5)
+          address.substring(0, 5) + "..." + address.substring(address.length - 5, 5)
         )
+      } else {
+        setBTCDisabled(true)
       }
-    } catch {
-      dispatch(toggleLoading({ loadingMessage: "" }));
-      router.push("/home")
+    } catch (err) {
+      console.log(err)
     }
     dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [LNurl, paySource, dispatch, router, bitcoinAdd]);
+  }, [LNurl, paySource, dispatch, bitcoinAdd]);
 
 
 
@@ -312,80 +339,140 @@ export const Receive = () => {
   return (
     <div>
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <div className="Receive_QR_text">
-          <span>{tag === 0 && showingLightningAddress ? "Lightning Address" : headerText[tag]}</span>
-          {
-            (tag === 0 && lnAddress !== null)
-            &&
-            <Toggle
-              value={!showingLightningAddress}
-              onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
-            />
-          }
-        </div>
-        {
-          valueQR
-          ?
-          <div className="Receive_QR" style={{ transform: deg }}>
-            <QRCodeSVG
-              style={{ textAlign: "center", transitionDuration: "500ms" }}
-              value={valueQR.toUpperCase()}
-              size={250}
-            />
-            <div className="Receive_logo_container">
-              {Icons.Logo()}
+        <Tabs ref={tabsRef}>
+          <Tab> {/* lnurl */}
+            {
+              lnurlDisabled
+              ?
+              <ErrorMessage text="No LNURL Enabled Sources" />
+              :
+              <>
+                <div className="Receive_QR_text">
+                  <span>{showingLightningAddress ? "Lightning Address" : "LNURL"}</span>
+                  {
+                    lnAddress !== null
+                    &&
+                    <Toggle
+                      value={!showingLightningAddress}
+                      onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
+                    />
+                  }
+                </div>
+                {
+                  valueQR
+                  &&
+                  <div className="Receive_QR" style={{ transform: deg }}>
+                    <QRCodeSVG
+                      style={{ textAlign: "center", transitionDuration: "500ms" }}
+                      value={valueQR.toUpperCase()}
+                      size={250}
+                    />
+                    <div className="Receive_logo_container">
+                      {Icons.Logo()}
+                    </div>
+                  </div>
+                  
+                }
+                <div className='Receive_copy'>
+                  {lightningAdd}
+                </div>
+                {
+                  (showingLightningAddress && lnAddress !== null)
+                  &&
+                  <div style={{fontSize: "17px", marginTop: "12px"}}>{lnAddress}</div>
+                }
+                <div className="Receive_set_amount_copy">
+                  <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+                  <div style={{ width: "20px" }} />
+                  <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+                </div>
+              </>
+            }
+          </Tab>
+          <Tab> {/* ln invoice */}
+            <div className="Receive_QR_text">
+              <span>Lightning Invoice</span>
             </div>
-          </div>
-          :
-          (tag === 2 && !paySource.sources[paySource.order[0]].pasteField.includes("nprofile"))
-          &&
-          <div>Cannot receive on-chain transactions</div> 
-        }
-        {
-          tag === 0 ? 
-          (showingLightningAddress && lnAddress !== null)
-          &&
-          <div style={{fontSize: "17px", marginTop: "12px"}}>{lnAddress}</div>
-          : ''
-        }
-        <div className='Receive_copy'>
-          {
-            tag === 1
-            ?
+            {
+              valueQR
+              &&
+              <div className="Receive_QR" style={{ transform: deg }}>
+                <QRCodeSVG
+                  style={{ textAlign: "center", transitionDuration: "500ms" }}
+                  value={valueQR.toUpperCase()}
+                  size={250}
+                />
+                <div className="Receive_logo_container">
+                  {Icons.Logo()}
+                </div>
+              </div>
+            }
+            
+            <div className='Receive_copy'>
               <React.Fragment>
                 <div>{`${amount} sats`}</div>
                 <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatSymbol}`}</div>
               </React.Fragment>
-            :
-            tag == 2 ? bitcoinAddText : lightningAdd
-          }
-        </div>
-        {
-          !(tag === 2 && !paySource.sources[paySource.order[0]].pasteField.includes("nprofile"))
-          &&
-          <>
-            {
-              tag === 1
-              &&
-              <div className="Receive_set_amount">
-                <button id="set-amount-button" onClick={toggle}>SET AMOUNT</button>
-              </div>
-            }
+            </div>
+            
+            <div className="Receive_set_amount">
+              <button id="set-amount-button" onClick={toggle}>SET AMOUNT</button>
+            </div>
             <div className="Receive_set_amount_copy">
               <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
               <div style={{ width: "20px" }} />
               <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
             </div>
-          </>
-        }
+          </Tab>
+          <Tab> {/* btc address */}
+            {
+              btcDisabled
+              ?
+              <ErrorMessage text="No chain source is configured" />
+              :
+              <>
+                <div className="Receive_QR_text">
+                  <span>On-chain Address</span>
+                </div>
+                {
+                  valueQR
+                  &&
+                  <div className="Receive_QR" style={{ transform: deg }}>
+                    <QRCodeSVG
+                      style={{ textAlign: "center", transitionDuration: "500ms" }}
+                      value={valueQR.toUpperCase()}
+                      size={250}
+                    />
+                    <div className="Receive_logo_container">
+                      {Icons.Logo()}
+                    </div>
+                  </div> 
+                }
+                <div className='Receive_copy'>{bitcoinAddText}</div>
+                <div className="Receive_set_amount_copy">
+                  <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+                  <div style={{ width: "20px" }} />
+                  <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+                </div>
+              </>
+            }
+          </Tab>
+        </Tabs>
         <div className="Receive_other_options">
           <div className="Receive_lnurl">
-            <button onClick={() => { changeQRcode((tag + 1) % 3) }}>
+            <button onClick={() => {
+              changeQRcode((tag + 1) % 3)
+              tabsRef.current.handleTabChange(true)
+            }
+            }>
               {Icons.arrowLeft()}{buttonText[(tag + 1) % 3]}
             </button>
           </div>
           <div className="Receive_chain">
-            <button onClick={() => { changeQRcode((tag + 2) % 3) }}>
+            <button onClick={() => {
+              changeQRcode((tag + 2) % 3)
+              tabsRef.current.handleTabChange(false)
+            }}>
               {buttonText[(tag + 2) % 3]}{Icons.arrowRight()}
             </button>
           </div>
