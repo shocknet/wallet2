@@ -1,4 +1,6 @@
 # ShockWallet
+![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
+
 A revolutionary Lightning Wallet for connecting to nodes over Nostr.
 
 Mobile nodes have proven slow and unreliable, while channel costs are too prohibitive and unscalable to be confined to a single app on a single device. 
@@ -13,7 +15,6 @@ ShockWallet also features multi-sourcing and automation, allowing you to connect
 
 Built with React and Ionic allowing builds for [PWA](https://my.shockwallet.app), [Android APK](https://dl.shockwallet.app/shockwallet.apk), or [iOS](https://testflight.apple.com/join/soZAKZWj) 
 
-![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
 
 This is a reference wallet client for [Lightning.Pub](https://github.com/shocknet/Lightning.Pub) and also contains the beginnings of a node management dashboard. 
 
