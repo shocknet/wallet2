@@ -18,11 +18,16 @@ ShockWallet features multi-sourcing and automation, allowing you to connect to l
 
 As a Nostr-native wallet, ShockWallet also provides a sync service via NIP78, enabling a shared wallet state across multiple-devices, like Desktop and Phone.
 
-Built with React and Ionic, builds for [PWA](https://my.shockwallet.app), [Android APK](https://dl.shockwallet.app/shockwallet.apk), or [iOS](https://testflight.apple.com/join/soZAKZWj) are available from a single code-base.
+Built with React and Ionic, builds for [Web Browser](https://my.shockwallet.app), [Android APK](https://dl.shockwallet.app/shockwallet.apk), or [Apple iOS](https://testflight.apple.com/join/soZAKZWj) are available from a single code-base.
 
 This is a reference wallet client for [Lightning.Pub](https://github.com/shocknet/Lightning.Pub) and also contains the beginnings of a node management dashboard. 
 
 <p style="text-align: center;"><img src="https://shockwallet.b-cdn.net/pub_home_ss.png" alt="Pub Dashboard" width="240"></p>
+
+- ShockWallet and Lightning.Pub make connecting to your node as easy as pasting an nprofile
+- Or use a link to share your nprofile with friends and family
+
+    <img src="https://cdn.shockwallet.app/add_src_sm.png" height="20%" alt="Connect Wallet"> <img src="https://cdn.shockwallet.app/src_invite_sm.png" height="20%" alt="Invite Guests">
 
 > [!IMPORTANT]  
 > ShockWallet and Lightning.Pub are free software. If you would like to see continued development, please show your [**support**](https://github.com/sponsors/shocknet) 😊<br>
