@@ -1,6 +1,11 @@
 # ShockWallet
 ![image](https://shockwallet.b-cdn.net/wnp%20banner.png)
 
+![GitHub last commit](https://img.shields.io/github/last-commit/shocknet/wallet2?style=flat-square)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+[![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/ShockBTC)
+![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square&logo=bitcoin)
+
 ### A revolutionary Lightning Wallet for connecting to nodes over Nostr.
 
 Mobile nodes have proven slow and unreliable, while channel costs are too prohibitive and unscalable to be confined to a single app on a single device. 
@@ -31,7 +36,7 @@ This is a reference wallet client for [Lightning.Pub](https://github.com/shockne
 
 An instance of the PWA is up at https://my.shockwallet.app 
 
-or [Download Android APK](https://dl.shockwallet.app/shockwallet.apk)
+[Download Android APK](https://dl.shockwallet.app/shockwallet.apk) or [Testflight](https://testflight.apple.com/join/soZAKZWj)
 
 The bootstrap node is live on mainnet allowing for the lay-away of a self-custodied channel for your own node with an LSP. 
 
