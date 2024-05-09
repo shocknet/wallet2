@@ -1,4 +1,4 @@
-import { getAppBackup, newBackupEvent, publishNostrEvent } from "../Api/nostrHandler"
+import { getNip78Event, newNip78Event, publishNostrEvent } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
 import { getSanctumNostrExtention } from "./nip07Extention"
 
@@ -9,7 +9,7 @@ export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'acces
     }
     const pubkey = await ext.getPublicKey()
     const relays = await ext.getRelays()
-    const backupEvent = await getAppBackup(pubkey, Object.keys(relays), dTag)
+    const backupEvent = await getNip78Event(pubkey, Object.keys(relays), dTag)
     if (!backupEvent) {
         console.log("no backups found")
         return { result: 'success', decrypted: "" }
@@ -27,7 +27,7 @@ export const saveRemoteBackup = async (backup: string, dTag?: string) => {
     const relays = await ext.getRelays()
     const encrypted = await ext.encrypt(pubkey, backup)
 
-    const backupEvent = newBackupEvent(encrypted, pubkey, dTag)
+    const backupEvent = newNip78Event(encrypted, pubkey, dTag)
 
     const signed = await ext.signEvent(backupEvent)
 
@@ -96,4 +96,17 @@ export const unlockSubscriptionPayment = async (id: string, success: boolean) =>
         delete subs[id]
     }
     await saveRemoteBackup(JSON.stringify(subs), subsPaymentsTag)
+}
+
+const pubServiceTag = "Lightning.Pub"
+export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number) => {
+    const event = await getNip78Event(pubkey, relays, pubServiceTag)
+    if (!event) {
+        return null
+    }
+    if (event.created_at + maxAgeSeconds < Math.floor(Date.now() / 1000)) {
+        return null
+    }
+    const data = JSON.parse(event.content) as { type: 'service', name: string }
+    return { createdAt: event.created_at, data }
 }
