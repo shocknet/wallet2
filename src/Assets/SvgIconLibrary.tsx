@@ -109,7 +109,7 @@ export const MenuBack = () => {
 export const Key = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 596 596" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M330.8,212.5c0,28.7,23.3,52,52,52c15.3,0,29.2-6.7,38.8-17.4c14.3,5.5,29.6,8.4,45.7,8.4c70.5,0,127.7-57.3,127.7-127.7  S537.8,0,467.3,0c-57.9,0-107,38.8-122.5,91.9c-2.7,0-5.5-0.2-8-0.2c-92.7,0-168,75.5-168,168c0,25.8,6.1,51.6,17.6,74.7L0,520.8  l75.1,75.1l186.3-186.1c23.5,11.7,49.3,18,75.5,18c40.3,0,79.3-14.5,109.7-40.7c30.2-26,50.1-61.7,56.2-100.9l-23.5-3.8  c-5.2,33.6-22.4,64.4-48.5,86.6c-26.2,22.7-59.6,35-94.2,35c-25.2,0-49.9-6.7-71.7-19.3l-8-4.6L74.9,562.3L33.6,521l182.3-182.3  l-4.4-7.8c-12.4-21.6-18.7-46.4-18.7-71.1c0-79.5,64.8-144.3,144.3-144.3c1,0,2.3,0,3.4,0c-0.4,4-0.6,8.2-0.6,12.4  c0,16.2,2.9,31.5,8.4,45.7C337.5,183.1,330.8,197,330.8,212.5z M411.1,215.2c-12.4-8-22.9-18.7-30.8-30.8c0.8,0,1.9-0.2,2.7-0.2  c15.5,0,28.3,12.6,28.3,28.3C411.3,213.3,411.1,214.4,411.1,215.2z M363.5,127.9c0-3.4,0.2-6.7,0.4-9.9  c46.8,8.8,86.8,40.5,105.7,85.6l22-9.2c-22-52.2-68.4-89.1-122.7-99.6c13.8-41.1,52.9-70.9,98.6-70.9c57.3,0,104,46.6,104,104  s-46.6,104-104,104c-12,0-23.5-2.1-34.2-5.9c1-4.4,1.9-8.8,1.9-13.6c0-28.7-23.3-52-52-52c-4.8,0-9.2,0.6-13.6,1.9  C365.6,151.4,363.5,139.9,363.5,127.9z M399,235.8c-4.6,3.1-10.1,5-15.9,5c-15.5,0-28.3-12.6-28.3-28.3c0-5.9,1.9-11.5,5-15.9  C369.8,212.1,383.2,225.7,399,235.8z" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Header_IMG_Key" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_SourceIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
 
@@ -712,6 +712,20 @@ export const sandClock = () => {
 
 export const sanctumChecked = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -6.49518874907476 50 50" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M20.5,37c-0.7,0-1.8-0.3-2.9-1.5L1.6,20.4c-1-0.9-2.5-3.2-0.8-5.3l5.4-5.5C6.4,9.5,7,8.9,8.1,8.9c0.7,0,1.8,0.3,3,1.6  l7.3,7.3c0.1,0.1,1.1,1.3,2.3,1.3c0.7,0,1.4-0.4,2.1-1.2L38.5,1c0.1-0.1,1-1,2.4-1c0.9,0,1.8,0.4,2.7,1.1l5.3,5.4  c0.2,0.2,1,1,1.1,2.2c0,1-0.5,2.1-1.6,3L23.8,35.5C23.7,35.6,22.3,37,20.5,37z M7.4,10.9l-5.3,5.4c-1,1.3,0.6,2.7,0.7,2.8L19,34.3  c0.5,0.6,1,0.9,1.6,0.9c0.9,0,1.7-0.7,2-1l24.7-23.8c0.5-0.4,1-1.1,1-1.7c0-0.5-0.4-0.9-0.4-0.9l-0.1-0.1l-5.3-5.3  c-0.5-0.4-1-0.6-1.4-0.6c-0.7,0-1.2,0.5-1.2,0.5L24.1,19.1c-1,1.2-2.1,1.8-3.4,1.8c-2.1,0-3.6-1.8-3.7-1.9l-7.3-7.3  c-0.6-0.7-1.2-1-1.7-1C7.8,10.7,7.5,10.9,7.4,10.9z" style="fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const acceptInvite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 18 22" width="18" height="22"><g transform="translate(0, 0)"><g transform="translate(0, 0) rotate(0)"><path d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g><defs><path id="path-171274089491557637" d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vector-effect="non-scaling-stroke"/></defs></g></svg>';
+    return (
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const declineInvite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
         <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
     )

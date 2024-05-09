@@ -86,6 +86,7 @@
     border-radius: 7px;
     max-height: 25vh;
     overflow-y: auto;
+    padding: 0 15px;
   }
 
   &_item{
@@ -95,7 +96,14 @@
     padding: 0 auto;
     background-color: black;
     margin-block: 3px;
+    margin: 8px 0;
     border-radius: 6px;
+    &, & * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
 
 
   }
@@ -115,7 +123,42 @@
     font-family: Montserrat;
     border-radius: 8px 8px 0 0;
     justify-content: space-between;
-    font-size: 30px;
+    font-size: 24px;
+  }
+
+  &_modal_link {
+    color: #268fbc;
+    margin-block: 30px;
+
+    &>button {
+      margin: 0;
+    }
+  }
+
+  &_modal_add_btn {
+    display: flex;
+    justify-content: center;
+    gap: 5%;
+    margin: auto;
+    margin-block-end: 20px;
+
+    &>button.margin-0 {
+      display: flex;
+      justify-content: center;
+      margin: auto;
+      gap: 0;
+      padding-inline: 15px;
+      font-size: 20px;
+      margin: 0;
+
+      & div {
+        margin: 0;
+        &>svg {
+          height: 20px;
+          width: auto;
+        }
+      }
+    }
   }
 
   &_modal_select_state_column{
@@ -288,6 +331,14 @@
     border: 1px solid transparent;
     margin-inline: 4px;
     cursor: pointer;
+  }
+  &_item_handle {
+    position: absolute;
+
+    top: -10px;
+    bottom: -10px;
+    left: -7px;
+    right: -20px;
   }
 
   &_add_btn{

@@ -43,7 +43,11 @@ export enum PaymentLock {
     ALREADY_SUCCESS
 }
 
-export const lockSubscriptionPayment = async (id: string): Promise<PaymentLock> => {
+export const lockSubscriptionPayment = async (id: string, backupEnabled: boolean): Promise<PaymentLock> => {
+    // only when the flag has been set to true after backup service sub
+    if (!backupEnabled) {
+        return PaymentLock.SUCCESSFULLY_LOCKED
+    }
     const existing = await fetchRemoteBackup(subsPaymentsTag)
     if (existing.result === 'accessTokenMissing') {
         console.log("remote sync not enabled, no need to lock")

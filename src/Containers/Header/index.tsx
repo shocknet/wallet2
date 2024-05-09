@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -9,6 +9,7 @@ import { useIonRouter,isPlatform } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
+
 let logs: string[] = []
 const saveLog = (...args: any[]) => {
   const line = args.map(m => {
@@ -27,6 +28,7 @@ const saveLog = (...args: any[]) => {
 export const Header = () => {
   const [badge, setBadge] = useState(false);
   const [logoClickCounter, setLogoClickCounter] = useState(0);
+  const backUpStates = useSelector(state => state.backupStateSlice);
   const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
@@ -113,12 +115,20 @@ export const Header = () => {
     if (isPlatform('ios')) {
       setTimeout(() => {
         var header = document.querySelector('.Header') as HTMLElement;
-        if (header) {
-          header.style.marginTop = '5vh';
+        if (window.location.href.indexOf('http://') === 0 || window.location.href.indexOf('https://') === 0) {
+          if (header) {
+            return header.style.marginTop = '0';
+          }
+        } else {
+          if (header) {
+            return header.style.marginTop = '5vh';
+          }
         }
       }, 30)
     }
   }, []);
+
+  
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -162,6 +172,19 @@ export const Header = () => {
           </div>
           <div className="Header_modal_content_item_text">Manage Sources</div>
         </div>
+        {
+          !backUpStates.subbedToBackUp
+          &&
+          <div className="Header_modal_content_item" onClick={() => {
+            router.push("/auth");
+            toggle();
+          }}>
+            <div className="Header_modal_content_item_img">
+              {Icons.Key()}
+            </div>
+            <div className="Header_modal_content_item_text">Auth</div>
+          </div>
+        }
         <div className="Header_modal_content_item">
           <hr />
         </div>

@@ -1,21 +1,20 @@
 import { useEffect } from "react"
-import { findReducerMerger } from "../../State/store"
-
-import { getNostrPrivateKey } from "../../Api/nostr"
+import { findReducerMerger, useSelector } from "../../State/store"
 import { fetchRemoteBackup, saveRemoteBackup } from "../../helpers/remoteBackups"
 import { ignoredStorageKeys } from "../../constants"
 export const RemoteBackup = () => {
+    const backupStates = useSelector(state => state.backupStateSlice);
+
     useEffect(() => {
-        const keyExist = getNostrPrivateKey()
-        if (!keyExist) {
+        if (!backupStates.subbedToBackUp) {
             console.log("instance not initialized yet to sync backups")
             return
         }
         syncBackups().then(() => console.log("backups synced succesfully")).catch((e) => console.log("failed to sync backups", e))
-    }, [])
+    }, [backupStates])
     const syncBackups = async () => {
         const backup = await fetchRemoteBackup()
-        if (backup.result != 'success') {
+        if (backup.result !== 'success') {
             throw new Error('access token missing')
         }
         let data: Record<string, string | null> = {}
@@ -38,7 +37,7 @@ export const RemoteBackup = () => {
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i) ?? "null";
                 const value = localStorage.getItem(key);
-                if (value && !ignoredStorageKeys.includes(value)) {
+                if (value && !ignoredStorageKeys.includes(key)) {
                     data[key] = value;
                 }
             }

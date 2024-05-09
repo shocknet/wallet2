@@ -9,6 +9,7 @@ import { Destination, InputClassification, decodeLnurl, getFormattedTime, parseB
 import { useIonRouter } from "@ionic/react";
 import { Modal } from "./Modals/Modal";
 import { UseModal } from "../Hooks/UseModal";
+import { truncateString } from '../Hooks/truncateString';
 import * as icons from '../Assets/SvgIconLibrary';
 import { Clipboard } from '@capacitor/clipboard';
 import { Client as NostrClient, parseNprofile } from "../Api/nostr";
@@ -23,6 +24,7 @@ import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
 import { toast } from "react-toastify";
 import Toast from "./Toast";
 import { useHistory } from "react-router";
+import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 
 
 export const Background = () => {
@@ -39,6 +41,7 @@ export const Background = () => {
     type: InputClassification.UNKNOWN,
     data: "",
   });
+	const [refresh, setRefresh] = useState<number | null>(null);
 	const { isShown, toggle } = UseModal();
 	const isShownRef = useRef(false);
 
@@ -189,7 +192,7 @@ export const Background = () => {
 			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await getSourceInfo(s, client)
 		})
-	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp])
+	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
 
 	useEffect(() => {
@@ -201,7 +204,7 @@ export const Background = () => {
 			const client = await getNostrClient({ pubkey, relays }, s.keys!)
 			await fetchSourceHistory(s, client, pubkey)
 		})
-	}, [operationsUpdateHook, nostrSpends.length, nodedUp])
+	}, [operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
 	
 
@@ -263,6 +266,7 @@ export const Background = () => {
 		} catch (error) {
 			return console.error("Cannot read clipboard");
 		}
+		console.log(savedAssets, 'test')
 		if (savedAssets?.includes(text)) {
 			return;
 		}
@@ -273,21 +277,21 @@ export const Background = () => {
 		let parsed: Destination | null = null;
 
 		try {
-      parsed = await parseBitcoinInput(text);
-    } catch (err: any) {
-      console.log(err)
-			return;
-    }
+      		parsed = await parseBitcoinInput(text);
+		} catch (err: any) {
+		console.log(err)
+				return;
+		}
 
-		if (
-      parsed.type === InputClassification.BITCOIN_ADDRESS
-      ||
-      parsed.type === InputClassification.LN_INVOICE
-      ||
-      parsed.type === InputClassification.LN_ADDRESS
-      ||
-      (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
-    ) {
+			if (
+		parsed.type === InputClassification.BITCOIN_ADDRESS
+		||
+		parsed.type === InputClassification.LN_INVOICE
+		||
+		parsed.type === InputClassification.LN_ADDRESS
+		||
+		(parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
+		) {
 			setParsedClipbaord(parsed);
 			toggle()
 		}
@@ -295,11 +299,18 @@ export const Background = () => {
 	}, [savedAssets, nodedUp]);
 
 	useEffect(() => {
-		window.addEventListener("visibilitychange", checkClipboard);
+
+		const visiblityHandler = () => {
+			if (document.visibilityState === "visible") {
+				setRefresh(Math.random())
+			}
+			checkClipboard();
+		}
+		window.addEventListener("visibilitychange", visiblityHandler)
 		window.addEventListener("focus", checkClipboard);
 
 		return () => {
-			window.removeEventListener("visibilitychange", checkClipboard);
+			window.removeEventListener("visibilitychange", visiblityHandler);
 			window.removeEventListener("focus", checkClipboard);
 		};
 	}, [checkClipboard])
@@ -313,7 +324,7 @@ export const Background = () => {
 	const clipBoardContent = <React.Fragment>
 		<div className='Home_modal_header'>Clipboard Detected</div>
 		<div className='Home_modal_discription'>Would you like to use it?</div>
-		<div className='Home_modal_clipboard'>{parsedClipboard.data}</div>
+		<div className='Home_modal_clipboard'>{truncateString(parsedClipboard.data, 30)}</div>
 		<div className="Home_add_btn">
 			<div className='Home_add_btn_container'>
 				<button onClick={() => { toggle(); dispatch(addAsset({ asset: parsedClipboard.data }));}}>
@@ -322,6 +333,7 @@ export const Background = () => {
 			</div>
 			<div className='Home_add_btn_container'>
 				<button onClick={() => {
+					dispatch(addAsset({ asset: parsedClipboard.data }));
 					toggle();
 					history.push({
 						pathname: "/send",
@@ -340,6 +352,7 @@ export const Background = () => {
 		<NewSourceCheck />
 		<LnAddressCheck />
 		<NodeUpCheck />
+		<RemoteBackup />
 		<Modal isShown={isShown} hide={() => { toggle()}} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }

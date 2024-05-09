@@ -1,5 +1,4 @@
-import React, { ChangeEvent, useEffect, useState, useCallback, useLayoutEffect } from 'react';
-import Checkbox from '../../Components/Checkbox';
+import React, { ChangeEvent, useState, useCallback } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { UseModal } from '../../Hooks/UseModal';
@@ -7,23 +6,24 @@ import { Modal } from '../../Components/Modals/Modal';
 import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
-import { keyLinkClient } from '../../Api/keylink/http';
-import { ignoredStorageKeys, keylinkAppId } from '../../constants';
-import { getNostrPrivateKey } from '../../Api/nostr';
-import { generatePrivateKey, getPublicKey } from '../../Api/tools/keys';
+import { ignoredStorageKeys, parseBitcoinInput } from '../../constants';
 import { fetchRemoteBackup } from '../../helpers/remoteBackups';
-import { getSanctumAccessToken, setSanctumAccessToken } from '../../Api/sanctum';
+import { setSanctumAccessToken } from '../../Api/sanctum';
 import { SANCTUM_URL } from "../../constants";
 
 import { useStore } from 'react-redux';
-import { syncRedux, useDispatch } from '../../State/store';
+import { syncRedux, useDispatch, useSelector } from '../../State/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { newSocket } from '../../Api/helpers';
+import SanctumBox from '../../Components/SanctumBox';
+import { getNostrExtention } from '../../helpers/nip07Extention';
+import { Interval, getPeriodSeconds } from '../Automation';
+import { v4 as uuid } from "uuid";
+import { Subscription, updateActiveSub } from '../../State/Slices/subscriptionsSlice';
+import { updateBackupData } from '../../State/Slices/backupState';
 
 
 const FILENAME = "shockw.dat";
-const startTimerValue = 15*60;
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -38,80 +38,25 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export const Auth = () => {
-  //reducer
   const router = useIonRouter();
   const store = useStore();
   const dispatch = useDispatch()
-
-  const [email, setEmail] = useState("");
-  const [serviceCheck, setServiceCheck] = useState(true);
   const [passphrase, setPassphrase] = useState("");
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
-  const [accessTokenRetreived, setAccessTokenRetreived] = useState<boolean>(false);
-  const [sanctumNostrSecret, setSanctumNostrSecret] = useState<string>("");
-  const [seconds, setSeconds] = useState<number>(startTimerValue);
-  const [loginStatus, setLoginStatus] = useState<null | "loading" | "awaiting" | "confirmed">();
-  const [newPair, setNewPair] = useState(false);
-  const [requestToken, setRequestToken] = useState("");
-  const [reOpenSocket, setReopenSocket] = useState(false);
-  const [accessToken, setAccessToken] = useState("")
-
+  const backupStates = useSelector(state => state.backupStateSlice);
+  const spendSources = useSelector(state => state.spendSource);
+  const paySources = useSelector(state => state.paySource);
+  const [promptSanctum, setPromptSanctum] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
   const backupFileRef = React.useRef<HTMLInputElement>(null);
-
-  useLayoutEffect(() => {
-    const localToken = getSanctumAccessToken();
-    if (localToken) {
-      setAccessToken(localToken)
-      setLoginStatus("confirmed");
-    }
-  }, [])
-
-
 
   const { isShown, toggle } = UseModal();
 
 
 
-  useEffect(() => {
-    if(loginStatus === "awaiting") {
-      const timer = setInterval(() => {
-        setSeconds(seconds => seconds - 1)
-      }, 1000)
-      
-      return () => clearInterval(timer)
-    }
-  }, [loginStatus])
 
-  /* useEffect(() => {
-    if(seconds < 15*60 - 5) {
-      setLoginStatus(null)
-    }
-  }, [seconds]) */
-
-  const signUpEmail = async () => {
-    if (!email) {
-      console.log("no email provided")
-      return
-    }
-    const nsec = newPair ? generatePrivateKey() : sanctumNostrSecret
-    if (!nsec) {
-      console.log("no nsec provided")
-      return
-    }
-    const res = await keyLinkClient.LinkAppUserToEmail({
-      app_id: keylinkAppId,
-      email,
-      identifier: getPublicKey(nsec),
-      nostr_secret: nsec
-    })
-    if (res.status === 'ERROR') {
-      toast.error(<Toast title="Email Signup Error" message="Email link Failed."  />)
-    }
-    toast.success(<Toast title="Email Signup" message="Email linked successfully." />)
-  }
 
   const openDownBackupModal = () => {
     toggle();
@@ -242,120 +187,12 @@ export const Auth = () => {
     }
   }
 
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-  
-    return `${minutes
-      .toString()
-      .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const rotateIcon = () => {
-    
-  }
-
-  const loadRemoteBackup = async () => {
-    const keyExists = getNostrPrivateKey()
-    if (keyExists) {
-      toast.error(<Toast title="Backup" message="Cannot load remote backup. User already exists." />)
-      return
-    }
-    const backup = await fetchRemoteBackup()
-    if (backup.result === 'accessTokenMissing') {
-      console.log("access token missing")
-  /*     setRetreiveAccessToken(true) */
-      return
-    }
-    if (backup.decrypted === '') {
-      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
-      return
-    }
-    const data = JSON.parse(backup.decrypted);
-    const keys = Object.keys(data)
-    for (let i = 0; i < keys.length; i++) {
-      const element = keys[i];
-      if (element && !ignoredStorageKeys.includes(element)) {
-        localStorage.setItem(element, data[element])
-      }
-    }
-    store.dispatch(syncRedux());
-    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
-    setTimeout(() => {
-      router.push("/home")
-    }, 1000);
-  }
-
-
-  const loginContent = () => {
-    switch(loginStatus) {
-      case 'loading':
-        return <React.Fragment>
-          <div className='loading'>{Icons.sanctumSetting()}</div>
-        </React.Fragment>
-      case 'awaiting':
-        return <React.Fragment>
-          <div className='timer_description'>Awaiting User Confirmation</div>
-          <div className='timer'>
-            {Icons.sandClock()}
-            <div className='timer-num'>{formatTime(seconds)}</div>
-          </div>
-          <p>client_id-12345abcdeffgggg</p>
-        </React.Fragment>
-      case "confirmed":
-        return <React.Fragment>
-          <div className='confirmed'>
-            {Icons.sanctumChecked()}
-            <p>client_id-12345abcdeffgggg</p>
-          </div>
-        </React.Fragment>
-      default:
-        return <React.Fragment>
-          <div className='btn-group'>
-            <button className='EMail' onClick={handleSanctumRequest} >EMail</button>
-            <button className='Nostr' onClick={() => { console.log("Nostr?") }} >Nostr</button>
-          </div>
-        </React.Fragment>
-    }
-  }
 
 
 
 
 
-  const handleSanctumRequest = useCallback(() => {
-    if (getSanctumAccessToken()) {
-      console.log("Access token already exists")
-      return;
-    }
-    setLoginStatus("loading");
 
-    newSocket({
-      sendOnOpen: {},
-      onError: (reason) => {
-        toast.error(<Toast title="Login Error" message={reason}  />)
-        setLoginStatus(null);
-      },
-      onSuccess: (data) => {
-        setSanctumAccessToken(data.accessToken);
-        setLoginStatus("confirmed");
-      },
-      onToStartSanctum: (receivedRequestToken) => {
-        setLoginStatus("awaiting");
-        window.open(`${SANCTUM_URL}/?token=${receivedRequestToken}&app=${keylinkAppId}`, "_blank", "noopener,noreferrer")
-      },
-      onUnexpectedClosure: () => {
-        setReopenSocket(true);
-      }
-    });
-  }, [])
-
-  useEffect(() => {
-    if (reOpenSocket) {
-      setReopenSocket(false);
-      handleSanctumRequest();
-    }
-  }, [reOpenSocket, handleSanctumRequest]);
 
   const infoBackupModal = <React.Fragment>
     <div className='Auth_modal_header'>Warning</div>
@@ -395,6 +232,77 @@ export const Auth = () => {
 
   </React.Fragment>;
 
+  const loadRemoteBackup = useCallback(async () => {
+    const backup = await fetchRemoteBackup()
+    if (backup.result === 'accessTokenMissing') {
+      console.log("access token missing")
+      return
+    }
+    if (backup.decrypted === '') {
+      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
+      return
+    }
+    const data = JSON.parse(backup.decrypted);
+    const keys = Object.keys(data)
+    for (let i = 0; i < keys.length; i++) {
+      const element = keys[i];
+      if (element && !ignoredStorageKeys.includes(element)) {
+        localStorage.setItem(element, data[element])
+      }
+    }
+    store.dispatch(syncRedux());
+    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
+    setTimeout(() => {
+      router.push("/home")
+    }, 1000);
+  }, [store, router])
+
+  const subscribeToBackupService = useCallback(async () => {
+    return console.log("Recurring payments not implemented")
+    const schedule = Interval.MONTHLY
+    const periodSeconds = getPeriodSeconds(schedule);
+    const des = await parseBitcoinInput("lnurl1dp68gup69uhkcmmrv9kxsmmnwsarsv3cxghkzurf9anh2etnwshkcmn4wfk97urp0yhkjmnxdulkkvfaxguryepcxymxzvf5v5ervcf3xumnxwp3v9jnsen9xccrjve3v93rxd3cxgcnvv3kxcexzvpexfnrzv3jxgenge3cxucrzcmpx5uq47rkwa");
+    const newSubId = uuid()
+
+		const subObject: Subscription = {
+			subId: newSubId,
+			periodSeconds: periodSeconds,
+			subbedAtUnix: Math.floor(Date.now() / 1000),
+			price: {
+				type: "sats",
+				amt: 1000
+			},
+			memo: "backup service",
+			destionation: des,
+			interval: schedule,
+      enabled: true
+		};
+
+    dispatch(updateActiveSub({ sub: subObject }));
+  }, [dispatch]);
+
+  const handleBackupConfirm = useCallback(async (gotSanctum: boolean) => {
+    const ext = getNostrExtention();
+    if (ext || gotSanctum) {
+      const backup = await fetchRemoteBackup()
+      if (backup.result === "success" && backup.decrypted === "") { // no backups yet, i.e. sole device
+        await subscribeToBackupService() // sub to payments for back up service
+      } else if (backup.result === "success" && backup.decrypted !== "") {
+        if (spendSources.order.length > 0 || paySources.order.length > 0) {
+          toast.error("User already has sources");
+          return
+        }
+        await loadRemoteBackup()
+      }
+      dispatch(updateBackupData({ subbedToBackUp: true, usingExtension: !gotSanctum, usingSanctum: gotSanctum }))
+      return
+    }
+
+    // no nostr extension, so use sanctum
+    setPromptSanctum(true);
+
+  }, [dispatch, loadRemoteBackup, subscribeToBackupService, spendSources, paySources])
+
   return (
     <div className='Auth_container'>
       <div className="Auth">
@@ -404,25 +312,50 @@ export const Auth = () => {
             <p className='Auth_description_header'>
               Recommended:
             </p>
-            <p className='Auth_description_para'>
-              Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
-            </p>
-          </div>
-          <div className='Auth_service'>
-            <p className='Auth_service_title'>Use Storage Service</p>
-            <label htmlFor="service-rule-check">
-              <Checkbox id="service-rule-check" state={serviceCheck} setState={(e) => setServiceCheck(e.target.checked)} />
-            </label>
-          </div>
-        </div>
-        <div className='Auth_login_title'>Log-In</div>
-        <div className='Auth_login'>
-          {loginContent()}
-          <div className='Auth_sanctum-logo'>
-            <p>Powered by</p>
-            <div>
-              <img src='/santum_huge.png' alt='Sanctum Logo' />
-            </div>
+            {
+              backupStates.subbedToBackUp
+              ?
+                backupStates.usingSanctum
+                ?
+                <SanctumBox
+                  loggedIn={true}
+                  successCallback={(creds) => {
+                    setSanctumAccessToken(creds.accessToken);
+                    loadRemoteBackup()
+                  }}
+                  errorCallback={(reason) => toast.error(<Toast title="Login Error" message={reason}  />)}
+                  sanctumUrl={SANCTUM_URL}
+                />
+                :
+                <div>connected with nostr extension</div>
+
+              :
+                (promptSanctum)
+                ?
+                <SanctumBox
+                  loggedIn={backupStates.usingSanctum}
+                  successCallback={(creds) => {
+                    setSanctumAccessToken(creds.accessToken);
+                    handleBackupConfirm(true)
+                  }}
+                  errorCallback={(reason) => toast.error(<Toast title="Login Error" message={reason}  />)}
+                  sanctumUrl={SANCTUM_URL}
+                />
+                :
+                <>
+                  <p className='Auth_description_para'>
+                    Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
+                  </p>
+                  <div className='Auth_service'>
+                    <div className='Auth_service_option_button'>
+                      <button id="set-amount-button" onClick={() => handleBackupConfirm(false)}>Confirm</button>
+                    </div>
+                    {/* <div className='Auth_service_option_button'>
+                      <button id="set-amount-button" onClick={toggle}>Hide</button>
+                    </div> */}
+                  </div>
+                </>
+            }
           </div>
         </div>
         <div className='Auth_border'>
