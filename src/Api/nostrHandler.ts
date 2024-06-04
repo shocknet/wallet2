@@ -224,18 +224,18 @@ class RelayHandler {
             this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
         if (keys && connectedCallback) {
-					setTimeout(() => {
-						connectedCallback()
-					}, 1000)
+            setTimeout(() => {
+                connectedCallback()
+            }, 1000)
         }
     }
 }
 const appTag = "shockwallet"
-export const getAppBackup = (pubkey: string, relays: string[], dTag = appTag) => {
+export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
     const pool = new SimplePool()
     return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
 }
-export const newBackupEvent = (data: string, pubkey: string, dTag = appTag) => {
+export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
     return {
         content: data,
         created_at: Math.floor(Date.now() / 1000),

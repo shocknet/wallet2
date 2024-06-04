@@ -85,12 +85,13 @@ export const SwItem = ({
       date = moment(operation.paidAtUnix * 1000).fromNow()
     }
     const label = getOperationLabel()
+    const totalPaidSats = operation.amount + operation.network_fee + operation.service_fee
     return {
       priceImg: operation.inbound ? Icons.PriceUp : Icons.PriceDown,
       station: label.length < 30 ? label : `${label.substring(0, 7)}...${label.substring(label.length - 7, label.length)}`,
-      changes: `${operation.inbound ? "" : "-"}${operation.amount}`,
+      changes: `${operation.inbound ? "" : "-"}${totalPaidSats}`,
       date,
-      price: Math.round(100 * operation.amount * price.sellPrice / (100 * 1000 * 1000)) / 100,
+      price: Math.round(100 * totalPaidSats * price.sellPrice / (100 * 1000 * 1000)) / 100,
       stateIcon: !operation.confirmed ? "hour" : isChain ? "linked" : "lightning",
     }
   }, [operation, price, getOperationLabel]);
@@ -103,26 +104,26 @@ export const SwItem = ({
         layoutId={operation.operationId}
       >
         <div className="SwItem_left">
-            {stateIcons(transactionObject.stateIcon)}
-            <div className="SwItem_text">
-              <div className="SwItem_date">{transactionObject.date}</div>
-              <div className="SwItem_station">{transactionObject.station}</div>
-            </div>
+          {stateIcons(transactionObject.stateIcon)}
+          <div className="SwItem_text">
+            <div className="SwItem_date">{transactionObject.date}</div>
+            <div className="SwItem_station">{transactionObject.station}</div>
           </div>
-          <div className="SwItem_right">
-            <div className="SwItem_price">
-              <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
-              <div className="SwItem_price_text">{transactionObject.changes}</div>
-            </div>
+        </div>
+        <div className="SwItem_right">
+          <div className="SwItem_price">
+            <div className="SwItem_price_img">{transactionObject.priceImg()}</div>
+            <div className="SwItem_price_text">{transactionObject.changes}</div>
+          </div>
           <div className="SwItem_changes">~ {fiatSymbol}{transactionObject.price}</div>
         </div>
       </motion.div>
-      <div className={underline?"SwItem_divider" : ""}></div>
-        {
-          shown
-          &&
-          <TransactionInfoModal key={operation.operationId} operation={operation} hide={() => setShown(!shown)} price={price} />
-        }
+      <div className={underline ? "SwItem_divider" : ""}></div>
+      {
+        shown
+        &&
+        <TransactionInfoModal key={operation.operationId} operation={operation} hide={() => setShown(!shown)} price={price} />
+      }
     </>
   )
 }

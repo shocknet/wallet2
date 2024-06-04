@@ -35,3 +35,4 @@ yarn-error.log*
 android/app/src/main/AndroidManifest.xml
 ios/App/App/Info.plist
 ios/App/App/App.entitlements
+shocknet.keystore
