@@ -145,9 +145,7 @@ export const Scan = () => {
     } else if (parsed.type === InputClassification.LNURL && parsed.lnurlType === "withdrawRequest") {
       history.push({
         pathname: "/sources",
-        state: {
-          data: parsed
-        }
+        state: parsed
       });
     } else if (parsed.type === InputClassification.UNKNOWN) {
       toast.error(<Toast title="Error" message="Unrecognized QR code." />)
