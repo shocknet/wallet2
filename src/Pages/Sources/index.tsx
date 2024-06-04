@@ -51,18 +51,21 @@ export const Sources = () => {
 
 
   const processParsedInput = (destination: Destination) => {
-    const promptSweep = 
+    if (
       destination.type === InputClassification.LNURL
       &&
       destination.lnurlType === "withdrawRequest"
-      &&
-      destination.max && destination.max > 0
-      &&
-      Object.values(paySources.sources).length > 0;
-
-    if (promptSweep) {
+    ) {
+      if (destination.max && destination.max <= 0) {
+        toast.error(<Toast title="Lnurl-withdraw error" message="Max sendable is zero" />);
+        return;
+      }
+      if (paySources.order.length === 0) {
+        toast.error(<Toast title="Lnurl-withdraw error" message="You don't have any pay sources to sweep lnurl-w to" />);
+        return;
+      }
       setTempParsedWithdraw(destination);
-      setModalContent("acceptInvite");
+      setModalContent("promptSweep");
       toggle();
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
@@ -550,9 +553,9 @@ export const Sources = () => {
 
   const promptSweep = <React.Fragment>
     <div className='Sources_modal_header'>LNURL Withdraw</div>
-    <div className='Sources_modal_discription'>Do you want to add this lnurl-withdraw as a spend from source or sweep it to your pay to source?</div>
+    <div className='Sources_modal_discription'>Do you want to sweep this lnurl-withdraw to your top pay source?</div>
     <div className="Sources_modal_add_btn">
-      <button onClick={() => { addSource() }}>Add as source</button>
+      <button onClick={toggle}>Cancel</button>
       <button
         onClick={() => {
           setModalContent("sweepLnurlModal");
