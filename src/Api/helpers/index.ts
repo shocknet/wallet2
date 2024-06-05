@@ -87,7 +87,7 @@ const handleLnurlWithdrawPay = async (lnurl: string, invoice: string) => {
 		);
 
 		if (resp.data.status === "ERROR") {
-			throw new Error(res.data.reason);
+			throw new Error(resp.data.reason);
 		}
 		
 		return { operation_id: `lnurl-withdraw-${Date.now()}`, service_fee: 0, network_fee: 0, data: invoice }
@@ -102,7 +102,7 @@ export const handlePayInvoice = async (invoice: string, source: SpendFrom | stri
 				invoice: invoice,
 				amount: 0,
 			})
-			if (payRes.status == "OK") {
+			if (payRes.status === "OK") {
 				return { ...payRes, data: invoice };
 			} else {
 				throw new Error(payRes.reason);
