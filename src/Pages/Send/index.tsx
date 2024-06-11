@@ -296,12 +296,12 @@ export const Send = () => {
       <div className="Sources_notify">
         <div className="Sources_notify_title">What is this?</div>
         <div className="Sources_notify_textBox">
-          Lightning fees arebased on the amount of sats you are
+          Lightning fees are based on the amount of sats you are
           sending, and so you must have more sats than you send.
           <br />
           <br />
           To ensure high success rates and low overall fees, the node
-          has defined a fee budget to hold in reserve when sending.
+          has defined a fee budget to hold as a fee reserve for sends.
         </div>
         <button className="Sources_notify_button" onClick={toggle}>
           OK
