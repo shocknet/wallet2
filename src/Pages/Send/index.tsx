@@ -296,12 +296,12 @@ export const Send = () => {
       <div className="Sources_notify">
         <div className="Sources_notify_title">What is this?</div>
         <div className="Sources_notify_textBox">
-          The Lightning Network charges fees based on the amount of sats your
-          sending, and so you must have more sats than you are planning to spend
+          Lightning fees arebased on the amount of sats you are
+          sending, and so you must have more sats than you send.
           <br />
           <br />
-          To ensure high payment success rates and low overall fees, the node
-          has defined a fee budget to hold in reserve when spending.
+          To ensure high success rates and low overall fees, the node
+          has defined a fee budget to hold in reserve when sending.
         </div>
         <button className="Sources_notify_button" onClick={toggle}>
           OK
@@ -376,7 +376,7 @@ export const Send = () => {
         </div>
         <div className='Send_note'>
           <div>
-            Note: {+selectedSource.balance - +(selectedSource.maxWithdrawable || "0")} sats from your balance is held in reserve for network fees.
+            Note: {+selectedSource.balance - +(selectedSource.maxWithdrawable || "0")} sats of your balance is held in reserve for network fees.
             <span onClick={Notify_Modal}>{questionMark()}</span>
           </div>
         </div>
