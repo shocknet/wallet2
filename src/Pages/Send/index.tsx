@@ -64,22 +64,22 @@ export const Send = () => {
   useEffect(() => {
     if (selectedSource && Number(selectedSource.balance) === 0) {
       const foundOneWithBalance = enabledSpendSources.find(s => Number(s.balance) > 0);
-      console.log({foundOneWithBalance})
+      console.log({ foundOneWithBalance })
       if (foundOneWithBalance) {
         setSelectedSource(foundOneWithBalance)
       }
-    } 
+    }
   }, [enabledSpendSources, selectedSource])
 
   const [satsPerByte, setSatsPerByte] = useState(0)
   const [fiatSymbol, setFiatSymbol] = useState('$')
   const [sendRunning, setSendRunning] = useState(false);
-  
+
   const [to, setTo] = useState({
     input: "",
     parse: false
   });
-  
+
   const debouncedTo = useDebounce(to.input, 500);
   const [destination, setDestination] = useState<Destination>({
     type: InputClassification.UNKNOWN,
@@ -148,8 +148,8 @@ export const Send = () => {
   }, [location]);
 
   const processParsedDestination = async (parsedInput: Destination) => {
-    if (parsedInput.type === InputClassification.LNURL &&  parsedInput.lnurlType !== "payRequest") {
-      throw new Error ("Lnurl cannot be a lnurl-withdraw");
+    if (parsedInput.type === InputClassification.LNURL && parsedInput.lnurlType !== "payRequest") {
+      throw new Error("Lnurl cannot be a lnurl-withdraw");
     }
 
     if (parsedInput.type === InputClassification.LN_INVOICE) {
@@ -195,7 +195,7 @@ export const Send = () => {
     if (note) {
       optLabel = note
     }
-    if (destination.type === InputClassification.LNURL ) {
+    if (destination.type === InputClassification.LNURL) {
       optLabel = destination.domainName!
     } else if (destination.type === InputClassification.LN_ADDRESS) {
       optLabel = destination.data;
@@ -255,7 +255,7 @@ export const Send = () => {
           payRes = await handlePayBitcoinAddress(selectedSource, destination.data, amount, satsPerByte)
         }
       }
-      
+
       dispatch(procOperationsUpdateHook())
 
       if (note) {
@@ -326,7 +326,7 @@ export const Send = () => {
       setAmount(Math.min(destination.max, parseInt(selectedSource.maxWithdrawable)))
       return;
     }
-    if(selectedSource.maxWithdrawable) {
+    if (selectedSource.maxWithdrawable) {
       setAmount(parseInt(selectedSource.maxWithdrawable))
     }
   }
@@ -363,7 +363,7 @@ export const Send = () => {
           </div>
           <div className="Send_to">
             <p>To:</p>
-            <input id="bitcoin-input" type="text" placeholder="Invoice, Lnurl-p or Lightning Address" value={to.input} onChange={(e) => setTo({input: e.target.value.toLocaleLowerCase(), parse: true})} />
+            <input id="bitcoin-input" type="text" placeholder="Invoice, Lnurl-p or Lightning Address" value={to.input} onChange={(e) => setTo({ input: e.target.value.toLocaleLowerCase(), parse: true })} />
           </div>
           <div className="Send_for">
             <p>For:</p>
@@ -376,7 +376,7 @@ export const Send = () => {
         </div>
         <div className='Send_note'>
           <div>
-            Note: {`NUM`} sats from your balance is held in reserve for network fees.
+            Note: {+selectedSource.balance - +(selectedSource.maxWithdrawable || "0")} sats from your balance is held in reserve for network fees.
             <span onClick={Notify_Modal}>{questionMark()}</span>
           </div>
         </div>
