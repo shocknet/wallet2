@@ -8,7 +8,6 @@ import { decode } from "@gandlaf21/bolt11-decode";
 
 export const locationRegex = new RegExp(/\w{1,}/g)
 
-export const keylinkUrl = import.meta.env.VITE_KEYLINK_URL || "https://auth.shock.network"
 export const keylinkAppId = import.meta.env.VITE_KEYLINK_APP_ID || ""
 
 export const DEVICE_ID_STORAGE_KEY = "DEVICE_ID"
