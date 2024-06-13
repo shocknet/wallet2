@@ -47,16 +47,18 @@ export const getSanctumNostrExtention = (): SanctumNostrExtention | InvalidExten
 
 const getSanctumExtension = (): SanctumNostrExtention | InvalidExtention => {
     const accessToken = getSanctumAccessToken()
+    const sanctumClient = keyLinkClient();
+
     if (!accessToken) {
         return { valid: false }
     }
     return {
         valid: true,
-        decrypt: (pubkey, ciphertext) => keyLinkClient.Nip44Decrypt({ pubkey, ciphertext }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.plaintext } }),
-        encrypt: (pubkey, plaintext) => keyLinkClient.Nip44Encrypt({ pubkey, plaintext }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.ciphertext } }),
-        getPublicKey: () => keyLinkClient.GetNostrPubKey().then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.pubkey } }),
-        signEvent: (event) => keyLinkClient.SignNostrEvent({ usignedEvent: JSON.stringify(event) }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return JSON.parse(r.signedEvent) } }),
-        getRelays: () => keyLinkClient.GetNostrRelays().then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.relays } })
+        decrypt: (pubkey, ciphertext) => sanctumClient.Nip44Decrypt({ pubkey, ciphertext }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.plaintext } }),
+        encrypt: (pubkey, plaintext) => sanctumClient.Nip44Encrypt({ pubkey, plaintext }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.ciphertext } }),
+        getPublicKey: () => sanctumClient.GetNostrPubKey().then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.pubkey } }),
+        signEvent: (event) => sanctumClient.SignNostrEvent({ usignedEvent: JSON.stringify(event) }).then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return JSON.parse(r.signedEvent) } }),
+        getRelays: () => sanctumClient.GetNostrRelays().then(r => { if (r.status !== 'OK') { throw new Error(r.reason); } else { return r.relays } })
     }
 
 
