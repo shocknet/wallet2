@@ -5,7 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { formatTime, getClientKey } from "./helpers";
 import styles from "./styles/index.module.scss";
 import SANCTUM_LOGO from "./santum_huge.png"
-import { keylinkAppId } from "../../constants";
+
 
 
 type LoginStatus = null | "loading" | "awaiting" | "confirmed";
