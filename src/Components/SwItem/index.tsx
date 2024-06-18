@@ -53,7 +53,17 @@ export const SwItem = ({
       return link
     }
     if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE)) {
-      const decodedInvoice = decode(operation.identifier);
+      console.log("decoding:", operation.identifier)
+      let network = undefined
+      if (operation.identifier.startsWith("lntbs")) {
+        network = {
+          bech32: 'tbs',
+          pubKeyHash: 0x6f,
+          scriptHash: 0xc4,
+          validWitnessVersions: [0]
+        }
+      }
+      const decodedInvoice = decode(operation.identifier, network);
       const description = decodedInvoice.sections.find(section => section.name === "description");
       if (description && description.value) {
         try {
