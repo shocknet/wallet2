@@ -53,8 +53,8 @@ export const SwItem = ({
       return link
     }
     if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE)) {
-
-      const decodedInvoice = operation.identifier.startsWith("lntbs") ? decode(operation.identifier, "signet") : decode(operation.identifier);
+      console.log("decoding:", operation.identifier)
+      const decodedInvoice = decode(operation.identifier);
       const description = decodedInvoice.sections.find(section => section.name === "description");
       if (description && description.value) {
         try {
