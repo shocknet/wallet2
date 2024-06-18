@@ -20,7 +20,7 @@ export const Footer = () => {
         }
       }, 30)
     }
-  }, []);
+  }, [isPlatform('android'), isPlatform('ios')]);
 
   useEffect(() => {
     // Create a new resize event
