@@ -18,7 +18,7 @@ export const Footer = () => {
         if (footer) {
           footer.style.top = viewportHeight - (footer.clientHeight ?? 0) + 'px';
         }
-      }, 100)
+      }, 150)
     }
   }, [isPlatform('android'), isPlatform('ios')]);
 
