@@ -2,15 +2,16 @@ import { useEffect } from "react"
 import { findReducerMerger, useSelector } from "../../State/store"
 import { fetchRemoteBackup, saveRemoteBackup } from "../../helpers/remoteBackups"
 import { ignoredStorageKeys } from "../../constants"
+import logger from "../../Api/helpers/logger"
 export const RemoteBackup = () => {
     const backupStates = useSelector(state => state.backupStateSlice);
 
     useEffect(() => {
         if (!backupStates.subbedToBackUp) {
-            console.log("instance not initialized yet to sync backups")
+            logger.info("instance not initialized yet to sync backups");
             return
         }
-        syncBackups().then(() => console.log("backups synced succesfully")).catch((e) => console.log("failed to sync backups", e))
+        syncBackups().then(() => logger.info("backups synced succesfully")).catch((e) => logger.error("failed to sync backups", e))
     }, [backupStates])
     const syncBackups = async () => {
         const backup = await fetchRemoteBackup()
@@ -25,12 +26,21 @@ export const RemoteBackup = () => {
                 if (!merger) {
                     continue
                 }
-                const dataItem = data[key]
-                const storageItem = localStorage.getItem(key)
-                if (!storageItem || !dataItem) {
-                    continue
+                const serialRemote = data[key] as string
+                const serialLocal = localStorage.getItem(key)
+                
+                let newItem = "";
+                // present on backup but not local, for example addressBook
+                if (!serialLocal) {
+                    newItem = serialRemote;
+                } else {
+                    newItem = merger(serialLocal, serialRemote)
                 }
-                data[key] = merger(dataItem, storageItem)
+
+                // update object that will be sent to backup/nostr
+                data[key] = newItem;
+                // update local with the merged object too
+                localStorage.setItem(key, newItem);
             }
 
         } else {

@@ -1,3 +1,4 @@
+import logger from "../Api/helpers/logger"
 import { getNip78Event, newNip78Event, publishNostrEvent } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
 import { getSanctumNostrExtention } from "./nip07Extention"
@@ -11,7 +12,7 @@ export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'acces
     const relays = await ext.getRelays()
     const backupEvent = await getNip78Event(pubkey, Object.keys(relays), dTag)
     if (!backupEvent) {
-        console.log("no backups found")
+        logger.info("no backups found")
         return { result: 'success', decrypted: "" }
     }
     const decrypted = await ext.decrypt(pubkey, backupEvent.content)
@@ -50,7 +51,7 @@ export const lockSubscriptionPayment = async (id: string, backupEnabled: boolean
     }
     const existing = await fetchRemoteBackup(subsPaymentsTag)
     if (existing.result === 'accessTokenMissing') {
-        console.log("remote sync not enabled, no need to lock")
+        logger.info("remote sync not enabled, no need to lock")
         return PaymentLock.SUCCESSFULLY_LOCKED
     }
     const subs = existing.decrypted ? (JSON.parse(existing.decrypted) as SubsPayments) : {}
@@ -81,7 +82,7 @@ export const lockSubscriptionPayment = async (id: string, backupEnabled: boolean
 export const unlockSubscriptionPayment = async (id: string, success: boolean) => {
     const existing = await fetchRemoteBackup(subsPaymentsTag)
     if (existing.result === 'accessTokenMissing') {
-        console.log("remote sync not enabled, no need to unlock")
+        logger.info("remote sync not enabled, no need to unlock")
         return
     }
     const myDeviceId = getDeviceId()

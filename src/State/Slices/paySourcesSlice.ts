@@ -18,7 +18,7 @@ export interface PaySourceState {
 
 
 export const storageKey = "payTo"
-export const VERSION = 3;
+export const VERSION = 4;
 export const migrations: Record<number, MigrationFunction<any>> = {
   // the bridge url encoded in nprofile migration
   1: (data) => {
@@ -68,6 +68,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
   },
    // key pair per source migration
    3: (state) => {
+    console.log("running migration v3 of payToSources")
     const privateKey = getNostrPrivateKey()
     if (!privateKey) return state;
     if (state.sources) {
@@ -81,6 +82,42 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       }
     }
     return state
+  },
+  // the order array is now a string of lpk + source npub
+  4: (state: PaySourceState) => {
+    console.log("running migration v4 of SpendFromSources")
+
+    const order = state.order;
+    const sourcesObject = state.sources;
+
+
+    const newOrderArray = order.map(lpk => {
+      if (!sourcesObject[lpk].pubSource) {
+        return lpk;
+      }
+      const source = sourcesObject[lpk]
+      const publicKey = source.keys.publicKey;
+      return `${lpk}-${publicKey}`;
+    });
+    
+    const newSourcesObject: PaySourceRecord = {};
+    for (const key in sourcesObject) {
+      // eslint-disable-next-line
+      if (sourcesObject.hasOwnProperty(key)) {
+        if (!sourcesObject[key].pubSource) {
+          newSourcesObject[key] = sourcesObject[key];
+        } else {
+          const publicKey = sourcesObject[key].keys.publicKey;
+          const newKey = `${key}-${publicKey}`;
+          newSourcesObject[newKey] = sourcesObject[key];
+          newSourcesObject[newKey].id = newKey
+        }
+      }
+    }
+    state.order = newOrderArray;
+    state.sources = newSourcesObject;
+    return state
+
   }
 };
 
