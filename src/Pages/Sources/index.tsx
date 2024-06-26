@@ -24,7 +24,6 @@ import { useLocation } from 'react-router';
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { generatePrivateKey, getPublicKey } from 'nostr-tools';
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
 
@@ -204,10 +203,7 @@ export const Sources = () => {
       
       try {
         (data  = decodeNprofile(sourcePasteField));
-        if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
-          toast.error(<Toast title="Error" message="Source already exists." />)
-          return;
-        }
+
       } catch (err: any) {
         toast.error(<Toast title="Error" message={err.message} />)
         setProcessingSource(false);
@@ -215,7 +211,7 @@ export const Sources = () => {
         return;
       }
     }
-    // none pub source are checked directly with the sourcePasteField
+    // there can be no more than once specific lnurl source
     if (spendSources.sources[sourcePasteField] || paySources.sources[sourcePasteField]) {
       toast.error(<Toast title="Error" message="Source already exists." />)
       return;
@@ -254,9 +250,10 @@ export const Sources = () => {
       const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
+      const id = `${data!.pubkey}-${newSourceKeyPair.publicKey}`;
       
       const addedPaySource = {
-        id: data!.pubkey,
+        id: id,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
@@ -267,7 +264,7 @@ export const Sources = () => {
       } as PayTo;
       dispatch(addPaySources(addedPaySource))
       const addedSpendSource = {
-        id: data!.pubkey,
+        id: id,
         label: resultLnurl.hostname,
         option: optional,
         icon: sndleveldomain,

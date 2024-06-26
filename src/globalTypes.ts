@@ -134,7 +134,7 @@ export interface SpendFrom {
   disabled?: string // the error message
   disconnected?: boolean;
   pubSource?: boolean,
-  keys?: NostrKeyPair
+  keys: NostrKeyPair
 }
 
 export interface PayTo {
@@ -146,7 +146,7 @@ export interface PayTo {
   disconnected?: boolean
   vanityName?: string;
   pubSource?: boolean,
-  keys?: NostrKeyPair
+  keys: NostrKeyPair
 }
 
 export interface FiatCurrency {

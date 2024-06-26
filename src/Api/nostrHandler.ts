@@ -2,6 +2,7 @@ import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit } from './tool
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 import { decrypt, encrypt } from './tools/nip04'
 import { Sub } from 'nostr-tools';
+import logger from './helpers/logger';
 
 const EVENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const CLEANUP_INTERVAL_SECONDS = 60
@@ -40,7 +41,7 @@ export default class RelayCluster {
     addRelays = (relaysSettings: RelaysSettings, connectedCallback: (connectedRelayUrl: string) => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: (disconnectedRelayUrl: string) => void) => {
         const relayUrls = relaysSettings.relays;
         const relaysToAdd = relayUrls.filter(r => !this.relays[r])
-        console.log("existing relays:", Object.keys(this.relays), "relay urls", relayUrls, "new relays to add:", relaysToAdd)
+        logger.info("existing relays:", Object.keys(this.relays), "relay urls", relayUrls, "new relays to add:", relaysToAdd)
         const onConnect = (relay: string) => {
             connectedCallback(relay)
         }
@@ -98,8 +99,8 @@ export default class RelayCluster {
     sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
         const signed = finishEvent(event, privateKey)
         this.pool.publish(relays, signed).forEach(p => {
-            p.then(() => console.log("sent ok"))
-            p.catch(() => console.log("failed to send"))
+            p.then(() => logger.info("sent ok"))
+            p.catch(() => logger.error("failed to send"))
         })
     }
 
@@ -146,15 +147,15 @@ class RelayHandler {
         try {
             await relay.connect()
         } catch (err) {
-            console.log("failed to connect to relay, will try again in 2 seconds")
+            logger.error("failed to connect to relay, will try again in 2 seconds")
             setTimeout(() => {
                 this.Connect(true, keys)
             }, 2000)
             return
         }
-        console.log("connected, subbing...")
+        logger.info("connected, subbing...")
         relay.on('disconnect', () => {
-            console.log("relay disconnected, will try to reconnect")
+            logger.warn("relay disconnected, will try to reconnect")
             if (this.sub) {
                 this.sub.unsub()
             }
@@ -180,7 +181,7 @@ class RelayHandler {
         //just appeasing ts
 
         if (keys) { // new keys to sub with
-            console.log("renewing sub")
+            logger.info("renewing sub")
             this.subbedPairs.push(keys);
             this.sub = this.sub.sub([
                 {
@@ -193,14 +194,14 @@ class RelayHandler {
         }
         this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
         this.sub.on("event", async (e) => {
-            console.log({ nostrEvent: e })
+            logger.log({ nostrEvent: e })
 
             if (!e.pubkey || !allowedKinds.includes(e.kind)) {
                 return
             }
             const eventId = e.id
             if (handledEvents.find(e => e.eventId === eventId)) {
-                console.log("event already handled")
+                logger.info("event already handled")
                 return
             }
             handledEvents.push({ eventId, addedAtUnix: Date.now() });
@@ -215,12 +216,12 @@ class RelayHandler {
 
             if (e.kind === 24133) {
                 const decryptedNip46 = await decrypt(addressedKeyPair!.privateKey, e.pubkey, e.content)
-                console.log({ decryptedNip46 })
+                logger.log({ decryptedNip46 })
                 this.args.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
             }
             const decoded = decodePayload(e.content)
             const content = await decryptData(decoded, getSharedSecret(addressedKeyPair!.privateKey, e.pubkey))
-            console.log({ decrypted: content })
+            logger.log({ decrypted: content }, addressedKeyPair?.publicKey)
             this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
         if (keys && connectedCallback) {

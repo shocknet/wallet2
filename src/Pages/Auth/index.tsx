@@ -45,8 +45,6 @@ export const Auth = () => {
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
   const backupStates = useSelector(state => state.backupStateSlice);
-  const spendSources = useSelector(state => state.spendSource);
-  const paySources = useSelector(state => state.paySource);
   const [promptSanctum, setPromptSanctum] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
@@ -232,30 +230,7 @@ export const Auth = () => {
 
   </React.Fragment>;
 
-  const loadRemoteBackup = useCallback(async () => {
-    const backup = await fetchRemoteBackup()
-    if (backup.result === 'accessTokenMissing') {
-      console.log("access token missing")
-      return
-    }
-    if (backup.decrypted === '') {
-      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
-      return
-    }
-    const data = JSON.parse(backup.decrypted);
-    const keys = Object.keys(data)
-    for (let i = 0; i < keys.length; i++) {
-      const element = keys[i];
-      if (element && !ignoredStorageKeys.includes(element)) {
-        localStorage.setItem(element, data[element])
-      }
-    }
-    store.dispatch(syncRedux());
-    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
-    setTimeout(() => {
-      router.push("/home")
-    }, 1000);
-  }, [store, router])
+
 
   const subscribeToBackupService = useCallback(async () => {
     return console.log("Recurring payments not implemented")
@@ -284,16 +259,7 @@ export const Auth = () => {
   const handleBackupConfirm = useCallback(async (gotSanctum: boolean) => {
     const ext = getNostrExtention();
     if (ext || gotSanctum) {
-      const backup = await fetchRemoteBackup()
-      if (backup.result === "success" && backup.decrypted === "") { // no backups yet, i.e. sole device
-        await subscribeToBackupService() // sub to payments for back up service
-      } else if (backup.result === "success" && backup.decrypted !== "") {
-        if (spendSources.order.length > 0 || paySources.order.length > 0) {
-          toast.error("User already has sources");
-          return
-        }
-        await loadRemoteBackup()
-      }
+      await subscribeToBackupService()
       dispatch(updateBackupData({ subbedToBackUp: true, usingExtension: !gotSanctum, usingSanctum: gotSanctum }))
       return
     }
@@ -301,7 +267,7 @@ export const Auth = () => {
     // no nostr extension, so use sanctum
     setPromptSanctum(true);
 
-  }, [dispatch, loadRemoteBackup, subscribeToBackupService, spendSources, paySources])
+  }, [dispatch,  subscribeToBackupService])
 
   return (
     <div className='Auth_container'>
@@ -321,7 +287,6 @@ export const Auth = () => {
                   loggedIn={true}
                   successCallback={(creds) => {
                     setSanctumAccessToken(creds.accessToken);
-                    loadRemoteBackup()
                   }}
                   errorCallback={(reason) => toast.error(<Toast title="Login Error" message={reason}  />)}
                   sanctumUrl={SANCTUM_URL}

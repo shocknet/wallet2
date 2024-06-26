@@ -7,7 +7,7 @@ import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 export const storageKey = "spendFrom"
-export const VERSION = 2;
+export const VERSION = 3;
 
 type SpendSourceRecord = Record<string, SpendFrom>;
 
@@ -40,6 +40,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
   },
   // key pair per source migration
   2: (state) => {
+    console.log("running migration v2 of SpendFromSources")
     const privateKey = getNostrPrivateKey()
     if (!privateKey) return state;
     if (state.sources) {
@@ -53,6 +54,41 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       }
     }
     return state
+  },
+  // the order array is now a string of lpk + source npub
+  3: (state: SpendSourceState) => {
+    console.log("running migration v3 of SpendFromSources")
+
+    const order = state.order;
+    const sourcesObject = state.sources;
+
+    const newOrderArray = order.map(lpk => {
+      if (!sourcesObject[lpk].pubSource) {
+        return lpk;
+      }
+      const source = sourcesObject[lpk]
+      const publicKey = source.keys.publicKey;
+      return `${lpk}-${publicKey}`;
+    });
+    
+    const newSourcesObject: SpendSourceRecord = {};
+    for (const key in sourcesObject) {
+      // eslint-disable-next-line
+      if (sourcesObject.hasOwnProperty(key)) {
+        if (!sourcesObject[key].pubSource) {
+          newSourcesObject[key] = sourcesObject[key];
+        } else {
+          const publicKey = sourcesObject[key].keys.publicKey;
+          const newKey = `${key}-${publicKey}`;
+          newSourcesObject[newKey] = sourcesObject[key];
+          newSourcesObject[newKey].id = newKey
+        }
+      }
+    }
+    state.order = newOrderArray;
+    state.sources = newSourcesObject;
+    return state
+
   }
 };
 
