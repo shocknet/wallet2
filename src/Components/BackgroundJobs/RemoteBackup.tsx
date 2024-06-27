@@ -1,9 +1,11 @@
 import { useEffect } from "react"
-import { findReducerMerger, useSelector } from "../../State/store"
+import { findReducerMerger, syncRedux, useSelector } from "../../State/store"
 import { fetchRemoteBackup, saveRemoteBackup } from "../../helpers/remoteBackups"
 import { ignoredStorageKeys } from "../../constants"
 import logger from "../../Api/helpers/logger"
+import { useStore } from "react-redux"
 export const RemoteBackup = () => {
+    const store = useStore();
     const backupStates = useSelector(state => state.backupStateSlice);
 
     useEffect(() => {
@@ -43,6 +45,7 @@ export const RemoteBackup = () => {
                 data[key] = newItem;
                 // update local with the merged object too
                 localStorage.setItem(key, newItem);
+                store.dispatch(syncRedux());
             }
 
         } else {
