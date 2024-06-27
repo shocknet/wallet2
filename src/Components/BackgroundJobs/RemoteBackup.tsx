@@ -37,7 +37,7 @@ export const RemoteBackup = () => {
                 } else {
                     newItem = merger(serialLocal, serialRemote)
                 }
-                console.log({serialLocal, serialRemote, newItem})
+                console.log(key, JSON.parse(serialLocal ?? "null"), JSON.parse(serialRemote), JSON.parse(newItem));
 
                 // update object that will be sent to backup/nostr
                 data[key] = newItem;
