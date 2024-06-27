@@ -1,5 +1,5 @@
 
-const enableLog = process.env.NODE_ENV === 'development';
+const enableLog = true;
 
 const log = (...args: any[]) => {
   if (enableLog) {
