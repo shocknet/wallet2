@@ -53,7 +53,6 @@ export const SwItem = ({
       return link
     }
     if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE)) {
-      console.log("decoding:", operation.identifier)
       let network = undefined
       if (operation.identifier.startsWith("lntbs")) {
         network = {

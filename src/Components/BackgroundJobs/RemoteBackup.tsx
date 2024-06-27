@@ -22,6 +22,7 @@ export const RemoteBackup = () => {
         if (backup.decrypted) {
             data = JSON.parse(backup.decrypted);
             for (const key in data) {
+
                 const merger = findReducerMerger(key)
                 if (!merger) {
                     continue
@@ -36,6 +37,7 @@ export const RemoteBackup = () => {
                 } else {
                     newItem = merger(serialLocal, serialRemote)
                 }
+                console.log({serialLocal, serialRemote, newItem})
 
                 // update object that will be sent to backup/nostr
                 data[key] = newItem;
