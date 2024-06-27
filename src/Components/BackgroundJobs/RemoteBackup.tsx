@@ -14,7 +14,8 @@ export const RemoteBackup = () => {
             return
         }
         syncBackups().then(() => logger.info("backups synced succesfully")).catch((e) => logger.error("failed to sync backups", e))
-    }, [backupStates])
+    }, [backupStates.subbedToBackUp]);
+
     const syncBackups = async () => {
         const backup = await fetchRemoteBackup()
         if (backup.result !== 'success') {
