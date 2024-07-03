@@ -84,7 +84,7 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 				setLoginStatus("confirmed");
 			},
 			onToStartSanctum: async (receivedRequestToken) => {
-				await Browser.open({ url: `http://localhost:3000/authenticate?requestToken=${receivedRequestToken}&authType=${login ? "Log In" : "Sign Up"}` });
+				await Browser.open({ url: `${sanctumUrl}/authenticate?requestToken=${receivedRequestToken}&authType=${login ? "Log In" : "Sign Up"}` });
 				setLoginStatus("awaiting");
 			},
 			onUnexpectedClosure: () => {
