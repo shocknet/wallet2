@@ -1,5 +1,5 @@
 
-const enableLog = true;
+const enableLog = false;
 
 const log = (...args: any[]) => {
   if (enableLog) {

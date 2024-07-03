@@ -2,12 +2,156 @@
 	height: 128px;
 	border: 2px solid #32a852;
 	border-radius: 5px;
-	padding-block-start: 20px;
 	display: flex;
 	flex-direction: column;
-	margin-block-start: 5px;
 	text-align: center;
-	cursor: pointer;
+	position: relative;
+	padding: 15px;
+	gap: 7px;
+	&.when-confirmed {
+		padding: 0;
+		padding-bottom: 15px;
+	}
+
+
+	.sanctum-logo {
+		margin-top: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+
+		span {
+			font-size: 11px;
+			color: #ffffff;
+			text-align: center;
+		}
+	
+		div {
+			padding: 0 5px;
+			width: 116px;
+			display: flex;
+			justify-content: center;
+	
+			&>img {
+				width: 104px;
+				height: 12px;
+			}
+		}
+	}
+
+	.alt-view-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		margin: auto;
+
+
+		.sanctum-timer-description {
+			font-size: 11px;
+			color: #ffffff;
+		}
+		.sanctum-timer {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 2px;
+			font-size: 16px;
+			color: #8c8c8c;
+			margin: auto;
+		}
+
+		
+
+		&.sanctum-loading {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			@keyframes rotateAnimation {
+				0% {
+					transform: rotate(0deg);
+				}
+				50% {
+					transform: rotate(360deg);
+				}
+				100% {
+					transform: rotate(380deg);
+				}
+			}
+			svg {
+				width: 30px;
+				height: 30px;
+				transition-duration: 1000ms;
+				animation: rotateAnimation 1100ms linear infinite;
+			}
+		}
+		&.confirmed {
+			margin: unset;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 1px;
+			&.logout-prompt {
+				margin-top: 7px;
+				gap: 7px;
+			}
+
+			.logout-cross {
+				align-self: flex-end;
+				cursor: pointer;
+				margin: 7px 7px 0px 0px;
+			}
+			.title {
+				font-size: 16px;
+			}
+			& svg {
+				width: 24px;
+				height: 24px;
+			}
+		
+		}
+	}
+
+	.sanctum-button-group {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 14px;
+		&.logout-buttons {
+			.sanctum-login-button {
+				width: 80px;
+				height: 41px;
+			}
+		}
+		.sanctum-login-button {
+			width: 120px;
+			height: 51px;
+			font-weight: 600;
+			background-color: #32a852;
+			border: none;
+			border-radius: 5px;
+			color: #ffffff;
+			font-size: 16px;
+			transition-duration: 400ms;
+			padding: 0;
+			border: 0;
+			font-family: inherit;
+			font-style: inherit;
+			font-variant: inherit;
+			line-height: 1;
+			text-transform: none;
+			cursor: pointer;
+			-webkit-appearance: button;
+			&:hover,
+			&:active {
+				filter: brightness(120%);
+			}
+		}
+
+	}
 }
 
 .sanctum-container p {
@@ -16,82 +160,19 @@
 	text-align: center;
 }
 
-.sanctum-button-group {
-	display: flex;
-	justify-content: center;
-	gap: 20px;
-}
 
-.sanctum-login-button {
-	width: 120px;
-	height: 51px;
-	font-weight: 600;
-	background-color: #32a852;
-	border: none;
-	border-radius: 5px;
-	color: #ffffff;
-	font-size: 16px;
-	transition-duration: 400ms;
-	padding: 0;
-	border: 0;
-	font-family: inherit;
-	font-style: inherit;
-	font-variant: inherit;
-	line-height: 1;
-	text-transform: none;
-	cursor: pointer;
-	-webkit-appearance: button;
-}
 
-.sanctum-logo {
-	margin-block: 15px;
-}
 
-.sanctum-logo>p {
-	font-size: 11px;
-	color: #ffffff;
-	text-align: center;
-}
 
-.sanctum-logo>div {
-	display: flex;
-	justify-content: center;
-	margin-block-start: 3px;
-	padding: 0 5px;
-	width: 116px;
-	margin-left: calc(50% - 58px);
-}
 
-.sanctum-logo>div>image {
-	width: 104px;
-	height: 12px;
-	max-width: 100%;
-}
 
-.sanctum-loading {
-	height: 80px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin: auto;
-	@keyframes rotateAnimation {
-		0% {
-			transform: rotate(0deg);
-		}
-		50% {
-			transform: rotate(360deg);
-		}
-		100% {
-			transform: rotate(380deg);
-		}
-	}
-	svg {
-		width: 30px;
-		height: 30px;
-		transition-duration: 1000ms;
-		animation: rotateAnimation 1100ms linear infinite;
-	}
-}
+
+
+
+
+
+
+
 
 
 
@@ -100,22 +181,9 @@
 	height: 24px;
 }
 
-.sanctum-timer-description {
-	margin-block-start: -10px;
-	margin-block-end: 5px;
-	font-size: 11px;
-	color: #ffffff;
-}
 
-.sanctum-timer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 2px;
-	font-size: 16px;
-	color: #8c8c8c;
-	margin: auto;
-}
+
+
 
 .timer {
 	display: flex;
@@ -142,58 +210,7 @@
 	color: #ffffff;
 }
 
-.confirmed {
-	& svg {
-		width: 24px;
-		height: 24px;
-	}
 
-}
 
-.btn-group {
-	display: flex;
-	justify-content: center;
-	gap: 20px;
 
-	button {
-		width: 120px;
-		height: 51px;
-		font-weight: 600;
-		background-color: #32a852;
-		border: none;
-		border-radius: 5px;
-		color: #ffffff;
-		font-size: 16px;
 
-		transition-duration: 400ms;
-
-		&:active,
-		&:hover {
-			background-color: hsl(139, 34%, 65%);
-		}
-	}
-}
-
-.sanctum-logo {
-	margin-block: 15px;
-
-	p {
-		font-size: 11px;
-		color: #ffffff;
-		text-align: center;
-	}
-
-	div {
-		display: flex;
-		justify-content: center;
-		margin-block-start: 3px;
-		padding: 0 5px;
-		width: 116px;
-		margin-left: calc(50% - 58px);
-
-		&>img {
-			width: 104px;
-			height: 12px;
-		}
-	}
-}

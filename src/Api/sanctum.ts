@@ -7,3 +7,7 @@ export const getSanctumAccessToken = () => {
 export const setSanctumAccessToken = (accessToken: string) => {
     return localStorage.setItem(SANCTUM_ACCESS_TOKEN_STORAGE_KEY, accessToken)
 }
+
+export const removeSanctumAccessToken = () => {
+    return localStorage.removeItem(SANCTUM_ACCESS_TOKEN_STORAGE_KEY);
+}
