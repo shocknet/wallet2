@@ -54,17 +54,27 @@ export const Auth = () => {
   const { isShown, toggle } = UseModal();
 
   const [isOnStorageService, setIsOnStorageService] = useState(backupStates.subbedToBackUp);
-  const [hasNostrExtension, setHasNostrExtension] = useState(false);
 
+
+  // detect nostr browser extension
+  const [hasNostrExtension, setHasNostrExtension] = useState(false);
   useEffect(() => {
-    const callback = () => {
+    let attempts = 0;
+    const maxAttempts = 50;
+    const checkNostrExtension = setInterval(() => {
       const w = window as any;
-      setHasNostrExtension(w && w.nostr);
-    }
-    document.addEventListener("readystatechange", callback);
-    return () => {
-      document.removeEventListener("readystatechange", callback);
-    }
+      if (w && w.nostr) {
+        setHasNostrExtension(true);
+        clearInterval(checkNostrExtension);
+      } else {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          clearInterval(checkNostrExtension);
+        }
+      }
+    }, 100)
+
+    return () => clearInterval(checkNostrExtension);
   }, [])
 
 
@@ -315,15 +325,15 @@ export const Auth = () => {
             "Auth_shadable-container_shaded": !isOnStorageService
             })}
           >
-            <span className='Auth_shadable-container_subtitle'>Log-In with Nostr</span>
+            {!hasNostrExtension && <span className='Auth_shadable-container_subtitle'>Log-In with Nostr</span>}
             {
               hasNostrExtension
               ?
                 backupStates.subbedToBackUp
                 ?
-                <div className='Auth_shadable-container_nostr-extension-text'>✓ Subbed to backup with nostr extension</div>
+                <div className='Auth_shadable-container_nostr-extension-text'>✓ Using Nostr Browser extension</div>
                 :
-                <button onClick={() => handleBackupConfirm(false)}>Use nostr extension</button>
+                <button className='Auth_shadable-container_nostr-extension-text' onClick={() => handleBackupConfirm(false)}>Use Nostr extension</button>
               :
               <SanctumBox
                 loggedIn={backupStates.subbedToBackUp}
