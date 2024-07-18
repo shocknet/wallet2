@@ -10,13 +10,24 @@ interface Props {
 }
 
 const Checkbox = ({ state, setState, id }: Props) => {
+  const handleCheckboxClick = () => {
+    const event = {
+      target: {
+        checked: !state
+      }
+    } as ChangeEvent<HTMLInputElement>;
+    setState(event)
+  }
   return (
     <div
     >
-      <div className={classNames({
-        [styles["checkbox"]]: true,
-        [styles["checked"]]: state
-      })} >
+      <div
+        className={classNames({
+          [styles["checkbox"]]: true,
+          [styles["checked"]]: state
+        })}
+        onClick={handleCheckboxClick}
+      >
         { state ? Icons.check() : null }
       </div>
       <input

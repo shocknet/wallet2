@@ -98,6 +98,7 @@ export const Receive = () => {
     } else {
       const decoded = decodeNprofile(topPaySource.pasteField);
       const url = decoded.bridge![0];
+      console.log({decoded})
 
       const hostName = new URL(url);
       const parts = hostName.hostname.split(".");

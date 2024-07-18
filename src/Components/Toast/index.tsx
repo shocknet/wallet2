@@ -19,3 +19,7 @@ const Toast = ({ title, message } : Props) => {
 }
 
 export default Toast;
+
+export const tsFilesWrapper = ({ title, message }: Props) => {
+	return <Toast title={title} message={message} />
+}
