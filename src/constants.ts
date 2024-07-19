@@ -91,8 +91,16 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 
 	if (LN_INVOICE_REGEX.test(input)) {
 		const invoice = removePrefixIfExists(input, "lightning:");
-
-		const decodedInvoice = decode(invoice);
+		let network = undefined
+		if (invoice.startsWith("lntbs")) {
+			network = {
+				bech32: 'tbs',
+				pubKeyHash: 0x6f,
+				scriptHash: 0xc4,
+				validWitnessVersions: [0]
+			}
+		}
+		const decodedInvoice = decode(invoice, network);
 		const amountSection = decodedInvoice.sections.find(section => section.name === "amount");
 		const description = decodedInvoice.sections.find(section => section.name === "description")?.value;
 		let amount = 0;
@@ -128,16 +136,16 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			domainName,
 			hostName: hostName.hostname,
 		};
-	/* } else if (BITCOIN_ADDRESS_REGEX.test(input)) {
-		const btcAddress = removePrefixIfExists(input, "bitcoin:");
-		const isValidAddress = validate(btcAddress);
-		if (!isValidAddress) {
-			throw new Error("Invalid bitcoin address provided");
-		}
-		return {
-			type: InputClassification.BITCOIN_ADDRESS,
-			data: btcAddress
-		}; */
+		/* } else if (BITCOIN_ADDRESS_REGEX.test(input)) {
+			const btcAddress = removePrefixIfExists(input, "bitcoin:");
+			const isValidAddress = validate(btcAddress);
+			if (!isValidAddress) {
+				throw new Error("Invalid bitcoin address provided");
+			}
+			return {
+				type: InputClassification.BITCOIN_ADDRESS,
+				data: btcAddress
+			}; */
 	} else if (LN_ADDRESS_REGEX.test(input)) {
 		const lnParts = input.split("@");
 
