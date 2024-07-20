@@ -38,9 +38,9 @@ export const Background = () => {
 	const nodedUp = useSelector(state => state.nostrPrivateKey);
 	const dispatch = useDispatch();
 	const [parsedClipboard, setParsedClipbaord] = useState<Destination>({
-    type: InputClassification.UNKNOWN,
-    data: "",
-  });
+		type: InputClassification.UNKNOWN,
+		data: "",
+	});
 	const [refresh, setRefresh] = useState<number | null>(null);
 	const { isShown, toggle } = UseModal();
 	const isShownRef = useRef(false);
@@ -164,11 +164,11 @@ export const Background = () => {
 			if (operations) collapsed = operations.concat(collapsed)
 		})
 
-		const record:Record<string,boolean>={}
-		collapsed.forEach(c => record[c.operationId]=true)
+		const record: Record<string, boolean> = {}
+		collapsed.forEach(c => record[c.operationId] = true)
 
 		const payments = [...totalData.filter(e => e.inbound && !record[e.operationId])];
-		
+
 		if (payments.length > 0 && localStorage.getItem("userStatus") === "offline") {
 			dispatch(addNotification({
 				header: 'Payments',
@@ -188,7 +188,7 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			const client = await getNostrClient({ pubkey, relays }, s.keys!)
+			const client = await getNostrClient({ pubkey, relays }, s.keys!) // TODO: write migration to remove type override
 			await getSourceInfo(s, client)
 		})
 	}, [latestOp, operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
@@ -200,12 +200,12 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			const client = await getNostrClient({ pubkey, relays }, s.keys!)
+			const client = await getNostrClient({ pubkey, relays }, s.keys)
 			await fetchSourceHistory(s, client, s.id)
 		})
 	}, [operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
-	
+
 
 
 
@@ -278,23 +278,23 @@ export const Background = () => {
 		try {
 			parsed = await parseBitcoinInput(text);
 		} catch (err: any) {
-		console.log(err)
-				return;
+			console.log(err)
+			return;
 		}
 
-			if (
-		parsed.type === InputClassification.BITCOIN_ADDRESS
-		||
-		parsed.type === InputClassification.LN_INVOICE
-		||
-		parsed.type === InputClassification.LN_ADDRESS
-		||
-		(parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
+		if (
+			parsed.type === InputClassification.BITCOIN_ADDRESS
+			||
+			parsed.type === InputClassification.LN_INVOICE
+			||
+			parsed.type === InputClassification.LN_ADDRESS
+			||
+			(parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
 		) {
 			setParsedClipbaord(parsed);
 			toggle()
 		}
-		
+
 	}, [savedAssets, nodedUp]);
 
 	useEffect(() => {
@@ -326,7 +326,7 @@ export const Background = () => {
 		<div className='Home_modal_clipboard'>{truncateString(parsedClipboard.data, 30)}</div>
 		<div className="Home_add_btn">
 			<div className='Home_add_btn_container'>
-				<button onClick={() => { toggle(); dispatch(addAsset({ asset: parsedClipboard.data }));}}>
+				<button onClick={() => { toggle(); dispatch(addAsset({ asset: parsedClipboard.data })); }}>
 					{icons.Close()}NO
 				</button>
 			</div>
@@ -352,7 +352,7 @@ export const Background = () => {
 		<LnAddressCheck />
 		<NodeUpCheck />
 		<RemoteBackup />
-		<Modal isShown={isShown} hide={() => { toggle()}} modalContent={clipBoardContent} headerText={''} />
+		<Modal isShown={isShown} hide={() => { toggle() }} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }
 

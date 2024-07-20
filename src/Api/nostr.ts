@@ -117,6 +117,8 @@ export class NostrClient {
         this.settings = settings
         this.client = NewNostrClient({
             retrieveNostrUserAuth: async () => { return this.settings.publicKey },
+            retrieveNostrAdminAuth: async () => { return this.settings.publicKey },
+            retrieveNostrMetricsAuth: async () => { return this.settings.publicKey },
             pubDestination: this.pubDestination,
         }, this.clientSend, this.clientSub)
     }

@@ -135,6 +135,7 @@ export interface SpendFrom {
   disconnected?: boolean;
   pubSource?: boolean,
   keys: NostrKeyPair
+  adminToken?: string
 }
 
 export interface PayTo {

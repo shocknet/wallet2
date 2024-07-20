@@ -30,8 +30,8 @@ import { getNostrClient } from '../../Api';
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
   const t = newArr[oldIndex]
-  newArr[oldIndex]= newArr[newIndex]
-  newArr[newIndex]= t
+  newArr[oldIndex] = newArr[newIndex]
+  newArr[newIndex] = t
   return newArr;
 }
 
@@ -71,7 +71,7 @@ export const Sources = () => {
       openAcceptInviteModal();
     }
   }
-  
+
   useEffect(() => {
     if (location.state) {
       const receivedDestination = location.state as Destination;
@@ -110,7 +110,7 @@ export const Sources = () => {
   const [editPSourceId, setEditPSourceId] = useState("");
   const [editSSourceId, setEditSSourceId] = useState("");
   const [processingSource, setProcessingSource] = useState(false);
- 
+
   const { isShown, toggle } = UseModal();
 
   const openAddSourceModal = () => {
@@ -184,26 +184,41 @@ export const Sources = () => {
     }
   }
 
-  const addSource = useCallback( async() => {
+  const addSource = useCallback(async () => {
+    console.log("adding")
     toggle();
-    
+
     if (processingSource) {
       return;
     }
-    
+
     if (!sourcePasteField || !optional) {
       toast.error(<Toast title="Error" message="Please write data correctly." />)
       return;
     }
-
+    const splitted = sourcePasteField.split(":")
+    const inputSource = splitted[0]
+    const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
+    console.log({ splitted })
     let data: CustomProfilePointer | null = null;
     // check that no source exists with the same lpk
-    if (sourcePasteField.startsWith("nprofile")) {
+    if (inputSource.startsWith("nprofile")) {
       // nprofile
-      
-      try {
-        (data  = decodeNprofile(sourcePasteField));
 
+      try {
+        (data = decodeNprofile(inputSource));
+        if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
+          const spendSource = spendSources.sources[data.pubkey];
+          if (adminEnrollToken && spendSource && spendSource.adminToken !== adminEnrollToken) {
+            setProcessingSource(true)
+            const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
+            await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+            dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
+            setProcessingSource(false);
+          }
+          toast.error(<Toast title="Error" message="Source already exists." />)
+          return;
+        }
       } catch (err: any) {
         toast.error(<Toast title="Error" message={err.message} />)
         setProcessingSource(false);
@@ -211,32 +226,32 @@ export const Sources = () => {
         return;
       }
     }
-    // there can be no more than once specific lnurl source
-    if (spendSources.sources[sourcePasteField] || paySources.sources[sourcePasteField]) {
+    // none pub source are checked directly with the inputSource
+    if (spendSources.sources[inputSource] || paySources.sources[inputSource]) {
       toast.error(<Toast title="Error" message="Source already exists." />)
       return;
     }
-    
+
     setProcessingSource(true);
     dispatch(toggleLoading({ loadingMessage: "Setting up source..." }))
     let parsed: Destination | null = null;
-    if (sourcePasteField.startsWith("nprofile")) {
+    if (inputSource.startsWith("nprofile")) {
       // nprofile
 
 
       const newSourceKeyPair = generateNewKeyPair();
       const tempPair = generateNewKeyPair();
-      
+
       let vanityName: string | undefined = undefined;
- 
+
       // integration to an existing pub account
       if (integrationData.token) {
-        const res = await (await getNostrClient({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS }, tempPair, true))
+        const res = await (await getNostrClient(inputSource, tempPair, true))
           .LinkNPubThroughToken({
             token: integrationData.token,
             nostr_pub: newSourceKeyPair.publicKey
           });
-        
+
         if (res.status !== "OK") {
           toast.error(<Toast title="Error" message={res.reason} />)
           setProcessingSource(false);
@@ -246,18 +261,22 @@ export const Sources = () => {
         vanityName = integrationData.lnAddress;
       }
 
+      if (adminEnrollToken) {
+        const client = await getNostrClient(inputSource, newSourceKeyPair);
+        await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+      }
 
       const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
       const id = `${data!.pubkey}-${newSourceKeyPair.publicKey}`;
-      
+
       const addedPaySource = {
         id: id,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
-        pasteField: sourcePasteField,
+        pasteField: inputSource,
         pubSource: true,
         keys: newSourceKeyPair,
         vanityName
@@ -269,16 +288,17 @@ export const Sources = () => {
         option: optional,
         icon: sndleveldomain,
         balance: "0",
-        pasteField: sourcePasteField,
+        pasteField: inputSource,
         pubSource: true,
-        keys: newSourceKeyPair
+        keys: newSourceKeyPair,
+        adminToken: adminEnrollToken
       } as SpendFrom;
       dispatch(addSpendSources(addedSpendSource));
     } else {
       // not nprofile, now checking for other cases
-      
+
       try {
-        parsed = await parseBitcoinInput(sourcePasteField);
+        parsed = await parseBitcoinInput(inputSource);
       } catch (err: any) {
         if (isAxiosError(err) && err.response) {
           toast.error(<Toast title="Error" message={err.response.data.reason} />)
@@ -332,7 +352,7 @@ export const Sources = () => {
     toast.success(<Toast title="Sources" message={`${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`} />)
     resetValue();
     dispatch(toggleLoading({ loadingMessage: "" }))
-    
+
     setProcessingSource(false);
   }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, integrationData]);
 
@@ -349,7 +369,7 @@ export const Sources = () => {
     dispatch(editPaySources(paySourceToEdit))
     resetValue();
     toggle();
-    
+
   };
 
   const editSpendSource = () => {
@@ -437,7 +457,7 @@ export const Sources = () => {
         }
         await handlePayInvoice(invoice, tempParsedWithdraw!.data);
 
-        
+
         toast.success(<Toast title="Withdraw" message={`Withdraw request successfuly sent to ${tempParsedWithdraw.domainName}.`} />)
         setTimeout(() => {
           router.push("/home");
@@ -557,7 +577,7 @@ export const Sources = () => {
         onClick={() => {
           setModalContent("sweepLnurlModal");
         }
-      }>Sweep</button>
+        }>Sweep</button>
     </div>
 
   </React.Fragment>;
@@ -578,15 +598,15 @@ export const Sources = () => {
     <div className='Sources_modal_discription'>Lightning.video</div>
     <div className='Sources_modal_link'>{truncateString(sourcePasteField, 30)}</div>
     <div className="Sources_modal_add_btn">
-      <button 
-        className='margin-0' 
+      <button
+        className='margin-0'
         onClick={toggle}>{icons.declineInvite()}DECLINE</button>
       <button
         className='margin-0'
         onClick={addSource}>{icons.acceptInvite()}ACCEPT</button>
     </div>
   </React.Fragment>
-  
+
 
   useEffect(() => {
     const list = document.getElementById('spend-list');
