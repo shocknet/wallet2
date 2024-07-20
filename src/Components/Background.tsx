@@ -73,16 +73,16 @@ export const Background = () => {
 		nostrSpends.forEach(source => {
 			const { pubkey, relays } = parseNprofile(source.pasteField)
 
-			getNostrClient({ pubkey, relays }, source.keys!).then(c => {
+			getNostrClient({ pubkey, relays }, source.keys).then(c => {
 				c.GetLiveUserOperations(newOp => {
 					if (newOp.status === "OK") {
 						// receiving external on-chain txs causes two getLiveUserOperations procs
 						// the history state takes care of this repetition,
 						// but we have to deal with the toast not appearing twice here
-						if (!operationGroups[pubkey].find(op => op.operationId === newOp.operation.operationId)) {
+						if (!operationGroups[source.id].find(op => op.operationId === newOp.operation.operationId)) {
 							toast.info(<Toast title="Payments" message="You received payment." />)
 						}
-						dispatch(setLatestOperation({ pub: pubkey, operation: newOp.operation }))
+						dispatch(setLatestOperation({ pub: source.id, operation: newOp.operation }))
 					} else {
 						console.log(newOp.reason)
 					}
@@ -131,23 +131,22 @@ export const Background = () => {
 			maxWithdrawable: `${res.max_withdrawable}`
 		}))
 	}
-	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, pubkey: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
+	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, sourceId: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor, !!newData)
 		const res = await client.GetUserOperations(req)
 		if (res.status === 'ERROR') {
 			console.log(res.reason)
 			return
 		}
-		console.log((res), "ops")
 		const totalHistory = parseOperationsResponse(res);
 		const totalData = (newData || []).concat(totalHistory.operations)
 		if (totalHistory.needMoreData) {
 			console.log("need more operations from server, fetching...")
-			fetchSourceHistory(source, client, pubkey, totalHistory.cursor, totalHistory.operations)
+			fetchSourceHistory(source, client, sourceId, totalHistory.cursor, totalHistory.operations)
 			return
 		}
 
-		dispatch(removeOptimisticOperation(pubkey));
+		dispatch(removeOptimisticOperation(sourceId));
 
 		const accumulatedHistory = {
 			operations: totalData,
@@ -156,7 +155,7 @@ export const Background = () => {
 
 		const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
 		if (populatedEntries.length === 0) {
-			dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
+			dispatch(setSourceHistory({ pub: sourceId, ...accumulatedHistory }));
 			return;
 		}
 
@@ -180,7 +179,7 @@ export const Background = () => {
 			}))
 			localStorage.setItem("userStatus", "online");
 		}
-		dispatch(setSourceHistory({ pub: pubkey, ...accumulatedHistory }));
+		dispatch(setSourceHistory({ pub: sourceId, ...accumulatedHistory }));
 	}, [cursor, dispatch, operationGroups]);
 
 	useEffect(() => {
@@ -201,8 +200,8 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			const client = await getNostrClient({ pubkey, relays }, s.keys!) // TODO: write migration to remove type override
-			await fetchSourceHistory(s, client, pubkey)
+			const client = await getNostrClient({ pubkey, relays }, s.keys)
+			await fetchSourceHistory(s, client, s.id)
 		})
 	}, [operationsUpdateHook, nostrSpends.length, nodedUp, refresh])
 
@@ -266,7 +265,7 @@ export const Background = () => {
 		} catch (error) {
 			return console.error("Cannot read clipboard");
 		}
-		console.log(savedAssets, 'test')
+
 		if (savedAssets?.includes(text)) {
 			return;
 		}
@@ -358,7 +357,6 @@ export const Background = () => {
 }
 
 const populateCursorRequest = (p: Partial<Types.GetUserOperationsRequest>, paginated: boolean): Types.GetUserOperationsRequest => {
-	console.log(p)
 	const thecursor = {
 		latestIncomingInvoice: p.latestIncomingInvoice ? (paginated ? p.latestIncomingInvoice + 1 : p.latestIncomingInvoice) : 0,
 		latestOutgoingInvoice: p.latestOutgoingInvoice ? (paginated ? p.latestOutgoingInvoice + 1 : p.latestOutgoingInvoice) : 0,
@@ -391,7 +389,6 @@ const parseOperationsResponse = (r: Types.GetUserOperationsResponse): { cursor: 
 		...r.latestOutgoingUserToUserPayemnts.operations,
 	]
 
-	console.log({ operations })
 	const needMoreData = isAnyArrayLong([
 		r.latestIncomingInvoiceOperations.operations,
 		r.latestOutgoingInvoiceOperations.operations,

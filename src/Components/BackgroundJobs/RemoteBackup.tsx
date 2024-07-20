@@ -1,17 +1,21 @@
 import { useEffect } from "react"
-import { findReducerMerger, useSelector } from "../../State/store"
+import { findReducerMerger, syncRedux, useSelector } from "../../State/store"
 import { fetchRemoteBackup, saveRemoteBackup } from "../../helpers/remoteBackups"
 import { ignoredStorageKeys } from "../../constants"
+import logger from "../../Api/helpers/logger"
+import { useStore } from "react-redux"
 export const RemoteBackup = () => {
+    const store = useStore();
     const backupStates = useSelector(state => state.backupStateSlice);
 
     useEffect(() => {
         if (!backupStates.subbedToBackUp) {
-            console.log("instance not initialized yet to sync backups")
+            logger.info("instance not initialized yet to sync backups");
             return
         }
-        syncBackups().then(() => console.log("backups synced succesfully")).catch((e) => console.log("failed to sync backups", e))
-    }, [backupStates])
+        syncBackups().then(() => logger.info("backups synced succesfully")).catch((e) => logger.error("failed to sync backups", e))
+    }, [backupStates.subbedToBackUp]);
+
     const syncBackups = async () => {
         const backup = await fetchRemoteBackup()
         if (backup.result !== 'success') {
@@ -21,16 +25,28 @@ export const RemoteBackup = () => {
         if (backup.decrypted) {
             data = JSON.parse(backup.decrypted);
             for (const key in data) {
+
                 const merger = findReducerMerger(key)
                 if (!merger) {
                     continue
                 }
-                const dataItem = data[key]
-                const storageItem = localStorage.getItem(key)
-                if (!storageItem || !dataItem) {
-                    continue
+                const serialRemote = data[key] as string
+                const serialLocal = localStorage.getItem(key)
+                
+                let newItem = "";
+                // present on backup but not local, for example addressBook
+                if (!serialLocal) {
+                    newItem = serialRemote;
+                } else {
+                    newItem = merger(serialLocal, serialRemote)
                 }
-                data[key] = merger(dataItem, storageItem)
+                console.log(key, JSON.parse(serialLocal ?? "null"), JSON.parse(serialRemote), JSON.parse(newItem));
+
+                // update object that will be sent to backup/nostr
+                data[key] = newItem;
+                // update local with the merged object too
+                localStorage.setItem(key, newItem);
+                store.dispatch(syncRedux());
             }
 
         } else {

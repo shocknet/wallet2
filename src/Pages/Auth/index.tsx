@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState, useCallback } from 'react';
+import React, { ChangeEvent, useState, useCallback, useEffect } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 import { UseModal } from '../../Hooks/UseModal';
@@ -21,6 +21,8 @@ import { Interval, getPeriodSeconds } from '../Automation';
 import { v4 as uuid } from "uuid";
 import { Subscription, updateActiveSub } from '../../State/Slices/subscriptionsSlice';
 import { updateBackupData } from '../../State/Slices/backupState';
+import Checkbox from '../../Components/Checkbox';
+import classNames from 'classnames';
 
 
 const FILENAME = "shockw.dat";
@@ -45,14 +47,46 @@ export const Auth = () => {
   const [passphraseR, setPassphraseR] = useState("");
   const [dataFromFile, setDataFromFile] = useState("");
   const backupStates = useSelector(state => state.backupStateSlice);
-  const spendSources = useSelector(state => state.spendSource);
-  const paySources = useSelector(state => state.paySource);
-  const [promptSanctum, setPromptSanctum] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const arrowIconRef = React.useRef<HTMLInputElement>(null);
   const backupFileRef = React.useRef<HTMLInputElement>(null);
 
   const { isShown, toggle } = UseModal();
+
+  const [isOnStorageService, setIsOnStorageService] = useState(backupStates.subbedToBackUp);
+
+
+  // detect nostr browser extension
+  const [hasNostrExtension, setHasNostrExtension] = useState(false);
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 50;
+    const checkNostrExtension = setInterval(() => {
+      const w = window as any;
+      if (w && w.nostr) {
+        setHasNostrExtension(true);
+        clearInterval(checkNostrExtension);
+      } else {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          clearInterval(checkNostrExtension);
+        }
+      }
+    }, 100)
+
+    return () => clearInterval(checkNostrExtension);
+  }, [])
+
+
+  useEffect(() => {
+    if (!isOnStorageService) {
+      dispatch(updateBackupData({ subbedToBackUp: false, usingExtension: false, usingSanctum: false }));
+    }
+  }, [isOnStorageService, dispatch])
+
+
+
+
 
 
 
@@ -232,30 +266,7 @@ export const Auth = () => {
 
   </React.Fragment>;
 
-  const loadRemoteBackup = useCallback(async () => {
-    const backup = await fetchRemoteBackup()
-    if (backup.result === 'accessTokenMissing') {
-      console.log("access token missing")
-      return
-    }
-    if (backup.decrypted === '') {
-      toast.error(<Toast title="Backup" message="No backups found from the provided pair." />)
-      return
-    }
-    const data = JSON.parse(backup.decrypted);
-    const keys = Object.keys(data)
-    for (let i = 0; i < keys.length; i++) {
-      const element = keys[i];
-      if (element && !ignoredStorageKeys.includes(element)) {
-        localStorage.setItem(element, data[element])
-      }
-    }
-    store.dispatch(syncRedux());
-    toast.success(<Toast title="Backup" message="Backup imported successfully." />)
-    setTimeout(() => {
-      router.push("/home")
-    }, 1000);
-  }, [store, router])
+
 
   const subscribeToBackupService = useCallback(async () => {
     return console.log("Recurring payments not implemented")
@@ -281,27 +292,12 @@ export const Auth = () => {
     dispatch(updateActiveSub({ sub: subObject }));
   }, [dispatch]);
 
-  const handleBackupConfirm = useCallback(async (gotSanctum: boolean) => {
-    const ext = getNostrExtention();
-    if (ext || gotSanctum) {
-      const backup = await fetchRemoteBackup()
-      if (backup.result === "success" && backup.decrypted === "") { // no backups yet, i.e. sole device
-        await subscribeToBackupService() // sub to payments for back up service
-      } else if (backup.result === "success" && backup.decrypted !== "") {
-        if (spendSources.order.length > 0 || paySources.order.length > 0) {
-          toast.error("User already has sources");
-          return
-        }
-        await loadRemoteBackup()
-      }
-      dispatch(updateBackupData({ subbedToBackUp: true, usingExtension: !gotSanctum, usingSanctum: gotSanctum }))
-      return
-    }
+  const handleBackupConfirm = useCallback(async (sanctum: boolean) => {
+    await subscribeToBackupService();
+    dispatch(updateBackupData({ subbedToBackUp: true, usingExtension: !sanctum, usingSanctum: sanctum }))
 
-    // no nostr extension, so use sanctum
-    setPromptSanctum(true);
 
-  }, [dispatch, loadRemoteBackup, subscribeToBackupService, spendSources, paySources])
+  }, [dispatch,  subscribeToBackupService])
 
   return (
     <div className='Auth_container'>
@@ -312,49 +308,42 @@ export const Auth = () => {
             <p className='Auth_description_header'>
               Recommended:
             </p>
-            {
-              backupStates.subbedToBackUp
-              ?
-                backupStates.usingSanctum
-                ?
-                <SanctumBox
-                  loggedIn={true}
-                  successCallback={(creds) => {
-                    setSanctumAccessToken(creds.accessToken);
-                    loadRemoteBackup()
-                  }}
-                  errorCallback={(reason) => toast.error(<Toast title="Login Error" message={reason}  />)}
-                  sanctumUrl={SANCTUM_URL}
-                />
-                :
-                <div>connected with nostr extension</div>
+            <p className='Auth_description_para'>
+              Use the built-in storage service to sync your connections across devices, or recover your connections should your data become lost. A donation of 615 sats per month supports open-source development.
+            </p>
+            <div className='Auth_description_checkbox-container'>
+              <div className="Auth_description_checkbox-mini-container">
+                <label htmlFor='checkbox-storage-service'>Use Storage Service</label>
+                <Checkbox state={isOnStorageService} setState={(e) => setIsOnStorageService(e.target.checked)} id="checkbox-storage-service" />
+              </div>
+            </div>
 
-              :
-                (promptSanctum)
+            
+          </div>
+          <div className={classNames({
+            "Auth_shadable-container": true,
+            "Auth_shadable-container_shaded": !isOnStorageService
+            })}
+          >
+            {!hasNostrExtension && <span className='Auth_shadable-container_subtitle'>Log-In with Nostr</span>}
+            {
+              hasNostrExtension
+              ?
+                backupStates.subbedToBackUp
                 ?
-                <SanctumBox
-                  loggedIn={backupStates.usingSanctum}
-                  successCallback={(creds) => {
-                    setSanctumAccessToken(creds.accessToken);
-                    handleBackupConfirm(true)
-                  }}
-                  errorCallback={(reason) => toast.error(<Toast title="Login Error" message={reason}  />)}
-                  sanctumUrl={SANCTUM_URL}
-                />
+                <div className='Auth_shadable-container_nostr-extension-text'>✓ Using Nostr Browser extension</div>
                 :
-                <>
-                  <p className='Auth_description_para'>
-                    Use the built-in <u>storage service</u> to sync your connections in the event your device data gets lost. A fee of 1000 sats month supports open-source development.
-                  </p>
-                  <div className='Auth_service'>
-                    <div className='Auth_service_option_button'>
-                      <button id="set-amount-button" onClick={() => handleBackupConfirm(false)}>Confirm</button>
-                    </div>
-                    {/* <div className='Auth_service_option_button'>
-                      <button id="set-amount-button" onClick={toggle}>Hide</button>
-                    </div> */}
-                  </div>
-                </>
+                <button className='Auth_shadable-container_nostr-extension-text' onClick={() => handleBackupConfirm(false)}>Use Nostr extension</button>
+              :
+              <SanctumBox
+                loggedIn={backupStates.subbedToBackUp}
+                successCallback={(creds) => {
+                  setSanctumAccessToken(creds.accessToken);
+                  handleBackupConfirm(true);
+                }}
+                errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
+                sanctumUrl={SANCTUM_URL}
+              />
             }
           </div>
         </div>

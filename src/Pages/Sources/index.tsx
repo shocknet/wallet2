@@ -24,7 +24,6 @@ import { useLocation } from 'react-router';
 import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { generatePrivateKey, getPublicKey } from 'nostr-tools';
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
 
@@ -270,9 +269,10 @@ export const Sources = () => {
       const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
+      const id = `${data!.pubkey}-${newSourceKeyPair.publicKey}`;
 
       const addedPaySource = {
-        id: data!.pubkey,
+        id: id,
         option: optional,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
@@ -283,7 +283,7 @@ export const Sources = () => {
       } as PayTo;
       dispatch(addPaySources(addedPaySource))
       const addedSpendSource = {
-        id: data!.pubkey,
+        id: id,
         label: resultLnurl.hostname,
         option: optional,
         icon: sndleveldomain,

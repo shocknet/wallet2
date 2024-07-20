@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { encodeNprofile } from "../../custom-nip19";
-import { generatePrivateKey, getPublicKey } from "nostr-tools";
+import { generateNewKeyPair } from "../../Api/helpers";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -43,11 +43,12 @@ export const NodeUp = () => {
 
 
   const addBootStrapSources = async () => {
-    const privateKey = generatePrivateKey()
-    const publicKey = getPublicKey(privateKey);
     if (Object.values(paySources.sources || {}).length !== 0 && Object.values(spendSources.sources || {}).length !== 0) {
       return;
     } else {
+      const keyPair = generateNewKeyPair();
+      const id = `${NOSTR_PUB_DESTINATION}-${keyPair.publicKey}`;
+
       const bootstrapBalance = "0";
       const nprofile = encodeNprofile({
         pubkey: NOSTR_PUB_DESTINATION,
@@ -57,29 +58,23 @@ export const NodeUp = () => {
 
 
       dispatch(addPaySources({
-        id: NOSTR_PUB_DESTINATION,
+        id: id,
         label: "Bootstrap Node",
         pasteField: nprofile,
         option: options.little,
         icon: "0",
         pubSource: true,
-        keys: {
-          privateKey,
-          publicKey
-        }
+        keys: keyPair
       }));
       dispatch(addSpendSources({
-        id: NOSTR_PUB_DESTINATION,
+        id: id,
         label: "Bootstrap Node",
         pasteField: nprofile,
         option: options.little,
         icon: "0",
         balance: bootstrapBalance,
         pubSource: true,
-        keys: {
-          privateKey,
-          publicKey
-        }
+        keys: keyPair
       }));
     }
   }
