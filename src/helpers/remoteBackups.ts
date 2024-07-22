@@ -1,5 +1,5 @@
 import logger from "../Api/helpers/logger"
-import { getNip78Event, newNip78Event, publishNostrEvent } from "../Api/nostrHandler"
+import { getNip78Event, newNip78Event, publishNostrEvent, pubServiceTag } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
 import { getSanctumNostrExtention } from "./nip07Extention"
 
@@ -99,7 +99,7 @@ export const unlockSubscriptionPayment = async (id: string, success: boolean) =>
     await saveRemoteBackup(JSON.stringify(subs), subsPaymentsTag)
 }
 
-const pubServiceTag = "Lightning.Pub"
+
 export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number) => {
     const event = await getNip78Event(pubkey, relays, pubServiceTag)
     if (!event) {

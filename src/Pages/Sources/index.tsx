@@ -206,9 +206,11 @@ export const Sources = () => {
       // nprofile
 
       try {
-        (data = decodeNprofile(inputSource));
-        if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
-          const spendSource = spendSources.sources[data.pubkey];
+        data = decodeNprofile(inputSource);
+        const pub = data.pubkey
+        const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
+        if (existingSpendSourceId) {
+          const spendSource = spendSources.sources[existingSpendSourceId];
           if (adminEnrollToken && spendSource && spendSource.adminToken !== adminEnrollToken) {
             setProcessingSource(true)
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
