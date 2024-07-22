@@ -24,6 +24,7 @@ import { Sources } from './Pages/Sources';
 import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
+import { Invitations } from './Pages/Invitations';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
@@ -120,6 +121,11 @@ const App: React.FC = () => {
               <Route exact path="/contacts">
                 <Layout>
                   <Contacts />
+                </Layout>
+              </Route>
+              <Route exact path="/invitations">
+                <Layout>
+                  <Invitations />
                 </Layout>
               </Route>
               <Route exact path="/auth">

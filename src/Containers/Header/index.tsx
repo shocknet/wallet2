@@ -172,6 +172,15 @@ export const Header = () => {
           </div>
           <div className="Header_modal_content_item_text">Manage Sources</div>
         </div>
+        <div className="Header_modal_content_item" onClick={() => {
+          router.push("/invitations");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            {Icons.addUser()}
+          </div>
+          <div className="Header_modal_content_item_text">Node Invitaions</div>
+        </div>
         {
           !backUpStates.subbedToBackUp
           &&

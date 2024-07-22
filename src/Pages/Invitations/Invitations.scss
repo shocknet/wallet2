@@ -1,0 +1,139 @@
+.Invitations {
+  padding-bottom: 30px;
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin-inline: auto;
+  font-family: Montserrat;
+
+  &_title {
+    font-size: 100%;
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  &_reusableLink {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+
+    & > .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-block-end: 10px;
+    }
+
+    & > .content {
+      margin-top: 12px;
+      & > .link {
+        font-size: 16px;
+        color: #adadad;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      & > .subNode {
+        font-size: 12px;
+        color: #adadad;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    & > .clipboard-copy {
+      width: fit-content;
+      margin-top: 10px;
+      align-self: end;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-family: Montserrat;
+      padding: 7px 16px;
+      $border: 1px;
+      color: #fff;
+      background: #16191c;
+      background-clip: padding-box;
+      border: solid $border transparent;
+      border-radius: 5px;
+
+      &:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: -1;
+        margin: -$border;
+        border-radius: 3px;
+        background: linear-gradient(150deg, #29abe2, #b0b0b0);
+      }
+    }
+  }
+
+  &_One-Time-Links {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+
+    & > .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-block-end: 10px;
+    }
+
+    & > .link-group {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      & > .content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        & > .text {
+          width: 85%;
+          & > .link {
+            font-size: 16px;
+            color: #adadad;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          & > .subNode {
+            font-size: 12px;
+            color: #adadad;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        & > .iconButton {
+          cursor: pointer;
+          $border: 1px;
+          background: #16191c;
+          border: solid $border transparent;
+
+          & svg {
+            width: 22px;
+            height: 18px;
+          }
+
+          & > span svg {
+            width: 26px;
+            height: 26px;
+          }
+        }
+      }
+    }
+  }
+}
