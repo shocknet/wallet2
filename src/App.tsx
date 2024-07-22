@@ -6,25 +6,26 @@ import { StatusBar } from "@capacitor/status-bar";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 
-import "./App.scss";
-import store from "./State/store";
-import { NodeUp } from "./Pages/NodeUp";
-import { Provider } from "react-redux";
-import { Layout } from "./Layout";
-import { Loader } from "./Pages/Loader";
-import { Home } from "./Pages/Home";
-import { Receive } from "./Pages/Receive";
-import { Send } from "./Pages/Send";
-import { Scan } from "./Pages/Scan";
-import { Sources } from "./Pages/Sources";
-import { Automation } from "./Pages/Automation";
-import { Prefs } from "./Pages/Prefs";
-import { Contacts } from "./Pages/Contacts";
-import { Auth } from "./Pages/Auth";
-import { Background } from "./Components/Background";
-import { isBrowser } from "react-device-detect";
-import { Notify } from "./Pages/Notify";
-import { Metrics } from "./Pages/Metrics";
+import './App.scss';
+import store from './State/store';
+import { NodeUp } from './Pages/NodeUp';
+import { Provider } from 'react-redux';
+import { Layout } from './Layout';
+import { Loader } from './Pages/Loader';
+import { Home } from './Pages/Home';
+import { Receive } from './Pages/Receive';
+import { Send } from './Pages/Send';
+import { Scan } from './Pages/Scan';
+import { Sources } from './Pages/Sources';
+import { Automation } from './Pages/Automation';
+import { Prefs } from './Pages/Prefs';
+import { Contacts } from './Pages/Contacts';
+import { Invitations } from './Pages/Invitations';
+import { Auth } from './Pages/Auth';
+import { Background } from './Components/Background';
+import { isBrowser } from 'react-device-detect'
+import { Notify } from './Pages/Notify';
+import { Metrics } from './Pages/Metrics';
 import { Manage } from "./Pages/Manage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -115,6 +116,11 @@ const App: React.FC = () => {
               <Route exact path="/contacts">
                 <Layout>
                   <Contacts />
+                </Layout>
+              </Route>
+              <Route exact path="/invitations">
+                <Layout>
+                  <Invitations />
                 </Layout>
               </Route>
               <Route exact path="/auth">

@@ -730,3 +730,17 @@ export const declineInvite = () => {
         <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
+
+export const addUser = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-25.91999999999996 0 648 648" width="24" height="24"><g><g xmlns:default="http://www.w3.org/2000/svg"><path d="M259,310.7c54.3,0,106.1,20.7,144.9,51.7h10.3h28.4c-31.1-31.1-72.5-57-116.5-67.3c51.7-25.9,85.4-77.6,85.4-139.8   C411.6,69.9,341.8,0,256.3,0S100.9,69.8,100.9,155.3c0,62.1,36.2,113.9,85.4,139.8C80.2,323.6,0,424.5,0,543.6v77.6h310.6v-25.9   H26.1v-51.7C26.1,414.3,129.6,310.7,259,310.7z M129.6,155.4c0-72.5,57-129.4,129.4-129.4s129.4,57,129.4,129.4   s-57,129.4-129.4,129.4S129.6,227.9,129.6,155.4z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/><polygon points="595.5,543.6 517.9,543.6 517.9,466 491.9,466 491.9,543.6 414.3,543.6 414.3,569.5 491.9,569.5 491.9,647.2    517.9,647.2 517.9,569.5 595.5,569.5  " style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const copyWhite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
