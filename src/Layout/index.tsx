@@ -20,6 +20,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   const isScan: boolean = router.routeInfo.pathname === "/scan";
   const isMetrics: boolean = router.routeInfo.pathname === "/metrics";
+  const isManage: boolean = router.routeInfo.pathname === "/manage";
+
 
 
   const dispatch = useDispatch();
@@ -40,7 +42,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   }
 
   useEffect(() => {
-    console.log(isMetrics, 'test')
     getPrice();
 
     const interval = setInterval(() => {
@@ -58,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
       {
         !isScan
         && 
-        isMetrics ?
+        isMetrics || isManage ?
         <IonHeader style={{boxShadow: "none"}}>
           <PubHeader />
         </IonHeader>
