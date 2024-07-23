@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
+import { getPublicKey } from '../../Api/tools';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -47,6 +48,7 @@ export const Sources = () => {
     token: "",
     lnAddress: ""
   });
+  const [inviteToken, setInviteToken] = useState("");
 
 
   const processParsedInput = (destination: Destination) => {
@@ -82,6 +84,10 @@ export const Sources = () => {
       const erroringSourceKey = addressSearch.get("sourceId");
       const token = addressSearch.get("token");
       const lnAddress = addressSearch.get("lnAddress");
+      const invToken = addressSearch.get("inviteToken");
+      if (invToken) {
+        setInviteToken(invToken)
+      }
       if (token && lnAddress) {
         setIntegrationData({ token, lnAddress })
       }
@@ -239,7 +245,7 @@ export const Sources = () => {
       // nprofile
 
 
-      const newSourceKeyPair = generateNewKeyPair();
+      let newSourceKeyPair = generateNewKeyPair();
       const tempPair = generateNewKeyPair();
 
       let vanityName: string | undefined = undefined;
@@ -259,6 +265,21 @@ export const Sources = () => {
           return;
         }
         vanityName = integrationData.lnAddress;
+      }
+
+      if (inviteToken) {
+        const res = await (await getNostrClient(inputSource, tempPair, true))
+          .UseInviteLink({ invite_token: inviteToken })
+          if (res.status !== "OK") {
+            toast.error(<Toast title="Error" message={res.reason} />)
+            setProcessingSource(false);
+            dispatch(toggleLoading({ loadingMessage: "" }))
+            return;
+          }
+          newSourceKeyPair = {
+            privateKey: res.nostr_secret,
+            publicKey: getPublicKey(res.nostr_secret)
+          }
       }
 
       if (adminEnrollToken) {
