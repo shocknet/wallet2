@@ -51,6 +51,8 @@ export const Invitations = () => {
     }
   }
 
+  console.log(WALLET_URL, import.meta.env.VITE_WALLET_URL)
+
 
   const copyToClip = async (text: string) => {
     await Clipboard.write({
