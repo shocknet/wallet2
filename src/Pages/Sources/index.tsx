@@ -442,7 +442,7 @@ export const Sources = () => {
     setSourceLabel("");
   }
 
-  const arrangeIcon = (value?: string) => {
+  const arrangeIcon = (value?: string, sourcePub?: string) => {
     switch (value) {
       case "0":
         return <React.Fragment>
@@ -464,6 +464,11 @@ export const Sources = () => {
         return icons.stacker()
 
       default:
+        if (sourcePub) {
+          return <React.Fragment>
+            <img src={`https://robohash.org/${sourcePub}.png?bgset=bg1`} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
+          </React.Fragment>
+        }
         if (!value?.includes("http")) {
           value = "https://www.google.com/s2/favicons?sz=64&domain=" + value;
         }
@@ -705,11 +710,12 @@ export const Sources = () => {
           </div>
           <ul id='pay-list' className="Sources_list_box">
             {paySources.order.map((key) => {
+              const [sourcePub] = key.split("-");
               const item = paySources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                    <div className="Sources_item_icon">{arrangeIcon(item.icon, item.pubSource ? sourcePub : undefined)}</div>
                     <div className="Sources_item_input">
                       <div>{item.label}</div>
                     </div>
@@ -735,11 +741,12 @@ export const Sources = () => {
           </div>
           <ul id='spend-list' className="Sources_list_box">
             {spendSources.order.map((key) => {
+              const [sourcePub] = key.split("-");
               const item = spendSources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                    <div className="Sources_item_icon">{arrangeIcon(item.icon, item.pubSource ? sourcePub : undefined)}</div>
                     <div className="Sources_item_input">
                       <div>{item.label}</div>
                     </div>
