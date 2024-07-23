@@ -11,6 +11,7 @@ import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as 
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic, Subscriptions } from './Slices/subscriptionsSlice';
+import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
@@ -29,7 +30,8 @@ const store = configureStore({
     generatedAssets,
     loadingOverlay,
     nostrPrivateKey,
-    backupStateSlice
+    backupStateSlice,
+    oneTimeInviteLinkSlice
   },
 });
 export type State = ReturnType<typeof store.getState>

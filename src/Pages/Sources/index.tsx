@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
+import { getPublicKey } from '../../Api/tools';
 import { fetchBeacon } from '../../helpers/remoteBackups';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
@@ -48,6 +49,7 @@ export const Sources = () => {
     token: "",
     lnAddress: ""
   });
+  const [inviteToken, setInviteToken] = useState("");
   const [nameFromBeacon, setNameFromBeacon] = useState("");
 
 
@@ -93,6 +95,10 @@ export const Sources = () => {
       const erroringSourceKey = addressSearch.get("sourceId");
       const token = addressSearch.get("token");
       const lnAddress = addressSearch.get("lnAddress");
+      const invToken = addressSearch.get("inviteToken");
+      if (invToken) {
+        setInviteToken(invToken)
+      }
       if (token && lnAddress) {
         setIntegrationData({ token, lnAddress })
       }
@@ -272,6 +278,17 @@ export const Sources = () => {
           return;
         }
         vanityName = integrationData.lnAddress;
+      }
+
+      if (inviteToken) {
+        const res = await (await getNostrClient(inputSource, newSourceKeyPair))
+          .UseInviteLink({ invite_token: inviteToken })
+          if (res.status !== "OK") {
+            toast.error(<Toast title="Error" message={res.reason} />)
+            setProcessingSource(false);
+            dispatch(toggleLoading({ loadingMessage: "" }))
+            return;
+          }
       }
 
       if (adminEnrollToken) {
