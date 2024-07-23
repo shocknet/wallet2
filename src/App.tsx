@@ -1,14 +1,10 @@
-import { Route } from 'react-router-dom';
-import React, { useEffect } from 'react';
-import {
-  IonApp,
-  IonRouterOutlet,
-  setupIonicReact
-} from '@ionic/react';
-import { IonReactHashRouter } from '@ionic/react-router';
-import { StatusBar } from '@capacitor/status-bar';
-import AppUrlListener from './Hooks/appUrlListener';
-import ErrorBoundary from './Hooks/ErrorBoundary';
+import { Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonReactHashRouter } from "@ionic/react-router";
+import { StatusBar } from "@capacitor/status-bar";
+import AppUrlListener from "./Hooks/appUrlListener";
+import ErrorBoundary from "./Hooks/ErrorBoundary";
 
 import './App.scss';
 import store from './State/store';
@@ -30,6 +26,7 @@ import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
+import { Manage } from "./Pages/Manage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -49,19 +46,17 @@ import "@ionic/react/css/text-transformation.css";
 import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 
-import LoadingOverlay from './Components/LoadingOverlay';
-
+import LoadingOverlay from "./Components/LoadingOverlay";
 
 setupIonicReact();
 
 const App: React.FC = () => {
-
   useEffect(() => {
     if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
   }, []);
 
   const setStatusBarColor = async () => {
-    await StatusBar.setBackgroundColor({ color: '#16191c' });
+    await StatusBar.setBackgroundColor({ color: "#16191c" });
   };
 
   return (
@@ -143,6 +138,11 @@ const App: React.FC = () => {
                   <Metrics />
                 </Layout>
               </Route>
+              <Route exact path="/manage">
+                <Layout>
+                  <Manage />
+                </Layout>
+              </Route>
             </IonRouterOutlet>
           </IonReactHashRouter>
         </ErrorBoundary>
@@ -157,7 +157,7 @@ const App: React.FC = () => {
         />
       </IonApp>
     </Provider>
-  )
+  );
 };
 
 export default App;
