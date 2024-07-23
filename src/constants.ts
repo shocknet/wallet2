@@ -9,7 +9,7 @@ import { decode } from "@gandlaf21/bolt11-decode";
 export const locationRegex = new RegExp(/\w{1,}/g)
 
 export const keylinkAppId = import.meta.env.VITE_KEYLINK_APP_ID || ""
-export const WALLET_URL = import.meta.env.WALLET_URL || "https://my.shock.wallet"
+export const WALLET_URL = import.meta.env.WALLET_URL || "https://my.shockwallet.app"
 export const DEVICE_ID_STORAGE_KEY = "DEVICE_ID"
 export const HTTP_ADMIN_TOKEN_STORAGE_KEY = "HTTP_ADMIN_TOKEN"
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
