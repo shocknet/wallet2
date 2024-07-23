@@ -197,6 +197,7 @@ export const Receive = () => {
         const lnurl = await createNostrPayLink(topPayToSource.pasteField, topPayToSource.keys);
         if (!lnurl) {
           changeQRcode(1)
+          tabsRef.current.handleTabChange(true)
           console.log("lnurl not supported by source, switching to invoice")
           return
         }
