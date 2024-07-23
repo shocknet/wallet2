@@ -27,6 +27,7 @@ import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
 import { getPublicKey } from '../../Api/tools';
+import { fetchBeacon } from '../../helpers/remoteBackups';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -49,6 +50,7 @@ export const Sources = () => {
     lnAddress: ""
   });
   const [inviteToken, setInviteToken] = useState("");
+  const [nameFromBeacon, setNameFromBeacon] = useState("");
 
 
   const processParsedInput = (destination: Destination) => {
@@ -70,6 +72,15 @@ export const Sources = () => {
       toggle();
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
+      if (destination.data.includes("nprofile")) {
+        const data = decodeNprofile(destination.data);
+        fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
+          if (beacon) {
+            setNameFromBeacon(beacon.data.name)
+          }
+        })
+      }
+      setNameFromBeacon(destination.domainName || "")
       openAcceptInviteModal();
     }
   }
@@ -207,14 +218,16 @@ export const Sources = () => {
     const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
     console.log({ splitted })
     let data: CustomProfilePointer | null = null;
-    // check that no source exists with the same lpk
+
     if (inputSource.startsWith("nprofile")) {
       // nprofile
 
       try {
-        (data = decodeNprofile(inputSource));
-        if (spendSources.sources[data.pubkey] || paySources.sources[data.pubkey]) {
-          const spendSource = spendSources.sources[data.pubkey];
+        data = decodeNprofile(inputSource);
+        const pub = data.pubkey
+        const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
+        if (existingSpendSourceId) {
+          const spendSource = spendSources.sources[existingSpendSourceId];
           if (adminEnrollToken && spendSource && spendSource.adminToken !== adminEnrollToken) {
             setProcessingSource(true)
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
@@ -612,7 +625,7 @@ export const Sources = () => {
 
   const acceptInviteContent = <React.Fragment>
     <div className='Sources_modal_header'>Accept Invite?</div>
-    <div className='Sources_modal_discription'>Lightning.video</div>
+    <div className='Sources_modal_discription'>{nameFromBeacon}</div>
     <div className='Sources_modal_link'>{truncateString(sourcePasteField, 30)}</div>
     <div className="Sources_modal_add_btn">
       <button

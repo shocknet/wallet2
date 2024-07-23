@@ -98,7 +98,7 @@ export const Receive = () => {
     } else {
       const decoded = decodeNprofile(topPaySource.pasteField);
       const url = decoded.bridge![0];
-      console.log({decoded})
+      console.log({ decoded })
 
       const hostName = new URL(url);
       const parts = hostName.hostname.split(".");
@@ -153,13 +153,18 @@ export const Receive = () => {
 
 
   const copyToClip = async () => {
-    const clipboardStr = valueQR.split(":")[1];
+    let clipboardStr = "";
+    if (showingLightningAddress && lnAddress !== null) {
+      clipboardStr = lnAddress
+    } else {
+      clipboardStr = valueQR.split(":")[1];
+    }
     await Clipboard.write({
       string: clipboardStr
     }).then(() => {
       dispatch(addAsset({ asset: clipboardStr }));
     });
-    
+
     toast.success("Copied to clipbaord.")
   };
 
@@ -195,6 +200,12 @@ export const Receive = () => {
     try {
       if (topPayToSource.pubSource && topPayToSource.keys) {
         const lnurl = await createNostrPayLink(topPayToSource.pasteField, topPayToSource.keys);
+        if (!lnurl) {
+          changeQRcode(1)
+          tabsRef.current.handleTabChange(true)
+          console.log("lnurl not supported by source, switching to invoice")
+          return
+        }
         setLNurl("lightning:" + lnurl);
         setValueQR("lightning:" + lnurl);
       } else if (topPayToSource.pasteField.includes("@")) {
@@ -242,7 +253,7 @@ export const Receive = () => {
 
 
   const updateInvoice = async () => {
-    
+
     toggle();
     if (!amount) {
       toast.error(<Toast title="Error" message="You need to set an amount." />)
@@ -302,7 +313,7 @@ export const Receive = () => {
       <div className="Receive_result_input">
         <input
           ref={amountInputRef}
-					id="invoice-amount"
+          id="invoice-amount"
           type="number"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -317,7 +328,7 @@ export const Receive = () => {
         <input
           type="text"
           maxLength={90}
-          style={{marginTop: "15px"}}
+          style={{ marginTop: "15px" }}
           id="invoice-memo"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -344,50 +355,50 @@ export const Receive = () => {
           <Tab> {/* lnurl */}
             {
               lnurlDisabled
-              ?
-              <ErrorMessage text="No LNURL Enabled Sources" />
-              :
-              <>
-                <div className="Receive_QR_text">
-                  <span>{showingLightningAddress ? "Lightning Address" : "LNURL"}</span>
-                  {
-                    lnAddress !== null
-                    &&
-                    <Toggle
-                      value={!showingLightningAddress}
-                      onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
-                    />
-                  }
-                </div>
-                {
-                  valueQR
-                  &&
-                  <div className="Receive_QR" style={{ transform: deg }}>
-                    <QRCodeSVG
-                      style={{ textAlign: "center", transitionDuration: "500ms" }}
-                      value={valueQR.toUpperCase()}
-                      size={250}
-                    />
-                    <div className="Receive_logo_container">
-                      {Icons.Logo()}
-                    </div>
+                ?
+                <ErrorMessage text="No LNURL Enabled Sources" />
+                :
+                <>
+                  <div className="Receive_QR_text">
+                    <span>{showingLightningAddress ? "Lightning Address" : "LNURL"}</span>
+                    {
+                      lnAddress !== null
+                      &&
+                      <Toggle
+                        value={!showingLightningAddress}
+                        onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
+                      />
+                    }
                   </div>
-                  
-                }
-                <div className='Receive_copy'>
-                  {lightningAdd}
-                </div>
-                {
-                  (showingLightningAddress && lnAddress !== null)
-                  &&
-                  <div style={{fontSize: "17px", marginTop: "12px"}}>{lnAddress}</div>
-                }
-                <div className="Receive_set_amount_copy">
-                  <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
-                  <div style={{ width: "20px" }} />
-                  <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
-                </div>
-              </>
+                  {
+                    valueQR
+                    &&
+                    <div className="Receive_QR" style={{ transform: deg }}>
+                      <QRCodeSVG
+                        style={{ textAlign: "center", transitionDuration: "500ms" }}
+                        value={valueQR.toUpperCase()}
+                        size={250}
+                      />
+                      <div className="Receive_logo_container">
+                        {Icons.Logo()}
+                      </div>
+                    </div>
+
+                  }
+                  <div className='Receive_copy'>
+                    {lightningAdd}
+                  </div>
+                  {
+                    (showingLightningAddress && lnAddress !== null)
+                    &&
+                    <div style={{ fontSize: "17px", marginTop: "12px" }}>{lnAddress}</div>
+                  }
+                  <div className="Receive_set_amount_copy">
+                    <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+                    <div style={{ width: "20px" }} />
+                    <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+                  </div>
+                </>
             }
           </Tab>
           <Tab> {/* ln invoice */}
@@ -408,19 +419,19 @@ export const Receive = () => {
                 </div>
               </div>
             }
-            
+
             <div className='Receive_copy'>
               <React.Fragment>
                 <div>{`${amount} sats`}</div>
                 <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatSymbol}`}</div>
               </React.Fragment>
             </div>
-            
+
             <div className="Receive_set_amount">
               <button id="set-amount-button" onClick={toggle}>SET AMOUNT</button>
             </div>
             <div className="Receive_set_amount_copy">
-              <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+              <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
               <div style={{ width: "20px" }} />
               <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
             </div>
@@ -428,34 +439,34 @@ export const Receive = () => {
           <Tab> {/* btc address */}
             {
               btcDisabled
-              ?
-              <ErrorMessage text="No chain source is configured" />
-              :
-              <>
-                <div className="Receive_QR_text">
-                  <span>On-chain Address</span>
-                </div>
-                {
-                  valueQR
-                  &&
-                  <div className="Receive_QR" style={{ transform: deg }}>
-                    <QRCodeSVG
-                      style={{ textAlign: "center", transitionDuration: "500ms" }}
-                      value={valueQR.toUpperCase()}
-                      size={250}
-                    />
-                    <div className="Receive_logo_container">
-                      {Icons.Logo()}
+                ?
+                <ErrorMessage text="No chain source is configured" />
+                :
+                <>
+                  <div className="Receive_QR_text">
+                    <span>On-chain Address</span>
+                  </div>
+                  {
+                    valueQR
+                    &&
+                    <div className="Receive_QR" style={{ transform: deg }}>
+                      <QRCodeSVG
+                        style={{ textAlign: "center", transitionDuration: "500ms" }}
+                        value={valueQR.toUpperCase()}
+                        size={250}
+                      />
+                      <div className="Receive_logo_container">
+                        {Icons.Logo()}
+                      </div>
                     </div>
-                  </div> 
-                }
-                <div className='Receive_copy'>{bitcoinAddText}</div>
-                <div className="Receive_set_amount_copy">
-                  <button id ="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
-                  <div style={{ width: "20px" }} />
-                  <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
-                </div>
-              </>
+                  }
+                  <div className='Receive_copy'>{bitcoinAddText}</div>
+                  <div className="Receive_set_amount_copy">
+                    <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
+                    <div style={{ width: "20px" }} />
+                    <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
+                  </div>
+                </>
             }
           </Tab>
         </Tabs>

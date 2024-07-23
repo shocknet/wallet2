@@ -1,27 +1,60 @@
-import { useEffect } from "react"
-import { getAllNostrClients, nostrCallback } from "../../Api/nostr"
+import { useCallback, useEffect, useMemo } from "react"
+import { getAllNostrClients, getNostrClient, nostrCallback, subToBeacons } from "../../Api/nostr"
 import { toast } from "react-toastify";
 import Toast from "../Toast";
+import { useDispatch, useSelector } from "../../State/store";
+import { editPaySources } from "../../State/Slices/paySourcesSlice";
+import { editSpendSources } from "../../State/Slices/spendSourcesSlice";
 
 const SubsCheckIntervalMs = 20 * 1000
 const SubsThresholdMs = 10 * 1000
 const BeaconMaxAgeSeconds = 2 * 60
 export const HealthCheck = () => {
-    // const paySource = useSelector(({ paySource }) => paySource)
-    // const spendSource = useSelector(({ spendSource }) => spendSource)
-    //const dispatch = useDispatch();
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            checkHealth()
-        }, SubsCheckIntervalMs)
-        return () => {
-            clearInterval(interval)
+    const paySource = useSelector(({ paySource }) => paySource)
+    const spendSource = useSelector(({ spendSource }) => spendSource)
+    const dispatch = useDispatch();
+    const updateSourceState = useCallback((source: string, state: { disconnected: boolean, name?: string }) => {
+        const payEntryId = paySource.order.find(s => s.startsWith(source))
+        if (payEntryId) {
+            const payEntry = paySource.sources[payEntryId]
+            console.log({ payEntry, state })
+            let doUpdate = false
+            const update = { ...payEntry }
+            if (payEntry.disconnected !== state.disconnected) {
+                update.disconnected = state.disconnected
+                doUpdate = true
+            }
+            if (state.name && payEntry.label !== state.name) {
+                update.label = state.name
+                doUpdate = true
+            }
+            if (doUpdate) {
+                console.log("updating pay source", source)
+                dispatch(editPaySources(update))
+            }
         }
-    }, [])
+        const spendEntryId = spendSource.order.find(s => s.startsWith(source))
+        if (spendEntryId) {
+            const spendEntry = spendSource.sources[spendEntryId]
+            let doUpdate = false
+            const update = { ...spendEntry }
+            if (spendEntry.disconnected !== state.disconnected) {
+                update.disconnected = state.disconnected
+                doUpdate = true
+            }
+            if (state.name && spendEntry.label !== state.name) {
+                update.label = state.name
+                doUpdate = true
+            }
+            if (doUpdate) {
+                console.log("updating spend source", source)
+                dispatch(editSpendSources(update))
+            }
+        }
+    }, [paySource, spendSource])
 
 
-    const checkHealth = () => {
+    const checkHealth = useCallback(() => {
         getAllNostrClients().forEach((wrapper) => {
             const state = wrapper.getClientState()
             let oldestSingleSub: nostrCallback<any> | undefined = undefined
@@ -46,13 +79,35 @@ export const HealthCheck = () => {
                 return
             }
             console.log("latest response is more than ", SubsThresholdMs, " seconds old, checking beacon state")
-            wrapper.checkBeaconHealth(BeaconMaxAgeSeconds, () => {
-                console.log("service is down, beacon is older than", BeaconMaxAgeSeconds, "seconds, disconnecting")
-                wrapper.disconnectCalls()
-                toast.error(<Toast title="Source Error" message={`Cannot connect to source: ${wrapper.getPubDst().slice(0, 10)}.`} />)
+            wrapper.checkBeaconHealth(BeaconMaxAgeSeconds).then(beacon => {
+                if (!beacon) {
+                    console.log("service is down, beacon is older than", BeaconMaxAgeSeconds, "seconds, disconnecting")
+                    wrapper.disconnectCalls()
+                    toast.error(<Toast title="Source Error" message={`Cannot connect to source: ${wrapper.getPubDst().slice(0, 10)}.`} />)
+                    updateSourceState(wrapper.getPubDst(), { disconnected: true, })
+                    return
+                }
+                updateSourceState(wrapper.getPubDst(), { disconnected: false, name: beacon.data.name })
+
             })
         })
-    }
+
+    }, [updateSourceState])
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            checkHealth()
+        }, SubsCheckIntervalMs)
+        return () => {
+            clearInterval(interval)
+        }
+    }, [checkHealth])
+
+    useEffect(() => {
+        return subToBeacons(up => {
+            updateSourceState(up.createdByPub, { disconnected: false, name: up.name })
+        })
+    }, [updateSourceState])
     /*
         const updateSourceState = (source: string, connected: boolean) => {
             const payEntry = paySource.find(s => s.pasteField === source)

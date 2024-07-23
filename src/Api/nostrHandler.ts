@@ -1,9 +1,10 @@
-import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit } from './tools'
+import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 import { decrypt, encrypt } from './tools/nip04'
 import { Sub } from 'nostr-tools';
 import logger from './helpers/logger';
-
+export const pubServiceTag = "Lightning.Pub"
+const appTag = "shockwallet"
 const EVENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const CLEANUP_INTERVAL_SECONDS = 60
 const handledEvents: { eventId: string, addedAtUnix: number }[] = []
@@ -16,7 +17,11 @@ const removeExpiredEvents = () => {
     }
 }
 setInterval(removeExpiredEvents, CLEANUP_INTERVAL_SECONDS * 1000);
-
+export type BeaconUpdate = {
+    updatedAtUnix: number
+    createdByPub: string
+    name: string
+}
 export type NostrKeyPair = {
     privateKey: string
     publicKey: string
@@ -37,6 +42,7 @@ const allowedKinds = [21000, 24133]
 export default class RelayCluster {
     pool: SimplePool = new SimplePool()
     relays: Record<string, RelayHandler> = {}
+    beaconListeners: Record<number, (beaconUpdate: BeaconUpdate) => void> = {}
 
     addRelays = (relaysSettings: RelaysSettings, connectedCallback: (connectedRelayUrl: string) => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: (disconnectedRelayUrl: string) => void) => {
         const relayUrls = relaysSettings.relays;
@@ -50,6 +56,14 @@ export default class RelayCluster {
         })
     }
 
+    addBeaconListener = (callback: (beaconUpdate: BeaconUpdate) => void) => {
+        const subId = Math.floor(Math.random() * 1000000)
+        this.beaconListeners[subId] = callback
+        return () => {
+            delete this.beaconListeners[subId]
+        }
+    }
+
     addRelay = (relayUrl: string, keys: NostrKeyPair, connectedCallback: () => void, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) => {
         if (this.relays[relayUrl] && !this.relays[relayUrl].subbedPairs.find(s => s.privateKey === keys.privateKey)) {
             this.relays[relayUrl].SubToEvents(false, keys, connectedCallback)
@@ -60,7 +74,10 @@ export default class RelayCluster {
             relay: relayUrl,
             connectedCallback,
             eventCallback,
-            disconnectCallback
+            disconnectCallback,
+            beaconCallback: (beaconUpdate: BeaconUpdate) => {
+                Object.values(this.beaconListeners).forEach(cb => cb(beaconUpdate))
+            }
         }, keys)
         return
     }
@@ -113,11 +130,14 @@ type RelayArgs = {
     relay: string
     connectedCallback: () => void
     eventCallback: (event: NostrEvent) => void
+    beaconCallback: (beaconUpdate: BeaconUpdate) => void
     disconnectCallback: () => void
 }
 
 class RelayHandler {
+    relay: Relay | null = null
     sub: Sub | null = null;
+    beaconSub: Sub | null = null;
     subbedPairs: NostrKeyPair[] = [];
     args: RelayArgs
     connected = false
@@ -159,39 +179,45 @@ class RelayHandler {
             if (this.sub) {
                 this.sub.unsub()
             }
+            if (this.beaconSub) {
+                this.beaconSub.unsub()
+            }
             relay.close()
             this.connected = false
             this.args.disconnectCallback()
             this.Connect(false, keys)
         })
-        this.sub = relay.sub([
+        this.relay = relay
+        this.SubToEvents(triggerConnectCb)
+        this.SubToBeacon()
+    }
+
+    SubToBeacon = async () => {
+        if (!this.relay) { return }
+        this.beaconSub = this.relay.sub([
+            { kinds: [30078], '#d': [pubServiceTag] }
+        ])
+        this.beaconSub.on('eose', () => { console.log("subbed to beacon") })
+        this.beaconSub.on("event", async (e) => {
+            const b = JSON.parse(e.content)
+            this.args.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
+        })
+    }
+
+    SubToEvents = async (triggerConnectCb: boolean, keys?: NostrKeyPair, connectedCallback?: () => void) => {
+        if (!this.relay) { return }
+        if (keys) { // new keys to sub with
+            logger.info("renewing sub")
+            this.subbedPairs.push(keys);
+        }
+        this.sub = this.relay.sub([
             {
                 since: Math.ceil(Date.now() / 1000),
                 kinds: allowedKinds,
                 '#p': this.subbedPairs.map(k => k.publicKey),
             }
         ])
-        this.SubToEvents(triggerConnectCb)
 
-    }
-
-
-    SubToEvents = async (triggerConnectCb: boolean, keys?: NostrKeyPair, connectedCallback?: () => void) => {
-        if (!this.sub) return // should never happen becuase of the queue in getNostrClient,
-        //just appeasing ts
-
-        if (keys) { // new keys to sub with
-            logger.info("renewing sub")
-            this.subbedPairs.push(keys);
-            this.sub = this.sub.sub([
-                {
-                    since: Math.ceil(Date.now() / 1000),
-                    kinds: allowedKinds,
-                    '#p': this.subbedPairs.map(k => k.publicKey),
-                }
-            ], {})
-
-        }
         this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
         this.sub.on("event", async (e) => {
             logger.log({ nostrEvent: e })
@@ -231,7 +257,7 @@ class RelayHandler {
         }
     }
 }
-const appTag = "shockwallet"
+
 export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
     const pool = new SimplePool()
     return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
