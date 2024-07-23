@@ -119,6 +119,7 @@ export class NostrClient {
             retrieveNostrUserAuth: async () => { return this.settings.publicKey },
             retrieveNostrAdminAuth: async () => { return this.settings.publicKey },
             retrieveNostrMetricsAuth: async () => { return this.settings.publicKey },
+            retrieveNostrGuestWithPubAuth: async () => { return this.settings.publicKey },
             pubDestination: this.pubDestination,
         }, this.clientSend, this.clientSub)
     }
