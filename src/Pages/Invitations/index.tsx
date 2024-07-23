@@ -45,7 +45,7 @@ export const Invitations = () => {
     const client = await getNostrClient(selectedSource.pasteField, selectedSource.keys!) // TODO: write migration to remove type override;
     for (const inv of invitations.invitations) {
       const res = await client.GetInviteLinkState({ invite_token: inv.inviteToken })
-      if (res.status === "OK") {
+      if (res.status === "OK" && res.used) {
         dispatch(setInvitationToUsed(inv.inviteToken));
       }
     }
