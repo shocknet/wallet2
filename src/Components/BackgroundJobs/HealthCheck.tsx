@@ -14,7 +14,6 @@ export const HealthCheck = () => {
     const spendSource = useSelector(({ spendSource }) => spendSource)
     const dispatch = useDispatch();
     const updateSourceState = useCallback((source: string, state: { disconnected: boolean, name?: string }) => {
-        console.log("updating source state", source, state, paySource.sources)
         const payEntryId = paySource.order.find(s => s.startsWith(source))
         if (payEntryId) {
             const payEntry = paySource.sources[payEntryId]
