@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIonRouter } from "@ionic/react";
 import { Chart as ChartJS, registerables, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2'
 ChartJS.register(...registerables, Legend);
@@ -103,6 +104,8 @@ const getUnixTimeRange = (period: Period) => {
 export const Metrics = () => {
   //const [url, setUrl] = useState("")
   //const [metricsToken, setMetricsToken] = useState("")
+  const router = useIonRouter();
+
   const [loading, setLoading] = useState(true)
   const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
@@ -284,7 +287,7 @@ export const Metrics = () => {
               {Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
             </div>
           </div>
-          <div className={classNames(styles["box"], styles["border"])}>
+          <div onClick={() => router.push('/manage')} style={{cursor: "pointer"}} className={classNames(styles["box"], styles["border"])}>
             Manage
           </div>
 

@@ -730,3 +730,24 @@ export const declineInvite = () => {
         <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
+
+export const addUser = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-25.91999999999996 0 648 648" width="24" height="24"><g><g xmlns:default="http://www.w3.org/2000/svg"><path d="M259,310.7c54.3,0,106.1,20.7,144.9,51.7h10.3h28.4c-31.1-31.1-72.5-57-116.5-67.3c51.7-25.9,85.4-77.6,85.4-139.8   C411.6,69.9,341.8,0,256.3,0S100.9,69.8,100.9,155.3c0,62.1,36.2,113.9,85.4,139.8C80.2,323.6,0,424.5,0,543.6v77.6h310.6v-25.9   H26.1v-51.7C26.1,414.3,129.6,310.7,259,310.7z M129.6,155.4c0-72.5,57-129.4,129.4-129.4s129.4,57,129.4,129.4   s-57,129.4-129.4,129.4S129.6,227.9,129.6,155.4z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/><polygon points="595.5,543.6 517.9,543.6 517.9,466 491.9,466 491.9,543.6 414.3,543.6 414.3,569.5 491.9,569.5 491.9,647.2    517.9,647.2 517.9,569.5 595.5,569.5  " style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const copyWhite = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
+
+export const closeQuestion = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 41 41" width="16" height="16"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M35.6,41.5c-0.8,0-1.6-0.3-2.1-0.9L20.7,27.8L8,40.6c-1.1,1.1-3.1,1.1-4.2,0l-2.8-2.8c-1.2-1.2-1.2-3.1,0-4.3l12.7-12.8  L0.9,7.9C0.3,7.4,0,6.6,0,5.8s0.3-1.6,0.9-2.1l2.8-2.8c1.1-1.1,3.1-1.1,4.2,0l12.7,12.8L33.5,0.9c1.1-1.1,3.1-1.1,4.2,0l2.8,2.8  c0.6,0.6,0.9,1.3,0.9,2.1s-0.3,1.6-0.9,2.1L27.8,20.7l12.7,12.8c1.2,1.2,1.2,3.1,0,4.3l-2.8,2.8C37.1,41.1,36.4,41.5,35.6,41.5z   M20.7,25l14.2,14.2c0.4,0.4,1,0.4,1.4,0l2.8-2.8c0.4-0.4,0.4-1,0-1.4L25,20.7L39.1,6.5c0.2-0.2,0.3-0.4,0.3-0.7s-0.1-0.5-0.3-0.7  l-2.8-2.8c-0.4-0.4-1-0.4-1.4,0L20.7,16.5L6.5,2.3c-0.4-0.4-1-0.4-1.4,0L2.3,5.1C2.1,5.3,2,5.6,2,5.8s0.1,0.5,0.3,0.7l14.2,14.2  L2.3,34.9c-0.4,0.4-0.4,1,0,1.4l2.8,2.8c0.4,0.4,1,0.4,1.4,0L20.7,25z" style="fill: rgb(196, 52, 224);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+    )
+}
