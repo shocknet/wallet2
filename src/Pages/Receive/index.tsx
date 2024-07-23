@@ -153,7 +153,12 @@ export const Receive = () => {
 
 
   const copyToClip = async () => {
-    const clipboardStr = valueQR.split(":")[1];
+    let clipboardStr = "";
+    if (showingLightningAddress && lnAddress !== null) {
+      clipboardStr = lnAddress
+    } else {
+      clipboardStr = valueQR.split(":")[1];
+    }
     await Clipboard.write({
       string: clipboardStr
     }).then(() => {
@@ -197,6 +202,7 @@ export const Receive = () => {
         const lnurl = await createNostrPayLink(topPayToSource.pasteField, topPayToSource.keys);
         if (!lnurl) {
           changeQRcode(1)
+          tabsRef.current.handleTabChange(true)
           console.log("lnurl not supported by source, switching to invoice")
           return
         }
