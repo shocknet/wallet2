@@ -245,7 +245,7 @@ export const Sources = () => {
       // nprofile
 
 
-      let newSourceKeyPair = generateNewKeyPair();
+      const newSourceKeyPair = generateNewKeyPair();
       const tempPair = generateNewKeyPair();
 
       let vanityName: string | undefined = undefined;
@@ -268,17 +268,13 @@ export const Sources = () => {
       }
 
       if (inviteToken) {
-        const res = await (await getNostrClient(inputSource, tempPair, true))
+        const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .UseInviteLink({ invite_token: inviteToken })
           if (res.status !== "OK") {
             toast.error(<Toast title="Error" message={res.reason} />)
             setProcessingSource(false);
             dispatch(toggleLoading({ loadingMessage: "" }))
             return;
-          }
-          newSourceKeyPair = {
-            privateKey: res.nostr_secret,
-            publicKey: getPublicKey(res.nostr_secret)
           }
       }
 
