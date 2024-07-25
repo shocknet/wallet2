@@ -259,16 +259,13 @@ export const Sources = () => {
 
 
       const newSourceKeyPair = generateNewKeyPair();
-      const tempPair = generateNewKeyPair();
-
       let vanityName: string | undefined = undefined;
 
       // integration to an existing pub account
       if (integrationData.token) {
-        const res = await (await getNostrClient(inputSource, tempPair, true))
+        const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .LinkNPubThroughToken({
             token: integrationData.token,
-            nostr_pub: newSourceKeyPair.publicKey
           });
 
         if (res.status !== "OK") {
@@ -283,12 +280,12 @@ export const Sources = () => {
       if (inviteToken) {
         const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .UseInviteLink({ invite_token: inviteToken })
-          if (res.status !== "OK") {
-            toast.error(<Toast title="Error" message={res.reason} />)
-            setProcessingSource(false);
-            dispatch(toggleLoading({ loadingMessage: "" }))
-            return;
-          }
+        if (res.status !== "OK") {
+          toast.error(<Toast title="Error" message={res.reason} />)
+          setProcessingSource(false);
+          dispatch(toggleLoading({ loadingMessage: "" }))
+          return;
+        }
       }
 
       if (adminEnrollToken) {
