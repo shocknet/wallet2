@@ -26,6 +26,8 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
+import { getPublicKey } from '../../Api/tools';
+import { fetchBeacon } from '../../helpers/remoteBackups';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -47,6 +49,8 @@ export const Sources = () => {
     token: "",
     lnAddress: ""
   });
+  const [inviteToken, setInviteToken] = useState("");
+  const [nameFromBeacon, setNameFromBeacon] = useState("");
 
 
   const processParsedInput = (destination: Destination) => {
@@ -68,6 +72,15 @@ export const Sources = () => {
       toggle();
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
+      if (destination.data.includes("nprofile")) {
+        const data = decodeNprofile(destination.data);
+        fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
+          if (beacon) {
+            setNameFromBeacon(beacon.data.name)
+          }
+        })
+      }
+      setNameFromBeacon(destination.domainName || "")
       openAcceptInviteModal();
     }
   }
@@ -82,6 +95,10 @@ export const Sources = () => {
       const erroringSourceKey = addressSearch.get("sourceId");
       const token = addressSearch.get("token");
       const lnAddress = addressSearch.get("lnAddress");
+      const invToken = addressSearch.get("inviteToken");
+      if (invToken) {
+        setInviteToken(invToken)
+      }
       if (token && lnAddress) {
         setIntegrationData({ token, lnAddress })
       }
@@ -201,7 +218,7 @@ export const Sources = () => {
     const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
     console.log({ splitted })
     let data: CustomProfilePointer | null = null;
-    // check that no source exists with the same lpk
+
     if (inputSource.startsWith("nprofile")) {
       // nprofile
 
@@ -242,16 +259,13 @@ export const Sources = () => {
 
 
       const newSourceKeyPair = generateNewKeyPair();
-      const tempPair = generateNewKeyPair();
-
       let vanityName: string | undefined = undefined;
 
       // integration to an existing pub account
       if (integrationData.token) {
-        const res = await (await getNostrClient(inputSource, tempPair, true))
+        const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .LinkNPubThroughToken({
             token: integrationData.token,
-            nostr_pub: newSourceKeyPair.publicKey
           });
 
         if (res.status !== "OK") {
@@ -261,6 +275,17 @@ export const Sources = () => {
           return;
         }
         vanityName = integrationData.lnAddress;
+      }
+
+      if (inviteToken) {
+        const res = await (await getNostrClient(inputSource, newSourceKeyPair))
+          .UseInviteLink({ invite_token: inviteToken })
+        if (res.status !== "OK") {
+          toast.error(<Toast title="Error" message={res.reason} />)
+          setProcessingSource(false);
+          dispatch(toggleLoading({ loadingMessage: "" }))
+          return;
+        }
       }
 
       if (adminEnrollToken) {
@@ -414,7 +439,7 @@ export const Sources = () => {
     setSourceLabel("");
   }
 
-  const arrangeIcon = (value?: string) => {
+  const arrangeIcon = (value?: string, sourcePub?: string) => {
     switch (value) {
       case "0":
         return <React.Fragment>
@@ -436,6 +461,11 @@ export const Sources = () => {
         return icons.stacker()
 
       default:
+        if (sourcePub) {
+          return <React.Fragment>
+            <img src={`https://robohash.org/${sourcePub}.png?bgset=bg1`} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
+          </React.Fragment>
+        }
         if (!value?.includes("http")) {
           value = "https://www.google.com/s2/favicons?sz=64&domain=" + value;
         }
@@ -597,7 +627,7 @@ export const Sources = () => {
 
   const acceptInviteContent = <React.Fragment>
     <div className='Sources_modal_header'>Accept Invite?</div>
-    <div className='Sources_modal_discription'>Lightning.video</div>
+    <div className='Sources_modal_discription'>{nameFromBeacon}</div>
     <div className='Sources_modal_link'>{truncateString(sourcePasteField, 30)}</div>
     <div className="Sources_modal_add_btn">
       <button
@@ -677,11 +707,12 @@ export const Sources = () => {
           </div>
           <ul id='pay-list' className="Sources_list_box">
             {paySources.order.map((key) => {
+              const [sourcePub] = key.split("-");
               const item = paySources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                    <div className="Sources_item_icon">{arrangeIcon(item.icon, item.pubSource ? sourcePub : undefined)}</div>
                     <div className="Sources_item_input">
                       <div>{item.label}</div>
                     </div>
@@ -707,11 +738,12 @@ export const Sources = () => {
           </div>
           <ul id='spend-list' className="Sources_list_box">
             {spendSources.order.map((key) => {
+              const [sourcePub] = key.split("-");
               const item = spendSources.sources[key];
               return (
                 <li className="Sources_item" key={item.id}>
                   <div className="Sources_item_left">
-                    <div className="Sources_item_icon">{arrangeIcon(item.icon)}</div>
+                    <div className="Sources_item_icon">{arrangeIcon(item.icon, item.pubSource ? sourcePub : undefined)}</div>
                     <div className="Sources_item_input">
                       <div>{item.label}</div>
                     </div>
