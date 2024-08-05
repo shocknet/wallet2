@@ -111,10 +111,11 @@ export const Auth = () => {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i) ?? "null";
       const value = localStorage.getItem(key);
-      if (value && !ignoredStorageKeys.includes(value)) {
+      if (value && !ignoredStorageKeys.includes(key)) {
         allData[key] = value;
       }
     }
+    console.log({allData})
 
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
     const blob = new Blob([encodedString], { type: 'text/plain' });
@@ -140,8 +141,9 @@ export const Auth = () => {
           recursive: true,
         });
         console.log({ savedFile })
+        toast.success(<Toast title="Backup file saved successfuly" message={savedFile.uri} />);
       } catch (e) {
-        console.log(e)
+        toast.error(<Toast title="File backup download failed" message="Some error occured" />);
       }
     }
     toggle();
