@@ -35,7 +35,7 @@ export const Invitations = () => {
     if (!selectedSource) {
       toast.error(
         <Toast
-          title="Not an amdin"
+          title="Not an admin"
           message="No admin source found"
         />
       )
