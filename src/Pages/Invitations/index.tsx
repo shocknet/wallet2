@@ -115,7 +115,7 @@ export const Invitations = () => {
   const oneTimeLinksRender = useMemo(() => {
     return (
       <div className="link-group">
-        {
+        { invitations.invitations &&
           invitations.invitations.map(inv => {
             const link = `${WALLET_URL}/#/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
             return (
