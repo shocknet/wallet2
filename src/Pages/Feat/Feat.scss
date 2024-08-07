@@ -1,0 +1,144 @@
+.Feat {
+  padding-bottom: 30px;
+  position: relative;
+  font-family: Montserrat;
+
+  &_header {
+    display: flex;
+    justify-content: center;
+  }
+
+  &_Icon_Left {
+    position: absolute;
+    left: 0px;
+    width: 24px;
+    height: 24px;
+  }
+
+  &_user {
+    font-size: 24px;
+    display: flex;
+    img {
+      vertical-align: middle;
+    }
+  }
+
+  &_user_name {
+    margin-left: 10px;
+  }
+
+  &_Msg_Image {
+    img {
+      margin-top: 90px;
+      width: 207px;
+      height: 170px;
+      border-radius: 5px;
+      fill: #dadada;
+      box-shadow: 0px 0px 2px rgba(0, 0, 0, 1);
+    }
+  }
+
+  &_Msg {
+    background-image: url("../../../public/feat/Group.svg");
+    width: 302px;
+    height: 189px;
+    opacity: 0.8;
+    background-size: cover;
+    filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 1));
+    font-size: 14px;
+    padding-left: 19px;
+    padding-top: 4px;
+  }
+
+  &_more_tools {
+    display: flex;
+    justify-content: center;
+    margin-top: 21px;
+    width: 100vw;
+    margin-left: -16px;
+    button {
+      margin-left: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      box-sizing: border-box;
+      font-size: 11px;
+      font-family: Montserrat;
+      font-weight: bold;
+      $border: 1px;
+      padding: 10px 10px;
+      color: #8c8c8c;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border #8c8c8c; /* !importanté */
+      border-radius: 25px;
+    }
+    img {
+      margin-top: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &_edit_message {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 12px;
+    width: 345px;
+    height: 53px;
+    border-radius: 5px;
+    border: 1px solid #29abe2;
+    display: flex;
+    img {
+      margin-left: 9px;
+      margin-top: 15px;
+    }
+  }
+
+  &_defaultIcon {
+    input {
+      position: relative;
+      top: -7px;
+      margin-left: 9px;
+      background: #16191c;
+      width: 210px;
+      text-decoration: none solid rgb(255, 255, 255);
+      height: 40px;
+      border-radius: 4px;
+      background-size: cover;
+      box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+      font-size: 12px;
+      outline: none;
+      text-align: start;
+      border: 0px;
+    }
+    img {
+      margin-left: 15px;
+      cursor: pointer;
+    }
+  }
+
+  &_sendIcon {
+    input {
+      margin-left: 9px;
+      position: relative;
+      top: -7px;
+      background: #16191c;
+      width: 240px;
+      text-decoration: none solid rgb(255, 255, 255);
+      height: 40px;
+      border-radius: 4px;
+      background-size: cover;
+      box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+      font-size: 12px;
+      outline: none;
+      text-align: start;
+      border: 0px;
+    }
+    img {
+      margin-left: 15px;
+      cursor: pointer;
+    }
+  }
+}

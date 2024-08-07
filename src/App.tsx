@@ -27,6 +27,7 @@ import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
 import { Manage } from "./Pages/Manage";
+import { Feat } from "./Pages/Feat";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -141,6 +142,11 @@ const App: React.FC = () => {
               <Route exact path="/manage">
                 <Layout>
                   <Manage />
+                </Layout>
+              </Route>
+              <Route exact path="/feat">
+                <Layout>
+                  <Feat />
                 </Layout>
               </Route>
             </IonRouterOutlet>
