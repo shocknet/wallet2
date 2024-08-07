@@ -142,8 +142,8 @@ export const Auth = () => {
         });
         console.log({ savedFile })
         toast.success(<Toast title="Backup file saved successfuly" message={savedFile.uri} />);
-      } catch (e) {
-        toast.error(<Toast title="File backup download failed" message="Some error occured" />);
+      } catch (e: any) {
+        toast.error(<Toast title="File backup download failed" message={e?.message || "not Error type"} />);
       }
     }
     toggle();
