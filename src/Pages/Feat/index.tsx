@@ -56,6 +56,9 @@ export const Feat = () => {
         id="message"
         className="Message"
         onChange={(e) => editingMessage(e.target.value)}
+        onKeyDown={(e) => {
+          console.log(e.key);
+        }}
         value={message}
       />
       <div className="Feat_inputFile">
@@ -84,6 +87,11 @@ export const Feat = () => {
         id="message"
         className="Message"
         onChange={(e) => editingMessage(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key == "Enter") {
+            sendMessage();
+          }
+        }}
         value={message}
       />
       <button onClick={sendMessage}>{Icons.sendIcon()}</button>

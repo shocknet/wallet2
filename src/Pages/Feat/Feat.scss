@@ -1,7 +1,7 @@
 .Feat {
   position: relative;
   font-family: Montserrat;
-
+  
   &_header {
     display: flex;
     justify-content: center;
@@ -93,7 +93,6 @@
   &_more_tools {
     display: flex;
     justify-content: center;
-    margin-top: 10px;
     width: 100vw;
     margin-left: -16px;
     button {
