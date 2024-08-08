@@ -28,7 +28,7 @@
 
   &_Msg_Image {
     img {
-      margin-top: 90px;
+      margin-top: 80px;
       width: 207px;
       height: 170px;
       border-radius: 5px;
@@ -95,7 +95,7 @@
     justify-content: center;
     width: 100vw;
     margin-left: -16px;
-    margin-top: 10px;
+    margin-top: 5px;
     button {
       margin-left: 3px;
       cursor: pointer;
@@ -124,7 +124,7 @@
   &_edit_message {
     margin-left: auto;
     margin-right: auto;
-    margin-top: 12px;
+    margin-top: 5px;
     width: 345px;
     height: 53px;
     border-radius: 5px;
@@ -165,11 +165,12 @@
 
   &_sendIcon {
     display: flex;
+    position: relative;
     input {
       margin-left: 9px;
       margin-top: -10px;
       background: #16191c;
-      width: 240px;
+      width: 200px;
       text-decoration: none solid rgb(255, 255, 255);
       height: 40px;
       border-radius: 4px;
@@ -184,7 +185,7 @@
     button {
       background-color: #16191c;
       div {
-        margin-top: -15px;
+        margin-top: -10px;
       }
     }
   }
@@ -214,6 +215,23 @@
       width: 207px;
       height: 170px;
       border-radius: 5px;
+    }
+  }
+
+  &_selectImage{
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    position: relative;
+    top: -24px;
+    img{
+      margin-left: 2px;
+      margin-top: 2px;
+      width: 35px;
+      height: 35px;
+      border-radius: 5px;
+      border: solid 1px #8c8c8c; /* !importanté */
+
     }
   }
 }
