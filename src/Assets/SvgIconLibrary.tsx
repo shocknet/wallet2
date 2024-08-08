@@ -751,3 +751,57 @@ export const closeQuestion = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}} />
     )
 }
+
+export const sendIcon = () => {
+    const svgCode =
+      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 46 46" width="24" height="24"><path d="M15.5,30.5L25.4,46L45,2.4L46,0l-2.4,1.1L0,20.6L15.5,30.5z M25.1,41.9L17.5,30L40.9,6.6L25.1,41.9z M16,28.5L4.2,20.9  L39.4,5.1L16,28.5z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/><g/></svg>';
+      return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+      )
+}
+
+export const attachIcon = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -1.5042492917847028 54 54" width="24" height="24"><g><g><path d="M51.1,4.4l-1.5-1.5c-3.8-3.8-10-3.8-13.8,0L0.3,38.2c-0.4,0.4-0.4,1,0,1.4c0.4,0.4,1,0.4,1.4,0L37.2,4.2c3-3,7.9-3,10.9,0    l1.5,1.5c3,3,3,7.9,0,10.9L18.8,47.5c-1,1-2.4,1.6-3.9,1.6c-1.5,0-2.9-0.6-3.9-1.6c-2.2-2.2-2.2-5.7,0-7.8l25.5-25.4    c0.4-0.4,1-0.7,1.6-0.7c0.6,0,1.2,0.2,1.6,0.7c0.4,0.4,0.7,1,0.7,1.6c0,0.6-0.2,1.2-0.7,1.6L21.1,35.9c-0.4,0.4-0.4,1,0,1.4    s1,0.4,1.4,0l18.5-18.5c0.8-0.8,1.3-1.9,1.3-3c0-1.1-0.4-2.2-1.3-3c-0.8-0.8-1.9-1.2-3-1.2s-2.2,0.4-3,1.2L9.6,38.2    c-2.9,2.9-2.9,7.7,0,10.6c1.4,1.4,3.3,2.2,5.3,2.2c2,0,3.9-0.8,5.3-2.2l30.9-30.8C54.9,14.3,54.9,8.2,51.1,4.4z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/></g></g><g/></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+    )
+}
+
+export const camIcon = () => {
+    const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -65.52465642683916 684 684" width="24" height="24"><g><g xmlns:default="http://www.w3.org/2000/svg"><path d="M513,52.6L460.4,0H315.7l-52.6,52.6H0v499.9h684V52.6H513z M657.7,526.2H26.3V78.9h236.8h10.5l7.9-7.9l44.7-44.7h123.7   L494.6,71l7.9,7.9H513h144.7V526.2z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/><path d="M210.5,289.4c0,102.6,81.6,184.2,184.2,184.2S578.8,392,578.8,289.4s-81.6-184.2-184.2-184.2S210.5,186.8,210.5,289.4z    M552.5,289.4c0,86.8-71,157.9-157.9,157.9s-157.9-71-157.9-157.9s71-157.9,157.9-157.9S552.5,202.6,552.5,289.4z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/><path d="M289.4,289.4h26.3c0-44.7,34.2-78.9,78.9-78.9v-26.3C336.8,184.2,289.4,231.5,289.4,289.4z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/><circle cx="92.1" cy="144.7" r="21" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/></g></g></svg>'
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+    )
+}
+
+export const refreshIcon = () => {
+    const svgCode =
+      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><path d="M12.05 19.5q-3.15 0-5.325-2.175Q4.55 15.15 4.55 12q0-3.15 2.175-5.325Q8.9 4.5 12.05 4.5q1.75 0 3.313.775 1.562.775 2.587 2.2V5.25q0-.325.225-.537.225-.213.525-.213.325 0 .538.213.212.212.212.537V9.7q0 .4-.25.663-.25.262-.65.262H14.1q-.325 0-.538-.225-.212-.225-.212-.525 0-.325.212-.538.213-.212.538-.212h3.2q-.8-1.45-2.2-2.287Q13.7 6 12.05 6 9.55 6 7.8 7.75T6.05 12q0 2.5 1.75 4.25T12.05 18q1.775 0 3.262-.95 1.488-.95 2.188-2.575.075-.2.288-.338Q18 14 18.225 14q.425 0 .65.3.225.3.05.675-.875 2.05-2.737 3.287Q14.325 19.5 12.05 19.5Z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/></svg>';
+      return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+      )
+}
+
+export const markIcon = () => {
+    const svgCode =
+      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><path d="m10.15 18.45-2.3-5.075-5.075-2.3 5.075-2.3 2.3-5.075 2.3 5.075 5.1 2.3-5.1 2.3Zm7.4 1.85-1.175-2.525-2.525-1.15 2.525-1.175 1.175-2.525 1.15 2.525 2.525 1.175-2.525 1.15Z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></svg>';
+      return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+      )
+}
+
+export const Polygon = () => {
+    const svgCode =
+      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 21 17" width="21" height="17"><g transform="translate(0, 0)"><defs><path id="path-172306608809612196" d="M12 -2 C12 -2 22.320000000000025 15 22.320000000000025 15 C22.320000000000025 15 1.6800000000000015 15 1.6800000000000015 15 C1.6800000000000015 15 12 -2 12 -2 Z" vector-effect="non-scaling-stroke"/></defs><g transform="translate(-1.6800000000000015, 2)"><path d="M12 -2 C12 -2 22.320000000000025 15 22.320000000000025 15 C22.320000000000025 15 1.6800000000000015 15 1.6800000000000015 15 C1.6800000000000015 15 12 -2 12 -2 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g></g></svg>'; 
+      return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+      )
+}
+
+export const MessageIcon = () => {
+    const svgCode =
+      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 46 46" width="8" height="8"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M23,46c-4,0-7.9-1-11.3-3l-11,3l2.9-10.8C1.2,31.5,0,27.3,0,23C0,10.3,10.3,0,23,0s23,10.3,23,23C46,35.7,35.7,46,23,46z   M11.9,40.9l0.4,0.2C15.5,43,19.2,44,23,44c11.6,0,21-9.4,21-21S34.6,2,23,2S2,11.4,2,23c0,4.1,1.2,8.1,3.4,11.5l0.2,0.4l-2.2,8.3  L11.9,40.9z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g></svg>';
+      return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+      )
+}

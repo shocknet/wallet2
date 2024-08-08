@@ -1,5 +1,4 @@
 .Feat {
-  padding-bottom: 30px;
   position: relative;
   font-family: Montserrat;
 
@@ -38,22 +37,63 @@
     }
   }
 
-  &_Msg {
-    background-image: url("../../../public/feat/Group.svg");
-    width: 302px;
-    height: 189px;
-    opacity: 0.8;
+  &_Msg_reciver {
+    margin-top: 5px;
+    display: flex;
+    justify-content: start;
+    align-items: end;
+  }
+
+  &_Msg_send {
+    margin-top: 5px;
+    display: flex;
+    justify-content: end;
+    align-items: end;
+  }
+
+  &_polygon_reciver {
+    position: relative;
+    left: 11px;
+    bottom: -7px;
+    z-index: -1;
+  }
+
+  &_polygon_send {
+    position: relative;
+    left: -10px;
+    bottom: -7px;
+    z-index: -1;
+  }
+
+  &_chat_reciver {
+    line-height: 1.8;
+    background-color: #29abe2;
+    border-radius: 5px;
+    width: 283px;
     background-size: cover;
-    filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 1));
     font-size: 14px;
     padding-left: 19px;
     padding-top: 4px;
+    color: #ffffff;
+  }
+
+  &_chat_send {
+    line-height: 1.8;
+    background: #16191c;
+    border: 1px solid #29abe2;
+    border-radius: 5px;
+    width: 283px;
+    background-size: cover;
+    font-size: 14px;
+    padding-left: 19px;
+    padding-top: 4px;
+    color: #ffffff;
   }
 
   &_more_tools {
     display: flex;
     justify-content: center;
-    margin-top: 21px;
+    margin-top: 10px;
     width: 100vw;
     margin-left: -16px;
     button {
@@ -75,7 +115,7 @@
       border: solid $border #8c8c8c; /* !importanté */
       border-radius: 25px;
     }
-    img {
+    div {
       margin-top: 6px;
       cursor: pointer;
     }
@@ -90,19 +130,20 @@
     border-radius: 5px;
     border: 1px solid #29abe2;
     display: flex;
-    img {
+    div {
       margin-left: 9px;
       margin-top: 15px;
     }
   }
 
   &_defaultIcon {
+    display: flex;
+    position: relative;
     input {
-      position: relative;
-      top: -7px;
       margin-left: 9px;
+      margin-top: -10px;
       background: #16191c;
-      width: 210px;
+      width: 200px;
       text-decoration: none solid rgb(255, 255, 255);
       height: 40px;
       border-radius: 4px;
@@ -113,17 +154,20 @@
       text-align: start;
       border: 0px;
     }
-    img {
-      margin-left: 15px;
-      cursor: pointer;
+
+    button {
+      background-color: #16191c;
+      div {
+        margin-top: -15px;
+      }
     }
   }
 
   &_sendIcon {
+    display: flex;
     input {
       margin-left: 9px;
-      position: relative;
-      top: -7px;
+      margin-top: -10px;
       background: #16191c;
       width: 240px;
       text-decoration: none solid rgb(255, 255, 255);
@@ -136,9 +180,40 @@
       text-align: start;
       border: 0px;
     }
+
+    button {
+      background-color: #16191c;
+      div {
+        margin-top: -15px;
+      }
+    }
+  }
+
+  &_container {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 460px;
+  }
+
+  &_inputFile {
+    input {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #ffffff;
+      position: absolute;
+      top: 10px;
+      opacity: 0;
+    }
+  }
+
+  &_Msg_Image_send {
+    margin-top: 5px;
+    display: flex;
+    justify-content: end;
     img {
-      margin-left: 15px;
-      cursor: pointer;
+      width: 207px;
+      height: 170px;
+      border-radius: 5px;
     }
   }
 }
