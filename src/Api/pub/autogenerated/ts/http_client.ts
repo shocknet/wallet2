@@ -73,6 +73,20 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    GetSeed: async (): Promise<ResultError | ({ status: 'OK' }& Types.LndSeed)> => {
+        const auth = await params.retrieveAdminAuth()
+        if (auth === null) throw new Error('retrieveAdminAuth() returned null')
+        let finalRoute = '/api/admin/seed'
+        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.LndSeedValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetUsageMetrics: async (): Promise<ResultError | ({ status: 'OK' }& Types.UsageMetrics)> => {
         const auth = await params.retrieveMetricsAuth()
         if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
@@ -274,17 +288,14 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    UseInviteLink: async (request: Types.UseInviteLinkRequest): Promise<ResultError | ({ status: 'OK' }& Types.UseInviteLinkResponse)> => {
+    UseInviteLink: async (request: Types.UseInviteLinkRequest): Promise<ResultError | ({ status: 'OK' })> => {
         const auth = await params.retrieveGuestWithPubAuth()
         if (auth === null) throw new Error('retrieveGuestWithPubAuth() returned null')
         let finalRoute = '/api/guest/invite'
         const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.UseInviteLinkResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+            return data
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
@@ -444,6 +455,20 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    ResetNPubLinkingToken: async (request: Types.RequestNPubLinkingTokenRequest): Promise<ResultError | ({ status: 'OK' }& Types.RequestNPubLinkingTokenResponse)> => {
+        const auth = await params.retrieveAppAuth()
+        if (auth === null) throw new Error('retrieveAppAuth() returned null')
+        let finalRoute = '/api/app/user/npub/token/reset'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.RequestNPubLinkingTokenResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     UserHealth: async (): Promise<ResultError | ({ status: 'OK' })> => {
         const auth = await params.retrieveUserAuth()
         if (auth === null) throw new Error('retrieveUserAuth() returned null')
@@ -579,6 +604,20 @@ export default (params: ClientParams) => ({
             const result = data
             if(!params.checkResult) return { status: 'OK', ...result }
             const error = Types.PayInvoiceResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    GetPaymentState: async (request: Types.GetPaymentStateRequest): Promise<ResultError | ({ status: 'OK' }& Types.PaymentState)> => {
+        const auth = await params.retrieveUserAuth()
+        if (auth === null) throw new Error('retrieveUserAuth() returned null')
+        let finalRoute = '/api/user/payment/state'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.PaymentStateValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
