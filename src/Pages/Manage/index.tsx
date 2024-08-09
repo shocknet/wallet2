@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useIonRouter } from "@ionic/react";
 import * as Icons from "../../Assets/SvgIconLibrary";
-
+import { useSelector } from "../../State/store";
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
+import { getHttpClient, getNostrClient } from '../../Api';
 interface Seeditem {
   id: number;
   node: string;
@@ -12,8 +15,12 @@ export const Manage = () => {
 
   const [isShowQuestion, setIsShowQuestion] = useState<boolean>(false);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
-
-  const seeditems: Seeditem[] = [
+  const [seed, setSeed] = useState<string[]>([])
+  const spendSources = useSelector(state => state.spendSource)
+  const selectedSource = useMemo(() => {
+    return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
+  }, [spendSources])
+  /*const seeditems: Seeditem[] = [
     {
       id: 1,
       node: "albert",
@@ -111,8 +118,28 @@ export const Manage = () => {
       node: "fruit",
     },
   ];
+*/
+  
 
-  const handleSave = () => {
+const fetchSeed =async() => {
+  if (!selectedSource) {
+    toast.error(<Toast title="Metrics Error" message={`no admin access found`} />);
+    return
+  }
+  const source = spendSources.sources[selectedSource]
+    if (!source || !source.adminToken) {
+      toast.error(<Toast title="Metrics Error" message={`no admin access found`} />);
+      return
+    }
+    const client = await getNostrClient(source.pasteField, source.keys!)
+    const res = await client.GetSeed()
+    if (res.status !== 'OK') {
+      toast.error(<Toast title="Metrics Error" message={`failed to fetch seed ${res.reason}`} />);
+      return
+    }
+    setSeed(res.seed)
+}
+const handleSave = () => {
     router.push("/metrics");
   };
 
@@ -239,11 +266,11 @@ export const Manage = () => {
           onClick={() => setIsRevealed(true)}
           className={`text-box ${!isRevealed && "blur"}`}
         >
-          {seeditems.map((item: Seeditem, index: number) => (
-            <div key={index} className="item">{`${item.id}. ${item.node}`}</div>
+          {seed.map((item: string, index: number) => (
+            <div key={index} className="item">{`${index+1}. ${item}`}</div>
           ))}
         </div>
-        <div onClick={() => setIsRevealed(true)} className="reveal-button">
+        <div onClick={() => fetchSeed()} className="reveal-button">
           Click to reveal seed
         </div>
       </div>
