@@ -1,0 +1,260 @@
+.Feat {
+  position: relative;
+  font-family: Montserrat;
+  height: 75vh;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+
+  &_header {
+    display: flex;
+    justify-content: center;
+  }
+
+  &_Icon_Left {
+    position: absolute;
+    left: 0px;
+    width: 24px;
+    height: 24px;
+  }
+
+  &_user {
+    font-size: 24px;
+    display: flex;
+    img {
+      vertical-align: middle;
+    }
+  }
+
+  &_user_name {
+    margin-left: 10px;
+  }
+
+  &_Msg_Image {
+    img {
+      margin-top: 80px;
+      width: 207px;
+      height: 170px;
+      border-radius: 5px;
+      fill: #dadada;
+      box-shadow: 0px 0px 2px rgba(0, 0, 0, 1);
+    }
+  }
+
+  &_Msg_reciver {
+    margin-top: 5px;
+    display: flex;
+    justify-content: start;
+    align-items: end;
+  }
+
+  &_Msg_send {
+    margin-top: 5px;
+    display: flex;
+    justify-content: end;
+    align-items: end;
+  }
+
+  &_polygon_reciver {
+    position: relative;
+    left: 11px;
+    bottom: -7px;
+    z-index: -1;
+  }
+
+  &_polygon_send {
+    position: relative;
+    left: -10px;
+    bottom: -7px;
+    z-index: -1;
+  }
+
+  &_chat_reciver {
+    line-height: 1.8;
+    background-color: #29abe2;
+    border-radius: 5px;
+    width: 283px;
+    background-size: cover;
+    font-size: 14px;
+    padding-left: 19px;
+    padding-top: 4px;
+    color: #ffffff;
+  }
+
+  &_chat_send {
+    line-height: 1.8;
+    background: #16191c;
+    border: 1px solid #29abe2;
+    border-radius: 5px;
+    width: 283px;
+    background-size: cover;
+    font-size: 14px;
+    padding-left: 19px;
+    padding-top: 4px;
+    color: #ffffff;
+  }
+
+  &_more_tools {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+    width: 100%;
+    button {
+      margin: 1px 1px;
+      width: 100%;
+      height: 30px;
+      cursor: pointer;
+      box-sizing: border-box;
+      font-size: 10px;
+      font-weight: bold;
+      font-family: Montserrat;
+      $border: 1px;
+      color: #8c8c8c;
+      background: #16191c;
+      background-clip: padding-box; /* !importanté */
+      border: solid $border #8c8c8c; /* !importanté */
+      border-radius: 25px;
+    }
+    div {
+      margin-top: 2px;
+      cursor: pointer;
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  &_edit_message {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    width: 100%;
+    height: 53px;
+    border-radius: 5px;
+    border: 1px solid #29abe2;
+    display: flex;
+    div {
+      margin-left: 9px;
+      margin-top: 15px;
+      width: 5%;
+    }
+    button {
+      margin-right: 10px;
+    }
+  }
+
+  &_defaultIcon {
+    display: flex;
+    position: relative;
+    width: 95% !important;
+    input {
+      margin-left: 9px;
+      margin-top: -10px;
+      background: #16191c;
+      width: 100%;
+      text-decoration: none solid rgb(255, 255, 255);
+      height: 40px;
+      border-radius: 4px;
+      background-size: cover;
+      box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+      font-size: 12px;
+      outline: none;
+      text-align: start;
+      border: 0px;
+    }
+
+    button {
+      background-color: #16191c;
+      div {
+        margin-top: -15px;
+      }
+    }
+  }
+
+  &_sendIcon {
+    display: flex;
+    position: relative;
+    width: 95% !important;
+    input {
+      margin-left: 9px;
+      margin-top: -10px;
+      background: #16191c;
+      width: 100%;
+      text-decoration: none solid rgb(255, 255, 255);
+      height: 40px;
+      border-radius: 4px;
+      background-size: cover;
+      box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+      font-size: 12px;
+      outline: none;
+      text-align: start;
+      border: 0px;
+    }
+
+    button {
+      background-color: #16191c;
+      div {
+        margin-top: -10px;
+      }
+    }
+  }
+
+  &_container {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 95%;
+    height: 95%;
+  }
+
+  &_inputFile {
+    input {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ffffff;
+      position: absolute;
+      top: 5px;
+      right: 50px;
+      opacity: 0;
+    }
+  }
+
+  &_Msg_Image_send {
+    margin-top: 5px;
+    display: flex;
+    justify-content: end;
+    img {
+      width: 207px;
+      height: 170px;
+      border-radius: 5px;
+      border: 1px solid #8c8c8c;
+    }
+  }
+
+  &_selectImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    position: relative;
+    top: -24px;
+    img {
+      margin-left: 2px;
+      margin-top: 2px;
+      width: 35px;
+      height: 35px;
+      border-radius: 5px;
+      border: solid 1px #8c8c8c; /* !importanté */
+    }
+  }
+
+  &_actions {
+    position: fixed;
+    width: 93vw;
+    bottom: 10px;
+    max-width: 500px;
+  }
+
+  &_body{
+    max-width: 500px;
+    margin: auto;
+    height: 74vh;
+  }
+}
