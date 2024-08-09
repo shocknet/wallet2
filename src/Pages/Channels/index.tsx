@@ -1,0 +1,259 @@
+import React, { useState } from "react";
+import * as Icons from "../../Assets/SvgIconLibrary";
+interface OfflineChannel {
+  id: number;
+  avatar: string;
+  name: string;
+  subNode: string;
+  timeStamp?: number;
+  satAmount: number;
+}
+
+interface ActiveChannel {
+  id: number;
+  avatar: string;
+  name: string;
+  localSatAmount: number;
+  RemoteSatAmount: number;
+}
+
+export const Channels = () => {
+  const offlineChannels: OfflineChannel[] = [
+    {
+      id: 1,
+      avatar: "",
+      name: "Bob",
+      subNode: "Initiate force-close",
+      timeStamp: 706774400000,
+      satAmount: 5900000,
+    },
+    {
+      id: 2,
+      avatar: "",
+      name: "Alice",
+      subNode: "tx13345567......787889900",
+      timeStamp: 706774400000,
+      satAmount: 10000000,
+    },
+    {
+      id: 3,
+      avatar: "",
+      name: "Charlie",
+      subNode: "",
+      timeStamp: 706774400000,
+      satAmount: 1000000,
+    },
+  ];
+
+  const activeChannels: ActiveChannel[] = [
+    {
+      id: 1,
+      avatar: "",
+      name: "Olympub",
+      localSatAmount: 1000000,
+      RemoteSatAmount: 500000,
+    },
+    {
+      id: 2,
+      avatar: "",
+      name: "LNMedium",
+      localSatAmount: 1000000,
+      RemoteSatAmount: 0,
+    },
+    {
+      id: 3,
+      avatar: "",
+      name: "Wattage",
+      localSatAmount: 1000000,
+      RemoteSatAmount: 1000000,
+    },
+    {
+      id: 4,
+      avatar: "",
+      name: "LNMarkers",
+      localSatAmount: 1000000,
+      RemoteSatAmount: 1000000,
+    },
+  ];
+
+  const totalSatAmount: number = offlineChannels.reduce(
+    (acc, obj) => acc + obj.satAmount,
+    0
+  );
+
+  const totalRemoteSatAmount: number = activeChannels.reduce(
+    (acc, obj) => acc + obj.RemoteSatAmount,
+    0
+  );
+
+  const totalLocalSatAmount: number = activeChannels.reduce(
+    (acc, obj) => acc + obj.localSatAmount,
+    0
+  );
+
+  return (
+    <div className="Channels">
+      <div className="Channels_offline-channels">
+        <div className="section-title">
+          <div>
+            <div className="title">
+              <span>🚨</span> Offline Channels
+            </div>
+            <div className="sub-title">
+              {formatCryptoAmount(totalSatAmount)} Encumbered
+            </div>
+          </div>
+          <div className="line" />
+        </div>
+        <div className="channel-group">
+          {offlineChannels.map((channel: OfflineChannel, index: number) => (
+            <div className="channel" key={index}>
+              <div>
+                <div className="avatar">
+                  <img
+                    src={channel.avatar}
+                    width={12}
+                    height={12}
+                    className=""
+                    alt="avatar"
+                  />
+                  <div>{channel.name}</div>
+                </div>
+                {channel.subNode !== "" && (
+                  <div className="sub-node">{channel.subNode}</div>
+                )}
+              </div>
+              <div>
+                <div className="amount">
+                  {formatCryptoAmount(channel.satAmount)}
+                </div>
+                <div className="time">
+                  <span>
+                    {`${
+                      channel.timeStamp
+                        ? channel.timeStamp > 1000
+                          ? "💀 Last seen 10 days ago"
+                          : "🔍 Last seen 2 hours ago"
+                        : "🔗 Pending Force Close"
+                    }`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="Channels_active-channels">
+        <div className="section-title">
+          <div>
+            <div className="title">
+              <span>
+                <img
+                  src="/icons/lightning_yellow.png"
+                  width={15}
+                  height={15}
+                  alt=""
+                />
+              </span>{" "}
+              Active Channels
+            </div>
+            <div className="sub-title">
+              {`${formatCryptoAmount(
+                totalLocalSatAmount
+              )} Local, ${formatCryptoAmount(totalRemoteSatAmount)}
+              Remote`}
+            </div>
+          </div>
+          <div className="line" />
+        </div>
+        <div className="channel-group">
+          {activeChannels.map((channel: ActiveChannel, index: number) => (
+            <div className="channel" key={index}>
+              <div>
+                <div className="avatar">
+                  <img
+                    src={channel.avatar}
+                    width={12}
+                    height={12}
+                    className=""
+                    alt="avatar"
+                  />
+                  <div>{channel.name}</div>
+                </div>
+                <div className="amount">
+                  {formatCryptoAmount(
+                    channel.RemoteSatAmount + channel.localSatAmount
+                  )}
+                </div>
+              </div>
+              <div className="progress">
+                <div>
+                  <div>I</div>
+                  <SatAmountBar
+                    type="remote"
+                    satAmount={channel.RemoteSatAmount}
+                    totalSatAmount={
+                      channel.RemoteSatAmount + channel.localSatAmount
+                    }
+                  />
+                </div>
+                <div>
+                  <div>O</div>
+                  <SatAmountBar
+                    type="local"
+                    satAmount={channel.localSatAmount}
+                    totalSatAmount={
+                      channel.RemoteSatAmount + channel.localSatAmount
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="Channels_footer">
+        Connected to <br />
+        npub123456
+      </div>
+    </div>
+  );
+};
+
+interface ComponentProps {
+  type: "remote" | "local";
+  satAmount: number;
+  totalSatAmount: number;
+}
+
+const SatAmountBar: React.FC<ComponentProps> = ({
+  type,
+  satAmount,
+  totalSatAmount,
+}) => {
+  const percent: number =
+    satAmount / totalSatAmount < 0.01 ? 0.01 : satAmount / totalSatAmount;
+  return (
+    <div
+      style={{
+        backgroundColor: `${type === "local" ? "#ff7700" : "#5912c7"}`,
+        width: `calc(${percent} * 100%)`,
+        textWrap: "nowrap",
+      }}
+    >
+      {formatCryptoAmount(satAmount)}
+    </div>
+  );
+};
+
+const formatCryptoAmount = (amount: number): string => {
+  if (amount >= 1000000) {
+    return `${amount / 1000000}M Sat`;
+  } else if (amount >= 1000) {
+    return `${amount / 1000}K Sat`;
+  } else if (amount >= 100000000) {
+    return `${amount.toFixed(2)} BTC`;
+  } else {
+    return `${amount} Sat`;
+  }
+};
