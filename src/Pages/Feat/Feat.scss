@@ -1,6 +1,10 @@
 .Feat {
   position: relative;
   font-family: Montserrat;
+  height: 75vh;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
 
   &_header {
     display: flex;
@@ -93,22 +97,18 @@
   &_more_tools {
     display: flex;
     justify-content: center;
-    width: 100vw;
-    margin-left: -16px;
     margin-top: 5px;
+    width: 100%;
     button {
-      margin-left: 3px;
+      margin: 1px 1px;
+      width: 100%;
+      height: 30px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      position: relative;
       box-sizing: border-box;
-      font-size: 11px;
-      font-family: Montserrat;
+      font-size: 10px;
       font-weight: bold;
+      font-family: Montserrat;
       $border: 1px;
-      padding: 10px 10px;
       color: #8c8c8c;
       background: #16191c;
       background-clip: padding-box; /* !importanté */
@@ -116,8 +116,10 @@
       border-radius: 25px;
     }
     div {
-      margin-top: 6px;
+      margin-top: 2px;
       cursor: pointer;
+      width: 15px;
+      height: 15px;
     }
   }
 
@@ -125,7 +127,7 @@
     margin-left: auto;
     margin-right: auto;
     margin-top: 5px;
-    width: 345px;
+    width: 100%;
     height: 53px;
     border-radius: 5px;
     border: 1px solid #29abe2;
@@ -133,17 +135,22 @@
     div {
       margin-left: 9px;
       margin-top: 15px;
+      width: 5%;
+    }
+    button {
+      margin-right: 10px;
     }
   }
 
   &_defaultIcon {
     display: flex;
     position: relative;
+    width: 95% !important;
     input {
       margin-left: 9px;
       margin-top: -10px;
       background: #16191c;
-      width: 200px;
+      width: 100%;
       text-decoration: none solid rgb(255, 255, 255);
       height: 40px;
       border-radius: 4px;
@@ -166,11 +173,12 @@
   &_sendIcon {
     display: flex;
     position: relative;
+    width: 95% !important;
     input {
       margin-left: 9px;
       margin-top: -10px;
       background: #16191c;
-      width: 200px;
+      width: 100%;
       text-decoration: none solid rgb(255, 255, 255);
       height: 40px;
       border-radius: 4px;
@@ -193,16 +201,18 @@
   &_container {
     overflow-y: scroll;
     overflow-x: hidden;
-    height: 460px;
+    max-height: 95%;
+    height: 95%;
   }
 
   &_inputFile {
     input {
-      width: 24px;
-      height: 24px;
+      width: 30px;
+      height: 30px;
       border: 1px solid #ffffff;
       position: absolute;
-      top: 10px;
+      top: 5px;
+      right: 50px;
       opacity: 0;
     }
   }
@@ -218,20 +228,32 @@
     }
   }
 
-  &_selectImage{
+  &_selectImage {
     width: 40px;
     height: 40px;
     border-radius: 5px;
     position: relative;
     top: -24px;
-    img{
+    img {
       margin-left: 2px;
       margin-top: 2px;
       width: 35px;
       height: 35px;
       border-radius: 5px;
       border: solid 1px #8c8c8c; /* !importanté */
-
     }
+  }
+
+  &_actions {
+    position: fixed;
+    width: 93vw;
+    bottom: 10px;
+    max-width: 500px;
+  }
+
+  &_body{
+    max-width: 500px;
+    margin: auto;
+    height: 74vh;
   }
 }

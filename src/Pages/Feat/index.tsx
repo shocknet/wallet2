@@ -229,48 +229,53 @@ export const Feat = () => {
           <div className="Feat_user_name">Alice</div>
         </div>
       </div>
-      <div className="Feat_container" id="HistoryFeild">
-        <div>
-          <div className="Feat_Msg_Image">
-            <img src="/feat/Rectangle.svg" alt="Rectangle" />
+      <div className="Feat_body">
+        <div className="Feat_container" id="HistoryFeild">
+          <div>
+            <div className="Feat_Msg_Image">
+              <img src="/feat/Rectangle.svg" alt="Rectangle" />
+            </div>
+            {messageHistory.map((message, index) => {
+              if (message.msg_type == "recive_message") {
+                return (
+                  <div className="Feat_Msg_reciver" key={index}>
+                    <div className="Feat_polygon_reciver">
+                      {Icons.Polygon()}
+                    </div>
+                    <div className="Feat_chat_reciver">{message.chat}</div>
+                  </div>
+                );
+              }
+              if (message.msg_type == "send_message") {
+                return (
+                  <div className="Feat_Msg_send" key={index}>
+                    <div className="Feat_chat_send">{message.chat}</div>
+                    <div className="Feat_polygon_send">{Icons.Polygon()}</div>
+                  </div>
+                );
+              }
+              if (message.msg_type == "send_image") {
+                return (
+                  <div className="Feat_Msg_Image_send" key={index}>
+                    <img src={message.file} alt="Rectangle" />
+                  </div>
+                );
+              }
+            })}
           </div>
-          {messageHistory.map((message, index) => {
-            if (message.msg_type == "recive_message") {
-              return (
-                <div className="Feat_Msg_reciver" key={index}>
-                  <div className="Feat_polygon_reciver">{Icons.Polygon()}</div>
-                  <div className="Feat_chat_reciver">{message.chat}</div>
-                </div>
-              );
-            }
-            if (message.msg_type == "send_message") {
-              return (
-                <div className="Feat_Msg_send" key={index}>
-                  <div className="Feat_chat_send">{message.chat}</div>
-                  <div className="Feat_polygon_send">{Icons.Polygon()}</div>
-                </div>
-              );
-            }
-            if (message.msg_type == "send_image") {
-              return (
-                <div className="Feat_Msg_Image_send" key={index}>
-                  <img src={message.file} alt="Rectangle" />
-                </div>
-              );
-            }
-          })}
         </div>
-      </div>
-      {/* <img src={captureImage} alt="" /> */}
-      <div className="Feat_more_tools">
-        <button onClick={send_payment}>Send Payment</button>
-        <button onClick={create_cloud}>Create a Cloud Node</button>
-        <button onClick={is_this_private}>Is this private?</button>
-        <div onClick={pastImage}>{Icons.refreshIcon()}</div>
-      </div>
-      <div className="Feat_edit_message">
-        {Icons.markIcon()}
-        {!editing ? defaultIcon : sendIcon()}
+        <div className="Feat_actions">
+          <div className="Feat_more_tools">
+            <button onClick={send_payment}>Send Payment</button>
+            <button onClick={create_cloud}>Create a Cloud Node</button>
+            <button onClick={is_this_private}>Is this private?</button>
+            <div onClick={pastImage}>{Icons.refreshIcon()}</div>
+          </div>
+          <div className="Feat_edit_message">
+            {Icons.markIcon()}
+            {!editing ? defaultIcon : sendIcon()}
+          </div>
+        </div>
       </div>
     </div>
   );
