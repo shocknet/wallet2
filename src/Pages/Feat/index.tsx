@@ -35,7 +35,9 @@ export const Feat = () => {
   const sendMessage = (selected: string) => {
     console.log(selected);
     const scrollField = document.getElementById("HistoryFeild");
-    setScroll(scrollField.scrollHeight);
+    if (scrollField) {
+      setScroll(scrollField.scrollHeight);
+    }
     if (selected == "normal") {
       if (file) {
         messageHistory.push({
@@ -88,12 +90,14 @@ export const Feat = () => {
 
   const fileDownload = (e: HTMLInputElement) => {
     setEditing(true);
-    const file = e.files[0];
-    setMessage(file.name);
-    if (file.type.includes("image")) {
-      setFile(URL.createObjectURL(file));
+    if (e.files) {
+      const file = e.files[0];
+      setMessage(file.name);
+      if (file.type.includes("image")) {
+        setFile(URL.createObjectURL(file));
+      }
+      document.getElementById("message")?.focus();
     }
-    document.getElementById("message")?.focus();
   };
 
   const editingMessage = (message: string) => {
@@ -184,8 +188,7 @@ export const Feat = () => {
             }}
             value={message}
           />
-          <div className="Feat_selectImage">
-          </div>
+          <div className="Feat_selectImage"></div>
           <button onClick={() => sendMessage("normal")}>
             {Icons.sendIcon()}
           </button>
