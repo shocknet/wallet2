@@ -209,13 +209,7 @@ export const Feat = () => {
   const pastImage = async () => {
     const clipboardItems = await navigator.clipboard.read();
     for (const clipboardItem of clipboardItems) {
-      console.log(clipboardItem);
-      console.log(clipboardItem.types);
-      const imageTypes = clipboardItem.types.find((type) =>
-        type.startsWith("image/")
-      );
-      const blob = await clipboardItem.getType(imageTypes);
-      console.log(URL.createObjectURL(blob));
+      const blob = await clipboardItem.getType("image/png");
       setFile(URL.createObjectURL(blob));
       setEditing(true);
       setMessage(String(Date.now()) + ".png");
