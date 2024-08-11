@@ -1,6 +1,6 @@
 
 
-const WALLET_CLIENT_KEY_STORAGE_KEY = "WALLET_CLIENT_KEY";
+export const WALLET_CLIENT_KEY_STORAGE_KEY = "WALLET_CLIENT_KEY";
 
 export const getClientKey = () => {
 	let clientKey = localStorage.getItem(WALLET_CLIENT_KEY_STORAGE_KEY);
