@@ -25,7 +25,7 @@ import Checkbox from '../../Components/Checkbox';
 import classNames from 'classnames';
 
 
-const FILENAME = "shockw.dat";
+const FILENAME = "shockw";
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -116,12 +116,12 @@ export const Auth = () => {
       }
     }
     console.log({allData})
-
+    const filename = `${FILENAME}-${new Date().toLocaleString().replace(/[,:\s/]/g, '-')}.dat`
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
     const blob = new Blob([encodedString], { type: 'text/plain' });
     if (!isPlatform("hybrid")) {
       const link = document.createElement('a');
-      link.download = FILENAME;
+      link.download = filename;
 
       console.log({ encodedString })
 
@@ -135,7 +135,7 @@ export const Auth = () => {
     } else {
       try {
         const savedFile = await Filesystem.writeFile({
-          path: FILENAME,
+          path: filename,
           data: await blobToBase64(blob),
           directory: Directory.Documents,
           recursive: true,
