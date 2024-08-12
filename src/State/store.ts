@@ -16,9 +16,13 @@ import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
 import { DataVersion } from './types';
+import { backupPollingMiddleware } from './backupMiddleware';
 export const syncRedux = createAction('SYNC_REDUX');
 
 const listenerMiddleware = createListenerMiddleware();
+
+
+listenerMiddleware.startListening(backupPollingMiddleware)
 
 
 
