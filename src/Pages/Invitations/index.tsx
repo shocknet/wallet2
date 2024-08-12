@@ -35,7 +35,7 @@ export const Invitations = () => {
     if (!selectedSource) {
       toast.error(
         <Toast
-          title="Not an amdin"
+          title="Not an admin"
           message="No admin source found"
         />
       )
@@ -115,7 +115,7 @@ export const Invitations = () => {
   const oneTimeLinksRender = useMemo(() => {
     return (
       <div className="link-group">
-        {
+        { invitations.invitations &&
           invitations.invitations.map(inv => {
             const link = `${WALLET_URL}/#/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
             return (

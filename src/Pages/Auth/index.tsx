@@ -25,7 +25,7 @@ import Checkbox from '../../Components/Checkbox';
 import classNames from 'classnames';
 
 
-const FILENAME = "shockw.dat";
+const FILENAME = "shockw";
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -111,16 +111,17 @@ export const Auth = () => {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i) ?? "null";
       const value = localStorage.getItem(key);
-      if (value && !ignoredStorageKeys.includes(value)) {
+      if (value && !ignoredStorageKeys.includes(key)) {
         allData[key] = value;
       }
     }
-
+    console.log({allData})
+    const filename = `${FILENAME}-${new Date().toLocaleString().replace(/[,:\s/]/g, '-')}.dat`
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
     const blob = new Blob([encodedString], { type: 'text/plain' });
     if (!isPlatform("hybrid")) {
       const link = document.createElement('a');
-      link.download = FILENAME;
+      link.download = filename;
 
       console.log({ encodedString })
 
@@ -134,14 +135,15 @@ export const Auth = () => {
     } else {
       try {
         const savedFile = await Filesystem.writeFile({
-          path: FILENAME,
+          path: filename,
           data: await blobToBase64(blob),
           directory: Directory.Documents,
           recursive: true,
         });
         console.log({ savedFile })
-      } catch (e) {
-        console.log(e)
+        toast.success(<Toast title="Backup file saved successfuly" message={savedFile.uri} />);
+      } catch (e: any) {
+        toast.error(<Toast title="File backup download failed" message={e?.message || "not Error type"} />);
       }
     }
     toggle();
