@@ -1,12 +1,13 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
-import { mergeArrayValuesWithOrder, mergeBasicRecords} from './dataMerge';
+import { mergeArrayValuesWithOrder, mergeNonFungibleRecords } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
+import { DataVersion } from '../types';
 
 
 type PaySourceRecord = Record<string, PayTo>;
@@ -123,15 +124,17 @@ export const migrations: Record<number, MigrationFunction<any>> = {
 
 
 
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+export const mergeLogic = (serialLocal: string, serialRemote: string, localVersion: DataVersion, remoteVersion: DataVersion): string => {
   const local = getStateAndVersion(serialLocal)
   const remote = getStateAndVersion(serialRemote)
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations) as PaySourceState;
   const migratedLocal = applyMigrations(local.state, local.version, migrations) as PaySourceState;
   const merged: PaySourceState = {
-    sources: mergeBasicRecords(migratedLocal.sources, migratedRemote.sources),
-    order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, v => v)
+    sources: mergeNonFungibleRecords(migratedLocal.sources, migratedRemote.sources, localVersion, remoteVersion),
+    order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, localVersion, remoteVersion, v => v)
   }
+
+  merged.order = merged.order.filter(source => !!merged.sources[source]);
   
   return JSON.stringify({
     version: VERSION,

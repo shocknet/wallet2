@@ -30,6 +30,7 @@ import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 export const Background = () => {
 	const history = useHistory();
 	const router = useIonRouter();
+	const optimisticOperations = useSelector(state => state.history.optimisticOperations)
 	const savedAssets = useSelector(state => state.generatedAssets.assets)
 	const spendSource = useSelector((state) => state.spendSource)
 	const nostrSpends = useSelector(selectNostrSpends);
@@ -125,11 +126,13 @@ export const Background = () => {
 			console.log(res.reason)
 			return
 		}
-		dispatch(editSpendSources({
-			...source,
-			balance: `${res.balance}`,
-			maxWithdrawable: `${res.max_withdrawable}`
-		}))
+		if (Number(source.balance) !== res.balance) {
+			dispatch(editSpendSources({
+				...source,
+				balance: `${res.balance}`,
+				maxWithdrawable: `${res.max_withdrawable}`
+			}))
+		}
 	}
 	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, sourceId: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor, !!newData)
@@ -145,8 +148,9 @@ export const Background = () => {
 			fetchSourceHistory(source, client, sourceId, totalHistory.cursor, totalHistory.operations)
 			return
 		}
-
-		dispatch(removeOptimisticOperation(sourceId));
+		if (optimisticOperations.length > 0) {
+			dispatch(removeOptimisticOperation(sourceId));
+		}
 
 		const accumulatedHistory = {
 			operations: totalData,
@@ -180,7 +184,7 @@ export const Background = () => {
 			localStorage.setItem("userStatus", "online");
 		}
 		dispatch(setSourceHistory({ pub: sourceId, ...accumulatedHistory }));
-	}, [cursor, dispatch, operationGroups]);
+	}, [cursor, dispatch, operationGroups, optimisticOperations]);
 
 	useEffect(() => {
 		if (!nodedUp) {
@@ -219,9 +223,11 @@ export const Background = () => {
 					const response = await axios.get(lnurlEndpoint);
 					const updatedSource = { ...source };
 					const amount = Math.round(response.data.maxWithdrawable / 1000).toString()
-					updatedSource.balance = amount;
-					updatedSource.maxWithdrawable = amount;
-					dispatch(editSpendSources(updatedSource));
+					if (amount !== updatedSource.balance) {
+						updatedSource.balance = amount;
+						updatedSource.maxWithdrawable = amount;
+						dispatch(editSpendSources(updatedSource));
+					}
 				} catch (err) {
 					if (isAxiosError(err) && err.response) {
 						dispatch(addNotification({

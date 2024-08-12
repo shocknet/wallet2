@@ -1,6 +1,6 @@
 // src/state/store.ts
 
-import { configureStore, createAction, createSelector } from '@reduxjs/toolkit';
+import { configureStore, createAction, createListenerMiddleware, createSelector } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from './Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
@@ -15,7 +15,16 @@ import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
+import { DataVersion } from './types';
+import { backupPollingMiddleware } from './backupMiddleware';
 export const syncRedux = createAction('SYNC_REDUX');
+
+const listenerMiddleware = createListenerMiddleware();
+
+
+listenerMiddleware.startListening(backupPollingMiddleware)
+
+
 
 const store = configureStore({
   reducer: {
@@ -33,6 +42,8 @@ const store = configureStore({
     backupStateSlice,
     oneTimeInviteLinkSlice
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(listenerMiddleware.middleware),
 });
 export type State = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
@@ -46,7 +57,7 @@ export const useSelector = <TSelected = unknown>(
 
 export default store;
 
-export const findReducerMerger = (storageKey: string): ((l: string, r: string) => string) | null => {
+export const findReducerMerger = (storageKey: string): ((l: string, r: string, lv: DataVersion, rv: DataVersion) => string) | null => {
   switch (storageKey) {
     case paySourcesStorageKey:
       return paySourcesMergeLogic
