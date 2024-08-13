@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from "@ionic/react";
+import { Message } from "./message";
+
+interface messageHistory {
+  time_stamp : number,
+  chat : string,
+  msg_type : string,
+  file :string
+}
 
 export const Feat = () => {
-  // const messageData = [
-  //   {
-  //     time_stamp: Date.now(),
-  //     chat: "Hey there, I'm Alice! I'm your wallet assistant and an expert with Bitcoin's Lightning Network... I can set-up a cloud node, open a channel, make a payment, pretty much anything you like... Just ask! So, how can I help you today?",
-  //     msg_type: "recive_message",
-  //     file: "",
-  //   },
-  // ];
 
   const router = useIonRouter();
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState("");
-  const [messageHistory, setMessageHistory] = useState([
+  const [messageHistory, setMessageHistory] = useState<messageHistory[]>([
     {
       time_stamp: Date.now(),
       chat: "Hey there, I'm Alice! I'm your wallet assistant and an expert with Bitcoin's Lightning Network... I can set-up a cloud node, open a channel, make a payment, pretty much anything you like... Just ask! So, how can I help you today?",
@@ -31,62 +31,6 @@ export const Feat = () => {
     const scrollField = document.getElementById("HistoryFeild");
     scrollField?.scrollTo(0, scroll);
   }, [scroll]);
-
-  const sendMessage = (selected: string) => {
-    console.log(selected);
-    const scrollField = document.getElementById("HistoryFeild");
-    if (scrollField) {
-      setScroll(scrollField.scrollHeight);
-    }
-    if (selected == "normal") {
-      if (file) {
-        messageHistory.push({
-          time_stamp: Date.now(),
-          chat: message,
-          msg_type: "send_image",
-          file: file,
-        });
-      } else {
-        messageHistory.push({
-          time_stamp: Date.now(),
-          chat: message,
-          msg_type: "send_message",
-          file: "",
-        });
-      }
-    }
-
-    if (selected == "/Send Payment") {
-      messageHistory.push({
-        time_stamp: Date.now(),
-        chat: selected,
-        msg_type: "send_message",
-        file: "",
-      });
-    }
-
-    if (selected == "/Create a Cloude Node") {
-      messageHistory.push({
-        time_stamp: Date.now(),
-        chat: selected,
-        msg_type: "send_message",
-        file: "",
-      });
-    }
-
-    if (selected == "/Is this private?") {
-      messageHistory.push({
-        time_stamp: Date.now(),
-        chat: selected,
-        msg_type: "send_message",
-        file: "",
-      });
-    }
-    setMessageHistory(messageHistory);
-    setEditing(false);
-    setMessage("");
-    setFile("");
-  };
 
   const fileDownload = (e: HTMLInputElement) => {
     setEditing(true);
@@ -117,7 +61,7 @@ export const Feat = () => {
         id="message"
         className="Message"
         onChange={(e) => editingMessage(e.target.value)}
-        onKeyDownCapture={(e) => {
+        onKeyDown={(e) => {
           if (e.key == "Control") setfirstKey("Control");
           if (e.key == "v") {
             if (firstKey == "Control") {
@@ -220,6 +164,69 @@ export const Feat = () => {
     }
   };
 
+  
+  const sendMessage = (selected: string) => {
+    // console.log(MessageParser(message));
+    console.log(message);
+    console.log(selected);
+    const scrollField = document.getElementById("HistoryFeild");
+    if (scrollField) {
+      setScroll(scrollField.scrollHeight);
+    }
+    if (selected == "normal") {
+      if (file) {
+        ActionProvider(message,"send_image",file)
+      } else {
+        ActionProvider(message,"send_message",file)
+      }
+    }
+
+    if (selected == "/Send Payment") {
+      ActionProvider(selected, "send_message",file)
+    }
+
+    if (selected == "/Create a Cloude Node") {
+      ActionProvider(selected, "send_message", file);
+    }
+
+    if (selected == "/Is this private?") {
+      ActionProvider(selected, "send_message", file);
+    }
+    MessageParser(messageHistory[messageHistory.length-1]);
+    setMessageHistory(messageHistory);
+    setEditing(false);
+    setMessage("");
+    setFile("");
+  };
+
+  const MessageParser = (message : messageHistory) => {
+    const LowserMessage = message.chat.toLocaleLowerCase();
+    
+    if((LowserMessage.includes("hi") || LowserMessage.includes("li")) && (message.file == "" && LowserMessage != "/is this private?")){
+      ActionProvider("Hi, I'm Alice. I'm here to help you explain how I work","recive_message",file)
+      setMessageHistory(messageHistory);
+    }
+    if(LowserMessage.includes("tool")){
+      ActionProvider("we provides this much features", "recive_message", file);
+      ActionProvider("", "recive_button", file);
+      setMessageHistory(messageHistory);
+    }
+    if(message.file){
+      ActionProvider("This is Image File, What do you want?","recive_message",file)
+      ActionProvider("", "recive_img_button", file);
+      setMessageHistory(messageHistory);
+    }
+  }
+
+  const ActionProvider = (chat:string, msg_type:string, file:string) => {
+    messageHistory.push({
+      time_stamp: Date.now(),
+      chat: chat,
+      msg_type: msg_type,
+      file: file,
+    });
+  }
+
   return (
     <div className="Feat">
       <div className="Feat_header">
@@ -236,31 +243,15 @@ export const Feat = () => {
               <img src="/feat/Rectangle.svg" alt="Rectangle" />
             </div>
             {messageHistory.map((message, index) => {
-              if (message.msg_type == "recive_message") {
-                return (
-                  <div className="Feat_Msg_reciver" key={index}>
-                    <div className="Feat_polygon_reciver">
-                      {Icons.Polygon()}
-                    </div>
-                    <div className="Feat_chat_reciver">{message.chat}</div>
-                  </div>
-                );
-              }
-              if (message.msg_type == "send_message") {
-                return (
-                  <div className="Feat_Msg_send" key={index}>
-                    <div className="Feat_chat_send">{message.chat}</div>
-                    <div className="Feat_polygon_send">{Icons.Polygon()}</div>
-                  </div>
-                );
-              }
-              if (message.msg_type == "send_image") {
-                return (
-                  <div className="Feat_Msg_Image_send" key={index}>
-                    <img src={message.file} alt="Rectangle" />
-                  </div>
-                );
-              }
+              return (
+                <Message
+                  key={index}
+                  content={message.chat}
+                  type={message.msg_type}
+                  file = {message.file}
+                ></Message>
+              );
+              
             })}
           </div>
         </div>
