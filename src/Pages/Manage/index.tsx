@@ -122,22 +122,36 @@ export const Manage = () => {
   
 
 const fetchSeed =async() => {
-  if (!selectedSource) {
-    toast.error(<Toast title="Metrics Error" message={`no admin access found`} />);
-    return
-  }
-  const source = spendSources.sources[selectedSource]
+  if(!isRevealed){
+    setIsRevealed(true);
+    if (!selectedSource) {
+      toast.error(
+        <Toast title="Metrics Error" message={`no admin access found`} />
+      );
+      return;
+    }
+    const source = spendSources.sources[selectedSource];
     if (!source || !source.adminToken) {
-      toast.error(<Toast title="Metrics Error" message={`no admin access found`} />);
-      return
+      toast.error(
+        <Toast title="Metrics Error" message={`no admin access found`} />
+      );
+      return;
     }
-    const client = await getNostrClient(source.pasteField, source.keys!)
-    const res = await client.GetSeed()
-    if (res.status !== 'OK') {
-      toast.error(<Toast title="Metrics Error" message={`failed to fetch seed ${res.reason}`} />);
-      return
+    const client = await getNostrClient(source.pasteField, source.keys!);
+    const res = await client.GetSeed();
+    if (res.status !== "OK") {
+      toast.error(
+        <Toast
+          title="Metrics Error"
+          message={`failed to fetch seed ${res.reason}`}
+        />
+      );
+      return;
     }
-    setSeed(res.seed)
+    setSeed(res.seed);
+  }else{
+    setIsRevealed(false);
+  }
 }
 const handleSave = () => {
     router.push("/metrics");
@@ -177,10 +191,12 @@ const handleSave = () => {
           <div className="line" />
         </div>
         <div className="input-group">
+          <div className="bg-over"></div>
           <span>Node name, seen by wallet users (Nostr):</span>
           <input type="text" placeholder="Nodey McNodeFace" value="" />
         </div>
         <div className="checkbox">
+          <div className="bg-over"></div>
           <input type="checkbox" id="nodeDiscoverable" />
           <div className="checkbox-shape"></div>
           <label htmlFor="nodeDiscoverable">
@@ -224,6 +240,7 @@ const handleSave = () => {
           <div className="line" />
         </div>
         <div className="checkbox">
+          <div className="bg-over"></div>
           <input type="checkbox" id="automationService" />
           <div className="checkbox-shape"></div>
           <label htmlFor="automationService" style={{ fontSize: 14 }}>
@@ -246,6 +263,7 @@ const handleSave = () => {
           <div className="line" />
         </div>
         <div className="checkbox">
+          <div className="bg-over"></div>
           <input type="checkbox" id="channelBackup" />
           <div className="checkbox-shape"></div>
           <label htmlFor="channelBackup" style={{ fontSize: 14 }}>
@@ -267,11 +285,11 @@ const handleSave = () => {
           className={`text-box ${!isRevealed && "blur"}`}
         >
           {seed.map((item: string, index: number) => (
-            <div key={index} className="item">{`${index+1}. ${item}`}</div>
+            <div key={index} className="item">{`${index + 1}. ${item}`}</div>
           ))}
         </div>
         <div onClick={() => fetchSeed()} className="reveal-button">
-          Click to reveal seed
+          {isRevealed ? "Click to hide seed" : "Click to reveal seed"}
         </div>
       </div>
       <button onClick={handleSave} className="Manage_save">
