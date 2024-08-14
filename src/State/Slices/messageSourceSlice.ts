@@ -40,7 +40,6 @@ const messageSourceSlice = createSlice({
   initialState,
   reducers : {
     addChat : (state, action : PayloadAction<MessageType>)=>{
-      console.log(action.payload)
       state.chats.push(action.payload);
       update(state);
     },

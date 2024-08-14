@@ -114,6 +114,7 @@ export const Feat = () => {
   };
 
   const handleBotResponse =  (response: string) => {
+    setIsLoading(true);
     setIsScrollDown(!isScrollDown);
     setSendUserResponse(response);
     setTimeout(() => {
@@ -247,7 +248,7 @@ export const Feat = () => {
               <p
                 data-id={option}
                 key={option}
-                // onClick={(e) => props.optionClick(e)}
+                onClick={(e) => optionClick(e)}
               >
                 {option}
               </p>
