@@ -45,7 +45,7 @@ const messageSourceSlice = createSlice({
     },
     allRemoveChat : (state, action : PayloadAction<MessageType>) => {
       state.chats = [action.payload];
-      update(initialState);
+      update(state);
     }
   }
 })
