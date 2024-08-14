@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from "@ionic/react";
-import { Message } from "./Message";
+import { Message } from "./message";
 import { useDispatch } from "../../State/store"; //import reducer
 import { addChat } from "../../State/Slices/messageSourceSlice";
 import { ChatService } from "./ChatService";
@@ -56,14 +56,16 @@ export const Feat = () => {
   };
 
   const handleUserResponse = () => {
-    setIsScrollDown(!isScrollDown)
+    setIsScrollDown(!isScrollDown);
     handleBotResponse(userResponse);
   };
 
   const handleBotResponse = async (response: string) => {
     setIsScrollDown(!isScrollDown);
     setSendUserResponse(response);
-    await dispatch(addChat({ sender: "user", message: response, purpose: "user_response" }));
+    await dispatch(
+      addChat({ sender: "user", message: response, purpose: "user_response" })
+    );
     const res = await ChatService(response.toLocaleLowerCase());
     await setBotResponse({ ...res, sender: "bot" });
     await dispatch(addChat({ ...res, sender: "bot" }));
