@@ -805,3 +805,10 @@ export const MessageIcon = () => {
         <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
       )
 }
+
+export const loadingIcon = () => {
+    const svgCode = '<svg height="16" width="16" xmlns="http://www.w3.org/2000/svg"><g fill="#666"><circle cx="3" cy="8" r="2"/><circle cx="8" cy="8" r="2"/><circle cx="13" cy="8" r="2"/></g></svg>';
+    return (
+        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+    )
+}

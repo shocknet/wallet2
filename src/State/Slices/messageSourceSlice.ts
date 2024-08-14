@@ -40,14 +40,16 @@ const messageSourceSlice = createSlice({
   initialState,
   reducers : {
     addChat : (state, action : PayloadAction<MessageType>)=>{
+      console.log(action.payload)
       state.chats.push(action.payload);
       update(state);
     },
-    removeChat : (state, action : PayloadAction<number>) => {
-      console.log(JSON.stringify(state.chats), action.payload);
+    allRemoveChat : (state, action : PayloadAction<MessageType>) => {
+      state.chats = [action.payload];
+      update(initialState);
     }
   }
 })
 
-export const { addChat, removeChat } = messageSourceSlice.actions;
+export const { addChat, allRemoveChat } = messageSourceSlice.actions;
 export default messageSourceSlice.reducer;

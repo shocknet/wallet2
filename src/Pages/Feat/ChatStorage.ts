@@ -11,7 +11,16 @@ export const ChatStorage = {
   C: {
     purpose: "specify field",
     message: `C test message`,
-    options: ["HTML", "CSS", "TypeScript"],
+    options: [
+      "HTML",
+      "CSS",
+      "TypeScript",
+      "TypeScript",
+      "TypeScript",
+      "TypeScript",
+      "TypeScript",
+      "TypeScript",
+    ],
   },
   D: {
     purpose: "bye",

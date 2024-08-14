@@ -9,5 +9,5 @@ export const ChatService = (response: string) => {
     ? ChatStorage.C
     : response == "d"
     ? ChatStorage.D
-    : { purpose: "default", message: "Sorry, I dont't know this message" };
+    : { purpose: "default", message: "Sorry, I don't know this message" };
 };

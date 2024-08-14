@@ -2,11 +2,18 @@ import React, { useEffect, useRef, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from "@ionic/react";
 import { Message } from "./message";
-import { useDispatch } from "../../State/store"; //import reducer
-import { addChat } from "../../State/Slices/messageSourceSlice";
+import { useDispatch, useSelector } from "../../State/store"; //import reducer
+import { addChat, allRemoveChat } from "../../State/Slices/messageSourceSlice";
 import { ChatService } from "./ChatService";
 
 interface ResponseBotObject {
+  purpose?: string;
+  message?: string;
+  options?: string[];
+  sender?: string;
+}
+
+interface MessagesInfo {
   purpose?: string;
   message?: string;
   options?: string[];
@@ -20,6 +27,8 @@ export const Feat = () => {
   const [firstKey, setfirstKey] = useState<string>("");
   //declaration about reducer
   const dispatch = useDispatch();
+  const messageSource = useSelector((state) => state.messageSource);
+
   const [userResponse, setUserResponse] = useState<string>("");
   const [botResponse, setBotResponse] = useState<ResponseBotObject>({
     purpose: "",
@@ -30,6 +39,34 @@ export const Feat = () => {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [sendUserResponse, setSendUserResponse] = useState<string>("");
   const [isScrollDown, setIsScrollDown] = useState<boolean>(false);
+  const [crtOptions, setCrtOptions] = useState<string[]>([]);
+  const [isAllRemoveChat, setIsAllRemoveChat] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [messages, setMessages] = useState<MessagesInfo[]>([]);
+
+  const initialData = {
+    purpose: "introduction",
+    message:
+      "Hey there, I'm Alice! I'm your wallet assistant and an expert with Bitcoin's Lightning Network... I can set-up a cloud node, open a channel, make a payment, pretty much anything you like... Just ask! So, how can I help you today?",
+    sender: "bot",
+    options: ["Send Payment", "Create a Cloud Node", "Is this private"],
+  };
+
+  useEffect(() => {
+    setMessages([
+      {
+        purpose: "introduction",
+        message:
+          "Hey there, I'm Alice! I'm your wallet assistant and an expert with Bitcoin's Lightning Network... I can set-up a cloud node, open a channel, make a payment, pretty much anything you like... Just ask! So, how can I help you today?",
+        sender: "bot",
+        options: ["Send Payment", "Create a Cloud Node", "Is this private"],
+      },
+    ]);
+  }, [isAllRemoveChat]);
+
+  useEffect(() => {
+    setMessages(messageSource.chats);
+  }, [messageSource.chats]);
 
   useEffect(() => {
     if (userResponse.length == 0) {
@@ -47,8 +84,23 @@ export const Feat = () => {
           behavior: "smooth",
         });
       }
-    }, 300);
+    }, 1200);
   }, [isScrollDown]);
+
+  const handleAllRemoveChat = async () => {
+    await dispatch(allRemoveChat(initialData));
+    await setIsAllRemoveChat(!isAllRemoveChat);
+    await setCrtOptions(["Send Payment", "Create a Cloud Node", "Is this private"]);
+  }
+
+  useEffect(() => {
+    const options = messageSource.chats[messageSource.chats.length - 1].options;
+    if (options) {
+      setCrtOptions(options);
+    } else {
+      setCrtOptions([]);
+    }
+  }, [messageSource.chats]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditing(true);
@@ -56,20 +108,24 @@ export const Feat = () => {
   };
 
   const handleUserResponse = () => {
+    setIsLoading(true);
     setIsScrollDown(!isScrollDown);
     handleBotResponse(userResponse);
   };
 
-  const handleBotResponse = async (response: string) => {
+  const handleBotResponse =  (response: string) => {
     setIsScrollDown(!isScrollDown);
     setSendUserResponse(response);
-    await dispatch(
-      addChat({ sender: "user", message: response, purpose: "user_response" })
-    );
-    const res = await ChatService(response.toLocaleLowerCase());
-    await setBotResponse({ ...res, sender: "bot" });
-    await dispatch(addChat({ ...res, sender: "bot" }));
-    await setUserResponse("");
+    setTimeout(() => {
+      dispatch(
+        addChat({ sender: "user", message: response, purpose: "user_response" })
+      );
+      const res = ChatService(response.toLocaleLowerCase());
+      setBotResponse({ ...res, sender: "bot" });
+      dispatch(addChat({ ...res, sender: "bot" }));
+      setIsLoading(false);
+    }, 1000);
+    setUserResponse("");
   };
 
   const optionClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -165,44 +221,42 @@ export const Feat = () => {
             <div className="Feat_Bot_Image">
               <img src="/feat/Rectangle.svg" alt="Rectangle" />
             </div>
-            {/* <div className="Feat_Bot_Actions">
-              <button
-                onClick={() => {
-                  `sendMessage("/Send Payment");`;
-                }}
-              >
-                Send Payment
-              </button>
-              <button
-                onClick={() => {
-                  `sendMessage("/Create a Cloude Node");`;
-                }}
-              >
-                Create a Cloud Node
-              </button>
-              <button
-                onClick={() => {
-                  `sendMessage("/Is this private?");`;
-                }}
-              >
-                Is this private?
-              </button>
-              <div onClick={pasteImage}>{Icons.refreshIcon()}</div>
-            </div> */}
           </div>
           <Message
             botResponse={botResponse}
             userResponse={userResponse}
             sendUserResponse={sendUserResponse}
             optionClick={optionClick}
+            allRemoveChat = {isAllRemoveChat}
+            message={messages}
           ></Message>
+          <div className="loader-container" style={{display : `${isLoading ? "block" : "none"}`}}>
+            <div className="bouncing-dots">
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+          </div>
+          </div>
           <div ref={dummyRef} className="dummy-div"></div>
         </div>
       </div>
       <div className="Feat_ChatMessageFooter">
+        <div className="options">
+          {crtOptions.map((option, index) => (
+            <div key={index}>
+              <p
+                data-id={option}
+                key={option}
+                // onClick={(e) => props.optionClick(e)}
+              >
+                {option}
+              </p>
+            </div>
+          ))}
+          <div className="clear_icon" onClick={handleAllRemoveChat}>{Icons.refreshIcon()}</div>
+        </div>
         <div className="Feat_ChatMessageInputContainer">
           {Icons.markIcon()}
-          {/* {!editing ? defaultIcon : sendIcon()} */}
           <div className="Feat_ChatMessageInputContainer_input">
             <input
               type="text"
@@ -224,6 +278,7 @@ export const Feat = () => {
                 }
               }}
               value={userResponse}
+              disabled = {isLoading}
             />
             <div className="Feat_ChatMessageInputContainer_ChangeField">
               {!editing ? BeforeEditingState() : AfterEditingState()}
