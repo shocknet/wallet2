@@ -6,7 +6,7 @@
   max-width: 800px;
   margin: auto;
 
-  &_header {
+  &_ChatMessageHeader {
     display: flex;
     justify-content: center;
   }
@@ -30,19 +30,6 @@
     margin-left: 10px;
   }
 
-  &_Msg_Image {
-    img {
-      width: 207px;
-      height: 170px;
-      border-radius: 5px;
-      fill: #dadada;
-      box-shadow: 0px 0px 2px rgba(0, 0, 0, 1);
-      animation-name: messageAnimation;
-      animation-duration: .5s;
-      position: relative;
-    }
-  }
-
   &_Msg_reciver {
     margin-top: 5px;
     display: flex;
@@ -53,6 +40,28 @@
     position: relative;
   }
 
+  &_Bot_Description {
+    margin-top: 5px;
+    display: flex;
+    justify-content: start;
+    align-items: end;
+    animation-name: messageAnimation;
+    animation-duration: .5s;
+    position: relative;
+    
+    .Bot_text {
+      line-height: 1.8;
+      background-color: #29abe2;
+      border-radius: 5px;
+      width: 283px;
+      background-size: cover;
+      font-size: 14px;
+      padding-left: 19px;
+      padding-top: 4px;
+      color: #ffffff;
+    }
+  }
+
   &_Msg_send {
     margin-top: 5px;
     display: flex;
@@ -60,53 +69,15 @@
     align-items: end;
   }
 
-  &_polygon_reciver {
-    position: relative;
-    left: 11px;
-    bottom: -7px;
-    z-index: -1;
-  }
 
-  &_polygon_send {
-    position: relative;
-    left: -10px;
-    bottom: -7px;
-    z-index: -1;
-  }
 
-  &_chat_reciver {
-    line-height: 1.8;
-    background-color: #29abe2;
-    border-radius: 5px;
-    width: 283px;
-    background-size: cover;
-    font-size: 14px;
-    padding-left: 19px;
-    padding-top: 4px;
-    color: #ffffff;
-  }
-
-  &_chat_send {
-    line-height: 1.8;
-    background: #16191c;
-    border: 1px solid #29abe2;
-    border-radius: 5px;
-    width: 283px;
-    background-size: cover;
-    font-size: 14px;
-    padding-left: 19px;
-    padding-top: 4px;
-    color: #ffffff;
-  }
-
-  &_more_tools {
+  &_Bot_Actions {
     display: flex;
-    justify-content: center;
-    margin-top: 5px;
+    justify-content: start;
     width: 100%;
+    margin-top: 10px;
     button {
       margin: 1px 1px;
-      width: 100%;
       height: 30px;
       cursor: pointer;
       box-sizing: border-box;
@@ -119,6 +90,7 @@
       background-clip: padding-box; /* !importanté */
       border: solid $border #8c8c8c; /* !importanté */
       border-radius: 25px;
+      padding: 1px 5px;
     }
     div {
       margin-top: 2px;
@@ -128,7 +100,7 @@
     }
   }
 
-  &_edit_message {
+  &_ChatMessageInputContainer {
     margin-left: auto;
     margin-right: auto;
     margin-top: 5px;
@@ -146,7 +118,7 @@
     }
   }
 
-  &_defaultIcon {
+  &_ChatMessageInputContainer_input {
     display: flex;
     position: relative;
     width: 95% !important;
@@ -166,43 +138,21 @@
       border: 0px;
     }
 
-    button {
-      background-color: #16191c;
-      div {
-        margin-top: -15px;
-      }
-    }
+    
   }
 
-  &_sendIcon {
+  &_ChatMessageInputContainer_ChangeField {
     display: flex;
     position: relative;
-    width: 95% !important;
-    input {
-      margin-left: 9px;
-      margin-top: -10px;
-      background: #16191c;
-      width: 100%;
-      text-decoration: none solid rgb(255, 255, 255);
-      height: 40px;
-      border-radius: 4px;
-      background-size: cover;
-      box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
-      font-size: 12px;
-      outline: none;
-      text-align: start;
-      border: 0px;
-    }
-
     button {
       background-color: #16191c;
       div {
-        margin-top: -10px;
+        margin-top: -25px;
       }
     }
   }
 
-  &_container {
+  &_ChatMessageBody_Container {
     overflow-y: scroll;
     overflow-x: hidden;
     max-height: 92%;
@@ -210,7 +160,7 @@
     margin-top: 5%;
   }
 
-  &_inputFile {
+  &_ChatMessageInputContainer_inputFile {
     input {
       width: 30px;
       height: 30px;
@@ -234,15 +184,15 @@
     }
   }
 
-  &_selectImage {
+  &_ChatMessageInputContaier_ShowImage {
     width: 40px;
     height: 40px;
     border-radius: 5px;
     position: relative;
     top: -24px;
     img {
-      margin-left: 2px;
-      margin-top: 2px;
+      position: absolute;
+      top: -13px;
       width: 35px;
       height: 35px;
       border-radius: 5px;
@@ -250,17 +200,9 @@
     }
   }
 
-  &_actions {
-    position: fixed;
-    width: 93vw;
-    bottom: 10px;
-    max-width: 500px;
-  }
-
-  &_body{
-    max-width: 500px;
+  &_ChatMessageBody{
     margin: auto;
-    height: 74vh;
+    height: 75vh;
   }
 
   &_bot_btn{
@@ -292,4 +234,85 @@
     from {right: -20px; opacity: 0;}
     to {right: 0px; opacity: 1;}
   }
+
+  // new
+
+  .options {
+    display: flex;
+    justify-content: start;
+    margin-top: 10px;
+    p {
+      margin: 1px 1px;
+      cursor: pointer;
+      box-sizing: border-box;
+      font-size: 10px;
+      font-weight: bold;
+      font-family: Montserrat;
+      color: #8c8c8c;
+      background: #16191c;
+      background-clip: padding-box;
+      border: solid 1px #8c8c8c;
+      border-radius: 25px;
+      padding: 4px 5px;
+    }
+  }
+
+  .message_bot {
+    margin-top: 5px;
+    display: flex;
+    justify-content: start;
+    align-items: end;
+    animation-name: messageAnimation;
+    animation-duration: .5s;
+    position: relative;
+
+    .Bot_text {
+      line-height: 1.8;
+      background-color: #29abe2;
+      border-radius: 5px;
+      width: 283px;
+      background-size: cover;
+      font-size: 14px;
+      padding-left: 19px;
+      padding-top: 4px;
+      color: #ffffff;
+    }
+    .polygon{
+      position: relative;
+      left: 11px;
+      bottom: -7px;
+      z-index: -1;
+    }
+  }
+
+  .message_user {
+    margin-top: 5px;
+    display: flex;
+    justify-content: end;
+    align-items: end;
+    .Bot_text {
+      line-height: 1.8;
+      background: #16191c;
+      border: 1px solid #29abe2;
+      border-radius: 5px;
+      width: 283px;
+      background-size: cover;
+      font-size: 14px;
+      padding-left: 19px;
+      padding-top: 4px;
+      color: #ffffff;
+    }
+
+    .polygon{
+      position: relative;
+      left: -10px;
+      bottom: -7px;
+      z-index: -1;
+    }
+  }
+  
+  &_Bot_Image {
+    margin-left: 20px;
+  }
+
 }

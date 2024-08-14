@@ -10,6 +10,7 @@ import historySlice, { storageKey as historyStorageKey, mergeLogic as historyMer
 import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from './Slices/notificationSlice';
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
+import messageSourceReducer from "./Slices/messageSourceSlice";
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic, Subscriptions } from './Slices/subscriptionsSlice';
 import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
@@ -20,6 +21,7 @@ export const syncRedux = createAction('SYNC_REDUX');
 const store = configureStore({
   reducer: {
     paySource: paySourcesReducer,
+    messageSource: messageSourceReducer,
     spendSource: spendSourcesReducer,
     usdToBTC: usdToBTCReducer,
     prefs: prefsSlice,
@@ -31,7 +33,7 @@ const store = configureStore({
     loadingOverlay,
     nostrPrivateKey,
     backupStateSlice,
-    oneTimeInviteLinkSlice
+    oneTimeInviteLinkSlice,
   },
 });
 export type State = ReturnType<typeof store.getState>
