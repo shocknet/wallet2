@@ -27,15 +27,15 @@ interface Props {
 export const Message: React.FC<Props> = props => {
   return (
     <div className="message-container">
-      {props.message.map((chat) => (
-        <div key={chat.message}>
+      {props.message.map((chat, index) => (
+        <div key={index}>
           <div className={`message_${chat.sender}`} style={{display : `${chat.sender == "bot" ? "flex" : "none"}`}}>
-            <p className="polygon">{Icons.Polygon()}</p>
-            <p className="Bot_text">{chat.message}</p>
+            <div className="polygon">{Icons.Polygon()}</div>
+            <div className="Bot_text">{chat.message}</div>
           </div>
           <div className={`message_${chat.sender}`} style={{display : `${chat.sender == "user" ? "flex" : "none"}`}}>
-            <p className="Bot_text">{chat.message}</p>
-            <p className="polygon">{Icons.Polygon()}</p>
+            <div className="Bot_text">{chat.message}</div>
+            <div className="polygon">{Icons.Polygon()}</div>
           </div>
         </div>
       ))}
