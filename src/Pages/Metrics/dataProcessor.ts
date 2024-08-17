@@ -142,11 +142,11 @@ export const processLnd = (lnd: Types.LndMetrics): LndGraphs => {
         })
     })
     const labels = generateTimeSeriesLabels(minBlock, maxBlock)
-    const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: 'Chain' }))
+    const chainDatasets = totalChainEvents.map((events, i) => ({ data: events, label: 'Chain', borderColor : "#ff7700", backgroundColor : "#ff7700", yAxisID : "y" }))
     const tmp = Object.entries(channelsBalanceLocal).map(([k, data]) => data)
     channelEvents.push(tmp);
 
-    const localChannelBalance = channelEvents.map((events, i) => ({ data: events, label: 'Channels' }))
+    const localChannelBalance = channelEvents.map((events, i) => ({ data: events, label: 'Channels', borderColor : "#c740c7", backgroundColor : "#c740c7", xAxisID : "x" }))
     return {
         balanceEvents: {
             datasets: [...chainDatasets, ...localChannelBalance],

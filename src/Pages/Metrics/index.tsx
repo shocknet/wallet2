@@ -332,7 +332,7 @@ export const Metrics = () => {
               </div>
             </div>
           </div>
-          <div className={classNames(styles["card"], styles["channels"])}>
+          <div className={classNames(styles["card"], styles["channels"])} onClick={() => router.push('/channels')}>
             <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Channels</h4>
             </div>
@@ -394,9 +394,32 @@ export const Metrics = () => {
         </div>
       </div>
       <br />
-      <div className='metric-footer'>
-        <i>Connected to <br />npub123456</i>
-      </div>
+      <div className={styles["section"]}>
+          <div className="Status">
+            <div className="Status_title">Lightning Status:</div>
+            <div className="Status_value">
+              {Icons.YellowState()}
+              <span>Syncing</span>
+            </div>
+          </div>
+        </div>
+        <div className={styles["section"]}>
+          <div className="Status">
+            <div className="Status_title">Watchdog Status:</div>
+            <div className="Status_value">
+              {Icons.GreenState()}
+              <span>No Alarms</span>
+            </div>
+          </div>
+        </div>
+        <div className={styles["section"]}>
+          <div className="metric-footer">
+            <i>
+              Connected to <br />
+              npub123456
+            </i>
+          </div>
+        </div>
     </div>
   </div>
 }
