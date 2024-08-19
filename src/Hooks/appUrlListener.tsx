@@ -25,12 +25,12 @@ const AppUrlListener: React.FC<any> = () => {
 
   const recogParam = (param: string) => {
     param = param.toLowerCase();
-    const paramArr = param.split("/");
+    const paramArr = param.split(":");
     switch (paramArr[0]) {
-      case "lightning:":
+      case "lightning":
         decodeLNURL(paramArr[1])
         break;
-      case "bitcoin:":
+      case "bitcoin":
         break;
       default:
         break;
