@@ -155,7 +155,12 @@ export const Receive = () => {
   const copyToClip = async () => {
     let clipboardStr = "";
     if (showingLightningAddress && lnAddress !== null) {
-      clipboardStr = lnAddress
+      // clipboardStr = lnAddress
+      if (tag == 0) {
+        clipboardStr = lnAddress;
+      } else {
+        clipboardStr = valueQR.split(":")[1];
+      }
     } else {
       clipboardStr = valueQR.split(":")[1];
     }

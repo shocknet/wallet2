@@ -3,6 +3,7 @@ import { bech32 } from 'bech32';
 import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
+import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
 
 
 
@@ -22,12 +23,14 @@ export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION 
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const SANCTUM_URL = import.meta.env.VITE_SANCTUM_URL || "https://test-auth.shock.network"
+export const TIMESTAMP_STORAGE_KEY = "BACKUP_TIMESTAMP";
+export const VERSION_STORAGE_KEY = "BACKUP_VERSION";
 export const options: any = {
 	little: "A little.",
 	very: "Very well.",
 	mine: "It's my node.",
 }
-export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY]
+export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY, SANCTUM_ACCESS_TOKEN_STORAGE_KEY, WALLET_CLIENT_KEY_STORAGE_KEY]
 
 function padZero(number: number) {
 	return number.toString().padStart(2, '0');
