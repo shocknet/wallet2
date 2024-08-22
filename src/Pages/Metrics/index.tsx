@@ -230,6 +230,13 @@ export const Metrics = () => {
         <Line
           data={lndGraphsData.balanceEvents}
           options={{
+            interaction : {
+              mode : 'index',
+              intersect : false
+            },
+            layout : {
+              padding : 0
+            },
             responsive: true,
             maintainAspectRatio: false,
             aspectRatio: 5 / 2,
@@ -250,19 +257,19 @@ export const Metrics = () => {
                 labels: {
                   boxWidth: 10,
                   boxHeight: 10
-                },
-
+                }
               },
             },
+            
             scales: {
               x: {
                 grid: {
-                  color: "#383838"
+                  color: "#383838",
                 },
               },
               y: {
                 grid: {
-                  color: "#383838"
+                  color: "#383838",
                 },
                 ticks: {
                   display: false
