@@ -413,7 +413,7 @@ export const Metrics = () => {
       </div>
       <br />
       <div className='metric-footer'>
-        <i>Connected to <br />npub123456</i>
+        <i>Connected to <br />{spendSources.sources[selectedSource || ""].pasteField}</i>
       </div>
     </div>
   </div>

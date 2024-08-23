@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
+import { useSelector } from "../../State/store";
+import { getNostrClient } from "../../Api";
+import { NostrKeyPair } from "../../Api/nostrHandler";
 interface OfflineChannel {
   id: number;
   avatar: string;
@@ -18,64 +21,42 @@ interface ActiveChannel {
 }
 
 export const Channels = () => {
-  const offlineChannels: OfflineChannel[] = [
-    {
-      id: 1,
-      avatar: "",
-      name: "Bob",
-      subNode: "Initiate force-close",
-      timeStamp: 706774400000,
-      satAmount: 5900000,
-    },
-    {
-      id: 2,
-      avatar: "",
-      name: "Alice",
-      subNode: "tx13345567......787889900",
-      timeStamp: 706774400000,
-      satAmount: 10000000,
-    },
-    {
-      id: 3,
-      avatar: "",
-      name: "Charlie",
-      subNode: "",
-      timeStamp: 706774400000,
-      satAmount: 1000000,
-    },
-  ];
+  const [activeChannels, setActiveChannels] = useState<ActiveChannel[]>([]);
+  const [offlineChannels, setOfflineChannels] = useState<OfflineChannel[]>([]);
+  const spendSources = useSelector(state => state.spendSource)
+  const selectedSource = useMemo(() => {
+    return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
+  }, [spendSources])
+  const fetchChannels = async (nprofile: string, keys: NostrKeyPair) => {
+    const client = await getNostrClient(nprofile, keys)
+    const res = await client.ListChannels()
+    if (res.status !== "OK") {
+      throw new Error("error listing channels" + res.reason)
+    }
+    const active: ActiveChannel[] = []
+    const offline: OfflineChannel[] = []
+    res.open_channels.forEach((c, i) => {
+      if (c.active) {
+        active.push({ avatar: "", id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance })
+      } else {
+        offline.push({ avatar: "", id: i, name: c.label, satAmount: c.capacity, timeStamp: c.lifetime, subNode: "Initiate force-close" })
+      }
+    })
+    setActiveChannels(active)
+    setOfflineChannels(offline)
 
-  const activeChannels: ActiveChannel[] = [
-    {
-      id: 1,
-      avatar: "",
-      name: "Olympub",
-      localSatAmount: 1000000,
-      RemoteSatAmount: 500000,
-    },
-    {
-      id: 2,
-      avatar: "",
-      name: "LNMedium",
-      localSatAmount: 1000000,
-      RemoteSatAmount: 0,
-    },
-    {
-      id: 3,
-      avatar: "",
-      name: "Wattage",
-      localSatAmount: 1000000,
-      RemoteSatAmount: 1000000,
-    },
-    {
-      id: 4,
-      avatar: "",
-      name: "LNMarkers",
-      localSatAmount: 1000000,
-      RemoteSatAmount: 1000000,
-    },
-  ];
+  }
 
+  useEffect(() => {
+    if (!selectedSource) {
+      throw new Error("admin source not found")
+    }
+    const source = spendSources.sources[selectedSource]
+    if (!source || !source.adminToken) {
+      throw new Error("admin source not found")
+    }
+    fetchChannels(source.pasteField, source.keys)
+  }, [selectedSource])
   const totalSatAmount: number = offlineChannels.reduce(
     (acc, obj) => acc + obj.satAmount,
     0
@@ -129,13 +110,12 @@ export const Channels = () => {
                 </div>
                 <div className="time">
                   <span>
-                    {`${
-                      channel.timeStamp
-                        ? channel.timeStamp > 1000
-                          ? "💀 Last seen 10 days ago"
-                          : "🔍 Last seen 2 hours ago"
-                        : "🔗 Pending Force Close"
-                    }`}
+                    {`${channel.timeStamp
+                      ? channel.timeStamp > 1000
+                        ? "💀 Last seen 10 days ago"
+                        : "🔍 Last seen 2 hours ago"
+                      : "🔗 Pending Force Close"
+                      }`}
                   </span>
                 </div>
               </div>
@@ -214,7 +194,7 @@ export const Channels = () => {
       </div>
       <div className="Channels_footer">
         Connected to <br />
-        npub123456
+        {spendSources.sources[selectedSource || ""].pasteField}
       </div>
     </div>
   );
