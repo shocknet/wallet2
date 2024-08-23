@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useIonRouter } from "@ionic/react";
 import { Chart as ChartJS, registerables, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2'
+import { Chart, Line } from 'react-chartjs-2'
 ChartJS.register(...registerables, Legend);
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useDispatch, useSelector } from '../../State/store';
@@ -108,8 +108,8 @@ export const Metrics = () => {
   const router = useIonRouter();
 
   const [loading, setLoading] = useState(true)
-  const [chainGraphData, setChainGraphData] = useState<{ points: Types.GraphPoint[] }>()
-  const [chansGraphData, setChansGraphData] = useState<{ points: Types.GraphPoint[] }>()
+  const [chainGraphData, setChainGraphData] = useState<Types.GraphPoint[]>([])
+  const [chansGraphData, setChansGraphData] = useState<Types.GraphPoint[]>([])
   //const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
@@ -168,11 +168,19 @@ export const Metrics = () => {
       toast.error(<Toast title="Metrics Error" message={lnd.reason} />);
       return;
     }
-    //const lndGraphs = processLnd(lnd)
-    //setLndGraphsData(lndGraphs)
+    const nodeStats = lnd.nodes[0]
+    console.log({ lnd: nodeStats, apps: apps.apps })
+    const minBlock = Math.min(nodeStats.chain_balance[0].x || 0, nodeStats.channel_balance[0].x || 0)
+    const maxBlock = Math.max(nodeStats.chain_balance[nodeStats.chain_balance.length - 1].x || 0, nodeStats.channel_balance[nodeStats.channel_balance.length - 1].x || 0)
+    console.log({ minBlock, maxBlock })
+    const labels = Array.from({ length: maxBlock - minBlock + 1 }, (_, i) => i + minBlock)
+    const chanValues = nodeStats.channel_balance.map(p => p.y)
+    const chainValues = nodeStats.chain_balance.map(p => p.y)
+    setChansGraphData(nodeStats.channel_balance)
+    setChainGraphData(nodeStats.chain_balance)
     const bestLocal = { n: "", v: 0 }
     const bestRemote = { n: "", v: 0 }
-    const openChannels = lnd.nodes[0].open_channels.map(c => {
+    const openChannels = nodeStats.open_channels.map(c => {
       if (c.remote_balance > bestRemote.v) {
         bestRemote.v = c.remote_balance; bestRemote.n = c.channel_id
       }
@@ -182,17 +190,17 @@ export const Metrics = () => {
       return c.lifetime
     })
     setChannelsInfo({
-      closingChannels: lnd.nodes[0].closing_channels,
-      offlineChannels: lnd.nodes[0].offline_channels,
-      onlineChannels: lnd.nodes[0].online_channels,
-      pendingChannels: lnd.nodes[0].pending_channels,
-      closeChannels: lnd.nodes[0].closed_channels.map(c => c.closed_height),
+      closingChannels: nodeStats.closing_channels,
+      offlineChannels: nodeStats.offline_channels,
+      onlineChannels: nodeStats.online_channels,
+      pendingChannels: nodeStats.pending_channels,
+      closeChannels: nodeStats.closed_channels.map(c => c.closed_height),
       openChannels,
       ChainCreditRoot: [],
       bestLocalChan: bestLocal.n,
       bestRemoteChan: bestRemote.n,
-      forwardedEvents: lnd.nodes[0].forwarding_events,
-      forwardedFees: lnd.nodes[0].forwarding_fees
+      forwardedEvents: nodeStats.forwarding_events,
+      forwardedFees: nodeStats.forwarding_fees
     })
     let totalAppsFees = 0
     let appsFeesInFrame = 0
@@ -225,7 +233,8 @@ export const Metrics = () => {
     <div className={styles["metrics-container"]}>
 
       <div className={classNames(styles["section"], styles["chart"])}>
-        <Line
+        <Chart
+          type={"line"}
           data={{
             datasets: [{
               data: chainGraphData,
@@ -235,6 +244,7 @@ export const Metrics = () => {
               label: "Channels",
             }]
           }}
+
           options={{
             responsive: true,
             maintainAspectRatio: false,
@@ -265,6 +275,8 @@ export const Metrics = () => {
                 grid: {
                   color: "#383838"
                 },
+                min: 830283,
+                max: 858016,
               },
               y: {
                 grid: {
