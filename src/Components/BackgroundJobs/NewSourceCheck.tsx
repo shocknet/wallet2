@@ -24,13 +24,15 @@ export const NewSourceCheck = () => {
 		const newProfile = encodeNprofile({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS, bridge: [DEFAULT_BRIDGE_URL] });
 
 		dispatch(addSpendSources({
-			id: NOSTR_PUB_DESTINATION,
-			label: "Bootstrap Node",
-			pasteField: newProfile,
-			option: options.little,
-			icon: "0",
-			balance: "0",
-			pubSource: true
+			source: {
+				id: NOSTR_PUB_DESTINATION,
+				label: "Bootstrap Node",
+				pasteField: newProfile,
+				option: options.little,
+				icon: "0",
+				balance: "0",
+				pubSource: true
+			}
 		}));
 
 	}, [])

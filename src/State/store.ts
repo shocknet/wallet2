@@ -1,6 +1,6 @@
 // src/state/store.ts
 
-import { configureStore, createAction, createListenerMiddleware, createSelector } from '@reduxjs/toolkit';
+import { combineReducers, configureStore, createAction, createListenerMiddleware, createSelector, TypedStartListening } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from './Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
@@ -15,33 +15,33 @@ import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
-import { DataVersion } from './types';
-import { backupPollingMiddleware } from './backupMiddleware';
+import { listenerMiddleware } from './backupMiddleware';
+import { BackupAction } from './types';
+
 export const syncRedux = createAction('SYNC_REDUX');
 
-const listenerMiddleware = createListenerMiddleware();
 
+export const reducer = combineReducers({
+  paySource: paySourcesReducer,
+  spendSource: spendSourcesReducer,
+  usdToBTC: usdToBTCReducer,
+  prefs: prefsSlice,
+  addressbook: addressbookSlice,
+  history: historySlice,
+  notify: notificationSlice,
+  subscriptions: subscriptionsSlice,
+  generatedAssets,
+  loadingOverlay,
+  nostrPrivateKey,
+  backupStateSlice,
+  oneTimeInviteLinkSlice
+})
 
-listenerMiddleware.startListening(backupPollingMiddleware)
 
 
 
 const store = configureStore({
-  reducer: {
-    paySource: paySourcesReducer,
-    spendSource: spendSourcesReducer,
-    usdToBTC: usdToBTCReducer,
-    prefs: prefsSlice,
-    addressbook: addressbookSlice,
-    history: historySlice,
-    notify: notificationSlice,
-    subscriptions: subscriptionsSlice,
-    generatedAssets,
-    loadingOverlay,
-    nostrPrivateKey,
-    backupStateSlice,
-    oneTimeInviteLinkSlice
-  },
+  reducer: reducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(listenerMiddleware.middleware),
 });
@@ -55,9 +55,10 @@ export const useSelector = <TSelected = unknown>(
 
 
 
-export default store;
 
-export const findReducerMerger = (storageKey: string): ((l: string, r: string, lv: DataVersion, rv: DataVersion) => string) | null => {
+
+export default store;
+export const findReducerMerger = (storageKey: string): ((l: string, r: string) => { data: string, actions: BackupAction[] }) | null => {
   switch (storageKey) {
     case paySourcesStorageKey:
       return paySourcesMergeLogic
@@ -69,10 +70,6 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string, l
       return addressbookMergeLogic
     case historyStorageKey:
       return historyMergeLogic
-    case notificationStorageKey:
-      return notificationMergeLogic
-    case subscriptionsStorageKey:
-      return subscriptionsMergeLogic
     default:
       return null
   }

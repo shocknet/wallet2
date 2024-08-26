@@ -1,16 +1,16 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { SpendFrom } from '../../globalTypes';
-import { mergeArrayValuesWithOrder, mergeNonFungibleRecords } from './dataMerge';
+import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 import { decodeNprofile } from '../../custom-nip19';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
-import { DataVersion } from '../types';
+import { BackupAction, Changelog } from '../types';
 export const storageKey = "spendFrom"
 export const VERSION = 3;
 
-type SpendSourceRecord = Record<string, SpendFrom>;
+export type SpendSourceRecord = Record<string, SpendFrom>;
 
 export interface SpendSourceState {
   sources: SpendSourceRecord;
@@ -93,22 +93,25 @@ export const migrations: Record<number, MigrationFunction<any>> = {
   }
 };
 
-export const mergeLogic = (serialLocal: string, serialRemote: string, localVersion: DataVersion, remoteVersion: DataVersion): string => {
+export const mergeLogic = (serialLocal: string, serialRemote: string): { data: string, actions: BackupAction[] } => {
   const local = getStateAndVersion(serialLocal)
   const remote = getStateAndVersion(serialRemote)
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations) as SpendSourceState;
   const migratedLocal = applyMigrations(local.state, local.version, migrations) as SpendSourceState;
+  const actions: BackupAction[] = []
+
   const merged: SpendSourceState = {
-    sources: mergeNonFungibleRecords(migratedLocal.sources, migratedRemote.sources, localVersion, remoteVersion),
-    order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, localVersion, remoteVersion, v => v)
+    sources: getDiffAsActionDispatch(migratedRemote.sources, migratedLocal.sources, "spendSources/addSpendSources", actions),
+    order: mergeArrayValues(migratedRemote.order, migratedLocal.order, s => s)
+  };
+
+  return {
+    data: JSON.stringify({
+      version: VERSION,
+      data: merged
+    }),
+    actions
   }
-
-  merged.order = merged.order.filter(source => !!merged.sources[source]);
-
-  return JSON.stringify({
-    version: VERSION,
-    data: merged
-  });
 }
 
 const update = (value: SpendSourceState) => {
@@ -125,9 +128,13 @@ const spendSourcesSlice = createSlice({
   name: 'spendSources',
   initialState,
   reducers: {
-    addSpendSources: (state, action: PayloadAction<SpendFrom>) => {
-      state.sources[action.payload.id] = action.payload;
-      state.order.push(action.payload.id);
+    addSpendSources: (state, action: PayloadAction<{ source: SpendFrom, first?: boolean }>) => {
+      state.sources[action.payload.source.id] = action.payload.source;
+      if (action.payload.first) {
+        state.order.unshift(action.payload.source.id);
+      } else {
+        state.order.push(action.payload.source.id);
+      }
       update(state);
       return state;
     },

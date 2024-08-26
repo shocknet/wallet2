@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { mergeBasicRecords } from './dataMerge';
+import { getDiffAsActionDispatch, } from './dataMerge';
 import { syncRedux } from '../store';
+import { BackupAction } from '../types';
 export const storageKey = "addressbook"
 type AddressBook = {
   contacts: Record<string, string>
@@ -9,20 +10,25 @@ type AddressBook = {
   identifierToContact: Record<string, string>
   identifierToMemo?: Record<string, string>
 }
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+export const mergeLogic = (serialLocal: string, serialRemote: string): { data: string, actions: BackupAction[] } => {
   const local = JSON.parse(serialLocal) as AddressBook
   const remote = JSON.parse(serialRemote) as AddressBook
+
+  const actions: BackupAction[] = [];
   const merged: AddressBook = {
-    contacts: mergeBasicRecords(local.contacts, remote.contacts),
-    addressToContact: mergeBasicRecords(local.addressToContact, remote.addressToContact),
-    identifierToAddress: mergeBasicRecords(local.identifierToAddress, remote.identifierToAddress),
-    identifierToContact: mergeBasicRecords(local.identifierToContact, remote.identifierToContact),
-    identifierToMemo: mergeBasicRecords(local.identifierToMemo || {}, remote.identifierToMemo || {}),
+    contacts: remote.contacts,
+    addressToContact: getDiffAsActionDispatch(remote.addressToContact, local.addressToContact, "addressbook/addAddressToContact", actions),
+    identifierToAddress: getDiffAsActionDispatch(remote.identifierToAddress, local.identifierToAddress, "addressbook/addIdentifierToAddress", actions),
+    identifierToContact: getDiffAsActionDispatch(remote.identifierToContact, local.identifierToContact, "addressbook/addIdentifierToContact", actions),
+    identifierToMemo: getDiffAsActionDispatch(remote.identifierToMemo || {}, local.identifierToMemo || {}, "addressbook/addIdentifierMemo", actions),
   }
-  return JSON.stringify(merged)
+  return {
+    data: JSON.stringify(merged),
+    actions
+  }
 }
 
-type AddressBookLink = { identifier?: string, address?: string, contact?: string }
+
 const addressbook = localStorage.getItem(storageKey);
 
 const update = (value: AddressBook) => {
@@ -35,24 +41,22 @@ const addressbookSlice = createSlice({
   name: storageKey,
   initialState,
   reducers: {
-    addAddressbookLink: (state, action: PayloadAction<AddressBookLink>) => {
-      const { identifier, contact, address } = action.payload
-      if (!identifier && !!address && !!contact) { // 0-1-1
-        state.addressToContact[address] = contact
-      } else if (!!identifier && !address && !!contact) { // 1-0-1
-        state.identifierToContact[identifier] = contact
-      } else if (!!identifier && !!address && !contact) { // 1-1-0
-        state.identifierToAddress[identifier] = address
-      } else if (!!identifier && address && !!contact) {// 1-1-1
-        state.identifierToAddress[identifier] = address
-        state.addressToContact[address] = contact
-      } else {
-        console.log("nothing to link")
-      }
-      if (!!contact && !state.contacts[contact]) {
-        state.contacts[contact] = ""
-      }
-      update(state)
+    addAddressToContact: (state, action: PayloadAction<{ address: string, contact: string }>) => {
+      state.addressToContact[action.payload.address] = action.payload.contact;
+      update(state);
+    },
+    addIdentifierToContact: (state, action: PayloadAction<{ identifier: string, contact: string }>) => {
+      state.identifierToContact[action.payload.identifier] = action.payload.contact;
+      update(state);
+    },
+    addIdentifierToAddress: (state, action: PayloadAction<{ address: string, identifier: string }>) => {
+      state.identifierToAddress[action.payload.identifier] = action.payload.address;
+      update(state);
+    },
+    addAddressbookLink: (state, action: PayloadAction<{ address: string, contact: string, identifier: string }>) => {
+      state.identifierToAddress[action.payload.identifier] = action.payload.address;
+      state.addressToContact[action.payload.address] = action.payload.contact
+      update(state);
     },
     addIdentifierMemo: (state, action: PayloadAction<{ identifier: string, memo: string }>) => {
       const { identifier, memo } = action.payload
@@ -71,7 +75,7 @@ const addressbookSlice = createSlice({
   }
 });
 
-export const { addAddressbookLink, addIdentifierMemo } = addressbookSlice.actions;
+export const { addAddressbookLink, addIdentifierMemo, addAddressToContact, addIdentifierToAddress, addIdentifierToContact } = addressbookSlice.actions;
 export default addressbookSlice.reducer;
 
 export const getIdentifierLink = (state: AddressBook, identifier: string) => {
