@@ -21,6 +21,7 @@ interface ActiveChannel {
 }
 
 export const Channels = () => {
+  const [maxBalance, setMaxBalance] = useState<number>(0);
   const [activeChannels, setActiveChannels] = useState<ActiveChannel[]>([]);
   const [offlineChannels, setOfflineChannels] = useState<OfflineChannel[]>([]);
   const spendSources = useSelector(state => state.spendSource)
@@ -33,15 +34,23 @@ export const Channels = () => {
     if (res.status !== "OK") {
       throw new Error("error listing channels" + res.reason)
     }
+    let max = 0
     const active: ActiveChannel[] = []
     const offline: OfflineChannel[] = []
     res.open_channels.forEach((c, i) => {
+      if (c.local_balance > max) {
+        max = c.local_balance
+      }
+      if (c.remote_balance > max) {
+        max = c.remote_balance
+      }
       if (c.active) {
         active.push({ avatar: "", id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance })
       } else {
         offline.push({ avatar: "", id: i, name: c.label, satAmount: c.capacity, timeStamp: c.lifetime, subNode: "Initiate force-close" })
       }
     })
+    setMaxBalance(max)
     setActiveChannels(active)
     setOfflineChannels(offline)
 
@@ -172,9 +181,7 @@ export const Channels = () => {
                   <SatAmountBar
                     type="remote"
                     satAmount={channel.RemoteSatAmount}
-                    totalSatAmount={
-                      channel.RemoteSatAmount + channel.localSatAmount
-                    }
+                    totalSatAmount={maxBalance}
                   />
                 </div>
                 <div>
@@ -182,9 +189,7 @@ export const Channels = () => {
                   <SatAmountBar
                     type="local"
                     satAmount={channel.localSatAmount}
-                    totalSatAmount={
-                      channel.RemoteSatAmount + channel.localSatAmount
-                    }
+                    totalSatAmount={maxBalance}
                   />
                 </div>
               </div>
@@ -211,8 +216,8 @@ const SatAmountBar: React.FC<ComponentProps> = ({
   satAmount,
   totalSatAmount,
 }) => {
-  const percent: number =
-    satAmount / totalSatAmount < 0.01 ? 0.01 : satAmount / totalSatAmount;
+  const r = satAmount / totalSatAmount;
+  const percent: number = r < 0.01 ? 0.01 : r;
   return (
     <div
       style={{
