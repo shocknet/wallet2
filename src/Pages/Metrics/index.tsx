@@ -170,12 +170,23 @@ export const Metrics = () => {
     }
     const nodeStats = lnd.nodes[0]
     console.log({ lnd: nodeStats, apps: apps.apps })
-    const minBlock = Math.min(nodeStats.chain_balance[0].x || 0, nodeStats.channel_balance[0].x || 0)
-    const maxBlock = Math.max(nodeStats.chain_balance[nodeStats.chain_balance.length - 1].x || 0, nodeStats.channel_balance[nodeStats.channel_balance.length - 1].x || 0)
+    const chain = nodeStats.chain_balance
+    const channels = nodeStats.channel_balance
+    const minBlock = Math.min(chain[0].x || 0, channels[0].x || 0)
+    const maxBlock = Math.max(chain[chain.length - 1].x || 0, channels[channels.length - 1].x || 0)
     console.log({ minBlock, maxBlock })
-    const labels = Array.from({ length: maxBlock - minBlock + 1 }, (_, i) => i + minBlock)
-    const chanValues = nodeStats.channel_balance.map(p => p.y)
-    const chainValues = nodeStats.chain_balance.map(p => p.y)
+    if (chain[0].x !== minBlock) {
+      chain.unshift({ x: minBlock, y: chain[0].y })
+    }
+    if (chain[chain.length - 1].x !== maxBlock) {
+      chain.push({ x: maxBlock, y: chain[chain.length - 1].y })
+    }
+    if (channels[0].x !== minBlock) {
+      channels.unshift({ x: minBlock, y: channels[0].y })
+    }
+    if (channels[channels.length - 1].x !== maxBlock) {
+      channels.push({ x: maxBlock, y: channels[channels.length - 1].y })
+    }
     setChansGraphData(nodeStats.channel_balance)
     setChainGraphData(nodeStats.chain_balance)
     const bestLocal = { n: "", v: 0 }
@@ -234,14 +245,20 @@ export const Metrics = () => {
 
       <div className={classNames(styles["section"], styles["chart"])}>
         <Chart
-          type={"line"}
+          type={"scatter"}
           data={{
             datasets: [{
               data: chainGraphData,
-              label: "Chain",
+              label: "Chain " + chainGraphData[chainGraphData.length - 1].y,
+              showLine: true,
+              fill: false,
+              borderWidth: 1
             }, {
               data: chansGraphData,
-              label: "Channels",
+              label: "Channels " + chansGraphData[chansGraphData.length - 1].y,
+              showLine: true,
+              fill: false,
+              borderWidth: 1
             }]
           }}
 
