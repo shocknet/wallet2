@@ -19,7 +19,7 @@ export interface Changelog {
 	previousHash: string;
 	newHash: string;
 	partial?: boolean;
-	id: string
+	id: string;
 }
 
 export interface PaySourceShard {

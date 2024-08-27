@@ -1,8 +1,9 @@
-import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
+import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 import { decrypt, encrypt } from './tools/nip04'
 import { Sub } from 'nostr-tools';
 import logger from './helpers/logger';
+import { SimplePool } from 'nostr-tools';
 export const pubServiceTag = "Lightning.Pub"
 const appTag = "shockwallet"
 const changelogsTag = "shockwallet:changelog";
@@ -17,6 +18,7 @@ const removeExpiredEvents = () => {
         }
     }
 }
+const pool = new SimplePool()
 setInterval(removeExpiredEvents, CLEANUP_INTERVAL_SECONDS * 1000);
 export type BeaconUpdate = {
     updatedAtUnix: number
@@ -260,7 +262,7 @@ class RelayHandler {
 }
 
 export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
-    const pool = new SimplePool()
+    
     return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
 }
 export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
@@ -273,8 +275,8 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
     }
 }
 export const publishNostrEvent = async (data: Event, relays: string[]) => {
-    const pool = new SimplePool()
-    return pool.publish(relays, data)
+    
+    return Promise.any(pool.publish(relays, data))
 }
 
 
@@ -289,8 +291,6 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
 }
 
 export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number) => {
-    const pool = new SimplePool();
-    console.log("the ts", timestamp)
     const sub = pool.sub(relays, [
         {
             since: timestamp,
