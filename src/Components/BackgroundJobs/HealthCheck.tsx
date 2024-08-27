@@ -29,7 +29,11 @@ export const HealthCheck = () => {
             }
             if (doUpdate) {
                 console.log("updating pay source", source)
-                dispatch(editPaySources(update))
+                dispatch({
+                    type: editPaySources.type,
+                    payload: update,
+                    meta: { skipChangelog: true }
+                })
             }
         }
         const spendEntryId = spendSource.order.find(s => s.startsWith(source))
@@ -47,7 +51,12 @@ export const HealthCheck = () => {
             }
             if (doUpdate) {
                 console.log("updating spend source", source)
-                dispatch(editSpendSources(update))
+
+                dispatch({
+                    type: editSpendSources.type,
+                    payload: update,
+                    meta: { skipChangelog: true }
+                })
             }
         }
     }, [paySource, spendSource])

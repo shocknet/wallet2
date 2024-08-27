@@ -1,10 +1,12 @@
-import { SimplePool, Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
+import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
 import { decrypt, encrypt } from './tools/nip04'
 import { Sub } from 'nostr-tools';
 import logger from './helpers/logger';
+import { SimplePool } from 'nostr-tools';
 export const pubServiceTag = "Lightning.Pub"
 const appTag = "shockwallet"
+const changelogsTag = "shockwallet:changelog";
 const EVENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const CLEANUP_INTERVAL_SECONDS = 60
 const handledEvents: { eventId: string, addedAtUnix: number }[] = []
@@ -16,6 +18,7 @@ const removeExpiredEvents = () => {
         }
     }
 }
+const pool = new SimplePool()
 setInterval(removeExpiredEvents, CLEANUP_INTERVAL_SECONDS * 1000);
 export type BeaconUpdate = {
     updatedAtUnix: number
@@ -259,7 +262,7 @@ class RelayHandler {
 }
 
 export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
-    const pool = new SimplePool()
+    
     return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
 }
 export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
@@ -271,7 +274,30 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
         pubkey
     }
 }
-export const publishNostrEvent = (data: Event, relays: string[]) => {
-    const pool = new SimplePool()
-    return pool.publish(relays, data)
+export const publishNostrEvent = async (data: Event, relays: string[]) => {
+    
+    return Promise.any(pool.publish(relays, data))
+}
+
+
+export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
+    return {
+        content: data,
+        created_at: Math.floor(Date.now() / 1000),
+        kind: 5500,
+        tags: [["d", changelogsTag]],
+        pubkey
+    }
+}
+
+export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number) => {
+    const sub = pool.sub(relays, [
+        {
+            since: timestamp,
+            kinds: [5500],
+            '#d': [changelogsTag],
+            authors: [pubkey]
+        }
+    ])
+    return sub;
 }

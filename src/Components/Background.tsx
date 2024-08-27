@@ -238,7 +238,11 @@ export const Background = () => {
 							link: `/sources?sourceId=${source.id}`,
 						}))
 						// update the erroring source
-						dispatch(editSpendSources({ ...source, disabled: err.response.data.reason }));
+						dispatch({
+							type: "spendSources/editSpendSources",
+							payload: { ...source, disabled: err.response.data.reason },
+							meta: { skipChangelog: true }
+						});
 					} else if (err instanceof Error) {
 						toast.error(<Toast title="Source Error" message={err.message} />)
 					} else {

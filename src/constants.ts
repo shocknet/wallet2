@@ -25,6 +25,8 @@ export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const SANCTUM_URL = import.meta.env.VITE_SANCTUM_URL || "https://test-auth.shock.network"
 export const TIMESTAMP_STORAGE_KEY = "BACKUP_TIMESTAMP";
 export const VERSION_STORAGE_KEY = "BACKUP_VERSION";
+export const CHANGELOG_TIMESTAMP = "CHANGELOG_TIMESTAMP";
+export const STATE_HASH = "STATE_HASH";
 export const options: any = {
 	little: "A little.",
 	very: "Very well.",
