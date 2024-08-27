@@ -16,12 +16,10 @@ import { setPrefs } from "./Slices/prefsSlice";
 // It then calculates the hash of the state and this hash is then compared with the newHash property of the changelog.
 const  simulateDispatchAndCalculateHash = (actions: AnyAction[], api: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>): string => {
   const currentState = api.getState();
-
   let clonedState = JSON.parse(JSON.stringify(currentState)) as State;
   
 	for (const action of actions) {
 		clonedState = reducer(clonedState, action)
-		console.log({clonedState}, action)
 	}
 
   return getStateHash(clonedState);
@@ -88,54 +86,51 @@ const hashString = (data: string) => {
 // Sources shard include an order number specifying their order in the sources order array
 // This property is used to sort the shards on the receiving device to prepend sources in the correct order
 const shardAndBackupState = async (state: State, stateHash: string, changelogs?: Changelog[]) => {
-	const backupPromises: Promise<number>[] = [];
 
+	const id = getDeviceId();
+
+	const backupPromises: Promise<number> []= []
 	const dtags: string[] = [];
 
 	// shard spend sources into nip78 events per source
-	Object.values(state.spendSource.sources).forEach(source => {
-		const dtag = `shockwallet:spendSource:${hashString(source.id)}`;
-		backupPromises.push(
-			saveRemoteBackup(
-				JSON.stringify({ source, order: state.spendSource.order.findIndex(id => id === source.id), kind: "spendSource" }),
-				dtag
-			)
-		);
+	for (const source of Object.values(state.spendSource.sources)) {
+		const dtag = `shockwallet:spendSource:${hashString(source.id)}:${id}`;
+		backupPromises.push(saveRemoteBackup(
+			JSON.stringify({ source, order: state.spendSource.order.findIndex(id => id === source.id), kind: "spendSource" }),
+			dtag
+		));
 		dtags.push(dtag)
-	});
+	}
 
 	// shard pay sources into nip78 events per source
-	Object.values(state.paySource.sources).forEach(source => {
-		const dtag = `shockwallet:paySource:${hashString(source.id)}`;
-		backupPromises.push(
-			saveRemoteBackup(
-				JSON.stringify({ source, order: state.paySource.order.findIndex(id => id === source.id), kind: "paySource" }),
-				dtag
-			)
-		);
+	for (const source of Object.values(state.paySource.sources)) {
+		const dtag = `shockwallet:paySource:${hashString(source.id)}:${id}`;
+		backupPromises.push(saveRemoteBackup(
+			JSON.stringify({ source, order: state.paySource.order.findIndex(id => id === source.id), kind: "paySource" }),
+			dtag
+		));
 		dtags.push(dtag);
-	});
+	}
 
 
 	// prefs into a shard
 	backupPromises.push(saveRemoteBackup(
 		JSON.stringify({ prefs: state.prefs, kind: "prefs" }),
-		PREFS_DTAG
-	))
-	dtags.push(PREFS_DTAG)
+		`${PREFS_DTAG}:${id}`
+	));
+	dtags.push(`${PREFS_DTAG}:${id}`)
+
 
 
 	// lnurl operations into a shard
 	if (Object.values(state.history.lnurlOperations).length > 0) {
-		backupPromises.push(saveRemoteBackup(JSON.stringify({ operations: state.history.lnurlOperations, kind: "lnurlOps" }), LNURL_OPERATIONS_DTAG));
-		dtags.push(LNURL_OPERATIONS_DTAG);
-
+		backupPromises.push((saveRemoteBackup(JSON.stringify({ operations: state.history.lnurlOperations, kind: "lnurlOps" }), `${LNURL_OPERATIONS_DTAG}:${id}`)));
+		dtags.push(`${LNURL_OPERATIONS_DTAG}:${id}`);
 	}
 
-	console.log("dtags about to send", dtags)
+
 	try {
 		// send the shards as well as main event that lists the shards' dtags and the stateHash
-		console.log(changelogs, stateHash, dtags)
 		await Promise.all(backupPromises)
 		await saveRemoteBackup(JSON.stringify({ dtags, remoteHash: stateHash }));
 
@@ -145,18 +140,107 @@ const shardAndBackupState = async (state: State, stateHash: string, changelogs?:
 
 		if (changelogs) {
 			await Promise.all(changelogs.map(async c => {
-				console.log("sending changelogs")
-				console.log({c});
 				finalTimestamp = await saveChangelog(JSON.stringify(c));
-				console.log({finalTimestamp})
 			}))
 		}
 		// the changelog timestamp is set to the timestamp of the last sent changelog event
-		finalTimestamp = finalTimestamp || Math.round(Date.now() / 1000);
+		finalTimestamp = Math.round(Date.now() / 1000);
 		return finalTimestamp
 	} catch (err) {
 		throw new Error(`Error when writing shards to nostr: ${err}`);
 	}
+}
+
+// Fall back to shards when there is conflict resultant of concurrent changelogs
+const resolveConflictWithShards = async (api: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>, mostRecent: Changelog & { timestamp: number }) => {
+	console.log("Solving conflict")
+	const originalState = api.getState();
+	// clear sources
+	originalState.paySource.order.forEach(id => {
+		api.dispatch({
+			type: "paySources/deletePaySources",
+			payload: id,
+			meta: { skipChangelog: true }
+		})
+	})
+	originalState.spendSource.order.forEach(id => {
+		api.dispatch({
+			type: "spendSources/deleteSpendSources",
+			payload: id,
+			meta: { skipChangelog: true }
+		})
+	})
+
+	// clear lnurl operations
+	api.dispatch({
+		type: "history/clearLnurlOperations",
+	})
+
+	const backup = await fetchRemoteBackup();
+	if (backup.result !== "success") {
+		throw new Error(backup.result);
+	}
+	const data = JSON.parse(backup.decrypted);
+	const { dtags, remoteHash } = data as ShardsTagsRecord;
+	const UnsortedShards: GeneralShard[] = await Promise.all(dtags.map(async (tag) => {
+		const shard = await fetchRemoteBackup(tag);
+		if (shard.result !== "success") {
+			throw new Error(backup.result);
+		}
+		
+		return JSON.parse(shard.decrypted);
+	}));
+	const shards = UnsortedShards.sort((a, b) => {
+		if ((a.kind === "spendSource" && b.kind === "spendSource") || (a.kind === "paySource" && b.kind === "paySource")) {
+			return b.order - a.order;
+		}
+		return 0
+	})
+
+	// sync down the shards
+	shards.forEach(shard => {
+		switch (shard.kind) {
+			case "paySource":
+				api.dispatch({
+					type: "paySources/addPaySources",
+					payload: { source: shard.source, first: true },
+					meta: { skipChangelog: true }
+				});
+				break;
+			case "spendSource":
+				api.dispatch({
+					type: "spendSources/addSpendSources",
+					payload: { source: shard.source, first: true },
+					meta: { skipChangelog: true }
+				});
+				break;
+			case "prefs":
+				api.dispatch({
+					type: "prefs/setPrefs",
+					payload: shard.prefs,
+					meta: { skipChangelog: true }
+				});
+				break;
+			case "lnurlOps":
+				api.dispatch({
+					type: "history/setLnurlOperations",
+					payload: shard.operations,
+					meta: { skipChangelog: true }
+				})
+				break;
+			default:
+				throw new Error("Unkown shard kind")
+		}
+	});
+
+	const newState = api.getState();
+	const newHash = getStateHash(newState);
+	if (newHash !== remoteHash) {
+		throw new Error("In conflict resolution. Hashes don't match")
+	}
+	localStorage.setItem(STATE_HASH, newHash)
+	localStorage.setItem(CHANGELOG_TIMESTAMP, (mostRecent.timestamp + 1).toString())
+
 }
 
 
@@ -164,7 +248,6 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 	const backup = await fetchRemoteBackup();
 	const id = getDeviceId()
 	const originalState = api.getState();
-	console.log({originalState})
 	if (backup.result !== "success") {
 		throw new Error(backup.result);
 	}
@@ -182,7 +265,6 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 		if (data.dtags) {
 			console.log("It's a sharded backup")
 			const { dtags, remoteHash } = data as ShardsTagsRecord;
-			console.log("dtags: ", dtags)
 			const UnsortedShards: GeneralShard[] = await Promise.all(dtags.map(async tag => {
 				const shard = await fetchRemoteBackup(tag);
 				if (shard.result !== "success") {
@@ -201,7 +283,6 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 
 			// sync down the shards
 			shards.forEach(shard => {
-				console.log({shard})
 				switch (shard.kind) {
 					case "paySource":
 						api.dispatch({
@@ -239,7 +320,6 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 			const newHash = getStateHash(newState);
 			const changelogs: Changelog[] = [];
 
-			console.log("key insight here", originalState.paySource)
 			
 
 			// Sends the local state as changelogs
@@ -353,13 +433,15 @@ export const backupMiddleware = {
 		);
 	},
 	effect: async (action: AnyAction, listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>) => {
-		console.log("sending changelog", action)
+
+
+		console.log("changelog sending triggered", action)
 		const state = listenerApi.getState();
 		const newHash = getStateHash(state);
 		const previousHash = localStorage.getItem(STATE_HASH) || getStateHash(listenerApi.getOriginalState());
+		localStorage.setItem(STATE_HASH, newHash)
 		const id = getDeviceId()
-		const changelog: Changelog = { action: { type: action.type, payload: action.payload }, id, previousHash: previousHash!, newHash: getStateHash(listenerApi.getState()) }
-		console.log("triggered")
+		const changelog: Changelog = { action: { type: action.type, payload: action.payload },  id, previousHash: previousHash!, newHash: getStateHash(listenerApi.getState()) }
 		await shardAndBackupState(state, newHash, [changelog])
 	}
 }
@@ -367,11 +449,14 @@ export const backupMiddleware = {
 export const backupSubStarted = createAction('backupSub/started')
 export const backupSubStopped = createAction('backupSub/stopped')
 export const batchProcessingDone = createAction("backupSub/processingDone");
-
+let timer: NodeJS.Timeout | null = null
 
 // handleChangelogs is the function that is responsible for applying received changelogs
 let aggregatedChangelogs: (Changelog & { timestamp: number })[] = [];
-const handleChangelogs = ( listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>, unknown>) => {
+const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>, unknown>) => {
+	if (timer !== null) {
+		clearTimeout(timer);
+	}
 
 	// If the changelogs has mutiple sources additions then the order of the sources is critical, that's why we sort 
 	aggregatedChangelogs = aggregatedChangelogs.sort((a, b) => {
@@ -386,20 +471,17 @@ const handleChangelogs = ( listenerApi: ListenerEffectAPI<State, ThunkDispatch<u
 		const stateHash = localStorage.getItem(STATE_HASH);
 		const target = aggregatedChangelogs.find(c => c.previousHash === stateHash)
 		if (target) {
-			console.log({target})
 			if (target.partial) {
 				const allPartialOfSameKind = aggregatedChangelogs.filter(c => c.partial && c.previousHash === stateHash && c.newHash === target.newHash);
 				const newSimulatedHash = simulateDispatchAndCalculateHash(allPartialOfSameKind.map(c => c.action), listenerApi);
-				console.log(target.newHash, newSimulatedHash)
 				if (newSimulatedHash === target.newHash) {
-					console.log("we got a match ladies and gentlemen")
-					aggregatedChangelogs = aggregatedChangelogs.filter(c => c.partial && c.previousHash === stateHash && c.newHash === target.newHash);
+					aggregatedChangelogs = aggregatedChangelogs.filter(c => !c.partial && c.previousHash !== stateHash && c.newHash !== target.newHash);
 					allPartialOfSameKind.forEach(c => {
 						listenerApi.dispatch({  ...c.action, meta: { skipChangelog: true } });
 					})
 					const newHash = getStateHash(listenerApi.getState())
 					localStorage.setItem(STATE_HASH, newHash)
-					localStorage.setItem(CHANGELOG_TIMESTAMP, target.timestamp.toString())
+					localStorage.setItem(CHANGELOG_TIMESTAMP, (target.timestamp + 1).toString())
 					continue
 				}
 
@@ -410,23 +492,24 @@ const handleChangelogs = ( listenerApi: ListenerEffectAPI<State, ThunkDispatch<u
 					listenerApi.dispatch({ ...target.action, meta: { skipChangelog: true } });
 					const newHash = getStateHash(listenerApi.getState())
 					localStorage.setItem(STATE_HASH, newHash)
-					localStorage.setItem(CHANGELOG_TIMESTAMP, target.timestamp.toString())
+					localStorage.setItem(CHANGELOG_TIMESTAMP, (target.timestamp + 1).toString())
 					continue
 				}
 			}
-			throw new Error("Unmatching new hash");
+			break;
 		} else {
+			timer = setTimeout(async () => {
+				// there is a conflict
+				console.log({aggregatedChangelogs})
+				const mostRecent = aggregatedChangelogs.reduce((prev, current) => prev.timestamp > current.timestamp ? prev : current)
+				await resolveConflictWithShards(listenerApi, mostRecent);
+				aggregatedChangelogs = [];
+			}, 3000);
 			break;
 		}
 	}
 
 }
-
-
-
-
-
-
 
 
 export const backupPollingMiddleware = {
@@ -454,6 +537,7 @@ export const backupPollingMiddleware = {
 						const changelog = JSON.parse(decrypted) as Changelog;
 						const id = getDeviceId()
 						if (id !== changelog.id) {
+							console.log("received changelog")
 							aggregatedChangelogs.push({ ...changelog, timestamp: eventTimestamp });
 	
 							handleChangelogs(listenerApi)
@@ -466,6 +550,7 @@ export const backupPollingMiddleware = {
 				})
 				
 			} catch (err) {
+				listenerApi.subscribe()
 				if (err instanceof TaskAbortError) {
 					console.log("task was aborted")
 				} else {

@@ -173,6 +173,11 @@ const historySlice = createSlice({
       }
       update(state)
     },
+    // only used in backups conflicts resolution
+    clearLnurlOperations: (state) => {
+      state.lnurlOperations = {};
+      update(state)
+    },
     setLatestLnurlOperation: (state, action: PayloadAction<{ pub: string, operation: Types.UserOperation }>) => {
       const { pub, operation } = action.payload
       state.latestOperation = { ...operation }
