@@ -110,6 +110,7 @@ export const Metrics = () => {
   const [loading, setLoading] = useState(true)
   const [chainGraphData, setChainGraphData] = useState<Types.GraphPoint[]>([])
   const [chansGraphData, setChansGraphData] = useState<Types.GraphPoint[]>([])
+  const [extGraphData, setExtGraphData] = useState<Types.GraphPoint[]>([])
   //const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
@@ -172,23 +173,28 @@ export const Metrics = () => {
     console.log({ lnd: nodeStats, apps: apps.apps })
     const chain = nodeStats.chain_balance
     const channels = nodeStats.channel_balance
-    const minBlock = Math.min(chain[0].x || 0, channels[0].x || 0)
-    const maxBlock = Math.max(chain[chain.length - 1].x || 0, channels[channels.length - 1].x || 0)
+    const external = nodeStats.external_balance
+    const showExternal = external.length > 1
+    const minBlock = Math.min(chain[0].x)
+    const maxBlock = Math.max(chain[chain.length - 1].x)
     console.log({ minBlock, maxBlock })
-    if (chain[0].x !== minBlock) {
-      chain.unshift({ x: minBlock, y: chain[0].y })
-    }
+
     if (chain[chain.length - 1].x !== maxBlock) {
       chain.push({ x: maxBlock, y: chain[chain.length - 1].y })
     }
-    if (channels[0].x !== minBlock) {
-      channels.unshift({ x: minBlock, y: channels[0].y })
-    }
+
     if (channels[channels.length - 1].x !== maxBlock) {
       channels.push({ x: maxBlock, y: channels[channels.length - 1].y })
     }
-    setChansGraphData(nodeStats.channel_balance)
-    setChainGraphData(nodeStats.chain_balance)
+
+    if (external[external.length - 1].x !== maxBlock) {
+      external.push({ x: maxBlock, y: external[external.length - 1].y })
+    }
+    setChansGraphData(channels)
+    setChainGraphData(chain)
+    if (showExternal) {
+      setExtGraphData(external)
+    }
     const bestLocal = { n: "", v: 0 }
     const bestRemote = { n: "", v: 0 }
     const openChannels = nodeStats.open_channels.map(c => {
@@ -240,6 +246,30 @@ export const Metrics = () => {
 
     </div>
   }
+  const datasets = [
+    {
+      data: chainGraphData,
+      label: "Chain " + chainGraphData[chainGraphData.length - 1].y,
+      showLine: true,
+      fill: false,
+      borderWidth: 1
+    }, {
+      data: chansGraphData,
+      label: "Channels " + chansGraphData[chansGraphData.length - 1].y,
+      showLine: true,
+      fill: false,
+      borderWidth: 1
+    }
+  ]
+  if (extGraphData.length > 0) {
+    datasets.push({
+      data: extGraphData,
+      label: "External " + extGraphData[extGraphData.length - 1].y,
+      showLine: true,
+      fill: false,
+      borderWidth: 1
+    })
+  }
   return <div>
     <div className={styles["metrics-container"]}>
 
@@ -247,19 +277,7 @@ export const Metrics = () => {
         <Chart
           type={"scatter"}
           data={{
-            datasets: [{
-              data: chainGraphData,
-              label: "Chain " + chainGraphData[chainGraphData.length - 1].y,
-              showLine: true,
-              fill: false,
-              borderWidth: 1
-            }, {
-              data: chansGraphData,
-              label: "Channels " + chansGraphData[chansGraphData.length - 1].y,
-              showLine: true,
-              fill: false,
-              borderWidth: 1
-            }]
+            datasets: datasets
           }}
 
           options={{
