@@ -175,8 +175,8 @@ export const Metrics = () => {
     const channels = nodeStats.channel_balance
     const external = nodeStats.external_balance
     const showExternal = external.length > 1
-    const minBlock = Math.min(chain[0].x)
-    const maxBlock = Math.max(chain[chain.length - 1].x)
+    const minBlock = Math.min(chain[0].x, channels[0].x, external[0].x)
+    const maxBlock = Math.max(chain[chain.length - 1].x, channels[channels.length - 1].x, external[external.length - 1].x)
     console.log({ minBlock, maxBlock })
 
     if (chain[chain.length - 1].x !== maxBlock) {
