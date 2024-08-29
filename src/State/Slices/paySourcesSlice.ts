@@ -173,6 +173,8 @@ const paySourcesSlice = createSlice({
   initialState,
   reducers: {
     addPaySources: (state: PaySourceState, action: PayloadAction<{ source: PayTo, first?: boolean }>) => {
+      if (state.sources[action.payload.source.id]) return;
+      
       state.sources[action.payload.source.id] = action.payload.source;
       if (action.payload.first) {
         state.order.unshift(action.payload.source.id);

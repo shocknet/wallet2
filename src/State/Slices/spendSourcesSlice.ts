@@ -129,6 +129,8 @@ const spendSourcesSlice = createSlice({
   initialState,
   reducers: {
     addSpendSources: (state, action: PayloadAction<{ source: SpendFrom, first?: boolean }>) => {
+      if (state.sources[action.payload.source.id]) return;
+
       state.sources[action.payload.source.id] = action.payload.source;
       if (action.payload.first) {
         state.order.unshift(action.payload.source.id);
