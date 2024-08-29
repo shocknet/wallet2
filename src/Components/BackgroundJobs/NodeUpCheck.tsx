@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "../../State/store";
 import { setPrivateKey } from "../../State/Slices/nostrPrivateKey";
 import { useHistory } from "react-router";
+import { fixSpendDuplicates } from "../../State/Slices/spendSourcesSlice";
+import { fixPayDuplicates } from "../../State/Slices/paySourcesSlice";
 
 
 export const NodeUpCheck = () => {
@@ -24,5 +26,10 @@ export const NodeUpCheck = () => {
 		}
 	}, [history.location, nodedUp])
 
+
+	useEffect(() => {
+		dispatch(fixSpendDuplicates);
+		dispatch(fixPayDuplicates);
+	}, [dispatch])
 	return null;
 }
