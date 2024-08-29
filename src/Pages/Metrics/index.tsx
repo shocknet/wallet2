@@ -281,6 +281,13 @@ export const Metrics = () => {
           }}
 
           options={{
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            layout: {
+              padding: 0
+            },
             responsive: true,
             maintainAspectRatio: false,
             aspectRatio: 5 / 2,
@@ -301,21 +308,21 @@ export const Metrics = () => {
                 labels: {
                   boxWidth: 10,
                   boxHeight: 10
-                },
-
+                }
               },
             },
+
             scales: {
               x: {
                 grid: {
-                  color: "#383838"
+                  color: "#383838",
                 },
                 min: 830283,
                 max: 858016,
               },
               y: {
                 grid: {
-                  color: "#383838"
+                  color: "#383838",
                 },
                 ticks: {
                   display: false
@@ -385,7 +392,7 @@ export const Metrics = () => {
               </div>
             </div>
           </div>
-          <div className={classNames(styles["card"], styles["channels"])}>
+          <div className={classNames(styles["card"], styles["channels"])} onClick={() => router.push('/channels')}>
             <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Channels</h4>
             </div>
@@ -447,8 +454,28 @@ export const Metrics = () => {
         </div>
       </div>
       <br />
-      <div className='metric-footer'>
-        <i>Connected to <br />{spendSources.sources[selectedSource || ""].pasteField}</i>
+      <div className={styles["section"]}>
+        <div className="Status">
+          <div className="Status_title">Lightning Status:</div>
+          <div className="Status_value">
+            {Icons.YellowState()}
+            <span>Syncing</span>
+          </div>
+        </div>
+      </div>
+      <div className={styles["section"]}>
+        <div className="Status">
+          <div className="Status_title">Watchdog Status:</div>
+          <div className="Status_value">
+            {Icons.GreenState()}
+            <span>No Alarms</span>
+          </div>
+        </div>
+      </div>
+      <div className={styles["section"]}>
+        <div className='metric-footer'>
+          <i>Connected to <br />{spendSources.sources[selectedSource || ""].pasteField}</i>
+        </div>
       </div>
     </div>
   </div>
