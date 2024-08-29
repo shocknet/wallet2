@@ -323,10 +323,10 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 			
 
 			// Sends the local state as changelogs
-			// An edge case would be a source, like an lnurl source, existing on both remote and local, that's why we do the filter step
+			
+			// An edge case would be a source, like an lnurl source, existing on both remote and local, that's why we do this filter step
 			// so as to not send changelog for something that is already there
-
-			Object.values(originalState.paySource.sources).filter(source => newState.paySource.order.includes(source.id)).forEach(source => {
+			Object.values(originalState.paySource.sources).filter(source => !shards.find(s => s.kind === "paySource" && s.source.id === source.id)).forEach(source => {
 				const changelog: Changelog = {
 					previousHash: remoteHash,
 					newHash: newHash,
@@ -341,7 +341,7 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 				changelogs.push(changelog);
 			});
 
-			Object.values(originalState.spendSource.sources).filter(source => newState.spendSource.order.includes(source.id)).forEach(source => {
+			Object.values(originalState.spendSource.sources).filter(source => !shards.find(s => s.kind === "spendSource" && s.source.id === source.id)).forEach(source => {
 				const changelog: Changelog = {
 					previousHash: remoteHash,
 					newHash: newHash,
@@ -461,7 +461,7 @@ const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispa
 	// If the changelogs has mutiple sources additions then the order of the sources is critical, that's why we sort 
 	aggregatedChangelogs = aggregatedChangelogs.sort((a, b) => {
 		if (a.order !== undefined && b.order !== undefined) {
-			return b.order - a.order
+			return a.order - b.order
 		} else {
 			return 0;
 		}
