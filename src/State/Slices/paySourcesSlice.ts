@@ -1,16 +1,16 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PayTo } from '../../globalTypes';
-import { mergeArrayValuesWithOrder, mergeNonFungibleRecords } from './dataMerge';
+import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
 import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
-import { DataVersion } from '../types';
+import { BackupAction } from '../types';
 
 
-type PaySourceRecord = Record<string, PayTo>;
+export type PaySourceRecord = Record<string, PayTo>;
 
 export interface PaySourceState {
   sources: PaySourceRecord;
@@ -124,22 +124,28 @@ export const migrations: Record<number, MigrationFunction<any>> = {
 
 
 
-export const mergeLogic = (serialLocal: string, serialRemote: string, localVersion: DataVersion, remoteVersion: DataVersion): string => {
+export const mergeLogic = (serialLocal: string, serialRemote: string): { data: string, actions: BackupAction[] } => {
   const local = getStateAndVersion(serialLocal)
   const remote = getStateAndVersion(serialRemote)
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations) as PaySourceState;
   const migratedLocal = applyMigrations(local.state, local.version, migrations) as PaySourceState;
+
+
+  const actions: BackupAction[] = [];
   const merged: PaySourceState = {
-    sources: mergeNonFungibleRecords(migratedLocal.sources, migratedRemote.sources, localVersion, remoteVersion),
-    order: mergeArrayValuesWithOrder(migratedLocal.order, migratedRemote.order, localVersion, remoteVersion, v => v)
+    sources: getDiffAsActionDispatch(migratedRemote.sources, migratedLocal.sources, "paySources/addPaySources", actions),
+    order: mergeArrayValues(migratedRemote.order, migratedLocal.order, s => s)
   }
 
-  merged.order = merged.order.filter(source => !!merged.sources[source]);
   
-  return JSON.stringify({
-    version: VERSION,
-    data: merged
-  });
+  return {
+    data: JSON.stringify({
+      version: VERSION,
+      data: merged
+    }),
+    actions
+  }
+
 }
 
 
@@ -166,9 +172,13 @@ const paySourcesSlice = createSlice({
   name: 'paySources',
   initialState,
   reducers: {
-    addPaySources: (state: PaySourceState, action: PayloadAction<PayTo>) => {
-      state.sources[action.payload.id] = action.payload;
-      state.order.push(action.payload.id);
+    addPaySources: (state: PaySourceState, action: PayloadAction<{ source: PayTo, first?: boolean }>) => {
+      state.sources[action.payload.source.id] = action.payload.source;
+      if (action.payload.first) {
+        state.order.unshift(action.payload.source.id);
+      } else {
+        state.order.push(action.payload.source.id);
+      }
       update(state);
       return state;
     },

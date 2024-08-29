@@ -58,23 +58,27 @@ export const NodeUp = () => {
 
 
       dispatch(addPaySources({
-        id: id,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-        pubSource: true,
-        keys: keyPair
+        source: {
+          id: id,
+          label: "Bootstrap Node",
+          pasteField: nprofile,
+          option: options.little,
+          icon: "0",
+          pubSource: true,
+          keys: keyPair
+        }
       }));
       dispatch(addSpendSources({
-        id: id,
-        label: "Bootstrap Node",
-        pasteField: nprofile,
-        option: options.little,
-        icon: "0",
-        balance: bootstrapBalance,
-        pubSource: true,
-        keys: keyPair
+        source: {
+          id: id,
+          label: "Bootstrap Node",
+          pasteField: nprofile,
+          option: options.little,
+          icon: "0",
+          balance: bootstrapBalance,
+          pubSource: true,
+          keys: keyPair
+        }
       }));
     }
   }

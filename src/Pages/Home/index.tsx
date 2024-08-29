@@ -10,7 +10,7 @@ export const Home = () => {
   const price = useSelector((state) => state.usdToBTC);
   const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
   const spendSources = useSelector((state) => state.spendSource);
-  const { operations: operationGroups, optimisticOperations } = useSelector(state => state.history)
+  const { operations: operationGroups, lnurlOperations, optimisticOperations } = useSelector(state => state.history)
 
   const [balance, setBalance] = useState('0.00')
   const [fiatSymbol, setFiatSymbol] = useState('$')
@@ -24,10 +24,10 @@ export const Home = () => {
   }, [fiatUnit])
 
   const transactionsToRender = useMemo(() => {
-    if (!operationGroups) {
+    if (!operationGroups && !lnurlOperations) {
       return null
     }
-    const populatedEntries = Object.entries(operationGroups).filter(([, operations]) => operations.length > 0);
+    const populatedEntries = Object.entries({ ...operationGroups, ...lnurlOperations }).filter(([, operations]) => operations.length > 0);
     if (populatedEntries.length === 0) {
       logger.info("No operations to display");
       return null;
@@ -46,7 +46,7 @@ export const Home = () => {
     return newarray.map((o, i) =>
       <SwItem operation={o} key={o.operationId} underline={i !== collapsed.length - 1} />
     )
-  }, [operationGroups, optimisticOperations, spendSources]);
+  }, [operationGroups, optimisticOperations, spendSources, lnurlOperations]);
   
 
   useEffect(() => {

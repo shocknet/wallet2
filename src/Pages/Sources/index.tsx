@@ -308,7 +308,7 @@ export const Sources = () => {
         keys: newSourceKeyPair,
         vanityName
       } as PayTo;
-      dispatch(addPaySources(addedPaySource))
+      dispatch(addPaySources({ source: addedPaySource }))
       const addedSpendSource = {
         id: id,
         label: resultLnurl.hostname,
@@ -320,7 +320,7 @@ export const Sources = () => {
         keys: newSourceKeyPair,
         adminToken: adminEnrollToken
       } as SpendFrom;
-      dispatch(addSpendSources(addedSpendSource));
+      dispatch(addSpendSources({ source: addedSpendSource }));
     } else {
       // not nprofile, now checking for other cases
 
@@ -347,7 +347,7 @@ export const Sources = () => {
             label: parsed.hostName,
             pasteField: parsed.data,
           } as PayTo;
-          dispatch(addPaySources(addedSource));
+          dispatch(addPaySources({ source: addedSource }));
         } else {
           // lnurl-withdraw
           const addedSource = {
@@ -358,7 +358,7 @@ export const Sources = () => {
             balance: parsed.max.toString(),
             pasteField: parsed.data,
           } as SpendFrom;
-          dispatch(addSpendSources(addedSource));
+          dispatch(addSpendSources({ source: addedSource }));
         }
       } else if (parsed.type === InputClassification.LN_ADDRESS) {
         const addedSource = {
@@ -368,7 +368,7 @@ export const Sources = () => {
           label: parsed.data,
           pasteField: parsed.data,
         } as PayTo;
-        dispatch(addPaySources(addedSource));
+        dispatch(addPaySources({ source: addedSource }));
       } else {
         toast.error(<Toast title="Error" message="Input not recognized." />)
         setProcessingSource(false);
@@ -381,7 +381,7 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
 
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, paySources, spendSources, toggle, processingSource, integrationData]);
+  }, [sourcePasteField, dispatch, optional, inviteToken, paySources, spendSources, toggle, processingSource, integrationData]);
 
   const editPaySource = () => {
     if (!sourceLabel || !optional) {

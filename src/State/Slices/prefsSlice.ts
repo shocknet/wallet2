@@ -1,13 +1,14 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 import { syncRedux } from '../store';
+import { BackupAction } from '../types';
 type FeeOptions = "asap" | "avg" | "eco" | ""
 type FiatCurrencyUrl = {
   url: string
   symbol?: string
   currency: string
 }
-interface PrefsInterface {
+export interface PrefsInterface {
   mempoolUrl: string
   FiatUnit: FiatCurrencyUrl
   selected: FeeOptions
@@ -39,7 +40,7 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
 
 
 
-export const mergeLogic = (serialLocal: string, serialRemote: string): string => {
+export const mergeLogic = (serialLocal: string, serialRemote: string): { data: string, actions: BackupAction[] } => {
   /* const local = JSON.parse(serialLocal) as PrefsInterface
   const remote = JSON.parse(serialRemote) */
   const local = getStateAndVersion(serialLocal);
@@ -48,16 +49,25 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): string =>
   const migratedRemote = applyMigrations(remote.state, remote.version, migrations);
   const migratedLocal = applyMigrations(local.state, local.version, migrations);
 
+  const actions: BackupAction[] = [];
+
   const merged: PrefsInterface = {
     mempoolUrl: migratedLocal.mempoolUrl || migratedRemote.mempoolUrl,
     FiatUnit: migratedLocal.FiatUnit || migratedRemote.FiatUnit,
     selected: migratedLocal.selected || migratedRemote.selected,
     debugMode: migratedLocal.debugMode,
   }
-  return JSON.stringify({
-    version: VERSION,
-    data: merged
-  });
+  actions.push({
+    type: "prefs/setPrefs",
+    payload: merged
+  })
+  return {
+    data: JSON.stringify({
+      version: VERSION,
+      data: merged
+    }),
+    actions
+  }
   
 }
 
