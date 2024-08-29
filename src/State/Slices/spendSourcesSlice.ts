@@ -6,7 +6,7 @@ import { decodeNprofile } from '../../custom-nip19';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
-import { BackupAction, Changelog } from '../types';
+import { BackupAction } from '../types';
 export const storageKey = "spendFrom"
 export const VERSION = 3;
 
@@ -158,6 +158,15 @@ const spendSourcesSlice = createSlice({
       update(state);
       return state;
     },
+    fixSpendDuplicates: (state) => {
+      state.order = state.order.reduce((acc, id) => {
+        if (!acc.includes(id)) {
+          acc.push(id);
+        }
+        return acc
+      }, [] as string[]);
+      update(state);
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(syncRedux, () => {
@@ -166,5 +175,5 @@ const spendSourcesSlice = createSlice({
   }
 });
 
-export const { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } = spendSourcesSlice.actions;
+export const { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources, fixSpendDuplicates } = spendSourcesSlice.actions;
 export default spendSourcesSlice.reducer;
