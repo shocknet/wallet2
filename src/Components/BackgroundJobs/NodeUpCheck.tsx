@@ -28,8 +28,8 @@ export const NodeUpCheck = () => {
 
 
 	useEffect(() => {
-		dispatch(fixSpendDuplicates);
-		dispatch(fixPayDuplicates);
+		dispatch(fixSpendDuplicates());
+		dispatch(fixPayDuplicates());
 	}, [dispatch])
 	return null;
 }
