@@ -173,6 +173,8 @@ const paySourcesSlice = createSlice({
   initialState,
   reducers: {
     addPaySources: (state: PaySourceState, action: PayloadAction<{ source: PayTo, first?: boolean }>) => {
+      if (state.sources[action.payload.source.id]) return;
+
       state.sources[action.payload.source.id] = action.payload.source;
       if (action.payload.first) {
         state.order.unshift(action.payload.source.id);
@@ -200,6 +202,15 @@ const paySourcesSlice = createSlice({
       update(state);
       return state;
     },
+    fixPayDuplicates: (state) => {
+      state.order = state.order.reduce((acc, id) => {
+        if (!acc.includes(id)) {
+          acc.push(id);
+        }
+        return acc
+      }, [] as string[]);
+      update(state);
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(syncRedux, () => {
@@ -208,5 +219,5 @@ const paySourcesSlice = createSlice({
   }
 });
 
-export const { addPaySources, editPaySources, deletePaySources, setPaySources } = paySourcesSlice.actions;
+export const { addPaySources, editPaySources, deletePaySources, setPaySources, fixPayDuplicates } = paySourcesSlice.actions;
 export default paySourcesSlice.reducer;

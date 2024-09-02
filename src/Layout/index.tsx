@@ -19,10 +19,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const router = useIonRouter();
 
   const isScan: boolean = router.routeInfo.pathname === "/scan";
-  const isMetrics: boolean = router.routeInfo.pathname === "/metrics";
-  const isManage: boolean = router.routeInfo.pathname === "/manage";
-
-
+  const isPub: boolean = router.routeInfo.pathname === "/metrics" || router.routeInfo.pathname === "/manage" || router.routeInfo.pathname === "/channels"
 
   const dispatch = useDispatch();
 
@@ -59,7 +56,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
       {
         !isScan
         && 
-        isMetrics || isManage ?
+        isPub ?
         <IonHeader style={{boxShadow: "none"}}>
           <PubHeader />
         </IonHeader>
