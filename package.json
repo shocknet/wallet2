@@ -79,7 +79,7 @@
     "react-qr-code": "^2.0.12",
     "react-redux": "^8.1.2",
     "react-toastify": "^10.0.4",
-    "react-zxing": "^2.0.0",
+    "react-zxing": "^2.0.2",
     "reactjs-qr-reader": "^1.1.0",
     "sortablejs": "^1.15.1",
     "styled-components": "^6.0.8",
