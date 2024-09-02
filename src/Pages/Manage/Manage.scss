@@ -31,6 +31,7 @@
   }
 
   & .input-group {
+    position: relative;
     & > span {
       font-size: 14px;
       color: #ffffff;
@@ -55,6 +56,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    padding: 5px 0;
 
     & > input[type="checkbox"] {
       display: none;
@@ -134,15 +136,12 @@
   }
 
   &_settings {
+    position: relative;
     margin-top: 20px;
     & > .hidden-part {
       position: relative;
       margin-top: 20px;
     }
-  }
-
-  &_automation {
-    position: relative;
   }
 
   & .blur {

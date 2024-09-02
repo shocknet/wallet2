@@ -7,7 +7,7 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from '../../Hooks/UseModal';
 import { isAxiosError } from 'axios';
 import { Modal } from '../../Components/Modals/Modal';
-import { useIonRouter } from '@ionic/react';
+import { useIonRouter, getPlatforms } from '@ionic/react';
 import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 import { useSelector } from '../../State/store';
@@ -68,7 +68,7 @@ export const Receive = () => {
   const [fiatSymbol, setFiatSymbol] = useState('$');
   const [btcDisabled, setBTCDisabled] = useState(false);
   const [lnurlDisabled, setLnurlDisabled] = useState(false)
-
+  const [topPosition, setTopPosition] = useState<number>(0);
 
 
 
@@ -353,6 +353,25 @@ export const Receive = () => {
     </div>
   </React.Fragment>;
 
+  const adjustElementPosition = () => {
+    const viewportHeight = window.innerHeight;
+    console.log(viewportHeight)
+    setTopPosition(viewportHeight - 60 - 60);
+  };
+
+  useEffect(() => {
+    // Set initial position
+    adjustElementPosition();
+
+    // Add event listener for resize events
+    window.addEventListener("resize", adjustElementPosition);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", adjustElementPosition);
+    };
+  }, []);
+
   return (
     <div>
       <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
@@ -475,7 +494,7 @@ export const Receive = () => {
             }
           </Tab>
         </Tabs>
-        <div className="Receive_other_options">
+        <div className="Receive_other_options" style={{top : `${topPosition}px`}}>
           <div className="Receive_lnurl">
             <button onClick={() => {
               changeQRcode((tag + 1) % 3)

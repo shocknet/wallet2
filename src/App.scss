@@ -136,13 +136,34 @@ input[type=number] {
 }
 
 .metric-footer{
-  position: fixed;
-  bottom: 2vh;
 	text-align: center;
 	font-size: 12px;
 	color: #ffffff;
 	font-weight: 500;
   font-family: Montserrat;
+  width: 100%;
+}
+
+.Status {
+  display: flex;
+
+  .Status_title{
+    font-size: 16px;
+    font-family: Montserrat;
+    width: 50%;
+  }
+
+  .Status_value{
+    display: flex;
+    font-size: 16px;
+    font-family: Montserrat;
+    width: 50%;
+    justify-content: end;
+
+    div {
+      margin: 1px 5px;
+    }
+  }
 }
 
 
@@ -154,6 +175,7 @@ input[type=number] {
 @import "./Pages/NodeUp/NodeUp.scss";
 @import "./Pages/Invitations/Invitations.scss";
 @import "./Pages/Manage//Manage.scss";
+@import "./Pages/Channels/Channels.scss";
 @import "./Pages/Scan/Scan.scss";
 @import "./Pages/Receive/Receive.scss";
 @import "./Pages/Send/Send.scss";
