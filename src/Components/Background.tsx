@@ -25,7 +25,6 @@ import { toast } from "react-toastify";
 import Toast from "./Toast";
 import { useHistory } from "react-router";
 import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
-
 import { App } from "@capacitor/app";
 
 
