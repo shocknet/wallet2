@@ -26,6 +26,8 @@ import Toast from "./Toast";
 import { useHistory } from "react-router";
 import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 
+import { App } from "@capacitor/app";
+
 
 export const Background = () => {
 	const history = useHistory();
@@ -308,19 +310,15 @@ export const Background = () => {
 	}, [savedAssets, nodedUp]);
 
 	useEffect(() => {
-
-		const visiblityHandler = () => {
-			if (document.visibilityState === "visible") {
-				setRefresh(Math.random())
+		const listener = App.addListener("appStateChange", (state) => {
+			if (state.isActive) {
+				checkClipboard();
+				setRefresh(Math.random());
 			}
-			checkClipboard();
-		}
-		window.addEventListener("visibilitychange", visiblityHandler)
-		window.addEventListener("focus", checkClipboard);
+		})
 
 		return () => {
-			window.removeEventListener("visibilitychange", visiblityHandler);
-			window.removeEventListener("focus", checkClipboard);
+			listener.remove();
 		};
 	}, [checkClipboard])
 
