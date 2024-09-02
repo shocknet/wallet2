@@ -175,19 +175,33 @@ export const Metrics = () => {
     const channels = nodeStats.channel_balance
     const external = nodeStats.external_balance
     const showExternal = external.length > 1
-    const minBlock = Math.min(chain[0].x, channels[0].x, external[0].x)
-    const maxBlock = Math.max(chain[chain.length - 1].x, channels[channels.length - 1].x, external[external.length - 1].x)
+    const toMin = []
+    const toMax = []
+    if (chain.length > 0) {
+      toMin.push(chain[0].x)
+      toMax.push(chain[chain.length - 1].x)
+    }
+    if (channels.length > 0) {
+      toMin.push(channels[0].x)
+      toMax.push(channels[channels.length - 1].x)
+    }
+    if (external.length > 0) {
+      toMin.push(external[0].x)
+      toMax.push(external[external.length - 1].x)
+    }
+    const minBlock = Math.min(...toMin) || 0
+    const maxBlock = Math.max(...toMax) || 0
     console.log({ minBlock, maxBlock })
 
-    if (chain[chain.length - 1].x !== maxBlock) {
+    if (chain.length > 0 && chain[chain.length - 1].x !== maxBlock) {
       chain.push({ x: maxBlock, y: chain[chain.length - 1].y })
     }
 
-    if (channels[channels.length - 1].x !== maxBlock) {
+    if (channels.length > 0 && channels[channels.length - 1].x !== maxBlock) {
       channels.push({ x: maxBlock, y: channels[channels.length - 1].y })
     }
 
-    if (external[external.length - 1].x !== maxBlock) {
+    if (external.length > 0 && external[external.length - 1].x !== maxBlock) {
       external.push({ x: maxBlock, y: external[external.length - 1].y })
     }
     setChansGraphData(channels)
@@ -240,7 +254,7 @@ export const Metrics = () => {
     return <div>loading...</div>
   }
 
-  if (!chansGraphData || !chainGraphData || !channelsInfo || !appsInfo || error) {
+  if (!channelsInfo || !appsInfo || error) {
     return <div style={{ color: 'red' }}>
       something went wrong {error}
 
@@ -249,13 +263,13 @@ export const Metrics = () => {
   const datasets = [
     {
       data: chainGraphData,
-      label: "Chain " + chainGraphData[chainGraphData.length - 1].y,
+      label: "Chain " + chainGraphData[chainGraphData.length - 1]?.y || "0",
       showLine: true,
       fill: false,
       borderWidth: 1
     }, {
       data: chansGraphData,
-      label: "Channels " + chansGraphData[chansGraphData.length - 1].y,
+      label: "Channels " + chansGraphData[chansGraphData.length - 1]?.y || "0",
       showLine: true,
       fill: false,
       borderWidth: 1
@@ -264,7 +278,7 @@ export const Metrics = () => {
   if (extGraphData.length > 0) {
     datasets.push({
       data: extGraphData,
-      label: "External " + extGraphData[extGraphData.length - 1].y,
+      label: "External " + extGraphData[extGraphData.length - 1]?.y || "0",
       showLine: true,
       fill: false,
       borderWidth: 1
