@@ -32,6 +32,8 @@ yarn-error.log*
 .env
 .env.development
 .env.production
+
+# build
 android/app/src/main/AndroidManifest.xml
 ios/App/App/Info.plist
 ios/App/App/App.entitlements
@@ -42,3 +44,8 @@ android/app/release/output-metadata.json
 android/app/src/main/AndroidManifest.xml
 ios/App/App/Info.plist
 ios/App/App/App.entitlements
+
+# actions tests
+act
+event.json
+run.log

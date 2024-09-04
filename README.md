@@ -16,7 +16,7 @@ ShockWallet is the first wallet to use Nostr based accounts for Lightning Networ
 
 ShockWallet features node multi-sourcing and is pushing the boundaries of automation, allowing you to also connect to multiple accounts, including legacy LNURL ones, to manage your balances through a single interface. 
 
-As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities via NIP78, enabling for example a shared wallet state between a Desktop and Phone.
+As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities via NIP78, enabling for example a shared wallet state between a Desktop and Phone. We're also pushing the boundries of Nostr and Lightning integration with [new NIPs](https://github.com/nostr-protocol/nips/pull/1460/files) that create more secure app connections with better UX than is currently available.
 
 **For new users, an optional Bootstrap node is default on mainnet allowing for the lay-away of a self-custodied channel for your own node with a partner LSP.** [*Service subject to Terms*](https://docs.shock.network/terms)
 
@@ -47,18 +47,15 @@ As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities 
 
 
 #### Build from source
-Clone the repo
+Clone the repo and install
 
 ```bash
 git clone https://github.com/shocknet/wallet2
-```
-Install
-
-```bash
 cd wallet2 && npm i
 npm install -g @ionic/cli native-run cordova-res
+cp env.production.example .env
 ```
-* Update src/constants.ts to customize
+* `nano .env` to customize
 
 #### Self-Hosting the PWA
 
