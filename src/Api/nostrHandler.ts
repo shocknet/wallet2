@@ -35,11 +35,15 @@ export type NostrEvent = {
     content: string
     kind: number
 }
+export type Nip69Success = { bolt11: string }
+export type Nip69Error = { code: number, error: string, range: { min: number, max: number } }
+export type Nip69Response = Nip69Success | Nip69Error
 
 export type RelaysSettings = {
     relays: string[];
     keys: NostrKeyPair
 }
+export type NofferData = { offer: string, amount?: number }
 const allowedKinds = [21000, 24133]
 
 export default class RelayCluster {
@@ -116,12 +120,46 @@ export default class RelayCluster {
         )
     }
 
+    SendNip69 = async (relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<Nip69Response> => {
+        const decoded = await encryptData(JSON.stringify(data), getSharedSecret(keys.privateKey, pubKey))
+        const content = encodePayload(decoded)
+        const e = await this.sendRaw(
+            relays,
+            {
+                content,
+                created_at: Math.floor(Date.now() / 1000),
+                kind: 21001,
+                pubkey: keys.publicKey,
+                tags: [['p', pubKey]]
+            },
+            keys.privateKey
+        )
+        const sub = this.pool.sub(relays, [{
+            since: Math.floor(Date.now() / 1000) - 1,
+            kinds: [21001],
+            '#p': [keys.publicKey],
+            '#e': [e.id]
+        }])
+        return new Promise<Nip69Response>((res, rej) => {
+            const timeout = setTimeout(() => {
+                sub.unsub(); rej("failed to get nip69 reponse in time")
+            }, 30 * 1000)
+            sub.on('event', async (e) => {
+                clearTimeout(timeout)
+                const decoded = decodePayload(e.content)
+                const content = await decryptData(decoded, getSharedSecret(keys.privateKey, pubKey))
+                res(JSON.parse(content))
+            })
+        })
+    }
+
     sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
         const signed = finishEvent(event, privateKey)
         this.pool.publish(relays, signed).forEach(p => {
             p.then(() => logger.info("sent ok"))
             p.catch(() => logger.error("failed to send"))
         })
+        return signed
     }
 
     getActiveRelays = () => {
@@ -262,7 +300,7 @@ class RelayHandler {
 }
 
 export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
-    
+
     return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
 }
 export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
@@ -275,7 +313,7 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
     }
 }
 export const publishNostrEvent = async (data: Event, relays: string[]) => {
-    
+
     return Promise.any(pool.publish(relays, data))
 }
 

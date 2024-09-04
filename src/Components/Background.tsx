@@ -123,6 +123,7 @@ export const Background = () => {
 
 	const getSourceInfo = async (source: SpendFrom, client: NostrClient) => {
 		const res = await client.GetUserInfo()
+		console.log({ userInfo: res })
 		if (res.status === 'ERROR') {
 			console.log(res.reason)
 			return
@@ -301,6 +302,8 @@ export const Background = () => {
 			parsed.type === InputClassification.LN_ADDRESS
 			||
 			(parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
+			||
+			parsed.type === InputClassification.NOFFER
 		) {
 			setParsedClipbaord(parsed);
 			toggle()

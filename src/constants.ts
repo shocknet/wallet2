@@ -4,6 +4,7 @@ import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
 import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
+import { decodeNoffer, OfferPointer } from './custom-nip19';
 
 
 
@@ -57,6 +58,7 @@ export function getFormattedTime(timestamp: number) {
 const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{39,59})$/;
 const LN_INVOICE_REGEX = /^(lightning:)?(lnbc|lntb)[0-9a-zA-Z]+$/;
 const LNURL_REGEX = /^(lightning:)?[Ll][Nn][Uu][Rr][Ll][0-9a-zA-Z]+$/;
+const NOFFER_REGEX = /^(lightning:)?[Nn][Oo][Ff][Ff][Ee][Rr][0-9a-zA-Z]+$/;
 const LN_ADDRESS_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/;
 
 
@@ -65,7 +67,8 @@ export enum InputClassification {
 	LN_INVOICE = "INVOICE",
 	LNURL = "LNURL",
 	LN_ADDRESS = "LIGHTING_ADDRESS",
-	UNKNOWN = "NO_IDEA"
+	UNKNOWN = "NO_IDEA",
+	NOFFER = "NOFFER"
 }
 
 export interface Destination {
@@ -80,6 +83,7 @@ export interface Destination {
 	domainName?: string,
 	hostName?: string,
 	memo?: string
+	noffer?: OfferPointer
 }
 
 export const decodeLnurl = (lnurl: string) => {
@@ -90,29 +94,35 @@ export const decodeLnurl = (lnurl: string) => {
 	return lnurlEndpoint;
 }
 
+export const decodeInvoice = (invoice: string) => {
+	let network = undefined
+	if (invoice.startsWith("lntbs")) {
+		network = {
+			bech32: 'tbs',
+			pubKeyHash: 0x6f,
+			scriptHash: 0xc4,
+			validWitnessVersions: [0]
+		}
+	}
+	const decodedInvoice = decode(invoice, network);
+	const amountSection = decodedInvoice.sections.find(section => section.name === "amount");
+	const description = decodedInvoice.sections.find(section => section.name === "description")?.value;
+	let amount = 0;
+	if (amountSection) {
+		amount = amountSection.value / 1000;
+	} else {
+		throw new Error("Error decoding provided invoice");
+	}
+	return { amount, description };
+}
+
 export const parseBitcoinInput = async (input: string): Promise<Destination> => {
 	const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
 	if (LN_INVOICE_REGEX.test(input)) {
 		const invoice = removePrefixIfExists(input, "lightning:");
-		let network = undefined
-		if (invoice.startsWith("lntbs")) {
-			network = {
-				bech32: 'tbs',
-				pubKeyHash: 0x6f,
-				scriptHash: 0xc4,
-				validWitnessVersions: [0]
-			}
-		}
-		const decodedInvoice = decode(invoice, network);
-		const amountSection = decodedInvoice.sections.find(section => section.name === "amount");
-		const description = decodedInvoice.sections.find(section => section.name === "description")?.value;
-		let amount = 0;
-		if (amountSection) {
-			amount = amountSection.value / 1000;
-		} else {
-			throw new Error("Error decoding provided invoice");
-		}
+		const { amount, description } = decodeInvoice(invoice);
+
 		return {
 			type: InputClassification.LN_INVOICE,
 			data: invoice,
@@ -165,6 +175,16 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			domainName: lnParts[1],
 
 		};
+	} else if (NOFFER_REGEX.test(input)) {
+		const noffer = removePrefixIfExists(input, "lightning:");
+		const decoded = decodeNoffer(noffer);
+		return {
+			type: InputClassification.NOFFER,
+			data: input,
+			noffer: decoded
+		}
+
+
 	} else {
 		return { type: InputClassification.UNKNOWN, data: input };
 	}
