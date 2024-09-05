@@ -6,6 +6,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 92vh;
+  justify-content: space-around;
 
   & .section-title {
     & > div {
