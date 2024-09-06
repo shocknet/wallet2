@@ -83,118 +83,121 @@ export const Channels = () => {
 
   return (
     <div className="Channels">
-      <div className="Channels_offline-channels">
-        <div className="section-title">
-          <div>
-            <div className="title">
-              <span>🚨</span> Offline Channels
-            </div>
-            <div className="sub-title">
-              {formatCryptoAmount(totalSatAmount)} Encumbered
-            </div>
-          </div>
-          <div className="line" />
-        </div>
-        <div className="channel-group">
-          {offlineChannels.map((channel: OfflineChannel, index: number) => (
-            <div className="channel" key={index}>
-              <div>
-                <div className="avatar">
-                  <img
-                    src={channel.avatar}
-                    width={12}
-                    height={12}
-                    className=""
-                    alt="avatar"
-                  />
-                  <div>{channel.name}</div>
-                </div>
-                {channel.subNode !== "" && (
-                  <div className="sub-node">{channel.subNode}</div>
-                )}
+      <div>
+        <div className="Channels_offline-channels">
+          <div className="section-title">
+            <div>
+              <div className="title">
+                <span>🚨</span> Offline Channels
               </div>
-              <div>
-                <div className="amount">
-                  {formatCryptoAmount(channel.satAmount)}
-                </div>
-                <div className="time">
-                  <span>
-                    {`${channel.timeStamp
-                      ? channel.timeStamp > 1000
-                        ? "💀 Last seen 10 days ago"
-                        : "🔍 Last seen 2 hours ago"
-                      : "🔗 Pending Force Close"
-                      }`}
-                  </span>
-                </div>
+              <div className="sub-title">
+                {formatCryptoAmount(totalSatAmount)} Encumbered
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="Channels_active-channels">
-        <div className="section-title">
-          <div>
-            <div className="title">
-              <span>
-                <img
-                  src="/icons/lightning_yellow.png"
-                  width={15}
-                  height={15}
-                  alt=""
-                />
-              </span>{" "}
-              Active Channels
-            </div>
-            <div className="sub-title">
-              {`${formatCryptoAmount(
-                totalLocalSatAmount
-              )} Local, ${formatCryptoAmount(totalRemoteSatAmount)}
-              Remote`}
-            </div>
+            <div className="line" />
           </div>
-          <div className="line" />
-        </div>
-        <div className="channel-group">
-          {activeChannels.map((channel: ActiveChannel, index: number) => (
-            <div className="channel" key={index}>
-              <div>
-                <div className="avatar">
-                  <img
-                    src={channel.avatar}
-                    width={12}
-                    height={12}
-                    className=""
-                    alt="avatar"
-                  />
-                  <div>{channel.name}</div>
-                </div>
-                <div className="amount">
-                  {formatCryptoAmount(
-                    channel.RemoteSatAmount + channel.localSatAmount
+          <div className="channel-group">
+            {offlineChannels.map((channel: OfflineChannel, index: number) => (
+              <div className="channel" key={index}>
+                <div>
+                  <div className="avatar">
+                    <img
+                      src={channel.avatar}
+                      width={12}
+                      height={12}
+                      className=""
+                      alt="avatar"
+                    />
+                    <div>{channel.name}</div>
+                  </div>
+                  {channel.subNode !== "" && (
+                    <div className="sub-node">{channel.subNode}</div>
                   )}
                 </div>
+                <div>
+                  <div className="amount">
+                    {formatCryptoAmount(channel.satAmount)}
+                  </div>
+                  <div className="time">
+                    <span>
+                      {`${
+                        channel.timeStamp
+                          ? channel.timeStamp > 1000
+                            ? "💀 Last seen 10 days ago"
+                            : "🔍 Last seen 2 hours ago"
+                          : "🔗 Pending Force Close"
+                      }`}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="progress">
-                <div>
-                  <div>I</div>
-                  <SatAmountBar
-                    type="remote"
-                    satAmount={channel.RemoteSatAmount}
-                    totalSatAmount={maxBalance}
+            ))}
+          </div>
+        </div>
+        <div className="Channels_active-channels">
+          <div className="section-title">
+            <div>
+              <div className="title">
+                <span>
+                  <img
+                    src="/icons/lightning_yellow.png"
+                    width={15}
+                    height={15}
+                    alt=""
                   />
-                </div>
-                <div>
-                  <div>O</div>
-                  <SatAmountBar
-                    type="local"
-                    satAmount={channel.localSatAmount}
-                    totalSatAmount={maxBalance}
-                  />
-                </div>
+                </span>{" "}
+                Active Channels
+              </div>
+              <div className="sub-title">
+                {`${formatCryptoAmount(
+                  totalLocalSatAmount
+                )} Local, ${formatCryptoAmount(totalRemoteSatAmount)}
+              Remote`}
               </div>
             </div>
-          ))}
+            <div className="line" />
+          </div>
+          <div className="channel-group">
+            {activeChannels.map((channel: ActiveChannel, index: number) => (
+              <div className="channel" key={index}>
+                <div>
+                  <div className="avatar">
+                    <img
+                      src={channel.avatar}
+                      width={12}
+                      height={12}
+                      className=""
+                      alt="avatar"
+                    />
+                    <div>{channel.name}</div>
+                  </div>
+                  <div className="amount">
+                    {formatCryptoAmount(
+                      channel.RemoteSatAmount + channel.localSatAmount
+                    )}
+                  </div>
+                </div>
+                <div className="progress">
+                  <div>
+                    <div>I</div>
+                    <SatAmountBar
+                      type="remote"
+                      satAmount={channel.RemoteSatAmount}
+                      totalSatAmount={maxBalance}
+                    />
+                  </div>
+                  <div>
+                    <div>O</div>
+                    <SatAmountBar
+                      type="local"
+                      satAmount={channel.localSatAmount}
+                      totalSatAmount={maxBalance}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className="Channels_footer">

@@ -288,62 +288,74 @@ export const Metrics = () => {
     <div className={styles["metrics-container"]}>
 
       <div className={classNames(styles["section"], styles["chart"])}>
-        <Chart
-          type={"scatter"}
-          data={{
-            datasets: datasets
-          }}
-
-          options={{
-            interaction: {
-              mode: 'index',
-              intersect: false
-            },
-            layout: {
-              padding: 0
-            },
-            responsive: true,
-            maintainAspectRatio: false,
-            aspectRatio: 5 / 2,
-            elements: {
-              line: {
-                borderWidth: 3,
-              },
-              point: {
-                radius: 0,
-              },
-            },
-            plugins: {
-              legend: {
-                display: true,
-                position: "chartArea",
-                align: "start",
-                maxWidth: 12,
-                labels: {
-                  boxWidth: 10,
-                  boxHeight: 10
-                }
-              },
-            },
-
-            scales: {
-              x: {
-                grid: {
-                  color: "#383838",
+        <Line
+            data={{
+              labels : chainGraphData.map(item=>`${item.x}`),
+              datasets: [
+                {
+                  label: "Chain " + chainGraphData[chainGraphData.length - 1]?.y || "0",
+                  data: chainGraphData,
+                  borderColor: "rgba(199, 64, 199, 0.5)",
+                  backgroundColor: "rgb(199, 64, 199)",
+                  yAxisID: "y",
                 },
-                min: 830283,
-                max: 858016,
-              },
-              y: {
-                grid: {
-                  color: "#383838",
+                {
+                  label: "Channels " + chansGraphData[chansGraphData.length - 1]?.y || "0",
+                  data: chansGraphData,
+                  borderColor: "rgba(255, 119, 0, 0.5)",
+                  backgroundColor: "rgb(255, 119, 0)",
+                  xAxisID: "x",
                 },
-                ticks: {
-                  display: false
-                }
-              }
-            },
-          }}
+              ],
+            }}
+            options={{
+              interaction: {
+                mode: "index",
+                intersect: false,
+              },
+              layout: {
+                padding: 0,
+              },
+              responsive: true,
+              maintainAspectRatio: false,
+              aspectRatio: 5 / 2,
+              elements: {
+                line: {
+                  borderWidth: 3,
+                },
+                point: {
+                  radius: 0,
+                },
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "chartArea",
+                  align: "start",
+                  maxWidth: 12,
+                  labels: {
+                    boxWidth: 10,
+                    boxHeight: 10,
+                  },
+                },
+              },
+
+              scales: {
+                x: {
+                  grid: {
+                    color: "#383838",
+                  },
+                },
+                y: {
+                  grid: {
+                    color: "#383838",
+                  },
+                  ticks: {
+                    display: false,
+                  },
+                },
+              },
+            }}
         />
       </div>
       <div className={styles["section"]}>
