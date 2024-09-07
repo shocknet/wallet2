@@ -173,6 +173,7 @@ export const parseBitcoinInput = async (input: string): Promise<Destination> => 
 			min: Math.floor(res.data.minSendable / 1000),
 			max: Math.floor(res.data.maxSendable / 1000),
 			domainName: lnParts[1],
+			noffer: res.data.nip69 // might be present or not
 
 		};
 	} else if (NOFFER_REGEX.test(input)) {

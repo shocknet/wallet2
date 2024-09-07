@@ -263,7 +263,12 @@ export const Send = () => {
         }
         case InputClassification.LN_ADDRESS:
         case InputClassification.LNURL: {
-          const invoice = await createLnurlInvoice(amount, destination);
+          let invoice = "";
+          if (destination.noffer) {
+            invoice = await createNofferInvoice(destination.noffer, selectedSource.keys, amount);
+          } else {
+            invoice = await createLnurlInvoice(amount, destination);
+          }
           payRes = await handlePayInvoice(invoice, selectedSource);
           break;
         }
