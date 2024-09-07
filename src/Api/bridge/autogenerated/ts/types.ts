@@ -6,15 +6,30 @@ export type RequestStats = { startMs:number, start:bigint, parse: bigint, guard:
 export type RequestMetric = AuthContext & RequestInfo & RequestStats & { error?: string }
 export type GuestContext = {
 }
-export type GuestMethodInputs = GetOrCreateVanityName_Input
-export type GuestMethodOutputs = GetOrCreateVanityName_Output
+export type GuestMethodInputs = GetOrCreateVanityName_Input | HandleLnurlPay_Input | HandleLnurlAddress_Input
+export type GuestMethodOutputs = GetOrCreateVanityName_Output | HandleLnurlPay_Output | HandleLnurlAddress_Output
 export type AuthContext = GuestContext
 
 export type GetOrCreateVanityName_Input = {rpcName:'GetOrCreateVanityName', req: GetOrCreateVanityNameRequest}
 export type GetOrCreateVanityName_Output = ResultError | ({ status: 'OK' } & GetOrCreateVanityNameResponse)
 
+export type HandleLnurlPay_Query = {
+    k1?: string
+    amount?: string
+}
+export type HandleLnurlPay_Input = {rpcName:'HandleLnurlPay', query: HandleLnurlPay_Query}
+export type HandleLnurlPay_Output = ResultError | ({ status: 'OK' } & HandleLnurlPayResponse)
+
+export type HandleLnurlAddress_RouteParams = {
+    address_name: string
+}
+export type HandleLnurlAddress_Input = {rpcName:'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams}
+export type HandleLnurlAddress_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
+
 export type ServerMethods = {
     GetOrCreateVanityName?: (req: GetOrCreateVanityName_Input & {ctx: GuestContext }) => Promise<GetOrCreateVanityNameResponse>
+    HandleLnurlPay?: (req: HandleLnurlPay_Input & {ctx: GuestContext }) => Promise<HandleLnurlPayResponse>
+    HandleLnurlAddress?: (req: HandleLnurlAddress_Input & {ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
 }
 
 
@@ -36,16 +51,22 @@ export const EmptyValidate = (o?: Empty, opts: EmptyOptions = {}, path: string =
 }
 
 export type GetOrCreateVanityNameRequest = {
+    noffer?: string
     k1: string
 }
-export const GetOrCreateVanityNameRequestOptionalFields: [] = []
+export type GetOrCreateVanityNameRequestOptionalField = 'noffer'
+export const GetOrCreateVanityNameRequestOptionalFields: GetOrCreateVanityNameRequestOptionalField[] = ['noffer']
 export type GetOrCreateVanityNameRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
+    checkOptionalsAreSet?: GetOrCreateVanityNameRequestOptionalField[]
+    noffer_CustomCheck?: (v?: string) => boolean
     k1_CustomCheck?: (v: string) => boolean
 }
 export const GetOrCreateVanityNameRequestValidate = (o?: GetOrCreateVanityNameRequest, opts: GetOrCreateVanityNameRequestOptions = {}, path: string = 'GetOrCreateVanityNameRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.noffer || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('noffer')) && typeof o.noffer !== 'string') return new Error(`${path}.noffer: is not a string`)
+    if (opts.noffer_CustomCheck && !opts.noffer_CustomCheck(o.noffer)) return new Error(`${path}.noffer: custom check failed`)
 
     if (typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
     if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
@@ -67,6 +88,88 @@ export const GetOrCreateVanityNameResponseValidate = (o?: GetOrCreateVanityNameR
 
     if (typeof o.vanity_name !== 'string') return new Error(`${path}.vanity_name: is not a string`)
     if (opts.vanity_name_CustomCheck && !opts.vanity_name_CustomCheck(o.vanity_name)) return new Error(`${path}.vanity_name: custom check failed`)
+
+    return null
+}
+
+export type HandleLnurlPayResponse = {
+    pr: string
+    routes: Empty[]
+}
+export const HandleLnurlPayResponseOptionalFields: [] = []
+export type HandleLnurlPayResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    pr_CustomCheck?: (v: string) => boolean
+    routes_ItemOptions?: EmptyOptions
+    routes_CustomCheck?: (v: Empty[]) => boolean
+}
+export const HandleLnurlPayResponseValidate = (o?: HandleLnurlPayResponse, opts: HandleLnurlPayResponseOptions = {}, path: string = 'HandleLnurlPayResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.pr !== 'string') return new Error(`${path}.pr: is not a string`)
+    if (opts.pr_CustomCheck && !opts.pr_CustomCheck(o.pr)) return new Error(`${path}.pr: custom check failed`)
+
+    if (!Array.isArray(o.routes)) return new Error(`${path}.routes: is not an array`)
+    for (let index = 0; index < o.routes.length; index++) {
+        const routesErr = EmptyValidate(o.routes[index], opts.routes_ItemOptions, `${path}.routes[${index}]`)
+        if (routesErr !== null) return routesErr
+    }
+    if (opts.routes_CustomCheck && !opts.routes_CustomCheck(o.routes)) return new Error(`${path}.routes: custom check failed`)
+
+    return null
+}
+
+export type LnurlPayInfoResponse = {
+    tag: string
+    callback: string
+    maxSendable: number
+    minSendable: number
+    metadata: string
+    allowsNostr: boolean
+    nostrPubkey: string
+    nip69?: string
+}
+export type LnurlPayInfoResponseOptionalField = 'nip69'
+export const LnurlPayInfoResponseOptionalFields: LnurlPayInfoResponseOptionalField[] = ['nip69']
+export type LnurlPayInfoResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: LnurlPayInfoResponseOptionalField[]
+    tag_CustomCheck?: (v: string) => boolean
+    callback_CustomCheck?: (v: string) => boolean
+    maxSendable_CustomCheck?: (v: number) => boolean
+    minSendable_CustomCheck?: (v: number) => boolean
+    metadata_CustomCheck?: (v: string) => boolean
+    allowsNostr_CustomCheck?: (v: boolean) => boolean
+    nostrPubkey_CustomCheck?: (v: string) => boolean
+    nip69_CustomCheck?: (v?: string) => boolean
+}
+export const LnurlPayInfoResponseValidate = (o?: LnurlPayInfoResponse, opts: LnurlPayInfoResponseOptions = {}, path: string = 'LnurlPayInfoResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.tag !== 'string') return new Error(`${path}.tag: is not a string`)
+    if (opts.tag_CustomCheck && !opts.tag_CustomCheck(o.tag)) return new Error(`${path}.tag: custom check failed`)
+
+    if (typeof o.callback !== 'string') return new Error(`${path}.callback: is not a string`)
+    if (opts.callback_CustomCheck && !opts.callback_CustomCheck(o.callback)) return new Error(`${path}.callback: custom check failed`)
+
+    if (typeof o.maxSendable !== 'number') return new Error(`${path}.maxSendable: is not a number`)
+    if (opts.maxSendable_CustomCheck && !opts.maxSendable_CustomCheck(o.maxSendable)) return new Error(`${path}.maxSendable: custom check failed`)
+
+    if (typeof o.minSendable !== 'number') return new Error(`${path}.minSendable: is not a number`)
+    if (opts.minSendable_CustomCheck && !opts.minSendable_CustomCheck(o.minSendable)) return new Error(`${path}.minSendable: custom check failed`)
+
+    if (typeof o.metadata !== 'string') return new Error(`${path}.metadata: is not a string`)
+    if (opts.metadata_CustomCheck && !opts.metadata_CustomCheck(o.metadata)) return new Error(`${path}.metadata: custom check failed`)
+
+    if (typeof o.allowsNostr !== 'boolean') return new Error(`${path}.allowsNostr: is not a boolean`)
+    if (opts.allowsNostr_CustomCheck && !opts.allowsNostr_CustomCheck(o.allowsNostr)) return new Error(`${path}.allowsNostr: custom check failed`)
+
+    if (typeof o.nostrPubkey !== 'string') return new Error(`${path}.nostrPubkey: is not a string`)
+    if (opts.nostrPubkey_CustomCheck && !opts.nostrPubkey_CustomCheck(o.nostrPubkey)) return new Error(`${path}.nostrPubkey: custom check failed`)
+
+    if ((o.nip69 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nip69')) && typeof o.nip69 !== 'string') return new Error(`${path}.nip69: is not a string`)
+    if (opts.nip69_CustomCheck && !opts.nip69_CustomCheck(o.nip69)) return new Error(`${path}.nip69: custom check failed`)
 
     return null
 }

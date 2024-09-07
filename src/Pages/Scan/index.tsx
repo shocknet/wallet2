@@ -37,7 +37,7 @@ const scanSingleBarcode = async () => {
 };
 
 export const Scan = () => {
-  
+
   const dispatch = useDispatch();
   const router = useIonRouter();
   const history = useHistory();
@@ -48,10 +48,10 @@ export const Scan = () => {
 
 
 
-  
+
   const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
     html5QrCode.start(
-      cameraId, 
+      cameraId,
       {
         fps: 10,
       },
@@ -62,14 +62,14 @@ export const Scan = () => {
       (errorMessage) => {
         console.log(errorMessage)
       })
-    .catch((err: any) => {
-      toast.error(<Toast title="Error" message={err.message} />)
-      router.goBack();
-    });
+      .catch((err: any) => {
+        toast.error(<Toast title="Error" message={err.message} />)
+        router.goBack();
+      });
   }
 
   useEffect(() => {
-    if(!isPlatform("hybrid")) {
+    if (!isPlatform("hybrid")) {
       let html5QrCode: Html5Qrcode | null = null;
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
@@ -83,7 +83,7 @@ export const Scan = () => {
           html5QrCode.stop()
         }
       }
-      
+
     } else {
       document.body.classList.add("barcode-scanner-active");
       setupMobileScanner();
@@ -137,6 +137,8 @@ export const Scan = () => {
       parsed.type === InputClassification.LN_ADDRESS
       ||
       (parsed.type === InputClassification.LNURL && parsed.lnurlType === "payRequest")
+      ||
+      parsed.type === InputClassification.NOFFER
     ) {
       history.push({
         pathname: "/send",

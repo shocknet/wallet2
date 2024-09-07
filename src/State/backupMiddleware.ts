@@ -567,8 +567,8 @@ export const backupPollingMiddleware = {
 	}
 }
 
-export const listenerMiddleware = createListenerMiddleware()
-const typedStartListening = listenerMiddleware.startListening as TypedStartListening<State, AppDispatch>
+export const backup = createListenerMiddleware()
+const typedStartListening = backup.startListening as TypedStartListening<State, AppDispatch>
 typedStartListening(backupPollingMiddleware);
 
 export const typedAddListener = addListener as TypedAddListener<State, AppDispatch>
