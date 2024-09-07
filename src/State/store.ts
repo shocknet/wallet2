@@ -15,8 +15,9 @@ import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
-import { listenerMiddleware } from './backupMiddleware';
+import { backup } from './backupMiddleware';
 import { BackupAction } from './types';
+import { bridgeMiddleware } from './bridgeMiddleware';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
@@ -43,7 +44,7 @@ export const reducer = combineReducers({
 const store = configureStore({
   reducer: reducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(listenerMiddleware.middleware),
+    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware),
 });
 export type State = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

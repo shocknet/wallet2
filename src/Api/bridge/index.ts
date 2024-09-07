@@ -8,11 +8,7 @@ export default class Handler {
 	bridgeHttp: BridgeHttpClient;
 
 
-	async GetOrCreateVanityName(k1: string) {
-		const res = await this.bridgeHttp.GetOrCreateVanityName({ k1 });
-		if (res.status === 'ERROR') {
-			throw new Error(res.reason)
-		}
-		return res;
+	async GetOrCreateVanityName(k1: string, noffer?: string) {
+		return this.bridgeHttp.GetOrCreateVanityName({ k1, noffer });
 	}
 }

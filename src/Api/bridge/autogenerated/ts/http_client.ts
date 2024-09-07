@@ -26,4 +26,35 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    HandleLnurlPay: async (query: Types.HandleLnurlPay_Query): Promise<ResultError | ({ status: 'OK' }& Types.HandleLnurlPayResponse)> => {
+        const auth = await params.retrieveGuestAuth()
+        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+        let finalRoute = '/api/lnurl_pay/handle'
+        const q = (new URLSearchParams(query)).toString()
+        finalRoute = finalRoute + (q === '' ? '' : '?' + q)
+        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.HandleLnurlPayResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    HandleLnurlAddress: async (routeParams: Types.HandleLnurlAddress_RouteParams): Promise<ResultError | ({ status: 'OK' }& Types.LnurlPayInfoResponse)> => {
+        const auth = await params.retrieveGuestAuth()
+        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+        let finalRoute = '/.well-known/lnurlp/:address_name'
+        finalRoute = finalRoute.replace(':address_name', routeParams['address_name'])
+        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.LnurlPayInfoResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
 })

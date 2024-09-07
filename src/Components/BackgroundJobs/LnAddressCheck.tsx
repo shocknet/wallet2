@@ -1,49 +1,16 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "../../State/store";
-import { decodeNprofile } from "../../custom-nip19";
-import { getNostrClient } from "../../Api";
-import Bridge from "../../Api/bridge";
-import { editPaySources } from "../../State/Slices/paySourcesSlice";
+import { useDispatch } from "../../State/store";
+
+import { upgradeSourcesToNofferBridge } from "../../State/bridgeMiddleware";
 
 export const LnAddressCheck = () => {
-	const paySource = useSelector((state) => state.paySource);
-	const spendSource = useSelector(state => state.spendSource);
-	const nodedUp = useSelector(state => state.nostrPrivateKey)
+
 	const dispatch = useDispatch();
 
-	// for nostr pay to sources, if vanity_name doesn't already exist in store, get it from bridge
+
 	useEffect(() => {
-		if (!nodedUp) {
-			return;
-		}
-		const nostrPayTos = Object.values(paySource.sources).filter(s => s.pubSource)
-		nostrPayTos.forEach(source => {
-			if (!source.vanityName && source.keys) {
-				const { pubkey, relays, bridge } = decodeNprofile(source.pasteField)
-				if (bridge && bridge.length > 0) {
-					getNostrClient({ pubkey, relays }, source.keys).then(c => {
-						c.GetLnurlPayLink().then(pubRes => {
-							if (pubRes.status !== 'OK') {
-								console.log("Pub error: ", pubRes.reason);
-							} else {
-								const bridgeHandler = new Bridge(bridge[0]);
-								bridgeHandler.GetOrCreateVanityName(pubRes.k1).then(bridgeRes => {
-									if (bridgeRes.status === "OK") {
-										dispatch(editPaySources({ ...source, vanityName: bridgeRes.vanity_name }));
-									} else {
-										console.log("Vanity name error");
-									}
-								})
-							}
-						})
-					})
-				}
-			}
-		})
-		/* spendSource in the dependency array instead of paySource to avoid infinite loop
-			adding a nostr source is both an addition of paySource and spendSource, so it's a hacky trick
-		*/
-	}, [dispatch, spendSource, nodedUp]);
+		dispatch(upgradeSourcesToNofferBridge())
+	}, [dispatch]);
 
 	return null;
 }
