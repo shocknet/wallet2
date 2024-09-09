@@ -82,7 +82,7 @@
     "reactjs-qr-reader": "^1.1.0",
     "sortablejs": "^1.15.1",
     "styled-components": "^6.0.8",
-    "uuid": "^9.0.1"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
@@ -93,7 +93,7 @@
     "@types/deep-diff": "^1.0.5",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
-    "@types/uuid": "^9.0.7",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
     "@vitejs/plugin-legacy": "^4.0.2",
