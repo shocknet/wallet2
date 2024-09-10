@@ -177,14 +177,14 @@ export const Invitations = () => {
               </div>
             </div>
       </div>
-      <div className="Invitations_reusableLink">
+      {/* <div className="Invitations_reusableLink">
         <button
           onClick={() => newInviteLink()}
           className="clipboard-copy"
         >
           {Icons.copyWhite()}Create New
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
