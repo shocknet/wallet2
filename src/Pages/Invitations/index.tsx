@@ -171,7 +171,11 @@ export const Invitations = () => {
       </div>
       <div className="Invitations_One-Time-Links">
         <div className="title">One-Time Links</div>
-        {oneTimeLinksRender}
+        <div className="content">
+              <div className="Gift" style={{fontSize : "12px", paddingTop : "50px", textAlign : "center"}}>
+                Gift links coming soon.
+              </div>
+            </div>
       </div>
       <div className="Invitations_reusableLink">
         <button
