@@ -3,16 +3,17 @@
   // border: 1px solid #8c8c8c;
   display: flow-root;
   width: 98%;
-  margin-bottom: 13px;
+  margin-bottom: 5px;
   border-radius: 5px;
   padding: 3px 0px;
   box-shadow: 0px 0px 2px #8c8c8c;
   display: inline-flex;
-  padding: 12px;
+  padding: 5px;
   cursor: pointer;
 
   &_icon{
-    font-size: 28px;
+    font-size: 24px;
+    margin-top: 5px;
   }
 
   &_left{
@@ -27,7 +28,7 @@
   }
 
   &_header{
-    font-size: 14px;
+    font-size: 12px;
     color: white;
     display: inline-flex;
     width: 100%;
@@ -35,13 +36,13 @@
 
   &_desc{
     margin-top: 2px;
-    font-size: 16px;
+    font-size: 14px;
     color: #54bbe8;
   }
 
   &_date{
     display: flex;
-    font-size: 14px;
+    font-size: 12px;
     color: #a3a3a3;
     margin-left: auto;
   }
