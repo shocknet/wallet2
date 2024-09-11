@@ -64,11 +64,29 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
-      - name: Sign APK
+      - name: Ensure base64 is installed
+        run: sudo apt-get install -y coreutils
+
+      - name: Decode Keystore
         run: |
           echo ${{ secrets.ANDROID_KEYSTORE }} | base64 --decode > my-release-key.keystore
+        shell: bash
+
+      - name: Verify Keystore
+        run: |
+          keytool -list -v -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        shell: bash
+
+      - name: Sign APK
+        run: |
           jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }} -keypass ${{ secrets.ANDROID_KEY_PASSWORD }} android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ secrets.ANDROID_KEY_ALIAS }}
           zipalign -v 4 android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+        shell: bash
+
+      - name: Verify APK
+        run: |
+          apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+        shell: bash
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
