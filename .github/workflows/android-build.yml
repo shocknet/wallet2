@@ -24,22 +24,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install libvips
+      - name: Install deps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libvips-dev
-
-      - name: Install sharp separately
-        run: npm install sharp@0.32.6 --verbose
-        env:
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "false"
-        timeout-minutes: 5
-
-      - name: Install other dependencies
-        run: |
+          npm ci
           npm install -g @ionic/cli native-run cordova-res
-          npm ci --ignore-scripts
-        timeout-minutes: 10
 
       - name: Set up environment
         run: cp .env.production.example .env
@@ -50,11 +38,11 @@ jobs:
       - name: Build Android app
         run: ionic cap build android --no-interactive
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: Cache Gradle packages
         uses: actions/cache@v3
@@ -67,7 +55,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Make gradlew executable
-        run: chmod +x ./gradlew
+        run: chmod +x ./android/gradlew
 
       - name: Build with Gradle
         run: |
