@@ -4,12 +4,14 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - test 
 
 env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
-  APP_NAME: "shockwallet"  # Hardcoded app name
-  VERSION: ${{ github.ref_name }}  # Use the tag name as the version
+  APP_NAME: "shockwallet"  
+  VERSION: ${{ github.ref_name }}  
 
 jobs:
   build:
