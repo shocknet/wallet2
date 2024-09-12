@@ -82,8 +82,7 @@ jobs:
 
       - name: Sign APK
         run: |
-          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }} -keypass ${{ secrets.ANDROID_KEY_PASSWORD }} android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ secrets.ANDROID_KEY_ALIAS }}
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/zipalign -v 4 android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
       - name: Verify APK
