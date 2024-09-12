@@ -34,7 +34,12 @@ jobs:
           npm ci
           npm install -g @ionic/cli native-run cordova-res
 
-      - name: Set up environment
+      - name: Set up environment for test
+        if: github.ref == 'refs/heads/test'
+        run: cp .env.test.example .env
+
+      - name: Set up environment for main
+        if: github.ref == 'refs/heads/main'
         run: cp .env.production.example .env
 
       - name: Run pre-build script
@@ -80,18 +85,40 @@ jobs:
           keytool -list -v -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         shell: bash
 
-      - name: Sign APK
+      - name: Sign APK for test
+        if: github.ref == 'refs/heads/test'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
-      - name: Verify APK
+      - name: Sign APK for main
+        if: github.ref == 'refs/heads/main'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
-      - name: Upload APK
+      - name: Verify APK for test
+        if: github.ref == 'refs/heads/test'
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk
+        shell: bash
+
+      - name: Verify APK for main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+        shell: bash
+
+      - name: Upload APK for test
+        if: github.ref == 'refs/heads/test'
         uses: actions/upload-artifact@v3
         with:
-          name: app-release
-          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          name: app-release-test
+          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk
+
+      - name: Upload APK for main
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-prod
+          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
