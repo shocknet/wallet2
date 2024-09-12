@@ -5,13 +5,13 @@ on:
     tags:
       - 'v*'
     branches:
-      - test 
+      - test
 
 env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
-  APP_NAME: "shockwallet"  
-  VERSION: ${{ github.ref_name }}  
+  APP_NAME: "shockwallet"
+  VERSION: ${{ github.ref_name }}
 
 jobs:
   build:
@@ -66,24 +66,8 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
-      - name: Ensure base64 is installed
-        run: apt-get install -y coreutils
-
-      - name: Install Android SDK
-        run: |
-          apt-get update
-          apt-get install -y wget unzip
-          wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip -d $HOME
-          mkdir -p $HOME/cmdline-tools/cmdline-tools
-          mv $HOME/cmdline-tools/* $HOME/cmdline-tools/cmdline-tools/
-          export ANDROID_HOME=$HOME/cmdline-tools
-          export PATH=$ANDROID_HOME/bin:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
-        env:
-          ANDROID_HOME: ${{ runner.temp }}/android-sdk
-          PATH: ${{ runner.temp }}/android-sdk/cmdline-tools/bin:${{ runner.temp }}/android-sdk/platform-tools:${{ runner.temp }}/android-sdk/build-tools/30.0.3:$PATH
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Decode Keystore
         run: |
