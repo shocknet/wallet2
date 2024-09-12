@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -36,7 +36,7 @@ jobs:
 
       - name: Set up environment for test
         if: github.ref == 'refs/heads/test'
-        run: cp .env.test.example .env
+        run: cp .env.development.example .env
 
       - name: Set up environment for main
         if: github.ref == 'refs/heads/main'
@@ -94,7 +94,7 @@ jobs:
       - name: Sign APK for main
         if: github.ref == 'refs/heads/main'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
       - name: Verify APK for test
@@ -106,7 +106,7 @@ jobs:
       - name: Verify APK for main
         if: github.ref == 'refs/heads/main'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
         shell: bash
 
       - name: Upload APK for test
@@ -121,4 +121,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-release-prod
-          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
