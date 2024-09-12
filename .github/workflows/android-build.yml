@@ -1,9 +1,9 @@
 name: Android Build
 
 on:
+  release:
+    types: [created]
   push:
-    tags:
-      - 'v*'
     branches:
       - test
 
@@ -11,7 +11,6 @@ env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
   APP_NAME: "shockwallet"
-  VERSION: ${{ github.ref_name }}
 
 jobs:
   build:
@@ -109,25 +108,38 @@ jobs:
           $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
         shell: bash
 
-      - name: Upload APK for test
-        if: github.ref == 'refs/heads/test'
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-release-test
-          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk
+      - name: Set VERSION for release
+        if: github.event_name == 'release'
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Upload APK for main
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-release-prod
-          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+      - name: Set VERSION for test branch
+        if: github.event_name == 'push'
+        run: echo "VERSION=test" >> $GITHUB_ENV
 
-      - name: Upload APK to GitHub Release for main
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Sign APK
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+        shell: bash
+
+      - name: Verify APK
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+        shell: bash
+
+      - name: Upload APK to GitHub Release
+        if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
-          asset_name: ${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+          asset_path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          asset_name: ${{ env.APP_NAME }}-${{ env.VERSION }}.apk
           asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload APK as artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
