@@ -49,3 +49,4 @@ ios/App/App/App.entitlements
 act
 event.json
 run.log
+android_key.base64
