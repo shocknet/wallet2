@@ -36,7 +36,7 @@ jobs:
 
       - name: Set up environment for test
         if: github.ref == 'refs/heads/test'
-        run: cp .env.test.example .env
+        run: cp .env.development.example .env
 
       - name: Set up environment for main
         if: github.ref == 'refs/heads/main'
