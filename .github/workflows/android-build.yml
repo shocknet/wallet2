@@ -67,12 +67,12 @@ jobs:
           ./gradlew assembleRelease
 
       - name: Ensure base64 is installed
-        run: sudo apt-get install -y coreutils
+        run: apt-get install -y coreutils
 
       - name: Install Android SDK
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
+          apt-get update
+          apt-get install -y wget unzip
           wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip -d $HOME
           mkdir -p $HOME/cmdline-tools/cmdline-tools
