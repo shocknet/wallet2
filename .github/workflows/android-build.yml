@@ -88,7 +88,7 @@ jobs:
 
       - name: Verify APK
         run: |
-          apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
         shell: bash
 
       - name: Upload APK
