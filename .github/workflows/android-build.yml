@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -36,7 +36,7 @@ jobs:
 
       - name: Set up environment for test
         if: github.ref == 'refs/heads/test'
-        run: cp .env.development.example .env
+        run: cp .env.test.example .env
 
       - name: Set up environment for main
         if: github.ref == 'refs/heads/main'
@@ -94,7 +94,7 @@ jobs:
       - name: Sign APK for main
         if: github.ref == 'refs/heads/main'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
       - name: Verify APK for test
@@ -106,7 +106,7 @@ jobs:
       - name: Verify APK for main
         if: github.ref == 'refs/heads/main'
         run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
         shell: bash
 
       - name: Upload APK for test
@@ -121,4 +121,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-release-prod
-          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ env.VERSION }}.apk
+          path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+
+      - name: Upload APK to GitHub Release for main
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+          asset_name: ${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
+          asset_content_type: application/vnd.android.package-archive
