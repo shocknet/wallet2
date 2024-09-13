@@ -56,7 +56,7 @@ function updateBuildGradle(version, versionCode, applicationId, appName) {
   );
   
   buildGradle = buildGradle.replace(
-    /resValue "string", "app_name", "[^"]+/,
+    /resValue "string", "app_name", "[^"]+"/,
     `resValue "string", "app_name", "${appName}"`
   );
   
