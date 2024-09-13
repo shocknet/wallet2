@@ -1,21 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "app.shockwallet.test"
+    namespace "${applicationId}"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.shockwallet.test"
+        applicationId "${applicationId}"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode project.hasProperty('versionCode') ? project.property('versionCode') as int : 1
+        versionName project.hasProperty('versionName') ? project.property('versionName') : "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
-             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
-             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
-        resValue "string", "app_name", "gradle default"  // This will be replaced by the preBuild script
+        resValue "string", "app_name", project.hasProperty('appName') ? project.property('appName') : "Default App Name"
     }
     buildTypes {
         release {

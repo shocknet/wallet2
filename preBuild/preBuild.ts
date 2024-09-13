@@ -41,24 +41,15 @@ function updateBuildGradle(version, versionCode, applicationId, appName) {
   );
   
   buildGradle = buildGradle.replace(
-    /versionCode \d+/,
-    `versionCode ${versionCode}`
-  );
-  
-  buildGradle = buildGradle.replace(
-    /versionName "[^"]+"/,
-    `versionName "${version}"`
-  );
-  
-  buildGradle = buildGradle.replace(
     /namespace "[^"]+"/,
     `namespace "${applicationId}"`
   );
   
-  buildGradle = buildGradle.replace(
-    /resValue "string", "app_name", "[^"]+"/,
-    `resValue "string", "app_name", "${appName}"`
-  );
+  // Remove this replacement as we'll use project properties instead
+  // buildGradle = buildGradle.replace(
+  //   /resValue "string", "app_name", "[^"]+"/,
+  //   `resValue "string", "app_name", "${appName}"`
+  // );
   
   fs.writeFileSync(buildGradlePath, buildGradle);
 }
@@ -68,5 +59,10 @@ const versionCode = process.env.VERSION_CODE || '1';
 const applicationId = process.env.VITE_ANDROID_APPLICATION_ID || 'app.shockwallet.test';
 const appName = process.env.VITE_APP_NAME || 'missing env';
 updateBuildGradle(version, versionCode, applicationId, appName);
+
+// Pass version information and app name to Gradle
+process.env.ORG_GRADLE_PROJECT_versionCode = versionCode;
+process.env.ORG_GRADLE_PROJECT_versionName = version;
+process.env.ORG_GRADLE_PROJECT_appName = appName;
 
 console.log('Pre-build script completed');
