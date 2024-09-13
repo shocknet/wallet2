@@ -58,6 +58,13 @@ const version = process.env.VERSION || '0.0.0';
 const versionCode = process.env.VERSION_CODE || '1';
 const applicationId = process.env.VITE_ANDROID_APPLICATION_ID || 'app.shockwallet.test';
 const appName = process.env.VITE_APP_NAME || 'missing env';
+
+console.log('Pre-build variables:');
+console.log(`Version: ${version}`);
+console.log(`Version Code: ${versionCode}`);
+console.log(`Application ID: ${applicationId}`);
+console.log(`App Name: ${appName}`);
+
 updateBuildGradle(version, versionCode, applicationId, appName);
 
 // Pass version information and app name to Gradle

@@ -35,11 +35,19 @@ jobs:
 
       - name: Set up environment for test
         if: github.ref == 'refs/heads/test'
-        run: cp .env.development.example .env
+        run: |
+          cp .env.development.example .env
+          source .env
+          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
+          echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
 
       - name: Set up environment for main
         if: github.ref == 'refs/heads/main'
-        run: cp .env.production.example .env
+        run: |
+          cp .env.production.example .env
+          source .env
+          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
+          echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
 
       - name: Set VERSION and VERSION_CODE
         run: |
@@ -84,7 +92,7 @@ jobs:
       - name: Build with Gradle
         run: |
           cd android
-          ./gradlew assembleRelease -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.APP_NAME }}"
+          ./gradlew assembleRelease -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
