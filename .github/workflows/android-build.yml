@@ -40,8 +40,8 @@ jobs:
           echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
 
-      - name: Set up environment for main
-        if: github.ref == 'refs/heads/main'
+      - name: Set up environment for production
+        if: github.ref == 'refs/heads/main' || github.event_name == 'release'
         run: |
           cp .env.production.example .env
           source .env
@@ -60,8 +60,15 @@ jobs:
 
       - name: Run pre-build script
         run: |
-          source .env
-          VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
+          if [ -f .env ]; then
+            source .env
+            VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
+          else
+            echo ".env file not found. Current directory contents:"
+            ls -la
+            echo "Current working directory: $(pwd)"
+            exit 1
+          fi
 
       - name: Build Android app
         run: |
