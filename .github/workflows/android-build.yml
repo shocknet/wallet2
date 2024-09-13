@@ -185,3 +185,20 @@ jobs:
       - name: Check AndroidManifest.xml
         run: |
           cat android/app/src/main/AndroidManifest.xml
+
+      - name: Debug Build Environment
+        run: |
+          echo "VITE_ANDROID_APPLICATION_ID: ${{ env.VITE_ANDROID_APPLICATION_ID }}"
+          echo "Gradle Properties:"
+          cat android/gradle.properties
+          echo "Local Properties:"
+          cat android/local.properties
+
+      - name: Build with Gradle
+        run: |
+          cd android
+          ./gradlew assembleRelease --info -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" -PappUrl="${{ env.VITE_APP_URL }}"
+
+      - name: Check Final AndroidManifest.xml
+        run: |
+          unzip -p android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree -
