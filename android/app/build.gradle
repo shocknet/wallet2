@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
+    namespace project.hasProperty('applicationId') ? project.property('applicationId') : System.getenv('VITE_ANDROID_APPLICATION_ID')
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
+        applicationId project.hasProperty('applicationId') ? project.property('applicationId') : System.getenv('VITE_ANDROID_APPLICATION_ID')
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.hasProperty('versionCode') ? project.property('versionCode') as int : 1

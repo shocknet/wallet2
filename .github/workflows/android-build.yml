@@ -32,13 +32,14 @@ jobs:
           npm ci
           npm install -g @ionic/cli native-run cordova-res
 
-      - name: Set up environment for test
+      - name: Set up environment for test (using production config)
         if: github.ref == 'refs/heads/test'
         run: |
-          cp .env.development.example .env
+          cp .env.production.example .env
           source .env
           echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
+          echo "VITE_APP_URL=$VITE_APP_URL" >> $GITHUB_ENV
 
       - name: Set up environment for production
         if: github.ref == 'refs/heads/main' || github.event_name == 'release'
@@ -47,6 +48,14 @@ jobs:
           source .env
           echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
+          echo "VITE_APP_URL=$VITE_APP_URL" >> $GITHUB_ENV
+
+      - name: Debug environment
+        run: |
+          echo "Environment variables:"
+          echo "VITE_APP_NAME: ${{ env.VITE_APP_NAME }}"
+          echo "VITE_ANDROID_APPLICATION_ID: ${{ env.VITE_ANDROID_APPLICATION_ID }}"
+          echo "VITE_APP_URL: ${{ env.VITE_APP_URL }}"
 
       - name: Set VERSION and VERSION_CODE
         run: |
@@ -170,5 +179,9 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v3
         with:
-          name: app-release
+          name: app-release-${{ env.BUILD_TYPE }}
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
+
+      - name: Check AndroidManifest.xml
+        run: |
+          cat android/app/src/main/AndroidManifest.xml

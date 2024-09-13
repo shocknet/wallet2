@@ -61,12 +61,15 @@ const appName = process.env.VITE_APP_NAME || 'missing env';
 
 const appUrl = process.env.VITE_APP_URL || 'shockwallet.app';
 
+console.log('Environment variables:');
+console.log(process.env);
+
 console.log('Pre-build variables:');
 console.log(`Version: ${version}`);
 console.log(`Version Code: ${versionCode}`);
 console.log(`Application ID: ${applicationId}`);
-console.log(`App Name: ${appName}`);
 console.log(`App URL: ${appUrl}`);
+console.log(`App Name: ${appName}`);
 
 updateBuildGradle(version, versionCode, applicationId, appName);
 
