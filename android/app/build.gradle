@@ -1,19 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "${applicationId}"
+    namespace project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "${applicationId}"
+        applicationId project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.hasProperty('versionCode') ? project.property('versionCode') as int : 1
         versionName project.hasProperty('versionName') ? project.property('versionName') : "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        aaptOptions {
-            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
-        }
         resValue "string", "app_name", project.hasProperty('appName') ? project.property('appName') : "Default App Name"
+        manifestPlaceholders = [appUrl: project.hasProperty('appUrl') ? project.property('appUrl') : (project.hasProperty('applicationId') ? project.property('applicationId').replace('app.', '') : "shockwallet.app")]
     }
     buildTypes {
         release {
