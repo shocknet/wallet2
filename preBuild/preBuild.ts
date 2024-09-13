@@ -5,9 +5,14 @@ const path = require('path');
 
 // Read and modify the AndroidManifest.xml file
 const androidManifestPath = 'android/app/src/main/AndroidManifest.xml';
-let androidManifest = fs.readFileSync('preBuild/AndroidManifest.copy.xml', 'utf8');
-androidManifest = androidManifest.replace('${appUrl}', process.env.VITE_APP_URL);
-androidManifest = androidManifest.replace('${appName}', process.env.VITE_APP_NAME);
+let androidManifest = fs.readFileSync(androidManifestPath, 'utf8');
+
+// Replace the app URL
+androidManifest = androidManifest.replace(
+  /<data android:scheme="https" android:host="[^"]+"/,
+  `<data android:scheme="https" android:host="${process.env.VITE_APP_URL}"`
+);
+
 fs.writeFileSync(androidManifestPath, androidManifest);
 
 // Read and modify the Info.plist file
@@ -26,7 +31,7 @@ entitlements = entitlements.replace('${appUrl}', process.env.VITE_APP_URL);
 fs.writeFileSync(entitlementsPath, entitlements);
 
 // Update the build.gradle file
-function updateBuildGradle(version, versionCode, applicationId) {
+function updateBuildGradle(version, versionCode, applicationId, appName) {
   const buildGradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
   let buildGradle = fs.readFileSync(buildGradlePath, 'utf8');
   
@@ -50,12 +55,18 @@ function updateBuildGradle(version, versionCode, applicationId) {
     `namespace "${applicationId}"`
   );
   
+  buildGradle = buildGradle.replace(
+    /resValue "string", "app_name", "[^"]+"/,
+    `resValue "string", "app_name", "${appName}"`
+  );
+  
   fs.writeFileSync(buildGradlePath, buildGradle);
 }
 
 const version = process.env.VERSION || '0.0.0';
 const versionCode = process.env.VERSION_CODE || '1';
 const applicationId = process.env.VITE_ANDROID_APPLICATION_ID || 'app.shockwallet.test';
-updateBuildGradle(version, versionCode, applicationId);
+const appName = process.env.VITE_APP_NAME || 'missing env';
+updateBuildGradle(version, versionCode, applicationId, appName);
 
 console.log('Pre-build script completed');
