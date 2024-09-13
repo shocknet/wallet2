@@ -51,7 +51,9 @@ jobs:
           echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
       - name: Run pre-build script
-        run: VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
+        run: |
+          source .env
+          VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
 
       - name: Build Android app
         run: ionic cap build android --no-interactive
