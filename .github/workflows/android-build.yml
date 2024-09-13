@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -41,8 +41,17 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: cp .env.production.example .env
 
+      - name: Set VERSION and VERSION_CODE
+        run: |
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=test" >> $GITHUB_ENV
+          fi
+          echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
+
       - name: Run pre-build script
-        run: npm run prebuild
+        run: VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
 
       - name: Build Android app
         run: ionic cap build android --no-interactive
