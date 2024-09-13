@@ -45,10 +45,11 @@ jobs:
         run: |
           if [[ ${{ github.event_name }} == 'release' ]]; then
             echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           else
             echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           fi
-          echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
       - name: Run pre-build script
         run: |
