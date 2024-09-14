@@ -34,7 +34,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          if [[ ${{ github.ref }} == 'refs/heads/test' || ${{ github.ref }} == 'refs/heads/main' || ${{ github.event_name }} == 'release' ]]; then
+          if [[ ${{ github.event_name }} == 'release' ]]; then
             cp .env.production.example .env
           else
             cp .env.development.example .env
@@ -57,7 +57,7 @@ jobs:
             echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           else
-            echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "VERSION=dev-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           fi
 
@@ -94,7 +94,11 @@ jobs:
         run: |
           source .env
           ionic cap sync android
-          ionic cap build android --no-interactive --prod
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            ionic cap build android --no-interactive --prod
+          else
+            ionic cap build android --no-interactive
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -143,38 +147,6 @@ jobs:
           keytool -list -v -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         shell: bash
 
-      - name: Sign APK for test
-        if: github.ref == 'refs/heads/test'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
-        shell: bash
-
-      - name: Sign APK for main
-        if: github.ref == 'refs/heads/main'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
-        shell: bash
-
-      - name: Verify APK for test
-        if: github.ref == 'refs/heads/test'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk
-        shell: bash
-
-      - name: Verify APK for main
-        if: github.ref == 'refs/heads/main'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
-        shell: bash
-
-      - name: Set VERSION for release
-        if: github.event_name == 'release'
-        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Set VERSION for test branch
-        if: github.event_name == 'push'
-        run: echo "VERSION=test" >> $GITHUB_ENV
-
       - name: Sign APK
         run: |
           $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
@@ -200,7 +172,7 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v3
         with:
-          name: app-release-${{ env.BUILD_TYPE }}
+          name: app-release-dev
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
 
       - name: Check AndroidManifest.xml
