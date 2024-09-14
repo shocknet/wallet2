@@ -40,8 +40,8 @@ jobs:
             cp .env.development.example .env
           fi
           source .env
-          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
+          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_APP_URL=$VITE_APP_URL" >> $GITHUB_ENV
 
       - name: Debug environment
@@ -68,15 +68,7 @@ jobs:
 
       - name: Run pre-build script
         run: |
-          if [ -f .env ]; then
-            source .env
-            VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
-          else
-            echo ".env file not found. Current directory contents:"
-            ls -la
-            echo "Current working directory: $(pwd)"
-            exit 1
-          fi
+          npm run prebuild
 
       - name: Verify Android project structure
         run: |
@@ -84,9 +76,6 @@ jobs:
           tree android/app/src/main
           echo "MainActivity.java contents:"
           cat android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
-
-      - name: Verify package name and version after prebuild
-        run: |
           echo "AndroidManifest.xml package and URL:"
           grep 'package=' android/app/src/main/AndroidManifest.xml
           grep 'android:host=' android/app/src/main/AndroidManifest.xml
@@ -95,7 +84,7 @@ jobs:
           grep 'versionCode' android/app/build.gradle
           grep 'versionName' android/app/build.gradle
           echo "MainActivity.java package:"
-          grep 'package' android/app/src/main/java/app/shockwallet/my/MainActivity.java
+          grep 'package' android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
           echo "strings.xml app name:"
           grep 'app_name' android/app/src/main/res/values/strings.xml
           echo "capacitor.config.json package name:"
