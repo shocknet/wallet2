@@ -61,6 +61,11 @@ jobs:
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           fi
 
+      - name: Set up Android project structure
+        run: |
+          mkdir -p android/app/src/main/java
+          mkdir -p android/app/src/main/res/values
+
       - name: Run pre-build script
         run: |
           if [ -f .env ]; then
@@ -72,6 +77,13 @@ jobs:
             echo "Current working directory: $(pwd)"
             exit 1
           fi
+
+      - name: Verify Android project structure
+        run: |
+          echo "Android project structure:"
+          tree android/app/src/main
+          echo "MainActivity.java contents:"
+          cat android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
 
       - name: Verify package name and version after prebuild
         run: |
