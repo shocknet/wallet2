@@ -191,8 +191,8 @@ jobs:
           echo "VITE_ANDROID_APPLICATION_ID: ${{ env.VITE_ANDROID_APPLICATION_ID }}"
           echo "Gradle Properties:"
           cat android/gradle.properties
-          echo "Local Properties:"
-          cat android/local.properties
+          echo "Build Gradle Contents:"
+          cat android/app/build.gradle
 
       - name: Build with Gradle
         run: |
@@ -201,4 +201,11 @@ jobs:
 
       - name: Check Final AndroidManifest.xml
         run: |
+          unzip -p android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree -
+
+      - name: Check APK contents
+        run: |
+          echo "APK contents:"
+          unzip -l android/app/build/outputs/apk/release/app-release.apk
+          echo "AndroidManifest.xml contents:"
           unzip -p android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree -
