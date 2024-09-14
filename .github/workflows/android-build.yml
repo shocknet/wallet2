@@ -32,19 +32,13 @@ jobs:
           npm ci
           npm install -g @ionic/cli native-run cordova-res
 
-      - name: Set up environment for test (using production config)
-        if: github.ref == 'refs/heads/test'
+      - name: Set up environment
         run: |
-          cp .env.production.example .env
-          source .env
-          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
-          echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
-          echo "VITE_APP_URL=$VITE_APP_URL" >> $GITHUB_ENV
-
-      - name: Set up environment for production
-        if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-        run: |
-          cp .env.production.example .env
+          if [[ ${{ github.ref }} == 'refs/heads/test' || ${{ github.ref }} == 'refs/heads/main' || ${{ github.event_name }} == 'release' ]]; then
+            cp .env.production.example .env
+          else
+            cp .env.development.example .env
+          fi
           source .env
           echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
@@ -107,7 +101,12 @@ jobs:
       - name: Build with Gradle
         run: |
           cd android
-          ./gradlew assembleRelease --info -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" -PappUrl="${{ env.VITE_APP_URL }}"
+          ./gradlew assembleRelease --info \
+            -PversionCode=${{ env.VERSION_CODE }} \
+            -PversionName=${{ env.VERSION }} \
+            -PappName="${{ env.VITE_APP_NAME }}" \
+            -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" \
+            -PappUrl="${{ env.VITE_APP_URL }}"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -193,11 +192,6 @@ jobs:
           cat android/gradle.properties
           echo "Build Gradle Contents:"
           cat android/app/build.gradle
-
-      - name: Build with Gradle
-        run: |
-          cd android
-          ./gradlew assembleRelease --info -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" -PappUrl="${{ env.VITE_APP_URL }}"
 
       - name: Check APK contents
         run: |

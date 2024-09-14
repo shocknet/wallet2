@@ -1,10 +1,19 @@
-// preBuild.js
-const fs = require('fs');
-require('dotenv').config();
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 
-// Read and modify the AndroidManifest.xml file
-const androidManifestPath = 'android/app/src/main/AndroidManifest.xml';
+// Load environment variables
+dotenv.config();
+
+console.log('Starting prebuild script');
+console.log('Environment variables:');
+console.log('VITE_APP_NAME:', process.env.VITE_APP_NAME);
+console.log('VITE_ANDROID_APPLICATION_ID:', process.env.VITE_ANDROID_APPLICATION_ID);
+console.log('VITE_APP_URL:', process.env.VITE_APP_URL);
+console.log('VERSION:', process.env.VERSION);
+console.log('VERSION_CODE:', process.env.VERSION_CODE);
+
+const androidManifestPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
 let androidManifest = fs.readFileSync(androidManifestPath, 'utf8');
 
 // Replace the app URL
@@ -13,73 +22,41 @@ androidManifest = androidManifest.replace(
   `<data android:scheme="https" android:host="${process.env.VITE_APP_URL}"`
 );
 
+// Replace the package name
+androidManifest = androidManifest.replace(
+  /package="[^"]+"/,
+  `package="${process.env.VITE_ANDROID_APPLICATION_ID}"`
+);
+
+// Replace any remaining ${applicationId} placeholders
+androidManifest = androidManifest.replace(
+  /\${applicationId}/g,
+  process.env.VITE_ANDROID_APPLICATION_ID || ''
+);
+
 fs.writeFileSync(androidManifestPath, androidManifest);
+console.log('AndroidManifest.xml updated successfully');
 
-// Read and modify the Info.plist file
-const infoPlistPath = 'ios/App/App/Info.plist';
-let infoPlist = fs.readFileSync('preBuild/Info.copy.plist', 'utf8');
+// Update build.gradle
+const buildGradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
+let buildGradle = fs.readFileSync(buildGradlePath, 'utf8');
 
-infoPlist = infoPlist.replace('${appUrl}', process.env.VITE_APP_URL);
+buildGradle = buildGradle.replace(
+  /applicationId .+/,
+  `applicationId "${process.env.VITE_ANDROID_APPLICATION_ID}"`
+);
 
-fs.writeFileSync(infoPlistPath, infoPlist);
+buildGradle = buildGradle.replace(
+  /versionCode .+/,
+  `versionCode ${process.env.VERSION_CODE}`
+);
 
-// Read and modify the App.entitlements file
-const entitlementsPath = 'ios/App/App/App.entitlements';
-let entitlements = fs.readFileSync('preBuild/App.entitlements.copy', 'utf8');
-entitlements = entitlements.replace('${appUrl}', process.env.VITE_APP_URL);
+buildGradle = buildGradle.replace(
+  /versionName .+/,
+  `versionName "${process.env.VERSION}"`
+);
 
-fs.writeFileSync(entitlementsPath, entitlements);
+fs.writeFileSync(buildGradlePath, buildGradle);
+console.log('build.gradle updated successfully');
 
-// Update the build.gradle file
-function updateBuildGradle(version, versionCode, applicationId, appName) {
-  const buildGradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
-  let buildGradle = fs.readFileSync(buildGradlePath, 'utf8');
-  
-  buildGradle = buildGradle.replace(
-    /applicationId "[^"]+"/,
-    `applicationId "${applicationId}"`
-  );
-  
-  buildGradle = buildGradle.replace(
-    /namespace "[^"]+"/,
-    `namespace "${applicationId}"`
-  );
-  
-  // Remove this replacement as we'll use project properties instead
-  // buildGradle = buildGradle.replace(
-  //   /resValue "string", "app_name", "[^"]+"/,
-  //   `resValue "string", "app_name", "${appName}"`
-  // );
-  
-  fs.writeFileSync(buildGradlePath, buildGradle);
-}
-
-const version = process.env.VERSION || '0.0.0';
-const versionCode = process.env.VERSION_CODE || '1';
-const applicationId = process.env.VITE_ANDROID_APPLICATION_ID || 'app.shockwallet.test';
-const appName = process.env.VITE_APP_NAME || 'missing env';
-
-const appUrl = process.env.VITE_APP_URL || 'shockwallet.app';
-
-console.log('Environment variables:');
-console.log(process.env);
-
-console.log('Pre-build variables:');
-console.log(`Version: ${version}`);
-console.log(`Version Code: ${versionCode}`);
-console.log(`Application ID: ${applicationId}`);
-console.log(`App URL: ${appUrl}`);
-console.log(`App Name: ${appName}`);
-
-updateBuildGradle(version, versionCode, applicationId, appName);
-
-// Pass version information and app name to Gradle
-process.env.ORG_GRADLE_PROJECT_versionCode = versionCode;
-process.env.ORG_GRADLE_PROJECT_versionName = version;
-process.env.ORG_GRADLE_PROJECT_appName = appName;
-
-// Pass applicationId and appUrl to Gradle
-process.env.ORG_GRADLE_PROJECT_applicationId = applicationId;
-process.env.ORG_GRADLE_PROJECT_appUrl = appUrl;
-
-console.log('Pre-build script completed');
+console.log('Prebuild script completed');
