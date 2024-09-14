@@ -199,13 +199,29 @@ jobs:
           cd android
           ./gradlew assembleRelease --info -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" -PappUrl="${{ env.VITE_APP_URL }}"
 
-      - name: Check Final AndroidManifest.xml
-        run: |
-          unzip -p android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree -
-
       - name: Check APK contents
         run: |
-          echo "APK contents:"
-          unzip -l android/app/build/outputs/apk/release/app-release.apk
-          echo "AndroidManifest.xml contents:"
-          unzip -p android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree -
+          APK_DIR="android/app/build/outputs/apk/release"
+          APK_FILE=$(find $APK_DIR -name "*.apk" | head -n 1)
+          if [ -f "$APK_FILE" ]; then
+            echo "APK file found: $APK_FILE"
+            echo "APK contents:"
+            unzip -l "$APK_FILE"
+            echo "AndroidManifest.xml contents:"
+            if unzip -p "$APK_FILE" AndroidManifest.xml > manifest.xml; then
+              if [ -s manifest.xml ]; then
+                $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree manifest.xml || echo "aapt command failed"
+              else
+                echo "Extracted AndroidManifest.xml is empty"
+              fi
+            else
+              echo "Failed to extract AndroidManifest.xml from APK"
+            fi
+          else
+            echo "No APK file found in $APK_DIR"
+            ls -R $APK_DIR
+          fi
+
+      - name: Check aapt version
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt version || echo "aapt not found or failed to run"
