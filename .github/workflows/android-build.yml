@@ -73,10 +73,21 @@ jobs:
             exit 1
           fi
 
-      - name: Check AndroidManifest.xml after prebuild
+      - name: Verify package name and version after prebuild
         run: |
-          echo "AndroidManifest.xml contents after prebuild:"
-          cat android/app/src/main/AndroidManifest.xml
+          echo "AndroidManifest.xml package and URL:"
+          grep 'package=' android/app/src/main/AndroidManifest.xml
+          grep 'android:host=' android/app/src/main/AndroidManifest.xml
+          echo "build.gradle applicationId and version:"
+          grep 'applicationId' android/app/build.gradle
+          grep 'versionCode' android/app/build.gradle
+          grep 'versionName' android/app/build.gradle
+          echo "MainActivity.java package:"
+          grep 'package' android/app/src/main/java/app/shockwallet/my/MainActivity.java
+          echo "strings.xml app name:"
+          grep 'app_name' android/app/src/main/res/values/strings.xml
+          echo "capacitor.config.json package name:"
+          grep 'packageName' capacitor.config.json || echo "capacitor.config.json not found"
 
       - name: Build Android app
         run: |

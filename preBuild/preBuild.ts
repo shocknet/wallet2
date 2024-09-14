@@ -13,32 +13,22 @@ console.log('VITE_APP_URL:', process.env.VITE_APP_URL);
 console.log('VERSION:', process.env.VERSION);
 console.log('VERSION_CODE:', process.env.VERSION_CODE);
 
+// Update AndroidManifest.xml
 const androidManifestPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
 let androidManifest = fs.readFileSync(androidManifestPath, 'utf8');
 
-console.log('Before AndroidManifest.xml update:');
-console.log(androidManifest);
-
-// Replace the app URL
-androidManifest = androidManifest.replace(
-  /<data android:scheme="https" android:host="[^"]+"/,
-  `<data android:scheme="https" android:host="${process.env.VITE_APP_URL}"`
-);
-
-// Replace the package name
 androidManifest = androidManifest.replace(
   /package="[^"]+"/,
   `package="${process.env.VITE_ANDROID_APPLICATION_ID}"`
 );
-
-// Replace any remaining ${applicationId} placeholders
 androidManifest = androidManifest.replace(
-  /\${applicationId}/g,
-  process.env.VITE_ANDROID_APPLICATION_ID || ''
+  /android:name="\.MainActivity"/,
+  `android:name="${process.env.VITE_ANDROID_APPLICATION_ID}.MainActivity"`
 );
-
-console.log('After AndroidManifest.xml update:');
-console.log(androidManifest);
+androidManifest = androidManifest.replace(
+  /<data android:scheme="https" android:host="[^"]+"/,
+  `<data android:scheme="https" android:host="${process.env.VITE_APP_URL}"`
+);
 
 fs.writeFileSync(androidManifestPath, androidManifest);
 console.log('AndroidManifest.xml updated successfully');
@@ -51,12 +41,14 @@ buildGradle = buildGradle.replace(
   /applicationId .+/,
   `applicationId "${process.env.VITE_ANDROID_APPLICATION_ID}"`
 );
-
+buildGradle = buildGradle.replace(
+  /namespace .+/,
+  `namespace "${process.env.VITE_ANDROID_APPLICATION_ID}"`
+);
 buildGradle = buildGradle.replace(
   /versionCode .+/,
   `versionCode ${process.env.VERSION_CODE}`
 );
-
 buildGradle = buildGradle.replace(
   /versionName .+/,
   `versionName "${process.env.VERSION}"`
@@ -64,5 +56,40 @@ buildGradle = buildGradle.replace(
 
 fs.writeFileSync(buildGradlePath, buildGradle);
 console.log('build.gradle updated successfully');
+
+// Update MainActivity.java
+const mainActivityPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'java', 'app', 'shockwallet', 'my', 'MainActivity.java');
+let mainActivity = fs.readFileSync(mainActivityPath, 'utf8');
+mainActivity = mainActivity.replace(
+  /package .+;/,
+  `package ${process.env.VITE_ANDROID_APPLICATION_ID};`
+);
+
+fs.writeFileSync(mainActivityPath, mainActivity);
+console.log('MainActivity.java updated successfully');
+
+// Update strings.xml
+const stringsXmlPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res', 'values', 'strings.xml');
+let stringsXml = fs.readFileSync(stringsXmlPath, 'utf8');
+
+stringsXml = stringsXml.replace(
+  /<string name="app_name">[^<]+<\/string>/,
+  `<string name="app_name">${process.env.VITE_APP_NAME}</string>`
+);
+
+fs.writeFileSync(stringsXmlPath, stringsXml);
+console.log('strings.xml updated successfully');
+
+// Update capacitor.config.json or capacitor.config.ts
+const capacitorConfigPath = path.join(__dirname, '..', 'capacitor.config.json');
+if (fs.existsSync(capacitorConfigPath)) {
+  let capacitorConfig = JSON.parse(fs.readFileSync(capacitorConfigPath, 'utf8'));
+  capacitorConfig.android = capacitorConfig.android || {};
+  capacitorConfig.android.packageName = process.env.VITE_ANDROID_APPLICATION_ID;
+  fs.writeFileSync(capacitorConfigPath, JSON.stringify(capacitorConfig, null, 2));
+  console.log('capacitor.config.json updated successfully');
+} else {
+  console.log('capacitor.config.json not found. Make sure to update it manually if needed.');
+}
 
 console.log('Prebuild script completed');
