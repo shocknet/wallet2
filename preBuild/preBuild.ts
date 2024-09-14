@@ -16,6 +16,9 @@ console.log('VERSION_CODE:', process.env.VERSION_CODE);
 const androidManifestPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
 let androidManifest = fs.readFileSync(androidManifestPath, 'utf8');
 
+console.log('Before AndroidManifest.xml update:');
+console.log(androidManifest);
+
 // Replace the app URL
 androidManifest = androidManifest.replace(
   /<data android:scheme="https" android:host="[^"]+"/,
@@ -33,6 +36,9 @@ androidManifest = androidManifest.replace(
   /\${applicationId}/g,
   process.env.VITE_ANDROID_APPLICATION_ID || ''
 );
+
+console.log('After AndroidManifest.xml update:');
+console.log(androidManifest);
 
 fs.writeFileSync(androidManifestPath, androidManifest);
 console.log('AndroidManifest.xml updated successfully');

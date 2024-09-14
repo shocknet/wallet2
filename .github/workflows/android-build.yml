@@ -73,6 +73,11 @@ jobs:
             exit 1
           fi
 
+      - name: Check AndroidManifest.xml after prebuild
+        run: |
+          echo "AndroidManifest.xml contents after prebuild:"
+          cat android/app/src/main/AndroidManifest.xml
+
       - name: Build Android app
         run: |
           source .env
@@ -107,6 +112,11 @@ jobs:
             -PappName="${{ env.VITE_APP_NAME }}" \
             -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" \
             -PappUrl="${{ env.VITE_APP_URL }}"
+
+      - name: Check AndroidManifest.xml after Gradle build
+        run: |
+          echo "AndroidManifest.xml contents after Gradle build:"
+          cat android/app/src/main/AndroidManifest.xml
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
