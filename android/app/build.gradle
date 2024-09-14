@@ -1,17 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
+    namespace project.hasProperty('applicationId') ? project.property('applicationId') : System.getenv('VITE_ANDROID_APPLICATION_ID')
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId project.hasProperty('applicationId') ? project.property('applicationId') : "${applicationId}"
+        applicationId project.hasProperty('applicationId') ? project.property('applicationId') : System.getenv('VITE_ANDROID_APPLICATION_ID')
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.hasProperty('versionCode') ? project.property('versionCode') as int : 1
         versionName project.hasProperty('versionName') ? project.property('versionName') : "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "app_name", project.hasProperty('appName') ? project.property('appName') : "Default App Name"
-        manifestPlaceholders = [appUrl: project.hasProperty('appUrl') ? project.property('appUrl') : (project.hasProperty('applicationId') ? project.property('applicationId').replace('app.', '') : "shockwallet.app")]
+        manifestPlaceholders = [appUrl: project.hasProperty('appUrl') ? project.property('appUrl') : (project.hasProperty('applicationId') ? project.property('applicationId').replace('app.', '') : "my.shockwallet.app")]
     }
     buildTypes {
         release {

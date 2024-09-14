@@ -32,21 +32,24 @@ jobs:
           npm ci
           npm install -g @ionic/cli native-run cordova-res
 
-      - name: Set up environment for test
-        if: github.ref == 'refs/heads/test'
+      - name: Set up environment
         run: |
-          cp .env.development.example .env
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            cp .env.production.example .env
+          else
+            cp .env.development.example .env
+          fi
           source .env
-          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
+          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
+          echo "VITE_APP_URL=$VITE_APP_URL" >> $GITHUB_ENV
 
-      - name: Set up environment for production
-        if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+      - name: Debug environment
         run: |
-          cp .env.production.example .env
-          source .env
-          echo "VITE_APP_NAME=$VITE_APP_NAME" >> $GITHUB_ENV
-          echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV
+          echo "Environment variables:"
+          echo "VITE_APP_NAME: ${{ env.VITE_APP_NAME }}"
+          echo "VITE_ANDROID_APPLICATION_ID: ${{ env.VITE_ANDROID_APPLICATION_ID }}"
+          echo "VITE_APP_URL: ${{ env.VITE_APP_URL }}"
 
       - name: Set VERSION and VERSION_CODE
         run: |
@@ -54,27 +57,48 @@ jobs:
             echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           else
-            echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "VERSION=dev-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           fi
 
+      - name: Set up Android project structure
+        run: |
+          mkdir -p android/app/src/main/java
+          mkdir -p android/app/src/main/res/values
+
       - name: Run pre-build script
         run: |
-          if [ -f .env ]; then
-            source .env
-            VERSION=${{ env.VERSION }} VERSION_CODE=${{ env.VERSION_CODE }} npm run prebuild
-          else
-            echo ".env file not found. Current directory contents:"
-            ls -la
-            echo "Current working directory: $(pwd)"
-            exit 1
-          fi
+          npm run prebuild
+
+      - name: Verify Android project structure
+        run: |
+          echo "Android project structure:"
+          tree android/app/src/main
+          echo "MainActivity.java contents:"
+          cat android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
+          echo "AndroidManifest.xml package and URL:"
+          grep 'package=' android/app/src/main/AndroidManifest.xml
+          grep 'android:host=' android/app/src/main/AndroidManifest.xml
+          echo "build.gradle applicationId and version:"
+          grep 'applicationId' android/app/build.gradle
+          grep 'versionCode' android/app/build.gradle
+          grep 'versionName' android/app/build.gradle
+          echo "MainActivity.java package:"
+          grep 'package' android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
+          echo "strings.xml app name:"
+          grep 'app_name' android/app/src/main/res/values/strings.xml
+          echo "capacitor.config.json package name:"
+          grep 'packageName' capacitor.config.json || echo "capacitor.config.json not found"
 
       - name: Build Android app
         run: |
           source .env
           ionic cap sync android
-          ionic cap build android --no-interactive --prod
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            ionic cap build android --no-interactive --prod
+          else
+            ionic cap build android --no-interactive
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -98,7 +122,17 @@ jobs:
       - name: Build with Gradle
         run: |
           cd android
-          ./gradlew assembleRelease -PversionCode=${{ env.VERSION_CODE }} -PversionName=${{ env.VERSION }} -PappName="${{ env.VITE_APP_NAME }}" -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" -PappUrl="${{ env.VITE_APP_URL }}"
+          ./gradlew assembleRelease --info \
+            -PversionCode=${{ env.VERSION_CODE }} \
+            -PversionName=${{ env.VERSION }} \
+            -PappName="${{ env.VITE_APP_NAME }}" \
+            -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" \
+            -PappUrl="${{ env.VITE_APP_URL }}"
+
+      - name: Check AndroidManifest.xml after Gradle build
+        run: |
+          echo "AndroidManifest.xml contents after Gradle build:"
+          cat android/app/src/main/AndroidManifest.xml
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -112,38 +146,6 @@ jobs:
         run: |
           keytool -list -v -keystore my-release-key.keystore -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         shell: bash
-
-      - name: Sign APK for test
-        if: github.ref == 'refs/heads/test'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
-        shell: bash
-
-      - name: Sign APK for main
-        if: github.ref == 'refs/heads/main'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
-        shell: bash
-
-      - name: Verify APK for test
-        if: github.ref == 'refs/heads/test'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-test-${{ env.VERSION }}.apk
-        shell: bash
-
-      - name: Verify APK for main
-        if: github.ref == 'refs/heads/main'
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/33.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.APP_NAME }}-prod-${{ env.VERSION }}.apk
-        shell: bash
-
-      - name: Set VERSION for release
-        if: github.event_name == 'release'
-        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Set VERSION for test branch
-        if: github.event_name == 'push'
-        run: echo "VERSION=test" >> $GITHUB_ENV
 
       - name: Sign APK
         run: |
@@ -170,5 +172,44 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v3
         with:
-          name: app-release
+          name: app-release-dev
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
+
+      - name: Check AndroidManifest.xml
+        run: |
+          cat android/app/src/main/AndroidManifest.xml
+
+      - name: Debug Build Environment
+        run: |
+          echo "VITE_ANDROID_APPLICATION_ID: ${{ env.VITE_ANDROID_APPLICATION_ID }}"
+          echo "Gradle Properties:"
+          cat android/gradle.properties
+          echo "Build Gradle Contents:"
+          cat android/app/build.gradle
+
+      - name: Check APK contents
+        run: |
+          APK_DIR="android/app/build/outputs/apk/release"
+          APK_FILE=$(find $APK_DIR -name "*.apk" | head -n 1)
+          if [ -f "$APK_FILE" ]; then
+            echo "APK file found: $APK_FILE"
+            echo "APK contents:"
+            unzip -l "$APK_FILE"
+            echo "AndroidManifest.xml contents:"
+            if unzip -p "$APK_FILE" AndroidManifest.xml > manifest.xml; then
+              if [ -s manifest.xml ]; then
+                $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt dump xmltree manifest.xml || echo "aapt command failed"
+              else
+                echo "Extracted AndroidManifest.xml is empty"
+              fi
+            else
+              echo "Failed to extract AndroidManifest.xml from APK"
+            fi
+          else
+            echo "No APK file found in $APK_DIR"
+            ls -R $APK_DIR
+          fi
+
+      - name: Check aapt version
+        run: |
+          $ANDROID_SDK_ROOT/build-tools/33.0.0/aapt version || echo "aapt not found or failed to run"
