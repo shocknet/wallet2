@@ -53,7 +53,7 @@ import LoadingOverlay from "./Components/LoadingOverlay";
 
 setupIonicReact();
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -63,9 +63,7 @@ const App: React.FC = () => {
       const inviteToken = url.searchParams.get('inviteToken');
 
       if (addSource) {
-        // Dispatch an action to show the confirmation dialog
         dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
-        // Clear the URL parameters
         window.history.replaceState({}, document.title, url.pathname);
       }
     };
@@ -78,6 +76,108 @@ const App: React.FC = () => {
     };
   }, [dispatch]);
 
+  return (
+    <>
+      <AppUrlListener />
+      <Background />
+      <LoadingOverlay />
+      <IonRouterOutlet>
+        <Route exact path="/">
+          <Layout>
+            <NodeUp />
+          </Layout>
+        </Route>
+        <Route exact path="/loader">
+          <Layout>
+            <Loader />
+          </Layout>
+        </Route>
+        <Route exact path="/home">
+          <Layout>
+            <Home />
+          </Layout>
+        </Route>
+        <Route exact path="/receive">
+          <Layout>
+            <Receive />
+          </Layout>
+        </Route>
+        <Route exact path="/send">
+          <Layout>
+            <Send />
+          </Layout>
+        </Route>
+        <Route exact path="/scan">
+          <Layout>
+            <Scan />
+          </Layout>
+        </Route>
+        <Route exact path="/sources">
+          <Layout>
+            <Sources />
+          </Layout>
+        </Route>
+        <Route exact path="/automation">
+          <Layout>
+            <Automation />
+          </Layout>
+        </Route>
+        <Route exact path="/prefs">
+          <Layout>
+            <Prefs />
+          </Layout>
+        </Route>
+        <Route exact path="/contacts">
+          <Layout>
+            <Contacts />
+          </Layout>
+        </Route>
+        <Route exact path="/invitations">
+          <Layout>
+            <Invitations />
+          </Layout>
+        </Route>
+        <Route exact path="/auth">
+          <Layout>
+            <Auth />
+          </Layout>
+        </Route>
+        <Route exact path="/notify">
+          <Layout>
+            <Notify />
+          </Layout>
+        </Route>
+        <Route exact path="/metrics">
+          <Layout>
+            <Metrics />
+          </Layout>
+        </Route>
+        <Route exact path="/manage">
+          <Layout>
+            <Manage />
+          </Layout>
+        </Route>
+        <Route exact path="/channels">
+          <Layout>
+            <Channels />
+          </Layout>
+        </Route>
+        <Route exact path="/LApps">
+          <Layout>
+            <LinkedApp />
+          </Layout>
+        </Route>
+        <Route exact path="/Offers">
+          <Layout>
+            <Offers />
+          </Layout>
+        </Route>
+      </IonRouterOutlet>
+    </>
+  );
+};
+
+const App: React.FC = () => {
   const setStatusBarColor = async () => {
     await StatusBar.setBackgroundColor({ color: "#16191c" });
   };
@@ -87,101 +187,7 @@ const App: React.FC = () => {
       <IonApp className="safe-area">
         <ErrorBoundary>
           <IonReactRouter>
-            <AppUrlListener />
-            <Background />
-            <LoadingOverlay />
-            <IonRouterOutlet>
-              <Route exact path="/">
-                <Layout>
-                  <NodeUp />
-                </Layout>
-              </Route>
-              <Route exact path="/loader">
-                <Layout>
-                  <Loader />
-                </Layout>
-              </Route>
-              <Route exact path="/home">
-                <Layout>
-                  <Home />
-                </Layout>
-              </Route>
-              <Route exact path="/receive">
-                <Layout>
-                  <Receive />
-                </Layout>
-              </Route>
-              <Route exact path="/send">
-                <Layout>
-                  <Send />
-                </Layout>
-              </Route>
-              <Route exact path="/scan">
-                <Layout>
-                  <Scan />
-                </Layout>
-              </Route>
-              <Route exact path="/sources">
-                <Layout>
-                  <Sources />
-                </Layout>
-              </Route>
-              <Route exact path="/automation">
-                <Layout>
-                  <Automation />
-                </Layout>
-              </Route>
-              <Route exact path="/prefs">
-                <Layout>
-                  <Prefs />
-                </Layout>
-              </Route>
-              <Route exact path="/contacts">
-                <Layout>
-                  <Contacts />
-                </Layout>
-              </Route>
-              <Route exact path="/invitations">
-                <Layout>
-                  <Invitations />
-                </Layout>
-              </Route>
-              <Route exact path="/auth">
-                <Layout>
-                  <Auth />
-                </Layout>
-              </Route>
-              <Route exact path="/notify">
-                <Layout>
-                  <Notify />
-                </Layout>
-              </Route>
-              <Route exact path="/metrics">
-                <Layout>
-                  <Metrics />
-                </Layout>
-              </Route>
-              <Route exact path="/manage">
-                <Layout>
-                  <Manage />
-                </Layout>
-              </Route>
-              <Route exact path="/channels">
-                <Layout>
-                  <Channels />
-                </Layout>
-              </Route>
-              <Route exact path="/LApps">
-                <Layout>
-                  <LinkedApp />
-                </Layout>
-              </Route>
-              <Route exact path="/Offers">
-                <Layout>
-                  <Offers />
-                </Layout>
-              </Route>
-            </IonRouterOutlet>
+            <AppContent />
           </IonReactRouter>
         </ErrorBoundary>
         <ToastContainer
