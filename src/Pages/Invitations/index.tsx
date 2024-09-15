@@ -89,7 +89,7 @@ export const Invitations = () => {
   
 
   const reusableLink = selectedSource ? {
-    link: `${WALLET_URL}/#/sources?addSource=${selectedSource.pasteField}`,
+    link: `${WALLET_URL}/sources?addSource=${selectedSource.pasteField}`,
     subNode: selectedSource.label,
   } : null;
 
@@ -117,7 +117,7 @@ export const Invitations = () => {
       <div className="link-group">
         { invitations.invitations &&
           invitations.invitations.map(inv => {
-            const link = `${WALLET_URL}/#/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
+            const link = `${WALLET_URL}/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
             return (
             <div key={inv.inviteToken} className="content">
                 <div className="text">

@@ -5,6 +5,7 @@ import { IonReactRouter } from "@ionic/react-router";
 import { StatusBar } from "@capacitor/status-bar";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
+import { useDispatch } from 'react-redux';
 
 import './App.scss';
 import store from './State/store';
@@ -23,7 +24,6 @@ import { Contacts } from './Pages/Contacts';
 import { Invitations } from './Pages/Invitations';
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
-import { isBrowser } from 'react-device-detect'
 import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
 import { Manage } from "./Pages/Manage";
@@ -54,9 +54,29 @@ import LoadingOverlay from "./Components/LoadingOverlay";
 setupIonicReact();
 
 const App: React.FC = () => {
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    if (!isBrowser) setStatusBarColor(); // check wonder it is opened in browser
-  }, []);
+    const handleUrlParams = () => {
+      const url = new URL(window.location.href);
+      const addSource = url.searchParams.get('addSource');
+      const inviteToken = url.searchParams.get('inviteToken');
+
+      if (addSource) {
+        // Dispatch an action to show the confirmation dialog
+        dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
+        // Clear the URL parameters
+        window.history.replaceState({}, document.title, url.pathname);
+      }
+    };
+
+    handleUrlParams();
+    window.addEventListener('popstate', handleUrlParams);
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlParams);
+    };
+  }, [dispatch]);
 
   const setStatusBarColor = async () => {
     await StatusBar.setBackgroundColor({ color: "#16191c" });
