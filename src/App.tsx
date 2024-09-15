@@ -1,7 +1,7 @@
 import { Route } from "react-router-dom";
 import React, { useEffect } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
-import { IonReactHashRouter } from "@ionic/react-router";
+import { IonReactRouter } from "@ionic/react-router";
 import { StatusBar } from "@capacitor/status-bar";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
@@ -66,7 +66,7 @@ const App: React.FC = () => {
     <Provider store={store}>
       <IonApp className="safe-area">
         <ErrorBoundary>
-          <IonReactHashRouter>
+          <IonReactRouter>
             <AppUrlListener />
             <Background />
             <LoadingOverlay />
@@ -162,7 +162,7 @@ const App: React.FC = () => {
                 </Layout>
               </Route>
             </IonRouterOutlet>
-          </IonReactHashRouter>
+          </IonReactRouter>
         </ErrorBoundary>
         <ToastContainer
           theme="colored"

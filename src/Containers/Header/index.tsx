@@ -1,11 +1,12 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLocation } from 'react-router-dom';
+import { useIonRouter, isPlatform } from "@ionic/react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import SWText from "../../Assets/Images/sw_text.png";
-import { useIonRouter,isPlatform } from "@ionic/react";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
@@ -26,20 +27,22 @@ const saveLog = (...args: any[]) => {
   logs.push(line)
 }
 export const Header = () => {
+  const location = useLocation();
+  const router = useIonRouter();
+
+  const isNopeUp: boolean = location.pathname === "/";
+  const isLoader: boolean = location.pathname === "/loader";
+  const isscan: boolean = location.pathname === "/scan";
+  const isreceive: boolean = location.pathname === "/receive";
+
   const [badge, setBadge] = useState(false);
   const [logoClickCounter, setLogoClickCounter] = useState(0);
   const backUpStates = useSelector(state => state.backupStateSlice);
-  const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
 
   const { isShown, toggle } = UseModal();
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
-
-  const isNopeUp: boolean = router.routeInfo?.pathname === "/";
-  const isLoader: boolean = router.routeInfo?.pathname === "/loader";
-  const isscan: boolean = router.routeInfo?.pathname === "/scan";
-  const isreceive: boolean = router.routeInfo?.pathname === "/receive";
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
@@ -294,19 +297,21 @@ export const Header = () => {
 }
 
 export const PubHeader = () => {
+  const location = useLocation();
+  const router = useIonRouter();
+
+  const isNopeUp: boolean = location.pathname === "/";
+  const isLoader: boolean = location.pathname === "/loader";
+  const isscan: boolean = location.pathname === "/scan";
+  const isreceive: boolean = location.pathname === "/receive";
+
   const [badge, setBadge] = useState(false);
   const [logoClickCounter, setLogoClickCounter] = useState(0);
-  const router = useIonRouter();
   const notifications = useSelector(({ notify }) => notify);
   const debugMode = useSelector(({ prefs }) => prefs.debugMode);
 
   const { isShown, toggle } = UseModal();
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
-
-  const isNopeUp: boolean = router.routeInfo?.pathname === "/";
-  const isLoader: boolean = router.routeInfo?.pathname === "/loader";
-  const isscan: boolean = router.routeInfo?.pathname === "/scan";
-  const isreceive: boolean = router.routeInfo?.pathname === "/receive";
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
