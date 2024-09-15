@@ -112,7 +112,7 @@ const AppContent: React.FC = () => {
             <Scan />
           </Layout>
         </Route>
-        <Route exact path="/sources">
+        <Route path="/sources">
           <Layout>
             <Sources />
           </Layout>
