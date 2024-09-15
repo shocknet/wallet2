@@ -33,7 +33,7 @@
     "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
     "@ionic/react": "^7.0.0",
-    "@ionic/react-router": "^7.0.0",
+    "@ionic/react-router": "^8.3.0",
     "@noble/curves": "^1.5.0",
     "@noble/hashes": "^1.5.0",
     "@noble/secp256k1": "^2.0.0",
