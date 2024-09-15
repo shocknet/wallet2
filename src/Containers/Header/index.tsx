@@ -37,7 +37,6 @@ export const Header = () => {
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
   const isNopeUp: boolean = router.routeInfo?.pathname === "/";
-  router.routeInfo;
   const isLoader: boolean = router.routeInfo?.pathname === "/loader";
   const isscan: boolean = router.routeInfo?.pathname === "/scan";
   const isreceive: boolean = router.routeInfo?.pathname === "/receive";
@@ -305,7 +304,6 @@ export const PubHeader = () => {
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
   const isNopeUp: boolean = router.routeInfo?.pathname === "/";
-  router.routeInfo;
   const isLoader: boolean = router.routeInfo?.pathname === "/loader";
   const isscan: boolean = router.routeInfo?.pathname === "/scan";
   const isreceive: boolean = router.routeInfo?.pathname === "/receive";
