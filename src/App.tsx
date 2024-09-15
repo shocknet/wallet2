@@ -28,6 +28,8 @@ import { Notify } from './Pages/Notify';
 import { Metrics } from './Pages/Metrics';
 import { Manage } from "./Pages/Manage";
 import { Channels } from "./Pages/Channels";
+import { LinkedApp } from "./Pages/LinkedApp";
+import { Offers } from "./Pages/Offers";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -147,6 +149,16 @@ const App: React.FC = () => {
               <Route exact path="/channels">
                 <Layout>
                   <Channels />
+                </Layout>
+              </Route>
+              <Route exact path="/LApps">
+                <Layout>
+                  <LinkedApp />
+                </Layout>
+              </Route>
+              <Route exact path="/Offers">
+                <Layout>
+                  <Offers />
                 </Layout>
               </Route>
             </IonRouterOutlet>
