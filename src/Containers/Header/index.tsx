@@ -36,11 +36,11 @@ export const Header = () => {
   const { isShown, toggle } = UseModal();
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
-  const isNopeUp: boolean = router.routeInfo.pathname === "/";
+  const isNopeUp: boolean = router.routeInfo?.pathname === "/";
   router.routeInfo;
-  const isLoader: boolean = router.routeInfo.pathname === "/loader";
-  const isscan: boolean = router.routeInfo.pathname === "/scan";
-  const isreceive: boolean = router.routeInfo.pathname === "/receive";
+  const isLoader: boolean = router.routeInfo?.pathname === "/loader";
+  const isscan: boolean = router.routeInfo?.pathname === "/scan";
+  const isreceive: boolean = router.routeInfo?.pathname === "/receive";
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
@@ -304,11 +304,11 @@ export const PubHeader = () => {
   const { isShown, toggle } = UseModal();
   const { isShown: isDebugShown, toggle: toggleDebugShown } = UseModal();
 
-  const isNopeUp: boolean = router.routeInfo.pathname === "/";
+  const isNopeUp: boolean = router.routeInfo?.pathname === "/";
   router.routeInfo;
-  const isLoader: boolean = router.routeInfo.pathname === "/loader";
-  const isscan: boolean = router.routeInfo.pathname === "/scan";
-  const isreceive: boolean = router.routeInfo.pathname === "/receive";
+  const isLoader: boolean = router.routeInfo?.pathname === "/loader";
+  const isscan: boolean = router.routeInfo?.pathname === "/scan";
+  const isreceive: boolean = router.routeInfo?.pathname === "/receive";
 
   const getNotifyBadge = () => {
     if (notifications && notifications.notifications.length) {
