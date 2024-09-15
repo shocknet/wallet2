@@ -19,9 +19,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
 
   const location = useLocation();
+  const pathname = location?.pathname || window.location.pathname;
 
-  const isScan: boolean = location.pathname === "/scan";
-  const isPub: boolean = location.pathname === "/metrics" || location.pathname === "/manage" || location.pathname === "/channels"
+  const isScan: boolean = pathname === "/scan";
+  const isPub: boolean = pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
 
   const dispatch = useDispatch();
 
