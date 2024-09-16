@@ -182,6 +182,10 @@ const App: React.FC = () => {
     await StatusBar.setBackgroundColor({ color: "#16191c" });
   };
 
+  useEffect(() => {
+    setStatusBarColor();
+  }, []);
+
   return (
     <Provider store={store}>
       <IonApp className="safe-area">
