@@ -24,15 +24,16 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 
 	// we still get and send the k1 so that legacy mappings in bridge are moved to nofferMapping
 	const lnurlPayLinkRes = await nostrClient.GetLnurlPayLink();
-	if (lnurlPayLinkRes.status !== "OK") {
-		throw new Error(lnurlPayLinkRes.reason);
+	let k1: string | undefined = undefined;
+	if (lnurlPayLinkRes.status === "OK") {
+		k1 = lnurlPayLinkRes.k1
 	}
 
 	const bridgeUrl = userInfoRes.bridge_url;
 	if (!bridgeUrl) return;
 
 
-	const payload = { noffer: userInfoRes.noffer, k1: lnurlPayLinkRes.k1 }
+	const payload = { k1, noffer: userInfoRes.noffer }
 	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finishEvent(e, source.keys.privateKey), true, payload)
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(payload);
