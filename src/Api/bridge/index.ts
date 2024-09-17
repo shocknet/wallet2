@@ -1,14 +1,16 @@
+
 import CreateBridgeHttpClient, { BridgeHttpClient } from "./http"
 
+
 export default class Handler {
-	constructor(bridgeUrl: string) {
+	constructor(bridgeUrl: string, nostrHeader: string) {
 		console.log(bridgeUrl)
-		this.bridgeHttp = CreateBridgeHttpClient(bridgeUrl);
+		this.bridgeHttp = CreateBridgeHttpClient(bridgeUrl, nostrHeader);
 	}
 	bridgeHttp: BridgeHttpClient;
 
 
-	async GetOrCreateVanityName(k1: string, noffer?: string) {
-		return this.bridgeHttp.GetOrCreateVanityName({ k1, noffer });
+	async GetOrCreateNofferName({ noffer, k1 }: { noffer: string, k1?: string }) {
+		return this.bridgeHttp.GetOrCreateNofferName({ k1, noffer });
 	}
 }

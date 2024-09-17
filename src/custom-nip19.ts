@@ -6,6 +6,7 @@
 */
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils';
 import { bech32 } from 'bech32';
+import { nip19 } from 'nostr-tools';
 
 export const utf8Decoder = new TextDecoder('utf-8')
 export const utf8Encoder = new TextEncoder()
@@ -103,6 +104,7 @@ export const decodeNoffer = (noffer: string): OfferPointer => {
   }
 }
 
+// deprecated
 export const decodeNprofile = (nprofile: string): CustomProfilePointer => {
   const { prefix, words } = bech32.decode(nprofile, 5000)
   if (prefix !== "nprofile") {
@@ -119,4 +121,12 @@ export const decodeNprofile = (nprofile: string): CustomProfilePointer => {
     relays: tlv[1] ? tlv[1].map(d => utf8Decoder.decode(d)) : [],
     bridge: tlv[2] ? tlv[2].map(d => utf8Decoder.decode(d)) : []
   }
+}
+
+export const decodeNProfile = (nprofile:string) => {
+  const { type, data } = nip19.decode(nprofile);
+  if (type !== "nprofile") {
+    throw new Error("Not an nprofile");
+  }
+  return data;
 }

@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from '../../State/store'; //import reducer
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
-import { Destination, InputClassification, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options, parseBitcoinInput } from '../../constants';
+import { Destination, InputClassification, NOSTR_RELAYS, options, parseBitcoinInput } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import Sortable from 'sortablejs';
 import { useIonRouter } from '@ionic/react';
@@ -21,13 +21,13 @@ import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayIn
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
-import { CustomProfilePointer, decodeNprofile } from '../../custom-nip19';
+import { decodeNProfile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
-import { getPublicKey } from '../../Api/tools';
 import { fetchBeacon } from '../../helpers/remoteBackups';
+import { nip19 } from 'nostr-tools';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -73,7 +73,7 @@ export const Sources = () => {
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
       if (destination.data.includes("nprofile")) {
-        const data = decodeNprofile(destination.data);
+        const data = decodeNProfile(destination.data);
         fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
           if (beacon) {
             setNameFromBeacon(beacon.data.name)
@@ -219,13 +219,13 @@ export const Sources = () => {
     const inputSource = splitted[0]
     const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
     console.log({ splitted })
-    let data: CustomProfilePointer | null = null;
+    let data: nip19.ProfilePointer | null = null;
 
     if (inputSource.startsWith("nprofile")) {
       // nprofile
 
       try {
-        data = decodeNprofile(inputSource);
+        data = decodeNProfile(inputSource);
         const pub = data.pubkey
         const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
         if (existingSpendSourceId) {
