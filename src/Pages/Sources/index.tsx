@@ -121,11 +121,10 @@ export const Sources = () => {
   const [sourceLabel, setSourceLabel] = useState<string>("");
   const [optional, setOptional] = useState<string>(options.little);
 
-  const [modalContent, setModalContent] = useState<undefined | null | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite">();
+  const [modalContent, setModalContent] = useState<undefined | null | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite" | "deleteSource">();
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
-  const [editPSourceId, setEditPSourceId] = useState("");
-  const [editSSourceId, setEditSSourceId] = useState("");
+  const [editSourceId, setEditSourceId] = useState("");
   const [processingSource, setProcessingSource] = useState(false);
 
   const { isShown, toggle } = UseModal();
@@ -143,7 +142,7 @@ export const Sources = () => {
   const openEditSourcePay = (key: string) => {
     const source = paySources.sources[key]
     if (source) {
-      setEditPSourceId(key);
+      setEditSourceId(key);
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcepay");
@@ -154,7 +153,7 @@ export const Sources = () => {
   const EditSourceSpend_Modal = (key: string) => {
     const source = spendSources.sources[key];
     if (source) {
-      setEditSSourceId(key);
+      setEditSourceId(key);
       setOptional(source.option || '');
       setSourceLabel(source.label || '');
       setModalContent("editSourcespend");
@@ -173,7 +172,7 @@ export const Sources = () => {
     toggle();
   }
 
-  const switchContent = (value: null | undefined | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite") => {
+  const switchContent = (value: null | undefined | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite" | "deleteSource") => {
     switch (value) {
       case 'promptSweep':
         return promptSweep
@@ -195,6 +194,9 @@ export const Sources = () => {
 
       case "acceptInvite":
         return acceptInviteContent
+
+      case "deleteSource":
+        return deleteSource
 
       default:
         return notifyContent
@@ -389,7 +391,7 @@ export const Sources = () => {
       return;
     }
     const paySourceToEdit: PayTo = {
-      ...paySources.sources[editPSourceId],
+      ...paySources.sources[editSourceId],
       option: optional,
       label: sourceLabel,
     };
@@ -405,7 +407,7 @@ export const Sources = () => {
       return
     }
     const spendSourceToEdit: SpendFrom = {
-      ...spendSources.sources[editSSourceId],
+      ...spendSources.sources[editSourceId],
       option: optional,
       label: sourceLabel
     };
@@ -416,19 +418,19 @@ export const Sources = () => {
   };
 
   const deletePaySource = () => {
-    setEditPSourceId("");
-    dispatch(deletePaySources(editPSourceId))
+    setEditSourceId("");
+    dispatch(deletePaySources(editSourceId));
     resetValue();
     toggle();
   };
 
   const deleteSpendSource = () => {
-    setEditSSourceId("");
-    const associatedNotification = notifications.find(n => n.link === `/sources?sourceId=${editSSourceId}`);
+    setEditSourceId("");
+    const associatedNotification = notifications.find(n => n.link === `/sources?sourceId=${editSourceId}`);
     if (associatedNotification) {
       dispatch(removeNotify(associatedNotification.date));
     }
-    dispatch(deleteSpendSources(editSSourceId))
+    dispatch(deleteSpendSources(editSourceId));
     resetValue();
     toggle();
   };
@@ -573,8 +575,8 @@ export const Sources = () => {
       />
     </div>
     <div className="Sources_modal_add_btn">
-      <button onClick={modalContent === "editSourcepay" ? deletePaySource : deleteSpendSource}>Delete</button>
-      <button onClick={modalContent === "editSourcepay" ? editPaySource : editSpendSource}>Edit</button>
+      <button onClick={()=>{ setModalContent("deleteSource"); }}>Delete</button>
+      <button onClick={()=>{editPaySource(); editSpendSource();}}>Edit</button>
     </div>
 
   </React.Fragment>;
@@ -638,6 +640,21 @@ export const Sources = () => {
         onClick={addSource}>{icons.acceptInvite()}ACCEPT</button>
     </div>
   </React.Fragment>
+
+  const deleteSource = (
+    <React.Fragment>
+      <div className="Sources_modal_discription">
+        Are you sure you want to delete this source?
+      </div>
+      <div className="Sources_modal_add_btn">
+        <button onClick={()=>{setModalContent("editSourcespend");}}>Cancel</button>
+        <button onClick={()=>{
+          deletePaySource();
+          deleteSpendSource();
+        }}>Ok</button>
+      </div>
+    </React.Fragment>
+  );
 
 
   useEffect(() => {
