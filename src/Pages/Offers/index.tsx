@@ -11,12 +11,6 @@ const DummyData = [
     value:
       "noffers1qqswxpkytms2030sprfmhxue69uhhxarjvee8jtnndphkx6ewdejhgam0wf4sx3je57:f08273120169c027e1740c641d3a42b4c6a0776ead7d8ee551e8af61b2495e4e",
   },
-  {
-    type: "Bootstrap Node",
-    title: "Bootstrap Offers",
-    value:
-      "noffers1qqswx30sprfmhxue69uhhxarjvee8jtnndphkx6ewdejhgam0wf4sx3je57:f08273120169c027e1740c641d3a42b4c6a0776ead7d8ee551e8af61b2495e4e",
-  },
 ];
 
 type OfferItemType = {
@@ -106,7 +100,8 @@ export const Offers = () => {
         <div className="Offers_header_text">Static Payment Offers</div>
         {isConnect ? (
           <>
-            <div className="Offers_item" onClick={dropdown}>
+            {/* <div className="Offers_item" onClick={dropdown}> */}
+            <div className="Offers_item">
               <div className="selected_item">
                 {value ? (
                   <div className="item" key={value}>
