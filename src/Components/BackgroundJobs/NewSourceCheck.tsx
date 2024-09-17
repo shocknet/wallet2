@@ -1,8 +1,8 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "../../State/store"
-import { DEFAULT_BRIDGE_URL, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, OLD_NOSTR_PUB_DESTINATION, options } from "../../constants"
+import {  NOSTR_PUB_DESTINATION, NOSTR_RELAYS, OLD_NOSTR_PUB_DESTINATION, options } from "../../constants"
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice"
-import { encodeNprofile } from "../../custom-nip19";
+import { nip19 } from "nostr-tools";
 
 export const NewSourceCheck = () => {
 	const spendSource = useSelector(({ spendSource }) => spendSource)
@@ -21,7 +21,7 @@ export const NewSourceCheck = () => {
 
 
 		console.log("bootstrap source changed, updating source")
-		const newProfile = encodeNprofile({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS, bridge: [DEFAULT_BRIDGE_URL] });
+		const newProfile = nip19.nprofileEncode({ pubkey: NOSTR_PUB_DESTINATION, relays: NOSTR_RELAYS });
 
 		dispatch(addSpendSources({
 			source: {

@@ -1,11 +1,11 @@
 import { useLayoutEffect } from "react";
 import { useIonRouter } from '@ionic/react';
-import { DEFAULT_BRIDGE_URL, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
-import { encodeNprofile } from "../../custom-nip19";
 import { generateNewKeyPair } from "../../Api/helpers";
+import { nip19 } from "nostr-tools";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -50,10 +50,9 @@ export const NodeUp = () => {
       const id = `${NOSTR_PUB_DESTINATION}-${keyPair.publicKey}`;
 
       const bootstrapBalance = "0";
-      const nprofile = encodeNprofile({
+      const nprofile = nip19.nprofileEncode({
         pubkey: NOSTR_PUB_DESTINATION,
         relays: NOSTR_RELAYS,
-        bridge: [DEFAULT_BRIDGE_URL]
       })
 
 

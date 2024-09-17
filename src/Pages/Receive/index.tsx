@@ -7,7 +7,7 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { UseModal } from '../../Hooks/UseModal';
 import { isAxiosError } from 'axios';
 import { Modal } from '../../Components/Modals/Modal';
-import { useIonRouter, getPlatforms } from '@ionic/react';
+import { useIonRouter } from '@ionic/react';
 import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 import { useSelector } from '../../State/store';
@@ -19,7 +19,6 @@ import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtc
 import { parseBitcoinInput } from '../../constants';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import Toggle from '../../Components/Toggle';
-import { decodeNprofile } from '../../custom-nip19';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { Tab, Tabs } from '../../Components/ReceiveScreenTabs';
@@ -91,20 +90,10 @@ export const Receive = () => {
     const vanityName = topPaySource.vanityName
     if (!vanityName) {
       return null;
-    }
-
-    if (vanityName.includes("@")) { // lnAddress from LV integration
-      return vanityName
     } else {
-      const decoded = decodeNprofile(topPaySource.pasteField);
-      const url = decoded.bridge![0];
-      console.log({ decoded })
-
-      const hostName = new URL(url);
-      const parts = hostName.hostname.split(".");
-      const domainName = parts.slice(-2).join('.');
-      return `${vanityName}@${domainName}`
+      return vanityName
     }
+
   }, [paySource])
 
   useEffect(() => {
