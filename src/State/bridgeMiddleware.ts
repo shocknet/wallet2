@@ -4,9 +4,10 @@ import { AppDispatch, State } from "./store";
 import { PayTo } from "../globalTypes";
 import { getNostrClient } from "../Api";
 import Bridge from "../Api/bridge";
-import { finalizeEvent, nip98 } from "nostr-tools";
-import { hexToBytes } from "@noble/hashes/utils";
+
 import { decodeNProfile } from "../custom-nip19";
+import { finishEvent } from "../Api/tools";
+import { getToken } from "../Api/tools/nip98";
 
 export const upgradeSourcesToNofferBridge = createAction("upgradeSourcesToNofferBridge");
 
@@ -32,7 +33,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 
 
 	const payload = { noffer: userInfoRes.noffer, k1: lnurlPayLinkRes.k1 }
-	const nostrHeader = await nip98.getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finalizeEvent(e, hexToBytes(source.keys.privateKey)), true, payload)
+	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finishEvent(e, source.keys.privateKey), true, payload)
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(payload);
 	if (bridgeRes.status !== "OK") {
