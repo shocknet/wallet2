@@ -3,21 +3,8 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { Clipboard } from "@capacitor/clipboard";
 import React, { useEffect, useState } from "react";
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
-
-const DummyData = [
-  {
-    type: "Bootstrap Node",
-    title: "Default Offers",
-    value:
-      "noffers1qqswxpkytms2030sprfmhxue69uhhxarjvee8jtnndphkx6ewdejhgam0wf4sx3je57:f08273120169c027e1740c641d3a42b4c6a0776ead7d8ee551e8af61b2495e4e",
-  },
-  {
-    type: "Bootstrap Node",
-    title: "Bootstrap Offers",
-    value:
-      "noffers1qqswx30sprfmhxue69uhhxarjvee8jtnndphkx6ewdejhgam0wf4sx3je57:f08273120169c027e1740c641d3a42b4c6a0776ead7d8ee551e8af61b2495e4e",
-  },
-];
+import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
+import { SpendFrom } from "../../globalTypes";
 
 type OfferItemType = {
   title: string;
@@ -26,42 +13,44 @@ type OfferItemType = {
 };
 
 export const Offers = () => {
-  const [isEdit, setIsEdit] = useState<number | null>(null);
-  const [offers, setOffers] = useState<OfferItemType[]>(DummyData);
-  const [editData, setEditData] = useState<string>("");
+
+  const enabledSpendSources = useSelector(selectEnabledSpends);
+  console.log(enabledSpendSources)
+
+  const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
-  const [allValue, setAllValue] = useState([
-    "Bootstrap Node",
-    "Source",
-    "Data",
-  ]);
+  const [allValue, setAllValue] = useState<SpendFrom[]>(enabledSpendSources);
+
   const [display, setDisplay] = useState(0);
   const [rotation, setRotation] = useState(0);
-  const [value, setValue] = useState("Bootstrap Node");
-  const [remainValues, setRemailValues] = useState<string[]>([]);
+  const [value, setValue] = useState<SpendFrom>(enabledSpendSources[0]);
+  const [remainValues, setRemailValues] = useState<SpendFrom[]>([]);
 
   const [isConnect, setIsConnect] = useState<boolean>(true);
-  const [displayData, setDisplayData] = useState<OfferItemType[]>([]);
+  const [displayData, setDisplayData] = useState<SpendFrom>();
+  const [offerValue, setOfferValue] = useState<string>("");
 
   useEffect(() => {
     setShowDropDown(showDropDown);
   }, [showDropDown]);
 
   useEffect(() => {
-    setDisplayData(offers.filter((item) => item.type == value));
+    setDisplayData(value)
+    setOfferValue(value.pasteField)
   }, [value]);
 
   const dropdown = () => {
-    const remainValues = allValue.filter((e) => e !== value);
+    const remainValues = allValue.filter((e) => e.label !== value.label);
     setRemailValues(remainValues);
     setDisplay(display === 0 ? 1 : 0);
     setRotation(rotation === 0 ? 90 : 0);
   };
 
   const arrangeIcon = (value?: string, sourcePub?: string) => {
+    console.log(value, sourcePub)
     switch (value) {
-      case "Bootstrap Node":
+      case "0":
         return (
           <React.Fragment>
             <img
@@ -72,7 +61,37 @@ export const Offers = () => {
             />
           </React.Fragment>
         );
+      case "1":
+        return Icons.mynodeSmall();
+
+      case "2":
+        return Icons.uncleSmall();
+
+      case "3":
+        return Icons.lightningSmall();
+
+      case "4":
+        return Icons.zbdSmall();
+
+      case "5":
+        return Icons.stackerSmall();
+
       default:
+        if (sourcePub) {
+          return (
+            <React.Fragment>
+              <img
+                src={`https://robohash.org/${sourcePub}.png?bgset=bg1`}
+                width="23px"
+                alt="Avatar"
+                style={{ borderRadius: "50%" }}
+              />
+            </React.Fragment>
+          );
+        }
+        if (!value?.includes("http")) {
+          value = "http://www.google.com/s2/favicons?sz=64&domain=" + value;
+        }
         return (
           <React.Fragment>
             <img
@@ -86,7 +105,7 @@ export const Offers = () => {
     }
   };
 
-  const selectOption = (id: string) => {
+  const selectOption = (id: SpendFrom) => {
     dropdown();
     setValue(id);
   };
@@ -100,6 +119,10 @@ export const Offers = () => {
     toast.success("Copied to clipboard");
   };
 
+  const changeOfferHandle = (data : string) => {
+    setOfferValue(data)
+  }
+
   return (
     <div className="Offers_container">
       <div className="Offers">
@@ -109,9 +132,9 @@ export const Offers = () => {
             <div className="Offers_item" onClick={dropdown}>
               <div className="selected_item">
                 {value ? (
-                  <div className="item" key={value}>
-                    {arrangeIcon(value)}
-                    <div className="Offers_from_value">{value}</div>
+                  <div className="item" key={value.label}>
+                    {arrangeIcon(value.icon, value.pubSource ? value.id.split("-")[0] : undefined)}
+                    <div className="Offers_from_value">{value.label}</div>
                   </div>
                 ) : (
                   <div></div>
@@ -125,17 +148,17 @@ export const Offers = () => {
                   }}
                 >
                   {display === 1 &&
-                    remainValues.map((item: string) => {
+                    remainValues.map((item: SpendFrom) => {
                       return (
                         <div
                           onClick={() => {
                             selectOption(item);
                           }}
                           className="item"
-                          key={item}
+                          key={item.label}
                         >
-                          {arrangeIcon(item)}
-                          <div className="Offers_from_value">{item}</div>
+                          {arrangeIcon(item.icon, item.pubSource ? item.id.split("-")[0] : undefined)}
+                          <div className="Offers_from_value">{item.label}</div>
                         </div>
                       );
                     })}
@@ -151,35 +174,28 @@ export const Offers = () => {
                 {Icons.arrow()}
               </div>
             </div>
-            {displayData.map((item, index) => {
-              return (
-                <div className="Offers_source" key={index}>
+            {displayData &&
+                (<div className="Offers_source">
                   <div className="source_header">
-                    <div className="title">{item.title}</div>
+                    <div className="title">Defulat Offer</div>
                     <div
                       className="edit_icon"
                       onClick={() => {
-                        if (isEdit == index) {
-                          setIsEdit(null);
-                          item.value = editData;
-                        } else {
-                          setIsEdit(index);
-                          setEditData(item.value);
-                        }
+                        setIsEdit(!isEdit)
                       }}
                     >
                       {Icons.pencilIcons()}
                     </div>
                   </div>
-                  {isEdit !== index ? (
-                    <div className="source_data">{item.value}</div>
+                  {!isEdit ? (
+                    <div className="source_data">{offerValue}</div>
                   ) : (
                     <div className="edit_source">
                       <input
-                        value={editData}
+                        value={offerValue}
                         type="text"
                         onChange={(e) => {
-                          setEditData(e.target.value);
+                          changeOfferHandle(e.target.value)
                         }}
                       />
                     </div>
@@ -189,15 +205,15 @@ export const Offers = () => {
                     <div
                       className="CopyIcon"
                       onClick={() => {
-                        CopyToClipboard(item.value);
+                        CopyToClipboard(offerValue);
                       }}
                     >
                       {Icons.combindIcon()}
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              )
+            }
           </>
         ) : (
           <div className="Offers_connect_state">
