@@ -155,6 +155,24 @@ export const Header = () => {
           <div className="Header_modal_content_item_text">Contacts</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
+          router.push("/LApps");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            {Icons.LinkedAppIcon()}
+          </div>
+          <div className="Header_modal_content_item_text">Linked Apps</div>
+        </div>
+        <div className="Header_modal_content_item" onClick={() => {
+          router.push("/Offers");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+            {Icons.OffersCodeIcon()}
+          </div>
+          <div className="Header_modal_content_item_text">Offer Codes</div>
+        </div>
+        <div className="Header_modal_content_item" onClick={() => {
           router.push("/prefs");
           toggle();
         }}>
@@ -181,7 +199,7 @@ export const Header = () => {
           </div>
           <div className="Header_modal_content_item_text">Node Invitations</div>
         </div>
-        {
+        {/* {
           !backUpStates.subbedToBackUp
           &&
           <div className="Header_modal_content_item" onClick={() => {
@@ -193,11 +211,11 @@ export const Header = () => {
             </div>
             <div className="Header_modal_content_item_text">Auth</div>
           </div>
-        }
+        } */}
         <div className="Header_modal_content_item">
           <hr />
         </div>
-{/*         <div className="Header_modal_content_item" onClick={() => {
+        <div className="Header_modal_content_item" onClick={() => {
           router.push("/sources");
           toggle();
         }}>
@@ -205,7 +223,7 @@ export const Header = () => {
             {Icons.BuyCryptoIcon()}
           </div>
           <div className="Header_modal_content_item_text">Buy Bitcoin</div>
-        </div> */}
+        </div>
         <div className="Header_modal_content_item" onClick={() => {
           if (debugMode) {
             toggleDebugShown()
