@@ -177,7 +177,7 @@ export const Offers = () => {
             {displayData &&
                 (<div className="Offers_source">
                   <div className="source_header">
-                    <div className="title">Defulat Offer</div>
+                    <div className="title">Default Offer</div>
                     <div
                       className="edit_icon"
                       onClick={() => {
