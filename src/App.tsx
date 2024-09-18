@@ -21,6 +21,7 @@ import { Automation } from './Pages/Automation';
 import { Prefs } from './Pages/Prefs';
 import { Contacts } from './Pages/Contacts';
 import { Invitations } from './Pages/Invitations';
+import { LinkedApp } from "./Pages/LinkedApp";
 import { Auth } from './Pages/Auth';
 import { Background } from './Components/Background';
 import { isBrowser } from 'react-device-detect'
@@ -84,6 +85,7 @@ const App: React.FC = () => {
                   <Home />
                 </Layout>
               </Route>
+              
               <Route exact path="/receive">
                 <Layout>
                   <Receive />
@@ -147,6 +149,11 @@ const App: React.FC = () => {
               <Route exact path="/channels">
                 <Layout>
                   <Channels />
+                </Layout>
+              </Route>
+              <Route exact path="/LApps">
+                <Layout>
+                  <LinkedApp />
                 </Layout>
               </Route>
             </IonRouterOutlet>

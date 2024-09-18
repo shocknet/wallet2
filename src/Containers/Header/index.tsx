@@ -155,6 +155,14 @@ export const Header = () => {
           <div className="Header_modal_content_item_text">Contacts</div>
         </div>
         <div className="Header_modal_content_item" onClick={() => {
+          router.push("/LApps");
+          toggle();
+        }}>
+          <div className="Header_modal_content_item_img">
+          </div>
+          <div className="Header_modal_content_item_text">Linked Apps</div>
+        </div>
+        <div className="Header_modal_content_item" onClick={() => {
           router.push("/prefs");
           toggle();
         }}>
