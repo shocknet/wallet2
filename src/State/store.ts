@@ -82,6 +82,12 @@ export const selectNostrSpends = createSelector(
     Object.values(spendSource.sources).filter((s) => s.pubSource)
 )
 
+export const selectConnectedNostrSpends = createSelector(
+  (state: State) => state.paySource,
+  (paySource: PaySourceState) =>
+    paySource.order.map(id => paySource.sources[id]).filter(source => source.pubSource && !source.disconnected)
+)
+
 export const selectEnabledSpends = createSelector(
   (state: State) => state.spendSource,
   (spendSource: SpendSourceState) =>
