@@ -143,6 +143,19 @@ export function validateEventUrlTag(event: Event, url: string): boolean {
 	return urlTag.length > 0 && urlTag[1] === url
 }
 
+export function sortObject(obj: Record<string, any>): any {
+    const allKeys = Object.keys(obj).sort(); // Sort keys
+    const sortedObj: Record<string, any> = {};
+    
+    // Build new object with sorted keys
+    for (const key of allKeys) {
+        sortedObj[key] = obj[key];
+    }
+
+    // Now stringify the object with sorted keys
+    return sortedObj;
+}
+
 /**
  * Validates if the given event has a method tag that matches the specified method.
  * @param event - The event to validate.
@@ -165,7 +178,7 @@ export function validateEventMethodTag(event: Event, method: string): boolean {
  * @returns The hash value as a string.
  */
 export function hashPayload(payload: any): string {
-	const hash = sha256(utf8Encoder.encode(JSON.stringify(payload)))
+	const hash = sha256(utf8Encoder.encode(JSON.stringify(sortObject(payload))))
 	return bytesToHex(hash)
 }
 
