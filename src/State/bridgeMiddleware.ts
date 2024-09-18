@@ -7,7 +7,7 @@ import Bridge from "../Api/bridge";
 
 import { decodeNProfile } from "../custom-nip19";
 import { finishEvent } from "../Api/tools";
-import { getToken } from "../Api/tools/nip98";
+import { getToken, sortObject } from "../Api/tools/nip98";
 
 export const upgradeSourcesToNofferBridge = createAction("upgradeSourcesToNofferBridge");
 
@@ -36,7 +36,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 	const payload = { k1, noffer: userInfoRes.noffer }
 	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finishEvent(e, source.keys.privateKey), true, payload)
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
-	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(payload);
+	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(sortObject(payload));
 	if (bridgeRes.status !== "OK") {
 		throw new Error(bridgeRes.reason);
 	}
