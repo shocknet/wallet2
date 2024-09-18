@@ -101,6 +101,20 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    AuthorizeDebit: async (request: Types.DebitAuthorizationRequest): Promise<ResultError | ({ status: 'OK' }& Types.DebitAuthorization)> => {
+        const auth = await params.retrieveUserAuth()
+        if (auth === null) throw new Error('retrieveUserAuth() returned null')
+        let finalRoute = '/api/user/debit/authorize'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.DebitAuthorizationValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     BanUser: async (request: Types.BanUserRequest): Promise<ResultError | ({ status: 'OK' }& Types.BanUserResponse)> => {
         const auth = await params.retrieveAdminAuth()
         if (auth === null) throw new Error('retrieveAdminAuth() returned null')
@@ -232,6 +246,20 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    GetDebitAuthorizations: async (): Promise<ResultError | ({ status: 'OK' }& Types.DebitAuthorizations)> => {
+        const auth = await params.retrieveUserAuth()
+        if (auth === null) throw new Error('retrieveUserAuth() returned null')
+        let finalRoute = '/api/user/debit/get'
+        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            const result = data
+            if(!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.DebitAuthorizationsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetHttpCreds: async (cb: (v:ResultError | ({ status: 'OK' }& Types.HttpCreds)) => void): Promise<void> => { throw  new Error('http streams are not supported')},
     GetInviteLinkState: async (request: Types.GetInviteTokenStateRequest): Promise<ResultError | ({ status: 'OK' }& Types.GetInviteTokenStateResponse)> => {
         const auth = await params.retrieveAdminAuth()
@@ -261,6 +289,7 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    GetLiveDebitRequests: async (cb: (v:ResultError | ({ status: 'OK' }& Types.LiveDebitRequest)) => void): Promise<void> => { throw  new Error('http streams are not supported')},
     GetLiveUserOperations: async (cb: (v:ResultError | ({ status: 'OK' }& Types.LiveUserOperation)) => void): Promise<void> => { throw  new Error('http streams are not supported')},
     GetLndMetrics: async (request: Types.LndMetricsRequest): Promise<ResultError | ({ status: 'OK' }& Types.LndMetrics)> => {
         const auth = await params.retrieveMetricsAuth()
@@ -598,6 +627,17 @@ export default (params: ClientParams) => ({
             if(!params.checkResult) return { status: 'OK', ...result }
             const error = Types.PayInvoiceResponseValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    RemoveAuthorizedDebit: async (request: Types.RemoveAuthorizedDebitRequest): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveUserAuth()
+        if (auth === null) throw new Error('retrieveUserAuth() returned null')
+        let finalRoute = '/api/user/debit/remove'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') { 
+            return data
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },

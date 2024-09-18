@@ -79,7 +79,7 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
 export const selectNostrSpends = createSelector(
   (state: State) => state.spendSource,
   (spendSource: SpendSourceState) =>
-    Object.values(spendSource.sources).filter((s) => s.pubSource)
+    Object.values(spendSource.sources).filter((s) => s.pubSource && !s.disconnected)
 )
 
 export const selectConnectedNostrSpends = createSelector(
