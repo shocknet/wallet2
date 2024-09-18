@@ -3,8 +3,9 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { Clipboard } from "@capacitor/clipboard";
 import React, { useEffect, useState } from "react";
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
-import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
-import { SpendFrom } from "../../globalTypes";
+import { useSelector, useDispatch, selectEnabledSpends, selectConnectedNostrSpends } from '../../State/store';
+import { PayTo } from "../../globalTypes";
+import { getNostrClient } from "../../Api";
 
 type OfferItemType = {
   title: string;
@@ -14,21 +15,21 @@ type OfferItemType = {
 
 export const Offers = () => {
 
-  const enabledSpendSources = useSelector(selectEnabledSpends);
-  console.log(enabledSpendSources)
+  const enabledPaySources = useSelector(selectConnectedNostrSpends);
+
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
 
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
-  const [allValue, setAllValue] = useState<SpendFrom[]>(enabledSpendSources);
+  const [allValue, setAllValue] = useState<PayTo[]>(enabledPaySources);
 
   const [display, setDisplay] = useState(0);
   const [rotation, setRotation] = useState(0);
-  const [value, setValue] = useState<SpendFrom>(enabledSpendSources[0]);
-  const [remainValues, setRemailValues] = useState<SpendFrom[]>([]);
+  const [value, setValue] = useState<PayTo>(enabledPaySources[0]);
+  const [remainValues, setRemailValues] = useState<PayTo[]>([]);
 
   const [isConnect, setIsConnect] = useState<boolean>(true);
-  const [displayData, setDisplayData] = useState<SpendFrom>();
+  const [displayData, setDisplayData] = useState<PayTo>();
   const [offerValue, setOfferValue] = useState<string>("");
 
   useEffect(() => {
@@ -37,7 +38,13 @@ export const Offers = () => {
 
   useEffect(() => {
     setDisplayData(value)
-    setOfferValue(value.pasteField)
+    getNostrClient(value.pasteField, value.keys).then(c => {
+      c.GetUserInfo().then(res => {
+        if (res.status === "OK") {
+          setOfferValue(res.noffer)
+        }
+      })
+    })
   }, [value]);
 
   const dropdown = () => {
@@ -105,7 +112,7 @@ export const Offers = () => {
     }
   };
 
-  const selectOption = (id: SpendFrom) => {
+  const selectOption = (id: PayTo) => {
     dropdown();
     setValue(id);
   };
@@ -148,7 +155,7 @@ export const Offers = () => {
                   }}
                 >
                   {display === 1 &&
-                    remainValues.map((item: SpendFrom) => {
+                    remainValues.map((item: PayTo) => {
                       return (
                         <div
                           onClick={() => {
