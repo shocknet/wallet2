@@ -34,8 +34,8 @@ export type UserContext = {
     app_user_id: string
     user_id: string
 }
-export type UserMethodInputs = AddProduct_Input | DecodeInvoice_Input | EnrollAdminToken_Input | GetLNURLChannelLink_Input | GetLnurlPayLink_Input | GetLnurlWithdrawLink_Input | GetPaymentState_Input | GetUserInfo_Input | GetUserOperations_Input | NewAddress_Input | NewInvoice_Input | NewProductInvoice_Input | OpenChannel_Input | PayAddress_Input | PayInvoice_Input | UserHealth_Input
-export type UserMethodOutputs = AddProduct_Output | DecodeInvoice_Output | EnrollAdminToken_Output | GetLNURLChannelLink_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetPaymentState_Output | GetUserInfo_Output | GetUserOperations_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | OpenChannel_Output | PayAddress_Output | PayInvoice_Output | UserHealth_Output
+export type UserMethodInputs = AddProduct_Input | AuthorizeDebit_Input | DecodeInvoice_Input | EnrollAdminToken_Input | GetDebitAuthorizations_Input | GetLNURLChannelLink_Input | GetLnurlPayLink_Input | GetLnurlWithdrawLink_Input | GetPaymentState_Input | GetUserInfo_Input | GetUserOperations_Input | NewAddress_Input | NewInvoice_Input | NewProductInvoice_Input | OpenChannel_Input | PayAddress_Input | PayInvoice_Input | RemoveAuthorizedDebit_Input | UserHealth_Input
+export type UserMethodOutputs = AddProduct_Output | AuthorizeDebit_Output | DecodeInvoice_Output | EnrollAdminToken_Output | GetDebitAuthorizations_Output | GetLNURLChannelLink_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetPaymentState_Output | GetUserInfo_Output | GetUserOperations_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | OpenChannel_Output | PayAddress_Output | PayInvoice_Output | RemoveAuthorizedDebit_Output | UserHealth_Output
 export type AuthContext = AdminContext | AppContext | GuestContext | GuestWithPubContext | MetricsContext | UserContext
 
 export type AddApp_Input = { rpcName: 'AddApp', req: AddAppRequest }
@@ -55,6 +55,9 @@ export type AddProduct_Output = ResultError | ({ status: 'OK' } & Product)
 
 export type AuthApp_Input = { rpcName: 'AuthApp', req: AuthAppRequest }
 export type AuthApp_Output = ResultError | ({ status: 'OK' } & AuthApp)
+
+export type AuthorizeDebit_Input = { rpcName: 'AuthorizeDebit', req: DebitAuthorizationRequest }
+export type AuthorizeDebit_Output = ResultError | ({ status: 'OK' } & DebitAuthorization)
 
 export type BanUser_Input = { rpcName: 'BanUser', req: BanUserRequest }
 export type BanUser_Output = ResultError | ({ status: 'OK' } & BanUserResponse)
@@ -86,6 +89,9 @@ export type GetAppUserLNURLInfo_Output = ResultError | ({ status: 'OK' } & Lnurl
 export type GetAppsMetrics_Input = { rpcName: 'GetAppsMetrics', req: AppsMetricsRequest }
 export type GetAppsMetrics_Output = ResultError | ({ status: 'OK' } & AppsMetrics)
 
+export type GetDebitAuthorizations_Input = { rpcName: 'GetDebitAuthorizations' }
+export type GetDebitAuthorizations_Output = ResultError | ({ status: 'OK' } & DebitAuthorizations)
+
 export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds', cb: (res: HttpCreds, err: Error | null) => void }
 export type GetHttpCreds_Output = ResultError | { status: 'OK' }
 
@@ -94,6 +100,9 @@ export type GetInviteLinkState_Output = ResultError | ({ status: 'OK' } & GetInv
 
 export type GetLNURLChannelLink_Input = { rpcName: 'GetLNURLChannelLink' }
 export type GetLNURLChannelLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
+
+export type GetLiveDebitRequests_Input = { rpcName: 'GetLiveDebitRequests', cb: (res: LiveDebitRequest, err: Error | null) => void }
+export type GetLiveDebitRequests_Output = ResultError | { status: 'OK' }
 
 export type GetLiveUserOperations_Input = { rpcName: 'GetLiveUserOperations', cb: (res: LiveUserOperation, err: Error | null) => void }
 export type GetLiveUserOperations_Output = ResultError | { status: 'OK' }
@@ -195,6 +204,9 @@ export type PayAppUserInvoice_Output = ResultError | ({ status: 'OK' } & PayInvo
 export type PayInvoice_Input = { rpcName: 'PayInvoice', req: PayInvoiceRequest }
 export type PayInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
+export type RemoveAuthorizedDebit_Input = { rpcName: 'RemoveAuthorizedDebit', req: RemoveAuthorizedDebitRequest }
+export type RemoveAuthorizedDebit_Output = ResultError | { status: 'OK' }
+
 export type RequestNPubLinkingToken_Input = { rpcName: 'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
 export type RequestNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
@@ -229,6 +241,7 @@ export type ServerMethods = {
     AddAppUserInvoice?: (req: AddAppUserInvoice_Input & { ctx: AppContext }) => Promise<NewInvoiceResponse>
     AddProduct?: (req: AddProduct_Input & { ctx: UserContext }) => Promise<Product>
     AuthApp?: (req: AuthApp_Input & { ctx: AdminContext }) => Promise<AuthApp>
+    AuthorizeDebit?: (req: AuthorizeDebit_Input & { ctx: UserContext }) => Promise<DebitAuthorization>
     BanUser?: (req: BanUser_Input & { ctx: AdminContext }) => Promise<BanUserResponse>
     CreateOneTimeInviteLink?: (req: CreateOneTimeInviteLink_Input & { ctx: AdminContext }) => Promise<CreateOneTimeInviteLinkResponse>
     DecodeInvoice?: (req: DecodeInvoice_Input & { ctx: UserContext }) => Promise<DecodeInvoiceResponse>
@@ -238,9 +251,11 @@ export type ServerMethods = {
     GetAppUser?: (req: GetAppUser_Input & { ctx: AppContext }) => Promise<AppUser>
     GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & { ctx: AppContext }) => Promise<LnurlPayInfoResponse>
     GetAppsMetrics?: (req: GetAppsMetrics_Input & { ctx: MetricsContext }) => Promise<AppsMetrics>
+    GetDebitAuthorizations?: (req: GetDebitAuthorizations_Input & { ctx: UserContext }) => Promise<DebitAuthorizations>
     GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext }) => Promise<void>
     GetInviteLinkState?: (req: GetInviteLinkState_Input & { ctx: AdminContext }) => Promise<GetInviteTokenStateResponse>
     GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
+    GetLiveDebitRequests?: (req: GetLiveDebitRequests_Input & { ctx: UserContext }) => Promise<void>
     GetLiveUserOperations?: (req: GetLiveUserOperations_Input & { ctx: UserContext }) => Promise<void>
     GetLndMetrics?: (req: GetLndMetrics_Input & { ctx: MetricsContext }) => Promise<LndMetrics>
     GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & { ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
@@ -267,6 +282,7 @@ export type ServerMethods = {
     PayAddress?: (req: PayAddress_Input & { ctx: UserContext }) => Promise<PayAddressResponse>
     PayAppUserInvoice?: (req: PayAppUserInvoice_Input & { ctx: AppContext }) => Promise<PayInvoiceResponse>
     PayInvoice?: (req: PayInvoice_Input & { ctx: UserContext }) => Promise<PayInvoiceResponse>
+    RemoveAuthorizedDebit?: (req: RemoveAuthorizedDebit_Input & { ctx: UserContext }) => Promise<void>
     RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
     ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
     SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & { ctx: AppContext }) => Promise<void>
@@ -830,6 +846,132 @@ export const CreateOneTimeInviteLinkResponseValidate = (o?: CreateOneTimeInviteL
     return null
 }
 
+export type DebitAuthorization = {
+    authorized: boolean
+    debit_id: string
+    npub: string
+    rules: DebitRule[]
+}
+export const DebitAuthorizationOptionalFields: [] = []
+export type DebitAuthorizationOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    authorized_CustomCheck?: (v: boolean) => boolean
+    debit_id_CustomCheck?: (v: string) => boolean
+    npub_CustomCheck?: (v: string) => boolean
+    rules_ItemOptions?: DebitRuleOptions
+    rules_CustomCheck?: (v: DebitRule[]) => boolean
+}
+export const DebitAuthorizationValidate = (o?: DebitAuthorization, opts: DebitAuthorizationOptions = {}, path: string = 'DebitAuthorization::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.authorized !== 'boolean') return new Error(`${path}.authorized: is not a boolean`)
+    if (opts.authorized_CustomCheck && !opts.authorized_CustomCheck(o.authorized)) return new Error(`${path}.authorized: custom check failed`)
+
+    if (typeof o.debit_id !== 'string') return new Error(`${path}.debit_id: is not a string`)
+    if (opts.debit_id_CustomCheck && !opts.debit_id_CustomCheck(o.debit_id)) return new Error(`${path}.debit_id: custom check failed`)
+
+    if (typeof o.npub !== 'string') return new Error(`${path}.npub: is not a string`)
+    if (opts.npub_CustomCheck && !opts.npub_CustomCheck(o.npub)) return new Error(`${path}.npub: custom check failed`)
+
+    if (!Array.isArray(o.rules)) return new Error(`${path}.rules: is not an array`)
+    for (let index = 0; index < o.rules.length; index++) {
+        const rulesErr = DebitRuleValidate(o.rules[index], opts.rules_ItemOptions, `${path}.rules[${index}]`)
+        if (rulesErr !== null) return rulesErr
+    }
+    if (opts.rules_CustomCheck && !opts.rules_CustomCheck(o.rules)) return new Error(`${path}.rules: custom check failed`)
+
+    return null
+}
+
+export type DebitAuthorizationRequest = {
+    authorize_npub: string
+    rules: DebitRule[]
+}
+export const DebitAuthorizationRequestOptionalFields: [] = []
+export type DebitAuthorizationRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    authorize_npub_CustomCheck?: (v: string) => boolean
+    rules_ItemOptions?: DebitRuleOptions
+    rules_CustomCheck?: (v: DebitRule[]) => boolean
+}
+export const DebitAuthorizationRequestValidate = (o?: DebitAuthorizationRequest, opts: DebitAuthorizationRequestOptions = {}, path: string = 'DebitAuthorizationRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.authorize_npub !== 'string') return new Error(`${path}.authorize_npub: is not a string`)
+    if (opts.authorize_npub_CustomCheck && !opts.authorize_npub_CustomCheck(o.authorize_npub)) return new Error(`${path}.authorize_npub: custom check failed`)
+
+    if (!Array.isArray(o.rules)) return new Error(`${path}.rules: is not an array`)
+    for (let index = 0; index < o.rules.length; index++) {
+        const rulesErr = DebitRuleValidate(o.rules[index], opts.rules_ItemOptions, `${path}.rules[${index}]`)
+        if (rulesErr !== null) return rulesErr
+    }
+    if (opts.rules_CustomCheck && !opts.rules_CustomCheck(o.rules)) return new Error(`${path}.rules: custom check failed`)
+
+    return null
+}
+
+export type DebitAuthorizations = {
+    debits: DebitAuthorization[]
+}
+export const DebitAuthorizationsOptionalFields: [] = []
+export type DebitAuthorizationsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    debits_ItemOptions?: DebitAuthorizationOptions
+    debits_CustomCheck?: (v: DebitAuthorization[]) => boolean
+}
+export const DebitAuthorizationsValidate = (o?: DebitAuthorizations, opts: DebitAuthorizationsOptions = {}, path: string = 'DebitAuthorizations::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.debits)) return new Error(`${path}.debits: is not an array`)
+    for (let index = 0; index < o.debits.length; index++) {
+        const debitsErr = DebitAuthorizationValidate(o.debits[index], opts.debits_ItemOptions, `${path}.debits[${index}]`)
+        if (debitsErr !== null) return debitsErr
+    }
+    if (opts.debits_CustomCheck && !opts.debits_CustomCheck(o.debits)) return new Error(`${path}.debits: custom check failed`)
+
+    return null
+}
+
+export type DebitExpirationRule = {
+    expires_at_unix: number
+}
+export const DebitExpirationRuleOptionalFields: [] = []
+export type DebitExpirationRuleOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    expires_at_unix_CustomCheck?: (v: number) => boolean
+}
+export const DebitExpirationRuleValidate = (o?: DebitExpirationRule, opts: DebitExpirationRuleOptions = {}, path: string = 'DebitExpirationRule::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.expires_at_unix !== 'number') return new Error(`${path}.expires_at_unix: is not a number`)
+    if (opts.expires_at_unix_CustomCheck && !opts.expires_at_unix_CustomCheck(o.expires_at_unix)) return new Error(`${path}.expires_at_unix: custom check failed`)
+
+    return null
+}
+
+export type DebitRule = {
+    rule: DebitRule_rule
+}
+export const DebitRuleOptionalFields: [] = []
+export type DebitRuleOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    rule_Options?: DebitRule_ruleOptions
+}
+export const DebitRuleValidate = (o?: DebitRule, opts: DebitRuleOptions = {}, path: string = 'DebitRule::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    const ruleErr = DebitRule_ruleValidate(o.rule, opts.rule_Options, `${path}.rule`)
+    if (ruleErr !== null) return ruleErr
+
+
+    return null
+}
+
 export type DecodeInvoiceRequest = {
     invoice: string
 }
@@ -916,6 +1058,24 @@ export const EnrollAdminTokenRequestValidate = (o?: EnrollAdminTokenRequest, opt
 
     if (typeof o.admin_token !== 'string') return new Error(`${path}.admin_token: is not a string`)
     if (opts.admin_token_CustomCheck && !opts.admin_token_CustomCheck(o.admin_token)) return new Error(`${path}.admin_token: custom check failed`)
+
+    return null
+}
+
+export type FrequencyRule = {
+    max_amount: number
+}
+export const FrequencyRuleOptionalFields: [] = []
+export type FrequencyRuleOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    max_amount_CustomCheck?: (v: number) => boolean
+}
+export const FrequencyRuleValidate = (o?: FrequencyRule, opts: FrequencyRuleOptions = {}, path: string = 'FrequencyRule::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.max_amount !== 'number') return new Error(`${path}.max_amount: is not a number`)
+    if (opts.max_amount_CustomCheck && !opts.max_amount_CustomCheck(o.max_amount)) return new Error(`${path}.max_amount: custom check failed`)
 
     return null
 }
@@ -1218,6 +1378,44 @@ export const LinkNPubThroughTokenRequestValidate = (o?: LinkNPubThroughTokenRequ
 
     if (typeof o.token !== 'string') return new Error(`${path}.token: is not a string`)
     if (opts.token_CustomCheck && !opts.token_CustomCheck(o.token)) return new Error(`${path}.token: custom check failed`)
+
+    return null
+}
+
+export type LiveDebitRequest = {
+    amount: number
+    npub: string
+    repeated: boolean
+    rules: DebitRule[]
+}
+export const LiveDebitRequestOptionalFields: [] = []
+export type LiveDebitRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    amount_CustomCheck?: (v: number) => boolean
+    npub_CustomCheck?: (v: string) => boolean
+    repeated_CustomCheck?: (v: boolean) => boolean
+    rules_ItemOptions?: DebitRuleOptions
+    rules_CustomCheck?: (v: DebitRule[]) => boolean
+}
+export const LiveDebitRequestValidate = (o?: LiveDebitRequest, opts: LiveDebitRequestOptions = {}, path: string = 'LiveDebitRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
+    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+
+    if (typeof o.npub !== 'string') return new Error(`${path}.npub: is not a string`)
+    if (opts.npub_CustomCheck && !opts.npub_CustomCheck(o.npub)) return new Error(`${path}.npub: custom check failed`)
+
+    if (typeof o.repeated !== 'boolean') return new Error(`${path}.repeated: is not a boolean`)
+    if (opts.repeated_CustomCheck && !opts.repeated_CustomCheck(o.repeated)) return new Error(`${path}.repeated: custom check failed`)
+
+    if (!Array.isArray(o.rules)) return new Error(`${path}.rules: is not an array`)
+    for (let index = 0; index < o.rules.length; index++) {
+        const rulesErr = DebitRuleValidate(o.rules[index], opts.rules_ItemOptions, `${path}.rules[${index}]`)
+        if (rulesErr !== null) return rulesErr
+    }
+    if (opts.rules_CustomCheck && !opts.rules_CustomCheck(o.rules)) return new Error(`${path}.rules: custom check failed`)
 
     return null
 }
@@ -2028,6 +2226,24 @@ export const RelaysMigrationValidate = (o?: RelaysMigration, opts: RelaysMigrati
     return null
 }
 
+export type RemoveAuthorizedDebitRequest = {
+    npub: string
+}
+export const RemoveAuthorizedDebitRequestOptionalFields: [] = []
+export type RemoveAuthorizedDebitRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    npub_CustomCheck?: (v: string) => boolean
+}
+export const RemoveAuthorizedDebitRequestValidate = (o?: RemoveAuthorizedDebitRequest, opts: RemoveAuthorizedDebitRequestOptions = {}, path: string = 'RemoveAuthorizedDebitRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.npub !== 'string') return new Error(`${path}.npub: is not a string`)
+    if (opts.npub_CustomCheck && !opts.npub_CustomCheck(o.npub)) return new Error(`${path}.npub: custom check failed`)
+
+    return null
+}
+
 export type RequestNPubLinkingTokenRequest = {
     user_identifier: string
 }
@@ -2548,3 +2764,40 @@ export const UsersInfoValidate = (o?: UsersInfo, opts: UsersInfoOptions = {}, pa
     return null
 }
 
+export enum DebitRule_rule_type {
+    EXPIRATION = 'expiration',
+    FREQUENCY = 'frequency',
+}
+export const enumCheckDebitRule_rule_type = (e?: DebitRule_rule_type): boolean => {
+    for (const v in DebitRule_rule_type) if (e === v) return true
+    return false
+}
+export type DebitRule_rule =
+    { type: DebitRule_rule_type.EXPIRATION, expiration: DebitExpirationRule } |
+    { type: DebitRule_rule_type.FREQUENCY, frequency: FrequencyRule }
+
+export type DebitRule_ruleOptions = {
+    expiration_Options?: DebitExpirationRuleOptions
+    frequency_Options?: FrequencyRuleOptions
+}
+export const DebitRule_ruleValidate = (o?: DebitRule_rule, opts: DebitRule_ruleOptions = {}, path: string = 'DebitRule_rule::root.'): Error | null => {
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+    const stringType: string = o.type
+    switch (o.type) {
+        case DebitRule_rule_type.EXPIRATION:
+            const expirationErr = DebitExpirationRuleValidate(o.expiration, opts.expiration_Options, `${path}.expiration`)
+            if (expirationErr !== null) return expirationErr
+
+
+            break
+        case DebitRule_rule_type.FREQUENCY:
+            const frequencyErr = FrequencyRuleValidate(o.frequency, opts.frequency_Options, `${path}.frequency`)
+            if (frequencyErr !== null) return frequencyErr
+
+
+            break
+        default:
+            return new Error(path + ': unknown type ' + stringType)
+    }
+    return null
+}
