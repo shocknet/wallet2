@@ -19,7 +19,7 @@
     "@capacitor/android": "5.4.0",
     "@capacitor/app": "5.0.6",
     "@capacitor/browser": "^5.2.0",
-    "@capacitor/camera": "^5.0.7",
+    "@capacitor/camera": "^5.0.10",
     "@capacitor/clipboard": "^5.0.6",
     "@capacitor/core": "5.7.8",
     "@capacitor/filesystem": "^5.1.4",
@@ -32,8 +32,8 @@
     "@gandlaf21/bolt11-decode": "^3.0.6",
     "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
-    "@ionic/react": "^7.0.0",
-    "@ionic/react-router": "^7.0.0",
+    "@ionic/react": "^8.3.0",
+    "@ionic/react-router": "^8.3.0",
     "@noble/curves": "^1.5.0",
     "@noble/hashes": "^1.5.0",
     "@noble/secp256k1": "^2.0.0",
@@ -83,7 +83,7 @@
     "reactjs-qr-reader": "^1.1.0",
     "sortablejs": "^1.15.1",
     "styled-components": "^6.0.8",
-    "uuid": "^9.0.1"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
@@ -94,7 +94,7 @@
     "@types/deep-diff": "^1.0.5",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
-    "@types/uuid": "^9.0.7",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
     "@vitejs/plugin-legacy": "^4.0.2",
@@ -103,12 +103,13 @@
     "eslint": "^8.56.0",
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "jsdom": "^22.1.0",
     "sass": "^1.67.0",
     "typescript": "^5.3.3",
     "vite": "^4.3.9",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-pwa": "^0.20.5",
     "vitest": "^0.32.2"
   },
   "description": "An Ionic project"

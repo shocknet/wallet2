@@ -6,6 +6,7 @@ import { LayoutProps } from "./types";
 import axios from "axios";
 import { useDispatch, useSelector } from "../State/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
+import { useLocation } from 'react-router-dom';
 
 interface Price {
   buyPrice: number,
@@ -16,10 +17,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
   //reducer
   const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
-  const router = useIonRouter();
 
-  const isScan: boolean = router.routeInfo.pathname === "/scan";
-  const isPub: boolean = router.routeInfo.pathname === "/metrics" || router.routeInfo.pathname === "/manage" || router.routeInfo.pathname === "/channels"
+  const location = useLocation();
+  const pathname = location?.pathname || window.location.pathname;
+
+  const isScan: boolean = pathname === "/scan";
+  const isPub: boolean = pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
 
   const dispatch = useDispatch();
 

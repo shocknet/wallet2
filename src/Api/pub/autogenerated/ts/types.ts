@@ -2,7 +2,7 @@
 
 export type ResultError = { status: 'ERROR', reason: string }
 export type RequestInfo = { rpcName: string, batch: boolean, nostr: boolean, batchSize: number }
-export type RequestStats = { startMs: number, start: bigint, parse: bigint, guard: bigint, validate: bigint, handle: bigint }
+export type RequestStats = { startMs:number, start:bigint, parse: bigint, guard: bigint, validate: bigint, handle: bigint }
 export type RequestMetric = AuthContext & RequestInfo & RequestStats & { error?: string }
 export type AdminContext = {
     admin_id: string
@@ -38,109 +38,109 @@ export type UserMethodInputs = AddProduct_Input | DecodeInvoice_Input | EnrollAd
 export type UserMethodOutputs = AddProduct_Output | DecodeInvoice_Output | EnrollAdminToken_Output | GetLNURLChannelLink_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetPaymentState_Output | GetUserInfo_Output | GetUserOperations_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | OpenChannel_Output | PayAddress_Output | PayInvoice_Output | UserHealth_Output
 export type AuthContext = AdminContext | AppContext | GuestContext | GuestWithPubContext | MetricsContext | UserContext
 
-export type AddApp_Input = { rpcName: 'AddApp', req: AddAppRequest }
+export type AddApp_Input = {rpcName:'AddApp', req: AddAppRequest}
 export type AddApp_Output = ResultError | ({ status: 'OK' } & AuthApp)
 
-export type AddAppInvoice_Input = { rpcName: 'AddAppInvoice', req: AddAppInvoiceRequest }
+export type AddAppInvoice_Input = {rpcName:'AddAppInvoice', req: AddAppInvoiceRequest}
 export type AddAppInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type AddAppUser_Input = { rpcName: 'AddAppUser', req: AddAppUserRequest }
+export type AddAppUser_Input = {rpcName:'AddAppUser', req: AddAppUserRequest}
 export type AddAppUser_Output = ResultError | ({ status: 'OK' } & AppUser)
 
-export type AddAppUserInvoice_Input = { rpcName: 'AddAppUserInvoice', req: AddAppUserInvoiceRequest }
+export type AddAppUserInvoice_Input = {rpcName:'AddAppUserInvoice', req: AddAppUserInvoiceRequest}
 export type AddAppUserInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type AddProduct_Input = { rpcName: 'AddProduct', req: AddProductRequest }
+export type AddProduct_Input = {rpcName:'AddProduct', req: AddProductRequest}
 export type AddProduct_Output = ResultError | ({ status: 'OK' } & Product)
 
-export type AuthApp_Input = { rpcName: 'AuthApp', req: AuthAppRequest }
+export type AuthApp_Input = {rpcName:'AuthApp', req: AuthAppRequest}
 export type AuthApp_Output = ResultError | ({ status: 'OK' } & AuthApp)
 
-export type BanUser_Input = { rpcName: 'BanUser', req: BanUserRequest }
+export type BanUser_Input = {rpcName:'BanUser', req: BanUserRequest}
 export type BanUser_Output = ResultError | ({ status: 'OK' } & BanUserResponse)
 
 export type BatchUser_Input = UserMethodInputs
 export type BatchUser_Output = UserMethodOutputs
 
-export type CreateOneTimeInviteLink_Input = { rpcName: 'CreateOneTimeInviteLink', req: CreateOneTimeInviteLinkRequest }
+export type CreateOneTimeInviteLink_Input = {rpcName:'CreateOneTimeInviteLink', req: CreateOneTimeInviteLinkRequest}
 export type CreateOneTimeInviteLink_Output = ResultError | ({ status: 'OK' } & CreateOneTimeInviteLinkResponse)
 
-export type DecodeInvoice_Input = { rpcName: 'DecodeInvoice', req: DecodeInvoiceRequest }
+export type DecodeInvoice_Input = {rpcName:'DecodeInvoice', req: DecodeInvoiceRequest}
 export type DecodeInvoice_Output = ResultError | ({ status: 'OK' } & DecodeInvoiceResponse)
 
-export type EncryptionExchange_Input = { rpcName: 'EncryptionExchange', req: EncryptionExchangeRequest }
+export type EncryptionExchange_Input = {rpcName:'EncryptionExchange', req: EncryptionExchangeRequest}
 export type EncryptionExchange_Output = ResultError | { status: 'OK' }
 
-export type EnrollAdminToken_Input = { rpcName: 'EnrollAdminToken', req: EnrollAdminTokenRequest }
+export type EnrollAdminToken_Input = {rpcName:'EnrollAdminToken', req: EnrollAdminTokenRequest}
 export type EnrollAdminToken_Output = ResultError | { status: 'OK' }
 
-export type GetApp_Input = { rpcName: 'GetApp' }
+export type GetApp_Input = {rpcName:'GetApp'}
 export type GetApp_Output = ResultError | ({ status: 'OK' } & Application)
 
-export type GetAppUser_Input = { rpcName: 'GetAppUser', req: GetAppUserRequest }
+export type GetAppUser_Input = {rpcName:'GetAppUser', req: GetAppUserRequest}
 export type GetAppUser_Output = ResultError | ({ status: 'OK' } & AppUser)
 
-export type GetAppUserLNURLInfo_Input = { rpcName: 'GetAppUserLNURLInfo', req: GetAppUserLNURLInfoRequest }
+export type GetAppUserLNURLInfo_Input = {rpcName:'GetAppUserLNURLInfo', req: GetAppUserLNURLInfoRequest}
 export type GetAppUserLNURLInfo_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
-export type GetAppsMetrics_Input = { rpcName: 'GetAppsMetrics', req: AppsMetricsRequest }
+export type GetAppsMetrics_Input = {rpcName:'GetAppsMetrics', req: AppsMetricsRequest}
 export type GetAppsMetrics_Output = ResultError | ({ status: 'OK' } & AppsMetrics)
 
-export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds', cb: (res: HttpCreds, err: Error | null) => void }
+export type GetHttpCreds_Input = {rpcName:'GetHttpCreds',  cb:(res: HttpCreds, err:Error|null)=> void}
 export type GetHttpCreds_Output = ResultError | { status: 'OK' }
 
-export type GetInviteLinkState_Input = { rpcName: 'GetInviteLinkState', req: GetInviteTokenStateRequest }
+export type GetInviteLinkState_Input = {rpcName:'GetInviteLinkState', req: GetInviteTokenStateRequest}
 export type GetInviteLinkState_Output = ResultError | ({ status: 'OK' } & GetInviteTokenStateResponse)
 
-export type GetLNURLChannelLink_Input = { rpcName: 'GetLNURLChannelLink' }
+export type GetLNURLChannelLink_Input = {rpcName:'GetLNURLChannelLink'}
 export type GetLNURLChannelLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
-export type GetLiveUserOperations_Input = { rpcName: 'GetLiveUserOperations', cb: (res: LiveUserOperation, err: Error | null) => void }
+export type GetLiveUserOperations_Input = {rpcName:'GetLiveUserOperations',  cb:(res: LiveUserOperation, err:Error|null)=> void}
 export type GetLiveUserOperations_Output = ResultError | { status: 'OK' }
 
-export type GetLndMetrics_Input = { rpcName: 'GetLndMetrics', req: LndMetricsRequest }
+export type GetLndMetrics_Input = {rpcName:'GetLndMetrics', req: LndMetricsRequest}
 export type GetLndMetrics_Output = ResultError | ({ status: 'OK' } & LndMetrics)
 
 export type GetLnurlPayInfo_Query = {
     k1?: string
 }
-export type GetLnurlPayInfo_Input = { rpcName: 'GetLnurlPayInfo', query: GetLnurlPayInfo_Query }
+export type GetLnurlPayInfo_Input = {rpcName:'GetLnurlPayInfo', query: GetLnurlPayInfo_Query}
 export type GetLnurlPayInfo_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
-export type GetLnurlPayLink_Input = { rpcName: 'GetLnurlPayLink' }
+export type GetLnurlPayLink_Input = {rpcName:'GetLnurlPayLink'}
 export type GetLnurlPayLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
 export type GetLnurlWithdrawInfo_Query = {
     k1?: string
 }
-export type GetLnurlWithdrawInfo_Input = { rpcName: 'GetLnurlWithdrawInfo', query: GetLnurlWithdrawInfo_Query }
+export type GetLnurlWithdrawInfo_Input = {rpcName:'GetLnurlWithdrawInfo', query: GetLnurlWithdrawInfo_Query}
 export type GetLnurlWithdrawInfo_Output = ResultError | ({ status: 'OK' } & LnurlWithdrawInfoResponse)
 
-export type GetLnurlWithdrawLink_Input = { rpcName: 'GetLnurlWithdrawLink' }
+export type GetLnurlWithdrawLink_Input = {rpcName:'GetLnurlWithdrawLink'}
 export type GetLnurlWithdrawLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
-export type GetMigrationUpdate_Input = { rpcName: 'GetMigrationUpdate', cb: (res: MigrationUpdate, err: Error | null) => void }
+export type GetMigrationUpdate_Input = {rpcName:'GetMigrationUpdate',  cb:(res: MigrationUpdate, err:Error|null)=> void}
 export type GetMigrationUpdate_Output = ResultError | { status: 'OK' }
 
-export type GetPaymentState_Input = { rpcName: 'GetPaymentState', req: GetPaymentStateRequest }
+export type GetPaymentState_Input = {rpcName:'GetPaymentState', req: GetPaymentStateRequest}
 export type GetPaymentState_Output = ResultError | ({ status: 'OK' } & PaymentState)
 
-export type GetSeed_Input = { rpcName: 'GetSeed' }
+export type GetSeed_Input = {rpcName:'GetSeed'}
 export type GetSeed_Output = ResultError | ({ status: 'OK' } & LndSeed)
 
-export type GetUsageMetrics_Input = { rpcName: 'GetUsageMetrics' }
+export type GetUsageMetrics_Input = {rpcName:'GetUsageMetrics'}
 export type GetUsageMetrics_Output = ResultError | ({ status: 'OK' } & UsageMetrics)
 
-export type GetUserInfo_Input = { rpcName: 'GetUserInfo' }
+export type GetUserInfo_Input = {rpcName:'GetUserInfo'}
 export type GetUserInfo_Output = ResultError | ({ status: 'OK' } & UserInfo)
 
-export type GetUserOperations_Input = { rpcName: 'GetUserOperations', req: GetUserOperationsRequest }
+export type GetUserOperations_Input = {rpcName:'GetUserOperations', req: GetUserOperationsRequest}
 export type GetUserOperations_Output = ResultError | ({ status: 'OK' } & GetUserOperationsResponse)
 
 export type HandleLnurlAddress_RouteParams = {
     address_name: string
 }
-export type HandleLnurlAddress_Input = { rpcName: 'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams }
+export type HandleLnurlAddress_Input = {rpcName:'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams}
 export type HandleLnurlAddress_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
 export type HandleLnurlPay_Query = {
@@ -149,133 +149,133 @@ export type HandleLnurlPay_Query = {
     lnurl?: string
     nostr?: string
 }
-export type HandleLnurlPay_Input = { rpcName: 'HandleLnurlPay', query: HandleLnurlPay_Query }
+export type HandleLnurlPay_Input = {rpcName:'HandleLnurlPay', query: HandleLnurlPay_Query}
 export type HandleLnurlPay_Output = ResultError | ({ status: 'OK' } & HandleLnurlPayResponse)
 
 export type HandleLnurlWithdraw_Query = {
     k1?: string
     pr?: string
 }
-export type HandleLnurlWithdraw_Input = { rpcName: 'HandleLnurlWithdraw', query: HandleLnurlWithdraw_Query }
+export type HandleLnurlWithdraw_Input = {rpcName:'HandleLnurlWithdraw', query: HandleLnurlWithdraw_Query}
 export type HandleLnurlWithdraw_Output = ResultError | { status: 'OK' }
 
-export type Health_Input = { rpcName: 'Health' }
+export type Health_Input = {rpcName:'Health'}
 export type Health_Output = ResultError | { status: 'OK' }
 
-export type LinkNPubThroughToken_Input = { rpcName: 'LinkNPubThroughToken', req: LinkNPubThroughTokenRequest }
+export type LinkNPubThroughToken_Input = {rpcName:'LinkNPubThroughToken', req: LinkNPubThroughTokenRequest}
 export type LinkNPubThroughToken_Output = ResultError | { status: 'OK' }
 
-export type ListChannels_Input = { rpcName: 'ListChannels' }
+export type ListChannels_Input = {rpcName:'ListChannels'}
 export type ListChannels_Output = ResultError | ({ status: 'OK' } & LndChannels)
 
-export type LndGetInfo_Input = { rpcName: 'LndGetInfo', req: LndGetInfoRequest }
+export type LndGetInfo_Input = {rpcName:'LndGetInfo', req: LndGetInfoRequest}
 export type LndGetInfo_Output = ResultError | ({ status: 'OK' } & LndGetInfoResponse)
 
-export type NewAddress_Input = { rpcName: 'NewAddress', req: NewAddressRequest }
+export type NewAddress_Input = {rpcName:'NewAddress', req: NewAddressRequest}
 export type NewAddress_Output = ResultError | ({ status: 'OK' } & NewAddressResponse)
 
-export type NewInvoice_Input = { rpcName: 'NewInvoice', req: NewInvoiceRequest }
+export type NewInvoice_Input = {rpcName:'NewInvoice', req: NewInvoiceRequest}
 export type NewInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
 export type NewProductInvoice_Query = {
     id?: string
 }
-export type NewProductInvoice_Input = { rpcName: 'NewProductInvoice', query: NewProductInvoice_Query }
+export type NewProductInvoice_Input = {rpcName:'NewProductInvoice', query: NewProductInvoice_Query}
 export type NewProductInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type OpenChannel_Input = { rpcName: 'OpenChannel', req: OpenChannelRequest }
+export type OpenChannel_Input = {rpcName:'OpenChannel', req: OpenChannelRequest}
 export type OpenChannel_Output = ResultError | ({ status: 'OK' } & OpenChannelResponse)
 
-export type PayAddress_Input = { rpcName: 'PayAddress', req: PayAddressRequest }
+export type PayAddress_Input = {rpcName:'PayAddress', req: PayAddressRequest}
 export type PayAddress_Output = ResultError | ({ status: 'OK' } & PayAddressResponse)
 
-export type PayAppUserInvoice_Input = { rpcName: 'PayAppUserInvoice', req: PayAppUserInvoiceRequest }
+export type PayAppUserInvoice_Input = {rpcName:'PayAppUserInvoice', req: PayAppUserInvoiceRequest}
 export type PayAppUserInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
-export type PayInvoice_Input = { rpcName: 'PayInvoice', req: PayInvoiceRequest }
+export type PayInvoice_Input = {rpcName:'PayInvoice', req: PayInvoiceRequest}
 export type PayInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
-export type RequestNPubLinkingToken_Input = { rpcName: 'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
+export type RequestNPubLinkingToken_Input = {rpcName:'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest}
 export type RequestNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
-export type ResetNPubLinkingToken_Input = { rpcName: 'ResetNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
+export type ResetNPubLinkingToken_Input = {rpcName:'ResetNPubLinkingToken', req: RequestNPubLinkingTokenRequest}
 export type ResetNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
-export type SendAppUserToAppPayment_Input = { rpcName: 'SendAppUserToAppPayment', req: SendAppUserToAppPaymentRequest }
+export type SendAppUserToAppPayment_Input = {rpcName:'SendAppUserToAppPayment', req: SendAppUserToAppPaymentRequest}
 export type SendAppUserToAppPayment_Output = ResultError | { status: 'OK' }
 
-export type SendAppUserToAppUserPayment_Input = { rpcName: 'SendAppUserToAppUserPayment', req: SendAppUserToAppUserPaymentRequest }
+export type SendAppUserToAppUserPayment_Input = {rpcName:'SendAppUserToAppUserPayment', req: SendAppUserToAppUserPaymentRequest}
 export type SendAppUserToAppUserPayment_Output = ResultError | { status: 'OK' }
 
-export type SetMockAppBalance_Input = { rpcName: 'SetMockAppBalance', req: SetMockAppBalanceRequest }
+export type SetMockAppBalance_Input = {rpcName:'SetMockAppBalance', req: SetMockAppBalanceRequest}
 export type SetMockAppBalance_Output = ResultError | { status: 'OK' }
 
-export type SetMockAppUserBalance_Input = { rpcName: 'SetMockAppUserBalance', req: SetMockAppUserBalanceRequest }
+export type SetMockAppUserBalance_Input = {rpcName:'SetMockAppUserBalance', req: SetMockAppUserBalanceRequest}
 export type SetMockAppUserBalance_Output = ResultError | { status: 'OK' }
 
-export type SetMockInvoiceAsPaid_Input = { rpcName: 'SetMockInvoiceAsPaid', req: SetMockInvoiceAsPaidRequest }
+export type SetMockInvoiceAsPaid_Input = {rpcName:'SetMockInvoiceAsPaid', req: SetMockInvoiceAsPaidRequest}
 export type SetMockInvoiceAsPaid_Output = ResultError | { status: 'OK' }
 
-export type UseInviteLink_Input = { rpcName: 'UseInviteLink', req: UseInviteLinkRequest }
+export type UseInviteLink_Input = {rpcName:'UseInviteLink', req: UseInviteLinkRequest}
 export type UseInviteLink_Output = ResultError | { status: 'OK' }
 
-export type UserHealth_Input = { rpcName: 'UserHealth' }
+export type UserHealth_Input = {rpcName:'UserHealth'}
 export type UserHealth_Output = ResultError | { status: 'OK' }
 
 export type ServerMethods = {
-    AddApp?: (req: AddApp_Input & { ctx: AdminContext }) => Promise<AuthApp>
-    AddAppInvoice?: (req: AddAppInvoice_Input & { ctx: AppContext }) => Promise<NewInvoiceResponse>
-    AddAppUser?: (req: AddAppUser_Input & { ctx: AppContext }) => Promise<AppUser>
-    AddAppUserInvoice?: (req: AddAppUserInvoice_Input & { ctx: AppContext }) => Promise<NewInvoiceResponse>
-    AddProduct?: (req: AddProduct_Input & { ctx: UserContext }) => Promise<Product>
-    AuthApp?: (req: AuthApp_Input & { ctx: AdminContext }) => Promise<AuthApp>
-    BanUser?: (req: BanUser_Input & { ctx: AdminContext }) => Promise<BanUserResponse>
-    CreateOneTimeInviteLink?: (req: CreateOneTimeInviteLink_Input & { ctx: AdminContext }) => Promise<CreateOneTimeInviteLinkResponse>
-    DecodeInvoice?: (req: DecodeInvoice_Input & { ctx: UserContext }) => Promise<DecodeInvoiceResponse>
-    EncryptionExchange?: (req: EncryptionExchange_Input & { ctx: GuestContext }) => Promise<void>
-    EnrollAdminToken?: (req: EnrollAdminToken_Input & { ctx: UserContext }) => Promise<void>
-    GetApp?: (req: GetApp_Input & { ctx: AppContext }) => Promise<Application>
-    GetAppUser?: (req: GetAppUser_Input & { ctx: AppContext }) => Promise<AppUser>
-    GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & { ctx: AppContext }) => Promise<LnurlPayInfoResponse>
-    GetAppsMetrics?: (req: GetAppsMetrics_Input & { ctx: MetricsContext }) => Promise<AppsMetrics>
-    GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext }) => Promise<void>
-    GetInviteLinkState?: (req: GetInviteLinkState_Input & { ctx: AdminContext }) => Promise<GetInviteTokenStateResponse>
-    GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
-    GetLiveUserOperations?: (req: GetLiveUserOperations_Input & { ctx: UserContext }) => Promise<void>
-    GetLndMetrics?: (req: GetLndMetrics_Input & { ctx: MetricsContext }) => Promise<LndMetrics>
-    GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & { ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
-    GetLnurlPayLink?: (req: GetLnurlPayLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
-    GetLnurlWithdrawInfo?: (req: GetLnurlWithdrawInfo_Input & { ctx: GuestContext }) => Promise<LnurlWithdrawInfoResponse>
-    GetLnurlWithdrawLink?: (req: GetLnurlWithdrawLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
-    GetMigrationUpdate?: (req: GetMigrationUpdate_Input & { ctx: UserContext }) => Promise<void>
-    GetPaymentState?: (req: GetPaymentState_Input & { ctx: UserContext }) => Promise<PaymentState>
-    GetSeed?: (req: GetSeed_Input & { ctx: AdminContext }) => Promise<LndSeed>
-    GetUsageMetrics?: (req: GetUsageMetrics_Input & { ctx: MetricsContext }) => Promise<UsageMetrics>
-    GetUserInfo?: (req: GetUserInfo_Input & { ctx: UserContext }) => Promise<UserInfo>
-    GetUserOperations?: (req: GetUserOperations_Input & { ctx: UserContext }) => Promise<GetUserOperationsResponse>
-    HandleLnurlAddress?: (req: HandleLnurlAddress_Input & { ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
-    HandleLnurlPay?: (req: HandleLnurlPay_Input & { ctx: GuestContext }) => Promise<HandleLnurlPayResponse>
-    HandleLnurlWithdraw?: (req: HandleLnurlWithdraw_Input & { ctx: GuestContext }) => Promise<void>
-    Health?: (req: Health_Input & { ctx: GuestContext }) => Promise<void>
-    LinkNPubThroughToken?: (req: LinkNPubThroughToken_Input & { ctx: GuestWithPubContext }) => Promise<void>
-    ListChannels?: (req: ListChannels_Input & { ctx: AdminContext }) => Promise<LndChannels>
-    LndGetInfo?: (req: LndGetInfo_Input & { ctx: AdminContext }) => Promise<LndGetInfoResponse>
-    NewAddress?: (req: NewAddress_Input & { ctx: UserContext }) => Promise<NewAddressResponse>
-    NewInvoice?: (req: NewInvoice_Input & { ctx: UserContext }) => Promise<NewInvoiceResponse>
-    NewProductInvoice?: (req: NewProductInvoice_Input & { ctx: UserContext }) => Promise<NewInvoiceResponse>
-    OpenChannel?: (req: OpenChannel_Input & { ctx: UserContext }) => Promise<OpenChannelResponse>
-    PayAddress?: (req: PayAddress_Input & { ctx: UserContext }) => Promise<PayAddressResponse>
-    PayAppUserInvoice?: (req: PayAppUserInvoice_Input & { ctx: AppContext }) => Promise<PayInvoiceResponse>
-    PayInvoice?: (req: PayInvoice_Input & { ctx: UserContext }) => Promise<PayInvoiceResponse>
-    RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
-    ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
-    SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & { ctx: AppContext }) => Promise<void>
-    SendAppUserToAppUserPayment?: (req: SendAppUserToAppUserPayment_Input & { ctx: AppContext }) => Promise<void>
-    SetMockAppBalance?: (req: SetMockAppBalance_Input & { ctx: AppContext }) => Promise<void>
-    SetMockAppUserBalance?: (req: SetMockAppUserBalance_Input & { ctx: AppContext }) => Promise<void>
-    SetMockInvoiceAsPaid?: (req: SetMockInvoiceAsPaid_Input & { ctx: GuestContext }) => Promise<void>
-    UseInviteLink?: (req: UseInviteLink_Input & { ctx: GuestWithPubContext }) => Promise<void>
-    UserHealth?: (req: UserHealth_Input & { ctx: UserContext }) => Promise<void>
+    AddApp?: (req: AddApp_Input & {ctx: AdminContext }) => Promise<AuthApp>
+    AddAppInvoice?: (req: AddAppInvoice_Input & {ctx: AppContext }) => Promise<NewInvoiceResponse>
+    AddAppUser?: (req: AddAppUser_Input & {ctx: AppContext }) => Promise<AppUser>
+    AddAppUserInvoice?: (req: AddAppUserInvoice_Input & {ctx: AppContext }) => Promise<NewInvoiceResponse>
+    AddProduct?: (req: AddProduct_Input & {ctx: UserContext }) => Promise<Product>
+    AuthApp?: (req: AuthApp_Input & {ctx: AdminContext }) => Promise<AuthApp>
+    BanUser?: (req: BanUser_Input & {ctx: AdminContext }) => Promise<BanUserResponse>
+    CreateOneTimeInviteLink?: (req: CreateOneTimeInviteLink_Input & {ctx: AdminContext }) => Promise<CreateOneTimeInviteLinkResponse>
+    DecodeInvoice?: (req: DecodeInvoice_Input & {ctx: UserContext }) => Promise<DecodeInvoiceResponse>
+    EncryptionExchange?: (req: EncryptionExchange_Input & {ctx: GuestContext }) => Promise<void>
+    EnrollAdminToken?: (req: EnrollAdminToken_Input & {ctx: UserContext }) => Promise<void>
+    GetApp?: (req: GetApp_Input & {ctx: AppContext }) => Promise<Application>
+    GetAppUser?: (req: GetAppUser_Input & {ctx: AppContext }) => Promise<AppUser>
+    GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & {ctx: AppContext }) => Promise<LnurlPayInfoResponse>
+    GetAppsMetrics?: (req: GetAppsMetrics_Input & {ctx: MetricsContext }) => Promise<AppsMetrics>
+    GetHttpCreds?: (req: GetHttpCreds_Input & {ctx: UserContext }) => Promise<void>
+    GetInviteLinkState?: (req: GetInviteLinkState_Input & {ctx: AdminContext }) => Promise<GetInviteTokenStateResponse>
+    GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & {ctx: UserContext }) => Promise<LnurlLinkResponse>
+    GetLiveUserOperations?: (req: GetLiveUserOperations_Input & {ctx: UserContext }) => Promise<void>
+    GetLndMetrics?: (req: GetLndMetrics_Input & {ctx: MetricsContext }) => Promise<LndMetrics>
+    GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & {ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
+    GetLnurlPayLink?: (req: GetLnurlPayLink_Input & {ctx: UserContext }) => Promise<LnurlLinkResponse>
+    GetLnurlWithdrawInfo?: (req: GetLnurlWithdrawInfo_Input & {ctx: GuestContext }) => Promise<LnurlWithdrawInfoResponse>
+    GetLnurlWithdrawLink?: (req: GetLnurlWithdrawLink_Input & {ctx: UserContext }) => Promise<LnurlLinkResponse>
+    GetMigrationUpdate?: (req: GetMigrationUpdate_Input & {ctx: UserContext }) => Promise<void>
+    GetPaymentState?: (req: GetPaymentState_Input & {ctx: UserContext }) => Promise<PaymentState>
+    GetSeed?: (req: GetSeed_Input & {ctx: AdminContext }) => Promise<LndSeed>
+    GetUsageMetrics?: (req: GetUsageMetrics_Input & {ctx: MetricsContext }) => Promise<UsageMetrics>
+    GetUserInfo?: (req: GetUserInfo_Input & {ctx: UserContext }) => Promise<UserInfo>
+    GetUserOperations?: (req: GetUserOperations_Input & {ctx: UserContext }) => Promise<GetUserOperationsResponse>
+    HandleLnurlAddress?: (req: HandleLnurlAddress_Input & {ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
+    HandleLnurlPay?: (req: HandleLnurlPay_Input & {ctx: GuestContext }) => Promise<HandleLnurlPayResponse>
+    HandleLnurlWithdraw?: (req: HandleLnurlWithdraw_Input & {ctx: GuestContext }) => Promise<void>
+    Health?: (req: Health_Input & {ctx: GuestContext }) => Promise<void>
+    LinkNPubThroughToken?: (req: LinkNPubThroughToken_Input & {ctx: GuestWithPubContext }) => Promise<void>
+    ListChannels?: (req: ListChannels_Input & {ctx: AdminContext }) => Promise<LndChannels>
+    LndGetInfo?: (req: LndGetInfo_Input & {ctx: AdminContext }) => Promise<LndGetInfoResponse>
+    NewAddress?: (req: NewAddress_Input & {ctx: UserContext }) => Promise<NewAddressResponse>
+    NewInvoice?: (req: NewInvoice_Input & {ctx: UserContext }) => Promise<NewInvoiceResponse>
+    NewProductInvoice?: (req: NewProductInvoice_Input & {ctx: UserContext }) => Promise<NewInvoiceResponse>
+    OpenChannel?: (req: OpenChannel_Input & {ctx: UserContext }) => Promise<OpenChannelResponse>
+    PayAddress?: (req: PayAddress_Input & {ctx: UserContext }) => Promise<PayAddressResponse>
+    PayAppUserInvoice?: (req: PayAppUserInvoice_Input & {ctx: AppContext }) => Promise<PayInvoiceResponse>
+    PayInvoice?: (req: PayInvoice_Input & {ctx: UserContext }) => Promise<PayInvoiceResponse>
+    RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & {ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
+    ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & {ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
+    SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & {ctx: AppContext }) => Promise<void>
+    SendAppUserToAppUserPayment?: (req: SendAppUserToAppUserPayment_Input & {ctx: AppContext }) => Promise<void>
+    SetMockAppBalance?: (req: SetMockAppBalance_Input & {ctx: AppContext }) => Promise<void>
+    SetMockAppUserBalance?: (req: SetMockAppUserBalance_Input & {ctx: AppContext }) => Promise<void>
+    SetMockInvoiceAsPaid?: (req: SetMockInvoiceAsPaid_Input & {ctx: GuestContext }) => Promise<void>
+    UseInviteLink?: (req: UseInviteLink_Input & {ctx: GuestWithPubContext }) => Promise<void>
+    UserHealth?: (req: UserHealth_Input & {ctx: UserContext }) => Promise<void>
 }
 
 export enum AddressType {
@@ -325,7 +325,7 @@ export const AddAppInvoiceRequestValidate = (o?: AddAppInvoiceRequest, opts: Add
 
     const invoice_reqErr = NewInvoiceRequestValidate(o.invoice_req, opts.invoice_req_Options, `${path}.invoice_req`)
     if (invoice_reqErr !== null) return invoice_reqErr
-
+    
 
     if (typeof o.payer_identifier !== 'string') return new Error(`${path}.payer_identifier: is not a string`)
     if (opts.payer_identifier_CustomCheck && !opts.payer_identifier_CustomCheck(o.payer_identifier)) return new Error(`${path}.payer_identifier: custom check failed`)
@@ -379,7 +379,7 @@ export const AddAppUserInvoiceRequestValidate = (o?: AddAppUserInvoiceRequest, o
 
     const invoice_reqErr = NewInvoiceRequestValidate(o.invoice_req, opts.invoice_req_Options, `${path}.invoice_req`)
     if (invoice_reqErr !== null) return invoice_reqErr
-
+    
 
     if (typeof o.payer_identifier !== 'string') return new Error(`${path}.payer_identifier: is not a string`)
     if (opts.payer_identifier_CustomCheck && !opts.payer_identifier_CustomCheck(o.payer_identifier)) return new Error(`${path}.payer_identifier: custom check failed`)
@@ -472,7 +472,7 @@ export const AppMetricsValidate = (o?: AppMetrics, opts: AppMetricsOptions = {},
 
     const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
     if (appErr !== null) return appErr
-
+    
 
     if (typeof o.available !== 'number') return new Error(`${path}.available: is not a number`)
     if (opts.available_CustomCheck && !opts.available_CustomCheck(o.available)) return new Error(`${path}.available: custom check failed`)
@@ -501,7 +501,7 @@ export const AppMetricsValidate = (o?: AppMetrics, opts: AppMetricsOptions = {},
 
     const usersErr = UsersInfoValidate(o.users, opts.users_Options, `${path}.users`)
     if (usersErr !== null) return usersErr
-
+    
 
     return null
 }
@@ -527,7 +527,7 @@ export const AppUserValidate = (o?: AppUser, opts: AppUserOptions = {}, path: st
 
     const infoErr = UserInfoValidate(o.info, opts.info_Options, `${path}.info`)
     if (infoErr !== null) return infoErr
-
+    
 
     if (typeof o.max_withdrawable !== 'number') return new Error(`${path}.max_withdrawable: is not a number`)
     if (opts.max_withdrawable_CustomCheck && !opts.max_withdrawable_CustomCheck(o.max_withdrawable)) return new Error(`${path}.max_withdrawable: custom check failed`)
@@ -636,7 +636,7 @@ export const AuthAppValidate = (o?: AuthApp, opts: AuthAppOptions = {}, path: st
 
     const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
     if (appErr !== null) return appErr
-
+    
 
     if (typeof o.auth_token !== 'string') return new Error(`${path}.auth_token: is not a string`)
     if (opts.auth_token_CustomCheck && !opts.auth_token_CustomCheck(o.auth_token)) return new Error(`${path}.auth_token: custom check failed`)
@@ -1105,27 +1105,27 @@ export const GetUserOperationsResponseValidate = (o?: GetUserOperationsResponse,
 
     const latestIncomingInvoiceOperationsErr = UserOperationsValidate(o.latestIncomingInvoiceOperations, opts.latestIncomingInvoiceOperations_Options, `${path}.latestIncomingInvoiceOperations`)
     if (latestIncomingInvoiceOperationsErr !== null) return latestIncomingInvoiceOperationsErr
-
+    
 
     const latestIncomingTxOperationsErr = UserOperationsValidate(o.latestIncomingTxOperations, opts.latestIncomingTxOperations_Options, `${path}.latestIncomingTxOperations`)
     if (latestIncomingTxOperationsErr !== null) return latestIncomingTxOperationsErr
-
+    
 
     const latestIncomingUserToUserPayemntsErr = UserOperationsValidate(o.latestIncomingUserToUserPayemnts, opts.latestIncomingUserToUserPayemnts_Options, `${path}.latestIncomingUserToUserPayemnts`)
     if (latestIncomingUserToUserPayemntsErr !== null) return latestIncomingUserToUserPayemntsErr
-
+    
 
     const latestOutgoingInvoiceOperationsErr = UserOperationsValidate(o.latestOutgoingInvoiceOperations, opts.latestOutgoingInvoiceOperations_Options, `${path}.latestOutgoingInvoiceOperations`)
     if (latestOutgoingInvoiceOperationsErr !== null) return latestOutgoingInvoiceOperationsErr
-
+    
 
     const latestOutgoingTxOperationsErr = UserOperationsValidate(o.latestOutgoingTxOperations, opts.latestOutgoingTxOperations_Options, `${path}.latestOutgoingTxOperations`)
     if (latestOutgoingTxOperationsErr !== null) return latestOutgoingTxOperationsErr
-
+    
 
     const latestOutgoingUserToUserPayemntsErr = UserOperationsValidate(o.latestOutgoingUserToUserPayemnts, opts.latestOutgoingUserToUserPayemnts_Options, `${path}.latestOutgoingUserToUserPayemnts`)
     if (latestOutgoingUserToUserPayemntsErr !== null) return latestOutgoingUserToUserPayemntsErr
-
+    
 
     return null
 }
@@ -1236,7 +1236,7 @@ export const LiveUserOperationValidate = (o?: LiveUserOperation, opts: LiveUserO
 
     const operationErr = UserOperationValidate(o.operation, opts.operation_Options, `${path}.operation`)
     if (operationErr !== null) return operationErr
-
+    
 
     return null
 }
@@ -1604,13 +1604,13 @@ export const MigrationUpdateValidate = (o?: MigrationUpdate, opts: MigrationUpda
         const closureErr = ClosureMigrationValidate(o.closure, opts.closure_Options, `${path}.closure`)
         if (closureErr !== null) return closureErr
     }
-
+    
 
     if (typeof o.relays === 'object' || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('relays')) {
         const relaysErr = RelaysMigrationValidate(o.relays, opts.relays_Options, `${path}.relays`)
         if (relaysErr !== null) return relaysErr
     }
-
+    
 
     return null
 }
@@ -2353,6 +2353,7 @@ export const UseInviteLinkRequestValidate = (o?: UseInviteLinkRequest, opts: Use
 
 export type UserInfo = {
     balance: number
+    bridge_url: string
     max_withdrawable: number
     network_max_fee_bps: number
     network_max_fee_fixed: number
@@ -2365,6 +2366,7 @@ export const UserInfoOptionalFields: [] = []
 export type UserInfoOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
     balance_CustomCheck?: (v: number) => boolean
+    bridge_url_CustomCheck?: (v: string) => boolean
     max_withdrawable_CustomCheck?: (v: number) => boolean
     network_max_fee_bps_CustomCheck?: (v: number) => boolean
     network_max_fee_fixed_CustomCheck?: (v: number) => boolean
@@ -2379,6 +2381,9 @@ export const UserInfoValidate = (o?: UserInfo, opts: UserInfoOptions = {}, path:
 
     if (typeof o.balance !== 'number') return new Error(`${path}.balance: is not a number`)
     if (opts.balance_CustomCheck && !opts.balance_CustomCheck(o.balance)) return new Error(`${path}.balance: custom check failed`)
+
+    if (typeof o.bridge_url !== 'string') return new Error(`${path}.bridge_url: is not a string`)
+    if (opts.bridge_url_CustomCheck && !opts.bridge_url_CustomCheck(o.bridge_url)) return new Error(`${path}.bridge_url: custom check failed`)
 
     if (typeof o.max_withdrawable !== 'number') return new Error(`${path}.max_withdrawable: is not a number`)
     if (opts.max_withdrawable_CustomCheck && !opts.max_withdrawable_CustomCheck(o.max_withdrawable)) return new Error(`${path}.max_withdrawable: custom check failed`)
