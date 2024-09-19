@@ -22,17 +22,23 @@ export const LinkedApp = () => {
 			getNostrClient({ pubkey, relays }, source.keys).then(c => {
         c.GetDebitAuthorizations().then(res => {
           if (res.status === "OK") {
-            setDebitAuthorizations((state) => [...state, ...res.debits])
+            setDebitAuthorizations((state) => [
+              ...state,
+              ...res.debits.filter(
+                debit => !state.some(stateDebt => stateDebt.debit_id === debit.debit_id)
+              )
+            ])
           }
         })
 				
 			})
 		});
-	}, [nostrSpends, nodedUp, toggle, updatehook])
+	}, [nostrSpends, nodedUp, updatehook])
   useEffect(() => {
 		if (!nodedUp) {
 			return;
 		}
+    console.log("inside")
 		nostrSpends.forEach(source => {
 			const { pubkey, relays } = parseNprofile(source.pasteField)
 			getNostrClient({ pubkey, relays }, source.keys).then(c => {
@@ -45,7 +51,7 @@ export const LinkedApp = () => {
 				})
 			})
 		});
-	}, [nostrSpends, nodedUp, toggle])
+	}, [nostrSpends, nodedUp])
   const authroizeRequest = useCallback(async (request: SourceDebitRequest) => {
     const res = await (await getNostrClient(request.source.pasteField, request.source.keys)).AuthorizeDebit({ authorize_npub: request.request.npub, rules: [] });
     if (res.status !=="OK") {
