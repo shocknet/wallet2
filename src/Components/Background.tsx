@@ -26,6 +26,7 @@ import Toast from "./Toast";
 import { useHistory } from "react-router";
 import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 import { App } from "@capacitor/app";
+import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
 
 
 export const Background = () => {
@@ -362,6 +363,7 @@ export const Background = () => {
 		<LnAddressCheck />
 		<NodeUpCheck />
 		<RemoteBackup />
+		<DebitRequestHandler />
 		<Modal isShown={isShown} hide={() => { toggle() }} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }
