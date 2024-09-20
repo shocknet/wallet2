@@ -16,12 +16,12 @@ export type NostrOptions = {
     logger?: Logger
     throwErrors?: true
     metricsCallback: (metrics: Types.RequestMetric[]) => void
-    NostrAdminAuthGuard: (appId?:string, identifier?: string) => Promise<Types.AdminContext>
-    NostrGuestWithPubAuthGuard: (appId?:string, identifier?: string) => Promise<Types.GuestWithPubContext>
-    NostrMetricsAuthGuard: (appId?:string, identifier?: string) => Promise<Types.MetricsContext>
-    NostrUserAuthGuard: (appId?:string, identifier?: string) => Promise<Types.UserContext>
+    NostrAdminAuthGuard: (appId?: string, identifier?: string) => Promise<Types.AdminContext>
+    NostrGuestWithPubAuthGuard: (appId?: string, identifier?: string) => Promise<Types.GuestWithPubContext>
+    NostrMetricsAuthGuard: (appId?: string, identifier?: string) => Promise<Types.MetricsContext>
+    NostrUserAuthGuard: (appId?: string, identifier?: string) => Promise<Types.UserContext>
 }
-const logErrorAndReturnResponse = (error: Error, response: string, res: NostrResponse, logger: Logger, metric: Types.RequestMetric, metricsCallback: (metrics: Types.RequestMetric[]) => void) => { 
+const logErrorAndReturnResponse = (error: Error, response: string, res: NostrResponse, logger: Logger, metric: Types.RequestMetric, metricsCallback: (metrics: Types.RequestMetric[]) => void) => {
     logger.error(error.message || error); metricsCallback([{ ...metric, error: response }]); res({ status: 'ERROR', reason: response })
 }
 export default (methods: Types.ServerMethods, opts: NostrOptions) => {
@@ -42,11 +42,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.AddAppRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AddApp({rpcName:'AddApp', ctx:authContext , req: request})
+                    const response = await methods.AddApp({ rpcName: 'AddApp', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'AddProduct':
                 try {
@@ -58,11 +58,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.AddProductRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AddProduct({rpcName:'AddProduct', ctx:authContext , req: request})
+                    const response = await methods.AddProduct({ rpcName: 'AddProduct', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'AuthApp':
                 try {
@@ -74,11 +74,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.AuthAppRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AuthApp({rpcName:'AuthApp', ctx:authContext , req: request})
+                    const response = await methods.AuthApp({ rpcName: 'AuthApp', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'AuthorizeDebit':
                 try {
@@ -90,11 +90,27 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.DebitAuthorizationRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AuthorizeDebit({rpcName:'AuthorizeDebit', ctx:authContext , req: request})
+                    const response = await methods.AuthorizeDebit({ rpcName: 'AuthorizeDebit', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'BanDebit':
+                try {
+                    if (!methods.BanDebit) throw new Error('method: BanDebit is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    const request = req.body
+                    const error = Types.DebitOperationValidate(request)
+                    stats.validate = process.hrtime.bigint()
+                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+                    await methods.BanDebit({ rpcName: 'BanDebit', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK' })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'BanUser':
                 try {
@@ -106,17 +122,17 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.BanUserRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.BanUser({rpcName:'BanUser', ctx:authContext , req: request})
+                    const response = await methods.BanUser({ rpcName: 'BanUser', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'BatchUser':
                 try {
                     info.batch = true
                     const requests = req.body.requests as Types.UserMethodInputs[]
-                    if (!Array.isArray(requests))throw new Error('invalid body, is not an array')
+                    if (!Array.isArray(requests)) throw new Error('invalid body, is not an array')
                     info.batchSize = requests.length
                     if (requests.length > 10) throw new Error('too many requests in the batch')
                     const ctx = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
@@ -130,7 +146,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                         const opInfo: Types.RequestInfo = { rpcName: operation.rpcName, batch: true, nostr: true, batchSize: 0 }
                         const opStats: Types.RequestStats = { startMs, start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
                         try {
-                            switch(operation.rpcName) {
+                            switch (operation.rpcName) {
                                 case 'AddProduct':
                                     if (!methods.AddProduct) {
                                         throw new Error('method not defined: AddProduct')
@@ -138,7 +154,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.AddProductRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.AddProduct({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.AddProduct({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -150,7 +166,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.DebitAuthorizationRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.AuthorizeDebit({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.AuthorizeDebit({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
+                                case 'BanDebit':
+                                    if (!methods.BanDebit) {
+                                        throw new Error('method not defined: BanDebit')
+                                    } else {
+                                        const error = Types.DebitOperationValidate(operation.req)
+                                        opStats.validate = process.hrtime.bigint()
+                                        if (error !== null) throw error
+                                        await methods.BanDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -162,7 +190,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.DecodeInvoiceRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.DecodeInvoice({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.DecodeInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -174,7 +202,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.EnrollAdminTokenRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        await methods.EnrollAdminToken({...operation, ctx}); responses.push({ status: 'OK' })
+                                        await methods.EnrollAdminToken({ ...operation, ctx }); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -184,7 +212,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: GetDebitAuthorizations')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.GetDebitAuthorizations({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetDebitAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -194,7 +222,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: GetLNURLChannelLink')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.GetLNURLChannelLink({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetLNURLChannelLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -204,7 +232,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: GetLnurlPayLink')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.GetLnurlPayLink({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetLnurlPayLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -214,7 +242,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: GetLnurlWithdrawLink')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.GetLnurlWithdrawLink({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetLnurlWithdrawLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -226,7 +254,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.GetPaymentStateRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.GetPaymentState({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetPaymentState({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -236,7 +264,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: GetUserInfo')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.GetUserInfo({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetUserInfo({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -248,7 +276,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.GetUserOperationsRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.GetUserOperations({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.GetUserOperations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -260,7 +288,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.NewAddressRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.NewAddress({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.NewAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -272,7 +300,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.NewInvoiceRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.NewInvoice({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.NewInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -282,7 +310,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: NewProductInvoice')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        const res = await methods.NewProductInvoice({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.NewProductInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -294,7 +322,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.OpenChannelRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.OpenChannel({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.OpenChannel({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -306,7 +334,7 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.PayAddressRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.PayAddress({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.PayAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -318,19 +346,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         const error = Types.PayInvoiceRequestValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        const res = await methods.PayInvoice({...operation, ctx}); responses.push({ status: 'OK', ...res  })
+                                        const res = await methods.PayInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
                                     break
-                                case 'RemoveAuthorizedDebit':
-                                    if (!methods.RemoveAuthorizedDebit) {
-                                        throw new Error('method not defined: RemoveAuthorizedDebit')
+                                case 'ResetDebit':
+                                    if (!methods.ResetDebit) {
+                                        throw new Error('method not defined: ResetDebit')
                                     } else {
-                                        const error = Types.RemoveAuthorizedDebitRequestValidate(operation.req)
+                                        const error = Types.DebitOperationValidate(operation.req)
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
-                                        await methods.RemoveAuthorizedDebit({...operation, ctx}); responses.push({ status: 'OK' })
+                                        await methods.ResetDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -340,20 +368,20 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         throw new Error('method not defined: UserHealth')
                                     } else {
                                         opStats.validate = opStats.guard
-                                        await methods.UserHealth({...operation, ctx}); responses.push({ status: 'OK' })
+                                        await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
                                     break
                                 default:
-                                throw new Error('unkown rpcName')
+                                    throw new Error('unkown rpcName')
                             }
-                        } catch(ex) {const e = ex as any; logger.error(e.message || e); callsMetrics.push({ ...opInfo, ...opStats, ...ctx, error: e.message }); responses.push({ status: 'ERROR', reason: e.message || e })}
+                        } catch (ex) { const e = ex as any; logger.error(e.message || e); callsMetrics.push({ ...opInfo, ...opStats, ...ctx, error: e.message }); responses.push({ status: 'ERROR', reason: e.message || e }) }
                     }
                     stats.handle = process.hrtime.bigint()
                     res({ status: 'OK', responses })
                     opts.metricsCallback([{ ...info, ...stats, ...ctx }, ...callsMetrics])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'CreateOneTimeInviteLink':
                 try {
@@ -365,11 +393,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.CreateOneTimeInviteLinkRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.CreateOneTimeInviteLink({rpcName:'CreateOneTimeInviteLink', ctx:authContext , req: request})
+                    const response = await methods.CreateOneTimeInviteLink({ rpcName: 'CreateOneTimeInviteLink', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'DecodeInvoice':
                 try {
@@ -381,11 +409,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.DecodeInvoiceRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.DecodeInvoice({rpcName:'DecodeInvoice', ctx:authContext , req: request})
+                    const response = await methods.DecodeInvoice({ rpcName: 'DecodeInvoice', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'EnrollAdminToken':
                 try {
@@ -397,11 +425,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.EnrollAdminTokenRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.EnrollAdminToken({rpcName:'EnrollAdminToken', ctx:authContext , req: request})
+                    await methods.EnrollAdminToken({ rpcName: 'EnrollAdminToken', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK'})
+                    res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetAppsMetrics':
                 try {
@@ -413,11 +441,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.AppsMetricsRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetAppsMetrics({rpcName:'GetAppsMetrics', ctx:authContext , req: request})
+                    const response = await methods.GetAppsMetrics({ rpcName: 'GetAppsMetrics', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetDebitAuthorizations':
                 try {
@@ -426,11 +454,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetDebitAuthorizations({rpcName:'GetDebitAuthorizations', ctx:authContext })
+                    const response = await methods.GetDebitAuthorizations({ rpcName: 'GetDebitAuthorizations', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetHttpCreds':
                 try {
@@ -439,11 +467,13 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    methods.GetHttpCreds({rpcName:'GetHttpCreds', ctx:authContext  ,cb: (response, err) => {
-                    stats.handle = process.hrtime.bigint()
-                    if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback)} else { res({status: 'OK', ...response});opts.metricsCallback([{ ...info, ...stats, ...authContext }])}
-                    }})
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                    methods.GetHttpCreds({
+                        rpcName: 'GetHttpCreds', ctx: authContext, cb: (response, err) => {
+                            stats.handle = process.hrtime.bigint()
+                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+                        }
+                    })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetInviteLinkState':
                 try {
@@ -455,11 +485,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.GetInviteTokenStateRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetInviteLinkState({rpcName:'GetInviteLinkState', ctx:authContext , req: request})
+                    const response = await methods.GetInviteLinkState({ rpcName: 'GetInviteLinkState', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLNURLChannelLink':
                 try {
@@ -468,11 +498,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetLNURLChannelLink({rpcName:'GetLNURLChannelLink', ctx:authContext })
+                    const response = await methods.GetLNURLChannelLink({ rpcName: 'GetLNURLChannelLink', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLiveDebitRequests':
                 try {
@@ -481,11 +511,13 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    methods.GetLiveDebitRequests({rpcName:'GetLiveDebitRequests', ctx:authContext  ,cb: (response, err) => {
-                    stats.handle = process.hrtime.bigint()
-                    if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback)} else { res({status: 'OK', ...response});opts.metricsCallback([{ ...info, ...stats, ...authContext }])}
-                    }})
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                    methods.GetLiveDebitRequests({
+                        rpcName: 'GetLiveDebitRequests', ctx: authContext, cb: (response, err) => {
+                            stats.handle = process.hrtime.bigint()
+                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+                        }
+                    })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLiveUserOperations':
                 try {
@@ -494,11 +526,13 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    methods.GetLiveUserOperations({rpcName:'GetLiveUserOperations', ctx:authContext  ,cb: (response, err) => {
-                    stats.handle = process.hrtime.bigint()
-                    if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback)} else { res({status: 'OK', ...response});opts.metricsCallback([{ ...info, ...stats, ...authContext }])}
-                    }})
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                    methods.GetLiveUserOperations({
+                        rpcName: 'GetLiveUserOperations', ctx: authContext, cb: (response, err) => {
+                            stats.handle = process.hrtime.bigint()
+                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+                        }
+                    })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLndMetrics':
                 try {
@@ -510,11 +544,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.LndMetricsRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetLndMetrics({rpcName:'GetLndMetrics', ctx:authContext , req: request})
+                    const response = await methods.GetLndMetrics({ rpcName: 'GetLndMetrics', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLnurlPayLink':
                 try {
@@ -523,11 +557,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetLnurlPayLink({rpcName:'GetLnurlPayLink', ctx:authContext })
+                    const response = await methods.GetLnurlPayLink({ rpcName: 'GetLnurlPayLink', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLnurlWithdrawLink':
                 try {
@@ -536,11 +570,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetLnurlWithdrawLink({rpcName:'GetLnurlWithdrawLink', ctx:authContext })
+                    const response = await methods.GetLnurlWithdrawLink({ rpcName: 'GetLnurlWithdrawLink', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetMigrationUpdate':
                 try {
@@ -549,11 +583,13 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    methods.GetMigrationUpdate({rpcName:'GetMigrationUpdate', ctx:authContext  ,cb: (response, err) => {
-                    stats.handle = process.hrtime.bigint()
-                    if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback)} else { res({status: 'OK', ...response});opts.metricsCallback([{ ...info, ...stats, ...authContext }])}
-                    }})
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                    methods.GetMigrationUpdate({
+                        rpcName: 'GetMigrationUpdate', ctx: authContext, cb: (response, err) => {
+                            stats.handle = process.hrtime.bigint()
+                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+                        }
+                    })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetPaymentState':
                 try {
@@ -565,11 +601,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.GetPaymentStateRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetPaymentState({rpcName:'GetPaymentState', ctx:authContext , req: request})
+                    const response = await methods.GetPaymentState({ rpcName: 'GetPaymentState', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetSeed':
                 try {
@@ -578,11 +614,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetSeed({rpcName:'GetSeed', ctx:authContext })
+                    const response = await methods.GetSeed({ rpcName: 'GetSeed', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetUsageMetrics':
                 try {
@@ -591,11 +627,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetUsageMetrics({rpcName:'GetUsageMetrics', ctx:authContext })
+                    const response = await methods.GetUsageMetrics({ rpcName: 'GetUsageMetrics', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetUserInfo':
                 try {
@@ -604,11 +640,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.GetUserInfo({rpcName:'GetUserInfo', ctx:authContext })
+                    const response = await methods.GetUserInfo({ rpcName: 'GetUserInfo', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetUserOperations':
                 try {
@@ -620,11 +656,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.GetUserOperationsRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetUserOperations({rpcName:'GetUserOperations', ctx:authContext , req: request})
+                    const response = await methods.GetUserOperations({ rpcName: 'GetUserOperations', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'LinkNPubThroughToken':
                 try {
@@ -636,11 +672,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.LinkNPubThroughTokenRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.LinkNPubThroughToken({rpcName:'LinkNPubThroughToken', ctx:authContext , req: request})
+                    await methods.LinkNPubThroughToken({ rpcName: 'LinkNPubThroughToken', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK'})
+                    res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'ListChannels':
                 try {
@@ -649,11 +685,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.ListChannels({rpcName:'ListChannels', ctx:authContext })
+                    const response = await methods.ListChannels({ rpcName: 'ListChannels', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'LndGetInfo':
                 try {
@@ -665,11 +701,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.LndGetInfoRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.LndGetInfo({rpcName:'LndGetInfo', ctx:authContext , req: request})
+                    const response = await methods.LndGetInfo({ rpcName: 'LndGetInfo', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'NewAddress':
                 try {
@@ -681,11 +717,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.NewAddressRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.NewAddress({rpcName:'NewAddress', ctx:authContext , req: request})
+                    const response = await methods.NewAddress({ rpcName: 'NewAddress', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'NewInvoice':
                 try {
@@ -697,11 +733,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.NewInvoiceRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.NewInvoice({rpcName:'NewInvoice', ctx:authContext , req: request})
+                    const response = await methods.NewInvoice({ rpcName: 'NewInvoice', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'NewProductInvoice':
                 try {
@@ -710,11 +746,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    const response = await methods.NewProductInvoice({rpcName:'NewProductInvoice', ctx:authContext ,query: req.query||{}})
+                    const response = await methods.NewProductInvoice({ rpcName: 'NewProductInvoice', ctx: authContext, query: req.query || {} })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'OpenChannel':
                 try {
@@ -726,11 +762,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.OpenChannelRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.OpenChannel({rpcName:'OpenChannel', ctx:authContext , req: request})
+                    const response = await methods.OpenChannel({ rpcName: 'OpenChannel', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'PayAddress':
                 try {
@@ -742,11 +778,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.PayAddressRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayAddress({rpcName:'PayAddress', ctx:authContext , req: request})
+                    const response = await methods.PayAddress({ rpcName: 'PayAddress', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'PayInvoice':
                 try {
@@ -758,27 +794,27 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.PayInvoiceRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayInvoice({rpcName:'PayInvoice', ctx:authContext , req: request})
+                    const response = await methods.PayInvoice({ rpcName: 'PayInvoice', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK', ...response})
+                    res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
-            case 'RemoveAuthorizedDebit':
+            case 'ResetDebit':
                 try {
-                    if (!methods.RemoveAuthorizedDebit) throw new Error('method: RemoveAuthorizedDebit is not implemented')
+                    if (!methods.ResetDebit) throw new Error('method: ResetDebit is not implemented')
                     const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     const request = req.body
-                    const error = Types.RemoveAuthorizedDebitRequestValidate(request)
+                    const error = Types.DebitOperationValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.RemoveAuthorizedDebit({rpcName:'RemoveAuthorizedDebit', ctx:authContext , req: request})
+                    await methods.ResetDebit({ rpcName: 'ResetDebit', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK'})
+                    res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'UseInviteLink':
                 try {
@@ -790,11 +826,11 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     const error = Types.UseInviteLinkRequestValidate(request)
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.UseInviteLink({rpcName:'UseInviteLink', ctx:authContext , req: request})
+                    await methods.UseInviteLink({ rpcName: 'UseInviteLink', ctx: authContext, req: request })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK'})
+                    res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'UserHealth':
                 try {
@@ -803,13 +839,13 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    await methods.UserHealth({rpcName:'UserHealth', ctx:authContext })
+                    await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
-                    res({status: 'OK'})
+                    res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                }catch(ex){ const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
-            default: logger.error('unknown rpc call name from nostr event:'+req.rpcName) 
+            default: logger.error('unknown rpc call name from nostr event:' + req.rpcName)
         }
     }
 }

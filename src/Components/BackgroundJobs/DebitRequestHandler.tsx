@@ -32,6 +32,13 @@ export const DebitRequestHandler = () => {
         }
         setRequestData(null)
     }, [])
+    const banRequest = useCallback(async (request: SourceDebitRequest) => {
+        const res = await (await getNostrClient(request.source.pasteField, request.source.keys)).BanDebit({ npub: request.request.npub });
+        if (res.status !== "OK") {
+            throw new Error(res.reason);
+        }
+        setRequestData(null)
+    }, [])
     if (!requestData) {
         return null
     }
@@ -51,7 +58,7 @@ export const DebitRequestHandler = () => {
             <div className='Sources_modal_discription'>Wants to spend</div>
             <div className='Sources_modal_discription'>{requestData.request.amount}</div>
             <div className="Sources_modal_add_btn">
-                <button onClick={() => close()}>Deny</button>
+                <button onClick={() => banRequest(requestData)}>Deny</button>
                 <button onClick={() => authroizeRequest(requestData)}>{requestData.request.debit.type === LiveDebitRequest_debit_type.FREQUENCY ? "Allow" : "Pay"}</button>
             </div>
         </>
