@@ -83,7 +83,13 @@ export const Background = () => {
 						// the history state takes care of this repetition,
 						// but we have to deal with the toast not appearing twice here
 						if (!operationGroups[source.id].find(op => op.operationId === newOp.operation.operationId)) {
-							toast.info(<Toast title="Payments" message="You received payment." />)
+							let message = ""
+							if (newOp.operation.inbound) {
+								message = `You received ${newOp.operation.amount} sats`
+							} else {
+								message = `You sent ${newOp.operation.amount} sats`
+							}
+							toast.info(<Toast title="Payments" message={message} />)
 						}
 						dispatch(setLatestOperation({ pub: source.id, operation: newOp.operation }))
 					} else {
