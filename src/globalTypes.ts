@@ -137,6 +137,7 @@ export interface SpendFrom {
   pubSource?: boolean,
   keys: NostrKeyPair
   adminToken?: string
+  ndebit?: string
 }
 
 export interface PayTo {

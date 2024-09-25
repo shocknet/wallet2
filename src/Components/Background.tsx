@@ -135,13 +135,16 @@ export const Background = () => {
 			console.log(res.reason)
 			return
 		}
-		if (Number(source.balance) !== res.balance) {
-			dispatch(editSpendSources({
+		dispatch({
+			type: "spendSources/editSpendSources",
+			payload: {
 				...source,
 				balance: `${res.balance}`,
-				maxWithdrawable: `${res.max_withdrawable}`
-			}))
-		}
+				maxWithdrawable: `${res.max_withdrawable}`,
+				ndebit: res.ndebit
+			},
+			meta: { skipChangelog: true }
+		})
 	}
 	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, sourceId: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor, !!newData)
