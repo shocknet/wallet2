@@ -1,0 +1,150 @@
+.container {
+	padding-bottom: 12px;
+	.buttons-container {
+		display: flex;
+    justify-content: center;
+    gap: 5%;
+    margin: auto;
+
+		button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			margin: 10px;
+			background-color: #151d24;
+			border: 1px solid #268fbc;
+			border-radius: 6px;
+			color: white;
+			font-size: 100%;
+			padding-inline: 30px;
+			padding-block: 10px;
+			transition-duration: 400ms;
+
+		}
+	}
+
+	.header {
+		font-size: 24px;
+	}
+	
+
+	.requestor-container {
+		padding: 10px 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 3px;
+
+		.app-name {
+			font-size: 18px;
+		}
+
+		.npub {
+			font-size: 12px;
+			margin-top: 5px;
+		}
+	}
+
+	.checkbox-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		span {
+			font-size: 14px;
+			margin-left: 5px;
+		}
+	}
+
+	.debit-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+
+		.sats-amount {
+			width: 140px;
+			font-size: 36px;
+			font-weight: bolder;
+		}
+
+		.input {
+			border: 1px solid #29abe2;
+			border-radius: 5px;
+			background-color: #16191c;
+			font-family: Montserrat;
+			font-size: 36px;
+			color: #999999;
+			text-align: center;
+		}
+
+		.sats-amount-input {
+
+			width: 180px;
+			font-weight: bolder;
+			margin: 4px 0;
+		}
+
+		
+
+		.orange-text {
+			color: #ff7700;
+			font-size: 16px;
+		}
+
+		.fiat {
+			color: #999999;
+			font-size: 12px;
+			margin: 5px 0;
+
+		}
+
+
+		.rule-options {
+			display: flex;
+			align-items: center;
+			gap: 7px;
+			margin: 7px 0;
+
+			&.disabled {
+				opacity: 0.5;
+				pointer-events: none;
+			}
+			span {
+				font-size: 14px;
+			}
+			.num-intervals-input {
+				width: 50px;
+
+				font-size: 15px;
+			}
+			.dropdown-box {
+				border: 1px solid #29abe2;
+				border-radius: 5px;
+				font-size: 14px;
+	
+				font-size: 15px;
+				background-color: #16191c;
+				color: #999999;
+				width: 8rem;
+			}
+		}
+
+		.adjust-checkbox-container {
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+			p {
+				font-size: 11px;
+				text-align: center;
+				color:#ffffff;
+				margin-left: 2px;
+			}
+		}
+
+	}
+
+
+
+}

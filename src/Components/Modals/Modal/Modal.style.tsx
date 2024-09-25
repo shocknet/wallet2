@@ -68,6 +68,4 @@ export const CloseButton = styled.button`
 export const Content = styled.div`
   font-family: Montserrat;
   max-height: 30rem;
-  overflow-x: hidden;
-  overflow-y: auto;
 `;
