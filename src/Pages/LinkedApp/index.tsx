@@ -7,30 +7,27 @@ import { getDebitAppNameAndAvatarUrl } from "../../Components/BackgroundJobs/Deb
 import { NOSTR_RELAYS } from "../../constants";
 import { nip19 } from "nostr-tools";
 import moment from "moment";
+import SpendFromDropdown from "../../Components/Dropdowns/SpendFromDropdown";
+import { Clipboard } from "@capacitor/clipboard";
+import { toast } from "react-toastify";
 
 export const LinkedApp = () => {
   const [debitAuthorizations, setDebitAuthorizations] = useState<(DebitAuthorization & { source: SpendFrom, domainName?: string, avatarUrl?: string })[]>([])
   const nodedUp = useSelector(state => state.nostrPrivateKey);
   const nostrSpends = useSelector(selectNostrSpends);
 
-  const fetchAuths = useCallback(() => {
-    nostrSpends.forEach(source => {
-      const { pubkey, relays } = parseNprofile(source.pasteField)
-      getNostrClient({ pubkey, relays }, source.keys).then(c => {
-        c.GetDebitAuthorizations().then(res => {
-          if (res.status === "OK") {
-            setDebitAuthorizations((state) => [
-              ...state,
-              ...res.debits.filter(
-                debit => !state.some(stateDebt => stateDebt.debit_id === debit.debit_id)
-              ).map(debit => ({ ...debit, source })),
-            ])
-          }
-        })
+  const [selectedSource, setSelectedSource] = useState(nostrSpends[0]);
 
+  const fetchAuths = useCallback(() => {
+    const { pubkey, relays } = parseNprofile(selectedSource.pasteField)
+    getNostrClient({ pubkey, relays }, selectedSource.keys).then(c => {
+      c.GetDebitAuthorizations().then(res => {
+        if (res.status === "OK") {
+          setDebitAuthorizations(res.debits.map(debit => ({ ...debit, source: selectedSource })));
+        }
       })
-    });
-  }, [nostrSpends])
+    })
+  }, [selectedSource])
 
   useEffect(() => {
     if (!nodedUp) {
@@ -52,7 +49,6 @@ export const LinkedApp = () => {
     return debitAuthorizations.map((debitAuth, index) => {
       const npub = nip19.npubEncode(debitAuth.npub);
       const substringedNpub = `${npub.substring(0, 20)}...${npub.substring(npub.length - 20, npub.length)}`;
-      console.log({debitAuth})
 
       if (!debitAuth.avatarUrl) {
         
@@ -90,7 +86,6 @@ export const LinkedApp = () => {
             <div className="LinkedApp_app_card_right_rules">
               {
                 debitAuth.rules.map((rule, i) => {
-                  console.log(rule)
                   if (rule.rule.type === DebitRule_rule_type.FREQUENCY_RULE) {
                     return <span key={i}><span>{rule.rule.frequency_rule.amount} sats</span> per {rule.rule.frequency_rule.interval}</span>
                   } else {
@@ -113,11 +108,23 @@ export const LinkedApp = () => {
     <div className="LinkedApp_container">
       <div className="LinkedApp">
         <div className="LinkedApp_header_text">Linked Apps</div>
-        <div>
+        <div className="LinkedApp_source_selection">
+          <SpendFromDropdown values={nostrSpends} value={selectedSource} callback={setSelectedSource} />
+        </div>
+        <div className="LinkedApp_scroller">
           {cardsToRender}
+        </div>
+        <div className="LinkedApp_app_card LinkedApp_app_card_column">
+          <span className="LinkedApp_app_card_title">My debit string:</span>
+          <span className="LinkedApp_app_card_ndebit">{selectedSource.ndebit}</span>
+          <button className="LinkedApp_button" onClick={async () => {
+            await Clipboard.write({ string: selectedSource.ndebit })
+            toast.success("Copied to clipboard.")
+          }}>Copy</button>
         </div>
       </div>
     </div>
   );
 };
+
 
