@@ -339,3 +339,8 @@ export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp
     ])
     return sub;
 }
+
+
+export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: string[]) => {
+    return pool.get(relayUrl, { kinds: [0], authors: [pubKey] })
+}
