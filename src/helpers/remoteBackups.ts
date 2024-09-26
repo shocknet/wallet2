@@ -22,7 +22,7 @@ export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'acces
 
 export const subscribeToRemoteChangelogs = async (
     latestTimestamp: number,
-    handleChangelogCallback: (decrypted: string, eventTimestamp: number)=> Promise<void>,
+    handleChangelogCallback: (decrypted: string, eventTimestamp: number) => Promise<void>,
 ): Promise<() => void> => {
     const ext = getSanctumNostrExtention()
     if (!ext.valid) {
@@ -30,13 +30,12 @@ export const subscribeToRemoteChangelogs = async (
     }
     const pubkey = await ext.getPublicKey()
     const relays = await ext.getRelays()
-    const sub = subToNip78Changelogs(pubkey, Object.keys(relays), latestTimestamp);
-    sub.on("event", async event => {
+    const closer = subToNip78Changelogs(pubkey, Object.keys(relays), latestTimestamp, async event => {
         const decrypted = await ext.decrypt(pubkey, event.content);
         await handleChangelogCallback(decrypted, event.created_at);
-    })
+    });
     return () => {
-        sub.unsub()
+        closer.close()
     }
 }
 

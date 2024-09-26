@@ -1,5 +1,5 @@
-import { generatePrivateKey, getPublicKey, nip19 } from 'nostr-tools'
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUBLIC_KEY_STORAGE_KEY, NOSTR_RELAYS, PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY } from '../../src/constants';
+import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools'
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUBLIC_KEY_STORAGE_KEY, NOSTR_RELAYS } from '../../src/constants';
 /// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
@@ -29,7 +29,7 @@ import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUBLIC_KEY_STORAGE_KEY, NOSTR_RELA
 //
 
 
-
+const PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY = "???"
 Cypress.Commands.add("emptyDb", () => {
 	window.localStorage.clear();
 	cy.request('GET', `http://localhost:18000/api/testing/db/reset`).then(res => {
@@ -80,10 +80,10 @@ Cypress.Commands.add("populateLocalStorage", () => {
 				balance: "0"
 			}
 		]
-		const privKey = generatePrivateKey();
+		const privKey = generateSecretKey();
 		const pubkKey = getPublicKey(privKey);
 
-		win.localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, privKey);
+		win.localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, Buffer.from(privKey).toString('hex'));
 		win.localStorage.setItem(NOSTR_PUBLIC_KEY_STORAGE_KEY, pubkKey);
 		win.localStorage.setItem("TEST_NPROFILE", nprofile);
 		win.localStorage.setItem("spendFrom", JSON.stringify(spendFrom));

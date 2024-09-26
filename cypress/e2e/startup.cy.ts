@@ -1,6 +1,5 @@
 import { nip19 } from 'nostr-tools'
-import { PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY } from '../../src/constants';
-
+const PUB_NOSTR_PUBLIC_KEY_STORAGE_KEY = "???"
 const initialNprofileSats = 2000;
 
 
@@ -43,7 +42,7 @@ describe("has nprofile and default 2000 sats", () => {
 		cy.populateLocalStorage() // user starts with 2000 sats here
 		cy.addUser();
 		cy.visit("")
-		
+
 	})
 
 	it("Has nprofile in sources page", () => {
@@ -63,10 +62,10 @@ describe("has nprofile and default 2000 sats", () => {
 		cy.get("body").focus()
 		cy.get("#copy-button").should("exist");
 		cy.get("#copy-button").click();
-		
+
 		cy.window().its("navigator.clipboard").invoke("readText").then(prom => {
 			prom.then((text: string) => {
-				cy.payInvoice({invoice: text.slice("lightning:".length)})
+				cy.payInvoice({ invoice: text.slice("lightning:".length) })
 				cy.visit("")
 				cy.get("#wallet_balance").contains((initialNprofileSats + invoiceAmount).toString());
 				cy.get(".SwItem").as("history-item");
@@ -94,7 +93,7 @@ describe("has nprofile and default 2000 sats", () => {
 
 	})
 
-	
+
 })
 
 
