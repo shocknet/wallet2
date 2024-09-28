@@ -18,6 +18,7 @@ import backupStateSlice from './Slices/backupState';
 import { backup } from './backupMiddleware';
 import { BackupAction } from './types';
 import { bridgeMiddleware } from './bridgeMiddleware';
+import modalsSlice from './Slices/modalsSlice';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
@@ -35,7 +36,8 @@ export const reducer = combineReducers({
   loadingOverlay,
   nostrPrivateKey,
   backupStateSlice,
-  oneTimeInviteLinkSlice
+  oneTimeInviteLinkSlice,
+  modalsSlice
 })
 
 

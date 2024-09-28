@@ -1,41 +1,18 @@
+@import "/src/styles/modals.module";
+@import "/src/styles/buttons.module";
+@import "/src/styles/inputs.module";
+
+
 .container {
-	padding-bottom: 12px;
-	.buttons-container {
-		display: flex;
-    justify-content: center;
-    gap: 5%;
-    margin: auto;
-
-		button {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 8px;
-			margin: 10px;
-			background-color: #151d24;
-			border: 1px solid #268fbc;
-			border-radius: 6px;
-			color: white;
-			font-size: 100%;
-			padding-inline: 30px;
-			padding-block: 10px;
-			transition-duration: 400ms;
-
-		}
-	}
-
-	.header {
-		font-size: 24px;
-	}
-	
-
+	@include modal-wrapper;
 	.requestor-container {
-		padding: 10px 0;
+
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		gap: 3px;
+		margin-bottom: 15px;
 
 		.app-name {
 			font-size: 18px;
@@ -44,24 +21,16 @@
 		.npub {
 			font-size: 12px;
 			margin-top: 5px;
+			color: #8c8c8c;
+			font-weight: 600;
 		}
 	}
-
-	.checkbox-container {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		span {
-			font-size: 14px;
-			margin-left: 5px;
-		}
-	}
-
 	.debit-info {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		margin-bottom: 15px;
 
 		.sats-amount {
 			width: 140px;
@@ -70,12 +39,9 @@
 		}
 
 		.input {
-			border: 1px solid #29abe2;
-			border-radius: 5px;
-			background-color: #16191c;
-			font-family: Montserrat;
+			@include input;
 			font-size: 36px;
-			color: #999999;
+			color: white;
 			text-align: center;
 		}
 
@@ -86,7 +52,7 @@
 			margin: 4px 0;
 		}
 
-		
+
 
 		.orange-text {
 			color: #ff7700;
@@ -96,7 +62,6 @@
 		.fiat {
 			color: #999999;
 			font-size: 12px;
-			margin: 5px 0;
 
 		}
 
@@ -104,6 +69,7 @@
 		.rule-options {
 			display: flex;
 			align-items: center;
+			justify-content: center;
 			gap: 7px;
 			margin: 7px 0;
 
@@ -111,23 +77,28 @@
 				opacity: 0.5;
 				pointer-events: none;
 			}
+
 			span {
-				font-size: 14px;
+				font-size: 20px;
 			}
+
 			.num-intervals-input {
-				width: 50px;
+				@include input;
+				width: 30px;
+				height: 30px;
 
 				font-size: 15px;
+				text-align: center;
 			}
+
 			.dropdown-box {
-				border: 1px solid #29abe2;
-				border-radius: 5px;
-				font-size: 14px;
-	
-				font-size: 15px;
-				background-color: #16191c;
-				color: #999999;
+				@include input;
+				display: flex;
+				text-align: center;
+				justify-content: center;
+				align-items: center;
 				width: 8rem;
+				height: 30px;
 			}
 		}
 
@@ -135,16 +106,40 @@
 			display: flex;
 			justify-content: center;
 			align-items: flex-start;
+			padding-inline: 15px;
+			margin: 12px 0;
+
 			p {
 				font-size: 11px;
-				text-align: center;
-				color:#ffffff;
-				margin-left: 2px;
+				text-align: left;
+				margin-left: 7px;
 			}
 		}
 
+		
 	}
+	.buttons-container {
+		display: flex;
+		justify-content: center;
+		gap: 5%;
+		margin: auto;
+		padding-bottom: 15px;
+		button {
+			@include rainbow-button;
+		}
+	}
+	.checkbox-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-
-
+		span {
+			font-size: 20px;
+			margin-left: 5px;
+			font-weight: 500;
+		}
+	}
+	.faded-text {
+		color: #8c8c8c;
+	}
 }

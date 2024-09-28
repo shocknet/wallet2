@@ -50,6 +50,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 
 import LoadingOverlay from "./Components/LoadingOverlay";
+import { DebitRequestModal, EditDebitModal } from "./Components/Modals/DebitRequestModal";
 
 setupIonicReact();
 
@@ -81,6 +82,13 @@ const AppContent: React.FC = () => {
       <AppUrlListener />
       <Background />
       <LoadingOverlay />
+
+      {/* Modals */}
+      <DebitRequestModal />
+      <EditDebitModal />
+      {/* Modals */}
+
+      
       <IonRouterOutlet>
         <Route exact path="/">
           <Layout>
