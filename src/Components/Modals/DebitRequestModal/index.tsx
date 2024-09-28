@@ -67,6 +67,7 @@ export const DebitRequestModal = () => {
 			} else {
 				const { amount } = decodeInvoice(req.request.debit.invoice)
 				setRequestAmount(amount.toString())
+				return { request: req.request, source: spendSources.sources[req.sourceId] }
 			}
 
 		} else {
@@ -115,9 +116,9 @@ export const DebitRequestModal = () => {
 				pathname: "/send",
 				state: parsed
 			})
+			dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
 			return
 		}
-		console.log("rules to send", rules)
 		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).AuthorizeDebit({
 			authorize_npub: currentRequest.request.npub, rules
 		});
