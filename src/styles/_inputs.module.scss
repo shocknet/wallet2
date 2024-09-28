@@ -1,0 +1,11 @@
+@mixin input {
+	font-family: Montserrat;
+	font-size: 17px;
+	text-align: start;
+	width: 100%;
+	background-color: transparent;
+	color: #a3a3a3;
+	box-shadow: rgb(0, 0, 0) 0px 0px 2px 0px;
+	border: 1px solid #2cb0e9;
+	border-radius: 5px;
+}

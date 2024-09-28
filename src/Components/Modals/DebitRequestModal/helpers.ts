@@ -39,7 +39,7 @@ export const getDebitAppNameAndAvatarUrl = async (npub: string, relays: string[]
 	const metadataEvent = await fetchNostrUserMetadataEvent(npub, relays);
 	const result = {
 		requestorDomain: "",
-		avatarUrl: ""
+		avatarUrl: `https://robohash.org/${npub}.png?bgset=bg1`
 	}
 	if (!metadataEvent) return result
 
@@ -47,9 +47,7 @@ export const getDebitAppNameAndAvatarUrl = async (npub: string, relays: string[]
 
 		const metadata = JSON.parse(metadataEvent.content)
 
-		if (metadata.picture && typeof metadata.picture === "string") {
-			result.avatarUrl = metadata.picture;
-		}
+
 
 		if (metadata.nip05 && typeof metadata.nip05 === "string" && nip05.NIP05_REGEX.test(metadata.nip05)) {
 			const profilePointer = await nip05.queryProfile(metadata.nip05);
@@ -57,10 +55,13 @@ export const getDebitAppNameAndAvatarUrl = async (npub: string, relays: string[]
 			if (profilePointer.pubkey !== npub) return result;
 			const [_, _name, domain] = metadata.nip05.match(nip05.NIP05_REGEX);
 			result.requestorDomain = domain;
-			if (!result.avatarUrl) result.avatarUrl = "https://www.google.com/s2/favicons?sz=64&domain=" + domain
+			result.avatarUrl = "https://www.google.com/s2/favicons?sz=64&domain=" + domain
 		}
 
-		if (!result.avatarUrl) result.avatarUrl = `https://robohash.org/${npub}.png?bgset=bg1`;
+		if (metadata.picture && typeof metadata.picture === "string") {
+			result.avatarUrl = metadata.picture;
+		}
+
 		return result
 
 
