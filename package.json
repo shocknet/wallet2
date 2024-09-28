@@ -70,7 +70,7 @@
     "i": "^0.3.7",
     "ionicons": "^7.0.0",
     "moment": "^2.29.4",
-    "nostr-tools": "^1.16.0",
+    "nostr-tools": "github:shocknet/nostr-tools#b0cc4a0763352c6c0e16a22d4b4bb4e2f9a06ed9",
     "npm": "^10.3.0",
     "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
