@@ -8,6 +8,8 @@ import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { nip19 } from 'nostr-tools'
+import { Buffer } from 'buffer';
+
 const { nprofileEncode: encodeNprofile } = nip19
 
 export type PaySourceRecord = Record<string, PayTo>;
