@@ -201,7 +201,7 @@ export const Header = () => {
           </div>
           <div className="Header_modal_content_item_text">Node Invitations</div>
         </div>
-        {/* {
+        {
           !backUpStates.subbedToBackUp
           &&
           <div className="Header_modal_content_item" onClick={() => {
@@ -213,7 +213,7 @@ export const Header = () => {
             </div>
             <div className="Header_modal_content_item_text">Auth</div>
           </div>
-        } */}
+        }
         <div className="Header_modal_content_item">
           <hr />
         </div>
