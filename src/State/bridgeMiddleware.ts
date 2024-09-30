@@ -5,16 +5,31 @@ import { PayTo } from "../globalTypes";
 import { getNostrClient } from "../Api";
 import Bridge from "../Api/bridge";
 
-import { decodeNProfile } from "../custom-nip19";
-import { finishEvent } from "../Api/tools";
-import { getToken, sortObject } from "../Api/tools/nip98";
+import { finalizeEvent, nip98, nip19 } from 'nostr-tools'
+const { getToken } = nip98
+const { decode } = nip19
 
 export const upgradeSourcesToNofferBridge = createAction("upgradeSourcesToNofferBridge");
 
+function sortObject(obj: Record<string, any>): any {
+	const allKeys = Object.keys(obj).sort(); // Sort keys
+	const sortedObj: Record<string, any> = {};
 
+	// Build new object with sorted keys
+	for (const key of allKeys) {
+		sortedObj[key] = obj[key];
+	}
+
+	// Now stringify the object with sorted keys
+	return sortedObj;
+}
 const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: string) => void) => {
-	const data = decodeNProfile(source.pasteField)
-	const { pubkey, relays } = data
+	//throw new Error("needs fixing!")
+	const data = decode(source.pasteField)
+	if (!data || data.type !== 'nprofile') {
+		throw new Error("Invalid paste field")
+	}
+	const { pubkey, relays } = data.data
 	const nostrClient = await getNostrClient({ pubkey, relays }, source.keys);
 
 	const userInfoRes = await nostrClient.GetUserInfo();
@@ -34,7 +49,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 
 
 	const payload = { k1, noffer: userInfoRes.noffer }
-	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finishEvent(e, source.keys.privateKey), true, payload)
+	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finalizeEvent(e, Buffer.from(source.keys.privateKey, 'hex')), true, payload)
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(sortObject(payload));
 	if (bridgeRes.status !== "OK") {

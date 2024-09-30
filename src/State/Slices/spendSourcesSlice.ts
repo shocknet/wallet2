@@ -2,11 +2,11 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { SpendFrom } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
-import { decodeNprofile } from '../../custom-nip19';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
+import { decodeNprofile } from '../../constants';
 export const storageKey = "spendFrom"
 export const VERSION = 3;
 
@@ -49,7 +49,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
         if (state.sources[key].pubSource && !state.sources[key].keys) {
           state.sources[key].keys = {
             privateKey,
-            publicKey: getPublicKey(privateKey)
+            publicKey: getPublicKey(Buffer.from(privateKey, 'hex'))
           }
         }
       }
@@ -71,7 +71,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       const publicKey = source.keys.publicKey;
       return `${lpk}-${publicKey}`;
     });
-    
+
     const newSourcesObject: SpendSourceRecord = {};
     for (const key in sourcesObject) {
       // eslint-disable-next-line

@@ -4,9 +4,23 @@ import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
 import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
-import { decodeNoffer, OfferPointer } from './custom-nip19';
+import { nip19 } from 'nostr-tools'
+const { decode: decodeNip19 } = nip19
 
-
+export const decodeNprofile = (data: string) => {
+	const decoded = decodeNip19(data);
+	if (decoded.type !== "nprofile") {
+		throw new Error("Invalid nprofile")
+	}
+	return decoded.data
+}
+export const decodeNoffer = (data: string) => {
+	const decoded = decodeNip19(data);
+	if (decoded.type !== "noffer") {
+		throw new Error("Invalid noffer")
+	}
+	return decoded.data
+}
 
 export const locationRegex = new RegExp(/\w{1,}/g)
 
@@ -83,7 +97,7 @@ export interface Destination {
 	domainName?: string,
 	hostName?: string,
 	memo?: string
-	noffer?: OfferPointer
+	noffer?: nip19.OfferPointer
 }
 
 export const decodeLnurl = (lnurl: string) => {

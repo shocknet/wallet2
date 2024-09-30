@@ -20,9 +20,7 @@ import { useLocation } from 'react-router';
 import { addAddressbookLink, addIdentifierMemo, addIdentifierToContact } from '../../State/Slices/addressbookSlice';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { PriceType } from '../../custom-nip19';
-
-
+import { nip19 } from 'nostr-tools'
 const determineOperationType = (destinationType: InputClassification) => {
   switch (destinationType) {
     case InputClassification.LN_INVOICE:
@@ -166,7 +164,7 @@ export const Send = () => {
 
     if (parsedInput.type === InputClassification.NOFFER) {
       const offer = parsedInput.noffer!;
-      if (offer.priceType !== PriceType.spontaneous) {
+      if (offer.priceType !== nip19.OfferPriceType.Spontaneous) {
         const invoice = await createNofferInvoice(offer, selectedSource.keys);
         const { amount, description } = decodeInvoice(invoice);
         parsedInput = {
