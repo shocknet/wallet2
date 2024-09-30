@@ -552,6 +552,7 @@ export const Sources = () => {
   </React.Fragment>;
 
   const contentEditContent = <React.Fragment>
+    <div style={{position: "absolute", top: "12px", right: "12px"}}>x</div>
     <div className='Sources_modal_header'>Edit Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>

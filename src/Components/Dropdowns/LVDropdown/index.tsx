@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { Period } from "../../../Pages/Metrics";
 import useClickOutside from "../../../Hooks/useClickOutside";
 import { Interval } from "../../../Pages/Automation";
-import { WalletIntervalEnum } from "../../BackgroundJobs/DebitRequestHandler/helpers";
+import { WalletIntervalEnum } from "../../Modals/DebitRequestModal/helpers";
 
 interface Props<T> {
 	setState: (data: T) => void;
