@@ -8,6 +8,7 @@ import { SpendFrom } from "../../globalTypes";
 import { nip69, generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
 import { NostrKeyPair } from "../nostrHandler";
 import { sendNip69 } from "../nostr";
+import { Buffer } from "buffer";
 
 
 /* This file includes all possible transactional operations.

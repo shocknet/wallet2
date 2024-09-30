@@ -7,6 +7,7 @@ import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { decodeNprofile } from '../../constants';
+import { Buffer } from 'buffer';
 export const storageKey = "spendFrom"
 export const VERSION = 3;
 
