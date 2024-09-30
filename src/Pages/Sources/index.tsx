@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from '../../State/store'; //import reducer
 import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
 import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
-import { Destination, InputClassification, NOSTR_RELAYS, options, parseBitcoinInput } from '../../constants';
+import { Destination, InputClassification, NOSTR_RELAYS, options, parseBitcoinInput, decodeNprofile } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import Sortable from 'sortablejs';
 import { useIonRouter } from '@ionic/react';
@@ -21,7 +21,7 @@ import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayIn
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
-import { decodeNProfile } from '../../custom-nip19';
+
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
@@ -73,7 +73,7 @@ export const Sources = () => {
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
       if (destination.data.includes("nprofile")) {
-        const data = decodeNProfile(destination.data);
+        const data = decodeNprofile(destination.data);
         fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
           if (beacon) {
             setNameFromBeacon(beacon.data.name)
@@ -225,7 +225,7 @@ export const Sources = () => {
       // nprofile
 
       try {
-        data = decodeNProfile(inputSource);
+        data = decodeNprofile(inputSource);
         const pub = data.pubkey
         const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
         if (existingSpendSourceId) {
@@ -576,8 +576,8 @@ export const Sources = () => {
       />
     </div>
     <div className="Sources_modal_add_btn">
-      <button onClick={()=>{ setModalContent("deleteSource"); }}>Delete</button>
-      <button onClick={()=>{editPaySource(); editSpendSource();}}>Edit</button>
+      <button onClick={() => { setModalContent("deleteSource"); }}>Delete</button>
+      <button onClick={() => { editPaySource(); editSpendSource(); }}>Edit</button>
     </div>
 
   </React.Fragment>;
@@ -648,8 +648,8 @@ export const Sources = () => {
         Are you sure you want to delete this source?
       </div>
       <div className="Sources_modal_add_btn">
-        <button onClick={()=>{setModalContent("editSourcespend");}}>Cancel</button>
-        <button onClick={()=>{
+        <button onClick={() => { setModalContent("editSourcespend"); }}>Cancel</button>
+        <button onClick={() => {
           deletePaySource();
           deleteSpendSource();
         }}>Ok</button>

@@ -1,4 +1,5 @@
 import { nip69, Event, UnsignedEvent, Relay, finalizeEvent, nip04 } from 'nostr-tools'
+import { Buffer } from 'buffer';
 //import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44v1'
 import logger from './helpers/logger';
