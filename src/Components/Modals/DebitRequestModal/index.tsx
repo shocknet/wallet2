@@ -107,9 +107,16 @@ export const DebitRequestModal = () => {
 					frequency_rule: { ...frequencyRule, amount: +requestAmount }
 				}
 			})
+		} else if (isCreateRule) {
+			rules.push({
+				rule: {
+					type: Types.DebitRule_rule_type.FREQUENCY_RULE,
+					frequency_rule: { amount: +requestAmount, number_of_intervals: 120_000, interval: Types.IntervalType.MONTH }
+				}
+			})
 		}
 
-		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment) {
+		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment && !isCreateRule) {
 			const invoice = currentRequest.request.debit.invoice
 			const parsed = await parseBitcoinInput(invoice)
 			history.push({
@@ -129,7 +136,7 @@ export const DebitRequestModal = () => {
 		dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
 		dispatch(refetchDebits())
 		toast.success("Linked app added successfuly")
-	}, [history, isRecurringPayment, frequencyRule, dispatch, currentRequest, requestAmount]);
+	}, [history, isRecurringPayment, frequencyRule, dispatch, currentRequest, requestAmount, isCreateRule]);
 
 
 
@@ -401,7 +408,7 @@ export const EditDebitModal = () => {
 				toast.error(<Toast title="Update linked app error" message={res.reason} />)
 				return
 			}
-			console.log({rules})
+			console.log({ rules })
 			dispatch(refetchDebits())
 			dispatch(setDebitToEdit(null));
 			toast.success("Linked app updated successfuly")
