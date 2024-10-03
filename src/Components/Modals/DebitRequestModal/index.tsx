@@ -7,7 +7,7 @@ import { Modal } from "../Modal";
 import { decodeInvoice, NOSTR_RELAYS, parseBitcoinInput } from "../../../constants";
 import { nip19 } from "nostr-tools";
 import styles from "./styles/index.module.scss";
-import { CrossIcon, ShieldIcon, TrashIcon } from '../../../Assets/SvgIconLibrary';
+import { BackCircleIcon, BanIcon, CrossIcon, ShieldIcon, TrashIcon } from '../../../Assets/SvgIconLibrary';
 import Dropdown from "../../Dropdowns/LVDropdown";
 import { getDebitAppNameAndAvatarUrl, intervalTypeToUnit, unitToIntervalType, WalletIntervalEnum } from "./helpers";
 import Checkbox from "../../Checkbox";
@@ -23,7 +23,6 @@ const intervalsArray = Object.values(WalletIntervalEnum);
 
 
 export const DebitRequestModal = () => {
-	const history = useHistory();
 	const price = useSelector((state) => state.usdToBTC);
 	const spendSources = useSelector(state => state.spendSource);
 	const dispatch = useDispatch();
@@ -49,11 +48,14 @@ export const DebitRequestModal = () => {
 	const [isRecurringPayment, setIsRecurringPayment] = useState(false);
 	const [adjustForExchangeRate, setAdjustForExchangeRate] = useState(false);
 
+	const [isBanPrompt, setIsBanPrompt] = useState(false);
+
 
 
 
 	const currentRequest = useMemo(() => {
 		setIsSecondPhase(false);
+		setIsBanPrompt(false);
 		if (debitRequests.length > 0) {
 			const req = debitRequests[0]; // take first request in the array; new requests are pushed to the end of the array. FIFO
 
@@ -109,15 +111,8 @@ export const DebitRequestModal = () => {
 			})
 		}
 
-		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment) {
-			const invoice = currentRequest.request.debit.invoice
-			const parsed = await parseBitcoinInput(invoice)
-			history.push({
-				pathname: "/send",
-				state: parsed
-			})
-			dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
-			return
+		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment && !isCreateRule) {
+			// TODO: finishDebitRequest
 		}
 		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).AuthorizeDebit({
 			authorize_npub: currentRequest.request.npub, rules
@@ -129,18 +124,11 @@ export const DebitRequestModal = () => {
 		dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
 		dispatch(refetchDebits())
 		toast.success("Linked app added successfuly")
-	}, [history, isRecurringPayment, frequencyRule, dispatch, currentRequest, requestAmount]);
+	}, [isRecurringPayment, frequencyRule, dispatch, currentRequest, requestAmount, isCreateRule]);
 
 
 
-	const banRequest = useCallback(async () => {
-		if (!currentRequest) return;
-		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).BanDebit({ npub: currentRequest.request.npub });
-		if (res.status !== "OK") {
-			throw new Error(res.reason);
-		}
-		dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
-	}, [dispatch, currentRequest])
+
 
 	const substrinedNpub = useMemo(() => {
 		if (!currentRequest) return "";
@@ -157,11 +145,33 @@ export const DebitRequestModal = () => {
 		}
 	}, [authroizeRequest, isCreateRule])
 
-	const denyRequest = useCallback(() => {
-		if (currentRequest) {
-			dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
+
+	const removeCurrentRequest = useCallback(() => {
+		if(currentRequest) {
+			dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }));
+			// TODO: finishDebitRequest
 		}
 	}, [currentRequest, dispatch])
+
+	const handleDenyRequest = useCallback(() => {
+		if (!currentRequest) return;
+
+		if (isCreateRule) {
+			setIsBanPrompt(true);
+		} else {
+			removeCurrentRequest()
+		}
+	
+	}, [currentRequest, removeCurrentRequest, isCreateRule])
+
+	const banRequest = useCallback(async () => {
+		if (!currentRequest) return;
+		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).BanDebit({ npub: currentRequest.request.npub });
+		if (res.status !== "OK") {
+			throw new Error(res.reason);
+		}
+		removeCurrentRequest()
+	}, [currentRequest, removeCurrentRequest])
 
 	const modalContent = currentRequest ? (
 		<div className={styles["container"]}>
@@ -183,53 +193,50 @@ export const DebitRequestModal = () => {
 
 				<>
 					{
-						!isSecondPhase
-							?
-							<>
-								<div className={styles["debit-info"]}>
-									<span className={styles["orange-text"]}>Wants you to spend</span>
-									<span className={styles["sats-amount"]}>{new Intl.NumberFormat('en-US').format(+requestAmount)}</span>
-									<span className={styles["fiat"]}>~ $ {+requestAmount === 0 ? 0 : (+requestAmount * price.buyPrice * 0.00000001).toFixed(2)}</span>
-								</div>
-								<div className={styles["buttons-container"]}>
-									<button onClick={() => dispatch(removeDebitRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))}>
-										<>
-											<CrossIcon />
-											Deny
-										</>
-									</button>
-									<button onClick={handleFirstPhaseAllow}>
-										<>
-											<ShieldIcon />
-											Allow
-										</>
-									</button>
-								</div>
-								<div className={styles["buttons-container"]}>
-									<button onClick={banRequest}>
-										<>
-											Ban
-										</>
-									</button>
-								</div>
-								<div className={styles["checkbox-container"]}>
-									<Checkbox state={isCreateRule} setState={(e) => setIsCreateRule(e.target.checked)} id="create-rule" />
-									<span className={styles["faded-text"]} style={{ fontSize: "14px" }}>Create rules for this app.</span>
-								</div>
-							</>
-							:
-							<RulesState
-								cancelCallback={() => setIsSecondPhase(false)}
-								frequencyRule={frequencyRule}
-								setFrequencyRule={setFrequencyRule}
-								requestAmount={requestAmount}
-								setRequestAmount={setRequestAmount}
-								isRecurringPayment={isRecurringPayment}
-								setIsRecurringPayment={setIsRecurringPayment}
-								adjustForExchangeRate={adjustForExchangeRate}
-								setAdjustForExchangeRate={setAdjustForExchangeRate}
-								confirmCallback={authroizeRequest}
-							/>
+						isBanPrompt
+						?
+						<PromptBanApp banAppCallback={banRequest} dismissCallback={removeCurrentRequest} />
+						:
+							!isSecondPhase
+								?
+								<>
+									<div className={styles["debit-info"]}>
+										<span className={styles["orange-text"]}>Wants you to spend</span>
+										<span className={styles["sats-amount"]}>{new Intl.NumberFormat('en-US').format(+requestAmount)}</span>
+										<span className={styles["fiat"]}>~ $ {+requestAmount === 0 ? 0 : (+requestAmount * price.buyPrice * 0.00000001).toFixed(2)}</span>
+									</div>
+									<div className={styles["buttons-container"]}>
+										<button onClick={handleDenyRequest}>
+											<>
+												<CrossIcon />
+												Deny
+											</>
+										</button>
+										<button onClick={handleFirstPhaseAllow}>
+											<>
+												<ShieldIcon />
+												Allow
+											</>
+										</button>
+									</div>
+									<div className={styles["checkbox-container"]}>
+										<Checkbox state={isCreateRule} setState={(e) => setIsCreateRule(e.target.checked)} id="create-rule" />
+										<span className={styles["faded-text"]} style={{ fontSize: "14px" }}>Create rules for this app.</span>
+									</div>
+								</>
+								:
+								<RulesState
+									cancelCallback={() => setIsSecondPhase(false)}
+									frequencyRule={frequencyRule}
+									setFrequencyRule={setFrequencyRule}
+									requestAmount={requestAmount}
+									setRequestAmount={setRequestAmount}
+									isRecurringPayment={isRecurringPayment}
+									setIsRecurringPayment={setIsRecurringPayment}
+									adjustForExchangeRate={adjustForExchangeRate}
+									setAdjustForExchangeRate={setAdjustForExchangeRate}
+									confirmCallback={authroizeRequest}
+								/>
 					}
 				</>
 			</div>
@@ -239,7 +246,7 @@ export const DebitRequestModal = () => {
 
 
 
-	return <Modal isShown={!!currentRequest} hide={denyRequest} modalContent={modalContent} headerText={''} />
+	return <Modal isShown={!!currentRequest} hide={handleDenyRequest} modalContent={modalContent} headerText={''} />
 }
 
 
@@ -463,4 +470,33 @@ export const EditDebitModal = () => {
 	) : <></>;
 
 	return <Modal isShown={!!debitAuth} hide={() => dispatch(setDebitToEdit(null))} modalContent={modalContent} headerText={''} />
+}
+
+interface PromptBanAppProps {
+	banAppCallback: () => Promise<void>;
+	dismissCallback: () => void;
+}
+
+const PromptBanApp = ({ banAppCallback, dismissCallback }: PromptBanAppProps) => {
+	return (
+		<>
+			<div className={classNames(styles["debit-info"], styles["ban-prompt-body"])}>
+				<span>Ban this key?</span>
+			</div>
+			<div className={styles["buttons-container"]}>
+				<button onClick={banAppCallback}>
+					<>
+						<BanIcon />
+						BAN
+					</>
+				</button>
+				<button onClick={dismissCallback}>
+					<>
+						<BackCircleIcon />
+						DISMISS
+					</>
+				</button>
+			</div>
+		</>
+	)
 }
