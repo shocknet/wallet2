@@ -11,7 +11,6 @@ import SpendFromDropdown from "../../Components/Dropdowns/SpendFromDropdown";
 import { Clipboard } from "@capacitor/clipboard";
 import { toast } from "react-toastify";
 import styles from "./styles/index.module.scss";
-import Spinner from "../../Components/Spinner";
 import classNames from "classnames";
 import { EditSource } from "../../Assets/SvgIconLibrary";
 import { setDebitToEdit } from "../../State/Slices/modalsSlice";
@@ -173,26 +172,43 @@ export const LinkedApp = () => {
         <div className={styles["list-scroller"]}>
 
           {
-            (debitAuthorizations.debitAuths.length > 0 || debitAuthorizations.debitAuthsBanned.length > 0)
-            ?
-            cardsToRender
-            :
-              hasNoDebits
-              ?
-              <div className={styles["spinner-container"]}>This source has no debits yet.</div>
-              :
-              <div className={styles["spinner-container"]}>
-                <Spinner />
+            (debitAuthorizations.debitAuths.length > 0 || debitAuthorizations.debitAuthsBanned.length > 0) ? (
+              cardsToRender
+            ) : (
+              <div style={{
+                marginTop: '40px',
+                fontSize: '18px',
+                color: '#a3a3a3',
+                width: '100%',
+                textAlign: 'center'
+              }}>
+                <span>Approval rules will be listed here.</span>
               </div>
+            )
           }
         </div>
         <div style={{ padding: "0 12px" }}>
-          <div className={classNames(styles["app-card"], styles["column"])}>
+          <div 
+            className={classNames(styles["app-card"], styles["column"])}
+            style={{
+              fontSize: '1.2rem',
+              width: '98%',
+              marginBottom: '5px',
+              borderRadius: '5px',
+              border: '1px solid #2a3035',
+              boxShadow: '0px 0px 2px rgba(0, 0, 0, 1)',
+              backgroundColor: '#16191c',
+              padding: '10px'
+            }}
+          >
             <span className={styles["title"]}>My debit string:</span>
-            <span className={styles["debit-string"]} onClick={async () => {
-              await Clipboard.write({ string: selectedSource.ndebit })
-              toast.success("Copied to clipboard.")
-            }}>
+            <span 
+              className={styles["debit-string"]} 
+              onClick={async () => {
+                await Clipboard.write({ string: selectedSource.ndebit })
+                toast.success("Copied to clipboard.")
+              }}
+            >
               {selectedSource.ndebit}
             </span>
             {
@@ -200,11 +216,11 @@ export const LinkedApp = () => {
               &&
               <>
                 <div className={styles["checkbox-container"]} style={{ marginTop: "12px" }}>
-                  <span className={styles["label"]}>Make publicly disoverable via Lightning Address:</span>
+                  <span className={styles["label"]}>Make publicly discoverable via Lightning Address:</span>
                   <Checkbox id="publicly-available" state={isPubliclyAvailable} setState={(e) => setIsPubliclyAvailable(e.target.checked)} />
                 </div>
                 <div className={styles["checkbox-container"]}>
-                  <span className={styles["ln-address"]}>&#40;{ counterpartPaySource.vanityName }&#41;</span>
+                  <span className={styles["ln-address"]}>&#40;{counterpartPaySource.vanityName}&#41;</span>
                 </div>
               </>
             }

@@ -160,9 +160,9 @@ export interface FiatCurrency {
 }
 
 export enum SourceTrustLevel {
-	HIGH = "My node.",
-	MEDIUM = "Well trusted.",
-	LOW = "Little trust.",
+	HIGH = "😎 My node.",
+	MEDIUM = "🫡 Well trusted.",
+	LOW = "🤔 Little trust.",
 }
 
 
