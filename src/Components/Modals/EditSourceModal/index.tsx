@@ -221,7 +221,7 @@ export const EditSourceModal = () => {
 							{
 								(sourceToEdit.type === "payTo" && sourceToEdit.source.vanityName)
 								&&
-								<span>{sourceToEdit.source.vanityName.split("@")[0]}</span>
+								<span className={styles["ln-address"]}>{sourceToEdit.source.vanityName.split("@")[0]}</span>
 							}
 						</>
 

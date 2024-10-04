@@ -227,7 +227,6 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
-			console.log({relays})
 			const client = await getNostrClient({ pubkey, relays }, s.keys)
 			await fetchSourceHistory(s, client, s.id)
 		})
