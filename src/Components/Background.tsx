@@ -141,10 +141,21 @@ export const Background = () => {
 				...source,
 				balance: `${res.balance}`,
 				maxWithdrawable: `${res.max_withdrawable}`,
-				ndebit: res.ndebit
+				ndebit: res.ndebit,
 			},
 			meta: { skipChangelog: true }
 		})
+		const paySourceToEdit = paySource.sources[source.id]
+		if (paySourceToEdit && res.bridge_url && !paySourceToEdit.bridgeUrl) {
+			dispatch({
+				type: "paySources/editPaySources",
+				payload: {
+					...paySourceToEdit,
+					bridgeUrl: res.bridge_url
+				},
+				meta: { skipChangelog: true }
+			})
+		}
 	}
 	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, sourceId: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
 		const req = populateCursorRequest(newCurosor || cursor, !!newData)
@@ -216,6 +227,7 @@ export const Background = () => {
 		}
 		nostrSpends.forEach(async s => {
 			const { pubkey, relays } = parseNprofile(s.pasteField)
+			console.log({relays})
 			const client = await getNostrClient({ pubkey, relays }, s.keys)
 			await fetchSourceHistory(s, client, s.id)
 		})

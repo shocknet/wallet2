@@ -130,7 +130,7 @@ export interface SpendFrom {
   pasteField: string;
   icon: string;
   balance: string;
-  option: string;
+  option: SourceTrustLevel;
   maxWithdrawable?: string; // Max sats payable to out of pub invoice
   disabled?: string // the error message
   disconnected?: boolean;
@@ -144,12 +144,13 @@ export interface PayTo {
   id: string;
   label: string;
   pasteField: string;
-  option: string;
+  option: SourceTrustLevel;
   icon: string;
   disconnected?: boolean
   vanityName?: string;
   pubSource?: boolean,
   keys: NostrKeyPair
+  bridgeUrl?: string
 }
 
 export interface FiatCurrency {
@@ -157,5 +158,12 @@ export interface FiatCurrency {
   currency: string;
   symbol: string;
 }
+
+export enum SourceTrustLevel {
+	HIGH = "My node.",
+	MEDIUM = "Well trusted.",
+	LOW = "Little trust.",
+}
+
 
 export type SourceDebitRequest = { request: LiveDebitRequest, source: SpendFrom }

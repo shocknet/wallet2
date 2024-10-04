@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { SpendFrom } from '../../globalTypes';
+import { SourceTrustLevel, SpendFrom } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
 import { syncRedux } from '../store';
@@ -9,7 +9,7 @@ import { BackupAction } from '../types';
 import { decodeNprofile } from '../../constants';
 import { Buffer } from 'buffer';
 export const storageKey = "spendFrom"
-export const VERSION = 3;
+export const VERSION = 4;
 
 export type SpendSourceRecord = Record<string, SpendFrom>;
 
@@ -91,6 +91,22 @@ export const migrations: Record<number, MigrationFunction<any>> = {
     state.sources = newSourcesObject;
     return state
 
+  },
+  4: (state) => {
+    state.order.forEach((id: any) => {
+      const source = state.sources[id];
+      if (!source.option) {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else if (source.option === "A little.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.LOW }
+      } else if (source.option === "Very well.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else {
+        state.sources[id] = { ...source, option: SourceTrustLevel.HIGH }
+      }
+      
+    })
+    return state;
   }
 };
 

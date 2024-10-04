@@ -1,8 +1,8 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { PayTo } from '../../globalTypes';
+import { PayTo, SourceTrustLevel } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
-import { decodeNprofile, OLD_NOSTR_PUB_DESTINATION } from '../../constants';
+import { decodeNprofile } from '../../constants';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
@@ -21,7 +21,7 @@ export interface PaySourceState {
 
 
 export const storageKey = "payTo"
-export const VERSION = 4;
+export const VERSION = 5;
 export const migrations: Record<number, MigrationFunction<any>> = {
   // the bridge url encoded in nprofile migration
   1: (data) => {
@@ -121,6 +121,24 @@ export const migrations: Record<number, MigrationFunction<any>> = {
     state.sources = newSourcesObject;
     return state
 
+  },
+  5: (state) => {
+    // option field more strict
+    console.log({state})
+    state.order.forEach((id: any) => {
+      const source = state.sources[id];
+      if (!source.option) {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else if (source.option === "A little.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.LOW }
+      } else if (source.option === "Very well.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else {
+        state.sources[id] = { ...source, option: SourceTrustLevel.HIGH }
+      }
+      
+    })
+    return state
   }
 };
 

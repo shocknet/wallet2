@@ -9,6 +9,7 @@
     transition-duration: 400ms;
     display: flex;
     align-items: center;
+    cursor: pointer;
 
 
     > *:first-child {
@@ -41,6 +42,7 @@
     background-clip: padding-box;
     border: solid $border transparent;
     border-radius: 5px;
+    cursor: pointer;
 
     > *:first-child {
         margin-right: 5px;
