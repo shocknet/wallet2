@@ -6,14 +6,17 @@ import { Period } from "../../../Pages/Metrics";
 import useClickOutside from "../../../Hooks/useClickOutside";
 import { Interval } from "../../../Pages/Automation";
 import { WalletIntervalEnum } from "../../Modals/DebitRequestModal/helpers";
+import { SourceTrustLevel } from "../../../globalTypes";
+
 
 interface Props<T> {
 	setState: (data: T) => void;
 	otherOptions: T[];
 	jsx: React.ReactNode;
+	className?: string
 }
 
-const Dropdown = <T extends "number" | "string" | Period | Interval | WalletIntervalEnum>({ setState, jsx, otherOptions }: Props<T>) => {
+const Dropdown = <T extends "number" | "string" | Period | Interval | WalletIntervalEnum | SourceTrustLevel>({ setState, jsx, otherOptions, className }: Props<T>) => {
 	const [expand, setExpand] = useState(false);
 	const dropDownRef = useRef<HTMLDivElement>(null);
 	useClickOutside([dropDownRef], () => setExpand(false), false);
@@ -35,7 +38,7 @@ const Dropdown = <T extends "number" | "string" | Period | Interval | WalletInte
 				{expand && (
 					<AnimatePresence>
 						<motion.div
-							className={styles["options"]}
+							className={classNames(styles["options"], className)}
 							initial={{ top: "-100%" }}
 							animate={{ top: "100%" }}
 							exit={{ top: "-100%" }}

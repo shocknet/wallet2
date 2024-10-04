@@ -33,7 +33,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 		k1 = lnurlPayLinkRes.k1
 	}
 
-	const bridgeUrl = userInfoRes.bridge_url;
+	const bridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
 	if (!bridgeUrl) return;
 
 
