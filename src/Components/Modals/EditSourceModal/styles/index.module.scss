@@ -1,0 +1,106 @@
+@import "/src/styles/modals.module";
+@import "/src/styles/buttons.module";
+@import "/src/styles/inputs.module";
+
+
+.container {
+	@include modal-wrapper;
+	.requestor-container {
+
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 3px;
+		margin-bottom: 15px;
+
+		.source-label {
+			font-size: 20px;
+			color: #999999;
+		}
+
+		.dropdown-box {
+			@include input;
+			font-size: 16px;
+			width: 10rem;
+			color: white;
+			text-align: center;
+			padding: 5px 10px;
+			margin-top: 10px;
+			color: #999999;
+		}
+		.dropdown-options {
+			background-color: #494848;
+			width: 10rem;
+			padding: 4px 0;
+			border-radius: 0 0 7px 7px;
+
+			& >* {
+				font-size: 16px;
+				padding: 5px 10px;
+				width: 95%;
+				margin: auto;
+				border-radius: 7px;
+				text-align: left;
+			
+
+			}
+		}
+
+
+	}
+
+	.source-items-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 60%;
+		margin: auto;
+		@media (max-width: 768px) {
+			width: 100%;
+		}
+
+		.item-line {
+
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			margin: 4px 0;
+			.item-label {
+				font-size: 14px;
+				font-weight: 500;
+			}
+			.item-value {
+				&.npub {
+					color: #29abe2;
+					text-decoration: underline;
+					font-size: 12px;
+				}
+				&.input {
+					input {
+						@include input;
+						font-size: 12px;
+						padding: 4px 7px;
+					}
+				}
+			}
+		}
+	}
+
+	.buttons-container {
+		display: flex;
+		justify-content: center;
+		gap: 5%;
+		margin: auto;
+		padding-top: 20px;
+		button {
+			@include rainbow-button;
+		}
+	}
+	.ln-address {
+		text-align: center;
+		font-size: 12px;
+	}
+}

@@ -1,0 +1,56 @@
+@import "/src/styles/modals.module";
+@import "/src/styles/buttons.module";
+.container {
+	@include modal-wrapper;
+	.content-container {
+		padding: 12px 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		.description {
+
+			font-weight: 500;
+			font-size: 16px;
+			text-align: center;
+		}
+		.action-buttons {
+			display: flex;
+			align-items: center;
+			justify-content: space-around;
+			gap: 20px;
+
+			.button {
+				@include normal-button;
+				border-radius: 8px;
+				&.danger {
+					background-color: #f04437;
+					border: none;
+					color: white;
+					font-weight: 600;
+				}
+				&.normal {
+					background-color: var(--primary);
+					color: var(--white);
+				}
+			}
+		}
+	}
+}
+.modal-wrapper {
+
+	&.blur {
+		backdrop-filter: blur(20px);
+	}
+	.modal-container {
+		flex-direction: column;
+		max-width: 400px;
+		.header {
+			justify-content: center;
+			font-weight: 700;
+			font-size: 18px;
+			padding: 18px 0;
+
+		}
+
+	}
+}

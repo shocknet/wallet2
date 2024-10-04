@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "../../State/store"
 import {  NOSTR_PUB_DESTINATION, NOSTR_RELAYS, OLD_NOSTR_PUB_DESTINATION, options } from "../../constants"
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice"
 import { nip19 } from "nostr-tools";
+import { SourceTrustLevel } from "../../globalTypes";
 
 export const NewSourceCheck = () => {
 	const spendSource = useSelector(({ spendSource }) => spendSource)
@@ -28,7 +29,7 @@ export const NewSourceCheck = () => {
 				id: NOSTR_PUB_DESTINATION,
 				label: "Bootstrap Node",
 				pasteField: newProfile,
-				option: options.little,
+				option: SourceTrustLevel.LOW,
 				icon: "0",
 				balance: "0",
 				pubSource: true

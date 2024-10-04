@@ -108,6 +108,13 @@ export const DebitRequestModal = () => {
 					frequency_rule: { ...frequencyRule, amount: +requestAmount }
 				}
 			})
+		} else if (isCreateRule) {
+			rules.push({
+				rule: {
+					type: Types.DebitRule_rule_type.FREQUENCY_RULE,
+					frequency_rule: { amount: +requestAmount, number_of_intervals: 120_000, interval: Types.IntervalType.MONTH }
+				}
+			})
 		}
 
 		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment && !isCreateRule) {
@@ -423,7 +430,7 @@ export const EditDebitModal = () => {
 				toast.error(<Toast title="Update linked app error" message={res.reason} />)
 				return
 			}
-			console.log({rules})
+			console.log({ rules })
 			dispatch(refetchDebits())
 			dispatch(setDebitToEdit(null));
 			toast.success("Linked app updated successfuly")
