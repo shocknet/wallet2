@@ -378,21 +378,7 @@ export const Sources = () => {
         return <React.Fragment>
           <img src={BootstrapSource} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
         </React.Fragment>
-      case "1":
-        return icons.mynode()
-
-      case "2":
-        return icons.uncle()
-
-      case "3":
-        return icons.lightning()
-
-      case "4":
-        return icons.zbd()
-
-      case "5":
-        return icons.stacker()
-
+      // Cases 1-5 have been removed as placeholder examples.
       default:
         if (sourcePub) {
           return <React.Fragment>
@@ -447,7 +433,7 @@ export const Sources = () => {
 
     <div className='Sources_modal_code'>
       <input
-        placeholder="Paste an LNURL, Lightning Address, or LP"
+        placeholder="Paste an NProfile or Lightning Address"
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
       />
