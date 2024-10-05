@@ -143,7 +143,10 @@ export const Sources = () => {
 
   const EditSourceSpend_Modal = (key: string) => {
     const source = spendSources.sources[key];
-    dispatch(setSourceToEdit({ source: source, type: "spendFrom" }))
+    dispatch(setSourceToEdit({ 
+      source: source, 
+      type: "spendFrom",
+    }))
 
   };
 

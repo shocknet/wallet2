@@ -187,12 +187,12 @@ export const LinkedApp = () => {
             )
           }
         </div>
-        <div style={{ padding: "0 12px" }}>
+        <div style={{ width: '100%' }}>
           <div 
             className={classNames(styles["app-card"], styles["column"])}
             style={{
               fontSize: '1.2rem',
-              width: '98%',
+              width: '100%',
               marginBottom: '5px',
               borderRadius: '5px',
               border: '1px solid #2a3035',

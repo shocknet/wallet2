@@ -1,4 +1,3 @@
-
 import { useDispatch, useSelector } from "../../../State/store";
 import { Modal } from "../Modal";
 
@@ -27,18 +26,11 @@ const isValidUrl = (url: string) => {
 	}
 }
 
-
-
-
-
-
 const trustLevelsArray = Object.values(SourceTrustLevel);
 
 const substringNpub = (npub: string) => {
 	return `${npub.substring(0, 15)}...${npub.substring(npub.length - 15, npub.length)}`;
 }
-
-
 
 export const EditSourceModal = () => {
 	const dispatch = useDispatch()
@@ -55,8 +47,6 @@ export const EditSourceModal = () => {
 	const [initialNameService, setInitialNameService] = useState("")
 
 	const [isPromptConfirmDelete, setIsPromptConfirmDelete] = useState(false);
-
-
 
 	useEffect(() => {
 		if (!sourceToEdit) return;
@@ -78,11 +68,6 @@ export const EditSourceModal = () => {
 		setEditValues(state => ({ ...state, nameService, relay }));
 
 	}, [sourceToEdit])
-
-
-
-
-
 
 	const handleSave = useCallback(() => {
 		if (!sourceToEdit) return;
@@ -153,8 +138,6 @@ export const EditSourceModal = () => {
 		toast.success(<Toast title="Success" message="Source deleted successfuly" />)
 	}, [dispatch, sourceToEdit])
 
-
-
 	const modalContent = sourceToEdit ? (
 		<div className={styles["container"]}>
 			<div className={styles["corner-icon"]} onClick={() => setIsPromptConfirmDelete(true)}>
@@ -170,7 +153,7 @@ export const EditSourceModal = () => {
 					<Dropdown<SourceTrustLevel>
 						setState={(option) => setEditValues(state => ({ ...state, trustLevel: option }))}
 						jsx={
-							<div className={styles["dropdown-box"]}>{editValues.trustLevel} ▼</div>
+								<div className={styles["dropdown-box"]}>{editValues.trustLevel} ▼</div>
 						}
 						otherOptions={trustLevelsArray}
 						className={styles["dropdown-options"]}
@@ -183,28 +166,28 @@ export const EditSourceModal = () => {
 						&&
 						<>
 							<div className={styles["item-line"]}>
-								<span className={styles["item-label"]}>
-									Source Key:
-								</span>
-								<span className={classNames(styles["item-value"], styles["npub"])}>
-									{substringNpub(nip19.npubEncode(sourceToEdit.source.id.split("-")[0]))}
-								</span>
+									<span className={styles["item-label"]}>
+										Source Key:
+									</span>
+									<span className={classNames(styles["item-value"], styles["npub"])}>
+										{substringNpub(nip19.npubEncode(sourceToEdit.source.id.split("-")[0]))}
+									</span>
 							</div>
 							<div className={styles["item-line"]}>
-								<span className={styles["item-label"]}>
-									Local Key:
-								</span>
-								<span className={classNames(styles["item-value"], styles["npub"])}>
-									{substringNpub(nip19.npubEncode(sourceToEdit.source.id.split("-")[1]))}
-								</span>
+									<span className={styles["item-label"]}>
+										Local Key:
+									</span>
+									<span className={classNames(styles["item-value"], styles["npub"])}>
+										{substringNpub(nip19.npubEncode(sourceToEdit.source.id.split("-")[1]))}
+									</span>
 							</div>
 							<div className={styles["item-line"]}>
-								<span className={styles["item-label"]}>
-									Relay:
-								</span>
-								<span className={classNames(styles["item-value"], styles["input"])}>
-									<input value={editValues.relay} onChange={(e) => setEditValues(state => ({ ...state, relay: e.target.value }))} />
-								</span>
+									<span className={styles["item-label"]}>
+										Relay:
+									</span>
+									<span className={classNames(styles["item-value"], styles["input"])}>
+										<input value={editValues.relay} onChange={(e) => setEditValues(state => ({ ...state, relay: e.target.value }))} />
+									</span>
 							</div>
 							{
 								sourceToEdit.type === "payTo"
@@ -213,7 +196,7 @@ export const EditSourceModal = () => {
 									<span className={styles["item-label"]}>
 										Name Service:
 									</span>
-									<span className={classNames(styles["item-value"], styles["input"])}>
+										<span className={classNames(styles["item-value"], styles["input"])}>
 										<input value={editValues.nameService} onChange={(e) => setEditValues(state => ({ ...state, nameService: e.target.value }))} />
 									</span>
 								</div>
@@ -246,8 +229,6 @@ export const EditSourceModal = () => {
 
 		</div>
 	) : <></>;
-
-
 
 	return (
 		<>
