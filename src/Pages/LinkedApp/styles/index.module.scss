@@ -1,6 +1,6 @@
 .wrapper {
 	width: 100%;
-	padding-inline: 5%;
+	padding-inline: 2%;
 	padding-bottom: 30px;
 	transition-duration: 500ms;
 	font-family: Montserrat;
@@ -91,6 +91,8 @@
 			border-radius: 5px;
 			padding: 12px;
 			height: 110px;
+			overflow: hidden;
+
 
 			&.column {
 				flex-direction: column;
@@ -126,10 +128,10 @@
 			}
 
 			.left {
-				flex: 1;
-				width: 100%;
+				flex: 0 0 90px;
+				max-width: 90px;
 
-				margin-right: 7px;
+				margin-right: 16px;
 
 				img {
 					width: 100%;
@@ -151,24 +153,24 @@
 
 			.right {
 
-				flex: 5;
+				flex: 1;
+				min-width: 0;
 				text-align: left;
 				display: flex;
 				flex-direction: column;
 				align-items: flex-start;
 				justify-content: flex-start;
 				height: 100%;
-				width: 100%;
 				gap: 5%;
 
 				.name {
-					font-size: 23px;
+					font-size: clamp(14px, 5vw, 23px);
 					font-weight: 500;
 				}
 
 				.npub {
 					color: #adadad;
-					font-size: 12px;
+					font-size: clamp(9px, 3vw, 12px)
 				}
 
 				.rules {
