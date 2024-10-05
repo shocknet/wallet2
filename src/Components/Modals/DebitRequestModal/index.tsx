@@ -117,7 +117,7 @@ export const DebitRequestModal = () => {
 			})
 		}
 
-		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE && !isRecurringPayment && !isCreateRule) {
+		if (currentRequest.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE) {
 			await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).RespondToDebit({
 				npub: currentRequest.request.npub,
 				request_id: currentRequest.request.request_id,
@@ -126,7 +126,6 @@ export const DebitRequestModal = () => {
 					invoice: currentRequest.request.debit.invoice
 				}
 			});
-			return;
 		}
 		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).AuthorizeDebit({
 			authorize_npub: currentRequest.request.npub, rules,

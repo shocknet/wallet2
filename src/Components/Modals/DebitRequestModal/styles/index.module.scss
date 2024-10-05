@@ -79,7 +79,7 @@
 			}
 
 			span {
-				font-size: 20px;
+				font-size: clamp(14px, 3vw, 20px);
 			}
 
 			.num-intervals-input {
