@@ -6,6 +6,7 @@ import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { generateNewKeyPair } from "../../Api/helpers";
 import { nip19 } from "nostr-tools";
+import { SourceTrustLevel } from "../../globalTypes";
 
 export const NodeUp = () => {
   const router = useIonRouter();
@@ -61,7 +62,7 @@ export const NodeUp = () => {
           id: id,
           label: "Bootstrap Node",
           pasteField: nprofile,
-          option: options.little,
+          option: SourceTrustLevel.LOW,
           icon: "0",
           pubSource: true,
           keys: keyPair
@@ -72,7 +73,7 @@ export const NodeUp = () => {
           id: id,
           label: "Bootstrap Node",
           pasteField: nprofile,
-          option: options.little,
+          option: SourceTrustLevel.LOW,
           icon: "0",
           balance: bootstrapBalance,
           pubSource: true,

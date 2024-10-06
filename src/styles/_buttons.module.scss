@@ -1,0 +1,74 @@
+@mixin normal-button {
+    background-color: #151d24;
+    border: 1px solid #268fbc;
+    border-radius: 6px;
+    color: white;
+    font-size: 100%;
+    padding-inline: 20px;
+    padding-block: 10px;
+    transition-duration: 400ms;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+
+    > *:first-child {
+        margin-right: 5px;
+    }
+
+    &:hover {
+        filter: brightness(110%);
+    }
+
+    &:active {
+        filter: brightness(130%);
+    }
+}
+
+@mixin rainbow-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+    font-size: 22px;
+    font-family: Montserrat;
+    font-weight: bold;
+    padding-inline: 20px;
+    padding-block: 6px;
+    $border: 1px;
+    color: #FFF;
+    background: #16191c;
+    background-clip: padding-box;
+    border: solid $border transparent;
+    border-radius: 5px;
+    cursor: pointer;
+
+    > *:first-child {
+        margin-right: 5px;
+    }
+
+
+    &:hover {
+        filter: brightness(110%);
+    }
+
+    &:active {
+        filter: brightness(130%);
+    }
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: -1;
+        margin: -$border;
+        /* !importanté */
+        border-radius: 3px;
+        /* !importanté */
+        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+    }
+}

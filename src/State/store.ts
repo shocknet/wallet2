@@ -18,6 +18,8 @@ import backupStateSlice from './Slices/backupState';
 import { backup } from './backupMiddleware';
 import { BackupAction } from './types';
 import { bridgeMiddleware } from './bridgeMiddleware';
+import modalsSlice from './Slices/modalsSlice';
+import { ndebitMiddleware } from './ndebitDiscoverableMiddleware';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
@@ -35,7 +37,8 @@ export const reducer = combineReducers({
   loadingOverlay,
   nostrPrivateKey,
   backupStateSlice,
-  oneTimeInviteLinkSlice
+  oneTimeInviteLinkSlice,
+  modalsSlice
 })
 
 
@@ -44,7 +47,7 @@ export const reducer = combineReducers({
 const store = configureStore({
   reducer: reducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware),
+    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware, ndebitMiddleware.middleware),
 });
 export type State = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
@@ -79,7 +82,7 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
 export const selectNostrSpends = createSelector(
   (state: State) => state.spendSource,
   (spendSource: SpendSourceState) =>
-    Object.values(spendSource.sources).filter((s) => s.pubSource)
+    Object.values(spendSource.sources).filter((s) => s.pubSource && !s.disconnected)
 )
 
 export const selectConnectedNostrSpends = createSelector(

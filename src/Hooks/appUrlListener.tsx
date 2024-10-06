@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { useIonRouter } from '@ionic/react';
 import { bech32 } from 'bech32';
+import { Buffer } from 'buffer';
 
 const AppUrlListener: React.FC<any> = () => {
   const router = useIonRouter();

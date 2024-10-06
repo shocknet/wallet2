@@ -1,9 +1,10 @@
-import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
-import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44'
-import { decrypt, encrypt } from './tools/nip04'
-import { Sub } from 'nostr-tools';
+import { nip69, Event, UnsignedEvent, Relay, finalizeEvent, nip04 } from 'nostr-tools'
+import { Buffer } from 'buffer';
+//import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
+import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44v1'
 import logger from './helpers/logger';
 import { SimplePool } from 'nostr-tools';
+const { decrypt, encrypt } = nip04
 export const pubServiceTag = "Lightning.Pub"
 const appTag = "shockwallet"
 const changelogsTag = "shockwallet:changelog";
@@ -35,15 +36,11 @@ export type NostrEvent = {
     content: string
     kind: number
 }
-export type Nip69Success = { bolt11: string }
-export type Nip69Error = { code: number, error: string, range: { min: number, max: number } }
-export type Nip69Response = Nip69Success | Nip69Error
 
 export type RelaysSettings = {
     relays: string[];
     keys: NostrKeyPair
 }
-export type NofferData = { offer: string, amount?: number }
 const allowedKinds = [21000, 24133]
 
 export default class RelayCluster {
@@ -120,41 +117,12 @@ export default class RelayCluster {
         )
     }
 
-    SendNip69 = async (relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<Nip69Response> => {
-        const decoded = await encryptData(JSON.stringify(data), getSharedSecret(keys.privateKey, pubKey))
-        const content = encodePayload(decoded)
-        const e = await this.sendRaw(
-            relays,
-            {
-                content,
-                created_at: Math.floor(Date.now() / 1000),
-                kind: 21001,
-                pubkey: keys.publicKey,
-                tags: [['p', pubKey]]
-            },
-            keys.privateKey
-        )
-        const sub = this.pool.sub(relays, [{
-            since: Math.floor(Date.now() / 1000) - 1,
-            kinds: [21001],
-            '#p': [keys.publicKey],
-            '#e': [e.id]
-        }])
-        return new Promise<Nip69Response>((res, rej) => {
-            const timeout = setTimeout(() => {
-                sub.unsub(); rej("failed to get nip69 reponse in time")
-            }, 30 * 1000)
-            sub.on('event', async (e) => {
-                clearTimeout(timeout)
-                const decoded = decodePayload(e.content)
-                const content = await decryptData(decoded, getSharedSecret(keys.privateKey, pubKey))
-                res(JSON.parse(content))
-            })
-        })
+    SendNip69 = async (relays: string[], pubKey: string, data: nip69.NofferData, keys: NostrKeyPair): Promise<nip69.Nip69Response> => {
+        return nip69.SendNofferRequest(this.pool, Buffer.from(keys.privateKey, 'hex'), relays, pubKey, data)
     }
 
     sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
-        const signed = finishEvent(event, privateKey)
+        const signed = finalizeEvent(event, Buffer.from(privateKey, 'hex'))
         this.pool.publish(relays, signed).forEach(p => {
             p.then(() => logger.info("sent ok"))
             p.catch(() => logger.error("failed to send"))
@@ -177,8 +145,6 @@ type RelayArgs = {
 
 class RelayHandler {
     relay: Relay | null = null
-    sub: Sub | null = null;
-    beaconSub: Sub | null = null;
     subbedPairs: NostrKeyPair[] = [];
     args: RelayArgs
     connected = false
@@ -202,11 +168,10 @@ class RelayHandler {
     }
 
     Connect = async (triggerConnectCb: boolean, keys: NostrKeyPair) => {
-        const relay = relayInit(this.args.relay)
         this.subbedPairs.push(keys);
-
+        let relay: Relay;
         try {
-            await relay.connect()
+            relay = await Relay.connect(this.args.relay)
         } catch (err) {
             logger.error("failed to connect to relay, will try again in 2 seconds")
             setTimeout(() => {
@@ -215,19 +180,13 @@ class RelayHandler {
             return
         }
         logger.info("connected, subbing...")
-        relay.on('disconnect', () => {
+        relay.onclose = () => {
             logger.warn("relay disconnected, will try to reconnect")
-            if (this.sub) {
-                this.sub.unsub()
-            }
-            if (this.beaconSub) {
-                this.beaconSub.unsub()
-            }
             relay.close()
             this.connected = false
             this.args.disconnectCallback()
             this.Connect(false, keys)
-        })
+        }
         this.relay = relay
         this.SubToEvents(triggerConnectCb)
         this.SubToBeacon()
@@ -235,13 +194,14 @@ class RelayHandler {
 
     SubToBeacon = async () => {
         if (!this.relay) { return }
-        this.beaconSub = this.relay.sub([
+        this.relay.subscribe([
             { kinds: [30078], '#d': [pubServiceTag] }
-        ])
-        this.beaconSub.on('eose', () => { console.log("subbed to beacon") })
-        this.beaconSub.on("event", async (e) => {
-            const b = JSON.parse(e.content)
-            this.args.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
+        ], {
+            oneose: () => { console.log("subbed to beacon") },
+            onevent: (e) => {
+                const b = JSON.parse(e.content)
+                this.args.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
+            }
         })
     }
 
@@ -251,45 +211,45 @@ class RelayHandler {
             logger.info("renewing sub")
             this.subbedPairs.push(keys);
         }
-        this.sub = this.relay.sub([
+        this.relay.subscribe([
             {
                 since: Math.ceil(Date.now() / 1000),
                 kinds: allowedKinds,
                 '#p': this.subbedPairs.map(k => k.publicKey),
             }
-        ])
+        ], {
+            oneose: () => { this.onConnect(triggerConnectCb) },
+            onevent: async (e) => {
+                logger.log({ nostrEvent: e })
 
-        this.sub.on('eose', () => { this.onConnect(triggerConnectCb) })
-        this.sub.on("event", async (e) => {
-            logger.log({ nostrEvent: e })
-
-            if (!e.pubkey || !allowedKinds.includes(e.kind)) {
-                return
-            }
-            const eventId = e.id
-            if (handledEvents.find(e => e.eventId === eventId)) {
-                logger.info("event already handled")
-                return
-            }
-            handledEvents.push({ eventId, addedAtUnix: Date.now() });
-
-            let addressedKeyPair: NostrKeyPair | null | undefined = null;
-            for (const tag of e.tags) {
-                if (tag[0] === 'p') {
-                    const pubkey = tag[1];
-                    addressedKeyPair = this.subbedPairs.find(p => p.publicKey === pubkey);
+                if (!e.pubkey || !allowedKinds.includes(e.kind)) {
+                    return
                 }
-            }
+                const eventId = e.id
+                if (handledEvents.find(e => e.eventId === eventId)) {
+                    logger.info("event already handled")
+                    return
+                }
+                handledEvents.push({ eventId, addedAtUnix: Date.now() });
 
-            if (e.kind === 24133) {
-                const decryptedNip46 = await decrypt(addressedKeyPair!.privateKey, e.pubkey, e.content)
-                logger.log({ decryptedNip46 })
-                this.args.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
+                let addressedKeyPair: NostrKeyPair | null | undefined = null;
+                for (const tag of e.tags) {
+                    if (tag[0] === 'p') {
+                        const pubkey = tag[1];
+                        addressedKeyPair = this.subbedPairs.find(p => p.publicKey === pubkey);
+                    }
+                }
+
+                if (e.kind === 24133) {
+                    const decryptedNip46 = await decrypt(addressedKeyPair!.privateKey, e.pubkey, e.content)
+                    logger.log({ decryptedNip46 })
+                    this.args.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
+                }
+                const decoded = decodePayload(e.content)
+                const content = await decryptData(decoded, getSharedSecret(addressedKeyPair!.privateKey, e.pubkey))
+                logger.log({ decrypted: content }, addressedKeyPair?.publicKey)
+                this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
             }
-            const decoded = decodePayload(e.content)
-            const content = await decryptData(decoded, getSharedSecret(addressedKeyPair!.privateKey, e.pubkey))
-            logger.log({ decrypted: content }, addressedKeyPair?.publicKey)
-            this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
         })
         if (keys && connectedCallback) {
             setTimeout(() => {
@@ -328,14 +288,20 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
     }
 }
 
-export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number) => {
-    const sub = pool.sub(relays, [
+export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number, onEvent: (e: Event) => Promise<void>) => {
+    return pool.subscribeMany(relays, [
         {
             since: timestamp,
             kinds: [5500],
             '#d': [changelogsTag],
             authors: [pubkey]
         }
-    ])
-    return sub;
+    ], {
+        onevent: (e) => { onEvent(e) }
+    })
+}
+
+
+export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: string[]) => {
+    return pool.get(relayUrl, { kinds: [0], authors: [pubKey] })
 }

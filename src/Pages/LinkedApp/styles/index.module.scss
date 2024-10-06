@@ -1,0 +1,214 @@
+.wrapper {
+	width: 100%;
+	padding-inline: 2%;
+	padding-bottom: 30px;
+	transition-duration: 500ms;
+	font-family: Montserrat;
+	justify-content: center;
+	position: fixed;
+	left: 0;
+	& * {
+		font-family: Montserrat;
+	}
+
+	.container {
+		margin-block-start: 20px;
+		max-width: 800px;
+		margin-inline: auto;
+
+		.page-header {
+			margin-block: 10px;
+			text-align: center;
+			color: white;
+			font-size: 26px;
+			font-family: Montserrat;
+
+		}
+
+		.source-selection {
+			width: 100%;
+			margin-top: 10px;
+			display: inline-flex;
+			align-items: start;
+			font-size: 19px;
+			font-weight: bold;
+			border: 1px olid blue;
+
+			p {
+				margin-right: 10px;
+				margin-top: 5px;
+			}
+		}
+
+		.list-scroller {
+			position: relative;
+			margin-top: 30px;
+			padding: 0 12px;
+			--scrollbar-width: 0px;
+			--mask-height: 10px;
+			overflow-y: auto;
+			height: calc(100vh - 400px);
+			// padding-top: var(--mask-height);
+			padding-bottom: var(--mask-height);
+			--mask-image-content: linear-gradient(to bottom,
+					transparent,
+					black var(--mask-height),
+					black calc(100% - var(--mask-height)),
+					transparent);
+			--mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+			--mask-image-scrollbar: linear-gradient(black, white, black);
+			--mask-size-scrollbar: var(--scrollbar-width) 100%;
+			-moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+			-moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+			mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+			mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+			mask-position: 0 0, 100% 0;
+			mask-repeat: no-repeat, no-repeat;
+
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+		.spinner-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+			font-weight: bold;
+			font-size: 24px;
+		}
+
+		.app-card {
+			position: relative;
+			display: flex;
+			align-items: stretch;
+			margin: 15px 0;
+			-webkit-box-shadow: 0px 0px 2px 0px rgba(173, 173, 173, 0.8);
+			-moz-box-shadow: 0px 0px 2px 0px rgba(173, 173, 173, 0.8);
+			box-shadow: 0px 0px 2px 0px rgba(173, 173, 173, 0.8);
+			border-radius: 5px;
+			padding: 12px;
+			height: 110px;
+			overflow: hidden;
+
+
+			&.column {
+				flex-direction: column;
+				height: auto;
+				.title {
+					font-size: 18px;
+					font-weight: 600;
+				}
+				.debit-string {
+					font-size: 14px;
+					color: #29abe2;
+					text-decoration: underline;
+					cursor: pointer;
+					display: inline-block;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.checkbox-container {
+					display: flex;
+					align-items: center;
+					justify-content: flex-start;
+					.label {
+						font-size: 14px;
+						color: #29abe2;
+						margin-right: 7px;
+					}
+					.ln-address {
+						font-size: 12px;
+						color: #8c8c8c;
+					}
+				}
+			}
+
+			.left {
+				flex: 0 0 90px;
+				max-width: 90px;
+
+				margin-right: 16px;
+
+				img {
+					width: 100%;
+					height: 100%;
+					border-radius: 5px;
+					object-fit: cover;
+				}
+			}
+
+			.title {
+				font-size: 16px;
+				font-weight: bold;
+			}
+
+			.ndebit {
+				font-size: 15px;
+				color: #29abe2;
+			}
+
+			.right {
+
+				flex: 1;
+				min-width: 0;
+				text-align: left;
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				justify-content: flex-start;
+				height: 100%;
+				gap: 5%;
+
+				.name {
+					font-size: clamp(14px, 5vw, 23px);
+					font-weight: 500;
+				}
+
+				.npub {
+					color: #adadad;
+					font-size: clamp(9px, 3vw, 12px)
+				}
+
+				.rules {
+					font-size: 12px;
+
+					.blue-text {
+						color:#29abe2;
+					}
+				}
+
+				.edit-icon {
+					font-size: 16px;
+					text-decoration: underline;
+					position: absolute;
+					top: 10px;
+					right: 10px;
+					cursor: pointer;
+					svg {
+						width: 25px;
+						height: 25px;
+					}
+				}
+
+			}
+		}
+
+	}
+
+	.change-view-button-container {
+		text-align: center;
+		font-size: 14px;
+		color: #ededed;
+		width: fit-content;
+		padding: 12px;
+		margin: auto;
+		cursor: pointer;
+	}
+
+
+
+}

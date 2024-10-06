@@ -26,6 +26,7 @@ import Toast from "./Toast";
 import { useHistory } from "react-router";
 import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 import { App } from "@capacitor/app";
+import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
 
 
 export const Background = () => {
@@ -82,7 +83,13 @@ export const Background = () => {
 						// the history state takes care of this repetition,
 						// but we have to deal with the toast not appearing twice here
 						if (!operationGroups[source.id].find(op => op.operationId === newOp.operation.operationId)) {
-							toast.info(<Toast title="Payments" message="You received payment." />)
+							let message = ""
+							if (newOp.operation.inbound) {
+								message = `You received ${newOp.operation.amount} sats`
+							} else {
+								message = `You sent ${newOp.operation.amount} sats`
+							}
+							toast.info(<Toast title="Payments" message={message} />)
 						}
 						dispatch(setLatestOperation({ pub: source.id, operation: newOp.operation }))
 					} else {
@@ -128,12 +135,26 @@ export const Background = () => {
 			console.log(res.reason)
 			return
 		}
-		if (Number(source.balance) !== res.balance) {
-			dispatch(editSpendSources({
+		dispatch({
+			type: "spendSources/editSpendSources",
+			payload: {
 				...source,
 				balance: `${res.balance}`,
-				maxWithdrawable: `${res.max_withdrawable}`
-			}))
+				maxWithdrawable: `${res.max_withdrawable}`,
+				ndebit: res.ndebit,
+			},
+			meta: { skipChangelog: true }
+		})
+		const paySourceToEdit = paySource.sources[source.id]
+		if (paySourceToEdit && res.bridge_url && !paySourceToEdit.bridgeUrl) {
+			dispatch({
+				type: "paySources/editPaySources",
+				payload: {
+					...paySourceToEdit,
+					bridgeUrl: res.bridge_url
+				},
+				meta: { skipChangelog: true }
+			})
 		}
 	}
 	const fetchSourceHistory = useCallback(async (source: SpendFrom, client: NostrClient, sourceId: string, newCurosor?: Partial<Types.GetUserOperationsRequest>, newData?: Types.UserOperation[]) => {
@@ -362,6 +383,7 @@ export const Background = () => {
 		<LnAddressCheck />
 		<NodeUpCheck />
 		<RemoteBackup />
+		<DebitRequestHandler />
 		<Modal isShown={isShown} hide={() => { toggle() }} modalContent={clipBoardContent} headerText={''} />
 	</div>
 }

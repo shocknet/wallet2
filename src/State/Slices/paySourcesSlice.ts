@@ -1,14 +1,16 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { PayTo } from '../../globalTypes';
+import { PayTo, SourceTrustLevel } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
-import { decodeNprofile, encodeNprofile } from '../../custom-nip19';
-import { OLD_NOSTR_PUB_DESTINATION } from '../../constants';
+import { decodeNprofile } from '../../constants';
 import { syncRedux } from '../store';
 import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
+import { nip19 } from 'nostr-tools'
+import { Buffer } from 'buffer';
 
+const { nprofileEncode: encodeNprofile } = nip19
 
 export type PaySourceRecord = Record<string, PayTo>;
 
@@ -19,25 +21,25 @@ export interface PaySourceState {
 
 
 export const storageKey = "payTo"
-export const VERSION = 4;
+export const VERSION = 5;
 export const migrations: Record<number, MigrationFunction<any>> = {
   // the bridge url encoded in nprofile migration
   1: (data) => {
-		console.log("running migration v1 of payToSources");
+    console.log("running migration v1 of payToSources");
     const state = data as PayTo[];
     const newState = state.map(source => {
       if (!source.pasteField.startsWith("nprofile") || source.label !== "Bootstrap Node") {
         return source
-      } else if (decodeNprofile(source.pasteField).bridge?.length) {
+      } /* else if (decodeNprofile(source.pasteField).bridge?.length) {
         return source;
-      } else {
+      } */ else {
         const decoded = decodeNprofile(source.pasteField);
         const newNprofile = encodeNprofile({
           pubkey: decoded.pubkey,
           relays: decoded.relays,
-          bridge: decoded.pubkey === OLD_NOSTR_PUB_DESTINATION ? ["https://zap.page"] : ["https://shockwallet.app"]
+          //bridge: decoded.pubkey === OLD_NOSTR_PUB_DESTINATION ? ["https://zap.page"] : ["https://shockwallet.app"]
         })
-        
+
         return {
           ...source,
           pasteField: newNprofile
@@ -67,8 +69,8 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       order
     } as PaySourceState;
   },
-   // key pair per source migration
-   3: (state) => {
+  // key pair per source migration
+  3: (state) => {
     console.log("running migration v3 of payToSources")
     const privateKey = getNostrPrivateKey()
     if (!privateKey) return state;
@@ -77,7 +79,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
         if (state.sources[key].pubSource && !state.sources[key].keys) {
           state.sources[key].keys = {
             privateKey,
-            publicKey: getPublicKey(privateKey)
+            publicKey: getPublicKey(Buffer.from(privateKey, 'hex'))
           }
         }
       }
@@ -100,7 +102,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       const publicKey = source.keys.publicKey;
       return `${lpk}-${publicKey}`;
     });
-    
+
     const newSourcesObject: PaySourceRecord = {};
     for (const key in sourcesObject) {
       // eslint-disable-next-line
@@ -119,6 +121,24 @@ export const migrations: Record<number, MigrationFunction<any>> = {
     state.sources = newSourcesObject;
     return state
 
+  },
+  5: (state) => {
+    // option field more strict
+    console.log({state})
+    state.order.forEach((id: any) => {
+      const source = state.sources[id];
+      if (!source.option) {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else if (source.option === "A little.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.LOW }
+      } else if (source.option === "Very well.") {
+        state.sources[id] = { ...source, option: SourceTrustLevel.MEDIUM }
+      } else {
+        state.sources[id] = { ...source, option: SourceTrustLevel.HIGH }
+      }
+      
+    })
+    return state
   }
 };
 
@@ -137,7 +157,7 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): { data: s
     order: mergeArrayValues(migratedRemote.order, migratedLocal.order, s => s)
   }
 
-  
+
   return {
     data: JSON.stringify({
       version: VERSION,
@@ -210,6 +230,11 @@ const paySourcesSlice = createSlice({
         return acc
       }, [] as string[]);
       update(state);
+    },
+    flipSourceNdebitDiscoverable: (state, action: PayloadAction<PayTo>) => {
+      state.sources[action.payload.id] = action.payload
+      update(state)
+      return state;
     }
   },
   extraReducers: (builder) => {
@@ -219,5 +244,5 @@ const paySourcesSlice = createSlice({
   }
 });
 
-export const { addPaySources, editPaySources, deletePaySources, setPaySources, fixPayDuplicates } = paySourcesSlice.actions;
+export const { addPaySources, editPaySources, deletePaySources, setPaySources, fixPayDuplicates, flipSourceNdebitDiscoverable } = paySourcesSlice.actions;
 export default paySourcesSlice.reducer;

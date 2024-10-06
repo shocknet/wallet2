@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { PayTo, SpendFrom } from "../../globalTypes";
+import { PayTo, SourceTrustLevel, SpendFrom } from "../../globalTypes";
 
 //It import modal component
 import { UseModal } from "../../Hooks/UseModal";
@@ -10,24 +10,24 @@ import { questionMark } from '../../Assets/SvgIconLibrary';
 import { isAxiosError } from 'axios';
 
 import { useSelector, useDispatch } from '../../State/store'; //import reducer
-import { addPaySources, editPaySources, deletePaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
-import { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
+import { addPaySources, setPaySources } from '../../State/Slices/paySourcesSlice';
+import { addSpendSources, editSpendSources, setSpendSources } from '../../State/Slices/spendSourcesSlice';
 import { Modal } from '../../Components/Modals/Modal';
-import { Destination, InputClassification, NOSTR_RELAYS, options, parseBitcoinInput } from '../../constants';
+import { Destination, InputClassification, NOSTR_RELAYS, parseBitcoinInput, decodeNprofile } from '../../constants';
 import BootstrapSource from "../../Assets/Images/bootstrap_source.jpg";
 import Sortable from 'sortablejs';
 import { useIonRouter } from '@ionic/react';
 import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayInvoice } from '../../Api/helpers';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import { removeNotify } from '../../State/Slices/notificationSlice';
 import { useLocation } from 'react-router';
-import { decodeNProfile } from '../../custom-nip19';
+
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
 import { fetchBeacon } from '../../helpers/remoteBackups';
 import { nip19 } from 'nostr-tools';
+import { setSourceToEdit } from '../../State/Slices/modalsSlice';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -44,7 +44,6 @@ export const Sources = () => {
 
   const [tempParsedWithdraw, setTempParsedWithdraw] = useState<Destination>();
   const [notifySourceId, setNotifySourceId] = useState("");
-  const notifications = useSelector(state => state.notify.notifications);
   const [integrationData, setIntegrationData] = useState({
     token: "",
     lnAddress: ""
@@ -73,7 +72,7 @@ export const Sources = () => {
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
       if (destination.data.includes("nprofile")) {
-        const data = decodeNProfile(destination.data);
+        const data = decodeNprofile(destination.data);
         fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
           if (beacon) {
             setNameFromBeacon(beacon.data.name)
@@ -118,13 +117,10 @@ export const Sources = () => {
   const spendSources = useSelector((state) => state.spendSource);
 
   const [sourcePasteField, setSourcePasteField] = useState<string>("");
-  const [sourceLabel, setSourceLabel] = useState<string>("");
-  const [optional, setOptional] = useState<string>(options.little);
 
   const [modalContent, setModalContent] = useState<undefined | null | "promptSweep" | "addSource" | "editSourcepay" | "editSourcespend" | "notify" | "sourceNotify" | "sweepLnurlModal" | "acceptInvite" | "deleteSource">();
 
   //This is the state variables what can be used to save sorce id temporarily when edit Source item
-  const [editSourceId, setEditSourceId] = useState("");
   const [processingSource, setProcessingSource] = useState(false);
 
   const { isShown, toggle } = UseModal();
@@ -141,24 +137,17 @@ export const Sources = () => {
 
   const openEditSourcePay = (key: string) => {
     const source = paySources.sources[key]
-    if (source) {
-      setEditSourceId(key);
-      setOptional(source.option || '');
-      setSourceLabel(source.label || '');
-      setModalContent("editSourcepay");
-      toggle();
-    }
+    dispatch(setSourceToEdit({ source: source, type: "payTo" }))
+
   };
 
   const EditSourceSpend_Modal = (key: string) => {
     const source = spendSources.sources[key];
-    if (source) {
-      setEditSourceId(key);
-      setOptional(source.option || '');
-      setSourceLabel(source.label || '');
-      setModalContent("editSourcespend");
-      toggle();
-    }
+    dispatch(setSourceToEdit({ 
+      source: source, 
+      type: "spendFrom",
+    }))
+
   };
 
   const Notify_Modal = () => {
@@ -180,13 +169,6 @@ export const Sources = () => {
         return sweepLnurlModal;
       case 'addSource':
         return contentAddContent
-
-      case 'editSourcepay':
-        return contentEditContent
-
-      case 'editSourcespend':
-        return contentEditContent
-
       case 'notify':
         return notifyContent
       case "sourceNotify":
@@ -194,10 +176,6 @@ export const Sources = () => {
 
       case "acceptInvite":
         return acceptInviteContent
-
-      case "deleteSource":
-        return deleteSource
-
       default:
         return notifyContent
     }
@@ -211,7 +189,7 @@ export const Sources = () => {
       return;
     }
 
-    if (!sourcePasteField || !optional) {
+    if (!sourcePasteField) {
       toast.error(<Toast title="Error" message="Please write data correctly." />)
       return;
     }
@@ -225,7 +203,7 @@ export const Sources = () => {
       // nprofile
 
       try {
-        data = decodeNProfile(inputSource);
+        data = decodeNprofile(inputSource);
         const pub = data.pubkey
         const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
         if (existingSpendSourceId) {
@@ -302,7 +280,7 @@ export const Sources = () => {
 
       const addedPaySource = {
         id: id,
-        option: optional,
+        option: SourceTrustLevel.LOW,
         icon: sndleveldomain,
         label: resultLnurl.hostname,
         pasteField: inputSource,
@@ -314,7 +292,7 @@ export const Sources = () => {
       const addedSpendSource = {
         id: id,
         label: resultLnurl.hostname,
-        option: optional,
+        option: SourceTrustLevel.LOW,
         icon: sndleveldomain,
         balance: "0",
         pasteField: inputSource,
@@ -344,7 +322,7 @@ export const Sources = () => {
         if (parsed.lnurlType === "payRequest") {
           const addedSource = {
             id: parsed.data,
-            option: optional,
+            option: SourceTrustLevel.LOW,
             icon: parsed.domainName,
             label: parsed.hostName,
             pasteField: parsed.data,
@@ -355,7 +333,7 @@ export const Sources = () => {
           const addedSource = {
             id: parsed.data,
             label: parsed.hostName,
-            option: optional,
+            option: SourceTrustLevel.LOW,
             icon: parsed.domainName,
             balance: parsed.max.toString(),
             pasteField: parsed.data,
@@ -365,7 +343,7 @@ export const Sources = () => {
       } else if (parsed.type === InputClassification.LN_ADDRESS) {
         const addedSource = {
           id: parsed.data,
-          option: optional,
+          option: SourceTrustLevel.LOW,
           icon: parsed.domainName,
           label: parsed.data,
           pasteField: parsed.data,
@@ -383,62 +361,18 @@ export const Sources = () => {
     dispatch(toggleLoading({ loadingMessage: "" }))
 
     setProcessingSource(false);
-  }, [sourcePasteField, dispatch, optional, inviteToken, paySources, spendSources, toggle, processingSource, integrationData]);
+  }, [sourcePasteField, dispatch, inviteToken, paySources, spendSources, toggle, processingSource, integrationData]);
 
-  const editPaySource = () => {
-    if (!sourceLabel || !optional) {
-      toast.error(<Toast title="Error" message="Please write data correctly." />)
-      return;
-    }
-    const paySourceToEdit: PayTo = {
-      ...paySources.sources[editSourceId],
-      option: optional,
-      label: sourceLabel,
-    };
-    dispatch(editPaySources(paySourceToEdit))
-    resetValue();
-    toggle();
 
-  };
 
-  const editSpendSource = () => {
-    if (!sourceLabel || !optional) {
-      toast.error(<Toast title="Error" message="Please write data correctly." />)
-      return
-    }
-    const spendSourceToEdit: SpendFrom = {
-      ...spendSources.sources[editSourceId],
-      option: optional,
-      label: sourceLabel
-    };
 
-    dispatch(editSpendSources(spendSourceToEdit))
-    resetValue();
-    toggle();
-  };
 
-  const deletePaySource = () => {
-    setEditSourceId("");
-    dispatch(deletePaySources(editSourceId));
-    resetValue();
-    toggle();
-  };
 
-  const deleteSpendSource = () => {
-    setEditSourceId("");
-    const associatedNotification = notifications.find(n => n.link === `/sources?sourceId=${editSourceId}`);
-    if (associatedNotification) {
-      dispatch(removeNotify(associatedNotification.date));
-    }
-    dispatch(deleteSpendSources(editSourceId));
-    resetValue();
-    toggle();
-  };
+
+
 
   const resetValue = () => {
-    setOptional(options.little);
     setSourcePasteField("");
-    setSourceLabel("");
   }
 
   const arrangeIcon = (value?: string, sourcePub?: string) => {
@@ -447,21 +381,7 @@ export const Sources = () => {
         return <React.Fragment>
           <img src={BootstrapSource} width="33px" alt='Avatar' style={{ borderRadius: "50%" }} />
         </React.Fragment>
-      case "1":
-        return icons.mynode()
-
-      case "2":
-        return icons.uncle()
-
-      case "3":
-        return icons.lightning()
-
-      case "4":
-        return icons.zbd()
-
-      case "5":
-        return icons.stacker()
-
+      // Cases 1-5 have been removed as placeholder examples.
       default:
         if (sourcePub) {
           return <React.Fragment>
@@ -513,30 +433,10 @@ export const Sources = () => {
 
   const contentAddContent = <React.Fragment>
     <div className='Sources_modal_header'>Add Source</div>
-    <div className='Sources_modal_discription'>How well do you trust this node?</div>
-    <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optional === options.little ? "active" : ""}`} onClick={() => setOptional(options.little)}>
-        <div className="Sources_modal_input">
-          <p>🔓</p>
-          A little.
-        </div>
-      </div>
-      <div className={`Sources_modal_select_state_column ${optional === options.very ? "active" : ""}`} onClick={() => setOptional(options.very)}>
-        <div className="Sources_modal_input">
-          <p>🫡</p>
-          Very well.
-        </div>
-      </div>
-      <div className={`Sources_modal_select_state_column ${optional === options.mine ? "active" : ""}`} onClick={() => setOptional(options.mine)}>
-        <div className="Sources_modal_input">
-          <p>🏠</p>
-          It&apos;s my node.
-        </div>
-      </div>
-    </div>
+
     <div className='Sources_modal_code'>
       <input
-        placeholder="Paste an LNURL, Lightning Address, or LP"
+        placeholder="Paste an NProfile or Lightning Address"
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
       />
@@ -544,42 +444,9 @@ export const Sources = () => {
     <div className="Sources_modal_add_btn">
       <button onClick={addSource}>Add</button>
     </div>
-    {(Object.values(paySources.sources).filter((e) => e.icon != "0").length == 0 && Object.values(spendSources.sources).filter((e) => e.icon != "0").length == 0) ? (<div className="Sources_modal_add_btn_bottom">
-      <p>or</p>
-      <button onClick={() => { router.push("/auth") }}>Recover Backup</button>
-    </div>) : null}
 
-  </React.Fragment>;
+  </React.Fragment>; 
 
-  const contentEditContent = <React.Fragment>
-    <div className='Sources_modal_header'>Edit Source</div>
-    <div className='Sources_modal_discription'>How well do you trust this node?</div>
-    <div className='Sources_modal_select_state'>
-      <div className={`Sources_modal_select_state_column ${optional === options.little ? "active" : ""}`} onClick={() => setOptional(options.little)}>
-        <div className="Sources_modal_icon">🔓</div>
-        <div className="Sources_modal_input">A little.</div>
-      </div>
-      <div className={`Sources_modal_select_state_column ${optional === options.very ? "active" : ""}`} onClick={() => setOptional(options.very)}>
-        <div className="Sources_modal_icon">🫡</div>
-        <div className="Sources_modal_input">Very well.</div>
-      </div>
-      <div className={`Sources_modal_select_state_column ${optional === options.mine ? "active" : ""}`} onClick={() => setOptional(options.mine)}>
-        <div className="Sources_modal_icon">🏠</div>
-        <div className="Sources_modal_input">It&apos;s my node.</div>
-      </div>
-    </div>
-    <div className='Sources_modal_code'>
-      <input
-        value={sourceLabel} placeholder="Optional label..."
-        onChange={(e) => setSourceLabel(e.target.value)}
-      />
-    </div>
-    <div className="Sources_modal_add_btn">
-      <button onClick={()=>{ setModalContent("deleteSource"); }}>Delete</button>
-      <button onClick={()=>{editPaySource(); editSpendSource();}}>Edit</button>
-    </div>
-
-  </React.Fragment>;
 
   const notifyContent = <React.Fragment>
     <div className="Sources_notify">
@@ -641,20 +508,6 @@ export const Sources = () => {
     </div>
   </React.Fragment>
 
-  const deleteSource = (
-    <React.Fragment>
-      <div className="Sources_modal_discription">
-        Are you sure you want to delete this source?
-      </div>
-      <div className="Sources_modal_add_btn">
-        <button onClick={()=>{setModalContent("editSourcespend");}}>Cancel</button>
-        <button onClick={()=>{
-          deletePaySource();
-          deleteSpendSource();
-        }}>Ok</button>
-      </div>
-    </React.Fragment>
-  );
 
 
   useEffect(() => {

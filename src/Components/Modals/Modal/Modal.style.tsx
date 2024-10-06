@@ -33,13 +33,14 @@ export const StyledModal = styled.div`
   max-width: 600px;
   border: 1px solid #29abe2;
   font-family: Montserrat;
-  padding: 25px 20px 0px 20px;
+  padding: 25px 20px 25px 20px;
   text-align: center;
   z-index: 100;
   font-size: 20px;
   background: linear-gradient(135deg, #16191c, #151d24);
   margin: auto;
   border-radius: 5px;
+  position: relative;
 `;
 
 export const Header = styled.div`
@@ -68,6 +69,4 @@ export const CloseButton = styled.button`
 export const Content = styled.div`
   font-family: Montserrat;
   max-height: 30rem;
-  overflow-x: hidden;
-  overflow-y: auto;
 `;
