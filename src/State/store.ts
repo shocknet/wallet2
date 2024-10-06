@@ -19,6 +19,7 @@ import { backup } from './backupMiddleware';
 import { BackupAction } from './types';
 import { bridgeMiddleware } from './bridgeMiddleware';
 import modalsSlice from './Slices/modalsSlice';
+import { ndebitMiddleware } from './ndebitDiscoverableMiddleware';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
@@ -46,7 +47,7 @@ export const reducer = combineReducers({
 const store = configureStore({
   reducer: reducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware),
+    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware, ndebitMiddleware.middleware),
 });
 export type State = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
