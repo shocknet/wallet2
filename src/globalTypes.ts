@@ -151,6 +151,7 @@ export interface PayTo {
   pubSource?: boolean,
   keys: NostrKeyPair
   bridgeUrl?: string
+  isNdebitDiscoverable?: boolean
 }
 
 export interface FiatCurrency {

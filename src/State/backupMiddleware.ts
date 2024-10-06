@@ -1,5 +1,5 @@
 import { addListener, AnyAction, TypedAddListener, createAction, createListenerMiddleware, ListenerEffectAPI, TaskAbortError, ThunkDispatch, removeListener, TypedRemoveListener, TypedStartListening } from "@reduxjs/toolkit";
-import { addPaySources, deletePaySources, editPaySources, PaySourceRecord, setPaySources } from "./Slices/paySourcesSlice";
+import { addPaySources, deletePaySources, editPaySources, flipSourceNdebitDiscoverable, PaySourceRecord, setPaySources } from "./Slices/paySourcesSlice";
 import { setLatestLnurlOperation } from "./Slices/HistorySlice";
 import { addSpendSources, deleteSpendSources, editSpendSources, setSpendSources, SpendSourceRecord } from "./Slices/spendSourcesSlice";
 import { fetchRemoteBackup, saveChangelog, saveRemoteBackup, subscribeToRemoteChangelogs } from "../helpers/remoteBackups";
@@ -428,7 +428,8 @@ export const backupMiddleware = {
 				deletePaySources.match(action) ||
 				setPaySources.match(action) ||
 				setLatestLnurlOperation.match(action) ||
-				setPrefs.match(action)
+				setPrefs.match(action) ||
+				flipSourceNdebitDiscoverable.match(action)
 			)
 		);
 	},

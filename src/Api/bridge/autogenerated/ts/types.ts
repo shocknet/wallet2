@@ -7,13 +7,13 @@ export type RequestStats = { startMs:number, start:bigint, parse: bigint, guard:
 export type RequestMetric = AuthContext & RequestInfo & RequestStats & { error?: string }
 export type GuestContext = {
 }
-export type GuestMethodInputs = GetOrCreateVanityName_Input | HandleLnurlPay_Input | HandleLnurlPayUsername_Input | HandleLnurlAddress_Input
-export type GuestMethodOutputs = GetOrCreateVanityName_Output | HandleLnurlPay_Output | HandleLnurlPayUsername_Output | HandleLnurlAddress_Output
+export type GuestMethodInputs = GetOrCreateVanityName_Input | HandleLnurlPay_Input | HandleLnurlPayUsername_Input | HandleLnurlAddress_Input | HandleNip05Info_Input
+export type GuestMethodOutputs = GetOrCreateVanityName_Output | HandleLnurlPay_Output | HandleLnurlPayUsername_Output | HandleLnurlAddress_Output | HandleNip05Info_Output
 export type NostrContext = {
     nostrPubKey: string
 }
-export type NostrMethodInputs = GetOrCreateNofferName_Input
-export type NostrMethodOutputs = GetOrCreateNofferName_Output
+export type NostrMethodInputs = GetOrCreateNofferName_Input | UpdateMappingNdebit_Input
+export type NostrMethodOutputs = GetOrCreateNofferName_Output | UpdateMappingNdebit_Output
 export type AuthContext = GuestContext | NostrContext
 
 export type GetOrCreateVanityName_Input = {rpcName:'GetOrCreateVanityName', req: GetOrCreateVanityNameRequest}
@@ -21,6 +21,9 @@ export type GetOrCreateVanityName_Output = ResultError | ({ status: 'OK' } & Get
 
 export type GetOrCreateNofferName_Input = {rpcName:'GetOrCreateNofferName', req: GetOrCreateNofferNameRequest}
 export type GetOrCreateNofferName_Output = ResultError | ({ status: 'OK' } & GetOrCreateNofferNameResponse)
+
+export type UpdateMappingNdebit_Input = {rpcName:'UpdateMappingNdebit', req: UpdateMappingNdebitRequest}
+export type UpdateMappingNdebit_Output = ResultError | { status: 'OK' }
 
 export type HandleLnurlPay_Query = {
     k1?: string
@@ -44,17 +47,72 @@ export type HandleLnurlAddress_RouteParams = {
 export type HandleLnurlAddress_Input = {rpcName:'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams}
 export type HandleLnurlAddress_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
+export type HandleNip05Info_Query = {
+    name?: string
+}
+export type HandleNip05Info_Input = {rpcName:'HandleNip05Info', query: HandleNip05Info_Query}
+export type HandleNip05Info_Output = ResultError | ({ status: 'OK' } & nip05Names)
+
 export type ServerMethods = {
     GetOrCreateVanityName?: (req: GetOrCreateVanityName_Input & {ctx: GuestContext, requestObject: Request }) => Promise<GetOrCreateVanityNameResponse>
     GetOrCreateNofferName?: (req: GetOrCreateNofferName_Input & {ctx: NostrContext, requestObject: Request }) => Promise<GetOrCreateNofferNameResponse>
+    UpdateMappingNdebit?: (req: UpdateMappingNdebit_Input & {ctx: NostrContext, requestObject: Request }) => Promise<void>
     HandleLnurlPay?: (req: HandleLnurlPay_Input & {ctx: GuestContext, requestObject: Request }) => Promise<HandleLnurlPayResponse>
     HandleLnurlPayUsername?: (req: HandleLnurlPayUsername_Input & {ctx: GuestContext, requestObject: Request }) => Promise<HandleLnurlPayResponse>
     HandleLnurlAddress?: (req: HandleLnurlAddress_Input & {ctx: GuestContext, requestObject: Request }) => Promise<LnurlPayInfoResponse>
+    HandleNip05Info?: (req: HandleNip05Info_Input & {ctx: GuestContext, requestObject: Request }) => Promise<nip05Names>
 }
 
 
 export type OptionsBaseMessage = {
     allOptionalsAreSet?: true
+}
+
+export type GetOrCreateVanityNameResponse = {
+    vanity_name: string
+}
+export const GetOrCreateVanityNameResponseOptionalFields: [] = []
+export type GetOrCreateVanityNameResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    vanity_name_CustomCheck?: (v: string) => boolean
+}
+export const GetOrCreateVanityNameResponseValidate = (o?: GetOrCreateVanityNameResponse, opts: GetOrCreateVanityNameResponseOptions = {}, path: string = 'GetOrCreateVanityNameResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.vanity_name !== 'string') return new Error(`${path}.vanity_name: is not a string`)
+    if (opts.vanity_name_CustomCheck && !opts.vanity_name_CustomCheck(o.vanity_name)) return new Error(`${path}.vanity_name: custom check failed`)
+
+    return null
+}
+
+export type GetOrCreateNofferNameRequest = {
+    noffer: string
+    ndebit?: string
+    k1?: string
+}
+export type GetOrCreateNofferNameRequestOptionalField = 'ndebit' | 'k1'
+export const GetOrCreateNofferNameRequestOptionalFields: GetOrCreateNofferNameRequestOptionalField[] = ['ndebit', 'k1']
+export type GetOrCreateNofferNameRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: GetOrCreateNofferNameRequestOptionalField[]
+    noffer_CustomCheck?: (v: string) => boolean
+    ndebit_CustomCheck?: (v?: string) => boolean
+    k1_CustomCheck?: (v?: string) => boolean
+}
+export const GetOrCreateNofferNameRequestValidate = (o?: GetOrCreateNofferNameRequest, opts: GetOrCreateNofferNameRequestOptions = {}, path: string = 'GetOrCreateNofferNameRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.noffer !== 'string') return new Error(`${path}.noffer: is not a string`)
+    if (opts.noffer_CustomCheck && !opts.noffer_CustomCheck(o.noffer)) return new Error(`${path}.noffer: custom check failed`)
+
+    if ((o.ndebit || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('ndebit')) && typeof o.ndebit !== 'string') return new Error(`${path}.ndebit: is not a string`)
+    if (opts.ndebit_CustomCheck && !opts.ndebit_CustomCheck(o.ndebit)) return new Error(`${path}.ndebit: custom check failed`)
+
+    if ((o.k1 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('k1')) && typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
+    if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
+
+    return null
 }
 
 export type HandleLnurlPayResponse = {
@@ -81,60 +139,6 @@ export const HandleLnurlPayResponseValidate = (o?: HandleLnurlPayResponse, opts:
         if (routesErr !== null) return routesErr
     }
     if (opts.routes_CustomCheck && !opts.routes_CustomCheck(o.routes)) return new Error(`${path}.routes: custom check failed`)
-
-    return null
-}
-
-export type LnurlPayInfoResponse = {
-    maxSendable: number
-    minSendable: number
-    metadata: string
-    allowsNostr?: boolean
-    nostrPubkey?: string
-    nip69?: string
-    tag: string
-    callback: string
-}
-export type LnurlPayInfoResponseOptionalField = 'allowsNostr' | 'nostrPubkey' | 'nip69'
-export const LnurlPayInfoResponseOptionalFields: LnurlPayInfoResponseOptionalField[] = ['allowsNostr', 'nostrPubkey', 'nip69']
-export type LnurlPayInfoResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: LnurlPayInfoResponseOptionalField[]
-    maxSendable_CustomCheck?: (v: number) => boolean
-    minSendable_CustomCheck?: (v: number) => boolean
-    metadata_CustomCheck?: (v: string) => boolean
-    allowsNostr_CustomCheck?: (v?: boolean) => boolean
-    nostrPubkey_CustomCheck?: (v?: string) => boolean
-    nip69_CustomCheck?: (v?: string) => boolean
-    tag_CustomCheck?: (v: string) => boolean
-    callback_CustomCheck?: (v: string) => boolean
-}
-export const LnurlPayInfoResponseValidate = (o?: LnurlPayInfoResponse, opts: LnurlPayInfoResponseOptions = {}, path: string = 'LnurlPayInfoResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.tag !== 'string') return new Error(`${path}.tag: is not a string`)
-    if (opts.tag_CustomCheck && !opts.tag_CustomCheck(o.tag)) return new Error(`${path}.tag: custom check failed`)
-
-    if (typeof o.callback !== 'string') return new Error(`${path}.callback: is not a string`)
-    if (opts.callback_CustomCheck && !opts.callback_CustomCheck(o.callback)) return new Error(`${path}.callback: custom check failed`)
-
-    if (typeof o.maxSendable !== 'number') return new Error(`${path}.maxSendable: is not a number`)
-    if (opts.maxSendable_CustomCheck && !opts.maxSendable_CustomCheck(o.maxSendable)) return new Error(`${path}.maxSendable: custom check failed`)
-
-    if (typeof o.minSendable !== 'number') return new Error(`${path}.minSendable: is not a number`)
-    if (opts.minSendable_CustomCheck && !opts.minSendable_CustomCheck(o.minSendable)) return new Error(`${path}.minSendable: custom check failed`)
-
-    if (typeof o.metadata !== 'string') return new Error(`${path}.metadata: is not a string`)
-    if (opts.metadata_CustomCheck && !opts.metadata_CustomCheck(o.metadata)) return new Error(`${path}.metadata: custom check failed`)
-
-    if ((o.allowsNostr || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('allowsNostr')) && typeof o.allowsNostr !== 'boolean') return new Error(`${path}.allowsNostr: is not a boolean`)
-    if (opts.allowsNostr_CustomCheck && !opts.allowsNostr_CustomCheck(o.allowsNostr)) return new Error(`${path}.allowsNostr: custom check failed`)
-
-    if ((o.nostrPubkey || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nostrPubkey')) && typeof o.nostrPubkey !== 'string') return new Error(`${path}.nostrPubkey: is not a string`)
-    if (opts.nostrPubkey_CustomCheck && !opts.nostrPubkey_CustomCheck(o.nostrPubkey)) return new Error(`${path}.nostrPubkey: custom check failed`)
-
-    if ((o.nip69 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nip69')) && typeof o.nip69 !== 'string') return new Error(`${path}.nip69: is not a string`)
-    if (opts.nip69_CustomCheck && !opts.nip69_CustomCheck(o.nip69)) return new Error(`${path}.nip69: custom check failed`)
 
     return null
 }
@@ -167,53 +171,11 @@ export const GetOrCreateVanityNameRequestValidate = (o?: GetOrCreateVanityNameRe
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if ((o.noffer || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('noffer')) && typeof o.noffer !== 'string') return new Error(`${path}.noffer: is not a string`)
-    if (opts.noffer_CustomCheck && !opts.noffer_CustomCheck(o.noffer)) return new Error(`${path}.noffer: custom check failed`)
-
     if (typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
     if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
 
-    return null
-}
-
-export type GetOrCreateVanityNameResponse = {
-    vanity_name: string
-}
-export const GetOrCreateVanityNameResponseOptionalFields: [] = []
-export type GetOrCreateVanityNameResponseOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
-    vanity_name_CustomCheck?: (v: string) => boolean
-}
-export const GetOrCreateVanityNameResponseValidate = (o?: GetOrCreateVanityNameResponse, opts: GetOrCreateVanityNameResponseOptions = {}, path: string = 'GetOrCreateVanityNameResponse::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.vanity_name !== 'string') return new Error(`${path}.vanity_name: is not a string`)
-    if (opts.vanity_name_CustomCheck && !opts.vanity_name_CustomCheck(o.vanity_name)) return new Error(`${path}.vanity_name: custom check failed`)
-
-    return null
-}
-
-export type GetOrCreateNofferNameRequest = {
-    noffer: string
-    k1?: string
-}
-export type GetOrCreateNofferNameRequestOptionalField = 'k1'
-export const GetOrCreateNofferNameRequestOptionalFields: GetOrCreateNofferNameRequestOptionalField[] = ['k1']
-export type GetOrCreateNofferNameRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: GetOrCreateNofferNameRequestOptionalField[]
-    noffer_CustomCheck?: (v: string) => boolean
-    k1_CustomCheck?: (v?: string) => boolean
-}
-export const GetOrCreateNofferNameRequestValidate = (o?: GetOrCreateNofferNameRequest, opts: GetOrCreateNofferNameRequestOptions = {}, path: string = 'GetOrCreateNofferNameRequest::root.'): Error | null => {
-    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
-    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (typeof o.noffer !== 'string') return new Error(`${path}.noffer: is not a string`)
+    if ((o.noffer || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('noffer')) && typeof o.noffer !== 'string') return new Error(`${path}.noffer: is not a string`)
     if (opts.noffer_CustomCheck && !opts.noffer_CustomCheck(o.noffer)) return new Error(`${path}.noffer: custom check failed`)
-
-    if ((o.k1 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('k1')) && typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
-    if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
 
     return null
 }
@@ -232,6 +194,118 @@ export const GetOrCreateNofferNameResponseValidate = (o?: GetOrCreateNofferNameR
 
     if (typeof o.vanity_name !== 'string') return new Error(`${path}.vanity_name: is not a string`)
     if (opts.vanity_name_CustomCheck && !opts.vanity_name_CustomCheck(o.vanity_name)) return new Error(`${path}.vanity_name: custom check failed`)
+
+    return null
+}
+
+export type LnurlPayInfoResponse = {
+    tag: string
+    allowsNostr?: boolean
+    nip69?: string
+    nip05?: string
+    callback: string
+    maxSendable: number
+    minSendable: number
+    metadata: string
+    nostrPubkey?: string
+}
+export type LnurlPayInfoResponseOptionalField = 'allowsNostr' | 'nip69' | 'nip05' | 'nostrPubkey'
+export const LnurlPayInfoResponseOptionalFields: LnurlPayInfoResponseOptionalField[] = ['allowsNostr', 'nip69', 'nip05', 'nostrPubkey']
+export type LnurlPayInfoResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: LnurlPayInfoResponseOptionalField[]
+    tag_CustomCheck?: (v: string) => boolean
+    allowsNostr_CustomCheck?: (v?: boolean) => boolean
+    nip69_CustomCheck?: (v?: string) => boolean
+    nip05_CustomCheck?: (v?: string) => boolean
+    callback_CustomCheck?: (v: string) => boolean
+    maxSendable_CustomCheck?: (v: number) => boolean
+    minSendable_CustomCheck?: (v: number) => boolean
+    metadata_CustomCheck?: (v: string) => boolean
+    nostrPubkey_CustomCheck?: (v?: string) => boolean
+}
+export const LnurlPayInfoResponseValidate = (o?: LnurlPayInfoResponse, opts: LnurlPayInfoResponseOptions = {}, path: string = 'LnurlPayInfoResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.callback !== 'string') return new Error(`${path}.callback: is not a string`)
+    if (opts.callback_CustomCheck && !opts.callback_CustomCheck(o.callback)) return new Error(`${path}.callback: custom check failed`)
+
+    if (typeof o.maxSendable !== 'number') return new Error(`${path}.maxSendable: is not a number`)
+    if (opts.maxSendable_CustomCheck && !opts.maxSendable_CustomCheck(o.maxSendable)) return new Error(`${path}.maxSendable: custom check failed`)
+
+    if (typeof o.minSendable !== 'number') return new Error(`${path}.minSendable: is not a number`)
+    if (opts.minSendable_CustomCheck && !opts.minSendable_CustomCheck(o.minSendable)) return new Error(`${path}.minSendable: custom check failed`)
+
+    if (typeof o.metadata !== 'string') return new Error(`${path}.metadata: is not a string`)
+    if (opts.metadata_CustomCheck && !opts.metadata_CustomCheck(o.metadata)) return new Error(`${path}.metadata: custom check failed`)
+
+    if ((o.nostrPubkey || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nostrPubkey')) && typeof o.nostrPubkey !== 'string') return new Error(`${path}.nostrPubkey: is not a string`)
+    if (opts.nostrPubkey_CustomCheck && !opts.nostrPubkey_CustomCheck(o.nostrPubkey)) return new Error(`${path}.nostrPubkey: custom check failed`)
+
+    if (typeof o.tag !== 'string') return new Error(`${path}.tag: is not a string`)
+    if (opts.tag_CustomCheck && !opts.tag_CustomCheck(o.tag)) return new Error(`${path}.tag: custom check failed`)
+
+    if ((o.allowsNostr || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('allowsNostr')) && typeof o.allowsNostr !== 'boolean') return new Error(`${path}.allowsNostr: is not a boolean`)
+    if (opts.allowsNostr_CustomCheck && !opts.allowsNostr_CustomCheck(o.allowsNostr)) return new Error(`${path}.allowsNostr: custom check failed`)
+
+    if ((o.nip69 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nip69')) && typeof o.nip69 !== 'string') return new Error(`${path}.nip69: is not a string`)
+    if (opts.nip69_CustomCheck && !opts.nip69_CustomCheck(o.nip69)) return new Error(`${path}.nip69: custom check failed`)
+
+    if ((o.nip05 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('nip05')) && typeof o.nip05 !== 'string') return new Error(`${path}.nip05: is not a string`)
+    if (opts.nip05_CustomCheck && !opts.nip05_CustomCheck(o.nip05)) return new Error(`${path}.nip05: custom check failed`)
+
+    return null
+}
+
+export type nip05Names = {
+    names: Record<string, string>
+    nip69: Record<string, string>
+    nip68: Record<string, string>
+}
+export const nip05NamesOptionalFields: [] = []
+export type nip05NamesOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    names_CustomCheck?: (v: Record<string, string>) => boolean
+    nip69_CustomCheck?: (v: Record<string, string>) => boolean
+    nip68_CustomCheck?: (v: Record<string, string>) => boolean
+}
+export const nip05NamesValidate = (o?: nip05Names, opts: nip05NamesOptions = {}, path: string = 'nip05Names::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.nip69 !== 'object' || o.nip69 === null) return new Error(`${path}.nip69: is not an object or is null`)
+    for (const key in o.nip69) {
+        if (typeof o.nip69[key] !== 'string') return new Error(`${path}.nip69['${key}']: is not a string`)
+    }
+
+    if (typeof o.nip68 !== 'object' || o.nip68 === null) return new Error(`${path}.nip68: is not an object or is null`)
+    for (const key in o.nip68) {
+        if (typeof o.nip68[key] !== 'string') return new Error(`${path}.nip68['${key}']: is not a string`)
+    }
+
+    if (typeof o.names !== 'object' || o.names === null) return new Error(`${path}.names: is not an object or is null`)
+    for (const key in o.names) {
+        if (typeof o.names[key] !== 'string') return new Error(`${path}.names['${key}']: is not a string`)
+    }
+
+    return null
+}
+
+export type UpdateMappingNdebitRequest = {
+    ndebit?: string
+}
+export type UpdateMappingNdebitRequestOptionalField = 'ndebit'
+export const UpdateMappingNdebitRequestOptionalFields: UpdateMappingNdebitRequestOptionalField[] = ['ndebit']
+export type UpdateMappingNdebitRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: UpdateMappingNdebitRequestOptionalField[]
+    ndebit_CustomCheck?: (v?: string) => boolean
+}
+export const UpdateMappingNdebitRequestValidate = (o?: UpdateMappingNdebitRequest, opts: UpdateMappingNdebitRequestOptions = {}, path: string = 'UpdateMappingNdebitRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.ndebit || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('ndebit')) && typeof o.ndebit !== 'string') return new Error(`${path}.ndebit: is not a string`)
+    if (opts.ndebit_CustomCheck && !opts.ndebit_CustomCheck(o.ndebit)) return new Error(`${path}.ndebit: custom check failed`)
 
     return null
 }

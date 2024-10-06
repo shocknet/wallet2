@@ -230,6 +230,11 @@ const paySourcesSlice = createSlice({
         return acc
       }, [] as string[]);
       update(state);
+    },
+    flipSourceNdebitDiscoverable: (state, action: PayloadAction<PayTo>) => {
+      state.sources[action.payload.id] = action.payload
+      update(state)
+      return state;
     }
   },
   extraReducers: (builder) => {
@@ -239,5 +244,5 @@ const paySourcesSlice = createSlice({
   }
 });
 
-export const { addPaySources, editPaySources, deletePaySources, setPaySources, fixPayDuplicates } = paySourcesSlice.actions;
+export const { addPaySources, editPaySources, deletePaySources, setPaySources, fixPayDuplicates, flipSourceNdebitDiscoverable } = paySourcesSlice.actions;
 export default paySourcesSlice.reducer;
