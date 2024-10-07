@@ -16,7 +16,7 @@ ShockWallet is the first wallet to use Nostr based accounts for Lightning Networ
 
 ShockWallet features node multi-sourcing and is pushing the boundaries of automation, allowing you to also connect to multiple accounts, including legacy LNURL ones, to manage your balances through a single interface. 
 
-As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities via NIP78, enabling for example a shared wallet state between a Desktop and Phone. We're also pushing the boundries of Nostr and Lightning integration with [new NIPs](https://github.com/nostr-protocol/nips/pull/1460/files) that create more secure app connections with better UX than is currently available.
+As a Nostr-native wallet, ShockWallet also provides [multi-device sync abilities](https://x.com/shocknet_justin/status/1823111069486735530) via NIP78, enabling for example a shared wallet state between a Desktop and Phone. We're also pushing the boundries of Nostr and Lightning integration with [new NIPs](https://github.com/nostr-protocol/nips/pull/1460/files) that create more secure app connections with better UX than is currently available.
 
 **For new users, an optional Bootstrap node is default on mainnet allowing for the lay-away of a self-custodied channel for your own node with a partner LSP.** [*Service subject to Terms*](https://docs.shock.network/terms)
 
@@ -26,7 +26,7 @@ As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities 
     <img src="https://cdn.shockwallet.app/add_src_sm.png" height="20%" alt="Connect Wallet"> <img src="https://cdn.shockwallet.app/src_invite_sm.png" height="20%" alt="Invite Guests">
 
 
-- Built with React and Ionic, builds for [Web Browser](https://my.shockwallet.app), [Android APK](https://dl.shockwallet.app/shockwallet.apk), or [Apple iOS](https://testflight.apple.com/join/soZAKZWj) are available from a single code-base.
+- Built with React and Ionic, builds for [Web Browser](https://my.shockwallet.app), [Android APK](https://github.com/shocknet/wallet2/releases/latest), or [Apple iOS](https://testflight.apple.com/join/soZAKZWj) are available from a single code-base.
 
 - This is a reference wallet client for [Lightning.Pub](https://github.com/shocknet/Lightning.Pub) and also contains the beginnings of a node management dashboard.
     - This will be both hidden and secured from your guests, tap the logo 3 times in the wallet to preview it.
@@ -35,7 +35,7 @@ As a Nostr-native wallet, ShockWallet also provides multi-device sync abilities 
 
 # Try It Now
 
-## [Web Browser/PWA](https://my.ShockWallet.app) | [Download Android APK](https://dl.shockwallet.app/shockwallet.apk) | [Apple Testflight](https://testflight.apple.com/join/soZAKZWj)
+## [Web Browser/PWA](https://my.ShockWallet.app) | [Download Android APK](https://github.com/shocknet/wallet2/releases/latest) | [Apple Testflight](https://testflight.apple.com/join/soZAKZWj)
 
 > [!WARNING]  
 > While already a more usable daily driver than most Lightning wallets, this software is still in alpha development. There will be bugs and bad UX decisions, please report any that you may find. 
