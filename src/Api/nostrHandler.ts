@@ -282,7 +282,7 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
     return {
         content: data,
         created_at: Math.floor(Date.now() / 1000),
-        kind: 5500,
+        kind: 2121,
         tags: [["d", changelogsTag]],
         pubkey
     }
@@ -292,7 +292,7 @@ export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp
     return pool.subscribeMany(relays, [
         {
             since: timestamp,
-            kinds: [5500],
+            kinds: [2121],
             '#d': [changelogsTag],
             authors: [pubkey]
         }
