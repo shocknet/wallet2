@@ -1,3 +1,4 @@
+import { SubCloser } from "nostr-tools/lib/types/abstract-pool"
 import logger from "../Api/helpers/logger"
 import { getNip78Event, newNip78ChangelogEvent, newNip78Event, publishNostrEvent, pubServiceTag, subToNip78Changelogs } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
@@ -23,20 +24,18 @@ export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'acces
 export const subscribeToRemoteChangelogs = async (
     latestTimestamp: number,
     handleChangelogCallback: (decrypted: string, eventTimestamp: number) => Promise<void>,
-): Promise<() => void> => {
+): Promise<SubCloser> => {
     const ext = getSanctumNostrExtention()
     if (!ext.valid) {
         throw new Error("accessTokenMissing")
     }
     const pubkey = await ext.getPublicKey()
     const relays = await ext.getRelays()
-    const closer = subToNip78Changelogs(pubkey, Object.keys(relays), latestTimestamp, async event => {
+    const subCloser = subToNip78Changelogs(pubkey, Object.keys(relays), latestTimestamp, async event => {
         const decrypted = await ext.decrypt(pubkey, event.content);
         await handleChangelogCallback(decrypted, event.created_at);
     });
-    return () => {
-        closer.close()
-    }
+    return subCloser
 }
 
 export const saveChangelog = async (changelog: string): Promise<number> => {

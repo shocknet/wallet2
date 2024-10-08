@@ -289,16 +289,22 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
 }
 
 export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number, onEvent: (e: Event) => Promise<void>) => {
-    return pool.subscribeMany(relays, [
+    return pool.subscribeMany(
+        relays,
+        [
+            {
+                since: timestamp,
+                kinds: [2121],
+                '#d': [changelogsTag],
+                authors: [pubkey]
+            }
+        ],
         {
-            since: timestamp,
-            kinds: [2121],
-            '#d': [changelogsTag],
-            authors: [pubkey]
+            onevent: (e) => {
+                onEvent(e)
+            },
         }
-    ], {
-        onevent: (e) => { onEvent(e) }
-    })
+    )
 }
 
 
