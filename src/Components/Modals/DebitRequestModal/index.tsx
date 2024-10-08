@@ -358,7 +358,7 @@ const RulesState = ({
 				<button onClick={cancelCallback}>
 					<>
 						<CrossIcon />
-						Deny
+						Cancel
 					</>
 				</button>
 				<button onClick={confirmCallback}>
