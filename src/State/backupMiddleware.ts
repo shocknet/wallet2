@@ -413,7 +413,7 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 		}
 	}
 }
-
+let changelogsTasksQueue: Changelog[] = [];
 export const backupMiddleware = {
 	predicate: (action: AnyAction) => {
 		return (
@@ -434,8 +434,6 @@ export const backupMiddleware = {
 		);
 	},
 	effect: async (action: AnyAction, listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>) => {
-
-
 		console.log("changelog sending triggered", action)
 		const state = listenerApi.getState();
 		const newHash = getStateHash(state);
@@ -443,7 +441,19 @@ export const backupMiddleware = {
 		localStorage.setItem(STATE_HASH, newHash)
 		const id = getDeviceId()
 		const changelog: Changelog = { action: { type: action.type, payload: action.payload },  id, previousHash: previousHash!, newHash: getStateHash(listenerApi.getState()) }
-		await shardAndBackupState(state, newHash, [changelog])
+		changelogsTasksQueue.push(changelog)
+		try {
+			await listenerApi.delay(100)
+			console.log("Releasing")
+		} catch(err) {
+			if (err instanceof TaskAbortError) {
+				return;
+			}
+		}
+		listenerApi.cancelActiveListeners();
+		
+		await shardAndBackupState(state, newHash, changelogsTasksQueue)
+		changelogsTasksQueue = []
 	}
 }
 
@@ -529,10 +539,13 @@ export const backupPollingMiddleware = {
 			localStorage.setItem(CHANGELOG_TIMESTAMP, timestamp.toString());
 		}
 
-		const pollingTask = listenerApi.fork(async (forkApi) => {
+		const pollingTask = listenerApi.fork(async () => {
+			let subCloser = {
+				close: () => {}
+			}
 			try {
 				console.log("Now stable device, listenting for changelogs")
-				const unsubFunc = await subscribeToRemoteChangelogs(
+				subCloser = await subscribeToRemoteChangelogs(
 					Number(timestamp),
 					async (decrypted, eventTimestamp) => {
 						const changelog = JSON.parse(decrypted) as Changelog;
@@ -546,11 +559,9 @@ export const backupPollingMiddleware = {
 					}
 				);
 
-				forkApi.signal.addEventListener("abort", () => {
-					unsubFunc();
-				})
 				
 			} catch (err) {
+				subCloser.close()
 				listenerApi.subscribe()
 				if (err instanceof TaskAbortError) {
 					console.log("task was aborted")
