@@ -262,7 +262,7 @@ export const Send = () => {
         case InputClassification.LN_ADDRESS:
         case InputClassification.LNURL: {
           let invoice = "";
-          if (destination.noffer) {
+          if (destination.noffer && selectedSource.pubSource) {
             invoice = await createNofferInvoice(destination.noffer, selectedSource.keys, amount);
           } else {
             invoice = await createLnurlInvoice(amount, destination);
@@ -293,7 +293,7 @@ export const Send = () => {
           pub: selectedSource.id,
           operation: {
             amount,
-            identifier: destination.data,
+            identifier: payRes.data,
             inbound: false,
             operationId: `${destination.data}-${amount}-${timestamp}`,
             paidAtUnix: timestamp,

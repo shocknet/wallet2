@@ -1,7 +1,10 @@
 .SwItem{
   font-size: 1.2rem;
   border: none;
-  display: flow-root;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
   margin: auto;
   width: 100%;
   cursor: pointer;
@@ -19,19 +22,21 @@
   }
 
   &_left{
-    float: left;
     display: flex;
     margin-top: 5px;
+    max-width: 80%;
+    flex: 1;
   }
 
   &_right{
-    margin-right: 5px;
-    float: right;
     margin-top: 5px;
+    flex-shrink: 0;
+    max-width: 20%;
   }
 
   &_text{
     margin-left: 5px;
+    width: 100%;
   }
 
   &_date{
@@ -41,8 +46,16 @@
 
   &_station{
     margin-top: 7px;
-    font-size: 18px;
+    font-size: clamp(14px, 3vw, 18px);
     color: #2aabe1;
+    width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+
+
+
   }
 
   &_price{
@@ -58,6 +71,9 @@
     text-align: right;
     font-size: 16px;
     margin-bottom: 2px;
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
   }
 
   &_divider {

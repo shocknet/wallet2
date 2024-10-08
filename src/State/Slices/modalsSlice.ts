@@ -5,7 +5,7 @@ import { PayTo, SpendFrom } from '../../globalTypes';
 type ModalRequest = { request: LiveDebitRequest, sourceId: string }
 export type EditDebit = DebitAuthorization & { sourceId: string, domainName?: string, avatarUrl?: string }
 
-type SourceToEdit = {
+export type SourceToEdit = {
 	type: "payTo";
 	source: PayTo;
 } | {

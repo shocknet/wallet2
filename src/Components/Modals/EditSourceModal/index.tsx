@@ -6,10 +6,10 @@ import { CrossIcon, ShieldIcon, TrashIcon } from '../../../Assets/SvgIconLibrary
 
 import { arrangeIcon } from "../../../jsxHelpers";
 import Dropdown from "../../Dropdowns/LVDropdown";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { nip19 } from "nostr-tools";
 import classNames from "classnames";
-import { setSourceToEdit } from "../../../State/Slices/modalsSlice";
+import { setSourceToEdit, SourceToEdit } from "../../../State/Slices/modalsSlice";
 import { deletePaySources, editPaySources } from "../../../State/Slices/paySourcesSlice";
 import { toast } from "react-toastify";
 import Toast from "../../Toast";
@@ -36,7 +36,25 @@ export const EditSourceModal = () => {
 	const dispatch = useDispatch()
 	const paySources = useSelector(state => state.paySource)
 	const spendSources = useSelector(state => state.spendSource)
-	const sourceToEdit = useSelector(state => state.modalsSlice.sourceToEdit);
+	const stateSourceToEdit = useSelector(state => state.modalsSlice.sourceToEdit);
+
+	// When it's a new source it will take some time to get populated with all data
+	// such as bridge_url, ndebit, etc; so useMemo to reflect the most updated version of the source
+	const sourceToEdit: SourceToEdit = useMemo(() => {
+		if (!stateSourceToEdit) return null;
+		if (stateSourceToEdit.type === "payTo") {
+			return {
+				source: paySources.sources[stateSourceToEdit.source.id],
+				type: "payTo"
+			}
+		} else {
+			return {
+				source: spendSources.sources[stateSourceToEdit.source.id],
+				type: "spendFrom"
+			}
+		}
+	}, [spendSources, paySources, stateSourceToEdit])
+
 	const [editValues, setEditValues] = useState({
 		relay: "",
 		nameService: "",

@@ -52,7 +52,7 @@ export const SwItem = ({
     if (link !== operation.identifier) {
       return link
     }
-    if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE)) {
+    if ((operation.type === Types.UserOperationType.INCOMING_INVOICE || operation.type === Types.UserOperationType.OUTGOING_INVOICE) && operation.identifier.startsWith("lnbc") || operation.identifier.startsWith("lntbs")) {
       let network = undefined
       if (operation.identifier.startsWith("lntbs")) {
         network = {
