@@ -235,8 +235,13 @@ export const Sources = () => {
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
             await client.EnrollAdminToken({ admin_token: adminEnrollToken });
             dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
+            toast.success(<Toast title="Sources" message={`successufly linked admin access to ${inputSource}`} />)
             setProcessingSource(false);
+            dispatch(toggleLoading({ loadingMessage: "" }))
+            return
           }
+          setProcessingSource(false);
+          dispatch(toggleLoading({ loadingMessage: "" }))
           toast.error(<Toast title="Error" message="Source already exists." />)
           return;
         }
@@ -552,7 +557,7 @@ export const Sources = () => {
   </React.Fragment>;
 
   const contentEditContent = <React.Fragment>
-    <div style={{position: "absolute", top: "12px", right: "12px"}}>x</div>
+    <div style={{ position: "absolute", top: "12px", right: "12px" }}>x</div>
     <div className='Sources_modal_header'>Edit Source</div>
     <div className='Sources_modal_discription'>How well do you trust this node?</div>
     <div className='Sources_modal_select_state'>
