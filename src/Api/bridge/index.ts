@@ -13,4 +13,8 @@ export default class Handler {
 	async GetOrCreateNofferName({ noffer, k1 }: { noffer: string, k1?: string }) {
 		return this.bridgeHttp.GetOrCreateNofferName({ k1, noffer });
 	}
+
+	async UpdateMappingNdebit({ ndebit }: { ndebit?: string }) {
+		return this.bridgeHttp.UpdateMappingNdebit({ ndebit })
+	}
 }

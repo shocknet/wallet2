@@ -11,7 +11,6 @@ import SpendFromDropdown from "../../Components/Dropdowns/SpendFromDropdown";
 import { Clipboard } from "@capacitor/clipboard";
 import { toast } from "react-toastify";
 import styles from "./styles/index.module.scss";
-import Spinner from "../../Components/Spinner";
 import classNames from "classnames";
 import { EditSource } from "../../Assets/SvgIconLibrary";
 import { setDebitToEdit } from "../../State/Slices/modalsSlice";
@@ -19,6 +18,7 @@ import Checkbox from "../../Components/Checkbox";
 import { formatNumberWithCommas } from "../../utils/numbers";
 import { useIonRouter } from "@ionic/react";
 import Toast from "../../Components/Toast";
+import { flipSourceNdebitDiscoverable } from "../../State/Slices/paySourcesSlice";
 
 type StateDebitAuth = DebitAuthorization & { source: SpendFrom, domainName?: string, avatarUrl?: string }
 
@@ -40,7 +40,9 @@ export const LinkedApp = () => {
   const [selectedSource, setSelectedSource] = useState(nostrSpends[0]);
   const [hasNoDebits, setHasNoDebits] = useState(false)
 
-  const [isPubliclyAvailable, setIsPubliclyAvailable] = useState(false);
+  const [isPubliclyAvailable, setIsPubliclyAvailable] = useState(paySources.sources[selectedSource?.id]?.isNdebitDiscoverable || false);
+
+  const [lnAddress, setLnAddress] = useState("")
 
   const [isShowingBans, setIsShowingBans] = useState(false);
 
@@ -53,7 +55,15 @@ export const LinkedApp = () => {
   }, [nostrSpends, router]);
 
 
+
+
   const fetchAuths = useCallback(() => {
+    if (!selectedSource) return;
+    const counterpartPaySource = paySources.sources[selectedSource.id]
+    if (counterpartPaySource) {
+      setLnAddress(counterpartPaySource.vanityName || "")
+      setIsPubliclyAvailable(!!counterpartPaySource.isNdebitDiscoverable)
+    }
     const { pubkey, relays } = parseNprofile(selectedSource.pasteField)
     getNostrClient({ pubkey, relays }, selectedSource.keys).then(c => {
       c.GetDebitAuthorizations().then(res => {
@@ -86,7 +96,6 @@ export const LinkedApp = () => {
   const cardsToRender = useMemo(() => {
     const debitsToShow: StateDebitAuth[] = isShowingBans ? debitAuthorizations.debitAuthsBanned : debitAuthorizations.debitAuths
     return debitsToShow.map((debitAuth, index) => {
-      console.log({debitAuth})
       const npub = nip19.npubEncode(debitAuth.npub);
       const substringedNpub = `${npub.substring(0, 20)}...${npub.substring(npub.length - 20, npub.length)}`;
 
@@ -160,10 +169,19 @@ export const LinkedApp = () => {
     })
   }, [debitAuthorizations, dispatch, isShowingBans])
 
-  const counterpartPaySource = paySources.sources[selectedSource.id] || null;
+
+
+  const handleFlipPubliclyDiscoverable = (checked: boolean) => {
+    if (!selectedSource) return;
+    const counterpartPaySource = paySources.sources[selectedSource.id]
+    if (counterpartPaySource) {
+      dispatch(flipSourceNdebitDiscoverable({ ...counterpartPaySource, isNdebitDiscoverable: checked }));
+      setIsPubliclyAvailable(checked)
+    }
+  }
 
   return (
-    <div className={styles["wrapper"]}>
+    <div className={styles["wrapper"]} key={selectedSource.id}>
       <div className={styles["container"]}>
 
         <div className={styles["page-header"]}>Linked Apps</div>
@@ -173,38 +191,55 @@ export const LinkedApp = () => {
         <div className={styles["list-scroller"]}>
 
           {
-            (debitAuthorizations.debitAuths.length > 0 || debitAuthorizations.debitAuthsBanned.length > 0)
-            ?
-            cardsToRender
-            :
-              hasNoDebits
-              ?
-              <div className={styles["spinner-container"]}>This source has no debits yet.</div>
-              :
-              <div className={styles["spinner-container"]}>
-                <Spinner />
+            (debitAuthorizations.debitAuths.length > 0 || debitAuthorizations.debitAuthsBanned.length > 0) ? (
+              cardsToRender
+            ) : (
+              <div style={{
+                marginTop: '40px',
+                fontSize: '18px',
+                color: '#a3a3a3',
+                width: '100%',
+                textAlign: 'center'
+              }}>
+                <span>Approval rules will be listed here.</span>
               </div>
+            )
           }
         </div>
-        <div style={{ padding: "0 12px" }}>
-          <div className={classNames(styles["app-card"], styles["column"])}>
+        <div style={{ width: '100%' }}>
+          <div 
+            className={classNames(styles["app-card"], styles["column"])}
+            style={{
+              fontSize: '1.2rem',
+              width: '100%',
+              marginBottom: '5px',
+              borderRadius: '5px',
+              border: '1px solid #2a3035',
+              boxShadow: '0px 0px 2px rgba(0, 0, 0, 1)',
+              backgroundColor: '#16191c',
+              padding: '10px'
+            }}
+          >
             <span className={styles["title"]}>My debit string:</span>
-            <span className={styles["debit-string"]} onClick={async () => {
-              await Clipboard.write({ string: selectedSource.ndebit })
-              toast.success("Copied to clipboard.")
-            }}>
+            <span 
+              className={styles["debit-string"]} 
+              onClick={async () => {
+                await Clipboard.write({ string: selectedSource.ndebit })
+                toast.success("Copied to clipboard.")
+              }}
+            >
               {selectedSource.ndebit}
             </span>
             {
-              (counterpartPaySource && counterpartPaySource.vanityName)
+              lnAddress
               &&
               <>
                 <div className={styles["checkbox-container"]} style={{ marginTop: "12px" }}>
-                  <span className={styles["label"]}>Make publicly disoverable via Lightning Address:</span>
-                  <Checkbox id="publicly-available" state={isPubliclyAvailable} setState={(e) => setIsPubliclyAvailable(e.target.checked)} />
+                  <span className={styles["label"]}>Make publicly discoverable via Lightning Address:</span>
+                  <Checkbox id="publicly-available" state={isPubliclyAvailable} setState={(e) => handleFlipPubliclyDiscoverable(e.target.checked)} />
                 </div>
                 <div className={styles["checkbox-container"]}>
-                  <span className={styles["ln-address"]}>&#40;{ counterpartPaySource.vanityName }&#41;</span>
+                  <span className={styles["ln-address"]}>&#40;{lnAddress}&#41;</span>
                 </div>
               </>
             }

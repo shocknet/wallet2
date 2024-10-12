@@ -79,7 +79,7 @@
 			}
 
 			span {
-				font-size: 20px;
+				font-size: clamp(14px, 3vw, 20px);
 			}
 
 			.num-intervals-input {
@@ -113,6 +113,14 @@
 				font-size: 11px;
 				text-align: left;
 				margin-left: 7px;
+			}
+		}
+		&.ban-prompt-body {
+			height: 200px;
+			span {
+				color: rgb(218, 218, 50);
+				font-size: 30px;
+				font-weight: 600;
 			}
 		}
 
