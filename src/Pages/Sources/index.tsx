@@ -143,8 +143,8 @@ export const Sources = () => {
 
   const EditSourceSpend_Modal = (key: string) => {
     const source = spendSources.sources[key];
-    dispatch(setSourceToEdit({ 
-      source: source, 
+    dispatch(setSourceToEdit({
+      source: source,
       type: "spendFrom",
     }))
 
@@ -213,8 +213,13 @@ export const Sources = () => {
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
             await client.EnrollAdminToken({ admin_token: adminEnrollToken });
             dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
+            toast.success(<Toast title="Sources" message={`successufly linked admin access to ${inputSource}`} />)
             setProcessingSource(false);
+            dispatch(toggleLoading({ loadingMessage: "" }))
+            return
           }
+          setProcessingSource(false);
+          dispatch(toggleLoading({ loadingMessage: "" }))
           toast.error(<Toast title="Error" message="Source already exists." />)
           return;
         }
@@ -445,7 +450,7 @@ export const Sources = () => {
       <button onClick={addSource}>Add</button>
     </div>
 
-  </React.Fragment>; 
+  </React.Fragment>;
 
 
   const notifyContent = <React.Fragment>
