@@ -38,6 +38,7 @@ export const Background = () => {
 	const nostrSpends = useSelector(selectNostrSpends);
 	const paySource = useSelector((state) => state.paySource)
 	const { cursor, latestOperation: latestOp, operations: operationGroups, operationsUpdateHook } = useSelector(state => state.history)
+	const backupState = useSelector(state => state.backupStateSlice)
 	const nodedUp = useSelector(state => state.nostrPrivateKey);
 	const dispatch = useDispatch();
 	const [parsedClipboard, setParsedClipbaord] = useState<Destination>({
@@ -105,7 +106,7 @@ export const Background = () => {
 		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pubSource);
 
 		if ((nostrSpends.length !== 0 && nostrSpends[0].balance !== "0") || (otherPaySources.length > 0 || otherSpendSources.length > 0)) {
-			if (localStorage.getItem("isBackUp") == "1") {
+			if (localStorage.getItem("isBackUp") === "1" || backupState.subbedToBackUp) {
 				return;
 			}
 			dispatch(addNotification({
