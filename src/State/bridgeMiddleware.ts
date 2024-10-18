@@ -60,7 +60,10 @@ export const bridgeListener = {
 			const nostrPayTos = Object.values(paySources.sources).filter(source => source.pubSource);
 			await Promise.all(nostrPayTos.map(async source => enrollToBridge(
 				source,
-				(vanityName) => listenerApi.dispatch({ type: "paySources/editPaySources", payload: { ...source, vanityName }, meta: { skipChangelog: true } })
+				(vanityName) => {
+					const recentSource = listenerApi.getState().paySource.sources[source.id]
+					listenerApi.dispatch({ type: "paySources/editPaySources", payload: { ...recentSource, vanityName }, meta: { skipChangelog: true } })
+				}
 			)))
 			return;
 		}
@@ -70,7 +73,10 @@ export const bridgeListener = {
 
 			await enrollToBridge(
 				source,
-				(vanityName) => listenerApi.dispatch({ type: "paySources/editPaySources", payload: { ...source, vanityName }, meta: { skipChangelog: true } })
+				(vanityName) => {
+					const recentSource = listenerApi.getState().paySource.sources[source.id]
+					listenerApi.dispatch({ type: "paySources/editPaySources", payload: { ...recentSource, vanityName }, meta: { skipChangelog: true } })
+				}
 			)
 
 		}
