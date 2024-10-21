@@ -53,6 +53,7 @@ export const Sources = () => {
 
 
   const processParsedInput = (destination: Destination) => {
+    console.log("processing parsed input", destination)
     if (
       destination.type === InputClassification.LNURL
       &&
@@ -72,6 +73,7 @@ export const Sources = () => {
     } else if (destination.data.includes("nprofile") || destination.type === InputClassification.LNURL || destination.type === InputClassification.LN_ADDRESS) {
       setSourcePasteField(destination.data);
       if (destination.data.includes("nprofile")) {
+        console.log("fetching beacon")
         const data = decodeNprofile(destination.data);
         fetchBeacon(data.pubkey, data.relays || NOSTR_RELAYS, 2 * 60).then(beacon => {
           if (beacon) {
@@ -182,7 +184,7 @@ export const Sources = () => {
   }
 
   const addSource = useCallback(async () => {
-    console.log("adding")
+    console.log("adding source", sourcePasteField)
     toggle();
 
     if (processingSource) {
@@ -209,6 +211,7 @@ export const Sources = () => {
         if (existingSpendSourceId) {
           const spendSource = spendSources.sources[existingSpendSourceId];
           if (adminEnrollToken && spendSource && spendSource.adminToken !== adminEnrollToken) {
+            console.log("resetting admin access to existing source")
             setProcessingSource(true)
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
             await client.EnrollAdminToken({ admin_token: adminEnrollToken });
@@ -218,6 +221,7 @@ export const Sources = () => {
             dispatch(toggleLoading({ loadingMessage: "" }))
             return
           }
+          console.log("source already exists")
           setProcessingSource(false);
           dispatch(toggleLoading({ loadingMessage: "" }))
           toast.error(<Toast title="Error" message="Source already exists." />)
@@ -242,12 +246,13 @@ export const Sources = () => {
     if (inputSource.startsWith("nprofile")) {
       // nprofile
 
-
+      console.log("generating source pair")
       const newSourceKeyPair = generateNewKeyPair();
       let vanityName: string | undefined = undefined;
-
+      console.log("checking for integration data")
       // integration to an existing pub account
       if (integrationData.token) {
+        console.log("linking to existing account")
         const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .LinkNPubThroughToken({
             token: integrationData.token,
@@ -261,8 +266,9 @@ export const Sources = () => {
         }
         vanityName = integrationData.lnAddress;
       }
-
+      console.log("checking for invite token")
       if (inviteToken) {
+        console.log("using invite token")
         const res = await (await getNostrClient(inputSource, newSourceKeyPair))
           .UseInviteLink({ invite_token: inviteToken })
         if (res.status !== "OK") {
@@ -272,12 +278,13 @@ export const Sources = () => {
           return;
         }
       }
-
+      console.log("checking for admin token")
       if (adminEnrollToken) {
+        console.log("enrolling admin token")
         const client = await getNostrClient(inputSource, newSourceKeyPair);
         await client.EnrollAdminToken({ admin_token: adminEnrollToken });
       }
-
+      console.log("adding source")
       const resultLnurl = new URL(data!.relays![0]);
       const parts = resultLnurl.hostname.split(".");
       const sndleveldomain = parts.slice(-2).join('.');
@@ -361,6 +368,7 @@ export const Sources = () => {
         return
       }
     }
+    console.log("source added")
     toast.success(<Toast title="Sources" message={`${parsed ? parsed.domainName : "Nprofile"} successfuly added to sources`} />)
     resetValue();
     dispatch(toggleLoading({ loadingMessage: "" }))
