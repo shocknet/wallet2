@@ -3,6 +3,7 @@ import * as Icons from "../../Assets/SvgIconLibrary";
 import { useSelector } from "../../State/store";
 import { getNostrClient } from "../../Api";
 import { NostrKeyPair } from "../../Api/nostrHandler";
+import PromptForActionModal, { ActionType } from "../../Components/Modals/PromptForActionModal";
 interface OfflineChannel {
   id: number;
   avatar: string;
@@ -24,6 +25,10 @@ export const Channels = () => {
   const [maxBalance, setMaxBalance] = useState<number>(0);
   const [activeChannels, setActiveChannels] = useState<ActiveChannel[]>([]);
   const [offlineChannels, setOfflineChannels] = useState<OfflineChannel[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<{ id: number, name: string } | null>(null);
+  const [openModal, setOpenModal] = useState<'addPeer' | 'openChannel' | 'closeChannel' | ''>('');
+  const [peerUri, setPeerUri] = useState<string>('');
+
   const spendSources = useSelector(state => state.spendSource)
   const selectedSource = useMemo(() => {
     return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
@@ -98,7 +103,7 @@ export const Channels = () => {
           </div>
           <div className="channel-group">
             {offlineChannels.map((channel: OfflineChannel, index: number) => (
-              <div className="channel" key={index}>
+              <div className="channel" key={index} onClick={() => { setSelectedChannel({ id: channel.id, name: channel.name }); setOpenModal('closeChannel') }}>
                 <div>
                   <div className="avatar">
                     <img
@@ -120,13 +125,12 @@ export const Channels = () => {
                   </div>
                   <div className="time">
                     <span>
-                      {`${
-                        channel.timeStamp
-                          ? channel.timeStamp > 1000
-                            ? "💀 Last seen 10 days ago"
-                            : "🔍 Last seen 2 hours ago"
-                          : "🔗 Pending Force Close"
-                      }`}
+                      {`${channel.timeStamp
+                        ? channel.timeStamp > 1000
+                          ? "💀 Last seen 10 days ago"
+                          : "🔍 Last seen 2 hours ago"
+                        : "🔗 Pending Force Close"
+                        }`}
                     </span>
                   </div>
                 </div>
@@ -159,7 +163,7 @@ export const Channels = () => {
           </div>
           <div className="channel-group">
             {activeChannels.map((channel: ActiveChannel, index: number) => (
-              <div className="channel" key={index}>
+              <div className="channel" key={index} onClick={() => { setSelectedChannel({ id: channel.id, name: channel.name }); setOpenModal('closeChannel') }}>
                 <div>
                   <div className="avatar">
                     <img
@@ -200,10 +204,38 @@ export const Channels = () => {
           </div>
         </div>
       </div>
+      <div>
+        <button onClick={() => setOpenModal('addPeer')}>ADD PEER</button>
+        <button onClick={() => setOpenModal('openChannel')}>ADD CHANNEL</button>
+
+      </div>
       <div className="Channels_footer">
         Connected to <br />
         {spendSources.sources[selectedSource || ""].pasteField}
       </div>
+      {openModal === 'addPeer' && <PromptForActionModal title="Add Peer"
+        actionText="Add Peer"
+        actionType={ActionType.NORMAL}
+        closeModal={() => { setOpenModal('') }}
+        action={() => { setOpenModal('') }}
+        jsx={<><input type="text" placeholder="pubkey@address:port"></input></>}
+      />}
+      {openModal === 'openChannel' && <PromptForActionModal title="Open Channel"
+        actionText="Open Channel"
+        actionType={ActionType.NORMAL}
+        closeModal={() => { setOpenModal('') }}
+        action={() => { setOpenModal('') }}
+        jsx={<><input type="text" placeholder="pubkey"></input>
+          <input type="text" placeholder="amount"></input>
+          <input type="text" placeholder="satsPerVByte"></input></>}
+      />}
+      {openModal === 'closeChannel' && selectedChannel && <PromptForActionModal title="Close Channel"
+        actionText="Close Channel"
+        actionType={ActionType.NORMAL}
+        closeModal={() => { setOpenModal('') }}
+        action={() => { setOpenModal('') }}
+        jsx={<><p>closing channel: {selectedChannel.id}</p><input type="text" placeholder="satsPerVByte"></input></>}
+      />}
     </div>
   );
 };
