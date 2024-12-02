@@ -24,7 +24,7 @@
     "@capacitor/core": "5.7.8",
     "@capacitor/filesystem": "^5.1.4",
     "@capacitor/haptics": "5.0.6",
-    "@capacitor/ios": "5.4.0",
+    "@capacitor/ios": "6.2.0",
     "@capacitor/keyboard": "5.0.6",
     "@capacitor/preferences": "^5.0.6",
     "@capacitor/share": "^5.0.6",
