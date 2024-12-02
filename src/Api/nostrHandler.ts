@@ -118,11 +118,11 @@ export default class RelayCluster {
     }
 
     SendNip69 = async (relays: string[], pubKey: string, data: nip69.NofferData, keys: NostrKeyPair): Promise<nip69.Nip69Response> => {
-        return nip69.SendNofferRequest(this.pool, Buffer.from(keys.privateKey, 'hex'), relays, pubKey, data)
+        return nip69.SendNofferRequest(this.pool, new Uint8Array(Buffer.from(keys.privateKey, 'hex')), relays, pubKey, data)
     }
 
     sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
-        const signed = finalizeEvent(event, Buffer.from(privateKey, 'hex'))
+        const signed = finalizeEvent(event, new Uint8Array(Buffer.from(privateKey, 'hex')))
         this.pool.publish(relays, signed).forEach(p => {
             p.then(() => logger.info("sent ok"))
             p.catch(() => logger.error("failed to send"))
