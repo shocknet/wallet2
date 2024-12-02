@@ -16,6 +16,7 @@ import Dropdown from '../../Components/Dropdowns/LVDropdown';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
+import { Client } from '../../Api/nostr';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -33,9 +34,6 @@ type ChannelsInfo = {
   onlineChannels: number
   pendingChannels: number
   closingChannels: number
-  openChannels: number[]
-  closeChannels: number[]
-  ChainCreditRoot: number[]
   bestLocalChan: string
   bestRemoteChan: string
   forwardedEvents: number
@@ -47,6 +45,7 @@ type AppsInfo = {
   totalGainPct: number
   appsUsers: { appName: string, users: number, invoices: number }[]
 }
+type RootEvent = { eventType: '🔗' | '🚨' | '⚡️', unix: number, message: string }
 const saveCreds = (creds: Creds) => {
   localStorage.setItem("metrics-creds", JSON.stringify(creds))
 }
@@ -117,6 +116,9 @@ export const Metrics = () => {
   const [period, setPeriod] = useState<Period>(Period.ALL_TIME);
   const [firstRender, setFirstRender] = useState(true);
   const [error, setError] = useState("")
+  const [lndStatus, setLndStatus] = useState("Loading...")
+  const [dogStatus, setDogStatus] = useState("Loading...")
+  const [rootOps, setRootOps] = useState<RootEvent[]>([])
 
   const spendSources = useSelector(state => state.spendSource)
   const dispatch = useDispatch();
@@ -129,6 +131,24 @@ export const Metrics = () => {
   useEffect(() => {
     fetchMetrics();
   }, [period])
+
+  const fetchInfo = useCallback(async (client: Client) => {
+    const info = await client.LndGetInfo({ nodeId: 0 })
+    if (info.status !== 'OK') {
+      toast.error(<Toast title="Metrics Error" message={`Failed to fetch service status. ${info.reason}`} />)
+      return
+    }
+    setDogStatus(info.watchdog_barking ? "Ops Locked" : "")
+    if (!info.synced_to_chain) {
+      setLndStatus("Syncing to chain")
+      return
+    }
+    if (!info.synced_to_graph) {
+      setLndStatus("Syncing to graph")
+      return
+    }
+    setLndStatus("")
+  }, [])
 
   const fetchMetrics = useCallback(async () => {
     console.log("fetching metrics")
@@ -146,10 +166,9 @@ export const Metrics = () => {
     dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
     const client = await getNostrClient(source.pasteField, source.keys!) // TODO: write migration to remove type override
     const periodRange = getUnixTimeRange(period);
-    let apps: ResultError | ({ status: 'OK' } & Types.AppsMetrics), lnd: ResultError | ({ status: 'OK' } & Types.LndMetrics);
+    let apps: ResultError | ({ status: 'OK' } & Types.AppsMetrics), lnd: ResultError | ({ status: 'OK' } & Types.LndMetrics)
     try {
-      apps = await client.GetAppsMetrics({ include_operations: false, ...periodRange });
-      lnd = await client.GetLndMetrics({ ...periodRange });
+      [apps, lnd] = await Promise.all([client.GetAppsMetrics({ include_operations: false, ...periodRange }), client.GetLndMetrics({ ...periodRange }), fetchInfo(client)])
     } catch (error) {
       console.error(error);
       setLoading(false);
@@ -218,16 +237,23 @@ export const Metrics = () => {
       if (c.local_balance > bestLocal.v) {
         bestLocal.v = c.remote_balance; bestLocal.n = c.channel_id
       }
-      return c.lifetime
+      const e: RootEvent = { eventType: '🔗', unix: (Date.now() / 1000 - c.lifetime), message: "Channel Opened" }
+      return e
     })
+    const closeChans = nodeStats.closed_channels.map(c => {
+      const e: RootEvent = { eventType: '🚨', unix: c.close_tx_timestamp, message: "Channel Closed" }
+      return e
+    })
+    const ops = nodeStats.root_ops.map(o => {
+      const e: RootEvent = { eventType: '⚡️', unix: o.created_at_unix, message: `${o.op_type} Root Credit (${o.amount})` }
+      return e
+    })
+    setRootOps([...openChannels, ...closeChans, ...ops].sort((a, b) => b.unix - a.unix))
     setChannelsInfo({
       closingChannels: nodeStats.closing_channels,
       offlineChannels: nodeStats.offline_channels,
       onlineChannels: nodeStats.online_channels,
       pendingChannels: nodeStats.pending_channels,
-      closeChannels: nodeStats.closed_channels.map(c => c.closed_height),
-      openChannels,
-      ChainCreditRoot: [],
       bestLocalChan: bestLocal.n,
       bestRemoteChan: bestRemote.n,
       forwardedEvents: nodeStats.forwarding_events,
@@ -278,7 +304,7 @@ export const Metrics = () => {
   if (extGraphData.length > 0) {
     datasets.push({
       data: extGraphData,
-      label: "External " + extGraphData[extGraphData.length - 1]?.y || "0",
+      label: "LSP Credit " + extGraphData[extGraphData.length - 1]?.y || "0",
       showLine: true,
       fill: false,
       borderWidth: 1
@@ -289,73 +315,73 @@ export const Metrics = () => {
 
       <div className={classNames(styles["section"], styles["chart"])}>
         <Line
-            data={{
-              labels : chainGraphData.map(item=>`${item.x}`),
-              datasets: [
-                {
-                  label: "Chain " + chainGraphData[chainGraphData.length - 1]?.y || "0",
-                  data: chainGraphData,
-                  borderColor: "rgba(199, 64, 199, 0.5)",
-                  backgroundColor: "rgb(199, 64, 199)",
-                  yAxisID: "y",
-                },
-                {
-                  label: "Channels " + chansGraphData[chansGraphData.length - 1]?.y || "0",
-                  data: chansGraphData,
-                  borderColor: "rgba(255, 119, 0, 0.5)",
-                  backgroundColor: "rgb(255, 119, 0)",
-                  xAxisID: "x",
-                },
-              ],
-            }}
-            options={{
-              interaction: {
-                mode: "index",
-                intersect: false,
+          data={{
+            labels: chainGraphData.map(item => `${item.x}`),
+            datasets: [
+              {
+                label: "Chain " + chainGraphData[chainGraphData.length - 1]?.y || "0",
+                data: chainGraphData,
+                borderColor: "rgba(199, 64, 199, 0.5)",
+                backgroundColor: "rgb(199, 64, 199)",
+                yAxisID: "y",
               },
-              layout: {
-                padding: 0,
+              {
+                label: "Channels " + chansGraphData[chansGraphData.length - 1]?.y || "0",
+                data: chansGraphData,
+                borderColor: "rgba(255, 119, 0, 0.5)",
+                backgroundColor: "rgb(255, 119, 0)",
+                xAxisID: "x",
               },
-              responsive: true,
-              maintainAspectRatio: false,
-              aspectRatio: 5 / 2,
-              elements: {
-                line: {
-                  borderWidth: 3,
-                },
-                point: {
-                  radius: 0,
+            ],
+          }}
+          options={{
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+            layout: {
+              padding: 0,
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            aspectRatio: 5 / 2,
+            elements: {
+              line: {
+                borderWidth: 3,
+              },
+              point: {
+                radius: 0,
+              },
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: "chartArea",
+                align: "start",
+                maxWidth: 12,
+                labels: {
+                  boxWidth: 10,
+                  boxHeight: 10,
                 },
               },
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "chartArea",
-                  align: "start",
-                  maxWidth: 12,
-                  labels: {
-                    boxWidth: 10,
-                    boxHeight: 10,
-                  },
-                },
-              },
+            },
 
-              scales: {
-                x: {
-                  grid: {
-                    color: "#383838",
-                  },
-                },
-                y: {
-                  grid: {
-                    color: "#383838",
-                  },
-                  ticks: {
-                    display: false,
-                  },
+            scales: {
+              x: {
+                grid: {
+                  color: "#383838",
                 },
               },
-            }}
+              y: {
+                grid: {
+                  color: "#383838",
+                },
+                ticks: {
+                  display: false,
+                },
+              },
+            },
+          }}
         />
       </div>
       <div className={styles["section"]}>
@@ -384,13 +410,9 @@ export const Metrics = () => {
         <h3 className={styles["sub-title"]}>Events</h3>
         <div className={styles["column-flex"]}>
           {
-            <div className={styles["event-item"]}><span> ⚡️&nbsp; Channel Opened</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.openChannels))}</span></div>
-          }
-          {
-            <div className={styles["event-item"]}><span> 🚨&nbsp; Channel Closed</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.closeChannels))}</span></div>
-          }
-          {
-            <div className={styles["event-item"]}><span> 🔗&nbsp; Chain credit to root</span> <span className={styles["date"]}>{getTimeAgo(Math.min(...channelsInfo.ChainCreditRoot))}</span></div>
+            rootOps.map((e, i) => (
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
+            ))
           }
         </div>
       </div>
@@ -484,8 +506,9 @@ export const Metrics = () => {
         <div className="Status">
           <div className="Status_title">Lightning Status:</div>
           <div className="Status_value">
-            {Icons.YellowState()}
-            <span>Syncing</span>
+            {lndStatus && Icons.YellowState()}
+            {!lndStatus && Icons.GreenState()}
+            <span>{lndStatus || "Synced"}</span>
           </div>
         </div>
       </div>
@@ -493,8 +516,9 @@ export const Metrics = () => {
         <div className="Status">
           <div className="Status_title">Watchdog Status:</div>
           <div className="Status_value">
-            {Icons.GreenState()}
-            <span>No Alarms</span>
+            {dogStatus && Icons.GreenState()}
+            {!dogStatus && Icons.GreenState()}
+            <span>{dogStatus || "No Alarms"}</span>
           </div>
         </div>
       </div>
