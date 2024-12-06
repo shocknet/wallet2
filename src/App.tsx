@@ -52,6 +52,7 @@ import "@ionic/react/css/display.css";
 import LoadingOverlay from "./Components/LoadingOverlay";
 import { DebitRequestModal, EditDebitModal } from "./Components/Modals/DebitRequestModal";
 import { EditSourceModal } from "./Components/Modals/EditSourceModal";
+import { OfferInfo } from "./Pages/OfferInfo";
 
 setupIonicReact();
 
@@ -90,7 +91,7 @@ const AppContent: React.FC = () => {
       <EditSourceModal />
       {/* Modals */}
 
-      
+
       <IonRouterOutlet>
         <Route exact path="/">
           <Layout>
@@ -180,6 +181,11 @@ const AppContent: React.FC = () => {
         <Route exact path="/Offers">
           <Layout>
             <Offers />
+          </Layout>
+        </Route>
+        <Route exact path="/OfferInfo">
+          <Layout>
+            <OfferInfo />
           </Layout>
         </Route>
       </IonRouterOutlet>
