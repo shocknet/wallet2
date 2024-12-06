@@ -2,17 +2,19 @@ $border-color: #BBBBBB;
 $contrast-color: #5BB166;
 $clear-color: #E2E2E2;
 
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 .safe-area {
   margin-top: env(safe-area-inset-top);
   margin-bottom: env(safe-area-inset-bottom);
   margin-left: env(safe-area-inset-left);
   margin-right: env(safe-area-inset-right);
 }
+
 body {
   background-color: #16191c;
   color: #fcfcfc;
@@ -29,6 +31,7 @@ body {
   //toastify
   --toastify-color-success: #32a852;
   --toastify-toast-width: 400px;
+
   .Toastify__toast-body {
     font-weight: bolder;
     font-size: 21px;
@@ -38,14 +41,14 @@ body {
   }
 }
 
-#root{
+#root {
   position: relative;
   height: 100vh;
   min-height: 100vh;
   max-height: 100vh;
 }
 
-.App{
+.App {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -54,7 +57,7 @@ body {
   position: relative;
 }
 
-ion-content::part(scroll){
+ion-content::part(scroll) {
   padding-top: 0;
 }
 
@@ -80,6 +83,7 @@ ion-content::part(scroll){
       text-decoration: underline;
     }
   }
+
   &>h2 {
     font-size: 25px;
   }
@@ -100,15 +104,19 @@ ion-content::part(scroll){
 input:focus-visible {
   outline: 1px solid #2693c1;
 }
+
 .sortable-ghost-class {
   background-color: #2693c1 !important;
 }
+
 .sortable-chosen-class {
   background-color: #2693c1 !important;
+
   & * {
     color: white !important;
   }
 }
+
 /* .sortable-drag-class {
   display: none !important;
 } */
@@ -135,11 +143,11 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-.metric-footer{
-	text-align: center;
-	font-size: 12px;
-	color: #ffffff;
-	font-weight: 500;
+.metric-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 500;
   font-family: Montserrat;
   width: 100%;
 }
@@ -147,13 +155,13 @@ input[type=number] {
 .Status {
   display: flex;
 
-  .Status_title{
+  .Status_title {
     font-size: 16px;
     font-family: Montserrat;
     width: 50%;
   }
 
-  .Status_value{
+  .Status_value {
     display: flex;
     font-size: 16px;
     font-family: Montserrat;
@@ -185,6 +193,7 @@ input[type=number] {
 @import "./Pages/Notify/notify.scss";
 @import "./Pages/LinkedApp/linkedApp.scss";
 @import "./Pages/Offers//Offers.scss";
+@import "./Pages/OfferInfo//OfferInfo.scss";
 
 @import "./Containers/Header/Header.scss";
 @import "./Containers/Footer/Footer.scss";
