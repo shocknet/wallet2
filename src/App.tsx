@@ -53,6 +53,7 @@ import LoadingOverlay from "./Components/LoadingOverlay";
 import { DebitRequestModal, EditDebitModal } from "./Components/Modals/DebitRequestModal";
 import { EditSourceModal } from "./Components/Modals/EditSourceModal";
 import { OfferInfo } from "./Pages/OfferInfo";
+import { Stats } from "./Pages/Stats";
 
 setupIonicReact();
 
@@ -186,6 +187,11 @@ const AppContent: React.FC = () => {
         <Route exact path="/OfferInfo">
           <Layout>
             <OfferInfo />
+          </Layout>
+        </Route>
+        <Route exact path="/Stats">
+          <Layout>
+            <Stats />
           </Layout>
         </Route>
       </IonRouterOutlet>

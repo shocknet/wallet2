@@ -27,8 +27,8 @@ export type GuestWithPubMethodOutputs = LinkNPubThroughToken_Output | UseInviteL
 export type MetricsContext = {
     operator_id: string
 }
-export type MetricsMethodInputs = GetAppsMetrics_Input | GetLndMetrics_Input | GetUsageMetrics_Input
-export type MetricsMethodOutputs = GetAppsMetrics_Output | GetLndMetrics_Output | GetUsageMetrics_Output
+export type MetricsMethodInputs = GetAppsMetrics_Input | GetErrorStats_Input | GetLndMetrics_Input | GetUsageMetrics_Input
+export type MetricsMethodOutputs = GetAppsMetrics_Output | GetErrorStats_Output | GetLndMetrics_Output | GetUsageMetrics_Output
 export type UserContext = {
     app_id: string
     app_user_id: string
@@ -109,6 +109,9 @@ export type GetAppsMetrics_Output = ResultError | ({ status: 'OK' } & AppsMetric
 
 export type GetDebitAuthorizations_Input = { rpcName: 'GetDebitAuthorizations' }
 export type GetDebitAuthorizations_Output = ResultError | ({ status: 'OK' } & DebitAuthorizations)
+
+export type GetErrorStats_Input = { rpcName: 'GetErrorStats' }
+export type GetErrorStats_Output = ResultError | ({ status: 'OK' } & ErrorStats)
 
 export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds', cb: (res: HttpCreds, err: Error | null) => void }
 export type GetHttpCreds_Output = ResultError | { status: 'OK' }
@@ -274,7 +277,7 @@ export type UseInviteLink_Input = { rpcName: 'UseInviteLink', req: UseInviteLink
 export type UseInviteLink_Output = ResultError | { status: 'OK' }
 
 export type UserHealth_Input = { rpcName: 'UserHealth' }
-export type UserHealth_Output = ResultError | { status: 'OK' }
+export type UserHealth_Output = ResultError | ({ status: 'OK' } & UserHealthState)
 
 export type ServerMethods = {
     AddApp?: (req: AddApp_Input & { ctx: AdminContext }) => Promise<AuthApp>
@@ -300,6 +303,7 @@ export type ServerMethods = {
     GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & { ctx: AppContext }) => Promise<LnurlPayInfoResponse>
     GetAppsMetrics?: (req: GetAppsMetrics_Input & { ctx: MetricsContext }) => Promise<AppsMetrics>
     GetDebitAuthorizations?: (req: GetDebitAuthorizations_Input & { ctx: UserContext }) => Promise<DebitAuthorizations>
+    GetErrorStats?: (req: GetErrorStats_Input & { ctx: MetricsContext }) => Promise<ErrorStats>
     GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext }) => Promise<void>
     GetInviteLinkState?: (req: GetInviteLinkState_Input & { ctx: AdminContext }) => Promise<GetInviteTokenStateResponse>
     GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
@@ -347,7 +351,7 @@ export type ServerMethods = {
     UpdateChannelPolicy?: (req: UpdateChannelPolicy_Input & { ctx: AdminContext }) => Promise<void>
     UpdateUserOffer?: (req: UpdateUserOffer_Input & { ctx: UserContext }) => Promise<void>
     UseInviteLink?: (req: UseInviteLink_Input & { ctx: GuestWithPubContext }) => Promise<void>
-    UserHealth?: (req: UserHealth_Input & { ctx: UserContext }) => Promise<void>
+    UserHealth?: (req: UserHealth_Input & { ctx: UserContext }) => Promise<UserHealthState>
 }
 
 export enum AddressType {
@@ -640,6 +644,28 @@ export const AppMetricsValidate = (o?: AppMetrics, opts: AppMetricsOptions = {},
     const usersErr = UsersInfoValidate(o.users, opts.users_Options, `${path}.users`)
     if (usersErr !== null) return usersErr
 
+
+    return null
+}
+
+export type AppUsageMetrics = {
+    app_metrics: Record<string, UsageMetricTlv>
+}
+export const AppUsageMetricsOptionalFields: [] = []
+export type AppUsageMetricsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    app_metrics_EntryOptions?: UsageMetricTlvOptions
+    app_metrics_CustomCheck?: (v: Record<string, UsageMetricTlv>) => boolean
+}
+export const AppUsageMetricsValidate = (o?: AppUsageMetrics, opts: AppUsageMetricsOptions = {}, path: string = 'AppUsageMetrics::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.app_metrics !== 'object' || o.app_metrics === null) return new Error(`${path}.app_metrics: is not an object or is null`)
+    for (const key in o.app_metrics) {
+        const app_metricsErr = UsageMetricTlvValidate(o.app_metrics[key], opts.app_metrics_EntryOptions, `${path}.app_metrics['${key}']`)
+        if (app_metricsErr !== null) return app_metricsErr
+    }
 
     return null
 }
@@ -1345,6 +1371,77 @@ export const EnrollAdminTokenRequestValidate = (o?: EnrollAdminTokenRequest, opt
 
     if (typeof o.admin_token !== 'string') return new Error(`${path}.admin_token: is not a string`)
     if (opts.admin_token_CustomCheck && !opts.admin_token_CustomCheck(o.admin_token)) return new Error(`${path}.admin_token: custom check failed`)
+
+    return null
+}
+
+export type ErrorStat = {
+    errors: number
+    from_unix: number
+    total: number
+}
+export const ErrorStatOptionalFields: [] = []
+export type ErrorStatOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    errors_CustomCheck?: (v: number) => boolean
+    from_unix_CustomCheck?: (v: number) => boolean
+    total_CustomCheck?: (v: number) => boolean
+}
+export const ErrorStatValidate = (o?: ErrorStat, opts: ErrorStatOptions = {}, path: string = 'ErrorStat::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.errors !== 'number') return new Error(`${path}.errors: is not a number`)
+    if (opts.errors_CustomCheck && !opts.errors_CustomCheck(o.errors)) return new Error(`${path}.errors: custom check failed`)
+
+    if (typeof o.from_unix !== 'number') return new Error(`${path}.from_unix: is not a number`)
+    if (opts.from_unix_CustomCheck && !opts.from_unix_CustomCheck(o.from_unix)) return new Error(`${path}.from_unix: custom check failed`)
+
+    if (typeof o.total !== 'number') return new Error(`${path}.total: is not a number`)
+    if (opts.total_CustomCheck && !opts.total_CustomCheck(o.total)) return new Error(`${path}.total: custom check failed`)
+
+    return null
+}
+
+export type ErrorStats = {
+    past10m: ErrorStat
+    past1h: ErrorStat
+    past1m: ErrorStat
+    past24h: ErrorStat
+    past6h: ErrorStat
+}
+export const ErrorStatsOptionalFields: [] = []
+export type ErrorStatsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    past10m_Options?: ErrorStatOptions
+    past1h_Options?: ErrorStatOptions
+    past1m_Options?: ErrorStatOptions
+    past24h_Options?: ErrorStatOptions
+    past6h_Options?: ErrorStatOptions
+}
+export const ErrorStatsValidate = (o?: ErrorStats, opts: ErrorStatsOptions = {}, path: string = 'ErrorStats::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    const past10mErr = ErrorStatValidate(o.past10m, opts.past10m_Options, `${path}.past10m`)
+    if (past10mErr !== null) return past10mErr
+
+
+    const past1hErr = ErrorStatValidate(o.past1h, opts.past1h_Options, `${path}.past1h`)
+    if (past1hErr !== null) return past1hErr
+
+
+    const past1mErr = ErrorStatValidate(o.past1m, opts.past1m_Options, `${path}.past1m`)
+    if (past1mErr !== null) return past1mErr
+
+
+    const past24hErr = ErrorStatValidate(o.past24h, opts.past24h_Options, `${path}.past24h`)
+    if (past24hErr !== null) return past24hErr
+
+
+    const past6hErr = ErrorStatValidate(o.past6h, opts.past6h_Options, `${path}.past6h`)
+    if (past6hErr !== null) return past6hErr
+
 
     return null
 }
@@ -3071,6 +3168,7 @@ export const UpdateChannelPolicyRequestValidate = (o?: UpdateChannelPolicyReques
 }
 
 export type UsageMetric = {
+    app_id?: string
     auth_in_nano: number
     batch: boolean
     batch_size: number
@@ -3079,11 +3177,14 @@ export type UsageMetric = {
     parsed_in_nano: number
     processed_at_ms: number
     rpc_name: string
+    success: boolean
     validate_in_nano: number
 }
-export const UsageMetricOptionalFields: [] = []
+export type UsageMetricOptionalField = 'app_id'
+export const UsageMetricOptionalFields: UsageMetricOptionalField[] = ['app_id']
 export type UsageMetricOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
+    checkOptionalsAreSet?: UsageMetricOptionalField[]
+    app_id_CustomCheck?: (v?: string) => boolean
     auth_in_nano_CustomCheck?: (v: number) => boolean
     batch_CustomCheck?: (v: boolean) => boolean
     batch_size_CustomCheck?: (v: number) => boolean
@@ -3092,11 +3193,15 @@ export type UsageMetricOptions = OptionsBaseMessage & {
     parsed_in_nano_CustomCheck?: (v: number) => boolean
     processed_at_ms_CustomCheck?: (v: number) => boolean
     rpc_name_CustomCheck?: (v: string) => boolean
+    success_CustomCheck?: (v: boolean) => boolean
     validate_in_nano_CustomCheck?: (v: number) => boolean
 }
 export const UsageMetricValidate = (o?: UsageMetric, opts: UsageMetricOptions = {}, path: string = 'UsageMetric::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.app_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('app_id')) && typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
 
     if (typeof o.auth_in_nano !== 'number') return new Error(`${path}.auth_in_nano: is not a number`)
     if (opts.auth_in_nano_CustomCheck && !opts.auth_in_nano_CustomCheck(o.auth_in_nano)) return new Error(`${path}.auth_in_nano: custom check failed`)
@@ -3122,31 +3227,67 @@ export const UsageMetricValidate = (o?: UsageMetric, opts: UsageMetricOptions = 
     if (typeof o.rpc_name !== 'string') return new Error(`${path}.rpc_name: is not a string`)
     if (opts.rpc_name_CustomCheck && !opts.rpc_name_CustomCheck(o.rpc_name)) return new Error(`${path}.rpc_name: custom check failed`)
 
+    if (typeof o.success !== 'boolean') return new Error(`${path}.success: is not a boolean`)
+    if (opts.success_CustomCheck && !opts.success_CustomCheck(o.success)) return new Error(`${path}.success: custom check failed`)
+
     if (typeof o.validate_in_nano !== 'number') return new Error(`${path}.validate_in_nano: is not a number`)
     if (opts.validate_in_nano_CustomCheck && !opts.validate_in_nano_CustomCheck(o.validate_in_nano)) return new Error(`${path}.validate_in_nano: custom check failed`)
 
     return null
 }
 
+export type UsageMetricTlv = {
+    available_chunks: number[]
+    base_64_tlvs: string[]
+    current_chunk: number
+}
+export const UsageMetricTlvOptionalFields: [] = []
+export type UsageMetricTlvOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    available_chunks_CustomCheck?: (v: number[]) => boolean
+    base_64_tlvs_CustomCheck?: (v: string[]) => boolean
+    current_chunk_CustomCheck?: (v: number) => boolean
+}
+export const UsageMetricTlvValidate = (o?: UsageMetricTlv, opts: UsageMetricTlvOptions = {}, path: string = 'UsageMetricTlv::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.available_chunks)) return new Error(`${path}.available_chunks: is not an array`)
+    for (let index = 0; index < o.available_chunks.length; index++) {
+        if (typeof o.available_chunks[index] !== 'number') return new Error(`${path}.available_chunks[${index}]: is not a number`)
+    }
+    if (opts.available_chunks_CustomCheck && !opts.available_chunks_CustomCheck(o.available_chunks)) return new Error(`${path}.available_chunks: custom check failed`)
+
+    if (!Array.isArray(o.base_64_tlvs)) return new Error(`${path}.base_64_tlvs: is not an array`)
+    for (let index = 0; index < o.base_64_tlvs.length; index++) {
+        if (typeof o.base_64_tlvs[index] !== 'string') return new Error(`${path}.base_64_tlvs[${index}]: is not a string`)
+    }
+    if (opts.base_64_tlvs_CustomCheck && !opts.base_64_tlvs_CustomCheck(o.base_64_tlvs)) return new Error(`${path}.base_64_tlvs: custom check failed`)
+
+    if (typeof o.current_chunk !== 'number') return new Error(`${path}.current_chunk: is not a number`)
+    if (opts.current_chunk_CustomCheck && !opts.current_chunk_CustomCheck(o.current_chunk)) return new Error(`${path}.current_chunk: custom check failed`)
+
+    return null
+}
+
 export type UsageMetrics = {
-    metrics: UsageMetric[]
+    apps: Record<string, AppUsageMetrics>
 }
 export const UsageMetricsOptionalFields: [] = []
 export type UsageMetricsOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    metrics_ItemOptions?: UsageMetricOptions
-    metrics_CustomCheck?: (v: UsageMetric[]) => boolean
+    apps_EntryOptions?: AppUsageMetricsOptions
+    apps_CustomCheck?: (v: Record<string, AppUsageMetrics>) => boolean
 }
 export const UsageMetricsValidate = (o?: UsageMetrics, opts: UsageMetricsOptions = {}, path: string = 'UsageMetrics::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (!Array.isArray(o.metrics)) return new Error(`${path}.metrics: is not an array`)
-    for (let index = 0; index < o.metrics.length; index++) {
-        const metricsErr = UsageMetricValidate(o.metrics[index], opts.metrics_ItemOptions, `${path}.metrics[${index}]`)
-        if (metricsErr !== null) return metricsErr
+    if (typeof o.apps !== 'object' || o.apps === null) return new Error(`${path}.apps: is not an object or is null`)
+    for (const key in o.apps) {
+        const appsErr = AppUsageMetricsValidate(o.apps[key], opts.apps_EntryOptions, `${path}.apps['${key}']`)
+        if (appsErr !== null) return appsErr
     }
-    if (opts.metrics_CustomCheck && !opts.metrics_CustomCheck(o.metrics)) return new Error(`${path}.metrics: custom check failed`)
 
     return null
 }
@@ -3165,6 +3306,24 @@ export const UseInviteLinkRequestValidate = (o?: UseInviteLinkRequest, opts: Use
 
     if (typeof o.invite_token !== 'string') return new Error(`${path}.invite_token: is not a string`)
     if (opts.invite_token_CustomCheck && !opts.invite_token_CustomCheck(o.invite_token)) return new Error(`${path}.invite_token: custom check failed`)
+
+    return null
+}
+
+export type UserHealthState = {
+    downtime_reason: string
+}
+export const UserHealthStateOptionalFields: [] = []
+export type UserHealthStateOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    downtime_reason_CustomCheck?: (v: string) => boolean
+}
+export const UserHealthStateValidate = (o?: UserHealthState, opts: UserHealthStateOptions = {}, path: string = 'UserHealthState::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.downtime_reason !== 'string') return new Error(`${path}.downtime_reason: is not a string`)
+    if (opts.downtime_reason_CustomCheck && !opts.downtime_reason_CustomCheck(o.downtime_reason)) return new Error(`${path}.downtime_reason: custom check failed`)
 
     return null
 }
