@@ -16,6 +16,7 @@ export const getHttpClient = (url: string, { adminToken, metricsToken }: { admin
     const c = NewHttpClient({
         baseUrl: url,
         retrieveGuestAuth: async () => { return "" },
+        retrieveGuestWithPubAuth: async () => { return "" },
         retrieveMetricsAuth: async () => { return metricsToken || "" },
         retrieveAdminAuth: async () => { return adminToken || "" },
         retrieveAppAuth: async () => { throw new Error("application routes not enabled") },
