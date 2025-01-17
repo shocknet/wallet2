@@ -173,7 +173,11 @@ export const Background = () => {
 			return
 		}
 		if (optimisticOperations.length > 0) {
-			dispatch(removeOptimisticOperation(sourceId));
+			optimisticOperations.forEach(o => {
+				if (totalData.find(e => e.operationId === o.operationId)) {
+					dispatch(removeOptimisticOperation([o.operationId]));
+				}
+			})
 		}
 
 		const accumulatedHistory = {

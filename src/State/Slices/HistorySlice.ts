@@ -193,11 +193,11 @@ const historySlice = createSlice({
       }
       update(state)
     },
-    updateOptimisticOperation: (state, action: PayloadAction<(Types.UserOperation & { source: string, sourceLabel: string, optLabel?: string })[]>) =>{
+    updateOptimisticOperation: (state, action: PayloadAction<(Types.UserOperation & { source: string, sourceLabel: string, optLabel?: string })[]>) => {
       state.optimisticOperations = action.payload;
     },
-    removeOptimisticOperation: (state, action: PayloadAction<string>) => {
-      state.optimisticOperations = state.optimisticOperations.filter(op => op.source !== action.payload)
+    removeOptimisticOperation: (state, action: PayloadAction<string[]>) => {
+      state.optimisticOperations = state.optimisticOperations.filter(op => !action.payload.includes(op.operationId));
     },
     procOperationsUpdateHook: (state) => {
       state.operationsUpdateHook = Math.random()

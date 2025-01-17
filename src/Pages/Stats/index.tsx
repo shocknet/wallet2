@@ -54,7 +54,7 @@ export const Stats = () => {
       toast.error('Error fetching metrics ' + res.reason)
       return
     }
-    console.log(res)
+    console.log({ appMetrics: res })
     const apps = Object.keys(res.apps)
     console.log(apps)
     const usageData = {} as UsageData
