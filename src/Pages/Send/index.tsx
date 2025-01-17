@@ -235,7 +235,15 @@ export const Send = () => {
 
   }, [dispatch, optimisticOperations, router, selectedSource, note, destination]);
 
-
+  const updateOptmisiticOpId = useCallback((operation_id: string, newId: string) => {
+    const newOps = optimisticOperations.map(op => {
+      if (op.operationId === operation_id) {
+        return { ...op, operationId: newId }
+      }
+      return op
+    })
+    dispatch(updateOptimisticOperation(newOps))
+  }, [dispatch, optimisticOperations]);
 
   const handleSubmit = useCallback(async () => {
     if (destination.type === InputClassification.UNKNOWN) {
@@ -273,7 +281,7 @@ export const Send = () => {
         case InputClassification.NOFFER: {
           if (!amount) {
             toast.error(<Toast title="Error" message={"no amount provided to spontaneous offer"} />)
-            dispatch(removeOptimisticOperation(selectedSource.id))
+            dispatch(removeOptimisticOperation([optimisticOperationId]));
             return
           }
           const invoice = await createNofferInvoice(destination.noffer!, selectedSource.keys, amount);
@@ -284,10 +292,11 @@ export const Send = () => {
           payRes = await handlePayBitcoinAddress(selectedSource, destination.data, amount, satsPerByte)
         }
       }
+      updateOptmisiticOpId(optimisticOperationId, payRes.operation_id)
       if (selectedSource.pubSource) {
         dispatch(procOperationsUpdateHook())
       } else {
-        dispatch(removeOptimisticOperation(selectedSource.id));
+        dispatch(removeOptimisticOperation([payRes.operation_id]));
         const timestamp = Date.now() / 1000;
         dispatch(setLatestLnurlOperation({
           pub: selectedSource.id,
@@ -324,7 +333,7 @@ export const Send = () => {
       } else {
         console.log("Unknown error occured", err);
       }
-      dispatch(removeOptimisticOperation(selectedSource.id));
+      dispatch(removeOptimisticOperation([optimisticOperationId]));
     }
     setSendRunning(false);
 
