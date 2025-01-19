@@ -27,6 +27,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          packages: |
+            build-tools;34.0.0
+            platforms;android-33
+
       - name: Install deps
         run: |
           npm ci
@@ -138,14 +146,6 @@ jobs:
         run: |
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list || $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
-          packages: |
-            build-tools;30.0.3
-            platforms;android-33
-
       - name: Decode Keystore
         run: |
           echo ${{ secrets.ANDROID_KEYSTORE }} | base64 --decode > my-release-key.keystore
@@ -158,12 +158,12 @@ jobs:
 
       - name: Sign APK
         run: |
-          $ANDROID_SDK_ROOT/build-tools/30.0.3/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner sign --ks my-release-key.keystore --ks-pass pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.ANDROID_KEY_PASSWORD }} --out android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
         shell: bash
 
       - name: Verify APK
         run: |
-          $ANDROID_SDK_ROOT/build-tools/30.0.3/apksigner verify android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
         shell: bash
 
       - name: Upload APK to GitHub Release
@@ -207,7 +207,7 @@ jobs:
             echo "AndroidManifest.xml contents:"
             if unzip -p "$APK_FILE" AndroidManifest.xml > manifest.xml; then
               if [ -s manifest.xml ]; then
-                $ANDROID_SDK_ROOT/build-tools/30.0.3/aapt dump xmltree manifest.xml || echo "aapt command failed"
+                $ANDROID_SDK_ROOT/build-tools/34.0.0/aapt dump xmltree manifest.xml || echo "aapt command failed"
               else
                 echo "Extracted AndroidManifest.xml is empty"
               fi
@@ -221,7 +221,7 @@ jobs:
 
       - name: Check aapt version
         run: |
-          $ANDROID_SDK_ROOT/build-tools/30.0.3/aapt version || echo "aapt not found or failed to run"
+          $ANDROID_SDK_ROOT/build-tools/34.0.0/aapt version || echo "aapt not found or failed to run"
 
       - name: Find sdkmanager location
         run: |
