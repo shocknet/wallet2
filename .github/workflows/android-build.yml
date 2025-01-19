@@ -34,8 +34,8 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses
-          sdkmanager --install "build-tools;34.0.0" "platforms;android-33"
+          echo "y" | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "build-tools;34.0.0" "platforms;android-33"
         shell: bash
 
       - name: Install deps
