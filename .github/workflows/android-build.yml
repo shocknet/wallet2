@@ -31,9 +31,12 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          packages: |
-            build-tools;34.0.0
-            platforms;android-33
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager --install "build-tools;34.0.0" "platforms;android-33"
+        shell: bash
 
       - name: Install deps
         run: |
