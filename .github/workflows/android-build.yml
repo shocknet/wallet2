@@ -134,6 +134,10 @@ jobs:
           echo "AndroidManifest.xml contents after Gradle build:"
           cat android/app/src/main/AndroidManifest.xml
 
+      - name: List available Android SDK packages
+        run: |
+          sdkmanager --list
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
