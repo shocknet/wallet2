@@ -136,7 +136,7 @@ jobs:
 
       - name: List available Android SDK packages
         run: |
-          sdkmanager --list
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list || $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -222,3 +222,9 @@ jobs:
       - name: Check aapt version
         run: |
           $ANDROID_SDK_ROOT/build-tools/33.0.2/aapt version || echo "aapt not found or failed to run"
+
+      - name: Find sdkmanager location
+        run: |
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          ls -R $ANDROID_SDK_ROOT || ls -R $ANDROID_HOME
