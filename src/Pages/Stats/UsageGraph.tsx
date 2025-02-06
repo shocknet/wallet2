@@ -6,30 +6,35 @@ import { useMemo, useState } from 'react'
 import { SpendFrom } from "../../globalTypes";
 import { getNostrClient } from "../../Api";
 import { decodeListTLV, parseTLV, tlvToUsageMetrics } from "./tlv";
-export type MetricsData = { entries: Types.UsageMetric[], currentPage: number, allPages: number[] }
+import { MetricsDataEntry } from "./statsApi";
+
 export type SelectedMetrics = {
     auth_in_nano?: boolean
     handle_in_nano?: boolean
     parsed_in_nano?: boolean
     validate_in_nano?: boolean
 }
-type Props = { fetchPage: (page: number) => Promise<Uint8Array>, rpcMethod: string, methodMetrics: MetricsData, successFilter: 'yes' | 'no' | '', nostrFilter: 'yes' | 'no' | '', selectedMetrics: SelectedMetrics }
+type Props = { fetchPage: (page: number) => Promise<Uint8Array>, rpcMethod: string, methodMetrics: MetricsDataEntry<Types.UsageMetric>, success: boolean, failure: boolean, http: boolean, nostr: boolean, selectedMetrics: SelectedMetrics }
 export const z = (n: number) => n < 10 ? `0${n}` : `${n}`
-export const StatsGraph = ({ fetchPage, rpcMethod, methodMetrics, nostrFilter, successFilter, selectedMetrics }: Props) => {
+export const UsageGraph = ({ fetchPage, rpcMethod, methodMetrics, failure, http, nostr, success, selectedMetrics }: Props) => {
     const [shownPage, setShownPage] = useState<number>(-1)
     const [pagesData, setPagesData] = useState<Record<number, Types.UsageMetric[]>>({})
-    const { datasets, labels } = useMemo(() => {
+    const { datasets, labels, from, to } = useMemo(() => {
         const labels = [] as string[]
         const handleInNanoData = [] as number[]
         const authInNanoData = [] as number[]
         const parsedInNanoData = [] as number[]
         const validateInNanoData = [] as number[]
         const pageData = shownPage === -1 ? methodMetrics.entries : pagesData[shownPage] || []
+        let min = Number.MAX_SAFE_INTEGER
+        let max = 0
         pageData.forEach(metric => {
-            if (successFilter === 'yes' && !metric.success) return
-            if (successFilter === 'no' && metric.success) return
-            if (nostrFilter === 'yes' && !metric.nostr) return
-            if (nostrFilter === 'no' && metric.nostr) return
+            if (!metric.success && !failure) return
+            if (metric.success && !success) return
+            if (!metric.nostr && !http) return
+            if (metric.nostr && !nostr) return
+            if (metric.processed_at_ms < min) min = metric.processed_at_ms
+            if (metric.processed_at_ms > max) max = metric.processed_at_ms
             const d = new Date(metric.processed_at_ms)
             const date = `${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`
             labels.push(date)
@@ -50,9 +55,12 @@ export const StatsGraph = ({ fetchPage, rpcMethod, methodMetrics, nostrFilter, s
             borderColor: d.color,
             color: d.color,
         }))
-        console.log({ nostrFilter, successFilter, datasets, labels })
-        return { datasets, labels }
-    }, [shownPage, pagesData, methodMetrics, selectedMetrics, nostrFilter, successFilter])
+        const minTime = new Date(min)
+        const from = `${minTime.getFullYear()}-${z(minTime.getMonth() + 1)}-${z(minTime.getDate())} ${z(minTime.getHours())}:${z(minTime.getMinutes())}:${z(minTime.getSeconds())}`
+        const maxTime = new Date(max)
+        const to = `${maxTime.getFullYear()}-${z(maxTime.getMonth() + 1)}-${z(maxTime.getDate())} ${z(maxTime.getHours())}:${z(maxTime.getMinutes())}:${z(maxTime.getSeconds())}`
+        return { datasets, labels, from, to }
+    }, [shownPage, pagesData, methodMetrics, selectedMetrics, failure, http, nostr, success])
 
     const loadMore = async (page: number) => {
         console.log("loading page", page, shownPage)
@@ -67,13 +75,15 @@ export const StatsGraph = ({ fetchPage, rpcMethod, methodMetrics, nostrFilter, s
         setPagesData(moreData)
     }
 
-    return <div key={rpcMethod} style={{ width: 600, border: '1px solid black' }}>
-        <h2>{rpcMethod}</h2>
+    return <div key={rpcMethod} style={{ width: 600, border: '1px solid black', textAlign: 'center' }}>
+        <h2 >{rpcMethod}</h2>
+        <p>{from}</p>
+        <p>{to}</p>
         <Line data={{
             labels,
             datasets,
         }} />
-        <div style={{ textAlign: 'center' }}>
+        <div >
             {methodMetrics.allPages.map(p =>
                 <span style={{ margin: '2px', textDecoration: p === shownPage ? 'underline' : ' none' }}
                     onClick={() => loadMore(p)} key={p}
