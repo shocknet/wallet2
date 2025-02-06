@@ -146,8 +146,8 @@ export const Graphs = ({ selectedSource }: { selectedSource: SpendFrom }) => {
             </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ ...tabStyle(tab === 'usage'), textAlign: 'center', position: 'relative', bottom: -1 }} onClick={() => setTab('usage')}>Usage Stats</div>
-            <div style={{ ...tabStyle(tab === 'bundle'), textAlign: 'center', position: 'relative', bottom: -1 }} onClick={() => setTab('bundle')}>Bundle Stats</div>
+            <div style={{ ...tabStyle(tab === 'usage'), textAlign: 'center', position: 'relative', bottom: -1 }} onClick={() => setTab('usage')}>Usage Metrics</div>
+            <div style={{ ...tabStyle(tab === 'bundle'), textAlign: 'center', position: 'relative', bottom: -1 }} onClick={() => setTab('bundle')}>Service Metrics</div>
         </div>
         <div style={{ border: '1px solid white', width: '100%', minHeight: 10, borderRadius: '10px' }}>
             {!selectedApp && <p style={{ textAlign: 'center', margin: 10 }}>Select an app to continue...</p>}
