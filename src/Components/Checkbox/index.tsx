@@ -7,9 +7,10 @@ interface Props {
   state: boolean;
   setState: (e: ChangeEvent<HTMLInputElement>) => void;
   id: string;
+  inline?: boolean;
 }
 
-const Checkbox = ({ state, setState, id }: Props) => {
+const Checkbox = ({ state, setState, id, inline }: Props) => {
   const handleCheckboxClick = () => {
     const event = {
       target: {
@@ -19,7 +20,7 @@ const Checkbox = ({ state, setState, id }: Props) => {
     setState(event)
   }
   return (
-    <div
+    <div style={inline ? { display: "inline-block" } : {}}
     >
       <div
         className={classNames({
@@ -28,17 +29,17 @@ const Checkbox = ({ state, setState, id }: Props) => {
         })}
         onClick={handleCheckboxClick}
       >
-        { state ? Icons.check() : null }
+        {state ? Icons.check() : null}
       </div>
       <input
         type="checkbox"
         id={id}
-        style={{display: "none"}}
+        style={{ display: "none" }}
         checked={state}
         onChange={(e) => setState(e)}
       />
     </div>
-    
+
   );
 };
 
