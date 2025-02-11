@@ -60,56 +60,56 @@ z"/>
 z"/>
 </svg>`;
     return (
-        <div className="Header_IMG_logo" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_logo" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const PriceDown = () => {
     const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="2ff83c025b4246628c834d86d76fdd0f" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(186, 41, 41); width: 24px; height: 24px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z" style="fill: rgb(186, 41, 41);"></path></g></svg>';
     return (
-        <div className="Home_IMG_PriceDown" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Home_IMG_PriceDown" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const PriceUp = () => {
     const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="00e20f6297a14af58205cf161e210f6c" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(67, 185, 96); width: 24px; height: 24px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" style="fill: rgb(67, 185, 96);"></path></g></svg>';
     return (
-        <div className="Home_IMG_PriceUp" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Home_IMG_PriceUp" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const SourceItemMenu = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="20" height="20"><g><defs xmlnsDefault="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0V0z" id="a" style="fill: rgb(42, 171, 225);" vector-effect="non-scaling-stroke"/></defs><clipPath xmlnsDefault="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="b" vector-effect="non-scaling-stroke"><use xlink:href="#a" vector-effect="non-scaling-stroke"/></clipPath><path xmlnsDefault="http://www.w3.org/2000/svg" clip-path="url(#b)" d="M20 9H4v2h16V9zM4 15h16v-2H4v2z" style="fill: rgb(42, 171, 225);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Sources_IMG_SourceItemMenu" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_SourceItemMenu" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const EditSource = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="12" height="12"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" style="fill: rgb(137, 137, 137);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const Menu = () => {
     const svgCode = '<?xml version="1.0" standalone="no"?><svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="28" height="28"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" style="fill: rgb(42, 171, 225);"/></g></svg>';
     return (
-        <div className="Header_IMG_Menu" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_Menu" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const MenuBack = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Header_IMG_MenuBack" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_MenuBack" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const Key = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 596 596" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M330.8,212.5c0,28.7,23.3,52,52,52c15.3,0,29.2-6.7,38.8-17.4c14.3,5.5,29.6,8.4,45.7,8.4c70.5,0,127.7-57.3,127.7-127.7  S537.8,0,467.3,0c-57.9,0-107,38.8-122.5,91.9c-2.7,0-5.5-0.2-8-0.2c-92.7,0-168,75.5-168,168c0,25.8,6.1,51.6,17.6,74.7L0,520.8  l75.1,75.1l186.3-186.1c23.5,11.7,49.3,18,75.5,18c40.3,0,79.3-14.5,109.7-40.7c30.2-26,50.1-61.7,56.2-100.9l-23.5-3.8  c-5.2,33.6-22.4,64.4-48.5,86.6c-26.2,22.7-59.6,35-94.2,35c-25.2,0-49.9-6.7-71.7-19.3l-8-4.6L74.9,562.3L33.6,521l182.3-182.3  l-4.4-7.8c-12.4-21.6-18.7-46.4-18.7-71.1c0-79.5,64.8-144.3,144.3-144.3c1,0,2.3,0,3.4,0c-0.4,4-0.6,8.2-0.6,12.4  c0,16.2,2.9,31.5,8.4,45.7C337.5,183.1,330.8,197,330.8,212.5z M411.1,215.2c-12.4-8-22.9-18.7-30.8-30.8c0.8,0,1.9-0.2,2.7-0.2  c15.5,0,28.3,12.6,28.3,28.3C411.3,213.3,411.1,214.4,411.1,215.2z M363.5,127.9c0-3.4,0.2-6.7,0.4-9.9  c46.8,8.8,86.8,40.5,105.7,85.6l22-9.2c-22-52.2-68.4-89.1-122.7-99.6c13.8-41.1,52.9-70.9,98.6-70.9c57.3,0,104,46.6,104,104  s-46.6,104-104,104c-12,0-23.5-2.1-34.2-5.9c1-4.4,1.9-8.8,1.9-13.6c0-28.7-23.3-52-52-52c-4.8,0-9.2,0.6-13.6,1.9  C365.6,151.4,363.5,139.9,363.5,127.9z M399,235.8c-4.6,3.1-10.1,5-15.9,5c-15.5,0-28.3-12.6-28.3-28.3c0-5.9,1.9-11.5,5-15.9  C369.8,212.1,383.2,225.7,399,235.8z" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Header_IMG_SourceIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_SourceIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -120,7 +120,7 @@ export const Automation = () => {
 	</g>
 </g></g></svg>`;
     return (
-        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -131,7 +131,7 @@ export const Contacts = () => {
                             </g>
                         </g></g></svg>`;
     return (
-        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -142,14 +142,14 @@ export const Setting = () => {
                 </g>
             </g><g/></svg>`;
     return (
-        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_Setting" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const SourceIcon = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 684 684" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M684,0L105.2,236.8l171,171L0,684l578.8-236.8l-171-171L684,0z M531.4,436.7l-420.9,171l184.2-184.2l18.4-18.4l-18.4-18.4  L152.6,244.7l420.9-171L389.4,257.8L371,276.2l18.4,18.4" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Header_IMG_SourceIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_SourceIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -159,7 +159,7 @@ export const BuyCryptoIcon = () => {
 	<path d="M247.3,234.2c0-28.9,28.9-55.2,73.7-55.2s78.9,28.9,78.9,28.9l18.4-26.3c0,0-28.9-28.9-84.2-31.6v-44.7h-28.9V150   c-55.2,5.3-92.1,44.7-92.1,86.8c0,100,178.9,81.6,178.9,163.1c0,34.2-31.6,55.2-71,55.2c-55.2,0-92.1-36.8-92.1-36.8l-21,23.7   c0,0,34.2,36.8,100,39.5v44.7h28.9v-42.1c57.9-5.3,92.1-42.1,92.1-86.8C426.2,292,247.3,307.8,247.3,234.2z" style="fill: rgb(245, 147, 34);" vector-effect="non-scaling-stroke"/>
 </g></g></svg>`;
     return (
-        <div className="Header_IMG_BuyCryptoIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_BuyCryptoIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -170,33 +170,33 @@ export const HelpAbout = () => {
 	</g>
 </g></g></svg>`;
     return (
-        <div className="Header_IMG_HelpAbout" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Header_IMG_HelpAbout" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const QR = () => {
     const svgCode = '<svg height="30" overflow="visible" viewBox="-1 -1 34 34" width="30" xmlns="http://www.w3.org/2000/svg"><g><defs><path id="path-169764199817443" d="M0 5.000000000000001 C0 2.2385762510000005 2.2385762510000005 0 5.000000000000001 0 C5.000000000000001 0 25.000000000000046 0 25.000000000000046 0 C27.761423749000045 0 30.000000000000046 2.2385762510000005 30.000000000000046 5.000000000000001 C30.000000000000046 5.000000000000001 30.000000000000046 25.000000000000025 30.000000000000046 25.000000000000025 C30.000000000000046 27.761423749000024 27.761423749000045 30.000000000000025 25.000000000000046 30.000000000000025 C25.000000000000046 30.000000000000025 5.000000000000001 30.000000000000025 5.000000000000001 30.000000000000025 C2.2385762510000005 30.000000000000025 0 27.761423749000024 0 25.000000000000025 C0 25.000000000000025 0 5.000000000000001 0 5.000000000000001 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(41, 171, 226); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M1 6.000000000000001 C1 3.2385762510000005 3.2385762510000005 1 6.000000000000001 1 C6.000000000000001 1 26.000000000000057 1 26.000000000000057 1 C28.761423749000055 1 31.000000000000057 3.2385762510000005 31.000000000000057 6.000000000000001 C31.000000000000057 6.000000000000001 31.000000000000057 26 31.000000000000057 26 C31.000000000000057 28.761423749 28.761423749000055 31 26.000000000000057 31 C26.000000000000057 31 6.000000000000001 31 6.000000000000001 31 C3.2385762510000005 31 1 28.761423749 1 26 C1 26 1 6.000000000000001 1 6.000000000000001 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817441" d="M0 0 C0 0 32 0 32 0 C32 0 32 8 32 8 C32 8 0 8 0 8 C0 8 0 0 0 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M0 12 C0 12 32 12 32 12 C32 12 32 20 32 20 C32 20 0 20 0 20 C0 20 0 12 0 12 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817339" d="M0 0 C0 0 8 0 8 0 C8 0 8 32 8 32 C8 32 0 32 0 32 C0 32 0 0 0 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M12 0 C12 0 20 0 20 0 C20 0 20 32 20 32 C20 32 12 32 12 32 C12 32 12 0 12 0 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817237" d="M5 0 C7.7595751224699985 0 10 2.2404248775299997 10 5 C10 7.75957512247 7.7595751224699985 10 5 10 C2.2404248775299997 10 0 7.75957512247 0 5 C0 2.2404248775299997 2.2404248775299997 0 5 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);" d="M16 11 C18.75957512247001 11 21 13.240424877530018 21 16 C21 18.759575122469982 18.75957512247001 21 16 21 C13.240424877529989 21 11 18.759575122469982 11 16 C11 13.240424877530018 13.240424877529989 11 16 11 Z" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Footer_IMG_QR" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Footer_IMG_QR" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const Share = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><defs> </defs> <rect display="none" fill="#FFA400" width="24" height="24" style="fill: rgb(38, 147, 193);" vector-effect="non-scaling-stroke"/> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="24" height="24" style="fill: rgb(38, 147, 193);" vector-effect="non-scaling-stroke"/> <path fill-rule="evenodd" clip-rule="evenodd" d="M20,16c-1.365,0-2.567,0.686-3.289,1.729l-8.864-4.692C7.937,12.704,8,12.361,8,12 s-0.063-0.704-0.153-1.037l8.864-4.692C17.433,7.313,18.635,8,20,8c2.209,0,4-1.791,4-4s-1.791-4-4-4c-2.209,0-4,1.791-4,4 c0,0.038,0.01,0.074,0.011,0.111L6.682,9.051C5.972,8.404,5.036,8,4,8c-2.209,0-4,1.791-4,4s1.791,4,4,4 c1.036,0,1.971-0.404,2.682-1.051l9.329,4.939C16.01,19.927,16,19.962,16,20c0,2.209,1.791,4,4,4c2.209,0,4-1.791,4-4 S22.209,16,20,16z M20,2c1.104,0,2,0.896,2,2s-0.896,2-2,2s-2-0.896-2-2S18.896,2,20,2z M4,14c-1.104,0-2-0.896-2-2s0.896-2,2-2 s2,0.896,2,2S5.104,14,4,14z M20,22c-1.104,0-2-0.896-2-2s0.896-2,2-2s2,0.896,2,2S21.104,22,20,22z" style="fill: rgb(38, 147, 193);" vector-effect="non-scaling-stroke"/> </g></svg>';
     return (
-        <div className="Receive_IMG_Share" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Receive_IMG_Share" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const Close = () => {
     const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 20 20" class="ng-element" data-id="e1136194e86a4b5396fa52ee720749c5" stroke-linecap="null" stroke-linejoin="null"><g><defs> </defs> <rect display="none" fill="#FFA400" width="20" height="20" style="fill: rgb(255, 255, 255);"></rect> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="20" height="20" style="fill: rgb(255, 255, 255);"></rect> <polygon fill-rule="evenodd" clip-rule="evenodd" points="20,3 17,0 10,7 3,0 0,3 7,10 0,17 3,20 10,13 17,20 20,17 13,10 " style="fill: rgb(255, 255, 255);"></polygon> </g></svg>';
     return (
-        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const ErrorMessage = () => {
-    const svgCode = 
+    const svgCode =
         `<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	    width="100%" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
         <path fill="rgba(0, 0, 0, 0)" opacity="1.000000" stroke="none" 
@@ -432,21 +432,21 @@ export const ErrorMessage = () => {
         z"/>
         </svg>`;
     return (
-        <div className="Scan_IMG_ErrorMessage" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Scan_IMG_ErrorMessage" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const Animation = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 684 684" width="24" height="24"><g><path xmlnsDefault="http://www.w3.org/2000/svg" d="M684,0L105.2,236.8l171,171L0,684l578.8-236.8l-171-171L684,0z M531.4,436.7l-420.9,171l184.2-184.2l18.4-18.4l-18.4-18.4  L152.6,244.7l420.9-171L389.4,257.8L371,276.2l18.4,18.4" style="fill: rgb(42, 171, 225);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Loader_IMG_Animation" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Loader_IMG_Animation" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const questionMark = () => {
     const svgCode = '<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element interactive" data-id="85c5ca9ce2814e0090336f34b8f76de8" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 14px; height: 14px; filter: drop-shadow(rgb(0, 0, 0) 0px 0px 1.16667px);"><g><path xmlns:default="http://www.w3.org/2000/svg" id="question-circle" d="M13.24,17.24c-0.06,0.06-0.15,0.09-0.24,0.09h-2c-0.18,0.01-0.32-0.13-0.33-0.31c0-0.01,0-0.01,0-0.02  v-2c-0.01-0.18,0.13-0.32,0.31-0.33c0.01,0,0.01,0,0.02,0h2c0.18-0.01,0.32,0.13,0.33,0.31c0,0.01,0,0.01,0,0.02v2  C13.33,17.09,13.3,17.18,13.24,17.24z M16,10c0,0.29-0.04,0.57-0.13,0.84c-0.07,0.22-0.17,0.43-0.29,0.63  c-0.13,0.19-0.28,0.36-0.46,0.5c-0.15,0.13-0.31,0.25-0.48,0.36l-0.51,0.3c-0.23,0.13-0.42,0.31-0.57,0.52  c-0.12,0.15-0.2,0.33-0.22,0.52c0.01,0.18-0.13,0.32-0.31,0.33c-0.01,0-0.02,0-0.03,0h-2c-0.18,0.01-0.32-0.13-0.33-0.31  c0-0.01,0-0.01,0-0.02v-0.38c0.01-0.48,0.21-0.94,0.54-1.29c0.33-0.38,0.74-0.69,1.2-0.9c0.27-0.11,0.51-0.27,0.71-0.47  c0.15-0.18,0.22-0.4,0.21-0.63c-0.02-0.26-0.17-0.49-0.39-0.61c-0.55-0.35-1.24-0.35-1.79,0c-0.34,0.29-0.64,0.63-0.9,1  c-0.06,0.08-0.16,0.12-0.26,0.12c-0.07,0.01-0.14-0.02-0.2-0.06l-1.37-1c-0.14-0.09-0.19-0.27-0.1-0.41  c0.01-0.01,0.01-0.02,0.02-0.03C9.11,7.6,10.6,6.74,12.2,6.79c1.25-0.02,2.44,0.54,3.22,1.51C15.8,8.79,16,9.38,16,10L16,10z   M18.93,8c-0.7-1.21-1.71-2.22-2.93-2.92C14.79,4.37,13.41,3.99,12,4c-1.41-0.01-2.79,0.37-4,1.08C6.79,5.78,5.78,6.79,5.08,8  C4.37,9.21,3.99,10.59,4,12c-0.01,1.41,0.36,2.79,1.07,4c0.7,1.21,1.71,2.22,2.93,2.92c1.21,0.71,2.59,1.09,4,1.08  c1.41,0.01,2.79-0.36,4-1.07c1.21-0.7,2.22-1.71,2.92-2.93c0.71-1.21,1.09-2.59,1.08-4c0.01-1.41-0.37-2.79-1.08-4H18.93z" style="fill: rgb(255, 255, 255);"></path></g></svg>';
     return (
-        <span dangerouslySetInnerHTML={{__html: svgCode}}></span>
+        <span dangerouslySetInnerHTML={{ __html: svgCode }}></span>
     )
 }
 
@@ -473,70 +473,70 @@ export const hourGlass = () => {
 export const mynode = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="e32536c924714fcda0ee8c743c7c05a7" style="overflow: visible;width: 33px;height: 33px;opacity: 1;mix-blend-mode: normal><defs><path id="path-169271476228410641" d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z"></path><pattern id="pattern-169271476234011279" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675274%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.0582010582010582, 0.0582010582010582)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.60659790415099 0 33 7.393402095849002 33 16.5 C33 25.60659790415101 25.60659790415099 33 16.5 33 C7.393402095848997 33 0 25.60659790415101 0 16.5 C0 7.393402095849002 7.393402095848997 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234011279&quot;);"></path></g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const uncle = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="16852934e1c94511963ef56e90e9d3b7" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476228210634" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234111368" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/uncle_jim-d639cb531fb4c5a2929595b6b85bbf5c-bbe8c4.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234111368&quot;);"></path></g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const lightning = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="6160a9a18b444d919b1ebc1d1abd6b01" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227910626" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234311457" height="100%" patternUnits="objectBoundingBox" width="114.60055096418733%" x="-14.600550964187335%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/LV_Signal_Logo_16191c_margins-675168630b49fe34278c03f3c0b9c4f7-92845b.png" height="363" transform="scale(0.09090909090909091, 0.09090909090909091)" width="469"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234311457&quot;);"></path></g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const zbd = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="cc67d5628c354c5fba6a7060a3cea36d" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476231310712" d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234511635" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/zbd-e3dd55ce5dc369b5a5ca2f89f20dc8b9-46ce09.webp" height="512" transform="scale(0.064453125, 0.064453125)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.393402095849003 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.393402095849003 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234511635&quot;);"></path></g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const stacker = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="8ed9c386e6ab4260ad871611baa5b9ac" style="overflow: visible; width: 33px; height: 33px; opacity: 1; mix-blend-mode: normal;><defs><path id="path-169271476227610617" d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z"></path><pattern id="pattern-169271476234411546" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/sn-56c133cd5b4448f8dc4bdbcb3b6fc748-08dca8.webp" height="225" transform="scale(0.14666666666666667, 0.14666666666666667)" width="225"></image></pattern></defs><g transform="translate(0, 0)"><path d="M16.5 0 C25.606597904150995 0 33 7.3934020958490025 33 16.5 C33 25.606597904151013 25.606597904150995 33 16.5 33 C7.393402095848998 33 0 25.606597904151013 0 16.5 C0 7.3934020958490025 7.393402095848998 0 16.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169271476234411546&quot;);"></path></g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const mynodeSmall = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="36a39baaac0c4f38a8ad45662046484e" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700542933255" d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000005 C24 18.62298029392801 18.62298029392798 24.00000000000001 12 24.00000000000001 C5.377019706071995 24.00000000000001 0 18.62298029392801 0 12.000000000000005 C0 5.377019706072 5.377019706071995 0 12 0 Z"></path><pattern id="pattern-169279700549733532" height="100%" patternUnits="objectBoundingBox" width="100.08818342151675%" x="-0.08818342151675207%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/home_avatar-a625d3a7f5a8c8d61c6bd89984c99332-75943f.webp" height="567" transform="scale(0.042328042328042326, 0.042328042328042326)" width="568"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000005 C24 18.62298029392801 18.62298029392798 24.00000000000001 12 24.00000000000001 C5.377019706071995 24.00000000000001 0 18.62298029392801 0 12.000000000000005 C0 5.377019706072 5.377019706071995 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549733532&quot;);"></path></g></svg>`;
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const uncleSmall = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="a3f7ed4a2c16436dafd02870fdbb1ce2" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal; "><defs><path id="path-169279700543333263" d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000007 C24 18.622980293928013 18.622980293927984 24.000000000000014 12 24.000000000000014 C5.377019706071998 24.000000000000014 0 18.622980293928013 0 12.000000000000007 C0 5.377019706071994 5.377019706071998 0 12 0 Z"></path><pattern id="pattern-169279700549333441" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/uncle_jim-d639cb531fb4c5a2929595b6b85bbf5c-bbe8c4.webp" height="512" transform="scale(0.046875, 0.046875)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000007 C24 18.622980293928013 18.622980293927984 24.000000000000014 12 24.000000000000014 C5.377019706071998 24.000000000000014 0 18.622980293928013 0 12.000000000000007 C0 5.377019706071994 5.377019706071998 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549333441&quot;);"></path></g></svg>`;
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const lightningSmall = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="67429c53a39f4d2390fe3f78603e796b" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700542533248" d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000009 C24 18.62298029392801 18.622980293927984 24.000000000000018 12 24.000000000000018 C5.377019706071999 24.000000000000018 0 18.62298029392801 0 12.000000000000009 C0 5.377019706071994 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700549933621" height="100%" patternUnits="objectBoundingBox" width="114.60055096418733%" x="-14.600550964187331%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/LV_Signal_Logo_16191c_margins-675168630b49fe34278c03f3c0b9c4f7-92845b.png" height="363" transform="scale(0.06611570247933884, 0.06611570247933884)" width="469"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.377019706071994 24 12.000000000000009 C24 18.62298029392801 18.622980293927984 24.000000000000018 12 24.000000000000018 C5.377019706071999 24.000000000000018 0 18.62298029392801 0 12.000000000000009 C0 5.377019706071994 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700549933621&quot;);"></path></g></svg>`;
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const zbdSmall = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="17ed649f123b481886f798247dabf982" style="overflow: visible;width: 24px;height: 24px;opacity: 1;mix-blend-mode: normal;"><defs><path id="path-169279700542233243" d="M12 0 C18.622980293927984 0 24 5.3770197060719935 24 12.000000000000005 C24 18.622980293928013 18.622980293927984 24.00000000000001 12 24.00000000000001 C5.377019706071999 24.00000000000001 0 18.622980293928013 0 12.000000000000005 C0 5.3770197060719935 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700550133710" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/zbd-e3dd55ce5dc369b5a5ca2f89f20dc8b9-46ce09.webp" height="512" transform="scale(0.046875, 0.046875)" width="512"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.622980293927984 0 24 5.3770197060719935 24 12.000000000000005 C24 18.622980293928013 18.622980293927984 24.00000000000001 12 24.00000000000001 C5.377019706071999 24.00000000000001 0 18.622980293928013 0 12.000000000000005 C0 5.3770197060719935 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700550133710&quot;);"></path></g></svg>`;
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const stackerSmall = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-element" data-id="61a1daf435584c6a88670d1afcc8990e" style="overflow: visible; width: 24px; height: 24px; opacity: 1; mix-blend-mode: normal;"><defs><path id="path-169279700541733235" d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000004 C24 18.62298029392801 18.62298029392798 24.000000000000007 12 24.000000000000007 C5.377019706071999 24.000000000000007 0 18.62298029392801 0 12.000000000000004 C0 5.377019706072 5.377019706071999 0 12 0 Z"></path><pattern id="pattern-169279700550333799" height="100%" patternUnits="objectBoundingBox" width="100%" x="0%" y="0%"><image xlink:href="https://s3.amazonaws.com/upload.uxpin/files/1118248/1080825/sn-56c133cd5b4448f8dc4bdbcb3b6fc748-08dca8.webp" height="225" transform="scale(0.10666666666666667, 0.10666666666666667)" width="225"></image></pattern></defs><g transform="translate(0, 0)"><path d="M12 0 C18.62298029392798 0 24 5.377019706072 24 12.000000000000004 C24 18.62298029392801 18.62298029392798 24.000000000000007 12 24.000000000000007 C5.377019706071999 24.000000000000007 0 18.62298029392801 0 12.000000000000004 C0 5.377019706072 5.377019706071999 0 12 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: url(&quot;#pattern-169279700550333799&quot;);"></path></g></svg>`;
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -544,119 +544,119 @@ export const stackerSmall = () => {
 export const plusIcon = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="06eddcf758814960bcea07c9c5c7ce4b" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;><g><defs> </defs> <rect display="none" fill="#FFA400" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <rect id="_x3C_Slice_x3E__126_" display="none" fill="none" width="33" height="33" style="fill: rgb(255, 255, 255);"></rect> <polygon fill-rule="evenodd" clip-rule="evenodd" points="14,10 14,0 10,0 10,10 0,10 0,14 10,14 10,24 14,24 14,14 24,14 24,10 " style="fill: rgb(255, 255, 255);"></polygon> </g></svg>`;
     return (
-        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_svgIcon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const closeIcon = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element fixed-position interactive" data-id="684b564284db4e8888fa11eebb3dc8b8" style="overflow: visible; opacity: 1; mix-blend-mode: normal; width: 28px; height: 28px"><g transform=""><use xlink:href="#path-16927291915041424" filter="url(#filter-16927291915101427)"></use><path d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);"></path></g><defs><path id="path-16927291915041424" d="M20.63768,24c-0.46377,0 -0.92754,-0.17381 -1.21739,-0.52142l-7.42029,-7.41581l-7.36232,7.41581c-0.63768,0.6373 -1.7971,0.6373 -2.43478,0l-1.62319,-1.62221c-0.69565,-0.69523 -0.69565,-1.79602 0,-2.49125l7.36232,-7.41581l-7.42029,-7.41581c-0.34783,-0.28968 -0.52174,-0.75317 -0.52174,-1.21666c0,-0.46349 0.17391,-0.92698 0.52174,-1.21666l1.62319,-1.62221c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l7.36232,7.41581l7.47826,-7.41581c0.63768,-0.6373 1.7971,-0.6373 2.43478,0l1.62319,1.62221c0.34783,0.34762 0.52174,0.75317 0.52174,1.21666c0,0.46349 -0.17391,0.92698 -0.52174,1.21666l-7.36232,7.41581l7.36232,7.41581c0.69565,0.69523 0.69565,1.79602 0,2.49125l-1.62319,1.62221c-0.34783,0.28968 -0.75362,0.52142 -1.21739,0.52142zM12,14.44056l8.23188,8.22692c0.23188,0.23174 0.57971,0.23174 0.81159,0l1.62319,-1.62221c0.23188,-0.23174 0.23188,-0.57936 0,-0.8111l-8.17391,-8.28485l8.17391,-8.22692c0.11594,-0.11587 0.17391,-0.23174 0.17391,-0.40555c0,-0.17381 -0.05797,-0.28968 -0.17391,-0.40555l-1.62319,-1.62221c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-8.23188,8.22692l-8.23188,-8.22692c-0.23188,-0.23174 -0.57971,-0.23174 -0.81159,0l-1.62319,1.62221c-0.11594,0.11587 -0.17391,0.28968 -0.17391,0.40555c0,0.11587 0.05797,0.28968 0.17391,0.40555l8.23188,8.22692l-8.23188,8.22692c-0.23188,0.23174 -0.23188,0.57936 0,0.8111l1.62319,1.62221c0.23188,0.23174 0.57971,0.23174 0.81159,0z"></path><filter height="116.66666319444516%" id="filter-16927291915101427" width="116.66666666666667%" x="-8.333333333333332%" y="-8.333331597222585%"><feFlood flood-opacity="0" result="backgroundFix"></feFlood><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix><feOffset dx="0" dy="0"></feOffset><feGaussianBlur stdDeviation="1.1666666666666665"></feGaussianBlur><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"></feColorMatrix><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1"></feBlend></filter></defs></svg>`;
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const pasteIcon = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" class="ng-element" data-id="df47e532c6eb4b608d7559b5f9a4a0a8"><g transform="translate(0, 0) rotate(0)"><path d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></g><defs><path id="path-16927294668254771" d="M16,2h-4.18c-0.42,-1.16 -1.52,-2 -2.82,-2c-1.3,0 -2.4,0.84 -2.82,2h-4.18c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2v-16c0,-1.1 -0.9,-2 -2,-2zM9,2c0.55,0 1,0.45 1,1c0,0.55 -0.45,1 -1,1c-0.55,0 -1,-0.45 -1,-1c0,-0.55 0.45,-1 1,-1zM16,20h-14v-16h2v3h10v-3h2z"></path></defs></svg>`;
     return (
-        <div className="Scan_input_icon_svg" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Scan_input_icon_svg" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const copy = () => {
     const svgCode = `<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-32 0 512 512" width="24" height="24"><path d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L400 115.9V320c0 8.8-7.2 16-16 16zM192 384H384c35.3 0 64-28.7 64-64V115.9c0-12.7-5.1-24.9-14.1-33.9L366.1 14.1c-9-9-21.2-14.1-33.9-14.1H192c-35.3 0-64 28.7-64 64V320c0 35.3 28.7 64 64 64zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H272v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16H96V128H64z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></svg>`;
     return (
-        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const share = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="3c622e0f230641a5b25f16531535677d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
     return (
-        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Receive_copy_icon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const arrowLeft = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="8c04bbe7ff1c40c99338e907c691102d" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
     return (
-        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Receive_arrow" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
-export const arrowRight = () => {
+export const arrowRight = (inline = false) => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="c1a1bae0abe4453f83674d3da4669950" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(176, 176, 176); width: 24px; height: 24px; "><g><path xmlns:default="http://www.w3.org/2000/svg" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="fill: rgb(176, 176, 176);"></path></g></svg>`;
     return (
-        <div className="Receive_arrow" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className={inline ? 'Receive_copy_icon Receive_arrow' : 'Receive_arrow'} dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const send = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element" data-id="06eddcf758814960bcea07c9c5c7ce4b" stroke-linecap="null" stroke-linejoin="null" style="opacity: 1; mix-blend-mode: normal; fill: rgb(255, 255, 255); width: 24px; height: 24px;"><g><polygon points="2,21 23,12 2,3 2,10 17,12 2,14" style="fill: rgb(255, 255, 255);"></polygon></g></svg>`;
     return (
-        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const arrow = () => {
     const svgCode = `<svg version="1.2" preserveAspectRatio="none" viewBox="0 0 24 24" class="ng-element interactive" data-id="146af6c51fef43f0ab5ae4021b59035e" stroke-linecap="null" stroke-linejoin="null" style=""><g><path xmlns:default="http://www.w3.org/2000/svg" id="chevron-right" d="M17.4,11.99c0-0.18-0.07-0.35-0.2-0.47L9.48,3.8C9.23,3.55,8.82,3.54,8.56,3.78  C8.55,3.79,8.54,3.8,8.54,3.8L6.81,5.53C6.55,5.77,6.54,6.18,6.78,6.44C6.79,6.45,6.8,6.46,6.81,6.47l5.53,5.53l-5.53,5.53  c-0.26,0.25-0.27,0.66-0.02,0.92c0.01,0.01,0.01,0.01,0.02,0.02l1.73,1.73c0.25,0.26,0.66,0.27,0.92,0.02  c0.01-0.01,0.01-0.01,0.02-0.02l7.73-7.73C17.33,12.34,17.4,12.17,17.4,11.99z" style="fill: rgb(255, 255, 255);"></path></g></svg>`;
     return (
-        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Send_IMG_Close" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const prefsSetting = () => {
     const svgCode = `<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 26 26" width="24" height="24"><g><defs> </defs> <rect display="none" fill="#FFA400" width="26" height="26" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="26" height="26" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <path fill-rule="evenodd" clip-rule="evenodd" d="M22.703,13.191l3.294-1.374l-1.004-4.225L21.3,7.988 c-0.373-0.629-0.805-1.203-1.29-1.717l1.364-3.315l-3.696-2.28l-2.306,2.867c-0.799-0.21-1.622-0.314-2.454-0.319l-1.445-3.219 L7.277,1.132L7.77,4.693C7.19,5.053,6.659,5.462,6.186,5.91L2.999,4.597L0.72,8.295l2.743,2.218c-0.2,0.755-0.318,1.538-0.335,2.327 l-3.124,1.298l1.007,4.23l3.487-0.375c0.403,0.7,0.875,1.334,1.422,1.893l-1.285,3.116L8.33,25.28l2.216-2.75 c0.752,0.187,1.518,0.291,2.3,0.299l1.312,3.167l4.223-1.007L18,21.396c0.653-0.398,1.255-0.854,1.773-1.368l3.237,1.334 l2.277-3.701l-2.865-2.312C22.595,14.644,22.692,13.92,22.703,13.191z M13,19.014c-3.308,0-5.989-2.692-5.989-6.014 S9.692,6.986,13,6.986S18.989,9.679,18.989,13S16.308,19.014,13,19.014z M13,10.99c-1.11,0-2.01,0.9-2.01,2.01 c0,1.11,0.9,2.01,2.01,2.01s2.01-0.899,2.01-2.01C15.01,11.891,14.11,10.99,13,10.99z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> </g></svg>`;
     return (
-        <div className="Prefs_setting_icon" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Prefs_setting_icon" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const notification = () => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="-13.160000000000025 0 658 658" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M552.5,389.4V236.8C552.5,105.2,447.3,0,315.7,0S78.9,105.2,78.9,236.8v152.6L0,578.8h78.9h157.9  c0,44.7,34.2,78.9,78.9,78.9c44.7,0,78.9-34.2,78.9-78.9h157.9h78.9L552.5,389.4z M315.7,26.3c115.8,0,210.5,94.7,210.5,210.5v131.5  H105.2V236.8C105.2,121,199.9,26.3,315.7,26.3z M315.7,631.4c-28.9,0-52.6-23.7-52.6-52.6h105.2  C368.3,607.7,344.6,631.4,315.7,631.4z M78.9,552.5H39.5l63.1-152.6l2.6-5.3h420.9l2.6,5.3L592,552.5h-39.5H78.9z" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const oval = () => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 8 8" width="8" height="8"><g transform="translate(0, 0)"><defs><path id="path-16987583019702256" d="M4 0 C6.2076600979759995 0 8 1.7923399020239992 8 3.9999999999999987 C8 6.207660097975998 6.2076600979759995 7.999999999999997 4 7.999999999999997 C1.7923399020239996 7.999999999999997 0 6.207660097975998 0 3.9999999999999987 C0 1.7923399020239992 1.7923399020239996 0 4 0 Z" vector-effect="non-scaling-stroke"/></defs><g transform="translate(0, 0)"><path d="M4 0 C6.2076600979759995 0 8 1.7923399020239992 8 3.9999999999999987 C8 6.207660097975998 6.2076600979759995 7.999999999999997 4 7.999999999999997 C1.7923399020239996 7.999999999999997 0 6.207660097975998 0 3.9999999999999987 C0 1.7923399020239992 1.7923399020239996 0 4 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 119, 0);" vector-effect="non-scaling-stroke"/></g></g></svg>';
     return (
-        <div className="Header_oval" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Header_oval" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const clipboard = () => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 512 512" width="24" height="24"><path d="M80 96v16c0 17.7 14.3 32 32 32h60.8c16.6-28.7 47.6-48 83.2-48h62c-7.1-27.6-32.2-48-62-48H215.4C211.6 20.9 188.2 0 160 0s-51.6 20.9-55.4 48H64C28.7 48 0 76.7 0 112V384c0 35.3 28.7 64 64 64h96V400H64c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H80zm64-40a16 16 0 1 1 32 0 16 16 0 1 1 -32 0zM256 464c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16H384v48c0 17.7 14.3 32 32 32h48V448c0 8.8-7.2 16-16 16H256zm192 48c35.3 0 64-28.7 64-64V227.9c0-12.7-5.1-24.9-14.1-33.9l-51.9-51.9c-9-9-21.2-14.1-33.9-14.1H256c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H448z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></svg>';
     return (
-        <div className="Home_clipboard" dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className="Home_clipboard" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const deleteNotify = () => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="16" height="16"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgb(140, 140, 140);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
-export const check = () => {
+export const check = (inline = false) => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="14" height="14"><g><defs> </defs> <rect display="none" fill="#FFA400" width="24" height="24" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <rect id="_x3C_Slice_x3E__109_" display="none" fill="none" width="24" height="24" style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> <polygon fill-rule="evenodd" clip-rule="evenodd" points="20.5,2 9.5,16.5 3,10 0,13 10,23 24,5 " style="fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/> </g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div className={inline ? 'Receive_copy_icon' : ''} dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const pending = () => {
     const svgCode = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M320-160h320v-120q0-66-47-113t-113-47q-66 0-113 47t-47 113v120ZM160-80v-80h80v-120q0-61 28.5-114.5T348-480q-51-32-79.5-85.5T240-680v-120h-80v-80h640v80h-80v120q0 61-28.5 114.5T612-480q51 32 79.5 85.5T720-280v120h80v80H160Z"/></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const switchToggle = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 632 632" width="11" height="11"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M315.7,0C142.1,0,0,142.1,0,315.7s142.1,315.7,315.7,315.7c47.4,0,92.1-10.5,131.5-28.9v-28.9  c-39.5,21-84.2,31.6-131.5,31.6c-160.5,0-289.4-128.9-289.4-289.4S155.2,26.3,315.7,26.3s289.4,128.9,289.4,289.4  c0,47.4-10.5,92.1-31.6,131.5h-100V315.7c0-86.8-71-157.9-157.9-157.9s-157.9,71-157.9,157.9s71,157.9,157.9,157.9  c55.2,0,102.6-28.9,131.5-71v71h110.5h21h10.5c26.3-47.4,42.1-100,42.1-157.9C631.4,142.1,489.3,0,315.7,0z M315.7,447.3  c-73.7,0-131.5-57.9-131.5-131.5S242,184.2,315.7,184.2S447.3,242,447.3,315.7S389.4,447.3,315.7,447.3z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>'
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
@@ -664,156 +664,156 @@ export const switchToggle = () => {
 export const arrowToggle = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" style="fill: rgb(255, 119, 0);" vector-effect="non-scaling-stroke"/></g></svg>'
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const pathLeft = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 7 13" width="7" height="13"><g transform="translate(0, 0)"><defs><path id="path-171146783412815055" d="M14.557354925775979 17.430833333333332 C14.557354925775979 17.430833333333332 10.23076923076923 12.458333333333332 10.23076923076923 12.458333333333332 C10.23076923076923 12.458333333333332 14.557354925775979 7.485833333333333 14.557354925775979 7.485833333333333 C14.557354925775979 7.485833333333333 13.225371120107962 5.958333333333333 13.225371120107962 5.958333333333333 C13.225371120107962 5.958333333333333 7.557354925775979 12.458333333333332 7.557354925775979 12.458333333333332 C7.557354925775979 12.458333333333332 13.225371120107962 18.958333333333332 13.225371120107962 18.958333333333332 C13.225371120107962 18.958333333333332 14.557354925775979 17.430833333333332 14.557354925775979 17.430833333333332 Z" vector-effect="non-scaling-stroke"/><filter height="130.76923076923077%" id="filter-171146783422716344" width="157.14285714285714%" x="-28.57142857142857%" y="-15.384615384615385%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(-7.557354925775979, -5.958333333333333)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-171146783412815055" filter="url(#filter-171146783422716344)" vector-effect="non-scaling-stroke"/><path d="M14.557354925775979 17.430833333333332 C14.557354925775979 17.430833333333332 10.23076923076923 12.458333333333332 10.23076923076923 12.458333333333332 C10.23076923076923 12.458333333333332 14.557354925775979 7.485833333333333 14.557354925775979 7.485833333333333 C14.557354925775979 7.485833333333333 13.225371120107962 5.958333333333333 13.225371120107962 5.958333333333333 C13.225371120107962 5.958333333333333 7.557354925775979 12.458333333333332 7.557354925775979 12.458333333333332 C7.557354925775979 12.458333333333332 13.225371120107962 18.958333333333332 13.225371120107962 18.958333333333332 C13.225371120107962 18.958333333333332 14.557354925775979 17.430833333333332 14.557354925775979 17.430833333333332 Z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(136, 136, 136);" vector-effect="non-scaling-stroke"/></g></g></svg>'
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const pathRight = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z" style="fill: rgb(136, 136, 136);" vector-effect="non-scaling-stroke"/></g></svg>'
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const verticalLine = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 3 25" width="3" height="25"><g transform="translate(1, 1)"><defs><path id="path-171146783412715052" d="M145 -117.55555555555557 C145 -117.55555555555557 145 -94.55555555555553 145 -94.55555555555553" vector-effect="non-scaling-stroke"/><filter height="117.3913043478261%" id="filter-171146783422816345" width="500%" x="-200%" y="-8.695652173913043%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(-145, 117.55555555555557)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-171146783412715052" filter="url(#filter-171146783422816345)" vector-effect="non-scaling-stroke"/><path d="M145 -117.55555555555557 C145 -117.55555555555557 145 -94.55555555555553 145 -94.55555555555553" style="stroke: rgb(140, 140, 140); stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; fill: none;" vector-effect="non-scaling-stroke"/></g></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const pubNavMenu = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="27" height="23"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" style="fill: rgb(160, 18, 199);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const sanctumSetting = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" id="cog" d="M13.88,13.88c-1.04,1.04-2.72,1.04-3.76,0.01c0,0-0.01-0.01-0.01-0.01c-1.04-1.04-1.04-2.72-0.01-3.76  c0,0,0.01-0.01,0.01-0.01c1.04-1.04,2.72-1.04,3.76-0.01c0,0,0.01,0.01,0.01,0.01C14.83,11.12,14.74,12.78,13.88,13.88z   M19.99,10.88c0-0.09-0.03-0.17-0.08-0.24c-0.05-0.07-0.13-0.12-0.22-0.13l-1.91-0.29c-0.11-0.35-0.26-0.68-0.43-1  c0.13-0.17,0.31-0.42,0.56-0.73s0.42-0.54,0.53-0.69c0.05-0.07,0.08-0.15,0.08-0.24c0.01-0.08-0.02-0.16-0.07-0.23  c-0.52-0.64-1.1-1.23-1.72-1.77c-0.07-0.06-0.16-0.1-0.26-0.1c-0.09-0.01-0.18,0.03-0.25,0.09l-1.46,1.07  c-0.3-0.15-0.62-0.28-0.94-0.39l-0.29-1.91c-0.01-0.09-0.05-0.17-0.12-0.22C13.34,4.03,13.25,4,13.16,4h-2.32  c-0.18-0.01-0.34,0.11-0.37,0.29c-0.14,0.64-0.24,1.29-0.3,1.94c-0.33,0.11-0.65,0.24-0.95,0.4L7.78,5.51  c-0.08-0.06-0.17-0.1-0.27-0.1c-0.39,0.16-0.74,0.41-1,0.74c-0.36,0.35-0.69,0.72-1,1.12C5.46,7.33,5.43,7.42,5.42,7.51  c0,0.09,0.04,0.18,0.1,0.25C5.98,8.32,6.35,8.8,6.63,9.2c-0.17,0.32-0.31,0.65-0.41,1l-1.94,0.29c-0.08,0.02-0.16,0.07-0.2,0.14  C4.03,10.69,4,10.78,4,10.87v2.31c0,0.09,0.03,0.17,0.08,0.24c0.05,0.07,0.13,0.12,0.22,0.13l1.91,0.28c0.11,0.35,0.25,0.68,0.43,1  C6.51,15,6.33,15.24,6.08,15.56c-0.25,0.31-0.42,0.54-0.53,0.69c-0.05,0.07-0.08,0.15-0.08,0.24c0,0.09,0.02,0.17,0.07,0.24  c0.52,0.63,1.1,1.22,1.72,1.75c0.07,0.07,0.16,0.11,0.26,0.11c0.1,0,0.19-0.03,0.26-0.09l1.47-1.11c0.3,0.15,0.62,0.28,0.94,0.39  l0.29,1.92c0.01,0.09,0.05,0.17,0.12,0.22c0.07,0.06,0.17,0.09,0.26,0.09h2.31c0.18,0.01,0.34-0.11,0.37-0.29  c0.14-0.64,0.24-1.29,0.3-1.94c0.33-0.11,0.65-0.24,0.95-0.4l1.44,1.12c0.08,0.06,0.17,0.09,0.27,0.09c0.39-0.16,0.74-0.41,1-0.74  c0.36-0.35,0.69-0.72,1-1.12c0.06-0.07,0.09-0.15,0.09-0.24c0-0.1-0.04-0.19-0.1-0.26c-0.5-0.61-0.87-1.09-1.11-1.44  c0.16-0.31,0.3-0.62,0.41-0.95l1.93-0.29c0.09-0.02,0.16-0.07,0.21-0.14c0.05-0.07,0.07-0.15,0.07-0.23v-2.31l0,0L19.99,10.88z" style="fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}/>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const sandClock = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="16" height="16"><g><path xmlns:default="http://www.w3.org/2000/svg" id="hourglass-o" d="M19.66,4c0.18,0.01,0.33-0.12,0.34-0.3c0-0.01,0-0.02,0-0.03V3c0.01-0.18-0.13-0.32-0.31-0.33  c-0.01,0-0.01,0-0.02,0H4.34C4.16,2.66,4.01,2.79,4,2.97C4,2.98,4,2.99,4,3v0.67C3.99,3.85,4.13,3.99,4.31,4c0.01,0,0.02,0,0.03,0h1  C5.31,5.67,5.69,7.32,6.45,8.8c0.64,1.28,1.59,2.38,2.77,3.2c-1.18,0.81-2.13,1.91-2.77,3.19C5.69,16.68,5.31,18.33,5.34,20h-1  c-0.18-0.01-0.32,0.13-0.33,0.31c0,0.01,0,0.01,0,0.02V21C4,21.18,4.14,21.32,4.32,21.33c0.01,0,0.01,0,0.02,0h15.32  c0.18,0.01,0.33-0.12,0.34-0.3c0-0.01,0-0.02,0-0.03v-0.67c0.01-0.18-0.13-0.32-0.31-0.33c-0.01,0-0.02,0-0.03,0h-1  c0.03-1.67-0.35-3.32-1.11-4.8c-0.64-1.28-1.59-2.38-2.77-3.2c1.18-0.81,2.13-1.91,2.77-3.19c0.76-1.49,1.14-3.14,1.11-4.81H19.66z   M13.1,11.38c-0.35,0.13-0.52,0.52-0.38,0.87c0.07,0.18,0.21,0.32,0.38,0.38c0.57,0.23,1.1,0.57,1.55,1  c0.52,0.45,0.97,0.97,1.35,1.55c0.44,0.68,0.78,1.41,1,2.19c0.23,0.86,0.34,1.74,0.33,2.63H6.67c-0.02-0.89,0.1-1.78,0.33-2.64  c0.22-0.78,0.56-1.51,1-2.19c0.37-0.59,0.83-1.12,1.35-1.59c0.45-0.43,0.98-0.77,1.55-1c0.35-0.13,0.52-0.52,0.38-0.87  c-0.07-0.18-0.21-0.32-0.38-0.38c-0.57-0.23-1.1-0.57-1.55-1C8.83,9.89,8.38,9.38,8,8.82C7.56,8.15,7.22,7.41,7,6.64  C6.77,5.78,6.65,4.89,6.67,4h10.66c0.02,0.89-0.1,1.78-0.33,2.64c-0.22,0.78-0.56,1.51-1,2.19c-0.37,0.59-0.83,1.12-1.35,1.59  c-0.45,0.43-0.98,0.77-1.55,1l0,0L13.1,11.38z" style="fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const sanctumChecked = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -6.49518874907476 50 50" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M20.5,37c-0.7,0-1.8-0.3-2.9-1.5L1.6,20.4c-1-0.9-2.5-3.2-0.8-5.3l5.4-5.5C6.4,9.5,7,8.9,8.1,8.9c0.7,0,1.8,0.3,3,1.6  l7.3,7.3c0.1,0.1,1.1,1.3,2.3,1.3c0.7,0,1.4-0.4,2.1-1.2L38.5,1c0.1-0.1,1-1,2.4-1c0.9,0,1.8,0.4,2.7,1.1l5.3,5.4  c0.2,0.2,1,1,1.1,2.2c0,1-0.5,2.1-1.6,3L23.8,35.5C23.7,35.6,22.3,37,20.5,37z M7.4,10.9l-5.3,5.4c-1,1.3,0.6,2.7,0.7,2.8L19,34.3  c0.5,0.6,1,0.9,1.6,0.9c0.9,0,1.7-0.7,2-1l24.7-23.8c0.5-0.4,1-1.1,1-1.7c0-0.5-0.4-0.9-0.4-0.9l-0.1-0.1l-5.3-5.3  c-0.5-0.4-1-0.6-1.4-0.6c-0.7,0-1.2,0.5-1.2,0.5L24.1,19.1c-1,1.2-2.1,1.8-3.4,1.8c-2.1,0-3.6-1.8-3.7-1.9l-7.3-7.3  c-0.6-0.7-1.2-1-1.7-1C7.8,10.7,7.5,10.9,7.4,10.9z" style="fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const acceptInvite = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 18 22" width="18" height="22"><g transform="translate(0, 0)"><g transform="translate(0, 0) rotate(0)"><path d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g><defs><path id="path-171274089491557637" d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vector-effect="non-scaling-stroke"/></defs></g></svg>';
     return (
-        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const declineInvite = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div className="Sources_IMG_EditSource" dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const addUser = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-25.91999999999996 0 648 648" width="24" height="24"><g><g xmlns:default="http://www.w3.org/2000/svg"><path d="M259,310.7c54.3,0,106.1,20.7,144.9,51.7h10.3h28.4c-31.1-31.1-72.5-57-116.5-67.3c51.7-25.9,85.4-77.6,85.4-139.8   C411.6,69.9,341.8,0,256.3,0S100.9,69.8,100.9,155.3c0,62.1,36.2,113.9,85.4,139.8C80.2,323.6,0,424.5,0,543.6v77.6h310.6v-25.9   H26.1v-51.7C26.1,414.3,129.6,310.7,259,310.7z M129.6,155.4c0-72.5,57-129.4,129.4-129.4s129.4,57,129.4,129.4   s-57,129.4-129.4,129.4S129.6,227.9,129.6,155.4z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/><polygon points="595.5,543.6 517.9,543.6 517.9,466 491.9,466 491.9,543.6 414.3,543.6 414.3,569.5 491.9,569.5 491.9,647.2    517.9,647.2 517.9,569.5 595.5,569.5  " style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const copyWhite = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M16,1H4C2.9,1,2,1.9,2,3v14h2V3h12V1z M19,5H8C6.9,5,6,5.9,6,7v14c0,1.1,0.9,2,2,2h11c1.1,0,2-0.9,2-2V7 C21,5.9,20.1,5,19,5z M19,21H8V7h11V21z" style="fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const closeQuestion = () => {
     const svgCode = '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 41 41" width="16" height="16"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M35.6,41.5c-0.8,0-1.6-0.3-2.1-0.9L20.7,27.8L8,40.6c-1.1,1.1-3.1,1.1-4.2,0l-2.8-2.8c-1.2-1.2-1.2-3.1,0-4.3l12.7-12.8  L0.9,7.9C0.3,7.4,0,6.6,0,5.8s0.3-1.6,0.9-2.1l2.8-2.8c1.1-1.1,3.1-1.1,4.2,0l12.7,12.8L33.5,0.9c1.1-1.1,3.1-1.1,4.2,0l2.8,2.8  c0.6,0.6,0.9,1.3,0.9,2.1s-0.3,1.6-0.9,2.1L27.8,20.7l12.7,12.8c1.2,1.2,1.2,3.1,0,4.3l-2.8,2.8C37.1,41.1,36.4,41.5,35.6,41.5z   M20.7,25l14.2,14.2c0.4,0.4,1,0.4,1.4,0l2.8-2.8c0.4-0.4,0.4-1,0-1.4L25,20.7L39.1,6.5c0.2-0.2,0.3-0.4,0.3-0.7s-0.1-0.5-0.3-0.7  l-2.8-2.8c-0.4-0.4-1-0.4-1.4,0L20.7,16.5L6.5,2.3c-0.4-0.4-1-0.4-1.4,0L2.3,5.1C2.1,5.3,2,5.6,2,5.8s0.1,0.5,0.3,0.7l14.2,14.2  L2.3,34.9c-0.4,0.4-0.4,1,0,1.4l2.8,2.8c0.4,0.4,1,0.4,1.4,0L20.7,25z" style="fill: rgb(196, 52, 224);" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}} />
+        <div dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 
 export const YellowState = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 15 15" width="15" height="15"><g transform="translate(0, 0)"><defs><path id="path-172386722092776505" d="M7.5 0 C11.639362683705 0 15 3.360637316295001 15 7.5 C15 11.639362683705006 11.639362683705 15 7.5 15 C3.3606373162949987 15 0 11.639362683705006 0 7.5 C0 3.360637316295001 3.3606373162949987 0 7.5 0 Z" vector-effect="non-scaling-stroke"/><filter height="126.66666666666666%" id="filter-172386722095877789" width="126.66666666666666%" x="-13.333333333333334%" y="-13.333333333333334%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(0, 0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172386722092776505" filter="url(#filter-172386722095877789)" vector-effect="non-scaling-stroke"/><path d="M7.5 0 C11.639362683705 0 15 3.360637316295001 15 7.5 C15 11.639362683705006 11.639362683705 15 7.5 15 C3.3606373162949987 15 0 11.639362683705006 0 7.5 C0 3.360637316295001 3.3606373162949987 0 7.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(204, 199, 49);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 15 15" width="15" height="15"><g transform="translate(0, 0)"><defs><path id="path-172386722092776505" d="M7.5 0 C11.639362683705 0 15 3.360637316295001 15 7.5 C15 11.639362683705006 11.639362683705 15 7.5 15 C3.3606373162949987 15 0 11.639362683705006 0 7.5 C0 3.360637316295001 3.3606373162949987 0 7.5 0 Z" vector-effect="non-scaling-stroke"/><filter height="126.66666666666666%" id="filter-172386722095877789" width="126.66666666666666%" x="-13.333333333333334%" y="-13.333333333333334%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(0, 0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172386722092776505" filter="url(#filter-172386722095877789)" vector-effect="non-scaling-stroke"/><path d="M7.5 0 C11.639362683705 0 15 3.360637316295001 15 7.5 C15 11.639362683705006 11.639362683705 15 7.5 15 C3.3606373162949987 15 0 11.639362683705006 0 7.5 C0 3.360637316295001 3.3606373162949987 0 7.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(204, 199, 49);" vector-effect="non-scaling-stroke"/></g></g></svg>';
     return (
-        <div dangerouslySetInnerHTML={{__html: svgCode}}></div>
+        <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>
     )
 }
 
 export const GreenState = () => {
-  const svgCode =
-    '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 15 15" width="15" height="15"><g transform="translate(0, 0)"><defs><path id="path-172386722092776501" d="M7.5 0 C11.639362683705 0 15 3.3606373162950014 15 7.5000000000000036 C15 11.639362683705007 11.639362683705 15.000000000000007 7.5 15.000000000000007 C3.3606373162949987 15.000000000000007 0 11.639362683705007 0 7.5000000000000036 C0 3.3606373162950014 3.3606373162949987 0 7.5 0 Z" vector-effect="non-scaling-stroke"/><filter height="126.66666666666666%" id="filter-172386722095977790" width="126.66666666666666%" x="-13.333333333333334%" y="-13.333333333333334%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(0, 0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172386722092776501" filter="url(#filter-172386722095977790)" vector-effect="non-scaling-stroke"/><path d="M7.5 0 C11.639362683705 0 15 3.3606373162950014 15 7.5000000000000036 C15 11.639362683705007 11.639362683705 15.000000000000007 7.5 15.000000000000007 C3.3606373162949987 15.000000000000007 0 11.639362683705007 0 7.5000000000000036 C0 3.3606373162950014 3.3606373162949987 0 7.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></g></svg>';
-  return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>;
+    const svgCode =
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 15 15" width="15" height="15"><g transform="translate(0, 0)"><defs><path id="path-172386722092776501" d="M7.5 0 C11.639362683705 0 15 3.3606373162950014 15 7.5000000000000036 C15 11.639362683705007 11.639362683705 15.000000000000007 7.5 15.000000000000007 C3.3606373162949987 15.000000000000007 0 11.639362683705007 0 7.5000000000000036 C0 3.3606373162950014 3.3606373162949987 0 7.5 0 Z" vector-effect="non-scaling-stroke"/><filter height="126.66666666666666%" id="filter-172386722095977790" width="126.66666666666666%" x="-13.333333333333334%" y="-13.333333333333334%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(0, 0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172386722092776501" filter="url(#filter-172386722095977790)" vector-effect="non-scaling-stroke"/><path d="M7.5 0 C11.639362683705 0 15 3.3606373162950014 15 7.5000000000000036 C15 11.639362683705007 11.639362683705 15.000000000000007 7.5 15.000000000000007 C3.3606373162949987 15.000000000000007 0 11.639362683705007 0 7.5000000000000036 C0 3.3606373162950014 3.3606373162949987 0 7.5 0 Z" style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(50, 168, 82);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+    return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>;
 };
 
 export const LinkedAppIcon = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -0.9904214559386979 47 47" width="24" height="24"><path d="M38.1,45.8c-0.2,0-0.3,0-0.5-0.1l-13.7-7.2l-13.7,7.2c-0.3,0.2-0.7,0.2-1.1-0.1c-0.3-0.2-0.5-0.6-0.4-1l2.6-15.3L0.3,18.4  c-0.3-0.3-0.4-0.7-0.3-1c0.1-0.4,0.4-0.6,0.8-0.7l15.3-2.2L23,0.5c0.3-0.7,1.5-0.7,1.8,0l6.9,13.9L47,16.7c0.4,0.1,0.7,0.3,0.8,0.7  c0.1,0.4,0,0.8-0.3,1L36.5,29.3l2.6,15.3c0.1,0.4-0.1,0.8-0.4,1C38.5,45.7,38.3,45.8,38.1,45.8z M23.9,36.3c0.2,0,0.3,0,0.5,0.1  l12.4,6.5l-2.4-13.8c-0.1-0.3,0.1-0.7,0.3-0.9l10-9.8l-13.8-2c-0.3,0-0.6-0.3-0.8-0.5L23.9,3.2l-6.2,12.6c-0.1,0.3-0.4,0.5-0.8,0.5  l-13.8,2l10,9.8c0.2,0.2,0.3,0.6,0.3,0.9l-2.4,13.8l12.4-6.5C23.6,36.3,23.8,36.3,23.9,36.3z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/><g/></svg>';
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -0.9904214559386979 47 47" width="24" height="24"><path d="M38.1,45.8c-0.2,0-0.3,0-0.5-0.1l-13.7-7.2l-13.7,7.2c-0.3,0.2-0.7,0.2-1.1-0.1c-0.3-0.2-0.5-0.6-0.4-1l2.6-15.3L0.3,18.4  c-0.3-0.3-0.4-0.7-0.3-1c0.1-0.4,0.4-0.6,0.8-0.7l15.3-2.2L23,0.5c0.3-0.7,1.5-0.7,1.8,0l6.9,13.9L47,16.7c0.4,0.1,0.7,0.3,0.8,0.7  c0.1,0.4,0,0.8-0.3,1L36.5,29.3l2.6,15.3c0.1,0.4-0.1,0.8-0.4,1C38.5,45.7,38.3,45.8,38.1,45.8z M23.9,36.3c0.2,0,0.3,0,0.5,0.1  l12.4,6.5l-2.4-13.8c-0.1-0.3,0.1-0.7,0.3-0.9l10-9.8l-13.8-2c-0.3,0-0.6-0.3-0.8-0.5L23.9,3.2l-6.2,12.6c-0.1,0.3-0.4,0.5-0.8,0.5  l-13.8,2l10,9.8c0.2,0.2,0.3,0.6,0.3,0.9l-2.4,13.8l12.4-6.5C23.6,36.3,23.8,36.3,23.9,36.3z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/><g/></svg>';
     return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>;
 }
 
 export const OffersCodeIcon = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -1.6318407960198442 656 656" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M655.1,18.4L636.7,0l-89.5,86.8H355.2L0,442l210.5,210.5l355.2-355.2V105.2L655.1,18.4z M539.3,286.8L210.5,615.6L36.8,442  l328.9-328.9h155.2l-55.2,55.2c-13.2-7.9-28.9-15.8-44.7-15.8c-44.7,0-78.9,34.2-78.9,78.9s34.2,78.9,78.9,78.9s78.9-34.2,78.9-78.9  c0-15.8-5.3-31.6-15.8-44.7l55.2-55.2V286.8z M473.6,231.5c0,28.9-23.7,52.6-52.6,52.6s-52.6-23.7-52.6-52.6s23.7-52.6,52.6-52.6  c10.5,0,18.4,2.6,26.3,7.9l-42.1,42.1l18.4,18.4l42.1-42.1C470.9,213.1,473.6,221,473.6,231.5z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></svg>';
-    return <div dangerouslySetInnerHTML={{__html : svgCode}}></div>;
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 -1.6318407960198442 656 656" width="24" height="24"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M655.1,18.4L636.7,0l-89.5,86.8H355.2L0,442l210.5,210.5l355.2-355.2V105.2L655.1,18.4z M539.3,286.8L210.5,615.6L36.8,442  l328.9-328.9h155.2l-55.2,55.2c-13.2-7.9-28.9-15.8-44.7-15.8c-44.7,0-78.9,34.2-78.9,78.9s34.2,78.9,78.9,78.9s78.9-34.2,78.9-78.9  c0-15.8-5.3-31.6-15.8-44.7l55.2-55.2V286.8z M473.6,231.5c0,28.9-23.7,52.6-52.6,52.6s-52.6-23.7-52.6-52.6s23.7-52.6,52.6-52.6  c10.5,0,18.4,2.6,26.3,7.9l-42.1,42.1l18.4,18.4l42.1-42.1C470.9,213.1,473.6,221,473.6,231.5z" style="fill: rgb(84, 187, 232);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>;
 }
 
 export const ChevronRightIcon = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 8.993999163309734 13.996114730834961" width="8.993999163309734" height="13.996114730834961"><g transform="translate(0, 0)"><defs><path id="path-172593461452670742" d="M14.499998651099748 9.991666731856325 C14.499998651099748 9.841666730877666 14.441665323193025 9.700000063286708 14.333331999937684 9.600000062634267 C14.333331999937684 9.600000062634267 7.8999992650819335 3.1666666873272757 7.8999992650819335 3.1666666873272757 C7.691665951129351 2.9583333526346918 7.349999316247115 2.9500000192469886 7.133332669736429 3.150000020551869 C7.124999337178326 3.1583333539395726 7.116666004620221 3.1666666873272757 7.116666004620221 3.1666666873272757 C7.116666004620221 3.1666666873272757 5.67499947206835 4.608333363399957 5.67499947206835 4.608333363399957 C5.458332825557664 4.808333364704837 5.449999492999561 5.150000033600675 5.649999474394041 5.366666701680963 C5.658332806952144 5.375000035068666 5.666666139510247 5.383333368456369 5.67499947206835 5.3916667018440725 C5.67499947206835 5.3916667018440725 10.283332376699478 10.000000065244029 10.283332376699478 10.000000065244029 C10.283332376699478 10.000000065244029 5.67499947206835 14.608333428643988 5.67499947206835 14.608333428643988 C5.458332825557664 14.81666676333657 5.44999949299956 15.158333432232409 5.658332806952144 15.375000100312697 C5.666666139510247 15.383333433700402 5.666666139510247 15.383333433700402 5.67499947206835 15.391666767088104 C5.67499947206835 15.391666767088104 7.116666004620221 16.833333443160786 7.116666004620221 16.833333443160786 C7.324999318572804 17.050000111241072 7.666665953455039 17.058333444628776 7.883332599965725 16.850000109936193 C7.8916659325238285 16.841666776548486 7.8916659325238285 16.841666776548486 7.899999265081932 16.833333443160786 C7.899999265081932 16.833333443160786 14.341665332495788 10.391666734466089 14.341665332495788 10.391666734466089 C14.441665323193025 10.283333400425944 14.499998651099748 10.141666732834986 14.499998651099748 9.991666731856325 Z" vector-effect="non-scaling-stroke"/><filter height="128.57935989326785%" id="filter-172593461453971111" width="144.47409797765675%" x="-22.237048988828377%" y="-14.289679946633923%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.8 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(-5.505999487790016, -3.005064887909955)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172593461452670742" filter="url(#filter-172593461453971111)" vector-effect="non-scaling-stroke"/><path d="M14.499998651099748 9.991666731856325 C14.499998651099748 9.841666730877666 14.441665323193025 9.700000063286708 14.333331999937684 9.600000062634267 C14.333331999937684 9.600000062634267 7.8999992650819335 3.1666666873272757 7.8999992650819335 3.1666666873272757 C7.691665951129351 2.9583333526346918 7.349999316247115 2.9500000192469886 7.133332669736429 3.150000020551869 C7.124999337178326 3.1583333539395726 7.116666004620221 3.1666666873272757 7.116666004620221 3.1666666873272757 C7.116666004620221 3.1666666873272757 5.67499947206835 4.608333363399957 5.67499947206835 4.608333363399957 C5.458332825557664 4.808333364704837 5.449999492999561 5.150000033600675 5.649999474394041 5.366666701680963 C5.658332806952144 5.375000035068666 5.666666139510247 5.383333368456369 5.67499947206835 5.3916667018440725 C5.67499947206835 5.3916667018440725 10.283332376699478 10.000000065244029 10.283332376699478 10.000000065244029 C10.283332376699478 10.000000065244029 5.67499947206835 14.608333428643988 5.67499947206835 14.608333428643988 C5.458332825557664 14.81666676333657 5.44999949299956 15.158333432232409 5.658332806952144 15.375000100312697 C5.666666139510247 15.383333433700402 5.666666139510247 15.383333433700402 5.67499947206835 15.391666767088104 C5.67499947206835 15.391666767088104 7.116666004620221 16.833333443160786 7.116666004620221 16.833333443160786 C7.324999318572804 17.050000111241072 7.666665953455039 17.058333444628776 7.883332599965725 16.850000109936193 C7.8916659325238285 16.841666776548486 7.8916659325238285 16.841666776548486 7.899999265081932 16.833333443160786 C7.899999265081932 16.833333443160786 14.341665332495788 10.391666734466089 14.341665332495788 10.391666734466089 C14.441665323193025 10.283333400425944 14.499998651099748 10.141666732834986 14.499998651099748 9.991666731856325 Z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></g></svg>';
-    return <div dangerouslySetInnerHTML={{__html : svgCode}}></div>
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 8.993999163309734 13.996114730834961" width="8.993999163309734" height="13.996114730834961"><g transform="translate(0, 0)"><defs><path id="path-172593461452670742" d="M14.499998651099748 9.991666731856325 C14.499998651099748 9.841666730877666 14.441665323193025 9.700000063286708 14.333331999937684 9.600000062634267 C14.333331999937684 9.600000062634267 7.8999992650819335 3.1666666873272757 7.8999992650819335 3.1666666873272757 C7.691665951129351 2.9583333526346918 7.349999316247115 2.9500000192469886 7.133332669736429 3.150000020551869 C7.124999337178326 3.1583333539395726 7.116666004620221 3.1666666873272757 7.116666004620221 3.1666666873272757 C7.116666004620221 3.1666666873272757 5.67499947206835 4.608333363399957 5.67499947206835 4.608333363399957 C5.458332825557664 4.808333364704837 5.449999492999561 5.150000033600675 5.649999474394041 5.366666701680963 C5.658332806952144 5.375000035068666 5.666666139510247 5.383333368456369 5.67499947206835 5.3916667018440725 C5.67499947206835 5.3916667018440725 10.283332376699478 10.000000065244029 10.283332376699478 10.000000065244029 C10.283332376699478 10.000000065244029 5.67499947206835 14.608333428643988 5.67499947206835 14.608333428643988 C5.458332825557664 14.81666676333657 5.44999949299956 15.158333432232409 5.658332806952144 15.375000100312697 C5.666666139510247 15.383333433700402 5.666666139510247 15.383333433700402 5.67499947206835 15.391666767088104 C5.67499947206835 15.391666767088104 7.116666004620221 16.833333443160786 7.116666004620221 16.833333443160786 C7.324999318572804 17.050000111241072 7.666665953455039 17.058333444628776 7.883332599965725 16.850000109936193 C7.8916659325238285 16.841666776548486 7.8916659325238285 16.841666776548486 7.899999265081932 16.833333443160786 C7.899999265081932 16.833333443160786 14.341665332495788 10.391666734466089 14.341665332495788 10.391666734466089 C14.441665323193025 10.283333400425944 14.499998651099748 10.141666732834986 14.499998651099748 9.991666731856325 Z" vector-effect="non-scaling-stroke"/><filter height="128.57935989326785%" id="filter-172593461453971111" width="144.47409797765675%" x="-22.237048988828377%" y="-14.289679946633923%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.8 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs><g transform="translate(-5.505999487790016, -3.005064887909955)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172593461452670742" filter="url(#filter-172593461453971111)" vector-effect="non-scaling-stroke"/><path d="M14.499998651099748 9.991666731856325 C14.499998651099748 9.841666730877666 14.441665323193025 9.700000063286708 14.333331999937684 9.600000062634267 C14.333331999937684 9.600000062634267 7.8999992650819335 3.1666666873272757 7.8999992650819335 3.1666666873272757 C7.691665951129351 2.9583333526346918 7.349999316247115 2.9500000192469886 7.133332669736429 3.150000020551869 C7.124999337178326 3.1583333539395726 7.116666004620221 3.1666666873272757 7.116666004620221 3.1666666873272757 C7.116666004620221 3.1666666873272757 5.67499947206835 4.608333363399957 5.67499947206835 4.608333363399957 C5.458332825557664 4.808333364704837 5.449999492999561 5.150000033600675 5.649999474394041 5.366666701680963 C5.658332806952144 5.375000035068666 5.666666139510247 5.383333368456369 5.67499947206835 5.3916667018440725 C5.67499947206835 5.3916667018440725 10.283332376699478 10.000000065244029 10.283332376699478 10.000000065244029 C10.283332376699478 10.000000065244029 5.67499947206835 14.608333428643988 5.67499947206835 14.608333428643988 C5.458332825557664 14.81666676333657 5.44999949299956 15.158333432232409 5.658332806952144 15.375000100312697 C5.666666139510247 15.383333433700402 5.666666139510247 15.383333433700402 5.67499947206835 15.391666767088104 C5.67499947206835 15.391666767088104 7.116666004620221 16.833333443160786 7.116666004620221 16.833333443160786 C7.324999318572804 17.050000111241072 7.666665953455039 17.058333444628776 7.883332599965725 16.850000109936193 C7.8916659325238285 16.841666776548486 7.8916659325238285 16.841666776548486 7.899999265081932 16.833333443160786 C7.899999265081932 16.833333443160786 14.341665332495788 10.391666734466089 14.341665332495788 10.391666734466089 C14.441665323193025 10.283333400425944 14.499998651099748 10.141666732834986 14.499998651099748 9.991666731856325 Z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(255, 255, 255);" vector-effect="non-scaling-stroke"/></g></g></svg>';
+    return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>
 }
 
 export const pencilIcons = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="20" height="20"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" style="fill: rgb(137, 137, 137);" vector-effect="non-scaling-stroke"/></g></svg>';
-    return <div dangerouslySetInnerHTML={{__html : svgCode}}></div>
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="20" height="20"><g><path xmlns:default="http://www.w3.org/2000/svg" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" style="fill: rgb(137, 137, 137);" vector-effect="non-scaling-stroke"/></g></svg>';
+    return <div className="Receive_copy_icon" dangerouslySetInnerHTML={{ __html: svgCode }}></div>
 }
 
 export const combindIcon = () => {
     const svgCode =
-      '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 20 19.999989999999997" width="20" height="19.999989999999997"><g transform="translate(0, 0)"><g transform="translate(-1.3322676295501878e-15, 0) rotate(0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172593587283574415" filter="url(#filter-172593587284874781)" vector-effect="non-scaling-stroke"/><path d="M14.73684,0h-12.63158c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727h2.10526v-12.72727h12.63158zM17.89474,3.63636h-11.57895c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727c0,1 0.94737,1.81818 2.10526,1.81818h11.57895c1.15789,0 2.10526,-0.81818 2.10526,-1.81818v-12.72727c0,-1 -0.94737,-1.81818 -2.10526,-1.81818zM17.89474,18.18182h-11.57895v-12.72727h11.57895z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g><defs><path id="path-172593587283574415" d="M14.73684,0h-12.63158c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727h2.10526v-12.72727h12.63158zM17.89474,3.63636h-11.57895c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727c0,1 0.94737,1.81818 2.10526,1.81818h11.57895c1.15789,0 2.10526,-0.81818 2.10526,-1.81818v-12.72727c0,-1 -0.94737,-1.81818 -2.10526,-1.81818zM17.89474,18.18182h-11.57895v-12.72727h11.57895z" vector-effect="non-scaling-stroke"/><filter height="120.00001000000499%" id="filter-172593587284874781" width="120%" x="-10%" y="-10.000005000002501%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs></g></svg>';
-    return <div dangerouslySetInnerHTML={{__html : svgCode}}></div>
+        '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 20 19.999989999999997" width="20" height="19.999989999999997"><g transform="translate(0, 0)"><g transform="translate(-1.3322676295501878e-15, 0) rotate(0)"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-172593587283574415" filter="url(#filter-172593587284874781)" vector-effect="non-scaling-stroke"/><path d="M14.73684,0h-12.63158c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727h2.10526v-12.72727h12.63158zM17.89474,3.63636h-11.57895c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727c0,1 0.94737,1.81818 2.10526,1.81818h11.57895c1.15789,0 2.10526,-0.81818 2.10526,-1.81818v-12.72727c0,-1 -0.94737,-1.81818 -2.10526,-1.81818zM17.89474,18.18182h-11.57895v-12.72727h11.57895z" style="stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);" vector-effect="non-scaling-stroke"/></g><defs><path id="path-172593587283574415" d="M14.73684,0h-12.63158c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727h2.10526v-12.72727h12.63158zM17.89474,3.63636h-11.57895c-1.15789,0 -2.10526,0.81818 -2.10526,1.81818v12.72727c0,1 0.94737,1.81818 2.10526,1.81818h11.57895c1.15789,0 2.10526,-0.81818 2.10526,-1.81818v-12.72727c0,-1 -0.94737,-1.81818 -2.10526,-1.81818zM17.89474,18.18182h-11.57895v-12.72727h11.57895z" vector-effect="non-scaling-stroke"/><filter height="120.00001000000499%" id="filter-172593587284874781" width="120%" x="-10%" y="-10.000005000002501%" vector-effect="non-scaling-stroke"><feFlood flood-opacity="0" result="backgroundFix" vector-effect="non-scaling-stroke"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" vector-effect="non-scaling-stroke"/><feOffset dx="0" dy="0" vector-effect="non-scaling-stroke"/><feGaussianBlur stdDeviation="1.1666666666666665" vector-effect="non-scaling-stroke"/><feColorMatrix in="" result="" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" vector-effect="non-scaling-stroke"/><feBlend in2="backgroundFix" mode="normal" result="shadowOuter_1" vector-effect="non-scaling-stroke"/></filter></defs></g></svg>';
+    return <div dangerouslySetInnerHTML={{ __html: svgCode }}></div>
 }
 
 
 
 export const ShieldIcon = () => (
-    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 18 22" width="18" height="22"><g transform="translate(0, 0)"><g transform="translate(0, 0) rotate(0)"><path style={{ strokeWidth: "0px", strokeLinecap: "butt", strokeLinejoin: "miter", fill: "rgb(255, 255, 255)" }} d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vectorEffect="non-scaling-stroke"/></g><defs><path id="path-172717291180729" d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vectorEffect="non-scaling-stroke"/></defs></g></svg>
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 18 22" width="18" height="22"><g transform="translate(0, 0)"><g transform="translate(0, 0) rotate(0)"><path style={{ strokeWidth: "0px", strokeLinecap: "butt", strokeLinejoin: "miter", fill: "rgb(255, 255, 255)" }} d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vectorEffect="non-scaling-stroke" /></g><defs><path id="path-172717291180729" d="M9,0l-9,4v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12v-6zM7,16l-4,-4l1.41,-1.41l2.59,2.58l6.59,-6.59l1.41,1.42z" vectorEffect="non-scaling-stroke" /></defs></g></svg>
 )
 
 export const CrossIcon = () => (
-    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style={{ fill: "rgb(255, 255, 255)" }} vectorEffect="non-scaling-stroke"/></g></svg>
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 24 24" width="24" height="24"><g><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" style={{ fill: "rgb(255, 255, 255)" }} vectorEffect="non-scaling-stroke" /></g></svg>
 )
 
 export const TrashIcon = () => (
-    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-32 0 512 512" width="20" height="20"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" style={{ fill: "rgb(235, 68, 90)" }} vectorEffect="non-scaling-stroke"/></svg>
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="-32 0 512 512" width="20" height="20"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" style={{ fill: "rgb(235, 68, 90)" }} vectorEffect="non-scaling-stroke" /></svg>
 )
 
 export const BanIcon = () => (
-    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 512 512" width="24" height="24"><path d="M367.2 412.5L99.5 144.8C77.1 176.1 64 214.5 64 256c0 106 86 192 192 192c41.5 0 79.9-13.1 111.2-35.5zm45.3-45.3C434.9 335.9 448 297.5 448 256c0-106-86-192-192-192c-41.5 0-79.9 13.1-111.2 35.5L412.5 367.2zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z" style={{fill: "rgb(255, 0, 0)"}} vectorEffect="non-scaling-stroke"/></svg>
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 512 512" width="24" height="24"><path d="M367.2 412.5L99.5 144.8C77.1 176.1 64 214.5 64 256c0 106 86 192 192 192c41.5 0 79.9-13.1 111.2-35.5zm45.3-45.3C434.9 335.9 448 297.5 448 256c0-106-86-192-192-192c-41.5 0-79.9 13.1-111.2 35.5L412.5 367.2zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z" style={{ fill: "rgb(255, 0, 0)" }} vectorEffect="non-scaling-stroke" /></svg>
 )
 export const BackCircleIcon = () => (
-    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 22 22" width="22" height="22"><g transform="translate(0, 0)"><defs><path id="path-172789516888224" d="M11 0 C7.727499999999999 0 4.79875 1.4345833333333333 2.787583333333333 3.70425 C2.787583333333333 3.70425 0 0.9166666666666666 0 0.9166666666666666 C0 0.9166666666666666 0 8.25 0 8.25 C0 8.25 7.333333333333333 8.25 7.333333333333333 8.25 C7.333333333333333 8.25 4.747416666666667 5.664083333333333 4.747416666666667 5.664083333333333 C6.258083333333333 3.890333333333333 8.487416666666666 2.75 11 2.75 C15.55675 2.75 19.25 6.44325 19.25 11 C19.25 15.55675 15.55675 19.25 11 19.25 C8.722083333333334 19.25 6.659583333333333 18.326916666666666 5.166333333333333 16.833666666666666 C5.166333333333333 16.833666666666666 3.221166666666667 18.777916666666666 3.221166666666667 18.777916666666666 C5.2130833333333335 20.768916666666666 7.963083333333333 22 11 22 C17.074749999999998 22 22 17.074749999999998 22 11 C22 4.925250000000001 17.074749999999998 0 11 0 Z" vectorEffect="non-scaling-stroke"/></defs><g transform="translate(0, 0)"><path style={{ strokeWidth: "0px", strokeLinecap: "butt", strokeLinejoin: "miter", fill: "rgb(255, 255, 255)" }}  d="M11 0 C7.727499999999999 0 4.79875 1.4345833333333333 2.787583333333333 3.70425 C2.787583333333333 3.70425 0 0.9166666666666666 0 0.9166666666666666 C0 0.9166666666666666 0 8.25 0 8.25 C0 8.25 7.333333333333333 8.25 7.333333333333333 8.25 C7.333333333333333 8.25 4.747416666666667 5.664083333333333 4.747416666666667 5.664083333333333 C6.258083333333333 3.890333333333333 8.487416666666666 2.75 11 2.75 C15.55675 2.75 19.25 6.44325 19.25 11 C19.25 15.55675 15.55675 19.25 11 19.25 C8.722083333333334 19.25 6.659583333333333 18.326916666666666 5.166333333333333 16.833666666666666 C5.166333333333333 16.833666666666666 3.221166666666667 18.777916666666666 3.221166666666667 18.777916666666666 C5.2130833333333335 20.768916666666666 7.963083333333333 22 11 22 C17.074749999999998 22 22 17.074749999999998 22 11 C22 4.925250000000001 17.074749999999998 0 11 0 Z" vectorEffect="non-scaling-stroke"/></g></g></svg>
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" overflow="visible" preserveAspectRatio="none" viewBox="0 0 22 22" width="22" height="22"><g transform="translate(0, 0)"><defs><path id="path-172789516888224" d="M11 0 C7.727499999999999 0 4.79875 1.4345833333333333 2.787583333333333 3.70425 C2.787583333333333 3.70425 0 0.9166666666666666 0 0.9166666666666666 C0 0.9166666666666666 0 8.25 0 8.25 C0 8.25 7.333333333333333 8.25 7.333333333333333 8.25 C7.333333333333333 8.25 4.747416666666667 5.664083333333333 4.747416666666667 5.664083333333333 C6.258083333333333 3.890333333333333 8.487416666666666 2.75 11 2.75 C15.55675 2.75 19.25 6.44325 19.25 11 C19.25 15.55675 15.55675 19.25 11 19.25 C8.722083333333334 19.25 6.659583333333333 18.326916666666666 5.166333333333333 16.833666666666666 C5.166333333333333 16.833666666666666 3.221166666666667 18.777916666666666 3.221166666666667 18.777916666666666 C5.2130833333333335 20.768916666666666 7.963083333333333 22 11 22 C17.074749999999998 22 22 17.074749999999998 22 11 C22 4.925250000000001 17.074749999999998 0 11 0 Z" vectorEffect="non-scaling-stroke" /></defs><g transform="translate(0, 0)"><path style={{ strokeWidth: "0px", strokeLinecap: "butt", strokeLinejoin: "miter", fill: "rgb(255, 255, 255)" }} d="M11 0 C7.727499999999999 0 4.79875 1.4345833333333333 2.787583333333333 3.70425 C2.787583333333333 3.70425 0 0.9166666666666666 0 0.9166666666666666 C0 0.9166666666666666 0 8.25 0 8.25 C0 8.25 7.333333333333333 8.25 7.333333333333333 8.25 C7.333333333333333 8.25 4.747416666666667 5.664083333333333 4.747416666666667 5.664083333333333 C6.258083333333333 3.890333333333333 8.487416666666666 2.75 11 2.75 C15.55675 2.75 19.25 6.44325 19.25 11 C19.25 15.55675 15.55675 19.25 11 19.25 C8.722083333333334 19.25 6.659583333333333 18.326916666666666 5.166333333333333 16.833666666666666 C5.166333333333333 16.833666666666666 3.221166666666667 18.777916666666666 3.221166666666667 18.777916666666666 C5.2130833333333335 20.768916666666666 7.963083333333333 22 11 22 C17.074749999999998 22 22 17.074749999999998 22 11 C22 4.925250000000001 17.074749999999998 0 11 0 Z" vectorEffect="non-scaling-stroke" /></g></g></svg>
 )
 
