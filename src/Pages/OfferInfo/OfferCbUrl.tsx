@@ -54,7 +54,7 @@ export const OfferCbUrl = ({ expectedData, existingCbUrl, updateCbUrl }: Props) 
         for (let i = 0; i < sections.length; i++) {
             const section = sections[i]
             const variable = existingCbUrl.substring(section.startIncl + 2, section.endIncl)
-            formatted.push(<span key={i} style={{ color: '#2aabe1' }}>{variable}</span>)
+            formatted.push(<i key={i} style={{ color: '#2aabe1' }}>{variable}</i>)
             if (sections[i + 1] && sections[i + 1].startIncl > section.endIncl + 1) {
                 formatted.push(<span key={"t_" + i}>{existingCbUrl.substring(section.endIncl + 1, sections[i + 1].startIncl)}</span>)
             }
