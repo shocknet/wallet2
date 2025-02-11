@@ -19,7 +19,7 @@ export const OfferHistory = ({ history, setShowUnpaid, showUnpaid }: Props) => {
                     <label>Show unpaid invoices: </label>
                     <Checkbox id="check" state={showUnpaid} setState={(e) => { setShowUnpaid(e.target.checked) }} inline={true} />
                 </div>
-                {history.map((invoice, i) => <div key={i} style={{ border: `1px solid ${invoice.paid_at_unix > 0 ? 'rgb(42, 171, 225)' : 'grey'}`, padding: '10px', borderRadius: '10px', marginTop: '20px' }}>
+                {history.map((invoice, i) => <div key={i} style={{ border: `1px solid ${invoice.paid_at_unix > 0 ? '#2aabe1' : 'grey'}`, padding: '10px', borderRadius: '10px', marginTop: '20px' }}>
                     <p>Invoice: {invoice.invoice.slice(0, 30)}...</p>
                     {invoice.paid_at_unix > 0 && <>
                         <p>+{invoice.amount}sats</p>
