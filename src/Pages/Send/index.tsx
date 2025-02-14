@@ -453,7 +453,7 @@ export const Send = () => {
               ||
               selectedSource.maxWithdrawable === "0"
               ||
-              optimisticOperations.find(op => op.source === selectedSource.id)
+              optimisticOperations.find(op => op.source === selectedSource.id && op.paidAtUnix > (Date.now() / 1000) - 10)
           })}>
             <button id="send-button" onClick={handleSubmit}>{Icons.send()}SEND</button>
           </div>
