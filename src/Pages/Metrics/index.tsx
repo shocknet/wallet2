@@ -13,7 +13,7 @@ import moment from 'moment';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { stringToColor } from '../../constants';
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
-import { toast } from "react-toastify";
+import { collapseToast, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
 import { Client } from '../../Api/nostr';
@@ -119,6 +119,7 @@ export const Metrics = () => {
   const [lndStatus, setLndStatus] = useState("Loading...")
   const [dogStatus, setDogStatus] = useState("Loading...")
   const [rootOps, setRootOps] = useState<RootEvent[]>([])
+  const [eventsCollapsed, setEventsCollapsed] = useState(true)
 
   const spendSources = useSelector(state => state.spendSource)
   const dispatch = useDispatch();
@@ -407,9 +408,17 @@ export const Metrics = () => {
       </div>
       <div className={styles["section"]}><span className={styles["separator"]}></span></div>
       <div className={styles["section"]}>
-        <h3 className={styles["sub-title"]}>Events</h3>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h3 className={styles["sub-title"]}>Events</h3>
+          <span style={{ transform: `rotate(${eventsCollapsed ? 0 : 90}deg)`, transition: "0.3s", }} onClick={() => { setEventsCollapsed(!eventsCollapsed) }}>{Icons.arrow()}</span>
+        </div>
         <div className={styles["column-flex"]}>
-          {
+          {eventsCollapsed &&
+            rootOps.slice(0, Math.min(rootOps.length, 2)).map((e, i) => (
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
+            ))
+          }
+          {!eventsCollapsed &&
             rootOps.map((e, i) => (
               <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
             ))
