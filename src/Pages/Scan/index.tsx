@@ -37,21 +37,14 @@ const scanSingleBarcode = async () => {
 };
 
 export const Scan = () => {
-
   const dispatch = useDispatch();
   const router = useIonRouter();
   const history = useHistory();
-
   const [itemInput, setItemInput] = useState("");
 
-
-
-
-
-
-  const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
+  const startDesktopCamera = async (html5QrCode: Html5Qrcode) => {
     html5QrCode.start(
-      cameraId,
+      { facingMode: 'environment' },
       {
         fps: 10,
       },
@@ -73,9 +66,8 @@ export const Scan = () => {
       let html5QrCode: Html5Qrcode | null = null;
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
-          const cameraId = devices[0].id;
           html5QrCode = new Html5Qrcode("reader");
-          startDesktopCamera(html5QrCode, cameraId)
+          startDesktopCamera(html5QrCode)
         }
       })
       return () => {
@@ -153,11 +145,6 @@ export const Scan = () => {
       toast.error(<Toast title="Error" message="Unrecognized QR code." />)
     }
   }
-
-
-
-
-
 
   return (
     <div className="Scan scan-layout">
