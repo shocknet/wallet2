@@ -6,7 +6,7 @@ import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-import SWText from "../../Assets/Images/sw_text.png";
+import SWText from "../../Assets/Images/wallet_new_text.png";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
@@ -130,7 +130,7 @@ export const Header = () => {
     }
   }, []);
 
-  
+
 
   const content = <React.Fragment>
     <div className="Header_modal">
@@ -235,7 +235,7 @@ export const Header = () => {
           }
         }}>
           <div className="Header_modal_content_item_img" onClick={() => {
-            window.location.href ='https://docs.shock.network/';
+            window.location.href = 'https://docs.shock.network/';
           }}>
             {Icons.HelpAbout()}
           </div>
@@ -438,7 +438,7 @@ export const PubHeader = () => {
         <div className="Header_modal_content_item">
           <hr />
         </div>
-{/*         <div className="Header_modal_content_item" onClick={() => {
+        {/*         <div className="Header_modal_content_item" onClick={() => {
           router.push("/sources");
           toggle();
         }}>
@@ -456,7 +456,7 @@ export const PubHeader = () => {
           }
         }}>
           <div className="Header_modal_content_item_img" onClick={() => {
-            window.location.href ='https://docs.shock.network/';
+            window.location.href = 'https://docs.shock.network/';
           }}>
             {Icons.HelpAbout()}
           </div>

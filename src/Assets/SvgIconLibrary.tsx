@@ -1,4 +1,12 @@
-export const Logo = () => {
+import IsolatedLogo from "../Assets/Images/isolated logo.png";
+
+export const Logo = (width = 40) => {
+    return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src={IsolatedLogo} alt="logo" style={{ width: width + 'px', height: 'auto', display: 'block' }} />
+    </div>
+}
+
+export const Logo2 = () => {
     const svgCode = `<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
     width="100%" viewBox="0 0 323 420" enable-background="new 0 0 323 420" xml:space="preserve">
 
@@ -174,10 +182,10 @@ export const HelpAbout = () => {
     )
 }
 
-export const QR = () => {
+export const QR = (inline = false) => {
     const svgCode = '<svg height="30" overflow="visible" viewBox="-1 -1 34 34" width="30" xmlns="http://www.w3.org/2000/svg"><g><defs><path id="path-169764199817443" d="M0 5.000000000000001 C0 2.2385762510000005 2.2385762510000005 0 5.000000000000001 0 C5.000000000000001 0 25.000000000000046 0 25.000000000000046 0 C27.761423749000045 0 30.000000000000046 2.2385762510000005 30.000000000000046 5.000000000000001 C30.000000000000046 5.000000000000001 30.000000000000046 25.000000000000025 30.000000000000046 25.000000000000025 C30.000000000000046 27.761423749000024 27.761423749000045 30.000000000000025 25.000000000000046 30.000000000000025 C25.000000000000046 30.000000000000025 5.000000000000001 30.000000000000025 5.000000000000001 30.000000000000025 C2.2385762510000005 30.000000000000025 0 27.761423749000024 0 25.000000000000025 C0 25.000000000000025 0 5.000000000000001 0 5.000000000000001 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(41, 171, 226); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M1 6.000000000000001 C1 3.2385762510000005 3.2385762510000005 1 6.000000000000001 1 C6.000000000000001 1 26.000000000000057 1 26.000000000000057 1 C28.761423749000055 1 31.000000000000057 3.2385762510000005 31.000000000000057 6.000000000000001 C31.000000000000057 6.000000000000001 31.000000000000057 26 31.000000000000057 26 C31.000000000000057 28.761423749 28.761423749000055 31 26.000000000000057 31 C26.000000000000057 31 6.000000000000001 31 6.000000000000001 31 C3.2385762510000005 31 1 28.761423749 1 26 C1 26 1 6.000000000000001 1 6.000000000000001 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817441" d="M0 0 C0 0 32 0 32 0 C32 0 32 8 32 8 C32 8 0 8 0 8 C0 8 0 0 0 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M0 12 C0 12 32 12 32 12 C32 12 32 20 32 20 C32 20 0 20 0 20 C0 20 0 12 0 12 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817339" d="M0 0 C0 0 8 0 8 0 C8 0 8 32 8 32 C8 32 0 32 0 32 C0 32 0 0 0 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(22, 25, 28);" d="M12 0 C12 0 20 0 20 0 C20 0 20 32 20 32 C20 32 12 32 12 32 C12 32 12 0 12 0 Z" vector-effect="non-scaling-stroke"/></g><g><defs><path id="path-169764199817237" d="M5 0 C7.7595751224699985 0 10 2.2404248775299997 10 5 C10 7.75957512247 7.7595751224699985 10 5 10 C2.2404248775299997 10 0 7.75957512247 0 5 C0 2.2404248775299997 2.2404248775299997 0 5 0 Z" vector-effect="non-scaling-stroke"/></defs> <path style="stroke: rgb(140, 140, 140); stroke-width: 0; stroke-linecap: butt; stroke-linejoin: miter; fill: rgb(41, 171, 226);" d="M16 11 C18.75957512247001 11 21 13.240424877530018 21 16 C21 18.759575122469982 18.75957512247001 21 16 21 C13.240424877529989 21 11 18.759575122469982 11 16 C11 13.240424877530018 13.240424877529989 11 16 11 Z" vector-effect="non-scaling-stroke"/></g></svg>';
     return (
-        <div className="Footer_IMG_QR" dangerouslySetInnerHTML={{ __html: svgCode }} />
+        <div className={inline ? 'Receive_copy_icon' : 'Footer_IMG_QR'} dangerouslySetInnerHTML={{ __html: svgCode }} />
     )
 }
 

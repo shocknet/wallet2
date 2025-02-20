@@ -21,7 +21,7 @@ import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayIn
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { useLocation } from 'react-router';
 
-import { toast } from "react-toastify";
+import { Icons, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
@@ -445,14 +445,16 @@ export const Sources = () => {
   }, [dispatch, paySources, tempParsedWithdraw, router, toggle])
 
   const contentAddContent = <React.Fragment>
-    <div className='Sources_modal_header'>Add Source</div>
+    <div className='Sources_modal_header'>Add Connection</div>
 
-    <div className='Sources_modal_code'>
+    <div className='Sources_modal_code' style={{ display: "flex", justifyContent: "space-around", alignItems: "center", paddingTop: "10px" }}>
       <input
         placeholder="Paste an NProfile or Lightning Address"
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
+        style={{ width: "80%", margin: 0 }}
       />
+      <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => { router.push("/scan") }}>{icons.QR(true)}</div>
     </div>
     <div className="Sources_modal_add_btn">
       <button onClick={addSource}>Add</button>
