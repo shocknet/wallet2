@@ -41,7 +41,7 @@ export const Scan = () => {
   const router = useIonRouter();
   const history = useHistory();
   const [itemInput, setItemInput] = useState("");
-
+  console.log("Scan")
   const startDesktopCamera = async (html5QrCode: Html5Qrcode) => {
     html5QrCode.start(
       { facingMode: 'environment' },
@@ -141,17 +141,22 @@ export const Scan = () => {
         pathname: "/sources",
         state: parsed
       });
-    } else if (parsed.type === InputClassification.UNKNOWN) {
+    } else if (parsed.type === InputClassification.UNKNOWN && parsed.data.startsWith("nprofile")) {
+      history.push({
+        pathname: "/sources",
+        state: parsed
+      });
+    } else {
       toast.error(<Toast title="Error" message="Unrecognized QR code." />)
     }
   }
 
   return (
-    <div className="Scan scan-layout">
-      <div onClick={() => { router.goBack() }} className="Scan_back">
+    <div className="">
+      <div onClick={() => { console.log("back click"); router.goBack() }} style={{ textAlign: 'end' }}>
         {Icons.closeIcon()}
       </div>
-      <div className="Scan_wall">
+      <div style={{ height: "80vh" }}>
         <div className="Scan_square" id="reader" />
       </div>
       <div className="Scan_result_input">
