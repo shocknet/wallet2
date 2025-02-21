@@ -29,7 +29,7 @@ interface ActiveChannel {
 
 
 
-export const Channels = () => {
+export const Channels = ({ done }: { done: () => void }) => {
   const [maxBalance, setMaxBalance] = useState<number>(0);
   const [activeChannels, setActiveChannels] = useState<ActiveChannel[]>([]);
   const [offlineChannels, setOfflineChannels] = useState<OfflineChannel[]>([]);
@@ -209,6 +209,9 @@ export const Channels = () => {
       </div>
       <OpenChannel adminSource={spendSources.sources[selectedSource || ""]} />
       <EditChannel adminSource={spendSources.sources[selectedSource || ""]} selectedChannel={selectedChannel} deselect={() => setSelectedChannel(null)} />
+      <button onClick={() => done()} className="Manage_save">
+        Done
+      </button>
       <div className="Channels_footer">
         Connected to <br />
         {spendSources.sources[selectedSource || ""].pasteField}

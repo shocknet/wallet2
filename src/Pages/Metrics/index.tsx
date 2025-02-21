@@ -17,6 +17,8 @@ import { collapseToast, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
 import { Client } from '../../Api/nostr';
+import { Manage } from '../Manage';
+import { Channels } from '../Channels';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -120,6 +122,8 @@ export const Metrics = () => {
   const [dogStatus, setDogStatus] = useState("Loading...")
   const [rootOps, setRootOps] = useState<RootEvent[]>([])
   const [eventsCollapsed, setEventsCollapsed] = useState(true)
+  const [showManage, setShowManage] = useState(false)
+  const [showChannels, setShowChannels] = useState(false)
 
   const spendSources = useSelector(state => state.spendSource)
   const dispatch = useDispatch();
@@ -287,6 +291,13 @@ export const Metrics = () => {
 
     </div>
   }
+
+  if (showManage) {
+    return <Manage done={() => setShowManage(false)} />
+  }
+  if (showChannels) {
+    return <Channels done={() => setShowChannels(false)} />
+  }
   const datasets = [
     {
       data: chainGraphData,
@@ -400,7 +411,7 @@ export const Metrics = () => {
               {Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
             </div>
           </div>
-          <div onClick={() => router.push('/manage')} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
+          <div onClick={() => setShowManage(true)} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
             Manage
           </div>
 
@@ -415,12 +426,12 @@ export const Metrics = () => {
         <div className={styles["column-flex"]}>
           {eventsCollapsed &&
             rootOps.slice(0, Math.min(rootOps.length, 2)).map((e, i) => (
-              <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span> {e.unix && <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span>}</div>
             ))
           }
           {!eventsCollapsed &&
             rootOps.map((e, i) => (
-              <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span>  {e.unix && <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span>}</div>
             ))
           }
         </div>
@@ -449,7 +460,7 @@ export const Metrics = () => {
               </div>
             </div>
           </div>
-          <div className={classNames(styles["card"], styles["channels"])} onClick={() => router.push('/channels')}>
+          <div className={classNames(styles["card"], styles["channels"])} onClick={() => setShowChannels(true)}>
             <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Channels</h4>
             </div>
