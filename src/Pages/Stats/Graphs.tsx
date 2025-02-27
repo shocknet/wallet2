@@ -10,6 +10,7 @@ import { newWebRtcConnection } from "./webRTC";
 import { BundleDataPoint, fetchBundleStats, fetchErrors, fetchUsageStats, MetricsData } from "./statsApi";
 import { BundleGraph } from "./BundleGraph";
 import { ErrorsView } from "./ErrorsView";
+import { AdminSource } from "../../Components/AdminGuard";
 //import { MetricsData } from "./StatsGraph";
 type OfferItemType = {
     title: string;
@@ -27,7 +28,7 @@ type PagedData = Record<string, Record<string, Record<number, Types.UsageMetric[
   validate_in_nano?: boolean
 } */
 
-export const Graphs = ({ selectedSource }: { selectedSource: SpendFrom }) => {
+export const Graphs = ({ adminSource }: { adminSource: AdminSource }) => {
     const [apps, setApps] = useState<string[]>([])
     const [bundleData, setBundleData] = useState<MetricsData<BundleDataPoint>>()
     const [usageData, setUsageData] = useState<MetricsData<Types.UsageMetric>>()
@@ -57,33 +58,33 @@ export const Graphs = ({ selectedSource }: { selectedSource: SpendFrom }) => {
     }
 
     useEffect(() => {
-        if (!selectedSource) return
-        newWebRtcConnection(selectedSource, (sendFunc) => {
+        if (!adminSource) return
+        newWebRtcConnection(adminSource, (sendFunc) => {
             console.log("wrtc is ready")
             setSendWrtcReq({ f: sendFunc })
         })
-    }, [selectedSource])
+    }, [adminSource])
 
     useEffect(() => {
-        if (!selectedSource) return
-        fetchErrors(selectedSource).then(({ errors }) => setErrorStats(errors)).catch((e) => toast.error(e.message))
-    }, [selectedSource])
+        if (!adminSource) return
+        fetchErrors(adminSource).then(({ errors }) => setErrorStats(errors)).catch((e) => toast.error(e.message))
+    }, [adminSource])
 
     useEffect(() => {
-        if (!selectedSource || tab !== 'usage' || !!usageData) return
-        fetchUsageStats(selectedSource).then(({ usageData, apps }) => {
+        if (!adminSource || tab !== 'usage' || !!usageData) return
+        fetchUsageStats(adminSource).then(({ usageData, apps }) => {
             setUsageData(usageData)
             updateApps(apps)
         }).catch((e) => toast.error(e.message))
-    }, [selectedSource, tab, usageData])
+    }, [adminSource, tab, usageData])
 
     useEffect(() => {
-        if (!selectedSource || tab !== 'bundle' || !!bundleData) return
-        fetchBundleStats(selectedSource).then(({ bundleData, apps }) => {
+        if (!adminSource || tab !== 'bundle' || !!bundleData) return
+        fetchBundleStats(adminSource).then(({ bundleData, apps }) => {
             setBundleData(bundleData)
             updateApps(apps)
         }).catch((e) => toast.error(e.message))
-    }, [selectedSource, tab, bundleData])
+    }, [adminSource, tab, bundleData])
 
     useEffect(() => {
         if (!selectedApp || !usageData) return

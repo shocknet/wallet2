@@ -19,6 +19,7 @@ import { SpendFrom } from '../../globalTypes';
 import { Client } from '../../Api/nostr';
 import { Manage } from '../Manage';
 import { Channels } from '../Channels';
+import { AdminGuard, AdminSource } from '../../Components/AdminGuard';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -116,7 +117,7 @@ export const Metrics = () => {
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
   const [period, setPeriod] = useState<Period>(Period.ALL_TIME);
-  const [firstRender, setFirstRender] = useState(true);
+  /* const [firstRender, setFirstRender] = useState(true); */
   const [error, setError] = useState("")
   const [lndStatus, setLndStatus] = useState("Loading...")
   const [dogStatus, setDogStatus] = useState("Loading...")
@@ -124,18 +125,19 @@ export const Metrics = () => {
   const [eventsCollapsed, setEventsCollapsed] = useState(true)
   const [showManage, setShowManage] = useState(false)
   const [showChannels, setShowChannels] = useState(false)
+  const [adminSource, setAdminSource] = useState<AdminSource | null>(null)
 
-  const spendSources = useSelector(state => state.spendSource)
+  /* const spendSources = useSelector(state => state.spendSource) */
   const dispatch = useDispatch();
 
   const otherOptions = periodOptionsArray.filter((o) => o !== period);
-  const selectedSource = useMemo(() => {
+  /* const selectedSource = useMemo(() => {
     return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-  }, [spendSources])
+  }, [spendSources]) */
 
   useEffect(() => {
     fetchMetrics();
-  }, [period])
+  }, [adminSource, period]);
 
   const fetchInfo = useCallback(async (client: Client) => {
     const info = await client.LndGetInfo({ nodeId: 0 })
@@ -157,19 +159,20 @@ export const Metrics = () => {
 
   const fetchMetrics = useCallback(async () => {
     console.log("fetching metrics")
-    if (!selectedSource) {
-      setError("no available admin source found")
-      setLoading(false)
+    if (!adminSource) {
+      //setError("no available admin source found")
+      //setLoading(false)
       return
     }
-    const source = spendSources.sources[selectedSource]
-    if (!source || !source.adminToken) {
-      setError("no available admin source found")
-      setLoading(false)
-      return
-    }
+    /*     const source = spendSources.sources[selectedSource]
+        if (!source || !source.adminToken) {
+          setError("no available admin source found")
+          setLoading(false)
+          return
+        } */
+    console.log("fetching metrics2")
     dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
-    const client = await getNostrClient(source.pasteField, source.keys!) // TODO: write migration to remove type override
+    const client = await getNostrClient(adminSource.nprofile, adminSource.keys)
     const periodRange = getUnixTimeRange(period);
     let apps: ResultError | ({ status: 'OK' } & Types.AppsMetrics), lnd: ResultError | ({ status: 'OK' } & Types.LndMetrics)
     try {
@@ -279,7 +282,11 @@ export const Metrics = () => {
     })
     setLoading(false)
     dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [dispatch, period]);
+  }, [dispatch, period, adminSource]);
+
+  if (!adminSource) {
+    return <AdminGuard updateSource={s => { console.log({ adminSource }); setAdminSource(s) }} />
+  }
 
   if (loading) {
     return <div>loading...</div>
@@ -544,7 +551,7 @@ export const Metrics = () => {
       </div>
       <div className={styles["section"]}>
         <div className='metric-footer'>
-          <i>Connected to <br />{spendSources.sources[selectedSource || ""].pasteField}</i>
+          <i>Connected to <br />{adminSource.nprofile}</i>
         </div>
       </div>
     </div>
