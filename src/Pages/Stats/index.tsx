@@ -20,6 +20,7 @@ import { BundleDataPoint, fetchBundleStats, fetchErrors, fetchUsageStats, Metric
 import { BundleGraph } from "./BundleGraph";
 import { ErrorsView } from "./ErrorsView";
 import { Graphs } from "./Graphs";
+import { AdminGuard, AdminSource } from "../../Components/AdminGuard";
 //import { MetricsData } from "./StatsGraph";
 type OfferItemType = {
   title: string;
@@ -38,29 +39,31 @@ type PagedData = Record<string, Record<string, Record<number, Types.UsageMetric[
 } */
 
 export const Stats = () => {
-  const [selectedSourceId, setSelectedSourceId] = useState<string>('')
-  const [selectedSource, setSelectedSource] = useState<SpendFrom>()
-  const enabledPaySources = useSelector((state) =>
-    state.spendSource.order.map(id => state.spendSource.sources[id]).filter(source => source.pubSource && source.adminToken))
+  /*   const [selectedSourceId, setSelectedSourceId] = useState<string>('')
+    const [selectedSource, setSelectedSource] = useState<SpendFrom>()
+    const enabledPaySources = useSelector((state) =>
+      state.spendSource.order.map(id => state.spendSource.sources[id]).filter(source => source.pubSource && source.adminToken)) */
+  const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
+  /*     useEffect(() => {
+        if (!selectedSourceId) return
+        const source = enabledPaySources.find((source) => source.pasteField === selectedSourceId)
+        if (!source) return
+        setSelectedSource(source)
+      }, [selectedSourceId]) */
 
-  useEffect(() => {
-    if (!selectedSourceId) return
-    const source = enabledPaySources.find((source) => source.pasteField === selectedSourceId)
-    if (!source) return
-    setSelectedSource(source)
-  }, [selectedSourceId])
-
-  if (!selectedSource) {
-    return <div style={{ textAlign: 'center' }}>
-      <h1 >Stats</h1>
-      <select style={{ color: "black" }} value={selectedSourceId} onChange={(e) => setSelectedSourceId(e.target.value)}>
-        <option value="" hidden>Select Source</option>
-        {enabledPaySources.map((item, index) => <option key={index} value={item.pasteField}>{item.label}</option>)}
-      </select>
-    </div>
+  /*   if (!selectedSource) {
+      return <div style={{ textAlign: 'center' }}>
+        <h1 >Stats</h1>
+        <select style={{ color: "black" }} value={selectedSourceId} onChange={(e) => setSelectedSourceId(e.target.value)}>
+          <option value="" hidden>Select Source</option>
+          {enabledPaySources.map((item, index) => <option key={index} value={item.pasteField}>{item.label}</option>)}
+        </select>
+      </div>
+    } */
+  if (!adminSource) {
+    return <AdminGuard updateSource={s => setAdminSource(s)} />
   }
-
   return <div>
-    <Graphs selectedSource={selectedSource} />
+    <Graphs adminSource={adminSource} />
   </div>
 }

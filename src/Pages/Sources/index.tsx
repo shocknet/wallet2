@@ -214,7 +214,12 @@ export const Sources = () => {
             console.log("resetting admin access to existing source")
             setProcessingSource(true)
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
-            await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+            const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+            if (res.status !== "OK") {
+              toast.error("Error enrolling admin token " + res.reason)
+              dispatch(toggleLoading({ loadingMessage: "" }))
+              return
+            }
             dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
             toast.success(<Toast title="Sources" message={`successufly linked admin access to ${inputSource}`} />)
             setProcessingSource(false);
@@ -282,7 +287,12 @@ export const Sources = () => {
       if (adminEnrollToken) {
         console.log("enrolling admin token")
         const client = await getNostrClient(inputSource, newSourceKeyPair);
-        await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+        const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+        if (res.status !== "OK") {
+          toast.error("Error enrolling admin token " + res.reason)
+          dispatch(toggleLoading({ loadingMessage: "" }))
+          return
+        }
       }
       console.log("adding source")
       const resultLnurl = new URL(data!.relays![0]);
