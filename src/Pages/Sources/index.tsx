@@ -21,7 +21,7 @@ import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayIn
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { useLocation } from 'react-router';
 
-import { toast } from "react-toastify";
+import { Icons, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
 import { getNostrClient } from '../../Api';
@@ -214,7 +214,12 @@ export const Sources = () => {
             console.log("resetting admin access to existing source")
             setProcessingSource(true)
             const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
-            await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+            const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+            if (res.status !== "OK") {
+              toast.error("Error enrolling admin token " + res.reason)
+              dispatch(toggleLoading({ loadingMessage: "" }))
+              return
+            }
             dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
             toast.success(<Toast title="Sources" message={`successufly linked admin access to ${inputSource}`} />)
             setProcessingSource(false);
@@ -282,7 +287,12 @@ export const Sources = () => {
       if (adminEnrollToken) {
         console.log("enrolling admin token")
         const client = await getNostrClient(inputSource, newSourceKeyPair);
-        await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+        const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+        if (res.status !== "OK") {
+          toast.error("Error enrolling admin token " + res.reason)
+          dispatch(toggleLoading({ loadingMessage: "" }))
+          return
+        }
       }
       console.log("adding source")
       const resultLnurl = new URL(data!.relays![0]);
@@ -445,14 +455,16 @@ export const Sources = () => {
   }, [dispatch, paySources, tempParsedWithdraw, router, toggle])
 
   const contentAddContent = <React.Fragment>
-    <div className='Sources_modal_header'>Add Source</div>
+    <div className='Sources_modal_header'>Add Connection</div>
 
-    <div className='Sources_modal_code'>
+    <div className='Sources_modal_code' style={{ display: "flex", justifyContent: "space-around", alignItems: "center", paddingTop: "10px" }}>
       <input
         placeholder="Paste an NProfile or Lightning Address"
         value={sourcePasteField}
         onChange={(e) => setSourcePasteField(e.target.value)}
+        style={{ width: "80%", margin: 0 }}
       />
+      <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => { router.push("/scan") }}>{icons.QR(true)}</div>
     </div>
     <div className="Sources_modal_add_btn">
       <button onClick={addSource}>Add</button>

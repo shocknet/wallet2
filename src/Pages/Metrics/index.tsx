@@ -13,10 +13,13 @@ import moment from 'moment';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { stringToColor } from '../../constants';
 import Dropdown from '../../Components/Dropdowns/LVDropdown';
-import { toast } from "react-toastify";
+import { collapseToast, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
 import { Client } from '../../Api/nostr';
+import { Manage } from '../Manage';
+import { Channels } from '../Channels';
+import { AdminGuard, AdminSource } from '../../Components/AdminGuard';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -114,23 +117,27 @@ export const Metrics = () => {
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
   const [period, setPeriod] = useState<Period>(Period.ALL_TIME);
-  const [firstRender, setFirstRender] = useState(true);
+  /* const [firstRender, setFirstRender] = useState(true); */
   const [error, setError] = useState("")
   const [lndStatus, setLndStatus] = useState("Loading...")
   const [dogStatus, setDogStatus] = useState("Loading...")
   const [rootOps, setRootOps] = useState<RootEvent[]>([])
+  const [eventsCollapsed, setEventsCollapsed] = useState(true)
+  const [showManage, setShowManage] = useState(false)
+  const [showChannels, setShowChannels] = useState(false)
+  const [adminSource, setAdminSource] = useState<AdminSource | null>(null)
 
-  const spendSources = useSelector(state => state.spendSource)
+  /* const spendSources = useSelector(state => state.spendSource) */
   const dispatch = useDispatch();
 
   const otherOptions = periodOptionsArray.filter((o) => o !== period);
-  const selectedSource = useMemo(() => {
+  /* const selectedSource = useMemo(() => {
     return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-  }, [spendSources])
+  }, [spendSources]) */
 
   useEffect(() => {
     fetchMetrics();
-  }, [period])
+  }, [adminSource, period]);
 
   const fetchInfo = useCallback(async (client: Client) => {
     const info = await client.LndGetInfo({ nodeId: 0 })
@@ -152,19 +159,20 @@ export const Metrics = () => {
 
   const fetchMetrics = useCallback(async () => {
     console.log("fetching metrics")
-    if (!selectedSource) {
-      setError("no available admin source found")
-      setLoading(false)
+    if (!adminSource) {
+      //setError("no available admin source found")
+      //setLoading(false)
       return
     }
-    const source = spendSources.sources[selectedSource]
-    if (!source || !source.adminToken) {
-      setError("no available admin source found")
-      setLoading(false)
-      return
-    }
+    /*     const source = spendSources.sources[selectedSource]
+        if (!source || !source.adminToken) {
+          setError("no available admin source found")
+          setLoading(false)
+          return
+        } */
+    console.log("fetching metrics2")
     dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
-    const client = await getNostrClient(source.pasteField, source.keys!) // TODO: write migration to remove type override
+    const client = await getNostrClient(adminSource.nprofile, adminSource.keys)
     const periodRange = getUnixTimeRange(period);
     let apps: ResultError | ({ status: 'OK' } & Types.AppsMetrics), lnd: ResultError | ({ status: 'OK' } & Types.LndMetrics)
     try {
@@ -274,7 +282,11 @@ export const Metrics = () => {
     })
     setLoading(false)
     dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [dispatch, period]);
+  }, [dispatch, period, adminSource]);
+
+  if (!adminSource) {
+    return <AdminGuard updateSource={s => { console.log({ adminSource }); setAdminSource(s) }} />
+  }
 
   if (loading) {
     return <div>loading...</div>
@@ -285,6 +297,13 @@ export const Metrics = () => {
       something went wrong {error}
 
     </div>
+  }
+
+  if (showManage) {
+    return <Manage done={() => setShowManage(false)} />
+  }
+  if (showChannels) {
+    return <Channels done={() => setShowChannels(false)} />
   }
   const datasets = [
     {
@@ -399,7 +418,7 @@ export const Metrics = () => {
               {Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
             </div>
           </div>
-          <div onClick={() => router.push('/manage')} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
+          <div onClick={() => setShowManage(true)} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
             Manage
           </div>
 
@@ -407,11 +426,19 @@ export const Metrics = () => {
       </div>
       <div className={styles["section"]}><span className={styles["separator"]}></span></div>
       <div className={styles["section"]}>
-        <h3 className={styles["sub-title"]}>Events</h3>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h3 className={styles["sub-title"]}>Events</h3>
+          <span style={{ transform: `rotate(${eventsCollapsed ? 0 : 90}deg)`, transition: "0.3s", }} onClick={() => { setEventsCollapsed(!eventsCollapsed) }}>{Icons.arrow()}</span>
+        </div>
         <div className={styles["column-flex"]}>
-          {
+          {eventsCollapsed &&
+            rootOps.slice(0, Math.min(rootOps.length, 2)).map((e, i) => (
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span> {e.unix && <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span>}</div>
+            ))
+          }
+          {!eventsCollapsed &&
             rootOps.map((e, i) => (
-              <div key={i} className={styles["event-item"]}><span>{e.message}</span> <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span></div>
+              <div key={i} className={styles["event-item"]}><span>{e.message}</span>  {e.unix && <span className={styles["date"]}>{moment(e.unix * 1000).fromNow()}</span>}</div>
             ))
           }
         </div>
@@ -440,7 +467,7 @@ export const Metrics = () => {
               </div>
             </div>
           </div>
-          <div className={classNames(styles["card"], styles["channels"])} onClick={() => router.push('/channels')}>
+          <div className={classNames(styles["card"], styles["channels"])} onClick={() => setShowChannels(true)}>
             <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Channels</h4>
             </div>
@@ -524,7 +551,7 @@ export const Metrics = () => {
       </div>
       <div className={styles["section"]}>
         <div className='metric-footer'>
-          <i>Connected to <br />{spendSources.sources[selectedSource || ""].pasteField}</i>
+          <i>Connected to <br />{adminSource.nprofile}</i>
         </div>
       </div>
     </div>

@@ -172,7 +172,7 @@ const AppContent: React.FC = () => {
             <Metrics />
           </Layout>
         </Route>
-        <Route exact path="/manage">
+        {/*         <Route exact path="/manage">
           <Layout>
             <Manage />
           </Layout>
@@ -181,7 +181,7 @@ const AppContent: React.FC = () => {
           <Layout>
             <Channels />
           </Layout>
-        </Route>
+        </Route> */}
         <Route exact path="/LApps">
           <Layout>
             <LinkedApp />

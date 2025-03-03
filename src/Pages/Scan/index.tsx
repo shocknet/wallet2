@@ -37,21 +37,14 @@ const scanSingleBarcode = async () => {
 };
 
 export const Scan = () => {
-
   const dispatch = useDispatch();
   const router = useIonRouter();
   const history = useHistory();
-
   const [itemInput, setItemInput] = useState("");
-
-
-
-
-
-
-  const startDesktopCamera = async (html5QrCode: Html5Qrcode, cameraId: string) => {
+  console.log("Scan")
+  const startDesktopCamera = async (html5QrCode: Html5Qrcode) => {
     html5QrCode.start(
-      cameraId,
+      { facingMode: 'environment' },
       {
         fps: 10,
       },
@@ -73,9 +66,8 @@ export const Scan = () => {
       let html5QrCode: Html5Qrcode | null = null;
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
-          const cameraId = devices[0].id;
           html5QrCode = new Html5Qrcode("reader");
-          startDesktopCamera(html5QrCode, cameraId)
+          startDesktopCamera(html5QrCode)
         }
       })
       return () => {
@@ -149,22 +141,22 @@ export const Scan = () => {
         pathname: "/sources",
         state: parsed
       });
-    } else if (parsed.type === InputClassification.UNKNOWN) {
+    } else if (parsed.type === InputClassification.UNKNOWN && parsed.data.startsWith("nprofile")) {
+      history.push({
+        pathname: "/sources",
+        state: parsed
+      });
+    } else {
       toast.error(<Toast title="Error" message="Unrecognized QR code." />)
     }
   }
 
-
-
-
-
-
   return (
-    <div className="Scan scan-layout">
-      <div onClick={() => { router.goBack() }} className="Scan_back">
+    <div className="">
+      <div onClick={() => { console.log("back click"); router.goBack() }} style={{ textAlign: 'end' }}>
         {Icons.closeIcon()}
       </div>
-      <div className="Scan_wall">
+      <div style={{ height: "80vh" }}>
         <div className="Scan_square" id="reader" />
       </div>
       <div className="Scan_result_input">

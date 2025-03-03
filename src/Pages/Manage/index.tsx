@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { getHttpClient, getNostrClient } from '../../Api';
 
-export const Manage = () => {
-  const router = useIonRouter();
+export const Manage = ({ done }: { done: () => void }) => {
+  //const router = useIonRouter();
 
   const [isShowQuestion, setIsShowQuestion] = useState<boolean>(false);
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
@@ -77,9 +77,9 @@ export const Manage = () => {
       setIsRevealed(false);
     }
   }
-  const handleSave = () => {
-    router.push("/metrics");
-  };
+  /*   const handleSave = () => {
+      router.push("/metrics");
+    }; */
 
   const questionContent = (
     <React.Fragment>
@@ -223,8 +223,8 @@ export const Manage = () => {
           {isRevealed ? "Click to hide seed" : "Click to reveal seed"}
         </div>
       </div>
-      <button onClick={handleSave} className="Manage_save">
-        Save
+      <button onClick={() => done()} className="Manage_save">
+        Done
       </button>
       <div className="Manage_footer">
         Connected to <br />

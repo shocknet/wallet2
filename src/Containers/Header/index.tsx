@@ -6,7 +6,7 @@ import { UseModal } from "../../Hooks/UseModal";
 
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
-import SWText from "../../Assets/Images/sw_text.png";
+import SWText from "../../Assets/Images/wallet_new_text.png";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store";
 import { Modal } from "../../Components/Modals/Modal";
@@ -129,8 +129,6 @@ export const Header = () => {
       }, 30)
     }
   }, []);
-
-
 
 
   return (

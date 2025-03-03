@@ -182,7 +182,7 @@ jobs:
 
       - name: Upload APK as artifact
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-release-dev
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
