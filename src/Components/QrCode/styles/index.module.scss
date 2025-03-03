@@ -1,0 +1,9 @@
+.qr-code {
+    width: 100%;
+    border-radius: 10px !important;
+
+    image {
+        width: 10% !important;
+        aspect-ratio: 1/1;
+    }
+}

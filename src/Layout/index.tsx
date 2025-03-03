@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { IonContent, IonFooter, IonHeader, useIonRouter } from "@ionic/react";
+import { IonContent, IonFooter, IonHeader, IonPage } from "@ionic/react";
 import { Header, PubHeader } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
@@ -55,18 +55,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
 
   return (
-    <div className="ion-page">
+
+    <IonPage>
       {
         !isScan
-        && 
-        isPub ?
-        <IonHeader style={{boxShadow: "none"}}>
-          <PubHeader />
-        </IonHeader>
-        :
-        <IonHeader style={{boxShadow: "none"}}>
-          <Header />
-        </IonHeader>
+          &&
+          isPub ?
+          <IonHeader style={{ boxShadow: "none" }}>
+            <PubHeader />
+          </IonHeader>
+          :
+          <IonHeader style={{ boxShadow: "none" }}>
+            <Header />
+          </IonHeader>
       }
       <IonContent className="ion-padding">
         {children}
@@ -78,6 +79,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
           <Footer />
         </IonFooter>
       }
-    </div>
+    </IonPage>
+
   )
 }

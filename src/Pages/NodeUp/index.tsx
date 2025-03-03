@@ -1,6 +1,5 @@
-import { useLayoutEffect } from "react";
 import { useIonRouter } from '@ionic/react';
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_PUB_DESTINATION, NOSTR_RELAYS, options } from "../../constants";
+import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "../../constants";
 import { useDispatch, useSelector } from "../../State/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
@@ -11,17 +10,15 @@ import { SourceTrustLevel } from "../../globalTypes";
 export const NodeUp = () => {
   const router = useIonRouter();
 
-  // from local storage, as opposed to from redux, means the value here isn't updated upon doing an option
-  // which serves the purpose of allowing the loader screen to show without immediately going to /home
-  const privateKeyFromStorage = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
-  
+
+
   const dispatch = useDispatch();
   const paySources = useSelector((state) => state.paySource);
   const spendSources = useSelector((state) => state.spendSource);
   const toMainPage = () => {
     addBootStrapSources();
-    setTimeout(() => {      
+    setTimeout(() => {
       router.push("/loader")
     }, 100);
   };
@@ -34,11 +31,9 @@ export const NodeUp = () => {
     router.push("/auth")
   }
 
-  useLayoutEffect(() => {
-    if (privateKeyFromStorage) {
-      router.push("/home")
-    }
-  }, []);
+
+
+
 
 
 

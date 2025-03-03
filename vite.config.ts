@@ -16,6 +16,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3000000
+      },
       manifest: {
         name: 'Your App Name',
         short_name: 'App',
