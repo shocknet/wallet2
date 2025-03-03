@@ -4,16 +4,26 @@ import styles from "./styles/index.module.scss";
 
 interface QrCodeProps {
 	value: string;
+	prefix?: string;
+	uppercase?: boolean;
 }
-const QrCode = ({ value }: QrCodeProps) => {
+const QrCode = ({ value, prefix, uppercase = true }: QrCodeProps) => {
 	if (value === "") {
 		return null;
+	}
+	let qrCodeValue = value;
+	// Add prefix to the value
+	if (prefix) {
+		qrCodeValue = `${prefix}:${value}`;
+	}
+	if (uppercase) {
+		qrCodeValue = qrCodeValue.toUpperCase();
 	}
 	return (
 		<QRCodeSVG
 			className={styles["qr-code"]}
 			size={256}
-			value={value}
+			value={qrCodeValue}
 			marginSize={4}
 			bgColor="#ffffff"
 			fgColor="#000000"

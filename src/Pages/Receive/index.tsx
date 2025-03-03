@@ -132,21 +132,7 @@ const Receive = () => {
 	const labels = getNavigationLabels();
 
 
-
-
-
-
-
-
-
-
-
-
 	const router = useIonRouter();
-
-
-
-
 
 	useEffect(() => {
 		if (!topPaysource) {
@@ -243,9 +229,6 @@ const Receive = () => {
 				</IonFooter>
 			</IonPage>
 		</>
-
-
-
 	)
 }
 
@@ -312,7 +295,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 		}
 		configure();
 	}, [dispatch, topPaySource, onInvalidate]);
-	console.log({ lnurl, lightningAddress })
+
 
 
 
@@ -322,6 +305,8 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 
 
 	const disabled = !(lnurl && lightningAddress);
+
+	const copyValue = selectedSegment === "lnurl" ? lnurl : createLnurlFromLnAddress(lightningAddress);
 
 	return (
 		<IonGrid className="ion-margin-top">
@@ -342,7 +327,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 				<IonCol size="auto">
 					<IonSegmentView>
 						<IonSegmentContent id="lnurl">
-							{loading ? <IonSpinner /> : <QrCode value={lnurl} />}
+							{loading ? <IonSpinner /> : <QrCode value={lnurl} prefix="lightning:" />}
 						</IonSegmentContent>
 						<IonSegmentContent id="address">
 							{
@@ -350,7 +335,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 									? <IonSpinner />
 									: (
 										<>
-											<QrCode value={createLnurlFromLnAddress(lightningAddress)} />
+											<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning:" />
 											<div style={{ textAlign: "center", fontSize: "16px" }}>{lightningAddress}</div>
 										</>
 									)
@@ -361,13 +346,13 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 			</IonRow>
 			<IonRow className="ion-justify-content-around ion-margin-top">
 				<IonCol size="auto">
-					<GradientButton /* onClick={() => dispatch(copyToClipboard(QrCodeValue))} */>
+					<GradientButton onClick={() => dispatch(copyToClipboard(copyValue))}>
 						<IonIcon color="primary" slot="start" icon={copy} />
 						Copy
 					</GradientButton>
 				</IonCol>
 				<IonCol size="auto" >
-					<GradientButton id="share-button" /* onClick={() => shareText(QrCodeValue)} */>
+					<GradientButton id="share-button" onClick={() => shareText(copyValue)}>
 						<IonIcon slot="start" color="primary" icon={shareSocialOutline} />
 						Share
 					</GradientButton>
@@ -450,7 +435,7 @@ const InvoiceTab = () => {
 				const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
 				invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
 			}
-			setQrCodeValue(`lightning:${invoice}`);
+			setQrCodeValue(invoice);
 		} catch (err: any) {
 			if (isAxiosError(err) && err.response) {
 				toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
@@ -464,7 +449,6 @@ const InvoiceTab = () => {
 	};
 
 
-	console.log(amountNum, price.buyPrice, (amountNum * price.buyPrice * 0.00000001).toFixed(2))
 
 
 
@@ -479,7 +463,7 @@ const InvoiceTab = () => {
 						{
 							loading
 								? <IonSpinner />
-								: <QrCode value={qrCodeValue} />
+								: <QrCode value={qrCodeValue} prefix="lightning" />
 						}
 					</IonCol>
 				</IonRow>
@@ -569,7 +553,7 @@ const OnChainTab = ({ onInvalidate }: TabProps) => {
 			<IonGrid>
 				<IonRow className="ion-justify-content-center">
 					<IonCol size="auto">
-						{loading ? <IonSpinner /> : <QrCode value={qrCodeValue} />}
+						{loading ? <IonSpinner /> : <QrCode value={qrCodeValue} prefix="bitcion:" />}
 					</IonCol>
 				</IonRow>
 				<IonRow className="ion-justify-content-center">
