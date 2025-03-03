@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Redirect, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
@@ -14,7 +14,7 @@ import { Provider } from 'react-redux';
 import { Layout } from './Layout';
 import { Loader } from './Pages/Loader';
 import { Home } from './Pages/Home';
-import { Receive } from './Pages/Receive';
+import Receive from './Pages/Receive';
 import { Send } from './Pages/Send';
 import { Scan } from './Pages/Scan';
 import { Sources } from './Pages/Sources';
@@ -34,26 +34,31 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 /* Core CSS required for Ionic components to work properly */
-import "@ionic/react/css/core.css";
+import '@ionic/react/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-import "@ionic/react/css/normalize.css";
-import "@ionic/react/css/structure.css";
-import "@ionic/react/css/typography.css";
+import '@ionic/react/css/normalize.css';
+import '@ionic/react/css/structure.css';
+import '@ionic/react/css/typography.css';
 
 /* Optional CSS utils that can be commented out */
-import "@ionic/react/css/padding.css";
-import "@ionic/react/css/float-elements.css";
-import "@ionic/react/css/text-alignment.css";
-import "@ionic/react/css/text-transformation.css";
-import "@ionic/react/css/flex-utils.css";
-import "@ionic/react/css/display.css";
+import '@ionic/react/css/padding.css';
+import '@ionic/react/css/float-elements.css';
+import '@ionic/react/css/text-alignment.css';
+import '@ionic/react/css/text-transformation.css';
+import '@ionic/react/css/flex-utils.css';
+import '@ionic/react/css/display.css';
+
+
+import "./theme/variables.css";
 
 import LoadingOverlay from "./Components/LoadingOverlay";
 import { DebitRequestModal, EditDebitModal } from "./Components/Modals/DebitRequestModal";
 import { EditSourceModal } from "./Components/Modals/EditSourceModal";
 import { OfferInfo } from "./Pages/OfferInfo";
 import { Stats } from "./Pages/Stats";
+import NavigationMenu from "./Components/NavigationMenu";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
 
 setupIonicReact();
 
@@ -91,27 +96,30 @@ const AppContent: React.FC = () => {
       <EditDebitModal />
       <EditSourceModal />
       {/* Modals */}
+      <NavigationMenu />
 
 
-      <IonRouterOutlet>
-        <Route exact path="/">
-          <Layout>
-            <NodeUp />
-          </Layout>
-        </Route>
-        <Route exact path="/loader">
-          <Layout>
-            <Loader />
-          </Layout>
-        </Route>
+      <IonRouterOutlet id="main-content">
+
         <Route exact path="/home">
           <Layout>
             <Home />
           </Layout>
         </Route>
-        <Route exact path="/receive">
+        <Route exact path="/nodeup">
           <Layout>
-            <Receive />
+            <NodeUp />
+          </Layout>
+        </Route>
+        <Route exact path="/">
+          <BoostrapGuard />
+        </Route>
+        <Route exact path="/receive">
+          <Receive />
+        </Route>
+        <Route exact path="/loader">
+          <Layout>
+            <Loader />
           </Layout>
         </Route>
         <Route exact path="/send">
@@ -194,8 +202,20 @@ const AppContent: React.FC = () => {
             <Stats />
           </Layout>
         </Route>
+
       </IonRouterOutlet>
     </>
+  );
+};
+
+const BoostrapGuard: React.FC = () => {
+  const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+  console.log({ hasBootstrapped })
+
+  return hasBootstrapped ? (
+    <Redirect to="/home" />
+  ) : (
+    <Redirect to="/nodeup" />
   );
 };
 

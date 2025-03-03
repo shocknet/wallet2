@@ -47,7 +47,7 @@ export const Home = () => {
       <SwItem operation={o} key={o.operationId} underline={i !== collapsed.length - 1} />
     )
   }, [operationGroups, optimisticOperations, spendSources, lnurlOperations]);
-  
+
 
   useEffect(() => {
     let totalAmount = 0;

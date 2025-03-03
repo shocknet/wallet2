@@ -20,7 +20,7 @@ export const NodeUpCheck = () => {
 	}, [paySource, spendSource])
 
 	useLayoutEffect(() => {
-		const routes = ["/", "/sources", "/auth"];
+		const routes = ["/nodeup", "/sources", "/auth"];
 		if (!nodedUp && !routes.includes(history.location.pathname)) {
 			history.push("/");
 		}

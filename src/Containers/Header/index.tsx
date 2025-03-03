@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useLocation } from 'react-router-dom';
-import { useIonRouter, isPlatform } from "@ionic/react";
+import { useIonRouter, isPlatform, IonMenuButton } from "@ionic/react";
 
 import { UseModal } from "../../Hooks/UseModal";
 
@@ -130,120 +130,8 @@ export const Header = () => {
     }
   }, []);
 
-  
 
-  const content = <React.Fragment>
-    <div className="Header_modal">
-      <div className="Header_modal_close" onClick={() => toggle()}>
-        {Icons.MenuBack()}
-      </div>
-      <div className="Header_modal_content">
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/automation");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.Automation()}
-          </div>
-          <div className="Header_modal_content_item_text">Automation</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/contacts");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.Contacts()}
-          </div>
-          <div className="Header_modal_content_item_text">Contacts</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/LApps");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.LinkedAppIcon()}
-          </div>
-          <div className="Header_modal_content_item_text">Linked Apps</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/Offers");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.OffersCodeIcon()}
-          </div>
-          <div className="Header_modal_content_item_text">Offer Codes</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/prefs");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.Setting()}
-          </div>
-          <div className="Header_modal_content_item_text">Preferences</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/sources");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.SourceIcon()}
-          </div>
-          <div className="Header_modal_content_item_text">Manage Sources</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/invitations");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.addUser()}
-          </div>
-          <div className="Header_modal_content_item_text">Node Invitations</div>
-        </div>
-        {
-          !backUpStates.subbedToBackUp
-          &&
-          <div className="Header_modal_content_item" onClick={() => {
-            router.push("/auth");
-            toggle();
-          }}>
-            <div className="Header_modal_content_item_img">
-              {Icons.Key()}
-            </div>
-            <div className="Header_modal_content_item_text">Auth</div>
-          </div>
-        }
-        <div className="Header_modal_content_item">
-          <hr />
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          router.push("/sources");
-          toggle();
-        }}>
-          <div className="Header_modal_content_item_img">
-            {Icons.BuyCryptoIcon()}
-          </div>
-          <div className="Header_modal_content_item_text">Buy Bitcoin</div>
-        </div>
-        <div className="Header_modal_content_item" onClick={() => {
-          if (debugMode) {
-            toggleDebugShown()
-          } else {
-            window.open('https://docs.shock.network/', '_blank');
-            toggle();
-          }
-        }}>
-          <div className="Header_modal_content_item_img" onClick={() => {
-            window.location.href ='https://docs.shock.network/';
-          }}>
-            {Icons.HelpAbout()}
-          </div>
-          <div className="Header_modal_content_item_text">Help/About</div>
-        </div>
-      </div>
-    </div>
-  </React.Fragment>;
+
 
   return (
     <div className="Header">
@@ -274,19 +162,15 @@ export const Header = () => {
               <button className="Header_logo_2" onClick={() => setLogoClickCounter(prev => prev + 1)}>
                 {Icons.Logo()}
               </button>
-              <button className="Header_menu" onClick={() => {
-                router.push("#");
-                toggle();
-              }}>
-                {Icons.Menu()}
-              </button>
+
+              <IonMenuButton color="primary" className="Header_menu" />
+
               <button className="Header_notify" onClick={() => {
                 router.push('/notify')
               }}>
                 {Icons.notification()}
                 {badge ? Icons.oval() : ''}
               </button>
-              <MenuList isShown={isShown} hide={toggle} modalContent={content} headerText="Add Source" />
             </React.Fragment>
           )
         )
@@ -438,7 +322,7 @@ export const PubHeader = () => {
         <div className="Header_modal_content_item">
           <hr />
         </div>
-{/*         <div className="Header_modal_content_item" onClick={() => {
+        {/*         <div className="Header_modal_content_item" onClick={() => {
           router.push("/sources");
           toggle();
         }}>
@@ -456,7 +340,7 @@ export const PubHeader = () => {
           }
         }}>
           <div className="Header_modal_content_item_img" onClick={() => {
-            window.location.href ='https://docs.shock.network/';
+            window.location.href = 'https://docs.shock.network/';
           }}>
             {Icons.HelpAbout()}
           </div>

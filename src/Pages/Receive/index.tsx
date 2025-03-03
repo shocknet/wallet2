@@ -1,509 +1,621 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-
-
-//It import svg icons library
-import * as Icons from "../../Assets/SvgIconLibrary";
-import { UseModal } from '../../Hooks/UseModal';
 import { isAxiosError } from 'axios';
-import { Modal } from '../../Components/Modals/Modal';
-import { useIonRouter } from '@ionic/react';
+import {
+	IonButton,
+	IonButtons,
+	IonCol,
+	IonContent,
+	IonFooter,
+	IonGrid,
+	IonHeader,
+	IonIcon,
+	IonLabel,
+	IonMenu,
+	IonMenuButton,
+	IonNote,
+	IonPage,
+	IonRow,
+	IonSegment,
+	IonSegmentButton,
+	IonSegmentContent,
+	IonSegmentView,
+	IonSpinner,
+	IonTitle,
+	IonToolbar,
+	SegmentCustomEvent,
+	useIonModal,
+	useIonRouter
+} from '@ionic/react';
 import { Buffer } from 'buffer';
 import { bech32 } from 'bech32';
 import { useSelector } from '../../State/store';
-import { Clipboard } from '@capacitor/clipboard';
 import { Share } from "@capacitor/share";
 import { useDispatch } from '../../State/store';
-import { addAsset } from '../../State/Slices/generatedAssets';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
-import Toggle from '../../Components/Toggle';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { Tab, Tabs } from '../../Components/ReceiveScreenTabs';
+
+import { Swiper, SwiperClass, SwiperSlide, useSwiperSlide } from 'swiper/react';
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import { copyToClipboard } from '../../State/thunks/copyToClipboard';
+import { chevronBack, copy, shareSocialOutline, chevronForward } from "ionicons/icons";
+import QrCode from '../../Components/QrCode';
+import GradientButton from '../../Components/Buttons/GradientButton';
+import { OverlayEventDetail } from '@ionic/react/dist/types/components/react-component-lib/interfaces';
+import { parseCommaFormattedSats } from '../../utils/numbers';
+import NewInvoiceModal from '../../Components/Modals/NewInvoiceModal';
+import { getCache, setCache } from '../../utils/cache';
+
+
+const CHAIN_CACHE_KEY = "p_c_info";
+const LNURL_CACHE_KEY = "p_lnurl_info";
+const getCacheKey = (id: string, cacheKey: string) => `${cacheKey}_${id}`;
+
+
+type Slide = {
+	id: string;
+	name: string;
+	component: React.ReactNode;
+}
+
+
+const Receive = () => {
+	const dispatch = useDispatch();
+	const topPaysource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (prev, next) => next.id === prev.id);
+
+
+	// swiper slides
+	const [validSlides, setValidSlides] = useState<Slide[]>([
+		{
+			id: 'lnurl',
+			name: 'LNURL',
+			component: <LnurlTab onInvalidate={() => handleInvalidate('lnurl')} />,
+		},
+		{
+			id: 'bitcoin',
+			name: 'Chain',
+			component: <OnChainTab onInvalidate={() => handleInvalidate('bitcoin')} />,
+		},
+		{
+			id: 'invoice',
+			name: 'Invoice',
+			component: <InvoiceTab />,
+		},
+	]);
+	const [isLoop, setIsLoop] = useState(validSlides.length >= 3);
+	const handleInvalidate = useCallback((id: string) => {
+		setValidSlides(prev => {
+			const newSlides = prev.filter(slide => slide.id !== id);
+			setIsLoop(newSlides.length >= 3);
+			return newSlides;
+		});
+	}, []);
+
+	// This is to reinitialize the swiper when the slides change
+	const swiperKey = useMemo(() => validSlides.map(s => s.id).join('-'), [validSlides]);
+
+
+	// navigation labels
+	const [currentState, setCurrentState] = useState({
+		realIndex: 0,
+		isBeginning: true,
+		isEnd: false
+	});
+	const updateState = (swiper: SwiperClass) => {
+		setCurrentState({
+			realIndex: swiper.realIndex,
+			isBeginning: swiper.isBeginning,
+			isEnd: swiper.isEnd
+		});
+	};
+	const getNavigationLabels = () => {
+		const total = validSlides.length;
+		const { realIndex, isBeginning, isEnd } = currentState;
+
+		let prevIndex = realIndex - 1;
+		let nextIndex = realIndex + 1;
+
+		if (isLoop && total > 1) {
+			prevIndex = (realIndex - 1 + total) % total;
+			nextIndex = (realIndex + 1) % total;
+		}
+
+		return {
+			prev: !isLoop && isBeginning ? null : validSlides[prevIndex]?.name,
+			next: !isLoop && isEnd ? null : validSlides[nextIndex]?.name
+		};
+	};
+	const labels = getNavigationLabels();
 
 
 
-const buttonText: string[] = [
-  'LNURL',
-  'INVOICE',
-  'CHAIN'
-]
 
 
-const ErrorMessage = ({ text }: { text: string }) => {
-  return (
-    <div style={{ display: "flex", width: "100%", height: "70vh", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ display: "flex", flexDirection: "column", fontSize: "1.2em", color: "#268fbc" }}>
-        <span>{text}</span>
-        <span>😕</span>
-      </div>
-    </div>
-  )
+
+
+
+
+
+
+
+	const router = useIonRouter();
+
+
+
+
+
+	useEffect(() => {
+		if (!topPaysource) {
+			toast.error(<Toast title="Error" message="You don't have any sources!" />)
+			router.push("/home");
+			return;
+		}
+
+
+		return () => {
+			dispatch(toggleLoading({ loadingMessage: "" }))
+		}
+	}, [dispatch, router, topPaysource]);
+
+	return (
+		<>
+			<IonMenu contentId="ion-router-outlet" side='end'>
+				<IonHeader>
+					<IonToolbar>
+						<IonTitle>Menu Content</IonTitle>
+					</IonToolbar>
+				</IonHeader>
+			</IonMenu>
+			<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }} >
+				<IonHeader style={{ boxShadow: "none" }}>
+					<IonToolbar>
+						<IonButtons slot="start">
+							<IonButton className="custom-back" onClick={() => router.goBack()}>
+								<IonIcon color='primary' icon={chevronBack} />
+								<IonLabel>Back</IonLabel>
+							</IonButton>
+						</IonButtons>
+						<IonButtons slot="end">
+							<IonMenuButton color="primary"></IonMenuButton>
+						</IonButtons>
+						<IonTitle size="large">Receive</IonTitle>
+					</IonToolbar>
+				</IonHeader>
+				<IonContent className="ion-padding">
+					<IonGrid>
+						<IonRow className="ion-justify-content-center">
+							<IonCol size="12" sizeMd='6'>
+								<Swiper
+									key={swiperKey}
+									onSwiper={updateState}
+									onSlideChange={updateState}
+									modules={[Navigation]}
+									navigation={{
+										prevEl: "#prev-button",
+										nextEl: "#next-button",
+									}}
+									loop={isLoop}
+									spaceBetween={50}
+									slidesPerView={1}
+									allowTouchMove={false}
+									style={{ width: "100%" }}
+								>
+									{
+										validSlides.map(slide => (
+											<SwiperSlide key={slide.id}>
+												{slide.component}
+											</SwiperSlide>
+										))
+									}
+
+								</Swiper>
+							</IonCol>
+						</IonRow>
+					</IonGrid>
+				</IonContent>
+				<IonFooter>
+					<IonToolbar>
+						<IonButtons slot="start" id="prev-button">
+							{
+								labels.prev && (
+									<IonButton>
+										<IonIcon slot="start" icon={chevronBack} />
+										{labels.prev}
+									</IonButton>
+								)
+							}
+						</IonButtons>
+						<IonButtons slot="end" id="next-button">
+							{
+								labels.next && (
+									<IonButton>
+										{labels.next}
+										<IonIcon slot="end" icon={chevronForward} />
+									</IonButton>
+								)
+							}
+						</IonButtons>
+					</IonToolbar>
+				</IonFooter>
+			</IonPage>
+		</>
+
+
+
+	)
 }
 
 
 
-export const Receive = () => {
-  const dispatch = useDispatch();
-  //reducer
-  const paySource = useSelector((state) => state.paySource)
-  const receiveHistory = useSelector((state) => state.history);
-  const fiatUnit = useSelector((state) => state.prefs.FiatUnit);
 
-  const price = useSelector((state) => state.usdToBTC);
-  const { isShown, toggle } = UseModal();
-  const [amount, setAmount] = useState("");
-  const [amountValue, setAmountValue] = useState("");
-  const [LNInvoice, setLNInvoice] = useState("");
-  const [LNurl, setLNurl] = useState("");
-  const [valueQR, setQR] = useState("");
-  const [lightningAdd, setLightningAdd] = useState("");
-  const [tag, setTag] = useState(0);
-  const [bitcoinAdd, setBitcoinAdd] = useState("");
-  const [bitcoinAddText, setBitcoinAddText] = useState("");
-  const [invoiceMemo, setInvoiceMemo] = useState("");
-  const [fiatSymbol, setFiatSymbol] = useState('$');
-  const [btcDisabled, setBTCDisabled] = useState(false);
-  const [lnurlDisabled, setLnurlDisabled] = useState(false)
-  const [topPosition, setTopPosition] = useState<number>(0);
-
-
-
-  const router = useIonRouter();
-  const amountInputRef = useRef<HTMLInputElement>(null);
-  const [showingLightningAddress, setShowingLightningAddress] = useState(!!paySource.sources[paySource.order[0]]?.vanityName)
-
-  const deg = "rotate(0deg)";
-  const vReceive = 1;
-
-  const tabsRef = useRef<any>();
-
-
-  const lnAddress = useMemo(() => {
-    if (paySource.order.length === 0) {
-      return null;
-    }
-
-    const topPaySource = paySource.sources[paySource.order[0]];
-    const vanityName = topPaySource.vanityName
-    if (!vanityName) {
-      return null;
-    } else {
-      return vanityName
-    }
-
-  }, [paySource])
-
-  useEffect(() => {
-    if (fiatUnit.symbol) {
-      setFiatSymbol(fiatUnit.symbol);
-    }
-  }, [fiatUnit])
-
-  useEffect(() => {
-    if (isShown && amountInputRef.current) {
-      amountInputRef.current.focus();
-    }
-  }, [isShown])
-
-
-
-  const setValueQR = (param: string) => {
-    setQR(param/* .toUpperCase() */);
-  }
-
-
-
-  useEffect(() => {
-    if (paySource.order.length === 0) {
-      toast.error(<Toast title="Error" message="You don't have any sources!" />)
-      router.push("/home");
-    } else {
-      configLnurlAndBtcAddress();
-    }
-    return () => {
-      dispatch(toggleLoading({ loadingMessage: "" }))
-    }
-  }, []);
-
-
-  useEffect(() => {
-    if (receiveHistory.latestOperation !== undefined && receiveHistory.latestOperation.identifier === LNInvoice.replaceAll("lightning:", "")) {
-      console.log("got thats what I was looking for")
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
-    }
-  }, [receiveHistory.latestOperation])
-
-
-
-
-  const copyToClip = async () => {
-    let clipboardStr = "";
-    if (showingLightningAddress && lnAddress !== null) {
-      // clipboardStr = lnAddress
-      if (tag == 0) {
-        clipboardStr = lnAddress;
-      } else {
-        clipboardStr = valueQR.split(":")[1];
-      }
-    } else {
-      clipboardStr = valueQR.split(":")[1];
-    }
-    await Clipboard.write({
-      string: clipboardStr
-    }).then(() => {
-      dispatch(addAsset({ asset: clipboardStr }));
-    });
-
-    toast.success("Copied to clipbaord.")
-  };
-
-
-  const configInvoice = useCallback(async (amountToRecive: string) => {
-    const topPaySource = paySource.sources[paySource.order[0]];
-    let invoice = "";
-    try {
-      if (topPaySource.pubSource && topPaySource.keys) {
-        invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, +amountToRecive, invoiceMemo);
-      } else {
-        const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
-        invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
-      }
-      setValueQR(`lightning:${invoice}`);
-      setLNInvoice(`lightning:${invoice}`);
-    } catch (err: any) {
-      if (isAxiosError(err) && err.response) {
-        toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
-      } else if (err instanceof Error) {
-        toast.error(<Toast title="Source Error" message={err.message} />)
-      } else {
-        console.log("Unknown error occured", err);
-      }
-    }
-  }, [paySource, invoiceMemo]);
-
-  const configLnurlAndBtcAddress = useCallback(async () => {
-    dispatch(toggleLoading({ loadingMessage: "Loading..." }))
-    if (LNurl !== "") return;
-    const topPayToSource = paySource.sources[paySource.order[0]];
-
-    try {
-      if (topPayToSource.pubSource && topPayToSource.keys) {
-        const lnurl = await createNostrPayLink(topPayToSource.pasteField, topPayToSource.keys);
-        if (!lnurl) {
-          changeQRcode(1)
-          tabsRef.current.handleTabChange(true)
-          console.log("lnurl not supported by source, switching to invoice")
-          return
-        }
-        setLNurl("lightning:" + lnurl);
-        setValueQR("lightning:" + lnurl);
-      } else if (topPayToSource.pasteField.includes("@")) {
-        const endpoint = "https://" + topPayToSource.pasteField.split("@")[1] + "/.well-known/lnurlp/" + topPayToSource.pasteField.split("@")[0];
-        const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
-        const lnurl = bech32.encode("lnurl", words, 999999);
-        setLightningAdd(topPayToSource.label);
-        setLNurl(`lightning:${lnurl}`);
-        setValueQR(`lightning:${lnurl}`);
-      } else {
-        setLightningAdd(topPayToSource.label);
-        setLNurl(`lightning:${topPayToSource.pasteField}`);
-        setValueQR(`lightning:${topPayToSource.pasteField}`);
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        if (err.message.includes("Lnurl not enabled")) {
-          setLnurlDisabled(true)
-          toast.error(<Toast title="Lnurl Error" message={"No LNURL enabled sources"} />)
-
-        }
-      }
-    }
-
-    try {
-      // btc address
-      if (topPayToSource.pubSource && topPayToSource.keys) {
-        if (bitcoinAdd !== '') return;
-        const address = await getNostrBtcAddress(topPayToSource.pasteField, topPayToSource.keys);
-
-        setBitcoinAdd(address);
-        setBitcoinAddText(
-          address.substring(0, 5) + "..." + address.substring(address.length - 5, 5)
-        )
-      } else {
-        setBTCDisabled(true)
-      }
-    } catch (err) {
-      console.log(err)
-    }
-    dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [LNurl, paySource, dispatch, bitcoinAdd]);
-
-
-
-
-  const updateInvoice = async () => {
-
-    toggle();
-    if (!amount) {
-      toast.error(<Toast title="Error" message="You need to set an amount." />)
-      return;
-    }
-    dispatch(toggleLoading({ loadingMessage: "Loading..." }))
-    setAmountValue(amount);
-    await configInvoice(amount);
-    setTag(1);
-    dispatch(toggleLoading({ loadingMessage: "" }));
-  }
-
-  const changeQRcode = (index: number) => {
-    setTag(index);
-    switch (index) {
-      case 0:
-        setValueQR(LNurl);
-        break;
-
-      case 1:
-        if (!amount) {
-          toggle();
-          setValueQR("");
-          return;
-        }
-        setValueQR(LNInvoice);
-        break;
-
-      case 2:
-        if (bitcoinAdd) {
-          setValueQR(`bitcoin:${bitcoinAdd}`);
-        } else {
-          setValueQR("");
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  const shareText = async () => {
-    try {
-      await Share.share({
-        title: 'Share',
-        text: valueQR,
-        dialogTitle: 'Share with'
-      });
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
-
-  const setAmountContent = <React.Fragment>
-    <div className="Sources_notify" id="amount-modal">
-      <div className="Sources_notify_title">Receive via Invoice</div>
-      <div className="Receive_result_input">
-        <input
-          ref={amountInputRef}
-          id="invoice-amount"
-          type="number"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              updateInvoice();
-            }
-
-          }}
-          onChange={(e) => { setAmount(e.target.value === "" ? "" : parseInt(e.target.value).toString()) }}
-          placeholder="Enter amount in sats"
-          value={amount}
-        />
-        <input
-          type="text"
-          maxLength={90}
-          style={{ marginTop: "15px" }}
-          id="invoice-memo"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              updateInvoice();
-            }
-
-          }}
-          onChange={(e) => setInvoiceMemo(e.target.value)}
-          placeholder="Description (optional)"
-          value={invoiceMemo}
-        />
-      </div>
-      <div className='Receive_modal_amount'>
-        ~ {fiatSymbol}{parseInt(amount === "" ? "0" : amount) === 0 ? 0 : (parseInt(amount === "" ? "0" : amount) * price.buyPrice * 0.00000001).toFixed(2)}
-      </div>
-      <button className="Sources_notify_button" onClick={updateInvoice} id="confirm-invoice-amount">OK</button>
-    </div>
-  </React.Fragment>;
-
-  const adjustElementPosition = () => {
-    const viewportHeight = window.innerHeight;
-    console.log(viewportHeight)
-    setTopPosition(viewportHeight - 60 - 60);
-  };
-
-  useEffect(() => {
-    // Set initial position
-    adjustElementPosition();
-
-    // Add event listener for resize events
-    window.addEventListener("resize", adjustElementPosition);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", adjustElementPosition);
-    };
-  }, []);
-
-  return (
-    <div>
-      <div className="Receive" style={{ opacity: vReceive, zIndex: vReceive ? 1000 : -1 }}>
-        <Tabs ref={tabsRef}>
-          <Tab> {/* lnurl */}
-            {
-              lnurlDisabled
-                ?
-                <ErrorMessage text="No LNURL Enabled Sources" />
-                :
-                <>
-                  <div className="Receive_QR_text">
-                    <span>{showingLightningAddress ? "Lightning Address" : "LNURL"}</span>
-                    {
-                      lnAddress !== null
-                      &&
-                      <Toggle
-                        value={!showingLightningAddress}
-                        onCheck={() => setShowingLightningAddress(!showingLightningAddress)}
-                      />
-                    }
-                  </div>
-                  {
-                    valueQR
-                    &&
-                    <div className="Receive_QR" style={{ transform: deg }}>
-                      <QRCodeSVG
-                        style={{ textAlign: "center", transitionDuration: "500ms" }}
-                        value={valueQR.toUpperCase()}
-                        size={250}
-                      />
-                      <div className="Receive_logo_container">
-                        {Icons.Logo()}
-                      </div>
-                    </div>
-
-                  }
-                  <div className='Receive_copy'>
-                    {lightningAdd}
-                  </div>
-                  {
-                    (showingLightningAddress && lnAddress !== null)
-                    &&
-                    <div style={{ fontSize: "17px", marginTop: "12px" }}>{lnAddress}</div>
-                  }
-                  <div className="Receive_set_amount_copy">
-                    <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
-                    <div style={{ width: "20px" }} />
-                    <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
-                  </div>
-                </>
-            }
-          </Tab>
-          <Tab> {/* ln invoice */}
-            <div className="Receive_QR_text">
-              <span>Lightning Invoice</span>
-            </div>
-            {
-              valueQR
-              &&
-              <div className="Receive_QR" style={{ transform: deg }}>
-                <QRCodeSVG
-                  style={{ textAlign: "center", transitionDuration: "500ms" }}
-                  value={valueQR.toUpperCase()}
-                  size={250}
-                />
-                <div className="Receive_logo_container">
-                  {Icons.Logo()}
-                </div>
-              </div>
-            }
-
-            <div className='Receive_copy'>
-              <React.Fragment>
-                <div>{`${amount} sats`}</div>
-                <div>{`~ ${parseInt(amountValue === "" ? "0" : amountValue) === 0 ? 0 : (parseInt(amountValue === "" ? "0" : amountValue) * price.buyPrice * 0.00000001).toFixed(2)} ${fiatSymbol}`}</div>
-              </React.Fragment>
-            </div>
-
-            <div className="Receive_set_amount">
-              <button id="set-amount-button" onClick={toggle}>SET AMOUNT</button>
-            </div>
-            <div className="Receive_set_amount_copy">
-              <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
-              <div style={{ width: "20px" }} />
-              <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
-            </div>
-          </Tab>
-          <Tab> {/* btc address */}
-            {
-              btcDisabled
-                ?
-                <ErrorMessage text="No chain source is configured" />
-                :
-                <>
-                  <div className="Receive_QR_text">
-                    <span>On-chain Address</span>
-                  </div>
-                  {
-                    valueQR
-                    &&
-                    <div className="Receive_QR" style={{ transform: deg }}>
-                      <QRCodeSVG
-                        style={{ textAlign: "center", transitionDuration: "500ms" }}
-                        value={valueQR.toUpperCase()}
-                        size={250}
-                      />
-                      <div className="Receive_logo_container">
-                        {Icons.Logo()}
-                      </div>
-                    </div>
-                  }
-                  <div className='Receive_copy'>{bitcoinAddText}</div>
-                  <div className="Receive_set_amount_copy">
-                    <button id="copy-button" onClick={copyToClip} style={{ width: "130px" }}>{Icons.copy()}COPY</button>
-                    <div style={{ width: "20px" }} />
-                    <button id="share-button" onClick={shareText} style={{ width: "130px" }}>{Icons.share()}SHARE</button>
-                  </div>
-                </>
-            }
-          </Tab>
-        </Tabs>
-        <div className="Receive_other_options" style={{top : `${topPosition}px`}}>
-          <div className="Receive_lnurl">
-            <button onClick={() => {
-              changeQRcode((tag + 1) % 3)
-              tabsRef.current.handleTabChange(true)
-            }
-            }>
-              {Icons.arrowLeft()}{buttonText[(tag + 1) % 3]}
-            </button>
-          </div>
-          <div className="Receive_chain">
-            <button onClick={() => {
-              changeQRcode((tag + 2) % 3)
-              tabsRef.current.handleTabChange(false)
-            }}>
-              {buttonText[(tag + 2) % 3]}{Icons.arrowRight()}
-            </button>
-          </div>
-        </div>
-      </div >
-      <Modal isShown={isShown} hide={toggle} modalContent={setAmountContent} headerText={''} />
-    </div>
-  )
+interface TabProps {
+	onInvalidate: () => void;
 }
+const LnurlTab = ({ onInvalidate }: TabProps) => {
+	const dispatch = useDispatch();
+	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (prev, next) => prev.vanityName === next.vanityName);
+
+	const [lnurl, setLnurl] = useState("");
+	const [lightningAddress, setLightningAddress] = useState("");
+	const [selectedSegment, setSelectedSegment] = useState<"lnurl" | "address">("address");
+	const [loading, setLoading] = useState(true);
+
+
+
+
+
+
+
+	useEffect(() => {
+		const configure = async () => {
+			if (topPaySource.pubSource) {
+				const lnAddress = topPaySource.vanityName;
+				if (lnAddress) {
+					setLightningAddress(lnAddress);
+
+				}
+
+				try {
+					const cacheKey = getCacheKey(topPaySource.id, LNURL_CACHE_KEY);
+					const cached = getCache(cacheKey);
+					if (cached) {
+						setLnurl(cached);
+						setSelectedSegment(!lnAddress ? "lnurl" : "address");
+						setLoading(false);
+						return;
+					}
+					const receivedLnurl = await createNostrPayLink(topPaySource.pasteField, topPaySource.keys);
+					setLnurl(receivedLnurl);
+					setCache(cacheKey, receivedLnurl);
+					setSelectedSegment(!lnAddress ? "lnurl" : "address");
+				} catch {
+					if (!lnAddress) {
+						onInvalidate(); // No lnurl or lightning address, remove view from swiper
+					} else {
+						setSelectedSegment("address");
+					}
+				}
+			} else if (topPaySource.pasteField.includes("@")) {
+				// Lightning address source
+				setLightningAddress(topPaySource.pasteField);
+				setSelectedSegment("address");
+			} else {
+				// lnurl source
+				setLnurl(topPaySource.pasteField);
+				setSelectedSegment("lnurl");
+			}
+			setLoading(false);
+		}
+		configure();
+	}, [dispatch, topPaySource, onInvalidate]);
+	console.log({ lnurl, lightningAddress })
+
+
+
+	const handleSegmentChange = (event: SegmentCustomEvent) => {
+		setSelectedSegment(event.detail.value as "lnurl" | "address");
+	};
+
+
+	const disabled = !(lnurl && lightningAddress);
+
+	return (
+		<IonGrid className="ion-margin-top">
+
+			<IonRow>
+				<IonCol size="12">
+					<IonSegment value={selectedSegment} onIonChange={handleSegmentChange}>
+						<IonSegmentButton className={disabled ? "segment-button-disabled" : undefined} value="lnurl" contentId="lnurl">
+							<IonLabel>LNURL</IonLabel>
+						</IonSegmentButton>
+						<IonSegmentButton className={disabled ? "segment-button-disabled" : undefined} value="address" contentId="address">
+							<IonLabel>ADDRESS</IonLabel>
+						</IonSegmentButton>
+					</IonSegment>
+				</IonCol>
+			</IonRow>
+			<IonRow className="ion-justify-content-center ion-margin-top">
+				<IonCol size="auto">
+					<IonSegmentView>
+						<IonSegmentContent id="lnurl">
+							{loading ? <IonSpinner /> : <QrCode value={lnurl} />}
+						</IonSegmentContent>
+						<IonSegmentContent id="address">
+							{
+								loading
+									? <IonSpinner />
+									: (
+										<>
+											<QrCode value={createLnurlFromLnAddress(lightningAddress)} />
+											<div style={{ textAlign: "center", fontSize: "16px" }}>{lightningAddress}</div>
+										</>
+									)
+							}
+						</IonSegmentContent>
+					</IonSegmentView>
+				</IonCol>
+			</IonRow>
+			<IonRow className="ion-justify-content-around ion-margin-top">
+				<IonCol size="auto">
+					<GradientButton /* onClick={() => dispatch(copyToClipboard(QrCodeValue))} */>
+						<IonIcon color="primary" slot="start" icon={copy} />
+						Copy
+					</GradientButton>
+				</IonCol>
+				<IonCol size="auto" >
+					<GradientButton id="share-button" /* onClick={() => shareText(QrCodeValue)} */>
+						<IonIcon slot="start" color="primary" icon={shareSocialOutline} />
+						Share
+					</GradientButton>
+				</IonCol>
+			</IonRow>
+		</IonGrid>
+	)
+}
+
+
+const InvoiceTab = () => {
+	const dispatch = useDispatch();
+	const { isActive } = useSwiperSlide();
+	const satsInputRef = useRef<HTMLIonInputElement>(null);
+
+	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], () => true);
+	const fiatUnit = useSelector(state => state.prefs.FiatUnit);
+	const price = useSelector(state => state.usdToBTC);
+
+
+	const [present, dismiss] = useIonModal(
+		<NewInvoiceModal
+			dismiss={(data: { amount: string, invoiceMemo: string }, role: string) => dismiss(data, role)}
+			ref={satsInputRef}
+		/>
+	);
+
+
+	const [loading, setIsloading] = useState(false);
+	const [qrCodeValue, setQrCodeValue] = useState("");
+	const [amount, setAmount] = useState("");
+	const [amountNum, setAmountNum] = useState(0);
+	const [fiatSymbol, setFiatSymbol] = useState('$');
+
+	useEffect(() => {
+		if (isActive && !qrCodeValue) {
+			openModal();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isActive]);
+
+	useEffect(() => {
+		if (fiatUnit.symbol) {
+			setFiatSymbol(fiatUnit.symbol);
+		}
+	}, [fiatUnit])
+
+
+
+	const openModal = () => {
+		present({
+			onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
+				console.log(event.detail)
+				if (event.detail.role === "confirm") {
+					console.log("Herere")
+					const data = event.detail.data as { amount: string, invoiceMemo: string };
+					if (data) {
+						configInvoice(data.amount, data.invoiceMemo);
+					}
+				}
+			},
+			onDidPresent: () => {
+				satsInputRef.current?.setFocus();
+			},
+			cssClass: "wallet-modal"
+		});
+	}
+
+
+	const configInvoice = async (amountToRecive: string, memo: string) => {
+		setIsloading(true);
+		let invoice = "";
+		setAmount(amountToRecive);
+		const parsedAmount = parseCommaFormattedSats(amountToRecive);
+		setAmountNum(parsedAmount);
+		try {
+			if (topPaySource.pubSource) {
+				invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, parsedAmount, memo);
+			} else {
+				const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
+				invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
+			}
+			setQrCodeValue(`lightning:${invoice}`);
+		} catch (err: any) {
+			if (isAxiosError(err) && err.response) {
+				toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
+			} else if (err instanceof Error) {
+				toast.error(<Toast title="Source Error" message={err.message} />)
+			} else {
+				console.log("Unknown error occured", err);
+			}
+		}
+		setIsloading(false);
+	};
+
+
+	console.log(amountNum, price.buyPrice, (amountNum * price.buyPrice * 0.00000001).toFixed(2))
+
+
+
+	return (
+		<>
+			<IonToolbar>
+				<IonTitle className="ion-text-center" size="large">Lightning Invoice</IonTitle>
+			</IonToolbar>
+			<IonGrid className="ion-margin-top">
+				<IonRow className="ion-justify-content-center">
+					<IonCol size="auto">
+						{
+							loading
+								? <IonSpinner />
+								: <QrCode value={qrCodeValue} />
+						}
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-center">
+					<IonCol size="auto" style={{ padding: "0px" }}>
+						<IonNote>{`${amount} sats`}</IonNote>
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-center">
+					<IonCol size="auto" style={{ padding: "0px" }}>
+						<IonNote>{`~ ${(amountNum * price.buyPrice * 0.00000001).toFixed(2)} ${fiatSymbol}`}</IonNote>
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-center ion-margin-top">
+					<IonCol size="auto">
+						<IonButton size="large" fill="outline" color="primary" onClick={openModal}>SET AMOUNT</IonButton>
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-around ion-margin-top">
+					<IonCol size="auto">
+						<GradientButton onClick={() => dispatch(copyToClipboard(qrCodeValue))}>
+							<IonIcon color="primary" slot="start" icon={copy} />
+							Copy
+						</GradientButton>
+					</IonCol>
+					<IonCol size="auto" >
+						<GradientButton id="share-button" onClick={() => shareText(qrCodeValue)}>
+							<IonIcon slot="start" color="primary" icon={shareSocialOutline} />
+							Share
+						</GradientButton>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+		</>
+	)
+}
+
+const OnChainTab = ({ onInvalidate }: TabProps) => {
+	const dispatch = useDispatch();
+	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], () => true);
+
+	const [qrCodeValue, setQrCodeValue] = useState("");
+	const [bitcoinAddText, setBitcoinAddText] = useState("");
+	const [loading, setIsloading] = useState(true);
+
+	useEffect(() => {
+		const config = async () => {
+			if (qrCodeValue !== "") return;
+			if (!topPaySource.pubSource) {
+				onInvalidate();
+				return;
+			}
+
+			try {
+				const cacheKey = getCacheKey(topPaySource.id, CHAIN_CACHE_KEY);
+				const cached = getCache(cacheKey);
+				if (cached) {
+					setQrCodeValue(`bitcoin:${cached}`);
+					setBitcoinAddText(
+						cached.substring(0, 5) + "..." + cached.substring(cached.length - 5, 5)
+					)
+					setIsloading(false);
+					return;
+				}
+
+				const address = await getNostrBtcAddress(topPaySource.pasteField, topPaySource.keys);
+				setQrCodeValue(`bitcoin:${address}`);
+				setBitcoinAddText(
+					address.substring(0, 5) + "..." + address.substring(address.length - 5, 5)
+				)
+				setCache(cacheKey, address);
+			} catch {
+				toast.error(<Toast title="Error" message={"Error when getting a btc address"} />)
+				onInvalidate();
+			}
+			setIsloading(false);
+		}
+		config();
+	}, [qrCodeValue, topPaySource, onInvalidate]);
+
+
+	return (
+		<>
+			<IonToolbar>
+				<IonTitle className="ion-text-center" size="large">On-chain Address</IonTitle>
+			</IonToolbar>
+			<IonGrid>
+				<IonRow className="ion-justify-content-center">
+					<IonCol size="auto">
+						{loading ? <IonSpinner /> : <QrCode value={qrCodeValue} />}
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-center">
+					<IonCol size="auto">
+						<IonNote >{bitcoinAddText}</IonNote>
+					</IonCol>
+				</IonRow>
+				<IonRow className="ion-justify-content-around ion-margin-top">
+					<IonCol size="auto">
+						<GradientButton onClick={() => dispatch(copyToClipboard(qrCodeValue))}>
+							<IonIcon color="primary" slot="start" icon={copy} />
+							Copy
+						</GradientButton>
+					</IonCol>
+					<IonCol size="auto" >
+						<GradientButton id="share-button" onClick={() => shareText(qrCodeValue)}>
+							<IonIcon slot="start" color="primary" icon={shareSocialOutline} />
+							Share
+						</GradientButton>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+		</>
+
+	)
+}
+
+export default Receive;
+
+const createLnurlFromLnAddress = (lnAddress: string) => {
+	if (lnAddress === "") return "";
+	const endpoint = "https://" + lnAddress.split("@")[1] + "/.well-known/lnurlp/" + lnAddress.split("@")[0];
+	const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
+	const lnurl = bech32.encode("lnurl", words, 999999);
+	return lnurl;
+}
+
+const shareText = async (text: string) => {
+	try {
+		await Share.share({
+			title: 'Share',
+			text: text,
+			dialogTitle: 'Share with'
+		});
+	} catch (error) {
+		console.error('Error sharing:', error);
+	}
+};
+

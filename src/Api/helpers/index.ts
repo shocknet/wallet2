@@ -35,7 +35,7 @@ export const createNostrPayLink = async (pasteField: string, keys: NostrKeyPair)
 	const res = await (await getNostrClient(pasteField, keys)).GetLnurlPayLink()
 
 	if (res.status !== 'OK') {
-		return null
+		throw new Error(res.reason);
 	}
 	return res.lnurl;
 }
