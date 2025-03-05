@@ -24,10 +24,10 @@ const menuItems = [
 
 const NavigationMenu = () => {
 	return (
-		<IonMenu contentId="main-content" side="end">
+		<IonMenu type="push" contentId="main-content" side="end">
 			<IonHeader>
 				<IonToolbar color="secondary">
-					<IonTitle color="light" size="large" className="ion-text-center">Shockwallet</IonTitle>
+					<IonTitle color="light" className="ion-text-center">Shockwallet</IonTitle>
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding">
@@ -47,7 +47,7 @@ const NavigationMenu = () => {
 						}
 					</IonItemGroup>
 					<IonItemGroup>
-						<IonItemDivider style={{ minHeight: "0.5px", color: "" }} color="primary"> </IonItemDivider>
+						<IonItemDivider style={{ minHeight: "0.5px" }} color="primary"> </IonItemDivider>
 						<IonItem button>
 							<IonIcon style={{ color: "orange" }} icon={logoBitcoin} slot="start" />
 							<IonLabel>Buy Bitcoin</IonLabel>

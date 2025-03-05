@@ -39,7 +39,7 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, any>(({ dismiss }: NewIn
 							Cancel
 						</IonButton>
 					</IonButtons>
-					<IonTitle size="large">New Invoice</IonTitle>
+					<IonTitle>New Invoice</IonTitle>
 					<IonButtons slot="end">
 						<IonButton
 							type="submit"
