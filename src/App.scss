@@ -2,11 +2,6 @@ $border-color: #BBBBBB;
 $contrast-color: #5BB166;
 $clear-color: #E2E2E2;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 .safe-area {
   margin-top: env(safe-area-inset-top);

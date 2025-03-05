@@ -64,59 +64,63 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-dark-shade: #292929;
   --ion-color-dark-tint: #444444;
 
-
-
   --ion-background-color: #16191c;
   --ion-background-color-rgb: 22, 25, 28;
 
-  --ion-text-color: #fcfcfc;
-  --ion-text-color-rgb: 252, 252, 252;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
 
-  --ion-text-color-step-50: #f0f1f1;
-  --ion-text-color-step-100: #e5e5e6;
-  --ion-text-color-step-150: #dadada;
-  --ion-text-color-step-200: #cecfcf;
-  --ion-text-color-step-250: #c3c3c4;
-  --ion-text-color-step-300: #b7b8b9;
-  --ion-text-color-step-350: #acadae;
-  --ion-text-color-step-400: #a0a1a2;
-  --ion-text-color-step-450: #959697;
-  --ion-text-color-step-500: #898b8c;
-  --ion-text-color-step-550: #7e7f81;
-  --ion-text-color-step-600: #727476;
-  --ion-text-color-step-650: #66686a;
-  --ion-text-color-step-700: #5b5d5f;
-  --ion-text-color-step-750: #505254;
-  --ion-text-color-step-800: #444649;
-  --ion-text-color-step-850: #393b3e;
-  --ion-text-color-step-900: #2d3032;
-  --ion-text-color-step-950: #222427;
+  --ion-text-color-step-50: #f3f4f4;
+  --ion-text-color-step-100: #e8e8e8;
+  --ion-text-color-step-150: #dcdddd;
+  --ion-text-color-step-200: #d0d1d2;
+  --ion-text-color-step-250: #c5c6c6;
+  --ion-text-color-step-300: #b9babb;
+  --ion-text-color-step-350: #adafb0;
+  --ion-text-color-step-400: #a2a3a4;
+  --ion-text-color-step-450: #969899;
+  --ion-text-color-step-500: #8b8c8e;
+  --ion-text-color-step-550: #7f8182;
+  --ion-text-color-step-600: #737577;
+  --ion-text-color-step-650: #686a6b;
+  --ion-text-color-step-700: #5c5e60;
+  --ion-text-color-step-750: #505355;
+  --ion-text-color-step-800: #454749;
+  --ion-text-color-step-850: #393c3e;
+  --ion-text-color-step-900: #2d3033;
+  --ion-text-color-step-950: #222527;
 
-  --ion-background-color-step-50: #222427;
-  --ion-background-color-step-100: #2d3032;
-  --ion-background-color-step-150: #393b3e;
-  --ion-background-color-step-200: #444649;
-  --ion-background-color-step-250: #505254;
-  --ion-background-color-step-300: #5b5d5f;
-  --ion-background-color-step-350: #66686a;
-  --ion-background-color-step-400: #727476;
-  --ion-background-color-step-450: #7e7f81;
-  --ion-background-color-step-500: #898b8c;
-  --ion-background-color-step-550: #959697;
-  --ion-background-color-step-600: #a0a1a2;
-  --ion-background-color-step-650: #acadae;
-  --ion-background-color-step-700: #b7b8b9;
-  --ion-background-color-step-750: #c3c3c4;
-  --ion-background-color-step-800: #cecfcf;
-  --ion-background-color-step-850: #dadada;
-  --ion-background-color-step-900: #e5e5e6;
-  --ion-background-color-step-950: #f0f1f1;
+  --ion-background-color-step-50: #222527;
+  --ion-background-color-step-100: #2d3033;
+  --ion-background-color-step-150: #393c3e;
+  --ion-background-color-step-200: #454749;
+  --ion-background-color-step-250: #505355;
+  --ion-background-color-step-300: #5c5e60;
+  --ion-background-color-step-350: #686a6b;
+  --ion-background-color-step-400: #737577;
+  --ion-background-color-step-450: #7f8182;
+  --ion-background-color-step-500: #8b8c8e;
+  --ion-background-color-step-550: #969899;
+  --ion-background-color-step-600: #a2a3a4;
+  --ion-background-color-step-650: #adafb0;
+  --ion-background-color-step-700: #b9babb;
+  --ion-background-color-step-750: #c5c6c6;
+  --ion-background-color-step-800: #d0d1d2;
+  --ion-background-color-step-850: #dcdddd;
+  --ion-background-color-step-900: #e8e8e8;
+  --ion-background-color-step-950: #f3f4f4;
 
-
+  --ripple-color: var(--ion-color-primary);
 }
 
+
+ion-segment-button.ios::part(indicator-background) {
+  background-color: var(--ion-color-primary);
+}
+
+
 ion-toolbar {
-  --background: var(--ion-background-color)
+  --background: var(--ion-background-color);
 }
 
 ion-input.wallet-input.input-fill-outline {
@@ -132,17 +136,10 @@ ion-input.wallet-input.input-fill-outline {
   font-size: 22px;
 }
 
-ion-item {
-  --inner-padding-start: 10px;
-}
+
 
 ion-divider {
   min-height: 0;
-}
-
-ion-button,
-ion-item {
-  --ripple-color: var(--ion-color-primary);
 }
 
 ion-modal.wallet-modal ion-content {

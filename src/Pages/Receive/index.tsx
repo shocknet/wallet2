@@ -10,7 +10,6 @@ import {
 	IonHeader,
 	IonIcon,
 	IonLabel,
-	IonMenu,
 	IonMenuButton,
 	IonNote,
 	IonPage,
@@ -49,6 +48,7 @@ import { OverlayEventDetail } from '@ionic/react/dist/types/components/react-com
 import { parseCommaFormattedSats } from '../../utils/numbers';
 import NewInvoiceModal from '../../Components/Modals/NewInvoiceModal';
 import { getCache, setCache } from '../../utils/cache';
+import { truncateTextMiddle } from '../../utils/text';
 
 
 const CHAIN_CACHE_KEY = "p_c_info";
@@ -148,87 +148,77 @@ const Receive = () => {
 	}, [dispatch, router, topPaysource]);
 
 	return (
-		<>
-			<IonMenu contentId="ion-router-outlet" side='end'>
-				<IonHeader>
-					<IonToolbar>
-						<IonTitle>Menu Content</IonTitle>
-					</IonToolbar>
-				</IonHeader>
-			</IonMenu>
-			<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }} >
-				<IonHeader style={{ boxShadow: "none" }}>
-					<IonToolbar>
-						<IonButtons slot="start">
-							<IonButton className="custom-back" onClick={() => router.goBack()}>
-								<IonIcon color='primary' icon={chevronBack} />
-								<IonLabel>Back</IonLabel>
-							</IonButton>
-						</IonButtons>
-						<IonButtons slot="end">
-							<IonMenuButton color="primary"></IonMenuButton>
-						</IonButtons>
-						<IonTitle size="large">Receive</IonTitle>
-					</IonToolbar>
-				</IonHeader>
-				<IonContent className="ion-padding">
-					<IonGrid>
-						<IonRow className="ion-justify-content-center">
-							<IonCol size="12" sizeMd='6'>
-								<Swiper
-									key={swiperKey}
-									onSwiper={updateState}
-									onSlideChange={updateState}
-									modules={[Navigation]}
-									navigation={{
-										prevEl: "#prev-button",
-										nextEl: "#next-button",
-									}}
-									loop={isLoop}
-									spaceBetween={50}
-									slidesPerView={1}
-									allowTouchMove={false}
-									style={{ width: "100%" }}
-								>
-									{
-										validSlides.map(slide => (
-											<SwiperSlide key={slide.id}>
-												{slide.component}
-											</SwiperSlide>
-										))
-									}
-
-								</Swiper>
-							</IonCol>
-						</IonRow>
-					</IonGrid>
-				</IonContent>
-				<IonFooter>
-					<IonToolbar>
-						<IonButtons slot="start" id="prev-button">
-							{
-								labels.prev && (
-									<IonButton>
-										<IonIcon slot="start" icon={chevronBack} />
-										{labels.prev}
-									</IonButton>
-								)
-							}
-						</IonButtons>
-						<IonButtons slot="end" id="next-button">
-							{
-								labels.next && (
-									<IonButton>
-										{labels.next}
-										<IonIcon slot="end" icon={chevronForward} />
-									</IonButton>
-								)
-							}
-						</IonButtons>
-					</IonToolbar>
-				</IonFooter>
-			</IonPage>
-		</>
+		<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }} >
+			<IonHeader className="ion-no-border">
+				<IonToolbar>
+					<IonButtons slot="start">
+						<IonButton onClick={() => router.goBack()}>
+							<IonIcon color='primary' icon={chevronBack} />
+							<IonLabel>Back</IonLabel>
+						</IonButton>
+					</IonButtons>
+					<IonButtons slot="end">
+						<IonMenuButton color="primary"></IonMenuButton>
+					</IonButtons>
+					<IonTitle>Receive</IonTitle>
+				</IonToolbar>
+			</IonHeader>
+			<IonContent className="ion-padding">
+				<IonGrid>
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="12" sizeMd="6">
+							<Swiper
+								key={swiperKey}
+								onSwiper={updateState}
+								onSlideChange={updateState}
+								modules={[Navigation]}
+								navigation={{
+									prevEl: "#prev-button",
+									nextEl: "#next-button",
+								}}
+								loop={isLoop}
+								spaceBetween={50}
+								slidesPerView={1}
+								allowTouchMove={false}
+								style={{ width: "100%" }}
+							>
+								{
+									validSlides.map(slide => (
+										<SwiperSlide key={slide.id}>
+											{slide.component}
+										</SwiperSlide>
+									))
+								}
+							</Swiper>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+			</IonContent>
+			<IonFooter>
+				<IonToolbar>
+					<IonButtons slot="start" id="prev-button">
+						{
+							labels.prev && (
+								<IonButton>
+									<IonIcon slot="start" icon={chevronBack} />
+									{labels.prev}
+								</IonButton>
+							)
+						}
+					</IonButtons>
+					<IonButtons slot="end" id="next-button">
+						{
+							labels.next && (
+								<IonButton>
+									{labels.next}
+									<IonIcon slot="end" icon={chevronForward} />
+								</IonButton>
+							)
+						}
+					</IonButtons>
+				</IonToolbar>
+			</IonFooter>
+		</IonPage>
 	)
 }
 
@@ -309,8 +299,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 	const copyValue = selectedSegment === "lnurl" ? lnurl : createLnurlFromLnAddress(lightningAddress);
 
 	return (
-		<IonGrid className="ion-margin-top">
-
+		<IonGrid>
 			<IonRow>
 				<IonCol size="12">
 					<IonSegment value={selectedSegment} onIonChange={handleSegmentChange}>
@@ -455,7 +444,7 @@ const InvoiceTab = () => {
 	return (
 		<>
 			<IonToolbar>
-				<IonTitle className="ion-text-center" size="large">Lightning Invoice</IonTitle>
+				<IonTitle className="ion-text-center">Lightning Invoice</IonTitle>
 			</IonToolbar>
 			<IonGrid className="ion-margin-top">
 				<IonRow className="ion-justify-content-center">
@@ -521,19 +510,15 @@ const OnChainTab = ({ onInvalidate }: TabProps) => {
 				const cacheKey = getCacheKey(topPaySource.id, CHAIN_CACHE_KEY);
 				const cached = getCache(cacheKey);
 				if (cached) {
-					setQrCodeValue(`bitcoin:${cached}`);
-					setBitcoinAddText(
-						cached.substring(0, 5) + "..." + cached.substring(cached.length - 5, 5)
-					)
+					setQrCodeValue(cached);
+					setBitcoinAddText(truncateTextMiddle(cached));
 					setIsloading(false);
 					return;
 				}
 
 				const address = await getNostrBtcAddress(topPaySource.pasteField, topPaySource.keys);
-				setQrCodeValue(`bitcoin:${address}`);
-				setBitcoinAddText(
-					address.substring(0, 5) + "..." + address.substring(address.length - 5, 5)
-				)
+				setQrCodeValue(address);
+				setBitcoinAddText(truncateTextMiddle(address));
 				setCache(cacheKey, address);
 			} catch {
 				toast.error(<Toast title="Error" message={"Error when getting a btc address"} />)
