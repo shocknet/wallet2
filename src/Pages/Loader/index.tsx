@@ -4,20 +4,20 @@ import { useEffect } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useIonRouter } from '@ionic/react';
 
-export const Loader = () => {
+const Loader = () => {
   const router = useIonRouter();
-  
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       router.push("/home");
     }, 500);
-  
+
     return () => {
       clearTimeout(timeoutId); // Clear the timeout when the component unmounts
     };
   }, []);
 
-  return(
+  return (
     <section className="Loader">
       <div className="Loader_msg">Reticulating splines...</div>
       <div className="Loader_img">
@@ -26,3 +26,5 @@ export const Loader = () => {
     </section>
   )
 }
+
+export default Loader;

@@ -7,7 +7,7 @@ import { generateNewKeyPair } from "../../Api/helpers";
 import { nip19 } from "nostr-tools";
 import { SourceTrustLevel } from "../../globalTypes";
 
-export const NodeUp = () => {
+const NodeUp = () => {
   const router = useIonRouter();
 
 
@@ -107,3 +107,5 @@ export const NodeUp = () => {
     </div>
   )
 }
+
+export default NodeUp;

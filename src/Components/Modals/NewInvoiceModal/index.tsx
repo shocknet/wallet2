@@ -1,34 +1,32 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonRow, IonTitle, IonToolbar } from "@ionic/react";
-import { sanitizeSatsInput } from "../../../utils/numbers";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import AmountInput from "@/Components/AmountInput";
+import { Satoshi } from "@/lib/types/units";
+
 
 interface NewInvoiceModalProps {
-	dismiss: (data: { amount: string, invoiceMemo: string } | null, role?: string) => void;
+	dismiss: (data: { amount: Satoshi, invoiceMemo: string } | null, role?: string) => void;
 }
 
-const NewInvoiceModal = forwardRef<HTMLIonInputElement, any>(({ dismiss }: NewInvoiceModalProps, inputRef) => {
-	const input = useRef<HTMLIonInputElement>(null);
-	const [amount, setAmount] = useState("");
+const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({ dismiss }: NewInvoiceModalProps, inputRef) => {
+	const amountInputRef = useRef<HTMLIonInputElement>(null);
+	const [amountInSats, setAmountInSats] = useState<Satoshi | null>(null);
+	const [unit, setUnit] = useState<"BTC" | "sats">("sats");
+	const [displayValue, setDisplayValue] = useState("");
 	const [invoiceMemo, setInvoiceMemo] = useState("");
 
-	useImperativeHandle(inputRef, () => input.current as HTMLIonInputElement);
+	useImperativeHandle(inputRef, () => amountInputRef.current as HTMLIonInputElement);
+
+
+
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (amount) {
-			dismiss({ amount, invoiceMemo }, "confirm");
+		if (amountInSats !== null) {
+			dismiss({ amount: amountInSats, invoiceMemo }, "confirm");
 		}
 	};
 
-	const onInput = (event: Event) => {
-		const value = (event.target as HTMLIonInputElement).value as string;
-		const formattedSats = sanitizeSatsInput(value);
-		setAmount(formattedSats);
-		const inputCmp = input.current;
-		if (inputCmp !== null) {
-			inputCmp.value = formattedSats;
-		}
-	};
 
 	return (
 		<>
@@ -43,10 +41,10 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, any>(({ dismiss }: NewIn
 					<IonButtons slot="end">
 						<IonButton
 							type="submit"
-							disabled={!amount}
+							disabled={!amountInSats}
 							color="primary"
+							onClick={handleSubmit}
 							strong
-							onClick={() => dismiss({ amount, invoiceMemo }, "confirm")}
 						>
 							Confirm
 						</IonButton>
@@ -58,36 +56,34 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, any>(({ dismiss }: NewIn
 					<IonGrid className="ion-margin-top">
 						<IonRow>
 							<IonCol>
-								<IonInput
-									ref={input}
-									className="wallet-input"
-									fill="outline"
-									inputMode="numeric"
-									type="text"
-									onIonInput={onInput}
-									placeholder="Enter amount in sats"
-									value={amount}
+								<AmountInput
+									ref={amountInputRef}
+									labelPlacement="floating"
+									amountInSats={amountInSats}
+									setAmountInSats={setAmountInSats}
+									unit={unit}
+									setUnit={setUnit}
+									displayValue={displayValue}
+									setDisplayValue={setDisplayValue}
 								>
-									<div slot="end" style={{ paddingLeft: '8px', color: '#666' }}>
-										sats
-									</div>
-								</IonInput>
+								</AmountInput>
 							</IonCol>
 						</IonRow>
 						<IonRow>
 							<IonCol>
 								<IonInput
-									className="wallet-input"
-									fill="outline"
 									type="text"
 									maxlength={90}
 									counter
+									color="primary"
 									style={{ marginTop: "15px" }}
 									id="invoice-memo"
+									label="Description (optional)"
+									labelPlacement="floating"
 									onIonInput={(e) => setInvoiceMemo(e.target.value as string)}
 									placeholder="Description (optional)"
 									value={invoiceMemo}
-								/>
+								></IonInput>
 							</IonCol>
 						</IonRow>
 					</IonGrid>

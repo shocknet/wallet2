@@ -1,0 +1,4 @@
+.card-input {
+	width: auto;
+	--background: var(--ion-background-color) !important;
+}

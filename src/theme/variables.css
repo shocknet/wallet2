@@ -15,12 +15,12 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-secondary-shade: #015796;
   --ion-color-secondary-tint: #1a73b3;
 
-  --ion-color-tertiary: #6030ff;
-  --ion-color-tertiary-rgb: 96, 48, 255;
+  --ion-color-tertiary: #1d2125;
+  --ion-color-tertiary-rgb: 29, 33, 37;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #542ae0;
-  --ion-color-tertiary-tint: #7045ff;
+  --ion-color-tertiary-shade: #1a1d21;
+  --ion-color-tertiary-tint: #34373b;
 
   --ion-color-success: #2dd55b;
   --ion-color-success-rgb: 45, 213, 91;
@@ -36,12 +36,12 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-warning-shade: #e0ac08;
   --ion-color-warning-tint: #ffca22;
 
-  --ion-color-danger: #c5000f;
-  --ion-color-danger-rgb: 197, 0, 15;
-  --ion-color-danger-contrast: #ffffff;
-  --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #ad000d;
-  --ion-color-danger-tint: #cb1a27;
+  --ion-color-danger: #FF4D4F;
+  --ion-color-danger-rgb: 255, 77, 79;
+  --ion-color-danger-contrast: #000000;
+  --ion-color-danger-contrast-rgb: 0, 0, 0;
+  --ion-color-danger-shade: #e04446;
+  --ion-color-danger-tint: #ff5f61;
 
   --ion-color-light: #f6f8fc;
   --ion-color-light-rgb: 246, 248, 252;
@@ -111,6 +111,19 @@ http://ionicframework.com/docs/theming/ */
   --ion-background-color-step-950: #f3f4f4;
 
   --ripple-color: var(--ion-color-primary);
+
+  --ion-overlay-background-color: var(--ion-color-secondary);
+
+  --wallet-box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 1px -2px,
+    rgba(0, 0, 0, 0.2) 0px 2px 2px 0px,
+    rgba(0, 0, 0, 0.18) 0px 1px 5px 0px;
+
+  --ion-padding: 14px;
+}
+
+ion-item,
+ion-button {
+  --ripple-color: var(--ion-color-primary);
 }
 
 
@@ -123,19 +136,104 @@ ion-toolbar {
   --background: var(--ion-background-color);
 }
 
-ion-input.wallet-input.input-fill-outline {
-  --border-color: var(--ion-color-primary) !important;
-  --border-width: 1px;
-  --border-style: solid;
-  --padding-bottom: 1px;
-  --padding-end: 10px;
-  --padding-start: 10px;
-  --padding-top: 1px;
-  --border-radius: 10px;
-  min-height: 49px;
-  font-size: 22px;
+
+
+
+ion-card {
+  -webkit-box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.3);
+  margin: 0;
 }
 
+
+
+
+
+
+.input-box-shadow {
+  box-shadow: var(--wallet-box-shadow);
+}
+
+
+
+ion-select {
+  --background: var(--ion-color-secondary);
+}
+
+ion-alert {
+  --background: var(--ion-color-secondary);
+}
+
+ion-popover {
+  --background: var(--ion-color-secondary);
+  --width: auto;
+  --min-width: 250px;
+  --max-width: 90vw;
+}
+
+ion-popover ion-content {
+  --background: var(--ion-color-secondary);
+}
+
+ion-range::part(pin) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: unset;
+  color: #fff;
+
+  border-radius: 50%;
+  transform: scale(1.01);
+
+  top: -20px;
+
+  min-width: 28px;
+  height: 28px;
+}
+
+ion-range::part(pin)::before {
+  content: none;
+}
+
+
+
+/* Expand image modal */
+ion-modal.image-modal::part(content) {
+  max-height: fit-content;
+  box-shadow: none;
+  background: transparent;
+}
+
+ion-modal.image-modal ion-content::part(background) {
+  background: transparent;
+}
+
+
+
+
+ion-list.secondary {
+  --ion-background-color: var(--ion-color-secondary) !important;
+}
+
+
+
+
+
+ion-label strong {
+  display: block;
+
+  max-width: calc(100% - 60px);
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+ion-label ion-note {
+  font-size: 0.9rem;
+}
 
 
 ion-divider {
@@ -146,12 +244,9 @@ ion-modal.wallet-modal ion-content {
   --background: var(--ion-color-secondary);
 }
 
-ion-modal.wallet-modal {
-  --background: var(--ion-color-secondary);
-}
 
 ion-note {
-  font-size: 0.6em;
+
   color: var(--ion-color-medium);
 
   color: var(--ion-color-step-600);
@@ -162,4 +257,51 @@ ion-note {
 ion-spinner {
   width: 60px;
   height: 60px;
+}
+
+
+/* Scrollbar styles */
+ion-content::part(scroll) {
+  overflow-y: auto;
+  overflow: overlay;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Firefox */
+ion-content::part(scroll) {
+  scrollbar-width: auto;
+  scrollbar-color: var(--ion-color-medium) transparent;
+
+}
+
+/* Chromium */
+ion-content::part(scroll)::-webkit-scrollbar {
+  width: 8px;
+}
+
+ion-content::part(scroll)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+ion-content::part(scroll)::-webkit-scrollbar-thumb {
+  background-color: var(--ion-color-medium);
+  border-radius: 20px;
+}
+
+
+.ion-page-width {
+  max-width: 800px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+
+ion-toolbar::part(container) .toolbar-content {
+  display: flex;
+  position: relative;
+}
+
+
+ion-grid {
+  --ion-grid-column-padding: 0;
 }

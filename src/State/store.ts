@@ -1,12 +1,11 @@
 // src/state/store.ts
 
-import { combineReducers, configureStore, createAction, createListenerMiddleware, createSelector, TypedStartListening } from '@reduxjs/toolkit';
+import { AnyAction, combineReducers, configureStore, createAction, createListenerMiddleware, createSelector, TypedStartListening } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from './Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
 import prefsSlice, { storageKey as prefsStorageKey, mergeLogic as prefsMergeLogic } from './Slices/prefsSlice';
 import addressbookSlice, { storageKey as addressbookStorageKey, mergeLogic as addressbookMergeLogic } from './Slices/addressbookSlice';
-import historySlice, { storageKey as historyStorageKey, mergeLogic as historyMergeLogic } from './Slices/HistorySlice';
 import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from './Slices/notificationSlice';
 import generatedAssets from './Slices/generatedAssets';
 import loadingOverlay from './Slices/loadingOverlay';
@@ -20,9 +19,21 @@ import { BackupAction } from './types';
 import { bridgeMiddleware } from './bridgeMiddleware';
 import modalsSlice from './Slices/modalsSlice';
 import { ndebitMiddleware } from './ndebitDiscoverableMiddleware';
+import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
+import history from './history';
+import IonicStorageAdapter from '../storage/redux-persist-ionic-storage-adapter';
+import { HistoryState } from './history/types';
+import { parseUserInputToSats } from '@/lib/units';
+import { Satoshi } from '@/lib/types/units';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
+
+const PaymentHistoryPersistConfig = {
+  key: 'paymentHistory',
+  storage: IonicStorageAdapter,
+
+}
 
 export const reducer = combineReducers({
   paySource: paySourcesReducer,
@@ -30,7 +41,7 @@ export const reducer = combineReducers({
   usdToBTC: usdToBTCReducer,
   prefs: prefsSlice,
   addressbook: addressbookSlice,
-  history: historySlice,
+  history: persistReducer<HistoryState, AnyAction>(PaymentHistoryPersistConfig, history),
   notify: notificationSlice,
   subscriptions: subscriptionsSlice,
   generatedAssets,
@@ -38,7 +49,7 @@ export const reducer = combineReducers({
   nostrPrivateKey,
   backupStateSlice,
   oneTimeInviteLinkSlice,
-  modalsSlice
+  modalsSlice,
 })
 
 
@@ -47,8 +58,14 @@ export const reducer = combineReducers({
 const store = configureStore({
   reducer: reducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(backup.middleware, bridgeMiddleware.middleware, ndebitMiddleware.middleware),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).prepend(backup.middleware, bridgeMiddleware.middleware, ndebitMiddleware.middleware),
 });
+
+export const persistor = persistStore(store);
 export type State = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 export const useDispatch: () => AppDispatch = originalUseDispatch
@@ -72,8 +89,8 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
       return prefsMergeLogic
     case addressbookStorageKey:
       return addressbookMergeLogic
-    case historyStorageKey:
-      return historyMergeLogic
+    /* case historyStorageKey:
+      return historyMergeLogic */
     default:
       return null
   }
@@ -107,4 +124,15 @@ export const selectNostrPays = createSelector(
   (state: State) => state.paySource,
   (paySource: PaySourceState) =>
     Object.values(paySource.sources).filter(s => s.pubSource)
+)
+
+
+export const selectSpendsTotalBalance = createSelector(
+  selectEnabledSpends,
+  (sources) => {
+    const result = sources.reduce((acc, source) => {
+      return (acc + parseUserInputToSats(source.balance, "sats")) as Satoshi
+    }, 0);
+    return result as Satoshi;
+  }
 )
