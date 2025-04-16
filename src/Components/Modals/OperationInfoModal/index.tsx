@@ -144,14 +144,14 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 			<IonList lines="none" style={{ borderRadius: "12px" }}>
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
-					<IonText>{operation.inbound ? "" : "-"}{formatBitcoin(satsToBtc(operation.amount))} <IonText color="primary">BTC</IonText></IonText>
+					<IonText color="primary">{operation.inbound ? "" : "-"}{formatBitcoin(satsToBtc(operation.amount))} <IonText color="light">BTC</IonText></IonText>
 
 				</IonItem>
 				{
 					!!mempoolRes && (
 						<IonItem>
 							<IonLabel color="primary">Transaction fee</IonLabel>
-							<IonText>{formatSatoshi(mempoolRes.fee as Satoshi)} sats</IonText>
+							<IonText color="primary">{formatSatoshi(mempoolRes.fee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -163,7 +163,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 					!!data.serviceFee && (
 						<IonItem>
 							<IonLabel color="primary">Service fee</IonLabel>
-							<IonText>{formatSatoshi(data.serviceFee as Satoshi)} sats</IonText>
+							<IonText color="primary">{formatSatoshi(data.serviceFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -171,7 +171,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 					!!data.networkFee && (
 						<IonItem>
 							<IonLabel color="primary">Network fee</IonLabel>
-							<IonText>{formatSatoshi(data.networkFee as Satoshi)} sats</IonText>
+							<IonText color="primary">{formatSatoshi(data.networkFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -229,7 +229,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 			<IonList lines="none" style={{ borderRadius: "12px" }}>
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
-					<IonText>{operation.inbound ? "" : "-"}{formatSatoshi(operation.amount)} <IonText color="primary">sats</IonText></IonText>
+					<IonText color="primary">{operation.inbound ? "" : "-"}{formatSatoshi(operation.amount)} <IonText color="light">sats</IonText></IonText>
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Status</IonLabel>
@@ -239,7 +239,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 					!!data.serviceFee && (
 						<IonItem>
 							<IonLabel color="primary">Service fee</IonLabel>
-							<IonText>{formatSatoshi(data.serviceFee as Satoshi)} <IonText color="primary">sats</IonText></IonText>
+							<IonText color="primary">{formatSatoshi(data.serviceFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -247,7 +247,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 					!!data.networkFee && (
 						<IonItem>
 							<IonLabel color="primary">Network fee</IonLabel>
-							<IonText>{formatSatoshi(data.networkFee as Satoshi)} <IonText color="primary">sats</IonText></IonText>
+							<IonText color="primary">{formatSatoshi(data.networkFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -346,12 +346,7 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 				{"balance" in operationSource && (
 					<IonItem>
 						<IonLabel color="primary">Balance</IonLabel>
-						<IonText>
-							<IonText color="primary">
-								{parseInt(operationSource.balance).toLocaleString()}
-							</IonText> 	sats
-
-						</IonText>
+						<IonText color="primary">{parseInt(operationSource.balance).toLocaleString()}	<IonText color="light">sats</IonText></IonText>
 					</IonItem>
 				)}
 				<IonItem>
