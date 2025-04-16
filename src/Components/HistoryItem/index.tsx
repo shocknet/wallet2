@@ -121,10 +121,13 @@ function areEqual(prevProps: HistoryItemProps, nextProps: HistoryItemProps) {
 
 	if (prevProps.handleSelectOperation !== nextProps.handleSelectOperation) return false;
 
+
 	if ("optimistic" in prevProps.operation && prevProps.operation.optimistic) return false; // If prev is optimistic always rerender
 
 	const prev = prevProps.operation as SourceActualOperation;
 	const next = nextProps.operation as SourceActualOperation;
+
+	if (prev.memo !== next.memo) return false;
 
 	if (prev.paidAtUnix !== next.paidAtUnix) return false;
 

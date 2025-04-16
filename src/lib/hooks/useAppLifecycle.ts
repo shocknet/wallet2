@@ -6,8 +6,9 @@ import { SplashScreen } from "@capacitor/splash-screen";
 import { initLocalNotifications } from "../local-notifications";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "./usePreference";
+import { isPlatform } from "@ionic/react";
 
-const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perm_denied";
+const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
 
 export const useAppLifecycle = () => {
@@ -70,35 +71,17 @@ export const useAppLifecycle = () => {
       return;
     }
 
-    const showPermissionAlert = async () => {
-      return new Promise<boolean>((resolve) => {
-        showAlert({
-          header: "Notifications Blocked",
-          message: "We need notification permissions to alert you about transactions. Would you like to enable them now?",
-          buttons: [
-            {
-              text: "Not Now",
-              role: 'cancel',
-              handler: () => resolve(false)
-            },
-            {
-              text: "Enable",
-              handler: () => resolve(true)
-            }
-          ]
-        });
-      });
-    };
-
-    const hasPermission = await initLocalNotifications(showPermissionAlert);
+    const hasPermission = await initLocalNotifications();
     if (!hasPermission) {
       showAlert({
         header: "Notifications Disabled",
-        message: "You can enable notifications later in settings.",
+        message: !isPlatform("hybrid")
+          ? 'You have blocked notifications in your browser. Please enable them in your browser settings if you wish to receive notifications.'
+          : 'Notifications are disabled. Please enable them in your device settings to receive alerts.',
         buttons: ['OK']
       });
-      setValue(true);
     }
+    setValue(true);
   }, [cachedValue, setValue, showAlert]);
 
   useEffect(() => {

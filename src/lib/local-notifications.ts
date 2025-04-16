@@ -8,11 +8,11 @@ const NOTIFICATION_CHANNELS = {
 	ALERTS: 'wallet_alerts',
 } as const;
 
-export async function initLocalNotifications(showPermissionAlert: () => Promise<boolean>): Promise<boolean> {
+export async function initLocalNotifications(): Promise<boolean> {
 	try {
 		// First permission request
 		let { display } = await LocalNotifications.checkPermissions();
-		console.log({ display })
+
 
 		if (display === "granted") {
 			await setUpAndroidNotificationChannel();
@@ -21,19 +21,11 @@ export async function initLocalNotifications(showPermissionAlert: () => Promise<
 
 		if (display === "prompt") {
 			({ display } = await LocalNotifications.requestPermissions());
-		}
-
-		if (display === "denied") {
-			const tryAgain = await showPermissionAlert();
-			if (!tryAgain) return false;
-
-			({ display } = await LocalNotifications.requestPermissions());
-		}
-
-		if (display === "granted") {
-			await setUpAndroidNotificationChannel();
-			console.log("Here!!!")
-			return true;
+			if (display === "granted") {
+				await setUpAndroidNotificationChannel();
+				return true;
+			}
+			return false;
 		}
 
 		return false;

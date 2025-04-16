@@ -25,7 +25,7 @@ const Notify = lazy(() => import('./Pages/Notify'));
 const Metrics = lazy(() => import('./Pages/Metrics'));
 const Manage = lazy(() => import('./Pages/Manage'));
 const Channels = lazy(() => import('./Pages/Channels'));
-const NewHome = lazy(() => import('./Pages/NewHome'));
+const Home = lazy(() => import('./Pages/Home'));
 const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
 const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
@@ -126,7 +126,7 @@ const AppContent: React.FC = () => {
       >
         <Route exact path="/home" render={(props) =>
           <Suspense fallback={<FullSpinner />}>
-            <NewHome {...props} />
+            <Home {...props} />
           </Suspense>
         }
         />
