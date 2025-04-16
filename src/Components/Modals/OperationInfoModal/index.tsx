@@ -27,95 +27,13 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
-import { checkmark, closeOutline, copy, helpCircleOutline, informationCircle, pencilOutline } from "ionicons/icons";
-import { useDispatch } from "@/State/store";
+import { checkmark, closeOutline, copy, informationCircle, pencilOutline } from "ionicons/icons";
+import { selectSourceById, useDispatch, useSelector } from "@/State/store";
 import { updateOperationNote } from "@/State/history";
 import Popover from "@/Components/common/popover";
 import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
-
-const NoteField = ({ note: initialNote, sourceId, operationId }: { note?: string, sourceId: string, operationId: string }) => {
-	const dispatch = useDispatch();
-
-	const [note, setNote] = useState<string | undefined>(initialNote);
-	const [isEditing, setIsEditing] = useState(false);
-
-
-
-
-
-
-	const handleNoteChange = (e: CustomEvent) => {
-		const rawValue = (e.target as HTMLIonInputElement).value?.toString() || "";
-		setNote(rawValue);
-
-	};
-	const handleNoteSave = () => {
-		if (note) {
-			dispatch(updateOperationNote({ note, sourceId, operationId }));
-			setIsEditing(false);
-		}
-	}
-
-	const handleNoteCancel = () => {
-		setNote(initialNote);
-		setIsEditing(false);
-	}
-
-
-
-	return (
-		<IonItem>
-			<IonLabel color="primary">
-				Note
-				{
-					isEditing ? (
-						<div className={styles["long-text-container"]}>
-							<div className={styles["long-text-text"]}>
-								<IonTextarea
-									ref={(el) => {
-										if (el) {
-											setTimeout(() => el.setFocus(), 0);
-										}
-									}}
-									value={note || ''}
-									onIonInput={handleNoteChange}
-									autoGrow={true}
-									color="primary"
-								/>
-							</div>
-							<div className={styles["long-text-icon"]}>
-								<IonButton onClick={handleNoteSave} shape="round" fill="clear" color="success">
-									<IonIcon icon={checkmark} slot="icon-only" />
-								</IonButton>
-								<IonButton onClick={handleNoteCancel} shape="round" fill="clear" color="medium">
-									<IonIcon icon={closeOutline} slot="icon-only" />
-								</IonButton>
-							</div>
-						</div>
-					) :
-						(
-							<div className={styles["long-text-container"]}>
-								<div className={styles["long-text-text"]}>
-
-									<IonNote color="medium" className={classNames("ion-text-wrap", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
-								</div>
-								<div className={styles["long-text-icon"]}>
-
-									<IonButton size="large" shape="round" fill="clear" onClick={() => setIsEditing(true)}>
-										<IonIcon slot="icon-only" icon={pencilOutline} />
-									</IonButton>
-								</div>
-							</div>
-						)
-				}
-			</IonLabel>
-
-		</IonItem>
-	);
-}
-
 
 interface Props {
 	isOpen: boolean;
@@ -123,8 +41,50 @@ interface Props {
 	operation: SourceOperation | null;
 }
 
+
+
+const OperationModal = ({ isOpen, onClose, operation }: Props) => {
+	if (!operation) return null;
+
+	return (
+		<IonModal
+			isOpen={isOpen}
+			onDidDismiss={onClose}
+			style={{ "--background": "var(--ion-color-secondary)" }}
+			className="wallet-modal"
+		>
+			<IonHeader>
+				<IonToolbar>
+					<IonTitle>
+						Operation Info
+					</IonTitle>
+					<IonButtons slot="end">
+						<IonButton onClick={onClose} fill="clear">
+							<IonIcon icon={closeOutline} slot="icon-only" />
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+			</IonHeader>
+
+			<IonContent className={classNames("ion-padding", styles["modal-content"])}>
+				{
+					operation.type === "ON-CHAIN" ? (
+						<OnChainOperation operation={operation} />
+					) : (
+						<InvoiceOperation operation={operation} />
+					)
+				}
+			</IonContent>
+		</IonModal>
+	)
+}
+
+export default OperationModal;
+
+
+
+
 const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | SourceOptimsiticOnChain }) => {
-	console.log({ operation });
 
 	const [mempoolRes, setMempoolRes] = useState<BitcoinTransaction | null>(null);
 
@@ -165,12 +125,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 			serviceFee = operation.serviceFee;
 
 			if (operation.internal) {
-				status = <IonText>Completed (internal)
-					<IonButton id="internal-info" fill="clear" shape="round">
-
-						<IonIcon icon={helpCircleOutline}></IonIcon>
-					</IonButton>
-				</IonText>;
+				status = "Completed (internal)";
 			} else {
 				status = mempoolRes ? `${mempoolRes.confirmations} confirmations` : <span className={styles["spinner"]}><IonSpinner /></span>;
 				networkFee = operation.networkFee;
@@ -246,6 +201,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 
 			</IonList>
 			<Popover id="internal-info" text="internal means this" />
+			<SourceSection sourceId={operation.sourceId} />
 		</>
 	)
 }
@@ -266,7 +222,6 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 		return { status, serviceFee, networkFee };
 	}, [operation]);
 
-	console.log({ operation })
 
 	return (
 		<>
@@ -275,7 +230,6 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
 					<IonText>{operation.inbound ? "" : "-"}{formatSatoshi(operation.amount)} <IonText color="primary">sats</IonText></IonText>
-
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Status</IonLabel>
@@ -365,45 +319,126 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				)
 			}
 
+			<SourceSection sourceId={operation.sourceId} />
+
 		</>
 	)
 }
 
-const OperationModal = ({ isOpen, onClose, operation }: Props) => {
-	if (!operation) return null;
+const SourceSection = ({ sourceId }: { sourceId: string }) => {
+	const operationSource = useSelector(state => selectSourceById(state, sourceId));
 
+	if (!operationSource) return null;
 
 	return (
-		<IonModal
-			isOpen={isOpen}
-			onDidDismiss={onClose}
-			style={{ "--background": "var(--ion-color-secondary)" }}
-			className="wallet-modal"
-		>
-			<IonHeader>
-				<IonToolbar>
-					<IonTitle>
-						Operation Info
-					</IonTitle>
-					<IonButtons slot="end">
-						<IonButton onClick={onClose} fill="clear">
-							<IonIcon icon={closeOutline} slot="icon-only" />
-						</IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonHeader>
+		<>
+			<SectionDivider title="Source" />
+			<IonList lines="none" style={{ borderRadius: "12px" }}>
+				<IonItem>
+					<IonLabel color="primary">Source Label</IonLabel>
+					<IonText>{operationSource.label}</IonText>
+				</IonItem>
+				<IonItem>
+					<IonLabel color="primary">Source Type</IonLabel>
+					<IonText>{"balance" in operationSource ? "Spend From" : "Pay To"}</IonText>
+				</IonItem>
 
-			<IonContent className={classNames("ion-padding", styles["modal-content"])}>
-				{
-					operation.type === "ON-CHAIN" ? (
-						<OnChainOperation operation={operation} />
-					) : (
-						<InvoiceOperation operation={operation} />
-					)
-				}
-			</IonContent>
-		</IonModal>
+				{"balance" in operationSource && (
+					<IonItem>
+						<IonLabel color="primary">Balance</IonLabel>
+						<IonText>
+							<IonText color="primary">
+								{parseInt(operationSource.balance).toLocaleString()}
+							</IonText> 	sats
+
+						</IonText>
+					</IonItem>
+				)}
+				<IonItem>
+					<IonLabel color="primary">
+						Paste Field
+						<IonNote style={{ display: "block", fontSize: "0.8rem" }} color="medium" className="ion-text-wrap">{operationSource.pasteField}</IonNote>
+					</IonLabel>
+				</IonItem>
+			</IonList>
+		</>
 	)
 }
 
-export default OperationModal;
+
+
+
+const NoteField = ({ note: initialNote, sourceId, operationId }: { note?: string, sourceId: string, operationId: string }) => {
+	const dispatch = useDispatch();
+
+	const [note, setNote] = useState<string | undefined>(initialNote);
+	const [isEditing, setIsEditing] = useState(false);
+
+	const handleNoteChange = (e: CustomEvent) => {
+		const rawValue = (e.target as HTMLIonInputElement).value?.toString() || "";
+		setNote(rawValue);
+
+	};
+	const handleNoteSave = () => {
+		if (note) {
+			dispatch(updateOperationNote({ note, sourceId, operationId }));
+			setIsEditing(false);
+		}
+	}
+
+	const handleNoteCancel = () => {
+		setNote(initialNote);
+		setIsEditing(false);
+	}
+
+
+	return (
+		<IonItem>
+			<IonLabel color="primary">
+				Note
+				{
+					isEditing ? (
+						<div className={styles["long-text-container"]}>
+							<div className={styles["long-text-text"]}>
+								<IonTextarea
+									ref={(el) => {
+										if (el) {
+											setTimeout(() => el.setFocus(), 0);
+										}
+									}}
+									value={note || ''}
+									onIonInput={handleNoteChange}
+									autoGrow={true}
+									color="primary"
+								/>
+							</div>
+							<div className={styles["long-text-icon"]}>
+								<IonButton onClick={handleNoteSave} shape="round" fill="clear" color="success">
+									<IonIcon icon={checkmark} slot="icon-only" />
+								</IonButton>
+								<IonButton onClick={handleNoteCancel} shape="round" fill="clear" color="medium">
+									<IonIcon icon={closeOutline} slot="icon-only" />
+								</IonButton>
+							</div>
+						</div>
+					) :
+						(
+							<div className={styles["long-text-container"]}>
+								<div className={styles["long-text-text"]}>
+
+									<IonNote color="medium" className={classNames("ion-text-wrap", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
+								</div>
+								<div className={styles["long-text-icon"]}>
+
+									<IonButton size="large" shape="round" fill="clear" onClick={() => setIsEditing(true)}>
+										<IonIcon slot="icon-only" icon={pencilOutline} />
+									</IonButton>
+								</div>
+							</div>
+						)
+				}
+			</IonLabel>
+
+		</IonItem>
+	);
+}

@@ -25,6 +25,7 @@ import IonicStorageAdapter from '../storage/redux-persist-ionic-storage-adapter'
 import { HistoryState } from './history/types';
 import { parseUserInputToSats } from '@/lib/units';
 import { Satoshi } from '@/lib/types/units';
+import { PayTo, SpendFrom } from '@/globalTypes';
 
 export const syncRedux = createAction('SYNC_REDUX');
 
@@ -136,3 +137,15 @@ export const selectSpendsTotalBalance = createSelector(
     return result as Satoshi;
   }
 )
+
+export const selectSourceById = createSelector(
+  [
+    (state: State) => state.spendSource.sources,
+    (state: State) => state.paySource.sources,
+    (_state: State, id: string) => id,
+  ],
+  (spendSources, paySources, id): PayTo | SpendFrom => {
+
+    return spendSources[id] ?? paySources[id];
+  }
+);

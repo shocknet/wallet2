@@ -206,7 +206,6 @@ export const selectSpendSourceSourceById = createSelector(
     (_spendFrom: SpendSourceState, id: string) => id
   ],
   (sources, id) => {
-    console.log("selecting source by id", id)
     return sources[id]
   }
 );
