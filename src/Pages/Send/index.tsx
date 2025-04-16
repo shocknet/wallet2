@@ -466,7 +466,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
                   return (
                     <>
                       <IonAvatar slot="start">
-                        <img src={`https://robohash.org/${source.label}.png?bgset=bg1`} alt='Avatar' />
+                        <img src={`https://robohash.org/${source.pasteField}.png?bgset=bg1`} alt='Avatar' />
                       </IonAvatar>
                       <IonLabel style={{ width: "100%" }}>
                         <h2>{source.label}</h2>
