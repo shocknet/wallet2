@@ -122,7 +122,7 @@ const listenForSourceNewOperations = appCreateAsyncThunk(
 		if (!source) throw new Error("Source not found");
 		const client = await getNostrClient(source.pasteField, source.keys);
 		client.GetLiveUserOperations(newOp => {
-			console.log({ newOp })
+			console.log({ newOp, source })
 			if (newOp.status === "OK") {
 				// receiving external on-chain txs causes two getLiveUserOperations procs
 				// the history state takes care of this repetition,
