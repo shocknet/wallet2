@@ -49,7 +49,7 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 						invoiceSource.noffer.pubkey || invoiceSource.noffer.relay
 						: null
 				: null;
-			label = operation.memo || operation.invoiceMemo || labelFromLnService || null;
+			label = extractInvoiceMemo(operation.memo) || operation.invoiceMemo || labelFromLnService || null;
 			typeIconColor = "#FFD700";
 			break;
 		}
@@ -60,8 +60,6 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 			break;
 		}
 	}
-
-
 
 
 	let date = moment(operation.paidAtUnix).fromNow();
@@ -102,4 +100,23 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 		color,
 		sign
 	}
+}
+
+
+const extractInvoiceMemo = (description?: string) => {
+	if (!description) return null;
+	try {
+		const parsed = JSON.parse(description);
+		if (Array.isArray(parsed)) {
+			const plainText = parsed.find(
+				(item) => Array.isArray(item) && item[0] === "text/plain"
+			);
+			if (plainText && typeof plainText[1] === "string") {
+				return plainText[1];
+			}
+		}
+	} catch (_) {
+		// not JSON, just return the raw description
+	}
+	return description;
 }

@@ -18,7 +18,14 @@ interface HistoryItemProps {
 }
 
 const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => {
-	console.log("history item render", operation.operationId, operation.paidAtUnix);
+	const [_tick, setTick] = useState(0);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTick(t => t + 1);
+		}, 60 * 1000);
+		return () => clearInterval(interval);
+	}, []);
+
 
 	const { unit } = usePreferredAmountUnit();
 

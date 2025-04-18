@@ -147,23 +147,27 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 					<IonText color="primary">{operation.inbound ? "" : "-"}{formatBitcoin(satsToBtc(operation.amount))} <IonText color="light">BTC</IonText></IonText>
 
 				</IonItem>
-				{
-					!!mempoolRes && (
-						<IonItem>
-							<IonLabel color="primary">Transaction fee</IonLabel>
-							<IonText color="primary">{formatSatoshi(mempoolRes.fee as Satoshi)} <IonText color="light">sats</IonText></IonText>
-						</IonItem>
-					)
-				}
 				<IonItem>
 					<IonLabel color="primary">Status</IonLabel>
 					<IonText>{data.status}</IonText>
+				</IonItem>
+				<IonItem>
+					<IonLabel color="primary">Paid At</IonLabel>
+					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
 				</IonItem>
 				{
 					!!data.serviceFee && (
 						<IonItem>
 							<IonLabel color="primary">Service fee</IonLabel>
 							<IonText color="primary">{formatSatoshi(data.serviceFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
+						</IonItem>
+					)
+				}
+				{
+					!!mempoolRes && (
+						<IonItem>
+							<IonLabel color="primary">Transaction fee</IonLabel>
+							<IonText color="primary">{formatSatoshi(mempoolRes.fee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
@@ -234,6 +238,10 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				<IonItem>
 					<IonLabel color="primary">Status</IonLabel>
 					<IonText>{data.status}</IonText>
+				</IonItem>
+				<IonItem>
+					<IonLabel color="primary">Paid At</IonLabel>
+					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
 				</IonItem>
 				{
 					!!data.serviceFee && (
