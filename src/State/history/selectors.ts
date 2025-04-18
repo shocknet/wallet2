@@ -12,7 +12,7 @@ export const makeSelectSortedOperationsArray = () => {
 				([sourceId, sourceHistory]) =>
 					sourceHistory.data.map(op => ({ ...op, sourceId }))
 			);
-			return mergedOps.sort((a, b) => b.paidAtUnix - a.paidAtUnix);
+			return [...mergedOps].sort((a, b) => b.paidAtUnix - a.paidAtUnix);
 		}
 	);
 
