@@ -39,7 +39,7 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export const Auth = () => {
+const Auth = () => {
   const router = useIonRouter();
   const store = useStore();
   const dispatch = useDispatch()
@@ -103,7 +103,7 @@ export const Auth = () => {
 
   const downloadBackUp = async () => {
     if (passphrase != passphraseR || passphrase == "") {
-      toast.error(<Toast title="Error" message="Passwords do not match."  />)
+      toast.error(<Toast title="Error" message="Passwords do not match." />)
       return;
     }
 
@@ -115,7 +115,7 @@ export const Auth = () => {
         allData[key] = value;
       }
     }
-    console.log({allData})
+    console.log({ allData })
     const filename = `${FILENAME}-${new Date().toLocaleString().replace(/[,:\s/]/g, '-')}.dat`
     const encodedString: string = AES.encrypt(JSON.stringify(allData), passphrase).toString();
     const blob = new Blob([encodedString], { type: 'text/plain' });
@@ -178,7 +178,7 @@ export const Auth = () => {
     try {
       decodedString = AES.decrypt(dataFromFile, passphrase).toString(enc.Utf8);
     } catch (error) {
-      toast.error(<Toast title="Error" message="Passphrase is not correct."  />)
+      toast.error(<Toast title="Error" message="Passphrase is not correct." />)
       return;
     }
     const data = JSON.parse(decodedString);
@@ -190,7 +190,7 @@ export const Auth = () => {
     }
     store.dispatch(syncRedux());
     toggle();
-    toast.success(<Toast title="Backup" message="Backup imported successfully. "  />)
+    toast.success(<Toast title="Backup" message="Backup imported successfully. " />)
     setTimeout(() => {
       router.push("/home")
     }, 1000);
@@ -198,11 +198,11 @@ export const Auth = () => {
 
   const notRcommendedToggle = () => {
     if (arrowIconRef.current?.style && backupFileRef.current?.style) {
-      if(arrowIconRef.current.style.transform === "rotate(270deg) translate(-13px, 13px)") {
+      if (arrowIconRef.current.style.transform === "rotate(270deg) translate(-13px, 13px)") {
         arrowIconRef.current.style.transform = "rotate(0deg)";
         backupFileRef.current.style.opacity = "1";
         backupFileRef.current.style.visibility = "initial";
-      }else{
+      } else {
         arrowIconRef.current.style.transform = "rotate(270deg) translate(-13px, 13px)";
         backupFileRef.current.style.opacity = "0";
         backupFileRef.current.style.visibility = "hidden";
@@ -277,19 +277,19 @@ export const Auth = () => {
     const des = await parseBitcoinInput("lnurl1dp68gup69uhkcmmrv9kxsmmnwsarsv3cxghkzurf9anh2etnwshkcmn4wfk97urp0yhkjmnxdulkkvfaxguryepcxymxzvf5v5ervcf3xumnxwp3v9jnsen9xccrjve3v93rxd3cxgcnvv3kxcexzvpexfnrzv3jxgenge3cxucrzcmpx5uq47rkwa");
     const newSubId = uuid()
 
-		const subObject: Subscription = {
-			subId: newSubId,
-			periodSeconds: periodSeconds,
-			subbedAtUnix: Math.floor(Date.now() / 1000),
-			price: {
-				type: "sats",
-				amt: 1000
-			},
-			memo: "backup service",
-			destionation: des,
-			interval: schedule,
+    const subObject: Subscription = {
+      subId: newSubId,
+      periodSeconds: periodSeconds,
+      subbedAtUnix: Math.floor(Date.now() / 1000),
+      price: {
+        type: "sats",
+        amt: 1000
+      },
+      memo: "backup service",
+      destionation: des,
+      interval: schedule,
       enabled: true
-		};
+    };
 
     dispatch(updateActiveSub({ sub: subObject }));
   }, [dispatch]);
@@ -299,7 +299,7 @@ export const Auth = () => {
     dispatch(updateBackupData({ subbedToBackUp: true, usingExtension: !sanctum, usingSanctum: sanctum }))
 
 
-  }, [dispatch,  subscribeToBackupService])
+  }, [dispatch, subscribeToBackupService])
 
   return (
     <div className='Auth_container'>
@@ -320,32 +320,32 @@ export const Auth = () => {
               </div>
             </div>
 
-            
+
           </div>
           <div className={classNames({
             "Auth_shadable-container": true,
             "Auth_shadable-container_shaded": !isOnStorageService
-            })}
+          })}
           >
             {!hasNostrExtension && <span className='Auth_shadable-container_subtitle'>Log-In with Nostr</span>}
             {
               hasNostrExtension
-              ?
-                backupStates.subbedToBackUp
                 ?
-                <div className='Auth_shadable-container_nostr-extension-text'>✓ Using Nostr Browser extension</div>
+                backupStates.subbedToBackUp
+                  ?
+                  <div className='Auth_shadable-container_nostr-extension-text'>✓ Using Nostr Browser extension</div>
+                  :
+                  <button className='Auth_shadable-container_nostr-extension-text' onClick={() => handleBackupConfirm(false)}>Use Nostr extension</button>
                 :
-                <button className='Auth_shadable-container_nostr-extension-text' onClick={() => handleBackupConfirm(false)}>Use Nostr extension</button>
-              :
-              <SanctumBox
-                loggedIn={backupStates.subbedToBackUp}
-                successCallback={(creds) => {
-                  setSanctumAccessToken(creds.accessToken);
-                  handleBackupConfirm(true);
-                }}
-                errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
-                sanctumUrl={SANCTUM_URL}
-              />
+                <SanctumBox
+                  loggedIn={backupStates.subbedToBackUp}
+                  successCallback={(creds) => {
+                    setSanctumAccessToken(creds.accessToken);
+                    handleBackupConfirm(true);
+                  }}
+                  errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
+                  sanctumUrl={SANCTUM_URL}
+                />
             }
           </div>
         </div>
@@ -356,7 +356,7 @@ export const Auth = () => {
           <p>Not recommended</p>
           <div ref={arrowIconRef} style={{ transform: "rotate(270deg) translate(-13px, 13px)" }}>{Icons.arrowToggle()}</div>
         </div>
-        <div ref={backupFileRef} className='Auth_download' style={{visibility: "hidden", opacity: "0"}}>
+        <div ref={backupFileRef} className='Auth_download' style={{ visibility: "hidden", opacity: "0" }}>
           <div className="Auth_download_button">
             <button onClick={() => { openDownBackupModal() }}>
               Download File Backup
@@ -375,3 +375,5 @@ export const Auth = () => {
     </div >
   )
 }
+
+export default Auth;

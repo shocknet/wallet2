@@ -1,5 +1,6 @@
 import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path';
 import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
@@ -16,9 +17,6 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      workbox: {
-        maximumFileSizeToCacheInBytes: 3000000
-      },
       manifest: {
         name: 'Your App Name',
         short_name: 'App',
@@ -54,5 +52,10 @@ export default defineConfig({
   // Add this section to handle SPA routing for PWA
   preview: {
     port: 8080,
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "src"),
+    },
   },
 })

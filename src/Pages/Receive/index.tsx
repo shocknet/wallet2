@@ -7,10 +7,8 @@ import {
 	IonContent,
 	IonFooter,
 	IonGrid,
-	IonHeader,
 	IonIcon,
 	IonLabel,
-	IonMenuButton,
 	IonNote,
 	IonPage,
 	IonRow,
@@ -45,10 +43,12 @@ import { chevronBack, copy, shareSocialOutline, chevronForward } from "ionicons/
 import QrCode from '../../Components/QrCode';
 import GradientButton from '../../Components/Buttons/GradientButton';
 import { OverlayEventDetail } from '@ionic/react/dist/types/components/react-component-lib/interfaces';
-import { parseCommaFormattedSats } from '../../utils/numbers';
 import NewInvoiceModal from '../../Components/Modals/NewInvoiceModal';
-import { getCache, setCache } from '../../utils/cache';
-import { truncateTextMiddle } from '../../utils/text';
+import BackHeader from '@/Layout2/BackHeader';
+import { getCache, setCache } from '@/lib/cache';
+import { Satoshi } from '@/lib/types/units';
+import { formatSatoshi } from '@/lib/units';
+import { truncateTextMiddle } from '@/lib/format';
 
 
 const CHAIN_CACHE_KEY = "p_c_info";
@@ -147,22 +147,11 @@ const Receive = () => {
 		}
 	}, [dispatch, router, topPaysource]);
 
+
+
 	return (
-		<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }} >
-			<IonHeader className="ion-no-border">
-				<IonToolbar>
-					<IonButtons slot="start">
-						<IonButton onClick={() => router.goBack()}>
-							<IonIcon color='primary' icon={chevronBack} />
-							<IonLabel>Back</IonLabel>
-						</IonButton>
-					</IonButtons>
-					<IonButtons slot="end">
-						<IonMenuButton color="primary"></IonMenuButton>
-					</IonButtons>
-					<IonTitle>Receive</IonTitle>
-				</IonToolbar>
-			</IonHeader>
+		<IonPage className="ion-page-width">
+			<BackHeader title="Receive" />
 			<IonContent className="ion-padding">
 				<IonGrid>
 					<IonRow className="ion-justify-content-center">
@@ -219,8 +208,8 @@ const Receive = () => {
 				</IonToolbar>
 			</IonFooter>
 		</IonPage>
-	)
-}
+	);
+};
 
 
 
@@ -239,14 +228,11 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 
 
 
-
-
-
-
 	useEffect(() => {
 		const configure = async () => {
 			if (topPaySource.pubSource) {
 				const lnAddress = topPaySource.vanityName;
+
 				if (lnAddress) {
 					setLightningAddress(lnAddress);
 
@@ -298,6 +284,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 
 	const copyValue = selectedSegment === "lnurl" ? lnurl : createLnurlFromLnAddress(lightningAddress);
 
+
 	return (
 		<IonGrid>
 			<IonRow>
@@ -316,7 +303,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 				<IonCol size="auto">
 					<IonSegmentView>
 						<IonSegmentContent id="lnurl">
-							{loading ? <IonSpinner /> : <QrCode value={lnurl} prefix="lightning:" />}
+							{loading ? <IonSpinner /> : <QrCode value={lnurl} prefix="lightning" />}
 						</IonSegmentContent>
 						<IonSegmentContent id="address">
 							{
@@ -324,7 +311,7 @@ const LnurlTab = ({ onInvalidate }: TabProps) => {
 									? <IonSpinner />
 									: (
 										<>
-											<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning:" />
+											<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning" />
 											<div style={{ textAlign: "center", fontSize: "16px" }}>{lightningAddress}</div>
 										</>
 									)
@@ -364,7 +351,7 @@ const InvoiceTab = () => {
 
 	const [present, dismiss] = useIonModal(
 		<NewInvoiceModal
-			dismiss={(data: { amount: string, invoiceMemo: string }, role: string) => dismiss(data, role)}
+			dismiss={(data: { amount: Satoshi, invoiceMemo: string } | null, role?: string) => dismiss(data, role)}
 			ref={satsInputRef}
 		/>
 	);
@@ -396,8 +383,7 @@ const InvoiceTab = () => {
 			onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
 				console.log(event.detail)
 				if (event.detail.role === "confirm") {
-					console.log("Herere")
-					const data = event.detail.data as { amount: string, invoiceMemo: string };
+					const data = event.detail.data as { amount: Satoshi, invoiceMemo: string };
 					if (data) {
 						configInvoice(data.amount, data.invoiceMemo);
 					}
@@ -411,12 +397,12 @@ const InvoiceTab = () => {
 	}
 
 
-	const configInvoice = async (amountToRecive: string, memo: string) => {
+	const configInvoice = async (amountToRecive: Satoshi, memo: string) => {
 		setIsloading(true);
 		let invoice = "";
-		setAmount(amountToRecive);
-		const parsedAmount = parseCommaFormattedSats(amountToRecive);
-		setAmountNum(parsedAmount);
+		setAmount(formatSatoshi(amountToRecive));
+		const parsedAmount = amountToRecive;
+		setAmountNum(amountToRecive);
 		try {
 			if (topPaySource.pubSource) {
 				invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, parsedAmount, memo);
@@ -533,12 +519,12 @@ const OnChainTab = ({ onInvalidate }: TabProps) => {
 	return (
 		<>
 			<IonToolbar>
-				<IonTitle className="ion-text-center" size="large">On-chain Address</IonTitle>
+				<IonTitle className="ion-text-center">On-chain Address</IonTitle>
 			</IonToolbar>
 			<IonGrid>
 				<IonRow className="ion-justify-content-center">
 					<IonCol size="auto">
-						{loading ? <IonSpinner /> : <QrCode value={qrCodeValue} prefix="bitcion:" />}
+						{loading ? <IonSpinner /> : <QrCode value={qrCodeValue} prefix="bitcoin" />}
 					</IonCol>
 				</IonRow>
 				<IonRow className="ion-justify-content-center">

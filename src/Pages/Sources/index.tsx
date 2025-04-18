@@ -37,7 +37,7 @@ const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   return newArr;
 }
 
-export const Sources = () => {
+const Sources = () => {
 
   const router = useIonRouter();
   const location = useLocation();
@@ -672,3 +672,5 @@ export const Sources = () => {
     </div>
   )
 }
+
+export default Sources;

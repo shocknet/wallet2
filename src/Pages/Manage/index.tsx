@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { getHttpClient, getNostrClient } from '../../Api';
 
-export const Manage = ({ done }: { done: () => void }) => {
+const Manage = ({ done }: { done: () => void }) => {
   //const router = useIonRouter();
 
   const [isShowQuestion, setIsShowQuestion] = useState<boolean>(false);
@@ -233,3 +233,6 @@ export const Manage = ({ done }: { done: () => void }) => {
     </div>
   );
 };
+
+
+export default Manage;

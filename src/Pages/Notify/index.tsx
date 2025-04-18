@@ -5,13 +5,13 @@ import { useSelector, useDispatch } from '../../State/store';
 import { NotifyItem } from '../../Components/NotifyItem';
 import { updateCheckTime } from '../../State/Slices/notificationSlice';
 
-export const Notify = () => {
+const Notify = () => {
   const dispatch = useDispatch();
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(updateCheckTime(Date.now()))
   }, []);
 
-  const notifications = useSelector(({notify}) => notify);
+  const notifications = useSelector(({ notify }) => notify);
   const notify: NotifyItemData[] = [];
   Object.assign(notify, notifications.notifications)
   notify.sort((i: NotifyItemData, j: NotifyItemData) => j.date - i.date)
@@ -22,7 +22,7 @@ export const Notify = () => {
     desc={o.desc}
     date={o.date}
     key={i}
-    link={o.link}  />)
+    link={o.link} />)
 
   return (
     <div className='Notify_container'>
@@ -35,3 +35,5 @@ export const Notify = () => {
     </div>
   )
 }
+
+export default Notify;

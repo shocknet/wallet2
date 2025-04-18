@@ -1,6 +1,5 @@
 import { addListener, AnyAction, TypedAddListener, createAction, createListenerMiddleware, ListenerEffectAPI, TaskAbortError, ThunkDispatch, removeListener, TypedRemoveListener, TypedStartListening } from "@reduxjs/toolkit";
 import { addPaySources, deletePaySources, editPaySources, flipSourceNdebitDiscoverable, PaySourceRecord, setPaySources } from "./Slices/paySourcesSlice";
-import { setLatestLnurlOperation } from "./Slices/HistorySlice";
 import { addSpendSources, deleteSpendSources, editSpendSources, setSpendSources, SpendSourceRecord } from "./Slices/spendSourcesSlice";
 import { fetchRemoteBackup, saveChangelog, saveRemoteBackup, subscribeToRemoteChangelogs } from "../helpers/remoteBackups";
 import { AppDispatch, findReducerMerger, reducer, State, syncRedux } from "./store";
@@ -14,15 +13,15 @@ import { setPrefs } from "./Slices/prefsSlice";
 
 // This function uses the root reducer to simulate dispatching a set of actions received in changelogs.
 // It then calculates the hash of the state and this hash is then compared with the newHash property of the changelog.
-const  simulateDispatchAndCalculateHash = (actions: AnyAction[], api: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>): string => {
-  const currentState = api.getState();
-  let clonedState = JSON.parse(JSON.stringify(currentState)) as State;
-  
+const simulateDispatchAndCalculateHash = (actions: AnyAction[], api: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>>): string => {
+	const currentState = api.getState();
+	let clonedState = JSON.parse(JSON.stringify(currentState)) as State;
+
 	for (const action of actions) {
 		clonedState = reducer(clonedState, action)
 	}
 
-  return getStateHash(clonedState);
+	return getStateHash(clonedState);
 }
 
 
@@ -65,7 +64,7 @@ const getStateHash = (state: State) => {
 	} */
 
 	const hashInput = {
-		history: state.history.lnurlOperations,
+		/* 		history: state.history.lnurlOperations, */
 		pay: reorderSourcesRecord(state.paySource.sources),
 		spend: reorderSourcesRecord(state.spendSource.sources),
 		payOrder: state.paySource.order,
@@ -89,7 +88,7 @@ const shardAndBackupState = async (state: State, stateHash: string, changelogs?:
 
 	const id = getDeviceId();
 
-	const backupPromises: Promise<number> []= []
+	const backupPromises: Promise<number>[] = []
 	const dtags: string[] = [];
 
 	// shard spend sources into nip78 events per source
@@ -123,10 +122,10 @@ const shardAndBackupState = async (state: State, stateHash: string, changelogs?:
 
 
 	// lnurl operations into a shard
-	if (Object.values(state.history.lnurlOperations).length > 0) {
-		backupPromises.push((saveRemoteBackup(JSON.stringify({ operations: state.history.lnurlOperations, kind: "lnurlOps" }), `${LNURL_OPERATIONS_DTAG}:${id}`)));
-		dtags.push(`${LNURL_OPERATIONS_DTAG}:${id}`);
-	}
+	/* 	if (Object.values(state.history.lnurlOperations).length > 0) {
+			backupPromises.push((saveRemoteBackup(JSON.stringify({ operations: state.history.lnurlOperations, kind: "lnurlOps" }), `${LNURL_OPERATIONS_DTAG}:${id}`)));
+			dtags.push(`${LNURL_OPERATIONS_DTAG}:${id}`);
+		} */
 
 
 	try {
@@ -187,7 +186,7 @@ const resolveConflictWithShards = async (api: ListenerEffectAPI<State, ThunkDisp
 		if (shard.result !== "success") {
 			throw new Error(backup.result);
 		}
-		
+
 		return JSON.parse(shard.decrypted);
 	}));
 	const shards = UnsortedShards.sort((a, b) => {
@@ -320,10 +319,10 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 			const newHash = getStateHash(newState);
 			const changelogs: Changelog[] = [];
 
-			
+
 
 			// Sends the local state as changelogs
-			
+
 			// An edge case would be a source, like an lnurl source, existing on both remote and local, that's why we do this filter step
 			// so as to not send changelog for something that is already there
 			Object.values(originalState.paySource.sources).filter(source => !shards.find(s => s.kind === "paySource" && s.source.id === source.id)).forEach(source => {
@@ -356,7 +355,7 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 				changelogs.push(changelog);
 			})
 
-			if (Object.values(originalState.history.lnurlOperations).length > 0) {
+			/* if (Object.values(originalState.history.lnurlOperations).length > 0) {
 				changelogs.push({
 					previousHash: remoteHash,
 					newHash: newHash,
@@ -367,7 +366,7 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 						payload: originalState.history.lnurlOperations
 					}
 				})
-			}
+			} */
 
 			// send changelogs for new sources on local
 			return shardAndBackupState(newState, newHash, changelogs);
@@ -377,9 +376,9 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 			// The remote backup is the legacy, non-sharded full state event.
 			// The goal is to sync it down and then shard it so it joins the sharded flow from now on
 			const actions: BackupAction[] = [];
-			
 
-			
+
+
 
 			for (const key in data) {
 				if (!["payTo", "spendFrom", "history", "prefs"].includes(key)) continue;
@@ -427,7 +426,6 @@ export const backupMiddleware = {
 				editPaySources.match(action) ||
 				deletePaySources.match(action) ||
 				setPaySources.match(action) ||
-				setLatestLnurlOperation.match(action) ||
 				setPrefs.match(action) ||
 				flipSourceNdebitDiscoverable.match(action)
 			)
@@ -440,18 +438,18 @@ export const backupMiddleware = {
 		const previousHash = localStorage.getItem(STATE_HASH) || getStateHash(listenerApi.getOriginalState());
 		localStorage.setItem(STATE_HASH, newHash)
 		const id = getDeviceId()
-		const changelog: Changelog = { action: { type: action.type, payload: action.payload },  id, previousHash: previousHash!, newHash: getStateHash(listenerApi.getState()) }
+		const changelog: Changelog = { action: { type: action.type, payload: action.payload }, id, previousHash: previousHash!, newHash: getStateHash(listenerApi.getState()) }
 		changelogsTasksQueue.push(changelog)
 		try {
 			await listenerApi.delay(100)
 			console.log("Releasing")
-		} catch(err) {
+		} catch (err) {
 			if (err instanceof TaskAbortError) {
 				return;
 			}
 		}
 		listenerApi.cancelActiveListeners();
-		
+
 		await shardAndBackupState(state, newHash, changelogsTasksQueue)
 		changelogsTasksQueue = []
 	}
@@ -488,7 +486,7 @@ const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispa
 				if (newSimulatedHash === target.newHash) {
 					aggregatedChangelogs = aggregatedChangelogs.filter(c => !c.partial && c.previousHash !== stateHash && c.newHash !== target.newHash);
 					allPartialOfSameKind.forEach(c => {
-						listenerApi.dispatch({  ...c.action, meta: { skipChangelog: true } });
+						listenerApi.dispatch({ ...c.action, meta: { skipChangelog: true } });
 					})
 					const newHash = getStateHash(listenerApi.getState())
 					localStorage.setItem(STATE_HASH, newHash)
@@ -511,7 +509,7 @@ const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispa
 		} else {
 			timer = setTimeout(async () => {
 				// there is a conflict
-				console.log({aggregatedChangelogs})
+				console.log({ aggregatedChangelogs })
 				const mostRecent = aggregatedChangelogs.reduce((prev, current) => prev.timestamp > current.timestamp ? prev : current)
 				await resolveConflictWithShards(listenerApi, mostRecent);
 				aggregatedChangelogs = [];
@@ -530,7 +528,7 @@ export const backupPollingMiddleware = {
 		listenerApi.unsubscribe();
 
 		const stateHash = localStorage.getItem(STATE_HASH);
-		let timestamp: number | string | null  = localStorage.getItem(CHANGELOG_TIMESTAMP)
+		let timestamp: number | string | null = localStorage.getItem(CHANGELOG_TIMESTAMP)
 
 		// This is a new device that just got into the syncing "pool"
 		if (!stateHash && !timestamp) {
@@ -541,7 +539,7 @@ export const backupPollingMiddleware = {
 
 		const pollingTask = listenerApi.fork(async () => {
 			let subCloser = {
-				close: () => {}
+				close: () => { }
 			}
 			try {
 				console.log("Now stable device, listenting for changelogs")
@@ -553,13 +551,13 @@ export const backupPollingMiddleware = {
 						if (id !== changelog.id) {
 							console.log("received changelog")
 							aggregatedChangelogs.push({ ...changelog, timestamp: eventTimestamp });
-	
+
 							handleChangelogs(listenerApi)
 						}
 					}
 				);
 
-				
+
 			} catch (err) {
 				subCloser.close()
 				listenerApi.subscribe()

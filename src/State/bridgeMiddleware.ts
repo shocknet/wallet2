@@ -7,6 +7,7 @@ import Bridge from "../Api/bridge";
 import { Buffer } from "buffer";
 
 import { finalizeEvent, nip98, nip19 } from 'nostr-tools'
+import { extractDomainFromUrl } from "@/lib/domain";
 const { getToken } = nip98
 const { decode } = nip19
 
@@ -44,9 +45,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 	if (bridgeRes.status !== "OK") {
 		throw new Error(bridgeRes.reason);
 	}
-	const hostName = new URL(bridgeUrl);
-	const parts = hostName.hostname.split(".");
-	const domainName = parts.slice(-2).join('.');
+	const domainName = extractDomainFromUrl(bridgeUrl);
 
 	dispatchCallback(`${bridgeRes.vanity_name}@${domainName}`)
 

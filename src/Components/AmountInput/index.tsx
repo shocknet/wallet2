@@ -1,0 +1,157 @@
+import { IonButton, IonInput } from "@ionic/react";
+import { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { formatBitcoin, formatSatoshi, parseUserInputToSats, satsToBtc } from "@/lib/units";
+import useDebounce from "@/Hooks/useDebounce";
+import { validateAndFormatAmountInput } from "@/lib/format";
+import { Satoshi } from "@/lib/types/units";
+
+
+
+
+interface AmountInputProps extends React.ComponentProps<typeof IonInput> {
+	children?: React.ReactNode;
+	amountInSats: Satoshi | null;
+	setAmountInSats: Dispatch<SetStateAction<Satoshi | null>>;
+	unit: "BTC" | "sats";
+	setUnit: Dispatch<SetStateAction<"BTC" | "sats">>;
+	displayValue: string;
+	setDisplayValue: Dispatch<SetStateAction<string>>;
+	limits?: {
+		minSats: Satoshi;
+		maxSats: Satoshi;
+	},
+}
+const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
+	children,
+	amountInSats,
+	setAmountInSats,
+	unit,
+	setUnit,
+	displayValue,
+	setDisplayValue,
+	limits,
+	...props
+}: AmountInputProps, ref) => {
+	const input = useRef<HTMLIonInputElement>(null);
+	useImperativeHandle(ref, () => input.current as HTMLIonInputElement);
+
+
+	const debouncedDisplayValue = useDebounce(displayValue, 500);
+
+	const [isTouched, setIsTouched] = useState(false);
+	const [error, setError] = useState<string | undefined>();
+
+	useEffect(() => {
+		let newSats: Satoshi;
+		try {
+			newSats = parseUserInputToSats(debouncedDisplayValue, unit);
+		} catch (err) {
+			console.error(err);
+			setError("Invalid amount");
+			return;
+		}
+
+		if (!newSats) {
+			setAmountInSats(null);
+			setError(undefined);
+			return;
+		}
+
+
+		if (limits) {
+			if (newSats < limits.minSats) {
+				setError(`Minimum amount is ${formatSatoshi(limits.minSats)}`);
+				return;
+			} else if (newSats > limits.maxSats) {
+				setError(`Maximum amount is ${formatSatoshi(limits.maxSats)}`);
+				return;
+			}
+		}
+
+
+
+		setError(undefined);
+		setAmountInSats(newSats);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debouncedDisplayValue]);
+
+	const handleInputChange = (e: CustomEvent) => {
+		const rawValue = (e.target as HTMLIonInputElement).value?.toString() || "";
+		const newValue = validateAndFormatAmountInput(rawValue, unit);
+		setDisplayValue(newValue);
+		const inputCmp = input.current;
+		if (inputCmp !== null) {
+			inputCmp.value = newValue;
+		}
+	};
+
+	const toggleUnit = () => {
+		const newUnit = unit === "BTC" ? "sats" : "BTC";
+
+		if (amountInSats) {
+			const convertedValue = newUnit === "BTC"
+
+				? formatBitcoin(satsToBtc(amountInSats))
+				: formatSatoshi(amountInSats);
+			setDisplayValue(convertedValue);
+		}
+
+		setUnit(newUnit);
+	}
+
+
+	/* 	const setMax = () => {
+			if (limits) {
+				const maxValue = unit === "BTC"
+					? formatBitcoin(satsToBtc(limits.maxSats))
+					: formatSatoshi(limits.maxSats);
+				setDisplayValue(maxValue);
+			}
+		}; */
+
+	return (
+		<IonInput
+			key={unit}
+			onIonBlur={() => setIsTouched(true)}
+			ref={input}
+			label="Amount"
+			color="primary"
+			inputMode="decimal"
+			type="text"
+			onIonInput={handleInputChange}
+			placeholder={`Enter amount in ${unit}`}
+			value={displayValue}
+			errorText={error}
+			{...props}
+			className={` ${props.className || ""} ${error !== undefined && 'ion-invalid'} ${isTouched && 'ion-touched'}`}
+		>
+			{children}
+			<IonButton
+				slot="end"
+				fill="clear"
+				onClick={toggleUnit}
+				aria-label="Toggle unit"
+			>
+				{unit.toUpperCase()}
+			</IonButton>
+			{/* {limits && (
+
+				<IonButton
+					slot="end"
+					fill="clear"
+					onClick={setMax}
+					aria-label="Set max"
+				>
+					Max
+				</IonButton>
+			)} */}
+		</IonInput>
+	);
+})
+
+AmountInput.displayName = "AmountInput";
+
+export default AmountInput;
+
+
+

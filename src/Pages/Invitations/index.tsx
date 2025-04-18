@@ -12,7 +12,7 @@ import { toggleLoading } from "../../State/Slices/loadingOverlay";
 
 
 
-export const Invitations = () => {
+const Invitations = () => {
   const dispatch = useDispatch();
   const spendSources = useSelector(state => state.spendSource)
   const invitations = useSelector(state => state.oneTimeInviteLinkSlice);
@@ -86,40 +86,40 @@ export const Invitations = () => {
   }
 
 
-  
+
 
   const reusableLink = selectedSource ? {
     link: `${WALLET_URL}/sources?addSource=${selectedSource.pasteField}`,
     subNode: selectedSource.label,
   } : null;
 
-/*   const oneTimeLinks: OneTimeLink[] = [
-    {
-      link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-      subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-      statu: "usable",
-    },
-    {
-      link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-      subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-      statu: "expired",
-    },
-    {
-      link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-      subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-      statu: "expired",
-    },
-  ]; */
+  /*   const oneTimeLinks: OneTimeLink[] = [
+      {
+        link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
+        subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
+        statu: "usable",
+      },
+      {
+        link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
+        subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
+        statu: "expired",
+      },
+      {
+        link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
+        subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
+        statu: "expired",
+      },
+    ]; */
 
 
   const oneTimeLinksRender = useMemo(() => {
     return (
       <div className="link-group">
-        { invitations.invitations &&
+        {invitations.invitations &&
           invitations.invitations.map(inv => {
             const link = `${WALLET_URL}/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
             return (
-            <div key={inv.inviteToken} className="content">
+              <div key={inv.inviteToken} className="content">
                 <div className="text">
                   <div className="link">{link}</div>
                   <div className="subNode">{selectedSource?.label}</div>
@@ -137,7 +137,7 @@ export const Invitations = () => {
                 </button>
               </div>
             )
-         })
+          })
         }
       </div>
     )
@@ -172,10 +172,10 @@ export const Invitations = () => {
       <div className="Invitations_One-Time-Links">
         <div className="title">One-Time Links</div>
         <div className="content">
-              <div className="Gift" style={{fontSize : "12px", paddingTop : "50px", textAlign : "center"}}>
-                Gift links coming soon.
-              </div>
-            </div>
+          <div className="Gift" style={{ fontSize: "12px", paddingTop: "50px", textAlign: "center" }}>
+            Gift links coming soon.
+          </div>
+        </div>
       </div>
       {/* <div className="Invitations_reusableLink">
         <button
@@ -188,3 +188,5 @@ export const Invitations = () => {
     </div>
   );
 };
+
+export default Invitations;

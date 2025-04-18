@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import { SourceTrustLevel, SpendFrom } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
@@ -8,6 +8,8 @@ import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { decodeNprofile } from '../../constants';
 import { Buffer } from 'buffer';
+
+
 export const storageKey = "spendFrom"
 export const VERSION = 4;
 
@@ -104,7 +106,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       } else {
         state.sources[id] = { ...source, option: SourceTrustLevel.HIGH }
       }
-      
+
     })
     return state;
   }
@@ -138,6 +140,7 @@ const update = (value: SpendSourceState) => {
   };
   localStorage.setItem(storageKey, JSON.stringify(stateToSave));
 }
+
 
 const initialState: SpendSourceState = loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
 
@@ -194,3 +197,17 @@ const spendSourcesSlice = createSlice({
 
 export const { addSpendSources, editSpendSources, deleteSpendSources, setSpendSources, fixSpendDuplicates } = spendSourcesSlice.actions;
 export default spendSourcesSlice.reducer;
+
+
+
+export const selectSpendSourceSourceById = createSelector(
+  [
+    (spendFrom: SpendSourceState) => spendFrom.sources,
+    (_spendFrom: SpendSourceState, id: string) => id
+  ],
+  (sources, id) => {
+    return sources[id]
+  }
+);
+
+

@@ -1,0 +1,50 @@
+.history-item {
+	--inner-padding-start: 0px;
+	--inner-padding-bottom: 0px;
+	--inner-padding-end: 0px;
+
+	/* 	--border-width: 0px !important; */
+	--padding-start: 0px;
+	position: relative !important;
+	/* 
+	&::after {
+		content: "";
+		position: absolute;
+		left: 40px;
+		right: 40px;
+		bottom: 0;
+		height: 1px;
+		background: var(--border-color);
+		z-index: 1;
+	} */
+
+	ion-label {
+		margin: 0px;
+	}
+
+	h2 {
+		font-size: 1.1rem;
+
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		/* Show up to 2 lines */
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+
+	}
+
+	.amount {
+		font-size: clamp(0.9rem, 2vw, 1.4rem);
+
+		@media screen and (max-width: 500px) {
+			font-size: 1rem;
+		}
+	}
+
+	.note {
+		font-size: 0.9rem;
+		color: var(--ion-text-color-step-350);
+	}
+
+
+}

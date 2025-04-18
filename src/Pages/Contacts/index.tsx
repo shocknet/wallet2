@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export const Contacts = () => {
+const Contacts = () => {
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -79,4 +79,4 @@ const styles = `
 }
 `;
 
-export default styles;
+export default Contacts;

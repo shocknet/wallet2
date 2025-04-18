@@ -29,7 +29,7 @@ interface ActiveChannel {
 
 
 
-export const Channels = ({ done }: { done: () => void }) => {
+const Channels = ({ done }: { done: () => void }) => {
   const [maxBalance, setMaxBalance] = useState<number>(0);
   const [activeChannels, setActiveChannels] = useState<ActiveChannel[]>([]);
   const [offlineChannels, setOfflineChannels] = useState<OfflineChannel[]>([]);
@@ -257,3 +257,6 @@ const formatCryptoAmount = (amount: number): string => {
     return `${amount} Sat`;
   }
 };
+
+
+export default Channels;
