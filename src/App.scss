@@ -3,11 +3,10 @@ $contrast-color: #5BB166;
 $clear-color: #E2E2E2;
 
 
-.safe-area {
-  margin-top: env(safe-area-inset-top);
-  margin-bottom: env(safe-area-inset-bottom);
-  margin-left: env(safe-area-inset-left);
-  margin-right: env(safe-area-inset-right);
+
+
+.custom-header {
+  padding-top: var(--ion-safe-area-top, 0px);
 }
 
 body {

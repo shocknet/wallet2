@@ -220,17 +220,18 @@ const BoostrapGuard: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const setStatusBarColor = async () => {
-    await StatusBar.setBackgroundColor({ color: "#16191c" });
-  };
-
+  
   useEffect(() => {
+    const setStatusBarColor = async () => {
+      await StatusBar.setBackgroundColor({ color: "#16191c" });
+      await StatusBar.setOverlaysWebView({ overlay: false });
+    };
     setStatusBarColor();
   }, []);
 
   return (
     <Provider store={store}>
-      <IonApp className="safe-area">
+      <IonApp>
         <ErrorBoundary>
           <IonReactRouter>
             <AppContent />
