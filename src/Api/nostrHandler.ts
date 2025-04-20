@@ -35,6 +35,7 @@ export type NostrEvent = {
     pub: string
     content: string
     kind: number
+    to: string // addressed pubkey
 }
 
 export type RelaysSettings = {
@@ -172,7 +173,7 @@ class RelayHandler {
         let relay: Relay;
         try {
             relay = await Relay.connect(this.args.relay)
-        } catch (err) {
+        } catch {
             logger.error("failed to connect to relay, will try again in 2 seconds")
             setTimeout(() => {
                 this.Connect(true, keys)
@@ -232,23 +233,26 @@ class RelayHandler {
                 }
                 handledEvents.push({ eventId, addedAtUnix: Date.now() });
 
-                let addressedKeyPair: NostrKeyPair | null | undefined = null;
-                for (const tag of e.tags) {
-                    if (tag[0] === 'p') {
-                        const pubkey = tag[1];
-                        addressedKeyPair = this.subbedPairs.find(p => p.publicKey === pubkey);
-                    }
+                const targetPubkey = e.tags.find(tag => tag[0] === 'p')?.[1];
+                if (!targetPubkey) {
+                    logger.warn("no 'p' tag found in event");
+                    return;
+                }
+
+                const addressedKeyPair = this.subbedPairs.find(p => p.publicKey === targetPubkey);
+                if (!addressedKeyPair) {
+                    logger.warn(`no keypair found for pubkey: ${targetPubkey}`);
+                    return;
                 }
 
                 if (e.kind === 24133) {
-                    const decryptedNip46 = await decrypt(addressedKeyPair!.privateKey, e.pubkey, e.content)
+                    const decryptedNip46 = await decrypt(addressedKeyPair.privateKey, e.pubkey, e.content)
                     logger.log({ decryptedNip46 })
-                    this.args.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind })
+                    this.args.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind, to: addressedKeyPair.publicKey })
                 }
                 const decoded = decodePayload(e.content)
-                const content = await decryptData(decoded, getSharedSecret(addressedKeyPair!.privateKey, e.pubkey))
-                logger.log({ decrypted: content }, addressedKeyPair?.publicKey)
-                this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind })
+                const content = await decryptData(decoded, getSharedSecret(addressedKeyPair.privateKey, e.pubkey))
+                this.args.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind, to: addressedKeyPair.publicKey })
             }
         })
         if (keys && connectedCallback) {

@@ -127,6 +127,10 @@ export class NostrClient {
         if (event.pub !== this.pubDestination) {
             return false
         }
+        if (event.to !== this.settings.publicKey) {
+            return false
+        }
+        
         if (this.clientCbs[res.requestId]) {
             const cb = this.clientCbs[res.requestId]
             cb.f(res)
