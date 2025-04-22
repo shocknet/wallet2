@@ -147,8 +147,11 @@ const Receive = () => {
 		}
 	}, [dispatch, router, topPaysource]);
 
+
+
+
 	return (
-		<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }} >
+		<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">

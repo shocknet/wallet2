@@ -3,113 +3,114 @@ $contrast-color: #5BB166;
 $clear-color: #E2E2E2;
 
 
-.safe-area {
-  margin-top: env(safe-area-inset-top);
-  margin-bottom: env(safe-area-inset-bottom);
-  margin-left: env(safe-area-inset-left);
-  margin-right: env(safe-area-inset-right);
+
+
+.custom-header {
+	padding-top: var(--ion-safe-area-top, 0px);
 }
 
+
+
 body {
-  background-color: #16191c;
-  color: #fcfcfc;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 162.5%;
+	background-color: #16191c;
+	color: #fcfcfc;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 162.5%;
 
-  text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
+	text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
 
-  // ion variables override
-  --ion-background-color: #16191c;
-  --ion-text-color: #fcfcfc;
-  --ion-font-family: Arial, Helvetica, sans-serif;
+	// ion variables override
+	--ion-background-color: #16191c;
+	--ion-text-color: #fcfcfc;
+	--ion-font-family: Arial, Helvetica, sans-serif;
 
-  //toastify
-  --toastify-color-success: #32a852;
-  --toastify-toast-width: 400px;
+	//toastify
+	--toastify-color-success: #32a852;
+	--toastify-toast-width: 400px;
 
-  .Toastify__toast-body {
-    font-weight: bolder;
-    font-size: 21px;
-    color: #fcfcfd;
-    font-family: Montserrat;
-    text-shadow: none;
-  }
+	.Toastify__toast-body {
+		font-weight: bolder;
+		font-size: 21px;
+		color: #fcfcfd;
+		font-family: Montserrat;
+		text-shadow: none;
+	}
 }
 
 #root {
-  position: relative;
-  height: 100vh;
-  min-height: 100vh;
-  max-height: 100vh;
+	position: relative;
+	height: 100vh;
+	min-height: 100vh;
+	max-height: 100vh;
 }
 
 .App {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-size: 1.6rem;
-  height: 100vh;
-  position: relative;
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	font-size: 1.6rem;
+	height: 100vh;
+	position: relative;
 }
 
 ion-content::part(scroll) {
-  padding-top: 0;
+	padding-top: 0;
 }
 
 @mixin buttonPrimary {
-  border: none;
-  background-color: transparent;
+	border: none;
+	background-color: transparent;
 }
 
 .error-page {
-  text-align: center;
-  padding: 20px;
-  margin-top: 35vh;
+	text-align: center;
+	padding: 20px;
+	margin-top: 35vh;
 
-  &>div {
-    position: fixed;
-    top: 4%;
-    left: 5%;
+	&>div {
+		position: fixed;
+		top: 4%;
+		left: 5%;
 
-    &>button {
-      @include buttonPrimary;
-      font-size: 20px;
-      color: #a3a3a3;
-      text-decoration: underline;
-    }
-  }
+		&>button {
+			@include buttonPrimary;
+			font-size: 20px;
+			color: #a3a3a3;
+			text-decoration: underline;
+		}
+	}
 
-  &>h2 {
-    font-size: 25px;
-  }
+	&>h2 {
+		font-size: 25px;
+	}
 
-  &>button {
-    @include buttonPrimary;
-    font-size: 18px;
-    color: #ffff;
-    text-decoration: underline;
-  }
+	&>button {
+		@include buttonPrimary;
+		font-size: 18px;
+		color: #ffff;
+		text-decoration: underline;
+	}
 
-  &>p {
-    font-size: 20px;
-    color: #ab4747;
-  }
+	&>p {
+		font-size: 20px;
+		color: #ab4747;
+	}
 }
 
 input:focus-visible {
-  outline: 1px solid #2693c1;
+	outline: 1px solid #2693c1;
 }
 
 .sortable-ghost-class {
-  background-color: #2693c1 !important;
+	background-color: #2693c1 !important;
 }
 
 .sortable-chosen-class {
-  background-color: #2693c1 !important;
+	background-color: #2693c1 !important;
 
-  & * {
-    color: white !important;
-  }
+	& * {
+		color: white !important;
+	}
 }
 
 /* .sortable-drag-class {
@@ -117,56 +118,56 @@ input:focus-visible {
 } */
 
 body.barcode-scanner-active {
-  visibility: hidden;
-  background: transparent;
-  --background: transparent;
-  --ion-background-color: transparent;
+	visibility: hidden;
+	background: transparent;
+	--background: transparent;
+	--ion-background-color: transparent;
 }
 
 .ant-notification {
-  visibility: visible;
+	visibility: visible;
 }
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+	-webkit-appearance: none;
+	margin: 0;
 }
 
 
 input[type=number] {
-  -moz-appearance: textfield;
+	-moz-appearance: textfield;
 }
 
 .metric-footer {
-  text-align: center;
-  font-size: 12px;
-  color: #ffffff;
-  font-weight: 500;
-  font-family: Montserrat;
-  width: 100%;
+	text-align: center;
+	font-size: 12px;
+	color: #ffffff;
+	font-weight: 500;
+	font-family: Montserrat;
+	width: 100%;
 }
 
 .Status {
-  display: flex;
+	display: flex;
 
-  .Status_title {
-    font-size: 16px;
-    font-family: Montserrat;
-    width: 50%;
-  }
+	.Status_title {
+		font-size: 16px;
+		font-family: Montserrat;
+		width: 50%;
+	}
 
-  .Status_value {
-    display: flex;
-    font-size: 16px;
-    font-family: Montserrat;
-    width: 50%;
-    justify-content: end;
+	.Status_value {
+		display: flex;
+		font-size: 16px;
+		font-family: Montserrat;
+		width: 50%;
+		justify-content: end;
 
-    div {
-      margin: 1px 5px;
-    }
-  }
+		div {
+			margin: 1px 5px;
+		}
+	}
 }
 
 
