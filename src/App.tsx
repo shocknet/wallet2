@@ -5,6 +5,7 @@ import { IonReactRouter } from "@ionic/react-router";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
+import { StatusBar } from '@capacitor/status-bar';
 
 import './App.scss';
 import store from './State/store';
@@ -58,6 +59,7 @@ import { OfferInfo } from "./Pages/OfferInfo";
 import { Stats } from "./Pages/Stats";
 import NavigationMenu from "./Components/NavigationMenu";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
+import { Capacitor } from "@capacitor/core";
 
 setupIonicReact();
 
@@ -219,6 +221,12 @@ const BoostrapGuard: React.FC = () => {
 };
 
 const App: React.FC = () => {
+
+	useEffect(() => {
+		if (Capacitor.getPlatform() === 'ios') {
+			StatusBar.setOverlaysWebView({ overlay: false });
+		}
+	}, []);
 
 	return (
 		<Provider store={store}>
