@@ -147,6 +147,19 @@ const Receive = () => {
 		}
 	}, [dispatch, router, topPaysource]);
 
+	useEffect(() => {
+		const testDiv = document.createElement('div');
+		testDiv.style.paddingTop = 'env(safe-area-inset-top)';
+		document.body.appendChild(testDiv);
+
+		requestAnimationFrame(() => {
+			const computed = window.getComputedStyle(testDiv).paddingTop;
+			console.log('safe-area-inset-top:', computed);
+			testDiv.remove();
+		});
+	}, []);
+
+
 	return (
 		<IonPage style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
 			<IonHeader className="ion-no-border">
