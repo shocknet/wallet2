@@ -1,6 +1,6 @@
 import { Redirect, Route } from "react-router-dom";
 import React, { useEffect } from "react";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonApp, IonRouterOutlet, isPlatform, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
@@ -223,14 +223,14 @@ const BoostrapGuard: React.FC = () => {
 const App: React.FC = () => {
 
 	useEffect(() => {
-		if (Capacitor.getPlatform() === 'ios') {
-			StatusBar.setOverlaysWebView({ overlay: false });
+		if (isPlatform("ios")) {
+			StatusBar.setOverlaysWebView({ overlay: true });
 		}
 	}, []);
 
 	return (
 		<Provider store={store}>
-			<IonApp className="safe-area">
+			<IonApp>
 				<ErrorBoundary>
 					<IonReactRouter>
 						<AppContent />
