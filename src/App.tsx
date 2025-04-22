@@ -2,7 +2,6 @@ import { Redirect, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { StatusBar } from "@capacitor/status-bar";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
@@ -63,116 +62,116 @@ import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
 setupIonicReact();
 
 const AppContent: React.FC = () => {
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-  useEffect(() => {
-    const handleUrlParams = () => {
-      const url = new URL(window.location.href);
-      const addSource = url.searchParams.get('addSource');
-      const inviteToken = url.searchParams.get('inviteToken');
+	useEffect(() => {
+		const handleUrlParams = () => {
+			const url = new URL(window.location.href);
+			const addSource = url.searchParams.get('addSource');
+			const inviteToken = url.searchParams.get('inviteToken');
 
-      if (addSource) {
-        dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
-        window.history.replaceState({}, document.title, url.pathname);
-      }
-    };
+			if (addSource) {
+				dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
+				window.history.replaceState({}, document.title, url.pathname);
+			}
+		};
 
-    handleUrlParams();
-    window.addEventListener('popstate', handleUrlParams);
+		handleUrlParams();
+		window.addEventListener('popstate', handleUrlParams);
 
-    return () => {
-      window.removeEventListener('popstate', handleUrlParams);
-    };
-  }, [dispatch]);
+		return () => {
+			window.removeEventListener('popstate', handleUrlParams);
+		};
+	}, [dispatch]);
 
-  return (
-    <>
-      <AppUrlListener />
-      <Background />
-      <LoadingOverlay />
+	return (
+		<>
+			<AppUrlListener />
+			<Background />
+			<LoadingOverlay />
 
-      {/* Modals */}
-      <DebitRequestModal />
-      <EditDebitModal />
-      <EditSourceModal />
-      {/* Modals */}
-      <NavigationMenu />
+			{/* Modals */}
+			<DebitRequestModal />
+			<EditDebitModal />
+			<EditSourceModal />
+			{/* Modals */}
+			<NavigationMenu />
 
 
-      <IonRouterOutlet id="main-content">
+			<IonRouterOutlet id="main-content">
 
-        <Route exact path="/home">
-          <Layout>
-            <Home />
-          </Layout>
-        </Route>
-        <Route exact path="/nodeup">
-          <Layout>
-            <NodeUp />
-          </Layout>
-        </Route>
-        <Route exact path="/">
-          <BoostrapGuard />
-        </Route>
-        <Route exact path="/receive">
-          <Receive />
-        </Route>
-        <Route exact path="/loader">
-          <Layout>
-            <Loader />
-          </Layout>
-        </Route>
-        <Route exact path="/send">
-          <Layout>
-            <Send />
-          </Layout>
-        </Route>
-        <Route exact path="/scan">
-          <Layout>
-            <Scan />
-          </Layout>
-        </Route>
-        <Route path="/sources">
-          <Layout>
-            <Sources />
-          </Layout>
-        </Route>
-        <Route exact path="/automation">
-          <Layout>
-            <Automation />
-          </Layout>
-        </Route>
-        <Route exact path="/prefs">
-          <Layout>
-            <Prefs />
-          </Layout>
-        </Route>
-        <Route exact path="/contacts">
-          <Layout>
-            <Contacts />
-          </Layout>
-        </Route>
-        <Route exact path="/invitations">
-          <Layout>
-            <Invitations />
-          </Layout>
-        </Route>
-        <Route exact path="/auth">
-          <Layout>
-            <Auth />
-          </Layout>
-        </Route>
-        <Route exact path="/notify">
-          <Layout>
-            <Notify />
-          </Layout>
-        </Route>
-        <Route exact path="/metrics">
-          <Layout>
-            <Metrics />
-          </Layout>
-        </Route>
-        {/*         <Route exact path="/manage">
+				<Route exact path="/home">
+					<Layout>
+						<Home />
+					</Layout>
+				</Route>
+				<Route exact path="/nodeup">
+					<Layout>
+						<NodeUp />
+					</Layout>
+				</Route>
+				<Route exact path="/">
+					<BoostrapGuard />
+				</Route>
+				<Route exact path="/receive">
+					<Receive />
+				</Route>
+				<Route exact path="/loader">
+					<Layout>
+						<Loader />
+					</Layout>
+				</Route>
+				<Route exact path="/send">
+					<Layout>
+						<Send />
+					</Layout>
+				</Route>
+				<Route exact path="/scan">
+					<Layout>
+						<Scan />
+					</Layout>
+				</Route>
+				<Route path="/sources">
+					<Layout>
+						<Sources />
+					</Layout>
+				</Route>
+				<Route exact path="/automation">
+					<Layout>
+						<Automation />
+					</Layout>
+				</Route>
+				<Route exact path="/prefs">
+					<Layout>
+						<Prefs />
+					</Layout>
+				</Route>
+				<Route exact path="/contacts">
+					<Layout>
+						<Contacts />
+					</Layout>
+				</Route>
+				<Route exact path="/invitations">
+					<Layout>
+						<Invitations />
+					</Layout>
+				</Route>
+				<Route exact path="/auth">
+					<Layout>
+						<Auth />
+					</Layout>
+				</Route>
+				<Route exact path="/notify">
+					<Layout>
+						<Notify />
+					</Layout>
+				</Route>
+				<Route exact path="/metrics">
+					<Layout>
+						<Metrics />
+					</Layout>
+				</Route>
+				{/*         <Route exact path="/manage">
           <Layout>
             <Manage />
           </Layout>
@@ -182,73 +181,65 @@ const AppContent: React.FC = () => {
             <Channels />
           </Layout>
         </Route> */}
-        <Route exact path="/LApps">
-          <Layout>
-            <LinkedApp />
-          </Layout>
-        </Route>
-        <Route exact path="/Offers">
-          <Layout>
-            <Offers />
-          </Layout>
-        </Route>
-        <Route exact path="/OfferInfo">
-          <Layout>
-            <OfferInfo />
-          </Layout>
-        </Route>
-        <Route exact path="/Stats">
-          <Layout>
-            <Stats />
-          </Layout>
-        </Route>
+				<Route exact path="/LApps">
+					<Layout>
+						<LinkedApp />
+					</Layout>
+				</Route>
+				<Route exact path="/Offers">
+					<Layout>
+						<Offers />
+					</Layout>
+				</Route>
+				<Route exact path="/OfferInfo">
+					<Layout>
+						<OfferInfo />
+					</Layout>
+				</Route>
+				<Route exact path="/Stats">
+					<Layout>
+						<Stats />
+					</Layout>
+				</Route>
 
-      </IonRouterOutlet>
-    </>
-  );
+			</IonRouterOutlet>
+		</>
+	);
 };
 
 const BoostrapGuard: React.FC = () => {
-  const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-  console.log({ hasBootstrapped })
+	const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+	console.log({ hasBootstrapped })
 
-  return hasBootstrapped ? (
-    <Redirect to="/home" />
-  ) : (
-    <Redirect to="/nodeup" />
-  );
+	return hasBootstrapped ? (
+		<Redirect to="/home" />
+	) : (
+		<Redirect to="/nodeup" />
+	);
 };
 
 const App: React.FC = () => {
-  
-  useEffect(() => {
-    const setStatusBarColor = async () => {
-      await StatusBar.setBackgroundColor({ color: "#16191c" });
-      await StatusBar.setOverlaysWebView({ overlay: false });
-    };
-    setStatusBarColor();
-  }, []);
 
-  return (
-    <Provider store={store}>
-      <IonApp>
-        <ErrorBoundary>
-          <IonReactRouter>
-            <AppContent />
-          </IonReactRouter>
-        </ErrorBoundary>
-        <ToastContainer
-          theme="colored"
-          position="top-center"
-          closeOnClick
-          pauseOnHover
-          autoClose={4000}
-          limit={2}
-          pauseOnFocusLoss={false}
-        />
-      </IonApp>
-    </Provider>
-  );
+	return (
+		<Provider store={store}>
+			<IonApp className="safe-area">
+				<ErrorBoundary>
+					<IonReactRouter>
+						<AppContent />
+					</IonReactRouter>
+				</ErrorBoundary>
+				<ToastContainer
+					theme="colored"
+					position="top-center"
+					closeOnClick
+					pauseOnHover
+					autoClose={4000}
+					limit={2}
+					pauseOnFocusLoss={false}
+				/>
+			</IonApp>
+		</Provider>
+	);
 };
 
 export default App;
