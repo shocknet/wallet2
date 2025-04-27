@@ -133,7 +133,7 @@ export const populateCursorRequest = (p: HistoryCursor, sourceId: string) => {
 }
 
 export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor, sourceId: string) => {
-	console.log("parseOperationsResponse", sourceId, "r", r, "c", r)
+	console.log("parseOperationsResponse", sourceId, "r", r, "c", c)
 	const newCursor: HistoryCursor = {
 		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice,
 		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice,
