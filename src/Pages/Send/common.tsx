@@ -1,10 +1,10 @@
 import { IonTextarea } from "@ionic/react";
-
-interface NoteInputProps {
+interface NoteInputProps extends React.ComponentProps<typeof IonTextarea> {
 	note: string;
 	setNote: React.Dispatch<React.SetStateAction<string>>;
 }
-const NoteInput = ({ note, setNote }: NoteInputProps) => {
+
+const NoteInput = ({ note, setNote, ...props }: NoteInputProps) => {
 	return (
 		<IonTextarea
 			value={note}
@@ -13,13 +13,11 @@ const NoteInput = ({ note, setNote }: NoteInputProps) => {
 			placeholder='Add a note'
 			maxlength={100}
 			counter
-			fill="solid"
-			className="card-input ion-margin"
 			helperText="Only you can see this note"
 			autoGrow
 			onIonInput={(e) => setNote(e.detail.value || "")}
+			className={`card-input ${props.className || ""}`}
 		>
-
 		</IonTextarea>
 	)
 }

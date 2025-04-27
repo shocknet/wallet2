@@ -19,6 +19,7 @@ import { Satoshi } from "@/lib/types/units";
 import NoteInput from "./common";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { InputClassification } from "@/lib/types/parse";
+import { useEffect, useRef } from "react";
 
 const LnurlCard = ({
 	lnurlData,
@@ -34,9 +35,20 @@ const LnurlCard = ({
 }: Omit<CardProps, "invoiceData" | "nofferData" | "feeTiers" | "selectedFeeTier" | "setSelectedFeeTier">) => {
 	const isLnurl = lnurlData.type === InputClassification.LNURL_PAY;
 
+	const satsInputRef = useRef<HTMLIonInputElement>(null);
+
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			satsInputRef.current?.setFocus();
+		}, 50);
+
+		return () => clearTimeout(timeout);
+	}, []);
+
+
 	return (
 		<>
-			<IonCard color="secondary">
+			<IonCard color="secondary" className="ion-margin-top ion-no-padding">
 				<IonCardHeader>
 					<IonCardTitle style={{ display: "flex", alignItems: "center" }}>
 						<IonIcon color="primary" icon={isLnurl ? globe : person} style={{ marginRight: "5px" }} />
@@ -46,8 +58,9 @@ const LnurlCard = ({
 						Paying <IonText color="primary">{lnurlData.domain}</IonText>
 					</IonCardSubtitle>
 				</IonCardHeader>
-				<IonCardContent className="ion-no-padding">
+				<IonCardContent className="ion-padding">
 					<AmountInput
+						ref={satsInputRef}
 						labelPlacement="stacked"
 						amountInSats={amountInSats}
 						setAmountInSats={setAmountInSats}
@@ -59,12 +72,11 @@ const LnurlCard = ({
 							minSats: lnurlData.min,
 							maxSats: Math.min(lnurlData.max, parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
 						}}
-						className="card-input ion-margin"
-						fill="solid"
+						className="card-input ion-padding"
 					/>
 
-					<NoteInput note={note} setNote={setNote} />
-					<IonAccordionGroup className="ion-margin">
+					<NoteInput note={note} setNote={setNote} className="ion-margin-top" />
+					<IonAccordionGroup className="ion-no-padding" style={{ marginTop: "30px" }}>
 						<IonAccordion value="lnurl-info">
 							<IonItem slot="header">
 								<IonLabel>Lnurl Info</IonLabel>

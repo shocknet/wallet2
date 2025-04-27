@@ -2,8 +2,10 @@ import { IonButton, IonInput } from "@ionic/react";
 import { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { formatBitcoin, formatSatoshi, parseUserInputToSats, satsToBtc } from "@/lib/units";
 import useDebounce from "@/Hooks/useDebounce";
-import { validateAndFormatAmountInput } from "@/lib/format";
+import { formatFiat, validateAndFormatAmountInput } from "@/lib/format";
 import { Satoshi } from "@/lib/types/units";
+import { useSelector } from "@/State/store";
+import { convertSatsToFiat } from "@/lib/fiat";
 
 
 
@@ -35,11 +37,15 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 	const input = useRef<HTMLIonInputElement>(null);
 	useImperativeHandle(ref, () => input.current as HTMLIonInputElement);
 
+	const { url, currency } = useSelector(state => state.prefs.FiatUnit)
+
 
 	const debouncedDisplayValue = useDebounce(displayValue, 500);
 
 	const [isTouched, setIsTouched] = useState(false);
 	const [error, setError] = useState<string | undefined>();
+
+	const [money, setMoney] = useState<string>("");
 
 	useEffect(() => {
 		let newSats: Satoshi;
@@ -99,6 +105,18 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 		setUnit(newUnit);
 	}
 
+	useEffect(() => {
+		const setFiat = async () => {
+			if (!amountInSats) {
+				setMoney("");
+				return;
+			}
+			const fiat = await convertSatsToFiat(amountInSats, currency, url);
+			setMoney(formatFiat(fiat, currency));
+		}
+		setFiat();
+	}, [amountInSats, currency, url]);
+
 
 	/* 	const setMax = () => {
 			if (limits) {
@@ -121,6 +139,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 			onIonInput={handleInputChange}
 			placeholder={`Enter amount in ${unit}`}
 			value={displayValue}
+			helperText={money ? `~ ${money}` : undefined}
 			errorText={error}
 			{...props}
 			className={` ${props.className || ""} ${error !== undefined && 'ion-invalid'} ${isTouched && 'ion-touched'}`}

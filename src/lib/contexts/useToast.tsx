@@ -1,12 +1,9 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { IonToast } from "@ionic/react";
+import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { IonToast, ToastOptions } from "@ionic/react";
 
-type ToastColor = "success" | "danger" | "primary";
 
-interface ToastOptions {
-	message: string;
-	color?: ToastColor;
-}
+
+
 
 export type ShowToast = (options: ToastOptions) => void;
 
@@ -23,27 +20,23 @@ export const useToast = () => {
 };
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
-	const [message, setMessage] = useState<string | null>(null);
-	const [color, setColor] = useState<ToastColor>("primary");
+	const [toastOptions, setToastOptions] = useState<ToastOptions | null>(null);
 
-	const showToast = ({ message, color = "danger" }: ToastOptions) => {
-		setMessage(message);
-		setColor(color);
-	};
+	const showToast = useCallback((options: ToastOptions) => {
+		setToastOptions(options);
+	}, []);
 
 	const handleDismiss = () => {
-		setMessage(null);
+		setToastOptions(null);
 	};
 
 	return (
 		<ToastContext.Provider value={{ showToast }}>
 			{children}
 			<IonToast
-				isOpen={!!message}
-				message={message || ""}
-				color={color}
-				duration={3000}
+				isOpen={!!toastOptions?.message}
 				onDidDismiss={handleDismiss}
+				{...toastOptions}
 			/>
 		</ToastContext.Provider>
 	);
