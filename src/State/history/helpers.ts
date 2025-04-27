@@ -118,6 +118,7 @@ export const isAnyArrayLong = (arrays: any[][], max: number): boolean => {
 }
 
 export const populateCursorRequest = (p: HistoryCursor) => {
+	console.log("populateCursorRequest", p)
 	const cursor = {
 		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice + 1 : 0,
 		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice + 1 : 0,
@@ -132,13 +133,14 @@ export const populateCursorRequest = (p: HistoryCursor) => {
 }
 
 export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor) => {
+	console.log("parseOperationsResponse", "r", r, "c", c)
 	const cursor: HistoryCursor = {
-		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice,
-		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice,
-		latestIncomingTx: r.latestIncomingTxOperations.toIndex || c.latestIncomingTx,
-		latestOutgoingTx: r.latestOutgoingTxOperations.toIndex || c.latestOutgoingTx,
-		latestIncomingUserToUserPayment: r.latestIncomingUserToUserPayemnts.toIndex || c.latestIncomingUserToUserPayment,
-		latestOutgoingUserToUserPayment: r.latestOutgoingUserToUserPayemnts.toIndex || c.latestOutgoingUserToUserPayment,
+		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice! + 1,
+		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice! + 1,
+		latestIncomingTx: r.latestIncomingTxOperations.toIndex || c.latestIncomingTx! + 1,
+		latestOutgoingTx: r.latestOutgoingTxOperations.toIndex || c.latestOutgoingTx! + 1,
+		latestIncomingUserToUserPayment: r.latestIncomingUserToUserPayemnts.toIndex || c.latestIncomingUserToUserPayment! + 1,
+		latestOutgoingUserToUserPayment: r.latestOutgoingUserToUserPayemnts.toIndex || c.latestOutgoingUserToUserPayment! + 1,
 		max_size: 10
 	}
 
