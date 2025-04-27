@@ -133,7 +133,7 @@ export type SourceOperation = SourceActualOperation | SourceOptimsticOperation
 
 
 
-export type HistoryCursor = Partial<GetUserOperationsRequest>
+export type HistoryCursor = GetUserOperationsRequest
 export interface SourceHistory {
 	data: SourceOperation[];
 	cursor: HistoryCursor;

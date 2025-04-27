@@ -49,20 +49,21 @@ export const fetchHistoryForSource = appCreateAsyncThunk(
 		const client = await getNostrClient(source.pasteField, source.keys);
 
 		const newOps: UserOperation[] = [];
-		let newCursor = getState().history.sources[sourceId]?.cursor || {};
+		const cursor = getState().history.sources[sourceId]?.cursor || {};
+
 
 
 		let needMore = true;
-
+		let populatedCursor = populateCursorRequest(cursor);
 		while (needMore) {
-			const res = await client.GetUserOperations(populateCursorRequest(newCursor));
+			const res = await client.GetUserOperations(populatedCursor);
 			if (res.status !== "OK") {
 				throw new Error(res.reason);
 			}
 
-			const { cursor, operations, needMoreData } = parseOperationsResponse(res, newCursor);
+			const { newCursor, operations, needMoreData } = parseOperationsResponse(res, populatedCursor);
 			newOps.push(...operations);
-			newCursor = cursor;
+			populatedCursor = newCursor;
 			needMore = needMoreData;
 		}
 
@@ -77,7 +78,7 @@ export const fetchHistoryForSource = appCreateAsyncThunk(
 			dispatch(getSourceInfo(sourceId));
 		}
 
-		return { sourceId, newOps: processedOperations, newCursor }
+		return { sourceId, newOps: processedOperations, newCursor: populatedCursor };
 	})
 
 
