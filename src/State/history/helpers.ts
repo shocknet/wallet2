@@ -117,8 +117,8 @@ export const isAnyArrayLong = (arrays: any[][], max: number): boolean => {
 	return false
 }
 
-export const populateCursorRequest = (p: HistoryCursor) => {
-	console.log("populateCursorRequest", JSON.stringify(p))
+export const populateCursorRequest = (p: HistoryCursor, sourceId: string) => {
+	console.log("populateCursorRequest", sourceId, p)
 	const cursor = {
 		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice : 0,
 		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice : 0,
@@ -132,8 +132,8 @@ export const populateCursorRequest = (p: HistoryCursor) => {
 	return cursor
 }
 
-export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor) => {
-	console.log("parseOperationsResponse", "r", JSON.stringify(r), "c", JSON.stringify(c))
+export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor, sourceId: string) => {
+	console.log("parseOperationsResponse", sourceId, "r", r, "c", r)
 	const newCursor: HistoryCursor = {
 		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice,
 		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice,
