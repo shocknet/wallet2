@@ -92,7 +92,6 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 	useEffect(() => {
 		if (operation.txHash) {
 			getTransaction(operation.txHash).then((res) => {
-				console.log({ res })
 				if (res !== null) {
 					setMempoolRes(res)
 				}

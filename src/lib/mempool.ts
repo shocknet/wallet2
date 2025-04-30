@@ -19,7 +19,6 @@ async function fetchTransaction(txId: string) {
 async function fetchLatestBlockHeight() {
 	try {
 		const response = await axios.get(`${MEMPOOL_API}/blocks/tip/height`);
-		console.log({ response })
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching latest block height:", error);
@@ -36,7 +35,7 @@ export async function getTransaction(txId: string): Promise<BitcoinTransaction |
 		return null;
 	}
 	if (!data.status.confirmed) {
-		return { txId, confirmations: 0, fee: data.status.fee };
+		return { txId, confirmations: 0, fee: data.fee };
 	}
 	const latestBlockHeight = await fetchLatestBlockHeight();
 	if (!latestBlockHeight) {
@@ -44,6 +43,6 @@ export async function getTransaction(txId: string): Promise<BitcoinTransaction |
 		return null;
 	}
 
-	return { txId, confirmations: latestBlockHeight - data.status.block_height + 1, fee: data.status.fee };
+	return { txId, confirmations: latestBlockHeight - data.status.block_height + 1, fee: data.fee };
 
 }
