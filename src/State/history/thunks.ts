@@ -54,14 +54,14 @@ export const fetchHistoryForSource = appCreateAsyncThunk(
 
 
 		let needMore = true;
-		let populatedCursor = populateCursorRequest(cursor, sourceId);
+		let populatedCursor = populateCursorRequest(cursor);
 		while (needMore) {
 			const res = await client.GetUserOperations(populatedCursor);
 			if (res.status !== "OK") {
 				throw new Error(res.reason);
 			}
 
-			const { newCursor, operations, needMoreData } = parseOperationsResponse(res, populatedCursor, sourceId);
+			const { newCursor, operations, needMoreData } = parseOperationsResponse(res, populatedCursor);
 			newOps.push(...operations);
 			populatedCursor = newCursor;
 			needMore = needMoreData;

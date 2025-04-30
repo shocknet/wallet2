@@ -97,6 +97,14 @@ const transformUserOperationToSourceOperation = (op: UserOperation, sourceId: st
 						txHash: op.tx_hash
 					})
 			}
+		case UserOperationType.INCOMING_USER_TO_USER:
+		case UserOperationType.OUTGOING_USER_TO_USER:
+			return {
+				...base,
+				type: "USER_TO_USER",
+				inbound: op.type === UserOperationType.INCOMING_USER_TO_USER,
+				serviceFee: op.service_fee,
+			}
 		default:
 			throw new Error("Unknown operation type")
 	}
@@ -117,23 +125,21 @@ export const isAnyArrayLong = (arrays: any[][], max: number): boolean => {
 	return false
 }
 
-export const populateCursorRequest = (p: HistoryCursor, sourceId: string) => {
-	console.log("populateCursorRequest", sourceId, p)
+export const populateCursorRequest = (p: HistoryCursor) => {
 	const cursor = {
-		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice : 0,
-		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice : 0,
-		latestIncomingTx: p.latestIncomingTx ? p.latestIncomingTx : 0,
-		latestOutgoingTx: p.latestOutgoingTx ? p.latestOutgoingTx : 0,
-		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ? p.latestIncomingUserToUserPayment : 0,
-		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ? p.latestOutgoingUserToUserPayment : 0,
+		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice + 1 : 0,
+		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice + 1 : 0,
+		latestIncomingTx: p.latestIncomingTx ? p.latestIncomingTx + 1 : 0,
+		latestOutgoingTx: p.latestOutgoingTx ? p.latestOutgoingTx + 1 : 0,
+		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ? p.latestIncomingUserToUserPayment + 1 : 0,
+		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ? p.latestOutgoingUserToUserPayment + 1 : 0,
 		max_size: 10
 	}
 
 	return cursor
 }
 
-export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor, sourceId: string) => {
-	console.log("parseOperationsResponse", sourceId, "r", r, "c", c)
+export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor) => {
 	const newCursor: HistoryCursor = {
 		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice,
 		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice,

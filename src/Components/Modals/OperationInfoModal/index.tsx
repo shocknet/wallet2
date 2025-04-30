@@ -3,7 +3,7 @@ import { getTransaction } from "@/lib/mempool";
 import { BitcoinTransaction } from "@/lib/types/mempool";
 import { Satoshi } from "@/lib/types/units";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
-import { SourceOperation, SourceOperationInvoice, SourceOperationOnChain, SourceOptimsiticInvoice, SourceOptimsiticOnChain } from "@/State/history/types";
+import { SourceOperation, SourceOperationInvoice, SourceOperationOnChain, SourceOptimsiticInvoice, SourceOptimsiticOnChain, SourceUserToUserOperation } from "@/State/history/types";
 import {
 	IonAccordion,
 	IonAccordionGroup,
@@ -68,10 +68,18 @@ const OperationModal = ({ isOpen, onClose, operation }: Props) => {
 
 			<IonContent className={classNames("ion-padding", styles["modal-content"])}>
 				{
-					operation.type === "ON-CHAIN" ? (
+					operation.type === "ON-CHAIN" && (
 						<OnChainOperation operation={operation} />
-					) : (
+					)
+				}
+				{
+					(operation.type === "LNURL_WITHDRAW" || operation.type === "INVOICE") && (
 						<InvoiceOperation operation={operation} />
+					)
+				}
+				{
+					operation.type === "USER_TO_USER" && (
+						<UserToUserOperation operation={operation} />
 					)
 				}
 			</IonContent>
@@ -333,6 +341,43 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 	)
 }
 
+
+const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperation }) => {
+
+	return (
+		<>
+			<SectionDivider title="User To User Payment" />
+			<IonList lines="none" style={{ borderRadius: "12px" }}>
+				<IonItem>
+					<IonLabel color="primary">Amount</IonLabel>
+					<IonText color="primary">{operation.inbound ? "" : "-"}{formatSatoshi(operation.amount)} <IonText color="light">sats</IonText></IonText>
+
+				</IonItem>
+				<IonItem>
+					<IonLabel color="primary">Status</IonLabel>
+					<IonText>Completed</IonText>
+				</IonItem>
+				<IonItem>
+					<IonLabel color="primary">Paid At</IonLabel>
+					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
+				</IonItem>
+				{
+					operation.serviceFee && (
+						<IonItem>
+							<IonLabel color="primary">Service fee</IonLabel>
+							<IonText color="primary">{formatSatoshi(operation.serviceFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
+						</IonItem>
+					)
+				}
+
+				<NoteField note={operation.memo} sourceId={operation.sourceId} operationId={operation.operationId} />
+
+			</IonList>
+			<SourceSection sourceId={operation.sourceId} />
+		</>
+	)
+}
+
 const SourceSection = ({ sourceId }: { sourceId: string }) => {
 	const operationSource = useSelector(state => selectSourceById(state, sourceId));
 
@@ -367,6 +412,8 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 		</>
 	)
 }
+
+
 
 
 

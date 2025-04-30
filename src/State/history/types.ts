@@ -126,8 +126,14 @@ export type SourceOptimsiticOnChain = OptimisticOperationBase & {
 		}
 	)
 
+export type SourceUserToUserOperation = SourceOperationBase & {
+	type: "USER_TO_USER";
+	inbound: boolean;
+	serviceFee: number;
+}
+
 export type SourceOptimsticOperation = SourceOptimsiticInvoice | SourceOptimsiticOnChain;
-export type SourceActualOperation = SourceOperationInvoice | SourceOperationOnChain
+export type SourceActualOperation = SourceOperationInvoice | SourceOperationOnChain | SourceUserToUserOperation;
 
 export type SourceOperation = SourceActualOperation | SourceOptimsticOperation
 

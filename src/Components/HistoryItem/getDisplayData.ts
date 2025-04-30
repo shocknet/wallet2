@@ -1,6 +1,6 @@
 import { InputClassification } from "@/lib/types/parse";
 import { SourceOperation } from "@/State/history/types";
-import { flash, hourglass, logoBitcoin, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
+import { cashOutline, flash, hourglass, logoBitcoin, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
 import moment from "moment";
 
 
@@ -57,6 +57,12 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 			label = operation.memo || null;
 			typeIcon = logoBitcoin;
 			typeIconColor = "#F7931A";
+			break;
+		}
+		case "USER_TO_USER": {
+			label = operation.memo || null;
+			typeIcon = cashOutline;
+			typeIconColor = "green";
 			break;
 		}
 	}
