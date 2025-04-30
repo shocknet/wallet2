@@ -49,7 +49,7 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 						invoiceSource.noffer.pubkey || invoiceSource.noffer.relay
 						: null
 				: null;
-			label = extractInvoiceMemo(operation.memo) || operation.invoiceMemo || labelFromLnService || null;
+			label = extractInvoiceMemo(operation.memo) || extractInvoiceMemo(operation.invoiceMemo) || labelFromLnService || null;
 			typeIconColor = "#FFD700";
 			break;
 		}
