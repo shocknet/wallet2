@@ -105,7 +105,6 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 		}
 	}, [operation]);
 
-	console.log({ operation })
 
 	const data = useMemo(() => {
 		let status: string | JSX.Element = "";
@@ -162,7 +161,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
+					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
 				</IonItem>
 				{
 					!!data.serviceFee && (
@@ -249,7 +248,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
+					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
 				</IonItem>
 				{
 					!!data.serviceFee && (
@@ -359,7 +358,7 @@ const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperati
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix).toLocaleString()}</IonText>
+					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
 				</IonItem>
 				{
 					operation.serviceFee && (
@@ -399,7 +398,7 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 				{"balance" in operationSource && (
 					<IonItem>
 						<IonLabel color="primary">Balance</IonLabel>
-						<IonText color="primary">{parseInt(operationSource.balance).toLocaleString()}	<IonText color="light">sats</IonText></IonText>
+						<IonText color="primary">{parseInt(operationSource.balance)?.toLocaleString()}	<IonText color="light">sats</IonText></IonText>
 					</IonItem>
 				)}
 				<IonItem>
