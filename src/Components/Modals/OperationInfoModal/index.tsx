@@ -30,7 +30,6 @@ import classNames from "classnames";
 import { checkmark, closeOutline, copy, informationCircle, pencilOutline } from "ionicons/icons";
 import { selectSourceById, useDispatch, useSelector } from "@/State/store";
 import { updateOperationNote } from "@/State/history";
-import Popover from "@/Components/common/popover";
 import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
@@ -214,7 +213,6 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 
 
 			</IonList>
-			<Popover id="internal-info" text="internal means this" />
 			<SourceSection sourceId={operation.sourceId} />
 		</>
 	)
