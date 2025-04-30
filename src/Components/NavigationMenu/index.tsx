@@ -24,7 +24,7 @@ const menuItems = [
 
 const NavigationMenu = () => {
 	return (
-		<IonMenu type="reveal" contentId="main-content" side="end">
+		<IonMenu type="overlay" contentId="main-content" side="end">
 			<IonHeader>
 				<IonToolbar color="secondary">
 					<IonTitle color="light" className="ion-text-center">Shockwallet</IonTitle>

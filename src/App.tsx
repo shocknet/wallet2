@@ -35,7 +35,6 @@ import { Background } from "./Components/Background";
 import { Provider } from 'react-redux';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { iosTransitionAnimation } from "@ionic/react"
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -74,149 +73,148 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 
 
 addIcons({
-  nostr: nostrSvg,
+	nostr: nostrSvg,
 })
 
 
 setupIonicReact();
 
 const AppContent: React.FC = () => {
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-  useAppLifecycle();
-
-
-  useEffect(() => {
-    const handleUrlParams = () => {
-      const url = new URL(window.location.href);
-      const addSource = url.searchParams.get('addSource');
-      const inviteToken = url.searchParams.get('inviteToken');
-
-      if (addSource) {
-        dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
-        window.history.replaceState({}, document.title, url.pathname);
-      }
-    };
-
-    handleUrlParams();
-    window.addEventListener('popstate', handleUrlParams);
-
-    return () => {
-      window.removeEventListener('popstate', handleUrlParams);
-    };
-  }, [dispatch]);
-
-  return (
-    <>
-      <AppUrlListener />
-      <Background />
-      <LoadingOverlay />
-
-      {/* Modals */}
-      <DebitRequestModal />
-      <EditDebitModal />
-      <EditSourceModal />
-      {/* Modals */}
-      <NavigationMenu />
+	useAppLifecycle();
 
 
+	useEffect(() => {
+		const handleUrlParams = () => {
+			const url = new URL(window.location.href);
+			const addSource = url.searchParams.get('addSource');
+			const inviteToken = url.searchParams.get('inviteToken');
 
-      <IonRouterOutlet id="main-content" animated={true}
-        animation={iosTransitionAnimation}
-      >
-        <Route exact path="/home" render={(props) =>
-          <Suspense fallback={<FullSpinner />}>
-            <Home {...props} />
-          </Suspense>
-        }
-        />
-        <Route exact path="/nodeup">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <NodeUp />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/">
-          <Suspense fallback={<FullSpinner />}>
-            <BoostrapGuard />
-          </Suspense>
-        </Route>
-        <Route exact path="/receive">
-          <Suspense fallback={<FullSpinner />}>
-            <Receive />
-          </Suspense>
-        </Route>
-        <Route exact path="/loader">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Loader />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/send" render={(props) =>
-          <Suspense fallback={<FullSpinner />}>
-            <Send {...props} />
-          </Suspense>
-        }
-        />
-        <Route path="/sources">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Sources />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/automation">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Automation />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/prefs">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Prefs />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/contacts">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Contacts />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/invitations">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Invitations />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/auth">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Auth />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/notify">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Notify />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/metrics">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Metrics />
-            </Layout>
-          </Suspense>
-        </Route>
-        {/*         <Route exact path="/manage">
+			if (addSource) {
+				dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
+				window.history.replaceState({}, document.title, url.pathname);
+			}
+		};
+
+		handleUrlParams();
+		window.addEventListener('popstate', handleUrlParams);
+
+		return () => {
+			window.removeEventListener('popstate', handleUrlParams);
+		};
+	}, [dispatch]);
+
+	return (
+		<>
+			<AppUrlListener />
+			<Background />
+			<LoadingOverlay />
+
+			{/* Modals */}
+			<DebitRequestModal />
+			<EditDebitModal />
+			<EditSourceModal />
+			{/* Modals */}
+			<NavigationMenu />
+
+
+
+			<IonRouterOutlet id="main-content" animated={true}
+			>
+				<Route exact path="/home" render={(props) =>
+					<Suspense fallback={<FullSpinner />}>
+						<Home {...props} />
+					</Suspense>
+				}
+				/>
+				<Route exact path="/nodeup">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<NodeUp />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/">
+					<Suspense fallback={<FullSpinner />}>
+						<BoostrapGuard />
+					</Suspense>
+				</Route>
+				<Route exact path="/receive">
+					<Suspense fallback={<FullSpinner />}>
+						<Receive />
+					</Suspense>
+				</Route>
+				<Route exact path="/loader">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Loader />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/send" render={(props) =>
+					<Suspense fallback={<FullSpinner />}>
+						<Send {...props} />
+					</Suspense>
+				}
+				/>
+				<Route path="/sources">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Sources />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/automation">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Automation />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/prefs">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Prefs />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/contacts">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Contacts />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/invitations">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Invitations />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/auth">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Auth />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/notify">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Notify />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/metrics">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Metrics />
+						</Layout>
+					</Suspense>
+				</Route>
+				{/*         <Route exact path="/manage">
           <Layout>
             <Manage />
           </Layout>
@@ -226,87 +224,87 @@ const AppContent: React.FC = () => {
             <Channels />
           </Layout>
         </Route> */}
-        <Route exact path="/LApps">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <LinkedApp />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/Offers">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Offers />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/OfferInfo">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <OfferInfo />
-            </Layout>
-          </Suspense>
-        </Route>
-        <Route exact path="/Stats">
-          <Suspense fallback={<FullSpinner />}>
-            <Layout>
-              <Stats />
-            </Layout>
-          </Suspense>
-        </Route>
+				<Route exact path="/LApps">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<LinkedApp />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/Offers">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Offers />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/OfferInfo">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<OfferInfo />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/Stats">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Stats />
+						</Layout>
+					</Suspense>
+				</Route>
 
 
-      </IonRouterOutlet>
-    </>
-  );
+			</IonRouterOutlet>
+		</>
+	);
 };
 
 const BoostrapGuard: React.FC = () => {
-  const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-  console.log({ hasBootstrapped })
+	const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+	console.log({ hasBootstrapped })
 
-  return hasBootstrapped ? (
-    <Redirect to="/home" />
-  ) : (
-    <Redirect to="/nodeup" />
-  );
+	return hasBootstrapped ? (
+		<Redirect to="/home" />
+	) : (
+		<Redirect to="/nodeup" />
+	);
 };
 
 const App: React.FC = () => {
-  const setStatusBarColor = async () => {
-    await StatusBar.setBackgroundColor({ color: "#16191c" });
-  };
+	const setStatusBarColor = async () => {
+		await StatusBar.setBackgroundColor({ color: "#16191c" });
+	};
 
-  useEffect(() => {
-    setStatusBarColor();
-  }, []);
+	useEffect(() => {
+		setStatusBarColor();
+	}, []);
 
-  return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <IonApp>
-          <ErrorBoundary>
-            <IonReactRouter>
-              <AlertProvider>
-                <ToastProvider>
-                  <AppContent />
-                </ToastProvider>
-              </AlertProvider>
-            </IonReactRouter>
-          </ErrorBoundary>
-          <ToastContainer
-            theme="colored"
-            position="top-center"
-            closeOnClick
-            pauseOnHover
-            autoClose={4000}
-            limit={2}
-            pauseOnFocusLoss={false}
-          />
-        </IonApp>
-      </PersistGate>
-    </Provider>
-  );
+	return (
+		<Provider store={store}>
+			<PersistGate loading={null} persistor={persistor}>
+				<IonApp>
+					<ErrorBoundary>
+						<IonReactRouter>
+							<AlertProvider>
+								<ToastProvider>
+									<AppContent />
+								</ToastProvider>
+							</AlertProvider>
+						</IonReactRouter>
+					</ErrorBoundary>
+					<ToastContainer
+						theme="colored"
+						position="top-center"
+						closeOnClick
+						pauseOnHover
+						autoClose={4000}
+						limit={2}
+						pauseOnFocusLoss={false}
+					/>
+				</IonApp>
+			</PersistGate>
+		</Provider>
+	);
 };
 
 export default App;
