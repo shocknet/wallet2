@@ -312,7 +312,9 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 						<IonRow className="ion-justify-content-center ion-margin-top">
 							<IonCol size="12" className="ion-text-center">
 								<div className={styles["qr-code-wrapper"]}>
-									<QrCode value={lnurl} prefix="lightning" />
+									<div className={styles["inner-qr-code"]}>
+										<QrCode value={lnurl} prefix="lightning" />
+									</div>
 								</div>
 							</IonCol>
 						</IonRow>
