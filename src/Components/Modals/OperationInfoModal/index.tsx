@@ -67,19 +67,13 @@ const OperationModal = ({ isOpen, onClose, operation }: Props) => {
 
 			<IonContent className={classNames("ion-padding", styles["modal-content"])}>
 				{
-					operation.type === "ON-CHAIN" && (
+					operation.type === "ON-CHAIN" ? (
 						<OnChainOperation operation={operation} />
-					)
-				}
-				{
-					(operation.type === "LNURL_WITHDRAW" || operation.type === "INVOICE") && (
+					) : (operation.type === "LNURL_WITHDRAW" || operation.type === "INVOICE") ? (
 						<InvoiceOperation operation={operation} />
-					)
-				}
-				{
-					operation.type === "USER_TO_USER" && (
+					) : (operation.type === "USER_TO_USER") ? (
 						<UserToUserOperation operation={operation} />
-					)
+					) : null
 				}
 			</IonContent>
 		</IonModal>
