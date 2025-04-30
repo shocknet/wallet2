@@ -106,6 +106,8 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 		}
 	}, [operation]);
 
+	console.log({ operation })
+
 	const data = useMemo(() => {
 		let status: string | JSX.Element = "";
 		let serviceFee: number | null = null;
