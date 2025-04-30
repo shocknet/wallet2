@@ -92,6 +92,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 	useEffect(() => {
 		if (operation.txHash) {
 			getTransaction(operation.txHash).then((res) => {
+				console.log({ res })
 				if (res !== null) {
 					setMempoolRes(res)
 				}
@@ -99,13 +100,6 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 		}
 	}, [operation]);
 
-	useEffect(() => {
-		console.log("re-render", {
-			paidAtUnix: operation.paidAtUnix,
-			mempoolRes,
-			operation,
-		});
-	}, [mempoolRes]);
 
 
 	const data = useMemo(() => {

@@ -19,6 +19,7 @@ async function fetchTransaction(txId: string) {
 async function fetchLatestBlockHeight() {
 	try {
 		const response = await axios.get(`${MEMPOOL_API}/blocks/tip/height`);
+		console.log({ response })
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching latest block height:", error);
