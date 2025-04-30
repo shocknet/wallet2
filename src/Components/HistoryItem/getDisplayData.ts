@@ -1,6 +1,6 @@
 import { InputClassification } from "@/lib/types/parse";
 import { SourceOperation } from "@/State/history/types";
-import { cashOutline, flash, hourglass, logoBitcoin, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
+import { flashOutline, hourglass, linkOutline, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
 import moment from "moment";
 
 
@@ -25,8 +25,8 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 	let label: string | null = null
 
 
-	let typeIcon = flash;
-	let typeIconColor = "";
+	let typeIcon = flashOutline;
+	const typeIconColor = "#FFD700";
 
 
 	switch (operation.type) {
@@ -50,21 +50,18 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 						: null
 				: null;
 			label = extractInvoiceMemo(operation.memo) || extractInvoiceMemo(operation.invoiceMemo) || labelFromLnService || null;
-			typeIconColor = "#FFD700";
-			break;
-		}
-		case "ON-CHAIN": {
-			label = operation.memo || null;
-			typeIcon = logoBitcoin;
-			typeIconColor = "#F7931A";
 			break;
 		}
 		case "USER_TO_USER": {
 			label = operation.memo || null;
-			typeIcon = cashOutline;
-			typeIconColor = "green";
 			break;
 		}
+		case "ON-CHAIN": {
+			label = operation.memo || null;
+			typeIcon = linkOutline;
+			break;
+		}
+
 	}
 
 
@@ -74,7 +71,6 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 		switch (operation.type) {
 			case "INVOICE": {
 				typeIcon = radioOutline;
-				typeIconColor = "#FFD700";
 				date = "Pending"
 				break;
 			}
@@ -82,7 +78,6 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 				switch (operation.status) {
 					case "broadcasting": {
 						typeIcon = radioOutline;
-						typeIconColor = "#F7931A";
 						date = "Pending";
 						break;
 					}

@@ -99,6 +99,14 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 		}
 	}, [operation]);
 
+	useEffect(() => {
+		console.log("re-render", {
+			paidAtUnix: operation.paidAtUnix,
+			mempoolRes,
+			operation,
+		});
+	}, [mempoolRes]);
+
 
 	const data = useMemo(() => {
 		let status: string | JSX.Element = "";
@@ -155,7 +163,12 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
+					<IonText>
+						{"paidAtUnix" in operation && operation.paidAtUnix
+							? new Date(operation.paidAtUnix).toLocaleString()
+							: "Pending..."}
+					</IonText>
+
 				</IonItem>
 				{
 					!!data.serviceFee && (
@@ -230,7 +243,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 
 	return (
 		<>
-			<SectionDivider title="Invoice Payment" />
+			<SectionDivider title="Lightning Payment" />
 			<IonList lines="none" style={{ borderRadius: "12px" }}>
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
@@ -242,7 +255,12 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
+					<IonText>
+						{"paidAtUnix" in operation && operation.paidAtUnix
+							? new Date(operation.paidAtUnix).toLocaleString()
+							: "Pending..."}
+					</IonText>
+
 				</IonItem>
 				{
 					!!data.serviceFee && (
@@ -339,32 +357,33 @@ const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperati
 
 	return (
 		<>
-			<SectionDivider title="User To User Payment" />
+			<SectionDivider title="Lightning Payment" />
 			<IonList lines="none" style={{ borderRadius: "12px" }}>
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
 					<IonText color="primary">{operation.inbound ? "" : "-"}{formatSatoshi(operation.amount)} <IonText color="light">sats</IonText></IonText>
-
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Status</IonLabel>
-					<IonText>Completed</IonText>
+					<IonText>{"Completed (internal)"}</IonText>
 				</IonItem>
 				<IonItem>
 					<IonLabel color="primary">Paid At</IonLabel>
-					<IonText>{new Date(operation.paidAtUnix)?.toLocaleString()}</IonText>
+					<IonText>
+						{"paidAtUnix" in operation && operation.paidAtUnix
+							? new Date(operation.paidAtUnix).toLocaleString()
+							: "Pending..."}
+					</IonText>
 				</IonItem>
 				{
-					operation.serviceFee && (
+					!!operation.serviceFee && (
 						<IonItem>
 							<IonLabel color="primary">Service fee</IonLabel>
 							<IonText color="primary">{formatSatoshi(operation.serviceFee as Satoshi)} <IonText color="light">sats</IonText></IonText>
 						</IonItem>
 					)
 				}
-
 				<NoteField note={operation.memo} sourceId={operation.sourceId} operationId={operation.operationId} />
-
 			</IonList>
 			<SourceSection sourceId={operation.sourceId} />
 		</>
