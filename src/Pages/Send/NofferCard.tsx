@@ -48,7 +48,7 @@ const NofferCard = ({
 						Paying <IonText color="primary">{nofferData.noffer.offer}</IonText>
 					</IonCardSubtitle>
 				</IonCardHeader>
-				<IonCardContent className="ion-no-padding">
+				<IonCardContent className="ion-no-padding ion-margin-top">
 					{
 						(nofferData.priceType === nip19.OfferPriceType.Spontaneous)
 						&&

@@ -55,7 +55,7 @@ const OnChainCard = ({
 					On Chain
 				</IonCardTitle>
 			</IonCardHeader>
-			<IonCardContent className="ion-padding">
+			<IonCardContent className="ion-padding ion-margin-top">
 				<AmountInput
 					ref={satsInputRef}
 					labelPlacement="stacked"

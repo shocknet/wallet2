@@ -58,7 +58,7 @@ const LnurlCard = ({
 						Paying <IonText color="primary">{lnurlData.domain}</IonText>
 					</IonCardSubtitle>
 				</IonCardHeader>
-				<IonCardContent className="ion-padding">
+				<IonCardContent className="ion-padding ion-margin-top">
 					<AmountInput
 						ref={satsInputRef}
 						labelPlacement="stacked"

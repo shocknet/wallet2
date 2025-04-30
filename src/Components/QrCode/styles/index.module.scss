@@ -13,8 +13,8 @@
 
 	.copy-hint {
 		position: absolute;
-		bottom: 3px;
-		right: 3px;
+		bottom: 2%;
+		right: 2%;
 		background: rgba(255, 255, 255, 0.9);
 		padding: 6px;
 		border-radius: 50%;
@@ -25,6 +25,9 @@
 		&:active {
 			transform: scale(0.9);
 		}
+
+		width: 6%;
+		height: 6%;
 	}
 }
 

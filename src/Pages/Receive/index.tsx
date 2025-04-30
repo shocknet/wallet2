@@ -40,6 +40,7 @@ import { formatFiat, truncateTextMiddle } from '@/lib/format';
 import BackToolbar from '@/Layout2/BackToolbar';
 import { convertSatsToFiat } from '@/lib/fiat';
 import { useAlert } from '@/lib/contexts/useAlert';
+import styles from "./styles/index.module.scss";
 
 const createLnurlFromLnAddress = (lnAddress: string) => {
 	if (lnAddress === "") return "";
@@ -47,14 +48,6 @@ const createLnurlFromLnAddress = (lnAddress: string) => {
 	const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
 	const lnurl = bech32.encode("lnurl", words, 999999);
 	return lnurl;
-}
-
-const breakPoints = {
-	size: "10",
-	sizeSm: "10",
-	sizeMd: "8",
-	sizeLg: "6",
-	sizeXl: "4",
 }
 
 
@@ -112,7 +105,7 @@ const Receive = () => {
 
 
 	const handleInvalidateLnurl = useCallback(() => {
-		handleInvalidate("lnurl");
+		handleInvalidate("address");
 	}, [handleInvalidate]);
 
 	const handleInvalidateChain = useCallback(() => {
@@ -121,8 +114,8 @@ const Receive = () => {
 
 	const [validSlides, setValidSlides] = useState<Slide[]>([
 		{
-			id: 'lnurl',
-			name: 'LNURL',
+			id: 'address',
+			name: 'Address',
 			component: <LnurlTab onInvalidate={handleInvalidateLnurl} />,
 		},
 		{
@@ -317,8 +310,10 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 				showLnurl ? (
 					<>
 						<IonRow className="ion-justify-content-center ion-margin-top">
-							<IonCol {...breakPoints} className="ion-text-center">
-								<QrCode value={lnurl} prefix="lightning" />
+							<IonCol size="12" className="ion-text-center">
+								<div className={styles["qr-code-wrapper"]}>
+									<QrCode value={lnurl} prefix="lightning" />
+								</div>
 							</IonCol>
 						</IonRow>
 						<IonRow className="ion-justify-content-center ion-margin-top">
@@ -332,8 +327,12 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 				) : (
 					<>
 						<IonRow className="ion-justify-content-center ion-margin-top">
-							<IonCol {...breakPoints} className="ion-text-center">
-								<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning" />
+							<IonCol size="12" className="ion-text-center">
+								<div className={styles["qr-code-wrapper"]}>
+									<div className={styles["inner-qr-code"]}>
+										<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning" />
+									</div>
+								</div>
 							</IonCol>
 						</IonRow>
 						<IonRow className="ion-justify-content-center ion-margin-top">
@@ -465,8 +464,14 @@ const InvoiceTab = memo(() => {
 					qrCodeValue ? (
 						<>
 							<IonRow className="ion-justify-content-center ion-margin-top">
-								<IonCol {...breakPoints} className="ion-text-center">
-									<QrCode value={qrCodeValue} prefix="lightning" />
+								<IonCol size="12" className="ion-text-center">
+									<div className={styles["qr-code-wrapper"]}>
+										<div className={styles["inner-qr-code"]}>
+
+											<QrCode value={qrCodeValue} prefix="lightning" />
+										</div>
+									</div>
+
 								</IonCol>
 							</IonRow>
 							<IonRow className="ion-justify-content-center ion-margin-top">
@@ -484,20 +489,26 @@ const InvoiceTab = memo(() => {
 				)
 			}
 			<IonRow className="ion-justify-content-center ion-margin-top">
-				<IonCol {...breakPoints}>
-					<IonButton
-						color="primary"
-						strong
-						onClick={openModal}
-						expand="block"
-						style={{
-							fontSize: "1.1rem",
-							"--padding-top": "15px",
-							"--padding-bottom": "15px",
-						}}
-					>
-						+ Create Invoice
-					</IonButton>
+				<IonCol size="12">
+					<div className={styles["qr-code-wrapper"]}>
+						<div className={styles["inner-qr-code"]}>
+							<IonButton
+								color="primary"
+								strong
+								onClick={openModal}
+								expand="block"
+								style={{
+									fontSize: "1.1rem",
+									"--padding-top": "15px",
+									"--padding-bottom": "15px",
+								}}
+							>
+								+ Create Invoice
+							</IonButton>
+
+						</div>
+					</div>
+
 				</IonCol>
 			</IonRow>
 
@@ -579,8 +590,12 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 					qrCodeValue ? (
 						<>
 							<IonRow className="ion-justify-content-center ion-margin-top">
-								<IonCol {...breakPoints} className="ion-text-center">
-									<QrCode value={qrCodeValue} prefix="bitcoin" />
+								<IonCol size="12" className="ion-text-center">
+									<div className={styles["qr-code-wrapper"]}>
+										<div className={styles["inner-qr-code"]}>
+											<QrCode value={qrCodeValue} prefix="bitcoin" />
+										</div>
+									</div>
 								</IonCol>
 							</IonRow>
 							<IonRow className="ion-justify-content-center ion-margin-top">
@@ -588,7 +603,6 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 									<IonText>{bitcoinAddText}</IonText>
 								</IonCol>
 							</IonRow>
-
 						</>
 					) : null
 				)

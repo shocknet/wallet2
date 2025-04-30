@@ -56,7 +56,7 @@ const InvoiceCard = ({
 					<IonText style={{ fontSize: "0.7rem" }}>{money && ` (~${money})`}</IonText>
 				</IonCardSubtitle>
 			</IonCardHeader>
-			<IonCardContent className="ion-padding">
+			<IonCardContent className="ion-padding ion-margin-top">
 				<NoteInput note={note} setNote={setNote} />
 				<IonAccordionGroup className="ion-no-padding" style={{ marginTop: "30px" }}>
 					<IonAccordion value="invoice-info">

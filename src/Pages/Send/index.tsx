@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
 import {
 	IonAvatar,
@@ -73,6 +73,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 	const [selectedSource, setSelectedSource] = useState(enabledSpendSources[0]);
 	const isPubSource = !!selectedSource?.pubSource;
+
+	const inputRef = useRef<HTMLIonInputElement>(null);
 
 	// To show which scanner to use
 	const [isMobile, setIsMobile] = useState(false);
@@ -174,6 +176,10 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	});
 	const [isTouched, setIsTouched] = useState(false);
 	const onRecipientChange = (e: CustomEvent) => {
+		setInputState({ status: "idle", inputValue: "" });
+		if (inputRef.current) {
+			inputRef.current.classList.remove("ion-invalid")
+		}
 		setRecipient(e.detail.value || "");
 	}
 
@@ -317,9 +323,6 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	};
 
 
-
-
-
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
@@ -332,22 +335,23 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					<IonRow>
 						<IonCol size="12">
 							<IonInput
+								ref={inputRef}
+								className={`
+									${inputState.status === "error" && 'ion-invalid'}
+									${isTouched && 'ion-touched'}
+								`}
 								style={{
 									"--background": "var(--ion-color-secondary)",
 								}}
 								label="Recipient"
 								labelPlacement="stacked"
 								fill="solid"
-								className={`
-                ${inputState.status === "error" && 'ion-invalid'}
-                ${isTouched && 'ion-touched'}
-              `}
 								color="primary"
 								onIonBlur={() => setIsTouched(true)}
 								placeholder={
 									isPubSource ? "Paste invoice, Noffer string LNURL, Bitcoin address, or Lightning address" : "Paste invoice, LNURL, or Lightning address"
 								}
-								errorText={inputState.status === "error" ? inputState.error : undefined}
+								errorText={inputState.status === "error" ? inputState.error : ""}
 								value={recipient}
 								onIonInput={onRecipientChange}
 							>
