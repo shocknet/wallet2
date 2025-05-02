@@ -8,7 +8,7 @@ import { nip19 } from "nostr-tools";
 import { NostrKeyPair } from "@/Api/nostrHandler";
 
 
-const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bcrt[a-zA-HJ-NP-Z0-9]{39,59})$/;
+const BITCOIN_ADDRESS_REGEX = /^(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
 const LN_INVOICE_REGEX = /^(lightning:)?(lnbc|lntb)[0-9a-zA-Z]+$/;
 const LNURL_REGEX = /^(lightning:)?[Ll][Nn][Uu][Rr][Ll][0-9a-zA-Z]+$/;
 const NOFFER_REGEX = /^(lightning:)?[Nn][Oo][Ff][Ff][Ee][Rr][0-9a-zA-Z]+$/;

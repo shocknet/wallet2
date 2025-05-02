@@ -19,79 +19,18 @@ const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
 export const useAppLifecycle = () => {
 	const dispatch = useDispatch();
-	const history = useHistory();
 
 	const nodedUp = useSelector(state => state.nostrPrivateKey);
-	const savedAssets = useSelector(state => state.generatedAssets.assets)
 
 	const { cachedValue, setValue, isLoaded } = usePreference<boolean>(DENIED_NOTIFICATIONS_PERMISSIONS, false);
 
 	const { showAlert } = useAlert();
-	const clipboardAlertShown = useRef(false);
 
-	const isFocused = useRef(false);
+	useWatchClipboard();
 
-	const checkClipboard = useCallback(async () => {
-		if (!isFocused.current) {
-			await new Promise(resolve => setTimeout(resolve, 300));
-			if (!isFocused.current) return;
-		}
-		let text = "";
 
-		try {
-			const { type, value } = await Clipboard.read();
-			if (type === "text/plain") {
-				text = value;
-			}
-		} catch (err) {
-			console.error("Cannot read clipboard", err);
-			return;
-		}
-		if (!text.length) {
-			return;
-		}
-		if (savedAssets?.includes(text)) {
-			return;
-		}
-		const classification = identifyBitcoinInput(text);
-		if (classification === InputClassification.UNKNOWN) {
-			return;
-		}
 
-		if (clipboardAlertShown.current) {
-			return;
-		}
-		clipboardAlertShown.current = true;
-		showAlert({
-			header: "Clipboard Detected",
-			subHeader: "Do you want to use the content from your clipboard?",
-			message: truncateTextMiddle(text, 20),
-			buttons: [
-				{
-					text: "No",
-					role: "cancel",
-					handler: () => {
-						clipboardAlertShown.current = false;
-					}
-				},
-				{
-					text: "Yes",
-					handler: () => {
-						clipboardAlertShown.current = false;
-						// Handle the clipboard content
-						dispatch(addAsset({ asset: text }));
 
-						history.push({
-							pathname: "/send",
-							state: {
-								input: text
-							}
-						})
-					}
-				}
-			]
-		})
-	}, [savedAssets, dispatch, history, showAlert])
 
 
 
@@ -100,7 +39,7 @@ export const useAppLifecycle = () => {
 
 		const tasks = () => {
 			dispatch(listenforNewOperations());
-			checkClipboard();
+
 		}
 
 		// App start
@@ -127,13 +66,10 @@ export const useAppLifecycle = () => {
 			// Handle background tasks if needed
 		};
 
-		const listener = App.addListener("appStateChange", async (state) => {
+		const listener = App.addListener("appStateChange", (state) => {
 			if (state.isActive) {
-				await new Promise(resolve => setTimeout(resolve, 100));
-				isFocused.current = true;
 				onAppResume();
 			} else {
-				isFocused.current = false;
 				onAppPause();
 			}
 		});
@@ -202,3 +138,106 @@ export const useAppLifecycle = () => {
 		};
 	}, [dispatch, isLoaded, handleInitNotifications])
 };
+
+
+const useWatchClipboard = () => {
+	const { showAlert } = useAlert();
+	const dispatch = useDispatch();
+
+	const history = useHistory();
+
+	const savedAssets = useSelector(state => state.generatedAssets.assets)
+
+	const clipboardAlertShown = useRef(false);
+	const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const lastCheckRef = useRef(0);
+
+	const checkClipboard = useCallback(async () => {
+		if (Date.now() - lastCheckRef.current < 500) return;
+		lastCheckRef.current = Date.now();
+
+		if (!document.hasFocus()) return;
+
+
+		let text = "";
+
+		try {
+			const { type, value } = await Clipboard.read();
+			if (type === "text/plain") {
+				text = value.trim();
+			}
+		} catch (err) {
+			console.error("Cannot read clipboard", err);
+			return;
+		}
+
+		if (
+			!text.length ||
+			(savedAssets || []).includes(text) ||
+			identifyBitcoinInput(text) === InputClassification.UNKNOWN ||
+			clipboardAlertShown.current
+		) {
+			return;
+		}
+
+		clipboardAlertShown.current = true;
+		showAlert({
+			header: "Clipboard Detected",
+			subHeader: "Do you want to use the content from your clipboard?",
+			message: truncateTextMiddle(text, 20),
+			buttons: [
+				{
+					text: "No",
+					role: "cancel",
+					handler: () => {
+						clipboardAlertShown.current = false;
+					}
+				},
+				{
+					text: "Yes",
+					handler: () => {
+						clipboardAlertShown.current = false;
+						// Handle the clipboard content
+						dispatch(addAsset({ asset: text }));
+
+						history.replace({
+							pathname: "/send",
+							state: {
+								input: text
+							}
+						})
+					}
+				}
+			]
+		})
+	}, [savedAssets, dispatch, history, showAlert])
+
+	useEffect(() => {
+		const focusHandler = () => {
+			// wait one tick so the browser definitely flags the doc as focused
+			clearTimeout(retryTimer.current!);
+			retryTimer.current = setTimeout(checkClipboard, 50);
+		};
+
+		const visHandler = () => {
+			if (document.visibilityState === "visible") focusHandler();
+		};
+
+		document.addEventListener("visibilitychange", visHandler);
+		window.addEventListener("focus", focusHandler);
+
+		// Hybrid (Android/iOS) – do the same when app becomes active
+		const sub = App.addListener("appStateChange", (s) => {
+			if (s.isActive) focusHandler();
+		});
+
+		focusHandler();
+
+		return () => {
+			document.removeEventListener("visibilitychange", visHandler);
+			window.removeEventListener("focus", focusHandler);
+			sub.remove();
+			clearTimeout(retryTimer.current!);
+		};
+	}, [checkClipboard]);
+}

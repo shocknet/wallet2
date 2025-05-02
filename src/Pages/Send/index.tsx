@@ -92,9 +92,6 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 		setAmountInSats(null);
 		setDisplayValue("");
-		if (location.state?.input) {
-			setRecipient(location.state.input);
-		}
 		if (enabledSpendSources.length === 0) {
 			showAlert({
 				header: "No Spend Sources",
@@ -141,6 +138,16 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			}
 		}
 	}, [enabledSpendSources])
+
+	useEffect(() => {
+		const clip = location.state?.input;
+		if (!clip) return;
+
+		setRecipient(clip);
+
+		// replace the current history entry with identical URL but no state
+		history.replace({ pathname: location.pathname, search: location.search, state: null });
+	}, [location.state?.input, history, location.pathname, location.search]);
 
 
 	// Fee tiers for on chain transactions
