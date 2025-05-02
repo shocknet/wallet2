@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
 import {
 	IonAvatar,
@@ -323,6 +323,11 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	};
 
 
+	const canPay = useMemo(() =>
+		inputState.status === "parsedOk" && amountInSats !== null && amountInSats !== 0 && parseInt(selectedSource?.maxWithdrawable || "0") > amountInSats
+		, [inputState, amountInSats, selectedSource]);
+
+
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
@@ -400,7 +405,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 							<IonRow>
 								<IonCol size="12">
 									<Suspense fallback={<IonSpinner />}>
-										<InvoiceCard invoiceData={inputState.parsedData} note={note} setNote={setNote} />
+										<InvoiceCard invoiceData={inputState.parsedData} note={note} setNote={setNote} selectedSource={selectedSource} />
 									</Suspense>
 								</IonCol>
 							</IonRow>
@@ -612,7 +617,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								</IonButton>
 							</IonCol>
 							<IonCol size="5" >
-								<IonButton color="primary" fill="solid" expand="block" disabled={inputState.status !== "parsedOk" || amountInSats === null || amountInSats === 0} onClick={handlePayment}>
+								<IonButton color="primary" fill="solid" expand="block" disabled={!canPay} onClick={handlePayment}>
 									Pay
 								</IonButton>
 							</IonCol>

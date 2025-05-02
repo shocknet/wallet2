@@ -27,7 +27,8 @@ const InvoiceCard = ({
 	invoiceData,
 	note,
 	setNote,
-}: Pick<CardProps, "invoiceData" | "note" | "setNote">) => {
+	selectedSource
+}: Pick<CardProps, "invoiceData" | "note" | "setNote" | "selectedSource">) => {
 
 	const { url, currency } = useSelector(state => state.prefs.FiatUnit);
 	const [money, setMoney] = useState("");
@@ -44,6 +45,8 @@ const InvoiceCard = ({
 		setFiat();
 	}, [invoiceData.amount, currency, url]);
 
+	const hasEnough = parseInt(selectedSource?.maxWithdrawable || "0") > invoiceData.amount!
+
 	return (
 		<IonCard color="secondary" className="ion-margin-top ion-no-padding">
 			<IonCardHeader>
@@ -54,6 +57,16 @@ const InvoiceCard = ({
 				<IonCardSubtitle>
 					Paying <IonText color="primary">{formatSatoshi(invoiceData.amount || 0 as Satoshi)} Sats</IonText>
 					<IonText style={{ fontSize: "0.7rem" }}>{money && ` (~${money})`}</IonText>
+					{
+						!hasEnough &&
+						<IonText color="danger" style={{ fontSize: "0.9rem", display: "block" }}>
+							<br />
+							You don&apos;t have enough funds in the selected source to pay this invoice.
+							<br />
+							Please select another source or input a different invoice.
+						</IonText>
+
+					}
 				</IonCardSubtitle>
 			</IonCardHeader>
 			<IonCardContent className="ion-padding ion-margin-top">

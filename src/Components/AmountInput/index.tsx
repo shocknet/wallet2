@@ -118,14 +118,14 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 	}, [amountInSats, currency, url]);
 
 
-	/* 	const setMax = () => {
-			if (limits) {
-				const maxValue = unit === "BTC"
-					? formatBitcoin(satsToBtc(limits.maxSats))
-					: formatSatoshi(limits.maxSats);
-				setDisplayValue(maxValue);
-			}
-		}; */
+	const setMax = () => {
+		if (limits) {
+			const maxValue = unit === "BTC"
+				? formatBitcoin(satsToBtc(limits.maxSats))
+				: formatSatoshi(limits.maxSats);
+			setDisplayValue(maxValue);
+		}
+	};
 
 	return (
 		<IonInput
@@ -153,7 +153,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 			>
 				{unit.toUpperCase()}
 			</IonButton>
-			{/* {limits && (
+			{limits && (
 
 				<IonButton
 					slot="end"
@@ -163,7 +163,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 				>
 					Max
 				</IonButton>
-			)} */}
+			)}
 		</IonInput>
 	);
 })
