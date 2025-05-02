@@ -60,10 +60,7 @@ const InvoiceCard = ({
 					{
 						!hasEnough &&
 						<IonText color="danger" style={{ fontSize: "0.9rem", display: "block" }}>
-							<br />
-							You don&apos;t have enough funds in the selected source to pay this invoice.
-							<br />
-							Please select another source or input a different invoice.
+							Insufficient funds in selected source
 						</IonText>
 
 					}
