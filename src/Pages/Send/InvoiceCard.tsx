@@ -59,7 +59,7 @@ const InvoiceCard = ({
 					<IonText style={{ fontSize: "0.7rem" }}>{money && ` (~${money})`}</IonText>
 					{
 						!hasEnough &&
-						<IonText color="danger" style={{ fontSize: "0.9rem", display: "block" }}>
+						<IonText color="danger" style={{ fontSize: "0.9rem", display: "block" }} className="ion-margin-top">
 							Insufficient funds in selected source
 						</IonText>
 
