@@ -20,7 +20,7 @@ type OfferItemType = {
   type: string;
 };
 
-export const OfferInfo = () => {
+const OfferInfo = () => {
   const location = useLocation()
   const sources = useSelector(s => s.paySource.sources)
   const [selectedSource, setSelectedSource] = useState<PayTo>()
@@ -146,3 +146,4 @@ export const OfferInfo = () => {
   );
 };
 
+export default OfferInfo;

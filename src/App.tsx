@@ -1,33 +1,36 @@
 import { Redirect, Route } from "react-router-dom";
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
 import './App.scss';
-import store from './State/store';
-import { NodeUp } from './Pages/NodeUp';
+import store, { persistor } from './State/store';
+import { Layout } from "./Layout";
+
+const NodeUp = lazy(() => import('./Pages/NodeUp'));
+const Loader = lazy(() => import('./Pages/Loader'));
+const Receive = lazy(() => import('./Pages/Receive'));
+const Send = lazy(() => import('./Pages/Send'));
+const Sources = lazy(() => import('./Pages/Sources'));
+const Automation = lazy(() => import('./Pages/Automation'));
+const Prefs = lazy(() => import('./Pages/Prefs'));
+const Contacts = lazy(() => import('./Pages/Contacts'));
+const Invitations = lazy(() => import('./Pages/Invitations'));
+const Auth = lazy(() => import('./Pages/Auth'));
+const Notify = lazy(() => import('./Pages/Notify'));
+const Metrics = lazy(() => import('./Pages/Metrics'));
+const Manage = lazy(() => import('./Pages/Manage'));
+const Channels = lazy(() => import('./Pages/Channels'));
+const Home = lazy(() => import('./Pages/Home'));
+const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
+const Offers = lazy(() => import('./Pages/Offers'));
+const Stats = lazy(() => import("./Pages/Stats"));
+const OfferInfo = lazy(() => import("./Pages/OfferInfo"));
+
+import { Background } from "./Components/Background";
 import { Provider } from 'react-redux';
-import { Layout } from './Layout';
-import { Loader } from './Pages/Loader';
-import { Home } from './Pages/Home';
-import Receive from './Pages/Receive';
-import { Send } from './Pages/Send';
-import { Scan } from './Pages/Scan';
-import { Sources } from './Pages/Sources';
-import { Automation } from './Pages/Automation';
-import { Prefs } from './Pages/Prefs';
-import { Contacts } from './Pages/Contacts';
-import { Invitations } from './Pages/Invitations';
-import { Auth } from './Pages/Auth';
-import { Background } from './Components/Background';
-import { Notify } from './Pages/Notify';
-import { Metrics } from './Pages/Metrics';
-import { Manage } from "./Pages/Manage";
-import { Channels } from "./Pages/Channels";
-import { LinkedApp } from "./Pages/LinkedApp";
-import { Offers } from "./Pages/Offers";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -53,16 +56,33 @@ import "./theme/variables.css";
 import LoadingOverlay from "./Components/LoadingOverlay";
 import { DebitRequestModal, EditDebitModal } from "./Components/Modals/DebitRequestModal";
 import { EditSourceModal } from "./Components/Modals/EditSourceModal";
-import { OfferInfo } from "./Pages/OfferInfo";
-import { Stats } from "./Pages/Stats";
+
+
 import NavigationMenu from "./Components/NavigationMenu";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
+import { PersistGate } from "redux-persist/integration/react";
+import { useAppLifecycle } from "./lib/hooks/useAppLifecycle";
+import { AlertProvider } from "./lib/contexts/useAlert";
+import { ToastProvider } from "./lib/contexts/useToast";
+import nostrSvg from "../icons/nostr.svg"
+import { addIcons } from "ionicons";
+import FullSpinner from "./Components/common/ui/fullSpinner";
+
+
+
+addIcons({
+	nostr: nostrSvg,
+})
+
 
 
 setupIonicReact();
 
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
+
+	useAppLifecycle();
+
 
 	useEffect(() => {
 		const handleUrlParams = () => {
@@ -98,78 +118,101 @@ const AppContent: React.FC = () => {
 			<NavigationMenu />
 
 
-			<IonRouterOutlet id="main-content">
 
-				<Route exact path="/home">
-					<Layout>
-						<Home />
-					</Layout>
-				</Route>
+			<IonRouterOutlet id="main-content" animated={true}
+			>
+				<Route exact path="/home" render={(props) =>
+					<Suspense fallback={<FullSpinner />}>
+						<Home {...props} />
+					</Suspense>
+				}
+				/>
 				<Route exact path="/nodeup">
-					<Layout>
-						<NodeUp />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<NodeUp />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/">
-					<BoostrapGuard />
+					<Suspense fallback={<FullSpinner />}>
+						<BoostrapGuard />
+					</Suspense>
 				</Route>
 				<Route exact path="/receive">
-					<Receive />
+					<Suspense fallback={<FullSpinner />}>
+						<Receive />
+					</Suspense>
 				</Route>
 				<Route exact path="/loader">
-					<Layout>
-						<Loader />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Loader />
+						</Layout>
+					</Suspense>
 				</Route>
-				<Route exact path="/send">
-					<Layout>
-						<Send />
-					</Layout>
-				</Route>
-				<Route exact path="/scan">
-					<Layout>
-						<Scan />
-					</Layout>
-				</Route>
+				<Route exact path="/send" render={(props) =>
+					<Suspense fallback={<FullSpinner />}>
+						<Send {...props} />
+					</Suspense>
+				}
+				/>
 				<Route path="/sources">
-					<Layout>
-						<Sources />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Sources />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/automation">
-					<Layout>
-						<Automation />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Automation />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/prefs">
-					<Layout>
-						<Prefs />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Prefs />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/contacts">
-					<Layout>
-						<Contacts />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Contacts />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/invitations">
-					<Layout>
-						<Invitations />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Invitations />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/auth">
-					<Layout>
-						<Auth />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Auth />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/notify">
-					<Layout>
-						<Notify />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Notify />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/metrics">
-					<Layout>
-						<Metrics />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Metrics />
+						</Layout>
+					</Suspense>
+
 				</Route>
 				{/*         <Route exact path="/manage">
           <Layout>
@@ -182,26 +225,37 @@ const AppContent: React.FC = () => {
           </Layout>
         </Route> */}
 				<Route exact path="/LApps">
-					<Layout>
-						<LinkedApp />
-					</Layout>
+
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<LinkedApp />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/Offers">
-					<Layout>
-						<Offers />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Offers />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/OfferInfo">
-					<Layout>
-						<OfferInfo />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<OfferInfo />
+						</Layout>
+					</Suspense>
 				</Route>
 				<Route exact path="/Stats">
-					<Layout>
-						<Stats />
-					</Layout>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Stats />
+						</Layout>
+					</Suspense>
 				</Route>
 
+
+				n
 			</IonRouterOutlet>
 		</>
 	);
@@ -221,24 +275,32 @@ const BoostrapGuard: React.FC = () => {
 const App: React.FC = () => {
 
 
+
 	return (
 		<Provider store={store}>
-			<IonApp>
-				<ErrorBoundary>
-					<IonReactRouter>
-						<AppContent />
-					</IonReactRouter>
-				</ErrorBoundary>
-				<ToastContainer
-					theme="colored"
-					position="top-center"
-					closeOnClick
-					pauseOnHover
-					autoClose={4000}
-					limit={2}
-					pauseOnFocusLoss={false}
-				/>
-			</IonApp>
+			<PersistGate loading={null} persistor={persistor}>
+				<IonApp>
+					<ErrorBoundary>
+						<IonReactRouter>
+							<AlertProvider>
+								<ToastProvider>
+									<AppContent />
+								</ToastProvider>
+							</AlertProvider>
+						</IonReactRouter>
+					</ErrorBoundary>
+					<ToastContainer
+						theme="colored"
+						position="top-center"
+						closeOnClick
+						pauseOnHover
+						autoClose={4000}
+						limit={2}
+						pauseOnFocusLoss={false}
+					/>
+				</IonApp>
+			</PersistGate>
+
 		</Provider>
 	);
 };

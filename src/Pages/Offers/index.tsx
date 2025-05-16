@@ -15,7 +15,7 @@ type OfferItemType = {
   type: string;
 };
 
-export const Offers = () => {
+const Offers = () => {
   const router = useIonRouter();
   const enabledPaySources = useSelector(selectConnectedNostrSpends);
 
@@ -242,3 +242,5 @@ export const Offers = () => {
     </div>
   );
 };
+
+export default Offers;

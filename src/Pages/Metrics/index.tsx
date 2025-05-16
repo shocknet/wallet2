@@ -17,8 +17,8 @@ import { collapseToast, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
 import { Client } from '../../Api/nostr';
-import { Manage } from '../Manage';
-import { Channels } from '../Channels';
+import Manage from '../Manage';
+import Channels from '../Channels';
 import { AdminGuard, AdminSource } from '../../Components/AdminGuard';
 
 const trimText = (text: string) => {
@@ -104,7 +104,7 @@ const getUnixTimeRange = (period: Period) => {
   return { from_unix, to_unix };
 }
 
-export const Metrics = () => {
+const Metrics = () => {
   //const [url, setUrl] = useState("")
   //const [metricsToken, setMetricsToken] = useState("")
   const router = useIonRouter();
@@ -557,3 +557,5 @@ export const Metrics = () => {
     </div>
   </div>
 }
+
+export default Metrics;

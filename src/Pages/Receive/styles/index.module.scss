@@ -1,0 +1,34 @@
+.qr-code-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto;
+	width: 100%;
+
+	.inner-qr-code {
+		width: 90%;
+
+		@media screen and (min-width: 576px) {
+			width: 70%;
+		}
+
+		@media screen and (min-width: 768px) {
+			width: 50%;
+		}
+
+		@media screen and (min-width: 992px) {
+			width: 50%;
+		}
+
+		@media screen and (min-width: 1200px) {
+			width: 40%;
+		}
+
+
+
+		@media screen and (min-width: 2000px) {
+			width: 66%;
+		}
+	}
+
+}

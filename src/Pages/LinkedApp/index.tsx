@@ -15,14 +15,13 @@ import classNames from "classnames";
 import { EditSource } from "../../Assets/SvgIconLibrary";
 import { setDebitToEdit } from "../../State/Slices/modalsSlice";
 import Checkbox from "../../Components/Checkbox";
-import { formatNumberWithCommas } from "../../utils/numbers";
 import { useIonRouter } from "@ionic/react";
 import Toast from "../../Components/Toast";
 import { flipSourceNdebitDiscoverable } from "../../State/Slices/paySourcesSlice";
 
 type StateDebitAuth = DebitAuthorization & { source: SpendFrom, domainName?: string, avatarUrl?: string }
 
-export const LinkedApp = () => {
+const LinkedApp = () => {
   const dispatch = useDispatch();
   const router = useIonRouter()
   const [debitAuthorizations, setDebitAuthorizations] = useState<{
@@ -102,7 +101,7 @@ export const LinkedApp = () => {
       if (!debitAuth.avatarUrl) {
 
         getDebitAppNameAndAvatarUrl(debitAuth.npub, parseNprofile(debitAuth.source.pasteField).relays || NOSTR_RELAYS).then(({ requestorDomain, avatarUrl }) => {
-          console.log({avatarUrl})
+          console.log({ avatarUrl })
           setDebitAuthorizations(state => {
             if (isShowingBans) {
               return {
@@ -131,14 +130,14 @@ export const LinkedApp = () => {
           <div className={styles["right"]}>
             {
               debitAuth.domainName
-              ?
-              <span className={styles["name"]}>
-                {debitAuth.domainName}
-              </span>
-              :
-              <span className={classNames(styles["name"], styles["unknown-app"])}>
-                Unknown App
-              </span>
+                ?
+                <span className={styles["name"]}>
+                  {debitAuth.domainName}
+                </span>
+                :
+                <span className={classNames(styles["name"], styles["unknown-app"])}>
+                  Unknown App
+                </span>
             }
             <span className={styles["npub"]}>
               {substringedNpub}
@@ -147,7 +146,7 @@ export const LinkedApp = () => {
               {
                 debitAuth.rules.map((rule, i) => {
                   if (rule.rule.type === DebitRule_rule_type.FREQUENCY_RULE) {
-                    return <span key={i}><span className={styles["blue-text"]}>{formatNumberWithCommas(rule.rule.frequency_rule.amount.toString())} sats</span> per {rule.rule.frequency_rule.interval}</span>
+                    return <span key={i}><span className={styles["blue-text"]}>{rule.rule.frequency_rule.amount.toLocaleString()} sats</span> per {rule.rule.frequency_rule.interval}</span>
                   } else {
                     return <span key={i}><span>Expires {moment(rule.rule.expiration_rule.expires_at_unix).fromNow()}</span></span>
                   }
@@ -207,7 +206,7 @@ export const LinkedApp = () => {
           }
         </div>
         <div style={{ width: '100%' }}>
-          <div 
+          <div
             className={classNames(styles["app-card"], styles["column"])}
             style={{
               fontSize: '1.2rem',
@@ -221,8 +220,8 @@ export const LinkedApp = () => {
             }}
           >
             <span className={styles["title"]}>My debit string:</span>
-            <span 
-              className={styles["debit-string"]} 
+            <span
+              className={styles["debit-string"]}
               onClick={async () => {
                 await Clipboard.write({ string: selectedSource.ndebit })
                 toast.success("Copied to clipboard.")
@@ -249,10 +248,10 @@ export const LinkedApp = () => {
           <div onClick={() => setIsShowingBans(!isShowingBans)}>
             {
               isShowingBans
-              ?
-              <span >&lt; Back to approved list </span>
-              :
-              <span> View ban list &gt;</span>
+                ?
+                <span >&lt; Back to approved list </span>
+                :
+                <span> View ban list &gt;</span>
             }
           </div>
         </div>
@@ -261,4 +260,4 @@ export const LinkedApp = () => {
   );
 };
 
-
+export default LinkedApp;

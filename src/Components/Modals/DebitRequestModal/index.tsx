@@ -14,7 +14,6 @@ import classNames from "classnames";
 import { refetchDebits, removeDebitRequest, setDebitToEdit } from "../../../State/Slices/modalsSlice";
 import { toast } from "react-toastify";
 import Toast from "../../Toast";
-import { formatNumberWithCommas } from "../../../utils/numbers";
 
 const intervalsArray = Object.values(WalletIntervalEnum);
 
@@ -161,7 +160,7 @@ export const DebitRequestModal = () => {
 
 
 	const removeCurrentRequest = useCallback(async () => {
-		if(currentRequest) {
+		if (currentRequest) {
 			await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).RespondToDebit({
 				npub: currentRequest.request.npub,
 				request_id: currentRequest.request.request_id,
@@ -182,7 +181,7 @@ export const DebitRequestModal = () => {
 		} else {
 			removeCurrentRequest()
 		}
-	
+
 	}, [currentRequest, removeCurrentRequest, isCreateRule])
 
 	const banRequest = useCallback(async () => {
@@ -215,9 +214,9 @@ export const DebitRequestModal = () => {
 				<>
 					{
 						isBanPrompt
-						?
-						<PromptBanApp banAppCallback={banRequest} dismissCallback={removeCurrentRequest} />
-						:
+							?
+							<PromptBanApp banAppCallback={banRequest} dismissCallback={removeCurrentRequest} />
+							:
 							!isSecondPhase
 								?
 								<>
@@ -311,7 +310,7 @@ const RulesState = ({
 				<input
 					className={classNames(styles["input"], styles["sats-amount-input"])}
 					type="text"
-					value={formatNumberWithCommas(requestAmount)}
+					value={parseInt(requestAmount).toLocaleString()}
 					onChange={(e) => {
 						console.log({ s: e.target.value })
 						const rawInput = e.target.value.replace(/,/g, '');

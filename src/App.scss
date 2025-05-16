@@ -4,6 +4,13 @@ $clear-color: #E2E2E2;
 
 
 
+.safe-area {
+	margin-top: env(safe-area-inset-top);
+	margin-bottom: env(safe-area-inset-bottom);
+	margin-left: env(safe-area-inset-left);
+	margin-right: env(safe-area-inset-right);
+}
+
 
 .custom-header {
 	padding-top: var(--ion-safe-area-top, 0px);
@@ -15,15 +22,11 @@ body {
 	background-color: #16191c;
 	color: #fcfcfc;
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 162.5%;
-
 	text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
-
 	// ion variables override
 	--ion-background-color: #16191c;
 	--ion-text-color: #fcfcfc;
 	--ion-font-family: Arial, Helvetica, sans-serif;
-
 	//toastify
 	--toastify-color-success: #32a852;
 	--toastify-toast-width: 400px;
@@ -53,9 +56,6 @@ body {
 	position: relative;
 }
 
-ion-content::part(scroll) {
-	padding-top: 0;
-}
 
 @mixin buttonPrimary {
 	border: none;
@@ -117,12 +117,6 @@ input:focus-visible {
   display: none !important;
 } */
 
-body.barcode-scanner-active {
-	visibility: hidden;
-	background: transparent;
-	--background: transparent;
-	--ion-background-color: transparent;
-}
 
 .ant-notification {
 	visibility: visible;
@@ -173,15 +167,12 @@ input[type=number] {
 
 
 
-@import "./Pages/Home/Home.scss";
 @import "./Pages/Loader/Loader.scss";
 @import "./Pages/Sources/Sources.scss";
 @import "./Pages/NodeUp/NodeUp.scss";
 @import "./Pages/Invitations/Invitations.scss";
 @import "./Pages/Manage//Manage.scss";
 @import "./Pages/Channels/Channels.scss";
-@import "./Pages/Scan/Scan.scss";
-@import "./Pages/Receive/Receive.scss";
 @import "./Pages/Send/Send.scss";
 @import "./Pages/Prefs/Prefs.scss";
 @import "./Pages/Automation/Auto.scss";

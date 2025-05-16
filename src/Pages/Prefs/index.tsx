@@ -30,7 +30,7 @@ interface Price {
 
 
 
-export const Prefs = () => {
+const Prefs = () => {
   const router = useIonRouter();
   const dispatch = useDispatch();
 
@@ -124,45 +124,45 @@ export const Prefs = () => {
     setChainFees(getFee.data);
   }
 
-/*   const touchMoveSlide = (e: any) => {
-    let positionX = 0;
-    if (e.type.includes("mouse")) {
-      positionX = e.pageX - window.innerWidth * 0.06 - 12;
-      if (!click) {
-        return;
+  /*   const touchMoveSlide = (e: any) => {
+      let positionX = 0;
+      if (e.type.includes("mouse")) {
+        positionX = e.pageX - window.innerWidth * 0.06 - 12;
+        if (!click) {
+          return;
+        }
+      } else if (e.type.includes("touch")) {
+        positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
       }
-    } else if (e.type.includes("touch")) {
-      positionX = e.changedTouches[0].clientX - window.innerWidth * 0.06 - 12;
-    }
-    if (positionX < 0) {
-      positionX = 0;
-    }
-    if (positionX > window.innerWidth * 0.88 - 23) {
-      positionX = window.innerWidth * 0.88 - 23;
-    }
-    setPos(positionX);
-  } */
+      if (positionX < 0) {
+        positionX = 0;
+      }
+      if (positionX > window.innerWidth * 0.88 - 23) {
+        positionX = window.innerWidth * 0.88 - 23;
+      }
+      setPos(positionX);
+    } */
 
-/*   const touchEndSlide = () => {
-    const feeValue = pos * 2 / screenWidth;
-    switch (Math.round(feeValue)) {
-      case 0:
-        setPos(23)
-        setChainFee("eco")
-        break;
-
-      case 1:
-        setPos(screenWidth / 2)
-        setChainFee("avg")
-        break;
-
-      case 2:
-        setPos(screenWidth - 23)
-        setChainFee("asap")
-        break;
-    }
-    setClick(false);
-  } */
+  /*   const touchEndSlide = () => {
+      const feeValue = pos * 2 / screenWidth;
+      switch (Math.round(feeValue)) {
+        case 0:
+          setPos(23)
+          setChainFee("eco")
+          break;
+  
+        case 1:
+          setPos(screenWidth / 2)
+          setChainFee("avg")
+          break;
+  
+        case 2:
+          setPos(screenWidth - 23)
+          setChainFee("asap")
+          break;
+      }
+      setClick(false);
+    } */
 
   const handleChangeFiatCurrency = (currency: string) => {
     setFiatCurreny(currency);
@@ -228,3 +228,5 @@ export const Prefs = () => {
     </div>
   )
 }
+
+export default Prefs;

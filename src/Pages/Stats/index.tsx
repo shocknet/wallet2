@@ -38,7 +38,7 @@ type PagedData = Record<string, Record<string, Record<number, Types.UsageMetric[
   validate_in_nano?: boolean
 } */
 
-export const Stats = () => {
+const Stats = () => {
   /*   const [selectedSourceId, setSelectedSourceId] = useState<string>('')
     const [selectedSource, setSelectedSource] = useState<SpendFrom>()
     const enabledPaySources = useSelector((state) =>
@@ -67,3 +67,5 @@ export const Stats = () => {
     <Graphs adminSource={adminSource} />
   </div>
 }
+
+export default Stats;
