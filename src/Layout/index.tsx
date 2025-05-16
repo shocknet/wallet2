@@ -61,11 +61,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
         !isScan
           &&
           isPub ?
-          <IonHeader style={{ boxShadow: "none" }}>
+          <IonHeader style={{ boxShadow: "none" }} className="custom-header">
             <PubHeader />
           </IonHeader>
           :
-          <IonHeader style={{ boxShadow: "none" }}>
+          <IonHeader style={{ boxShadow: "none" }} className="custom-header">
             <Header />
           </IonHeader>
       }

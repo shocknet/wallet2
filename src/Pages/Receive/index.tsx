@@ -134,8 +134,12 @@ const Receive = () => {
 
 	const [selectedSegment, setSelectedSegment] = useState(validSlides[0].id);
 
+
+
+
 	return (
 		<IonPage className="ion-page-width">
+
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Receive" />
 				<IonToolbar>

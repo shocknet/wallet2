@@ -133,6 +133,18 @@ export const Graphs = ({ adminSource }: { adminSource: AdminSource }) => {
         })
     }, [selectedApp, selectedMetrics, bundleData, bundleGraphs])
 
+    const selectMemory = () => {
+        const g: Record<string, boolean> = {}
+        for (const graph in bundleGraphs) {
+            if (graph.startsWith('memory') && graph.includes('kb')) {
+                g[graph] = true
+            } else {
+                g[graph] = false
+            }
+        }
+        setBundleGraphs(g)
+    }
+
     return <div>
         <h1 style={{ textAlign: 'center' }}>Errors</h1>
         {errorStats && <ErrorsView errors={errorStats} />}
@@ -216,6 +228,7 @@ export const Graphs = ({ adminSource }: { adminSource: AdminSource }) => {
                             <label>{m}</label>
                         </div>)}
                     </div>
+                    <button onClick={() => selectMemory()}>SHOW ONLY MEMORY STATS</button>
                 </div>}
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>{bundleRows}</div>
             </>}

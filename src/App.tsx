@@ -2,11 +2,9 @@ import { Redirect, Route } from "react-router-dom";
 import React, { lazy, Suspense, useEffect } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { StatusBar } from "@capacitor/status-bar";
 import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
-
 import './App.scss';
 import store, { persistor } from './State/store';
 import { Layout } from "./Layout";
@@ -75,6 +73,7 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 addIcons({
 	nostr: nostrSvg,
 })
+
 
 
 setupIonicReact();
@@ -213,6 +212,7 @@ const AppContent: React.FC = () => {
 							<Metrics />
 						</Layout>
 					</Suspense>
+
 				</Route>
 				{/*         <Route exact path="/manage">
           <Layout>
@@ -225,6 +225,7 @@ const AppContent: React.FC = () => {
           </Layout>
         </Route> */}
 				<Route exact path="/LApps">
+
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<LinkedApp />
@@ -254,6 +255,7 @@ const AppContent: React.FC = () => {
 				</Route>
 
 
+				n
 			</IonRouterOutlet>
 		</>
 	);
@@ -271,13 +273,8 @@ const BoostrapGuard: React.FC = () => {
 };
 
 const App: React.FC = () => {
-	const setStatusBarColor = async () => {
-		await StatusBar.setBackgroundColor({ color: "#16191c" });
-	};
 
-	useEffect(() => {
-		setStatusBarColor();
-	}, []);
+
 
 	return (
 		<Provider store={store}>
@@ -303,6 +300,7 @@ const App: React.FC = () => {
 					/>
 				</IonApp>
 			</PersistGate>
+
 		</Provider>
 	);
 };

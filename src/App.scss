@@ -3,6 +3,7 @@ $contrast-color: #5BB166;
 $clear-color: #E2E2E2;
 
 
+
 .safe-area {
 	margin-top: env(safe-area-inset-top);
 	margin-bottom: env(safe-area-inset-bottom);
@@ -10,19 +11,22 @@ $clear-color: #E2E2E2;
 	margin-right: env(safe-area-inset-right);
 }
 
+
+.custom-header {
+	padding-top: var(--ion-safe-area-top, 0px);
+}
+
+
+
 body {
 	background-color: #16191c;
 	color: #fcfcfc;
 	font-family: Arial, Helvetica, sans-serif;
-
-
 	text-shadow: rgb(0, 0, 0) 0px 0px 1.16667px !important;
-
 	// ion variables override
 	--ion-background-color: #16191c;
 	--ion-text-color: #fcfcfc;
 	--ion-font-family: Arial, Helvetica, sans-serif;
-
 	//toastify
 	--toastify-color-success: #32a852;
 	--toastify-toast-width: 400px;
@@ -51,7 +55,6 @@ body {
 	height: 100vh;
 	position: relative;
 }
-
 
 
 @mixin buttonPrimary {
@@ -114,12 +117,6 @@ input:focus-visible {
   display: none !important;
 } */
 
-/* body.barcode-scanner-active {
-  visibility: hidden;
-  background: transparent;
-  --background: transparent;
-  --ion-background-color: transparent;
-} */
 
 .ant-notification {
 	visibility: visible;
