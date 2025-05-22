@@ -15,7 +15,7 @@ export const getNostrPrivateKey = () => {
     return localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
 }
 
-export type nostrCallback<T> = { startedAtMillis: number, type: 'single' | 'stream', f: (res: T) => void }
+export type NostrCallback<T> = { startedAtMillis: number, type: 'single' | 'stream', message: NostrRequest, paused?: true, to: string, f: (res: T) => void }
 export type Client = ReturnType<typeof NewNostrClient>
 
 
@@ -76,6 +76,7 @@ export class ClientsCluster {
                 const c = this.clients[key]
                 if (c && !temp) {
                     const nostrClient = c.client
+                    await this.SyncClusterRelays(relaysSettings) // Even when we have the client, we need to sync the relays as we could be coming from the background
                     logger.info("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
                     res(nostrClient.Get())
                     return;
@@ -101,7 +102,7 @@ export class ClientsCluster {
 export class NostrClient {
     clientId = makeId(16)
     client: Client
-    clientCbs: Record<string, nostrCallback<any>> = {}
+    clientCbs: Record<string, NostrCallback<any>> = {}
     pubDestination: string
     relays: string[]
     latestResponseAtMillis = 0
@@ -125,6 +126,9 @@ export class NostrClient {
     onEvent = (event: NostrEvent) => {
         const res = JSON.parse(event.content) as { requestId: string }
         if (event.pub !== this.pubDestination) {
+            return false
+        }
+        if (event.to !== this.settings.publicKey) {
             return false
         }
         if (this.clientCbs[res.requestId]) {
@@ -194,7 +198,9 @@ export class NostrClient {
             this.clientCbs[reqId] = {
                 startedAtMillis: Date.now(),
                 type: 'single',
+                message,
                 f: (response: any) => { this.latestResponseAtMillis = Date.now(); res(response) },
+                to
             }
         })
     }
@@ -210,7 +216,9 @@ export class NostrClient {
             this.clientCbs[reqId] = {
                 startedAtMillis: Date.now(),
                 type: 'stream',
+                message,
                 f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) },
+                to
             }
             logger.warn("sub for", reqId, "was already registered, overriding")
             return
@@ -220,7 +228,9 @@ export class NostrClient {
         this.clientCbs[reqId] = {
             startedAtMillis: Date.now(),
             type: 'stream',
-            f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) }
+            message,
+            f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) },
+            to
         }
     }
 

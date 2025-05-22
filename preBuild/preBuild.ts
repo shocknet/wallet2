@@ -22,7 +22,7 @@ androidManifest = androidManifest.replace(
   `package="${process.env.VITE_ANDROID_APPLICATION_ID}"`
 );
 androidManifest = androidManifest.replace(
-  /android:name="\.MainActivity"/,
+  /(?:android:|)name="[^"]*MainActivity"/,
   `android:name="${process.env.VITE_ANDROID_APPLICATION_ID}.MainActivity"`
 );
 androidManifest = androidManifest.replace(

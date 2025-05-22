@@ -1,0 +1,18 @@
+.send-card {
+	--background: var(--ion-color-secondary);
+}
+
+
+
+
+.send-card-title {
+	display: flex;
+	align-items: center;
+	--color: var(--ion-text-color-step-300);
+	font-size: 0.9rem;
+}
+
+.send-card-subtitle {
+	font-size: 0.8rem;
+	--color: var(--ion-text-color-step-350);
+}

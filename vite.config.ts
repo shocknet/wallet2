@@ -1,5 +1,6 @@
 import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path';
 import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
@@ -51,5 +52,10 @@ export default defineConfig({
   // Add this section to handle SPA routing for PWA
   preview: {
     port: 8080,
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "src"),
+    },
   },
 })
