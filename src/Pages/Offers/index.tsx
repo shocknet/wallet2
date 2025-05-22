@@ -33,6 +33,7 @@ const Offers = () => {
   const [isConnect, setIsConnect] = useState<boolean>(true);
   const [displayData, setDisplayData] = useState<PayTo>();
   const [offerValue, setOfferValue] = useState<string>("");
+  const [userIdentifier, setUserIdentifier] = useState<string>("");
   const [sourceOffers, setSourceOffers] = useState<Types.OfferConfig[]>([]);
 
   useEffect(() => {
@@ -43,9 +44,10 @@ const Offers = () => {
     setDisplayData(value)
     getNostrClient(value.pasteField, value.keys).then(c => {
       c.GetUserInfo().then(res => {
+        console.log(res)
         if (res.status === "OK") {
           setOfferValue(res.noffer)
-
+          setUserIdentifier(res.user_identifier)
         }
       })
       c.GetUserOffers().then(res => {
@@ -203,7 +205,7 @@ const Offers = () => {
                 {Icons.arrow()}
               </div>
             </div>
-            {sourceOffers.map(((o, i) => <div key={i} className="Offers_source" onClick={() => {
+            {sourceOffers.filter(o => o.offer_id !== userIdentifier).map(((o, i) => <div key={i} className="Offers_source" onClick={() => {
               router.push("/OfferInfo?o=" + o.offer_id + "&s=" + value.id);
             }}>
               <div className="source_header">

@@ -104,7 +104,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
-    "@vitejs/plugin-legacy": "^4.0.2",
+    "@vitejs/plugin-legacy": "^6.1.1",
     "@vitejs/plugin-react": "^4.0.1",
     "cypress": "^13.14.0",
     "eslint": "^8.56.0",
@@ -114,10 +114,10 @@
     "jsdom": "^22.1.0",
     "sass": "^1.67.0",
     "typescript": "^5.3.3",
-    "vite": "^4.3.9",
+    "vite": "^6.3.5",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-pwa": "^0.20.5",
-    "vitest": "^0.32.2"
+    "vite-plugin-pwa": "^1.0.0",
+    "vitest": "^3.1.4"
   },
   "description": "An Ionic project"
 }
