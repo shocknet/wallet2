@@ -11,10 +11,6 @@ import {
 	IonRow,
 	IonText
 } from "@ionic/react";
-
-import { Satoshi } from "@/lib/types/units";
-import AmountInput from "@/Components/AmountInput";
-import { parseUserInputToSats } from "@/lib/units";
 import { logoBitcoin } from "ionicons/icons";
 import { useEffect, useRef } from "react";
 
@@ -23,16 +19,9 @@ import { useEffect, useRef } from "react";
 
 
 const OnChainCard = ({
-	amountInSats,
-	setAmountInSats,
-	displayValue,
-	setDisplayValue,
-	unit,
-	setUnit,
 	selectedFeeTier,
 	setSelectedFeeTier,
 	feeTiers,
-	selectedSource
 }: Omit<CardProps, "note" | "setNote" | "lnurlData" | "invoiceData" | "nofferData">) => {
 	const currentTier = feeTiers[selectedFeeTier];
 
@@ -48,35 +37,23 @@ const OnChainCard = ({
 
 
 	return (
-		<IonCard color="secondary" className="ion-margin-top ion-no-padding">
+		<IonCard className="ion-margin-top ion-no-padding send-card">
 			<IonCardHeader>
-				<IonCardTitle>
+				<IonCardTitle className="send-card-title">
 					<IonIcon icon={logoBitcoin} style={{ color: "orange", marginRight: "5px" }} />
 					On Chain
 				</IonCardTitle>
 			</IonCardHeader>
 			<IonCardContent className="ion-padding ion-margin-top">
-				<AmountInput
-					ref={satsInputRef}
-					labelPlacement="stacked"
-					amountInSats={amountInSats}
-					setAmountInSats={setAmountInSats}
-					unit={unit}
-					setUnit={setUnit}
-					displayValue={displayValue}
-					setDisplayValue={setDisplayValue}
-					className="ion-padding card-input"
-					limits={{ minSats: 1 as Satoshi, maxSats: parseUserInputToSats(selectedSource?.maxWithdrawable || "0", "sats") }}
-				/>
-				<IonGrid className="ion-margin-top ion-no-padding">
+				<IonGrid className="ion-no-padding">
 					<IonRow>
 						<IonCol>
-							<IonText style={{ fontSize: "0.7rem" }}>Fee Rate</IonText>
+							<IonText style={{ fontSize: "0.9rem", color: "var(--ion-text-color-step-200)" }}>Fee Rate</IonText>
 						</IonCol>
 					</IonRow>
 					<IonRow>
 						<IonCol>
-							<IonText style={{ fontSize: "0.8rem", opacity: "0.7" }}>Choose your preferred fee rate</IonText>
+							<IonText style={{ fontSize: "0.8rem", color: "var(--ion-text-color-step-250)" }}>Choose your preferred fee rate</IonText>
 						</IonCol>
 					</IonRow>
 					<IonRow className="ion-justify-content-center">
@@ -98,7 +75,7 @@ const OnChainCard = ({
 					</IonRow>
 					<IonRow>
 						<IonCol>
-							<IonText class="ion-text-center" style={{ display: "block" }}>
+							<IonText class="ion-text-center" style={{ display: "block", color: "var(--ion-text-color-step-150)" }}>
 								<h2 style={{ marginTop: "15px" }}>{currentTier?.description}</h2>
 								<p>Selected: {currentTier?.rate} sat/vB</p>
 							</IonText>

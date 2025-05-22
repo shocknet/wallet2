@@ -38,7 +38,7 @@ export const payInvoiceReponseToSourceOperation = (resp: PayInvoiceResponse, opt
 		type: UserOperationType.OUTGOING_INVOICE,
 		identifier: optimisticOperation.invoice,
 		amount: resp.amount_paid as Satoshi,
-		paidAtUnix: Date.now(),
+		paidAtUnix: Math.floor(Date.now() / 1000), // UserOperation's paidAtUnix is in seconds
 		service_fee: resp.service_fee,
 		network_fee: resp.network_fee,
 		inbound: false,
