@@ -18,7 +18,6 @@ import { createNofferInvoice } from '@/lib/noffer';
 import { nip19 } from 'nostr-tools';
 import { getSourceInfo } from '../thunks/spendFrom';
 import { appCreateAsyncThunk } from '../appCreateAsyncThunk';
-import { App } from '@capacitor/app';
 
 
 
@@ -179,8 +178,6 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 						throw new Error(res.reason);
 					}
 
-					App.exitApp();
-
 					handlePaymentSuccess(dispatch, amount, selectedSource, optimisticOperationId, payInvoiceReponseToSourceOperation(res, optimisticOperation), showToast);
 
 
@@ -239,7 +236,11 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 				try {
 					let invoice = "";
 					if (parsedInput.noffer && isPubSource) {
-						invoice = await createNofferInvoice(parsedInput.noffer, selectedSource.keys, amount);
+						const nofferRes = await createNofferInvoice(parsedInput.noffer, selectedSource.keys, amount);
+						if (typeof nofferRes !== "string") {
+							throw new Error(nofferRes.error);
+						}
+						invoice = nofferRes;
 					} else {
 						const { pr } = await getInvoiceForLnurlPay({
 							lnUrlOrAddress: parsedInput.data,
@@ -294,6 +295,9 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 					try {
 
 						const invoice = await createNofferInvoice(parsedInput.noffer, selectedSource.keys, amount);
+						if (typeof invoice !== "string") {
+							return invoice;
+						}
 
 						const classification = identifyBitcoinInput(invoice);
 						if (classification !== InputClassification.LN_INVOICE) {

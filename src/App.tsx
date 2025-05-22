@@ -253,9 +253,6 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</Route>
-
-
-				n
 			</IonRouterOutlet>
 		</>
 	);

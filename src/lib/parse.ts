@@ -6,6 +6,8 @@ import { validateAddress } from "./address";
 import { decodeInvoice } from "./invoice";
 import { nip19 } from "nostr-tools";
 import { NostrKeyPair } from "@/Api/nostrHandler";
+import { Satoshi } from "./types/units";
+import { parseUserInputToSats } from "./units";
 
 
 const BITCOIN_ADDRESS_REGEX = /^(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
@@ -50,21 +52,25 @@ export function identifyBitcoinInput(incomingInput: string, config?: InputClassi
 
 	return matchedType;
 }
+
+const parseInvoiceInput = (input: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
+	const invoice = removePrefixIfExists(input, "lightning:");
+	const { amount, description } = decodeInvoice(invoice, expectedAmount);
+
+	return {
+		type: InputClassification.LN_INVOICE,
+		data: invoice,
+		amount,
+		memo: description
+	};
+}
 // Takes input string and its previously determined InputClassification and returns a ParsedInput object.
 export async function parseBitcoinInput(incomingInput: string, matchedClassification: InputClassification, keyPair?: NostrKeyPair): Promise<ParsedInput> {
 	const input = incomingInput.trim();
 
 	switch (matchedClassification) {
 		case InputClassification.LN_INVOICE: {
-			const invoice = removePrefixIfExists(input, "lightning:");
-			const { amount, description } = decodeInvoice(invoice);
-
-			return {
-				type: InputClassification.LN_INVOICE,
-				data: invoice,
-				amount,
-				memo: description
-			};
+			return parseInvoiceInput(input);
 		}
 		case InputClassification.LNURL_PAY: {
 			const lnurl = removePrefixIfExists(input, "lightning:");
@@ -111,7 +117,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			const decoded = decodeNoffer(noffer);
 			const { price, priceType } = decoded;
 			const base: ParsedNofferInput = {
-				type: InputClassification.NOFFER as InputClassification.NOFFER,
+				type: InputClassification.NOFFER,
 				data: input,
 				noffer: decoded,
 				priceType: nip19.OfferPriceType.Spontaneous,
@@ -125,24 +131,27 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			let parsedInvoice: ParsedInvoiceInput;
 			switch (priceType) {
 				case nip19.OfferPriceType.Fixed:
-				case nip19.OfferPriceType.Variable:
+				case nip19.OfferPriceType.Variable: {
 					// For Fixed and Variable, we want to get an invoice right away, so the user can see the amount before sending.
-					try {
-						const invoice = await createNofferInvoice(decoded, keyPair);
-						const classification = identifyBitcoinInput(invoice);
-						if (classification !== InputClassification.LN_INVOICE) {
-							throw new Error("Invalid invoice from noffer");
-						}
-						parsedInvoice = await parseBitcoinInput(invoice, classification, keyPair) as ParsedInvoiceInput;
-					} catch {
-						throw new Error("Error getting noffer invoice");
+					const invoice = await createNofferInvoice(decoded, keyPair);
+					if (typeof invoice !== "string") {
+						throw new Error(invoice.error);
 					}
+					const classification = identifyBitcoinInput(invoice);
+					if (classification !== InputClassification.LN_INVOICE) {
+						throw new Error("Invalid invoice from noffer");
+					}
+					parsedInvoice = parseInvoiceInput(invoice, parseUserInputToSats((price || 0).toString(), "sats"));
+
 
 					return {
 						...base,
 						priceType: priceType,
 						invoiceData: parsedInvoice
 					};
+				}
+
+
 				case nip19.OfferPriceType.Spontaneous:
 					return base;
 				default:

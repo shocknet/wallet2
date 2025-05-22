@@ -13,7 +13,7 @@ interface Props {
 
 const NofferInfoDisplay = ({ nofferData, inset, labelsColor }: Props) => {
 	return (
-		<IonList inset={inset}>
+		<IonList inset={inset} className="secondary">
 			<IonItem>
 				<IonLabel color={labelsColor}>
 					Offer

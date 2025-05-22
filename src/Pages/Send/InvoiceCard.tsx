@@ -1,4 +1,4 @@
-import { flash } from "ionicons/icons";
+import { flash, informationCircleOutline } from "ionicons/icons";
 import { CardProps } from "./types";
 import {
 	IonAccordion,
@@ -48,13 +48,13 @@ const InvoiceCard = ({
 	const hasEnough = parseInt(selectedSource?.maxWithdrawable || "0") > invoiceData.amount!
 
 	return (
-		<IonCard color="secondary" className="ion-margin-top ion-no-padding">
+		<IonCard className="ion-margin-top ion-no-padding send-card">
 			<IonCardHeader>
-				<IonCardTitle style={{ display: "flex", alignItems: "center" }}>
+				<IonCardTitle className="send-card-title">
 					<IonIcon icon={flash} style={{ color: "orange", marginRight: "5px" }} />
 					Lightning Invoice
 				</IonCardTitle>
-				<IonCardSubtitle>
+				<IonCardSubtitle className="send-card-subtitle">
 					Paying <IonText color="primary">{formatSatoshi(invoiceData.amount || 0 as Satoshi)} Sats</IonText>
 					<IonText style={{ fontSize: "0.7rem" }}>{money && ` (~${money})`}</IonText>
 					{
@@ -67,14 +67,14 @@ const InvoiceCard = ({
 				</IonCardSubtitle>
 			</IonCardHeader>
 			<IonCardContent className="ion-padding ion-margin-top">
-				<NoteInput note={note} setNote={setNote} />
-				<IonAccordionGroup className="ion-no-padding" style={{ marginTop: "30px" }}>
+				<NoteInput note={note} setNote={setNote} className="ion-margin-top" />
+				<IonAccordionGroup style={{ marginTop: "30px" }}>
 					<IonAccordion value="invoice-info">
-						<IonItem slot="header">
-							<IonLabel>Invoice info</IonLabel>
+						<IonItem slot="header" color="secondary" lines="none">
+							<IonLabel><IonIcon icon={informationCircleOutline} /></IonLabel>
 						</IonItem>
 						<div slot="content">
-							<InvoiceInfoDisplay invoiceData={invoiceData} inset />
+							<InvoiceInfoDisplay invoiceData={invoiceData} />
 						</div>
 					</IonAccordion>
 				</IonAccordionGroup>
