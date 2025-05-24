@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import './App.scss';
 import store, { persistor } from './State/store';
 import { Layout } from "./Layout";
+import { StatusBar } from "@capacitor/status-bar";
 
 const NodeUp = lazy(() => import('./Pages/NodeUp'));
 const Loader = lazy(() => import('./Pages/Loader'));
@@ -260,7 +261,7 @@ const AppContent: React.FC = () => {
 
 const BoostrapGuard: React.FC = () => {
 	const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-	console.log({ hasBootstrapped })
+
 
 	return hasBootstrapped ? (
 		<Redirect to="/home" />
@@ -270,7 +271,10 @@ const BoostrapGuard: React.FC = () => {
 };
 
 const App: React.FC = () => {
-
+	useEffect(() => {
+		StatusBar.setOverlaysWebView({ overlay: false });
+		StatusBar.setBackgroundColor({ color: "#16191c" })
+	}, []);
 
 
 	return (
