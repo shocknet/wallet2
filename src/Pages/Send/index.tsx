@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
 import {
 	IonAvatar,
@@ -55,6 +55,9 @@ import { parseUserInputToSats } from '@/lib/units';
 import { getIconFromClassification } from '@/lib/icons';
 import { useAlert } from '@/lib/contexts/useAlert';
 import BackToolbar from '@/Layout2/BackToolbar';
+import AmountInput from '@/Components/AmountInput';
+import { validateAndFormatAmountInput } from '@/lib/format';
+import { nip19 } from 'nostr-tools';
 
 const LnurlCard = lazy(() => import("./LnurlCard"));
 const InvoiceCard = lazy(() => import("./InvoiceCard"));
@@ -65,33 +68,20 @@ const OnChainCard = lazy(() => import("./OnChainCard"));
 const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	const location = useLocation<{ input: string }>();
 	const dispatch = useDispatch();
-	const enabledSpendSources = useSelector(selectEnabledSpends);
-	const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
-
 	const { showAlert } = useAlert();
 	const { showToast } = useToast();
 
+	const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
+
+	// --- Selected Spend Source ---
+	const enabledSpendSources = useSelector(selectEnabledSpends);
 	const [selectedSource, setSelectedSource] = useState(enabledSpendSources[0]);
 	const isPubSource = !!selectedSource?.pubSource;
-
-	const inputRef = useRef<HTMLIonInputElement>(null);
-
-	// To show which scanner to use
-	const [isMobile, setIsMobile] = useState(false);
-
-	const [popovers, setPopovers] = useState({
-		reserve: false,
-		//recipient: false,
-	})
-
-
-	// Check whether we have at least one spend source THAT also has enough balance (maxWithdrawable > 0)
+	// Check whether we have at least one spend source that ALSO has enough balance (maxWithdrawable > 0)
 	// Show alert if not
 	useIonViewWillEnter(() => {
 		setIsMobile(isPlatform("hybrid"));
-
-		setAmountInSats(null);
-		setDisplayValue("");
+		resetValues(); // Ionic will not remove the state when navigating again to this page, so we need to reset the values
 		if (enabledSpendSources.length === 0) {
 			showAlert({
 				header: "No Spend Sources",
@@ -137,44 +127,39 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				})
 			}
 		}
-	}, [enabledSpendSources])
-
-	useEffect(() => {
-		const clip = location.state?.input;
-		if (!clip) return;
-
-		setRecipient(clip);
-
-		// replace the current history entry with identical URL but no state
-		history.replace({ pathname: location.pathname, search: location.search, state: null });
-	}, [location.state?.input, history, location.pathname, location.search]);
+	}, [enabledSpendSources]);
 
 
-	// Fee tiers for on chain transactions
-	const [feeTiers, setFeeTiers] = useState<FeeTier[]>([]);
-	const [selectedFeeTier, setSelectedFeeTier] = useState(1);  // Default to avergae fee rate
+	// --- Amount input ---
+	const [amountInSats, setAmountInSats] = useState<Satoshi | null>(null);
+	const [unit, setUnit] = useState<"BTC" | "sats">("sats");
+	const [displayValue, setDisplayValue] = useState("");
+	const [isFilled, setIsFilled] = useState(false); // Was the amount automatically filled by invoice, fixed noffer, etc
+	const [limits, setLimits] = useState<{
+		minSats: Satoshi;
+		maxSats: Satoshi;
+	}>({
+		minSats: 1 as Satoshi,
+		maxSats: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+	});
+	const [isAmountInputDisabled, setIsAmountInputDisabled] = useState(false);
 
-	const fetchFeeTiers = async () => {
-		try {
-			const tiers = await getFeeTiers(mempoolUrl);
+	// Amount input ref, used to focus the input after a valid recipient is parsed, when applicable
+	const satsInputRef = useRef<HTMLIonInputElement>(null);
 
-			setFeeTiers(tiers);
-		} catch (err) {
-			console.error("Failed to fetch fees", mempoolUrl, err);
+	const [note, setNote] = useState("");
+
+	const resetValues = useCallback((skipAmount = false) => {
+		if (!skipAmount) {
+			setAmountInSats(null);
+			setDisplayValue("");
 		}
-	};
-
-	useEffect(() => {
-		fetchFeeTiers();
-
-		const interval = setInterval(fetchFeeTiers, 120000); // Refresh every 2 minutes
-		return () => clearInterval(interval);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		setNote("");
+		setIsAmountInputDisabled(false);
+	}, [])
 
 
-
-	// Recipient
+	// --- Recipient input ---
 	const [recipient, setRecipient] = useState("");
 	const debouncedRecepient = useDebounce(recipient, 800);
 	const [inputState, setInputState] = useState<InputState>({
@@ -182,15 +167,13 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		inputValue: ""
 	});
 	const [isTouched, setIsTouched] = useState(false);
-	const onRecipientChange = (e: CustomEvent) => {
-		setInputState({ status: "idle", inputValue: "" });
-		if (inputRef.current) {
-			inputRef.current.classList.remove("ion-invalid")
-		}
-		setRecipient(e.detail.value || "");
-	}
+	// Recipient input ref, used to enforce removal of error class when input is changed
+	const inputRef = useRef<HTMLIonInputElement>(null);
 
 	useEffect(() => {
+		resetValues(isFilled); // When the recipient changes, reset the values
+		setIsFilled(false); // Reset the isFilled state
+
 		if (!debouncedRecepient.trim()) {
 			setInputState({ status: "idle", inputValue: "" });
 			return;
@@ -225,22 +208,58 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					return;
 				}
 
-				if (parsed.type === InputClassification.LN_INVOICE && !parsed.amount) {
-					setInputState({
-						error: "Zero value invoices not supported",
-						status: "error",
-						inputValue: debouncedRecepient,
-						classification: parsed.type
-					});
-					return;
-				}
-
 				if (parsed.type === InputClassification.LN_INVOICE) {
-					setAmountInSats(parsed.amount!);
+					if (!parsed.amount) {
+						setInputState({
+							error: "Zero value invoices are not supported",
+							status: "error",
+							inputValue: debouncedRecepient,
+							classification: parsed.type
+						});
+						return;
+					}
+					// Update amount with the invoice's decoded amount
+					const newDisplayValue = validateAndFormatAmountInput(parsed.amount.toString(), "sats");
+					setDisplayValue(newDisplayValue);
+					setIsFilled(true);
+					setIsAmountInputDisabled(true); // Disable the amount input, as it is already filled by the invoice
+
+					// If the invoice has a description, set it as the note
 					if (parsed.memo) {
 						setNote(parsed.memo);
 					}
 				}
+
+				// If it's a LNURL or LN address, set the limits
+				if (parsed.type === InputClassification.LNURL_PAY || parsed.type === InputClassification.LN_ADDRESS) {
+					setLimits({
+						minSats: parsed.min,
+						maxSats: Math.min(parsed.max, parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
+					})
+				}
+
+				// If it's a noffer with no spontaneous price type, set the amount from the invoice
+				if (parsed.type === InputClassification.NOFFER) {
+					if (parsed.priceType === nip19.OfferPriceType.Fixed || parsed.priceType === nip19.OfferPriceType.Variable) {
+						setDisplayValue(parsed.invoiceData.amount.toString());
+						setIsFilled(true);
+						setIsAmountInputDisabled(true); // Disable the amount input, as it is already filled by noffer
+					}
+				}
+
+
+				// When the recipient expects amount input, focus the amount input
+				// after the recipient is parsed
+				if (
+					parsed.type === InputClassification.LNURL_PAY ||
+					parsed.type === InputClassification.LN_ADDRESS ||
+					(parsed.type === InputClassification.NOFFER && parsed.priceType === nip19.OfferPriceType.Spontaneous) ||
+					parsed.type === InputClassification.BITCOIN_ADDRESS
+				) {
+					satsInputRef.current?.setFocus();
+				}
+
+
 				setInputState({
 					status: "parsedOk",
 					inputValue: debouncedRecepient,
@@ -255,9 +274,61 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					classification
 				});
 			})
-	}, [debouncedRecepient, selectedSource]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debouncedRecepient, selectedSource, resetValues]);
 
-	// Scanner for getting recipient
+	// Recipient might be passed in location.state
+	useEffect(() => {
+		const clip = location.state?.input;
+		if (!clip) return;
+		clearRecipientError();
+
+		setRecipient(clip);
+
+		// replace the current history entry with identical URL but no state.
+		// this is because Ionic will not remove the state when navigating again to this page
+		history.replace({ pathname: location.pathname, search: location.search, state: null });
+	}, [location.state?.input, history, location.pathname, location.search]);
+
+	const clearRecipientError = () => {
+		if (inputRef.current) {
+			inputRef.current.classList.remove("ion-invalid")
+		}
+	}
+
+	const onRecipientChange = (e: CustomEvent) => {
+		clearRecipientError();
+		setRecipient(e.detail.value || "");
+	}
+
+
+
+	// --- On chain fee tiers ---
+	const [feeTiers, setFeeTiers] = useState<FeeTier[]>([]);
+	const [selectedFeeTier, setSelectedFeeTier] = useState(1);  // Default to avergae fee rate
+
+	useEffect(() => {
+		const fetchFeeTiers = async () => {
+			try {
+				const tiers = await getFeeTiers(mempoolUrl);
+
+				setFeeTiers(tiers);
+			} catch (err) {
+				console.error("Failed to fetch fees", mempoolUrl, err);
+			}
+		};
+
+		fetchFeeTiers();
+
+		const interval = setInterval(fetchFeeTiers, 120000); // Refresh every 2 minutes
+		return () => clearInterval(interval);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+
+
+	// --- Scanner ---
+	const [isMobile, setIsMobile] = useState(false);
 	const [presentScanner, dismissScanner] = useIonModal(
 		<ScanModal
 			onError={(error) => {
@@ -289,17 +360,17 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	}
 
 
+	const [popovers, setPopovers] = useState({
+		reserve: false,
+	})
 
 
-	// Amount input states
-	const [amountInSats, setAmountInSats] = useState<Satoshi | null>(null);
-	const [unit, setUnit] = useState<"BTC" | "sats">("sats");
-	const [displayValue, setDisplayValue] = useState("");
-	const [note, setNote] = useState("");
+	// --- Handle Payment ---
+	const canPay = useMemo(() =>
+		inputState.status === "parsedOk" && amountInSats !== null && amountInSats !== 0 && parseUserInputToSats((selectedSource?.maxWithdrawable || "0"), "sats") > amountInSats
+		, [inputState, amountInSats, selectedSource]);
 
-
-
-	const handlePayment = async () => {
+	const handlePayment = useCallback(async () => {
 		if (inputState.status !== "parsedOk") {
 
 			return;
@@ -313,26 +384,34 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		}
 
 		try {
-			await dispatch(sendPaymentThunk({
+			const res = await dispatch(sendPaymentThunk({
 				sourceId: selectedSource.id,
 				parsedInput: inputState.parsedData,
 				amount: amountInSats,
 				note,
-				satsPerVByte: /* feeTiers[selectedFeeTier].rate */ 4,
+				satsPerVByte: feeTiers[selectedFeeTier].rate,
 				showToast
-			}));
-			history.push("/home");
+			})).unwrap();
+			if (
+				inputState.parsedData.type === InputClassification.NOFFER &&
+				inputState.parsedData.priceType === nip19.OfferPriceType.Spontaneous &&
+				res?.error
+			) {
+				setLimits({
+					minSats: parseUserInputToSats(res.range.min.toString(), "sats"),
+					maxSats: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
+
+				})
+
+				showToast({ message: "Noffer range updated, please try to send again now", color: "warning" });
+			} else {
+				history.replace("/home");
+			}
 		} catch (err: any) {
-			alert(err?.message)
 			showToast({ message: err?.message || "Payment failed", color: "danger" });
 		}
 
-	};
-
-
-	const canPay = useMemo(() =>
-		inputState.status === "parsedOk" && amountInSats !== null && amountInSats !== 0 && parseInt(selectedSource?.maxWithdrawable || "0") > amountInSats
-		, [inputState, amountInSats, selectedSource]);
+	}, [amountInSats, inputState, selectedSource, dispatch, history, showToast, feeTiers, selectedFeeTier, note]);
 
 
 	return (
@@ -345,6 +424,27 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			<IonContent className="ion-padding">
 				<IonGrid>
 					<IonRow>
+						<IonCol size="12">
+							<AmountInput
+								ref={satsInputRef}
+								color="primary"
+								style={{
+									"--background": "var(--ion-color-secondary)",
+								}}
+								labelPlacement="stacked"
+								amountInSats={amountInSats}
+								setAmountInSats={setAmountInSats}
+								unit={unit}
+								setUnit={setUnit}
+								displayValue={displayValue}
+								setDisplayValue={setDisplayValue}
+								fill="solid"
+								limits={limits}
+								disabled={isAmountInputDisabled}
+							/>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-margin-top">
 						<IonCol size="12">
 							<IonInput
 								ref={inputRef}
@@ -367,10 +467,10 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								value={recipient}
 								onIonInput={onRecipientChange}
 							>
-								<IonButton fill="clear" slot="end" aria-label="scan" onClick={openScanModal}>
+								<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScanModal}>
 									<IonIcon slot="icon-only" icon={qrCodeOutline} />
 								</IonButton>
-								<IonButton fill="clear" slot="end" aria-label="info" id="recipient-types-info">
+								<IonButton fill="clear" size="small" slot="end" aria-label="info" id="recipient-types-info">
 									<IonIcon slot="icon-only" icon={informationCircle} />
 								</IonButton>
 							</IonInput>
@@ -391,12 +491,6 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								<IonCol size="12">
 									<Suspense fallback={<IonSpinner />}>
 										<OnChainCard
-											amountInSats={amountInSats}
-											setAmountInSats={setAmountInSats}
-											displayValue={displayValue}
-											setDisplayValue={setDisplayValue}
-											unit={unit}
-											setUnit={setUnit}
 											selectedFeeTier={selectedFeeTier}
 											setSelectedFeeTier={setSelectedFeeTier}
 											feeTiers={feeTiers}
@@ -435,12 +529,6 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 											<Suspense fallback={<IonSpinner />}>
 												<LnurlCard
 													lnurlData={inputState.parsedData}
-													amountInSats={amountInSats}
-													setAmountInSats={setAmountInSats}
-													displayValue={displayValue}
-													setDisplayValue={setDisplayValue}
-													unit={unit}
-													setUnit={setUnit}
 													setNote={setNote}
 													note={note}
 													selectedSource={selectedSource}
@@ -467,15 +555,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 										<Suspense fallback={<IonSpinner />}>
 											<NofferCard
 												nofferData={inputState.parsedData}
-												amountInSats={amountInSats}
-												setAmountInSats={setAmountInSats}
-												displayValue={displayValue}
-												setDisplayValue={setDisplayValue}
-												unit={unit}
-												setUnit={setUnit}
 												setNote={setNote}
 												note={note}
-												selectedSource={selectedSource}
 											/>
 										</Suspense>
 									</IonCol>
@@ -649,9 +730,12 @@ const RecipentInputHelperText = ({ inputState }: { inputState: InputState }) => 
 				<IonText color="primary">
 					<p style={{ fontSize: "14px", marginTop: "4px", display: "flex", alignItems: "center" }}>
 						<IonIcon icon={icon} color={color} style={{ marginRight: "8px" }} />
-						{inputState.classification === InputClassification.LNURL_PAY || inputState.classification === InputClassification.LN_ADDRESS
-							? `${inputState.classification} detected. Fetching info.`
-							: `${inputState.classification} detected. Parsing...`}
+						{
+							inputState.classification === InputClassification.LNURL_PAY ||
+								inputState.classification === InputClassification.LN_ADDRESS ||
+								inputState.classification === InputClassification.NOFFER
+								? `${inputState.classification} detected. Fetching info.`
+								: `${inputState.classification} detected. Parsing...`}
 					</p>
 				</IonText>
 			);

@@ -1,7 +1,6 @@
 import { SpendFrom } from "@/globalTypes";
 import { FeeTier } from "@/lib/fees";
 import { InputClassification, ParsedInput, ParsedInvoiceInput, ParsedLightningAddressInput, ParsedLnurlPayInput, ParsedNofferInput } from "@/lib/types/parse";
-import { Satoshi } from "@/lib/types/units";
 
 interface IdleState {
 	status: "idle";
@@ -38,12 +37,6 @@ export type InputState =
 
 
 export interface CardProps {
-	amountInSats: Satoshi | null;
-	setAmountInSats: React.Dispatch<React.SetStateAction<Satoshi | null>>;
-	unit: "BTC" | "sats";
-	setUnit: React.Dispatch<React.SetStateAction<"BTC" | "sats">>;
-	displayValue: string;
-	setDisplayValue: React.Dispatch<React.SetStateAction<string>>;
 	selectedFeeTier: number;
 	setSelectedFeeTier: React.Dispatch<React.SetStateAction<number>>;
 	feeTiers: FeeTier[];

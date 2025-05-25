@@ -2,27 +2,27 @@
 const enableLog = false;
 
 const log = (...args: any[]) => {
-  if (enableLog) {
-    console.log('%cLOG:', 'color: blue;', ...args);
-  }
+	if (enableLog) {
+		console.log('%cLOG:', 'color: blue;', ...args);
+	}
 };
 
 const info = (...args: any[]) => {
-  if (enableLog) {
-    console.info('%cINFO:', 'color: green;', ...args);
-  }
+	if (enableLog) {
+		console.info('%cINFO:', 'color: green;', ...args);
+	}
 };
 
 const warn = (...args: any[]) => {
-  if (enableLog) {
-    console.warn('%cWARN:', 'color: yellow;', ...args);
-  }
+	if (enableLog) {
+		console.warn('%cWARN:', 'color: yellow;', ...args);
+	}
 };
 
 const error = (...args: any[]) => {
-  if (enableLog) {
-    console.error('%cERROR:', 'color: red;', ...args);
-  }
+	if (enableLog) {
+		console.error('%cERROR:', 'color: red;', ...args);
+	}
 };
 
 const logger = {

@@ -11,12 +11,13 @@ const NoteInput = ({ note, setNote, ...props }: NoteInputProps) => {
 			label="Note (optional)"
 			labelPlacement="stacked"
 			placeholder='Add a note'
+			fill="outline"
 			maxlength={100}
 			counter
 			helperText="Only you can see this note"
 			autoGrow
 			onIonInput={(e) => setNote(e.detail.value || "")}
-			className={`card-input ${props.className || ""}`}
+			className={props.className}
 		>
 		</IonTextarea>
 	)
