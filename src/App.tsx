@@ -130,9 +130,9 @@ const AppContent: React.FC = () => {
 				/>
 				<Route exact path="/nodeup">
 					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<NodeUp />
-						</Layout>
+
+						<NodeUp />
+
 					</Suspense>
 				</Route>
 				<Route exact path="/">

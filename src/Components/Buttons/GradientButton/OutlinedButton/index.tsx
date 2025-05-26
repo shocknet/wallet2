@@ -1,5 +1,6 @@
 import { IonButton } from "@ionic/react";
 import styles from "./styles/index.module.scss";
+import classNames from "classnames";
 
 interface OutlinedButtonProps {
 	children: React.ReactNode;
@@ -10,7 +11,7 @@ const OutlinedButton = ({ children, ...props }: OutlinedButtonProps & React.Comp
 	return (
 		<IonButton
 			{...props}
-			className={styles["outlined-button"]}
+			className={classNames(styles["outlined-button"], props.className)}
 			fill="outline"
 
 		>
