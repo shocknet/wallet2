@@ -10,7 +10,7 @@ interface Props {
 
 const InvoiceInfoDisplay = ({ invoiceData, inset, labelsColor }: Props) => {
 	return (
-		<IonList inset={inset}>
+		<IonList inset={inset} className="secondary">
 			<IonItem>
 				<IonLabel color={labelsColor}>Amount</IonLabel>
 				<IonText>{invoiceData.amount?.toLocaleString()} sats</IonText>

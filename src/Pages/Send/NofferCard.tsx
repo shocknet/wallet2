@@ -13,79 +13,44 @@ import {
 	IonText
 } from "@ionic/react";
 
-import { Satoshi } from "@/lib/types/units";
 import NoteInput from "./common";
-import { nip19 } from "nostr-tools";
-import AmountInput from "@/Components/AmountInput";
-import { parseUserInputToSats } from "@/lib/units";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
+import { informationCircleOutline } from "ionicons/icons";
 
 
 
 
 const NofferCard = ({
 	nofferData,
-	amountInSats,
-	setAmountInSats,
-	displayValue,
-	setDisplayValue,
-	unit,
-	setUnit,
 	note,
 	setNote,
-	selectedSource
-}: Omit<CardProps, "invoiceData" | "lnurlData" | "feeTiers" | "selectedFeeTier" | "setSelectedFeeTier">) => {
+}: Omit<CardProps, "invoiceData" | "lnurlData" | "feeTiers" | "selectedFeeTier" | "setSelectedFeeTier" | "selectedSource">) => {
 
 	return (
 		<>
-			<IonCard color="secondary">
+			<IonCard className="ion-margin-top ion-no-padding send-card">
 				<IonCardHeader>
-					<IonCardTitle style={{ display: "flex", alignItems: "center" }}>
+					<IonCardTitle className="send-card-title">
 						<IonIcon color="primary" icon="nostr" style={{ marginRight: "5px" }} />
 						Noffer
 					</IonCardTitle>
-					<IonCardSubtitle>
-						Paying <IonText color="primary">{nofferData.noffer.offer}</IonText>
+					<IonCardSubtitle className="send-card-subtitle">
+						Paying offer <IonText>{nofferData.noffer.offer}</IonText>
 					</IonCardSubtitle>
 				</IonCardHeader>
-				<IonCardContent className="ion-no-padding ion-margin-top">
-					{
-						(nofferData.priceType === nip19.OfferPriceType.Spontaneous)
-						&&
-						<AmountInput
-							labelPlacement="stacked"
-							amountInSats={amountInSats}
-							setAmountInSats={setAmountInSats}
-							unit={unit}
-							setUnit={setUnit}
-							displayValue={displayValue}
-							setDisplayValue={setDisplayValue}
-							limits={{
-								minSats: 1 as Satoshi,
-								maxSats: parseUserInputToSats(selectedSource?.maxWithdrawable || "0", "sats")
-							}}
-							className="card-input ion-margin"
-							fill="solid"
-						/>
-					}
+				<IonCardContent className="ion-padding ion-margin-top">
+					<NoteInput note={note} setNote={setNote} className="ion-margin-top" />
 
-					<NoteInput note={note} setNote={setNote} />
-
-					<IonAccordionGroup className="ion-margin">
+					<IonAccordionGroup style={{ marginTop: "30px" }}>
 						<IonAccordion value="lnurl-info">
-							<IonItem slot="header">
-								<IonLabel>Noffer Info</IonLabel>
+							<IonItem slot="header" color="secondary" lines="none">
+								<IonLabel><IonIcon icon={informationCircleOutline} /></IonLabel>
 							</IonItem>
 							<div slot="content">
 								<NofferInfoDisplay nofferData={nofferData} />
 							</div>
 						</IonAccordion>
 					</IonAccordionGroup>
-
-
-
-
-
 				</IonCardContent>
 			</IonCard>
 		</>

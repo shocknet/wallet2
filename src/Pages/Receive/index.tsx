@@ -20,8 +20,6 @@ import {
 	useIonRouter,
 	useIonViewWillEnter
 } from '@ionic/react';
-import { Buffer } from 'buffer';
-import { bech32 } from 'bech32';
 import { useSelector } from '../../State/store';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
@@ -42,13 +40,6 @@ import { convertSatsToFiat } from '@/lib/fiat';
 import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
 
-const createLnurlFromLnAddress = (lnAddress: string) => {
-	if (lnAddress === "") return "";
-	const endpoint = "https://" + lnAddress.split("@")[1] + "/.well-known/lnurlp/" + lnAddress.split("@")[0];
-	const words = bech32.toWords(Buffer.from(endpoint, 'utf8'));
-	const lnurl = bech32.encode("lnurl", words, 999999);
-	return lnurl;
-}
 
 
 const CHAIN_CACHE_KEY = "p_c_info";
@@ -336,7 +327,7 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 							<IonCol size="12" className="ion-text-center">
 								<div className={styles["qr-code-wrapper"]}>
 									<div className={styles["inner-qr-code"]}>
-										<QrCode value={createLnurlFromLnAddress(lightningAddress)} prefix="lightning" />
+										<QrCode value={lightningAddress} prefix="lightning" />
 									</div>
 								</div>
 							</IonCol>

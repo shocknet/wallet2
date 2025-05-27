@@ -37,6 +37,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 				isOpen={!!toastOptions?.message}
 				onDidDismiss={handleDismiss}
 				{...toastOptions}
+				duration={5000}
 			/>
 		</ToastContext.Provider>
 	);

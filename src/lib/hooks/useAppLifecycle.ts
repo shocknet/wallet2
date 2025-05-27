@@ -102,13 +102,11 @@ export const useAppLifecycle = () => {
 	}, [cachedValue, setValue, showAlert]);
 
 	useEffect(() => {
-		const appStartUp = async () => {
-			if (isLoaded) {
-				await handleInitNotifications();
-			}
 
+
+		if (isLoaded) {
+			handleInitNotifications();
 		}
-		appStartUp();
 
 
 		// App resume
@@ -146,7 +144,7 @@ const useWatchClipboard = () => {
 
 	const history = useHistory();
 
-	const savedAssets = useSelector(state => state.generatedAssets.assets)
+	const savedAssets = useSelector(state => state.generatedAssets.assets);
 
 	const clipboardAlertShown = useRef(false);
 	const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -174,32 +172,29 @@ const useWatchClipboard = () => {
 		if (
 			!text.length ||
 			(savedAssets || []).includes(text) ||
-			identifyBitcoinInput(text) === InputClassification.UNKNOWN ||
-			clipboardAlertShown.current
+			clipboardAlertShown.current ||
+			identifyBitcoinInput(text) === InputClassification.UNKNOWN
 		) {
 			return;
 		}
 
-		clipboardAlertShown.current = true;
+		clipboardAlertShown.current = true
 		showAlert({
 			header: "Clipboard Detected",
 			subHeader: "Do you want to use the content from your clipboard?",
 			message: truncateTextMiddle(text, 20),
+			onWillDismiss: () => {
+				dispatch(addAsset({ asset: text }));
+				clipboardAlertShown.current = false;
+			},
 			buttons: [
 				{
 					text: "No",
 					role: "cancel",
-					handler: () => {
-						clipboardAlertShown.current = false;
-					}
 				},
 				{
 					text: "Yes",
 					handler: () => {
-						clipboardAlertShown.current = false;
-						// Handle the clipboard content
-						dispatch(addAsset({ asset: text }));
-
 						history.replace({
 							pathname: "/send",
 							state: {

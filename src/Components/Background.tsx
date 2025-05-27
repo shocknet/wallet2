@@ -6,7 +6,6 @@ import { useIonRouter } from "@ionic/react";
 import { editSpendSources } from "../State/Slices/spendSourcesSlice";
 import axios, { isAxiosError } from "axios";
 import { SubscriptionsBackground } from "./BackgroundJobs/subscriptions";
-import { HealthCheck } from "./BackgroundJobs/HealthCheck";
 import { LnAddressCheck } from "./BackgroundJobs/LnAddressCheck";
 import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
 import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
@@ -14,6 +13,8 @@ import { toast } from "react-toastify";
 import Toast from "./Toast";
 import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
+import { subToBeacons } from "@/Api/nostr";
+import { updateSourceState } from "@/Api/health";
 
 
 
@@ -116,13 +117,18 @@ export const Background = () => {
 		})
 	}, [router, dispatch])
 
+	useEffect(() => {
+		return subToBeacons(up => {
+			updateSourceState(up.createdByPub, { disconnected: false, name: up.name })
+		})
+	}, [spendSource, paySource])
+
 
 
 
 
 	return <div id="focus_div">
 		<SubscriptionsBackground />
-		<HealthCheck />
 		<NewSourceCheck />
 		<LnAddressCheck />
 		<NodeUpCheck />

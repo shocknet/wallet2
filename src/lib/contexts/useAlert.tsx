@@ -1,14 +1,9 @@
-import { AlertButton, IonAlert } from '@ionic/react';
+import { IonAlert } from '@ionic/react';
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
+type AlertOptions = React.ComponentProps<typeof IonAlert>
 
 
-interface AlertOptions {
-	header?: string;
-	subHeader?: string;
-	message?: string;
-	buttons?: (AlertButton | string)[];
-}
 
 interface AlertContextValue {
 	showAlert: (options: AlertOptions) => void;
@@ -46,9 +41,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
 			<IonAlert
 				isOpen={isOpen}
 				onDidDismiss={() => setIsOpen(false)}
-				header={currentAlert?.header}
-				subHeader={currentAlert?.subHeader}
-				message={currentAlert?.message}
+				{...currentAlert}
 				buttons={currentAlert?.buttons || ["OK"]}
 			></IonAlert>
 		</AlertContext.Provider>

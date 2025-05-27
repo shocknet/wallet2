@@ -22,7 +22,7 @@ interface ParsedInputBase {
 
 export interface ParsedInvoiceInput extends ParsedInputBase {
 	type: InputClassification.LN_INVOICE;
-	amount?: Satoshi;
+	amount: Satoshi;
 	memo?: string;
 }
 export interface ParsedLnurlPayInput extends ParsedInputBase, LnurlPayServiceResponse {

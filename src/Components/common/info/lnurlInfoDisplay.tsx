@@ -13,7 +13,7 @@ const LnurlInfoDisplay = ({ lnurlData, inset, labelsColor }: Props) => {
 	const [expandImage, setExpandImage] = useState(false);
 	return (
 		<>
-			<IonList inset={inset}>
+			<IonList inset={inset} className="secondary">
 				<IonItem>
 					<IonLabel color={labelsColor}>Amount Range</IonLabel>
 					<IonText>{lnurlData.min.toLocaleString()} - {lnurlData.max.toLocaleString()} sats</IonText>

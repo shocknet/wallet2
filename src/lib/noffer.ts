@@ -14,21 +14,19 @@ export function decodeNoffer(data: string) {
 }
 
 
-export async function createNofferInvoice(noffer: OfferPointer, keys: NostrKeyPair, amount?: Satoshi) {
+export async function createNofferInvoice(noffer: OfferPointer, keys: NostrKeyPair, amount?: Satoshi): Promise<string | NofferError> {
 	const { offer } = noffer
 	const res = await sendNip69(noffer, { offer, amount }, keys)
 	const resErr = res as NofferError
 	if (resErr.error) {
+		// If the error is a 5 (range error), we want that error returned to use the reported range
 		if (resErr.code === 5) {
-			throw new Error("value must be between " + resErr.range.min + " and " + resErr.range.max);
+			return resErr;
 		}
+		// If it's any other error, throw it
 		throw new Error(resErr.error);
 	}
 	const bolt11 = (res as NofferSuccess).bolt11
-	const invoice = decodeInvoice(bolt11)
-	if (amount && invoice.amount !== amount) {
-		throw new Error("Amount mismatch");
-	}
 	return bolt11;
 }
 

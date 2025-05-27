@@ -47,6 +47,8 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 
 	const [money, setMoney] = useState<string>("");
 
+	const [choseMax, setChoseMax] = useState(false);
+
 	useEffect(() => {
 		let newSats: Satoshi;
 		try {
@@ -78,6 +80,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 
 		setError(undefined);
 		setAmountInSats(newSats);
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedDisplayValue]);
 
@@ -124,8 +127,16 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 				? formatBitcoin(satsToBtc(limits.maxSats))
 				: formatSatoshi(limits.maxSats);
 			setDisplayValue(maxValue);
+			setChoseMax(true);
 		}
 	};
+
+	useEffect(() => {
+		if (choseMax) {
+			setMax();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [limits])
 
 	return (
 		<IonInput
@@ -148,6 +159,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 			<IonButton
 				slot="end"
 				fill="clear"
+				size="small"
 				onClick={toggleUnit}
 				aria-label="Toggle unit"
 			>
@@ -158,6 +170,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 				<IonButton
 					slot="end"
 					fill="clear"
+					size="small"
 					onClick={setMax}
 					aria-label="Set max"
 				>
