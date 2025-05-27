@@ -1,11 +1,12 @@
 import { NostrKeyPair } from '@/Api/nostrHandler';
-import { nip19, nip69 } from 'nostr-tools';
+import { decodeBech32, NofferError, NofferSuccess, OfferPointer, OfferPriceType } from '@shocknet/clink-sdk';
 import { Satoshi } from './types/units';
 import { sendNip69 } from '@/Api/nostr';
-const { decode: decodeNip19 } = nip19;
+import { decodeInvoice } from './invoice';
+
 
 export function decodeNoffer(data: string) {
-	const decoded = decodeNip19(data);
+	const decoded = decodeBech32(data);
 	if (decoded.type !== "noffer") {
 		throw new Error("Invalid noffer");
 	}
@@ -13,10 +14,10 @@ export function decodeNoffer(data: string) {
 }
 
 
-export async function createNofferInvoice(noffer: nip19.OfferPointer, keys: NostrKeyPair, amount?: Satoshi): Promise<string | nip69.Nip69Error> {
+export async function createNofferInvoice(noffer: OfferPointer, keys: NostrKeyPair, amount?: Satoshi): Promise<string | NofferError> {
 	const { offer } = noffer
 	const res = await sendNip69(noffer, { offer, amount }, keys)
-	const resErr = res as nip69.Nip69Error
+	const resErr = res as NofferError
 	if (resErr.error) {
 		// If the error is a 5 (range error), we want that error returned to use the reported range
 		if (resErr.code === 5) {
@@ -25,17 +26,17 @@ export async function createNofferInvoice(noffer: nip19.OfferPointer, keys: Nost
 		// If it's any other error, throw it
 		throw new Error(resErr.error);
 	}
-	const bolt11 = (res as nip69.Nip69Success).bolt11
+	const bolt11 = (res as NofferSuccess).bolt11
 	return bolt11;
 }
 
-export function priceTypeToString(priceType: nip19.OfferPriceType) {
+export function priceTypeToString(priceType: OfferPriceType) {
 	switch (priceType) {
-		case nip19.OfferPriceType.Fixed:
+		case OfferPriceType.Fixed:
 			return "Fixed";
-		case nip19.OfferPriceType.Variable:
+		case OfferPriceType.Variable:
 			return "Variable";
-		case nip19.OfferPriceType.Spontaneous:
+		case OfferPriceType.Spontaneous:
 			return "Spontaneous";
 		default:
 			throw new Error("Unknown price type");

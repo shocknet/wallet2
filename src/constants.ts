@@ -5,6 +5,7 @@ import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
 import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
 import { nip19 } from 'nostr-tools'
+import { decodeBech32, OfferPointer } from '@shocknet/clink-sdk';
 const { decode: decodeNip19 } = nip19
 
 export const decodeNprofile = (data: string) => {
@@ -15,7 +16,7 @@ export const decodeNprofile = (data: string) => {
 	return decoded.data
 }
 export const decodeNoffer = (data: string) => {
-	const decoded = decodeNip19(data);
+	const decoded = decodeBech32(data);
 	if (decoded.type !== "noffer") {
 		throw new Error("Invalid noffer")
 	}
@@ -97,7 +98,7 @@ export interface Destination {
 	domainName?: string,
 	hostName?: string,
 	memo?: string
-	noffer?: nip19.OfferPointer
+	noffer?: OfferPointer
 }
 
 export const decodeLnurl = (lnurl: string) => {
