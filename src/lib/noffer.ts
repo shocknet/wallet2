@@ -1,12 +1,12 @@
 import { NostrKeyPair } from '@/Api/nostrHandler';
-import { nip19, nip69 } from 'nostr-tools';
+import { decodeBech32, NofferError, NofferSuccess, OfferPointer, OfferPriceType } from '@shocknet/clink-sdk';
 import { Satoshi } from './types/units';
 import { sendNip69 } from '@/Api/nostr';
 import { decodeInvoice } from './invoice';
-const { decode: decodeNip19 } = nip19;
+
 
 export function decodeNoffer(data: string) {
-	const decoded = decodeNip19(data);
+	const decoded = decodeBech32(data);
 	if (decoded.type !== "noffer") {
 		throw new Error("Invalid noffer");
 	}
@@ -14,17 +14,17 @@ export function decodeNoffer(data: string) {
 }
 
 
-export async function createNofferInvoice(noffer: nip19.OfferPointer, keys: NostrKeyPair, amount?: Satoshi) {
+export async function createNofferInvoice(noffer: OfferPointer, keys: NostrKeyPair, amount?: Satoshi) {
 	const { offer } = noffer
 	const res = await sendNip69(noffer, { offer, amount }, keys)
-	const resErr = res as nip69.Nip69Error
+	const resErr = res as NofferError
 	if (resErr.error) {
 		if (resErr.code === 5) {
 			throw new Error("value must be between " + resErr.range.min + " and " + resErr.range.max);
 		}
 		throw new Error(resErr.error);
 	}
-	const bolt11 = (res as nip69.Nip69Success).bolt11
+	const bolt11 = (res as NofferSuccess).bolt11
 	const invoice = decodeInvoice(bolt11)
 	if (amount && invoice.amount !== amount) {
 		throw new Error("Amount mismatch");
@@ -32,13 +32,13 @@ export async function createNofferInvoice(noffer: nip19.OfferPointer, keys: Nost
 	return bolt11;
 }
 
-export function priceTypeToString(priceType: nip19.OfferPriceType) {
+export function priceTypeToString(priceType: OfferPriceType) {
 	switch (priceType) {
-		case nip19.OfferPriceType.Fixed:
+		case OfferPriceType.Fixed:
 			return "Fixed";
-		case nip19.OfferPriceType.Variable:
+		case OfferPriceType.Variable:
 			return "Variable";
-		case nip19.OfferPriceType.Spontaneous:
+		case OfferPriceType.Spontaneous:
 			return "Spontaneous";
 		default:
 			throw new Error("Unknown price type");

@@ -1,4 +1,5 @@
-import { nip69, Event, UnsignedEvent, Relay, finalizeEvent, nip04 } from 'nostr-tools'
+import { Event, UnsignedEvent, Relay, finalizeEvent, nip04 } from 'nostr-tools'
+import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk"
 import { Buffer } from 'buffer';
 //import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
 import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44v1'
@@ -118,8 +119,8 @@ export default class RelayCluster {
         )
     }
 
-    SendNip69 = async (relays: string[], pubKey: string, data: nip69.NofferData, keys: NostrKeyPair): Promise<nip69.Nip69Response> => {
-        return nip69.SendNofferRequest(this.pool, new Uint8Array(Buffer.from(keys.privateKey, 'hex')), relays, pubKey, data)
+    SendNip69 = async (relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<NofferResponse> => {
+        return SendNofferRequest(this.pool, new Uint8Array(Buffer.from(keys.privateKey, 'hex')), relays, pubKey, data)
     }
 
     sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
