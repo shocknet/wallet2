@@ -2,6 +2,7 @@ import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import AmountInput from "@/Components/AmountInput";
 import { Satoshi } from "@/lib/types/units";
+import { useAmountInput } from "@/Components/AmountInput/useAmountInput";
 
 
 interface NewInvoiceModalProps {
@@ -10,20 +11,17 @@ interface NewInvoiceModalProps {
 
 const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({ dismiss }: NewInvoiceModalProps, inputRef) => {
 	const amountInputRef = useRef<HTMLIonInputElement>(null);
-	const [amountInSats, setAmountInSats] = useState<Satoshi | null>(null);
-	const [unit, setUnit] = useState<"BTC" | "sats">("sats");
-	const [displayValue, setDisplayValue] = useState("");
-	const [invoiceMemo, setInvoiceMemo] = useState("");
 
 	useImperativeHandle(inputRef, () => amountInputRef.current as HTMLIonInputElement);
 
-
+	const amountInput = useAmountInput({});
+	const [invoiceMemo, setInvoiceMemo] = useState("");
 
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (amountInSats !== null) {
-			dismiss({ amount: amountInSats, invoiceMemo }, "confirm");
+		if (amountInput.effectiveSats !== null) {
+			dismiss({ amount: amountInput.effectiveSats, invoiceMemo }, "confirm");
 		}
 	};
 
@@ -41,7 +39,7 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 					<IonButtons slot="end">
 						<IonButton
 							type="submit"
-							disabled={!amountInSats}
+							disabled={!amountInput.effectiveSats}
 							color="primary"
 							onClick={handleSubmit}
 							strong
@@ -59,12 +57,15 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 								<AmountInput
 									ref={amountInputRef}
 									labelPlacement="floating"
-									amountInSats={amountInSats}
-									setAmountInSats={setAmountInSats}
-									unit={unit}
-									setUnit={setUnit}
-									displayValue={displayValue}
-									setDisplayValue={setDisplayValue}
+									unit={amountInput.unit}
+									displayValue={amountInput.displayValue}
+									limits={amountInput.limits}
+									isDisabled={amountInput.inputDisabled}
+									effectiveSats={amountInput.effectiveSats}
+									error={amountInput.error}
+									onType={amountInput.typeAmount}
+									onPressMax={amountInput.pressMax}
+									onToggleUnit={amountInput.toggleUnit}
 								>
 								</AmountInput>
 							</IonCol>

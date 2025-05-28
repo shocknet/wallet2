@@ -10,11 +10,11 @@ import { Satoshi } from "./types/units";
 import { parseUserInputToSats } from "./units";
 
 
-const BITCOIN_ADDRESS_REGEX = /^(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
+const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
 const LN_INVOICE_REGEX = /^(lightning:)?(lnbc|lntb)[0-9a-zA-Z]+$/;
 const LNURL_REGEX = /^(lightning:)?[Ll][Nn][Uu][Rr][Ll][0-9a-zA-Z]+$/;
 const NOFFER_REGEX = /^(lightning:)?[Nn][Oo][Ff][Ff][Ee][Rr][0-9a-zA-Z]+$/;
-const LN_ADDRESS_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/;
+const LN_ADDRESS_REGEX = /^(lightning:)?[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/;
 
 const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
@@ -99,13 +99,14 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			};
 		}
 		case InputClassification.LN_ADDRESS: {
-			const lnurlResponse = await requestLnurlServiceParams(input, true);
+			const address = removePrefixIfExists(input, "lightning:");
+			const lnurlResponse = await requestLnurlServiceParams(address, true);
 			if (lnurlResponse.tag !== "payRequest") {
 				throw new Error("Invalid response from Lightning Address service");
 			}
 			return {
 				type: InputClassification.LN_ADDRESS,
-				data: input,
+				data: address,
 				...lnurlResponse
 			}
 		}

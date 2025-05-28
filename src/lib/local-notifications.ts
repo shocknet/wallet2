@@ -54,7 +54,6 @@ async function showOperationNotification(
 	title: string,
 	body: string,
 	summaryText: string,
-	largeIcon: string,
 	operationId: string,
 ) {
 
@@ -69,7 +68,6 @@ async function showOperationNotification(
 					channelId: NOTIFICATION_CHANNELS.OPERATIONS,
 					largeBody: body,
 					summaryText: summaryText,
-					largeIcon: largeIcon,
 					extra: {
 						operationId,
 					}
@@ -90,7 +88,6 @@ export async function notifyReceivedOperation(amount: Satoshi, operationId: stri
 		"Payment Received",
 		`You Received ${formatSatoshi(amount)} sats`,
 		isOnChain ? "Incoming on-chain transaction" : "Incoming Lightning transaction",
-		"ic_notification",
 		operationId
 	)
 }
@@ -100,7 +97,6 @@ export function notifySentOperation(amount: Satoshi, operationId: string, isOnCh
 		"Payment Sent",
 		`You sent ${formatSatoshi(amount)} sats`,
 		isOnChain ? "Outgoing on-chain transaction" : "Outgoing Lightning transaction",
-		"ic_notification",
 		operationId
 	)
 }

@@ -144,6 +144,7 @@ const useWatchClipboard = () => {
 
 	const history = useHistory();
 
+	const nodedup = useSelector(state => state.nostrPrivateKey)
 	const savedAssets = useSelector(state => state.generatedAssets.assets);
 
 	const clipboardAlertShown = useRef(false);
@@ -152,6 +153,7 @@ const useWatchClipboard = () => {
 
 	const checkClipboard = useCallback(async () => {
 		if (Date.now() - lastCheckRef.current < 500) return;
+		if (!nodedup) return; // don't check clipboard if not noded up
 		lastCheckRef.current = Date.now();
 
 		if (!document.hasFocus()) return;
@@ -205,7 +207,7 @@ const useWatchClipboard = () => {
 				}
 			]
 		})
-	}, [savedAssets, dispatch, history, showAlert])
+	}, [savedAssets, dispatch, history, showAlert, nodedup])
 
 	useEffect(() => {
 		const focusHandler = () => {

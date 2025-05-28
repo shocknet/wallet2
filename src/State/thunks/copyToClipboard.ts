@@ -4,7 +4,7 @@ import { AppDispatch } from "../store";
 import { ShowToast } from "@/lib/contexts/useToast";
 import { Clipboard } from "@capacitor/clipboard";
 
-export const copyToClipboard = (text: string, showToast: ShowToast, save?: true) => async (dispatch: AppDispatch) => {
+export const copyToClipboard = (text: string, showToast: ShowToast, save = true) => async (dispatch: AppDispatch) => {
 	try {
 		await Clipboard.write({ string: text });
 	} catch (err) {

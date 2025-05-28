@@ -38,6 +38,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 				onDidDismiss={handleDismiss}
 				{...toastOptions}
 				duration={5000}
+				position="bottom"
 			/>
 		</ToastContext.Provider>
 	);
