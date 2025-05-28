@@ -90,6 +90,7 @@ const Receive = () => {
 		setValidSlides(prev => {
 			const newSlides = prev.filter(slide => slide.id !== id);
 			swiperRef.current?.slideTo(Math.min(swiperRef.current.activeIndex, newSlides.length - 1));
+			setSelectedSegment(newSlides[0].id);
 			return newSlides;
 		});
 	}, []);
