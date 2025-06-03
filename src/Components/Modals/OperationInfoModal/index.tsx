@@ -283,7 +283,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 						Invoice
 						<IonNote style={{ display: "block", fontSize: "0.8rem" }} color="medium" className="ion-text-wrap">{operation.invoice}</IonNote>
 					</IonLabel>
-					<IonIcon icon={copy} slot="end" />
+					<IonIcon icon={copy} slot="end" onClick={() => navigator.clipboard.writeText(operation.invoice)} />
 				</IonItem>
 				{
 					operation.invoiceMemo && (
