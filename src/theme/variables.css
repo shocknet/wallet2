@@ -334,3 +334,10 @@ ion-toolbar::part(container) .toolbar-content {
 ion-grid {
 	--ion-grid-column-padding: 0;
 }
+
+/* @capacitor/barcode-scanner desktop variant styles override */
+.scanner-dialog-inner {
+	background-color: var(--ion-color-secondary) !important;
+	border: none !important;
+	width: 90% !important;
+}
