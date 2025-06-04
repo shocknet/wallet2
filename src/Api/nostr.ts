@@ -22,12 +22,17 @@ export type Client = ReturnType<typeof NewNostrClient>
 type NostrReadyClient = { client: NostrClient }
 type NostrClientHolder = NostrReadyClient
 
+type ShardsInfo = {
+    total: number
+    parts: string[]
+}
 
 export class ClientsCluster {
     clients: Record<string, NostrClientHolder> = {}
     tempClients: Record<string, NostrClientHolder> = {}
     relayCluster: NostrRelayCluster
     queueManager: QueueManager;
+    shards: Record<string, ShardsInfo> = {}
 
     constructor() {
         this.relayCluster = new NostrRelayCluster()
@@ -35,7 +40,11 @@ export class ClientsCluster {
     }
 
     onRelayEvent = (event: NostrEvent) => {
-        const res = JSON.parse(event.content) as { requestId: string }
+        const res = this.handleEventContent(event.content)
+        if (!res) {
+            console.log("got shard")
+            return
+        }
         for (const key in this.clients) {
             const c = this.clients[key]
             if (c.client.onEvent(event)) {
@@ -49,6 +58,29 @@ export class ClientsCluster {
             }
         }
         logger.warn("no client found for", res.requestId)
+    }
+
+    handleEventContent = (content: string) => {
+        const res = JSON.parse(content)
+        if (!res.shardsId) {
+            return res as { requestId: string }
+        }
+        const shard = res as { index: number, totalShards: number, shardsId: string }
+        let existingShards = this.shards[shard.shardsId]
+        if (!existingShards) {
+            existingShards = {
+                total: shard.totalShards,
+                parts: new Array(shard.totalShards).fill(null)
+            }
+            this.shards[shard.shardsId] = existingShards
+        }
+        existingShards.parts[shard.index] = content
+        if (existingShards.parts.every(p => p !== null)) {
+            const fullContent = existingShards.parts.join('')
+            delete this.shards[shard.shardsId]
+            return JSON.parse(fullContent) as { requestId: string }
+        }
+        return null
     }
 
     SyncClusterRelays = (relays: RelaysSettings) => {
