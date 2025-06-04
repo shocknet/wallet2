@@ -10,6 +10,16 @@ const initialState: HistoryState = {
 	error: null
 };
 
+const emptyCursor = {
+	latestIncomingInvoice: 0,
+	latestIncomingTx: 0,
+	latestIncomingUserToUserPayment: 0,
+	latestOutgoingInvoice: 0,
+	latestOutgoingTx: 0,
+	latestOutgoingUserToUserPayment: 0,
+	max_size: 100
+}
+
 const paymentHistorySlice = createSlice({
 	name: 'paymentHistory',
 	initialState,
@@ -20,7 +30,7 @@ const paymentHistorySlice = createSlice({
 		) => {
 			const { sourceId, operation } = action.payload;
 			if (!state.sources[sourceId]) {
-				state.sources[sourceId] = { data: [], cursor: {} };
+				state.sources[sourceId] = { data: [], cursor: emptyCursor };
 			}
 
 			const existingOps = state.sources[sourceId].data;
@@ -56,7 +66,7 @@ const paymentHistorySlice = createSlice({
 		) => {
 			const { sourceId, operation } = action.payload;
 			if (!state.sources[sourceId]) {
-				state.sources[sourceId] = { data: [], cursor: {} };
+				state.sources[sourceId] = { data: [], cursor: emptyCursor };
 			}
 			// Only add if it doesn't exist
 			const existing = state.sources[sourceId].data.filter(op => op.optimistic).findIndex(
@@ -91,6 +101,15 @@ const paymentHistorySlice = createSlice({
 			if (index !== -1) {
 				existingOps[index].memo = note;
 			}
+		},
+		resetCursors: (
+			state,
+			action: PayloadAction<void>
+		) => {
+			for (const sourceId in state.sources) {
+				state.sources[sourceId].cursor = emptyCursor;
+			}
+
 		}
 	},
 	extraReducers: (builder) => {
@@ -103,7 +122,7 @@ const paymentHistorySlice = createSlice({
 				state.status = 'idle';
 				const { sourceId, newOps, newCursor } = action.payload;
 				if (!state.sources[sourceId]) {
-					state.sources[sourceId] = { data: [], cursor: {} };
+					state.sources[sourceId] = { data: [], cursor: emptyCursor };
 				}
 				const existing = state.sources[sourceId].data;
 
@@ -151,7 +170,7 @@ const paymentHistorySlice = createSlice({
 			.addCase(processNewIncomingOperation.fulfilled, (state, action) => {
 				const { sourceId, operation } = action.payload;
 				if (!state.sources[sourceId]) {
-					state.sources[sourceId] = { data: [], cursor: {} };
+					state.sources[sourceId] = { data: [], cursor: emptyCursor };
 				}
 				const existingOps = state.sources[sourceId].data;
 				const index = existingOps.findIndex(op => op.operationId === operation.operationId);
@@ -170,7 +189,8 @@ export const { addNewOperation,
 	addOptimisticOperation,
 	removeOptimisticOperation,
 	updateOptimsticOperation,
-	updateOperationNote
+	updateOperationNote,
+	resetCursors,
 } = paymentHistorySlice.actions;
 
 export default paymentHistorySlice.reducer;
