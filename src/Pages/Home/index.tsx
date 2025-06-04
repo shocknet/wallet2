@@ -156,10 +156,7 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 		presentScanner({
 			cssClass: !isMobile ? "desktop-scanner-modal" : undefined
 		});
-	}
-
-
-	// Triple click logo to metrics
+	};
 
 
 	return (

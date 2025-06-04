@@ -15,9 +15,9 @@ import { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
 import { InputClassification, ParsedInput, ParsedInvoiceInput } from '@/lib/types/parse';
 import { createNofferInvoice } from '@/lib/noffer';
-import { nip19 } from 'nostr-tools';
 import { getSourceInfo } from '../thunks/spendFrom';
 import { appCreateAsyncThunk } from '../appCreateAsyncThunk';
+import { OfferPriceType } from '@shocknet/clink-sdk';
 
 
 
@@ -288,7 +288,10 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 
 
 				let parsedInvoice: ParsedInvoiceInput;
-				if (parsedInput.priceType !== nip19.OfferPriceType.Spontaneous) {
+				if (parsedInput.priceType !== OfferPriceType.Spontaneous) {
+					if (!parsedInput.invoiceData) {
+						throw new Error("No invoice data");
+					}
 					// For Fixed and Variable, we already have the invoice from the parsing step.
 					parsedInvoice = parsedInput.invoiceData;
 				} else {
