@@ -22,7 +22,6 @@ export async function scanSingleBarcode(instruction: string): Promise<string> {
 			}
 
 		}).then(result => {
-			alert(result.ScanResult)
 			resolve(result.ScanResult.toLowerCase())
 		}).catch(err => {
 			reject(new Error(err?.message || "Error when scanning qr code"));
