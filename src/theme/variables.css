@@ -127,6 +127,13 @@ ion-button {
 	--ripple-color: var(--ion-color-primary);
 }
 
+
+.filled-input {
+	--background: var(--ion-color-secondary) !important;
+	--padding-start: 16px;
+	--padding-end: 16px;
+}
+
 ion-button.custom-outline {
 	--border-width: 1px;
 	--padding-top: 15px;
@@ -333,4 +340,11 @@ ion-toolbar::part(container) .toolbar-content {
 
 ion-grid {
 	--ion-grid-column-padding: 0;
+}
+
+/* @capacitor/barcode-scanner desktop variant styles override */
+.scanner-dialog-inner {
+	background-color: var(--ion-color-secondary) !important;
+	border: none !important;
+	width: 90% !important;
 }

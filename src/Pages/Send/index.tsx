@@ -22,8 +22,6 @@ import {
 	IonSpinner,
 	IonText,
 	IonToolbar,
-	isPlatform,
-	useIonModal,
 	useIonViewWillEnter
 } from '@ionic/react';
 import { defaultMempool } from '../../constants';
@@ -43,8 +41,6 @@ import {
 import { SpendFrom } from '@/globalTypes';
 import { CustomSelect } from '@/Components/CustomSelect';
 import { InputState } from './types';
-import ScanModal from '@/Components/Modals/ScanModal';
-import { OverlayEventDetail } from '@ionic/react/dist/types/components/react-component-lib/interfaces';
 import { sendPaymentThunk } from '@/State/history/thunks';
 import { useToast } from '@/lib/contexts/useToast';
 import { InputClassification } from '@/lib/types/parse';
@@ -57,7 +53,9 @@ import { useAlert } from '@/lib/contexts/useAlert';
 import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
 import { nip19 } from 'nostr-tools';
+import { scanSingleBarcode } from '@/lib/scan';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
+
 
 const LnurlCard = lazy(() => import("./LnurlCard"));
 const InvoiceCard = lazy(() => import("./InvoiceCard"));
@@ -80,7 +78,6 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	// Check whether we have at least one spend source that ALSO has enough balance (maxWithdrawable > 0)
 	// Show alert if not
 	useIonViewWillEnter(() => {
-		setIsMobile(isPlatform("hybrid"));
 		amountInput.clearFixed();
 		setNote("");
 
@@ -343,37 +340,27 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 
 
-	// --- Scanner ---
-	const [isMobile, setIsMobile] = useState(false);
-	const [presentScanner, dismissScanner] = useIonModal(
-		<ScanModal
-			onError={(error) => {
-				dismissScanner();
-				showToast({
-					message: error,
-					color: "danger",
-				})
-			}}
-			dismiss={() => dismissScanner()}
-			onScanned={(input) => {
-				setRecipient(input);
-				dismissScanner();
-			}}
-			instructions="Scan a QR code to send a payment some very long text"
-			isMobile={isMobile}
-		/>
-	);
 
-	const openScanModal = () => {
-		presentScanner({
-			onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
-				if (event.detail.role === "confirm") {
-					console.log({ dataFromScan: event.detail.data })
-				}
-			},
-			cssClass: !isMobile ? "desktop-scanner-modal" : undefined
-		});
+
+
+	const openScan = async () => {
+		const instruction = isPubSource ?
+			"Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address" :
+			"Scan a Lightning Invoice, Lnurl, or Lightning Address";
+		try {
+			const input = await scanSingleBarcode(instruction);
+			setRecipient(input);
+		} catch (err: any) {
+			console.error(err);
+			if (err?.message && err.message.contains("cancelled")) return;
+			showToast({
+				message: err?.message || "Error when scanning QR code",
+				color: "danger",
+			});
+		}
 	}
+
+
 
 
 	const [popovers, setPopovers] = useState({
@@ -445,15 +432,12 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 							<AmountInput
 								ref={satsInputRef}
 								color="primary"
-								style={{
-									"--background": "var(--ion-color-secondary)",
-								}}
+								className="filled-input"
 								labelPlacement="stacked"
-
 								unit={amountInput.unit}
-
 								displayValue={amountInput.displayValue}
 								fill="solid"
+								mode="md"
 								limits={amountInput.limits}
 								isDisabled={amountInput.inputDisabled}
 								effectiveSats={amountInput.effectiveSats}
@@ -471,13 +455,13 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								className={`
 									${inputState.status === "error" && 'ion-invalid'}
 									${isTouched && 'ion-touched'}
+									filled-input
 								`}
-								style={{
-									"--background": "var(--ion-color-secondary)",
-								}}
+
 								label="Recipient"
 								labelPlacement="stacked"
 								fill="solid"
+								mode="md"
 								color="primary"
 								onIonBlur={() => setIsTouched(true)}
 								placeholder={
@@ -487,7 +471,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								value={recipient}
 								onIonInput={onRecipientChange}
 							>
-								<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScanModal}>
+								<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScan}>
 									<IonIcon slot="icon-only" icon={qrCodeOutline} />
 								</IonButton>
 								<IonButton fill="clear" size="small" slot="end" aria-label="info" id="recipient-types-info">

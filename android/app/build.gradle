@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "app.shockwallet"
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "app.shockwallet"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -37,7 +37,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    implementation 'com.google.mlkit:barcode-scanning: 17.2.0' // The latest version number of the API
+    implementation 'com.google.mlkit:barcode-scanning: 17.3.0' // The latest version number of the API
 }
 
 apply from: 'capacitor.build.gradle'
