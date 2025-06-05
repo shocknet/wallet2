@@ -414,9 +414,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 							<AmountInput
 								ref={satsInputRef}
 								color="primary"
-								style={{
-									"--background": "var(--ion-color-secondary)",
-								}}
+								className="filled-input"
 								labelPlacement="stacked"
 								amountInSats={amountInSats}
 								setAmountInSats={setAmountInSats}
@@ -437,10 +435,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								className={`
 									${inputState.status === "error" && 'ion-invalid'}
 									${isTouched && 'ion-touched'}
+									filled-input
 								`}
-								style={{
-									"--background": "var(--ion-color-secondary)",
-								}}
+
 								label="Recipient"
 								labelPlacement="stacked"
 								fill="solid"
