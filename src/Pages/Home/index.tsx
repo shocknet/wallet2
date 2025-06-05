@@ -9,9 +9,7 @@ import {
 	IonPage,
 	IonRefresher,
 	IonRefresherContent,
-	isPlatform,
 	RefresherEventDetail,
-	useIonModal,
 	useIonViewWillEnter
 } from "@ionic/react";
 import {
@@ -29,12 +27,12 @@ import { SourceOperation } from "@/State/history/types";
 import OperationModal from "@/Components/Modals/OperationInfoModal";
 import { fetchAllSourcesHistory } from "@/State/history/thunks";
 import { App } from "@capacitor/app";
-import ScanModal from "@/Components/Modals/ScanModal";
 import { useToast } from "@/lib/contexts/useToast";
 import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
 import { removeOptimisticOperation } from "@/State/history";
+import { scanSingleBarcode } from "@/lib/scan";
 
 
 
@@ -43,7 +41,6 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	const dispatch = useDispatch();
 
 	const { showToast } = useToast();
-	const [isMobile, setIsMobile] = useState(false);
 
 
 	const selectOperationsArray = useMemo(makeSelectSortedOperationsArray, []);
@@ -51,21 +48,23 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 
 
 	useIonViewWillEnter(() => {
-		setIsMobile(isPlatform("hybrid"));
 		dispatch(fetchAllSourcesHistory());
 
-		const listener = App.addListener("appStateChange", (state) => {
+		let cleanupListener: (() => void) | undefined;
+
+		App.addListener("appStateChange", (state) => {
 			if (state.isActive) {
 				dispatch(fetchAllSourcesHistory());
 			}
-		})
+		}).then(listener => {
+			cleanupListener = () => listener.remove();
+		});
 
 		// If the user exits the app before an optimstic operation is done
-		// then thhose optimistic operations should be removed
+		// then those optimistic operations should be removed
 		// This is to prevent optimistic operations from being stuck in the history
 		operations.forEach(op => {
 			if ("optimistic" in op && op.optimistic) {
-
 				if (op.type === "INVOICE") {
 					dispatch(removeOptimisticOperation({ sourceId: op.sourceId, operationId: op.operationId }));
 				} else {
@@ -74,10 +73,10 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 					}
 				}
 			}
-		})
+		});
 
 		return () => {
-			listener.remove();
+			cleanupListener?.();
 		}
 	})
 
@@ -132,34 +131,20 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	}, [history, showToast]);
 
 
-	// Scanner for getting recipient
-	const [presentScanner, dismissScanner] = useIonModal(
-		<ScanModal
-			onError={(error) => {
-				dismissScanner();
-				showToast({
-					message: error,
-					color: "danger",
-				})
-			}}
-			dismiss={() => dismissScanner()}
-			onScanned={(input) => {
-				handleScanned(input);
-				dismissScanner();
-			}}
-			instructions="Scan a QR code"
-			isMobile={isMobile}
-		/>
-	);
-
-	const openScanModal = () => {
-		presentScanner({
-			cssClass: !isMobile ? "desktop-scanner-modal" : undefined
-		});
+	const openScan = async () => {
+		try {
+			const scanned = await scanSingleBarcode("Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address");
+			handleScanned(scanned);
+		} catch (err: any) {
+			console.error(err);
+			if (err?.message && err.message.contains("cancelled")) return;
+			showToast({
+				message: err?.message || "Error when scanning QR code",
+				color: "danger",
+			});
+		}
 	}
 
-
-	// Triple click logo to metrics
 
 
 	return (
@@ -192,7 +177,7 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 							Send
 						</IonButton>
 					</div>
-					<IonButton shape="round" className={styles["fab-button"]} onClick={openScanModal}>
+					<IonButton shape="round" className={styles["fab-button"]} onClick={openScan}>
 						<IonIcon slot="icon-only" icon={qrCodeOutline} />
 					</IonButton>
 				</div>
