@@ -423,6 +423,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								displayValue={displayValue}
 								setDisplayValue={setDisplayValue}
 								fill="solid"
+								mode="md"
 								limits={limits}
 								disabled={isAmountInputDisabled}
 							/>
@@ -441,6 +442,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								label="Recipient"
 								labelPlacement="stacked"
 								fill="solid"
+								mode="md"
 								color="primary"
 								onIonBlur={() => setIsTouched(true)}
 								placeholder={
