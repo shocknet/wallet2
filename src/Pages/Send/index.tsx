@@ -52,9 +52,10 @@ import { getIconFromClassification } from '@/lib/icons';
 import { useAlert } from '@/lib/contexts/useAlert';
 import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
-import { validateAndFormatAmountInput } from '@/lib/format';
 import { nip19 } from 'nostr-tools';
 import { scanSingleBarcode } from '@/lib/scan';
+import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
+
 
 const LnurlCard = lazy(() => import("./LnurlCard"));
 const InvoiceCard = lazy(() => import("./InvoiceCard"));
@@ -77,7 +78,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	// Check whether we have at least one spend source that ALSO has enough balance (maxWithdrawable > 0)
 	// Show alert if not
 	useIonViewWillEnter(() => {
-		resetValues(); // Ionic will not remove the state when navigating again to this page, so we need to reset the values
+		amountInput.clearFixed();
+		setNote("");
+
 		if (enabledSpendSources.length === 0) {
 			showAlert({
 				header: "No Spend Sources",
@@ -126,33 +129,20 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	}, [enabledSpendSources]);
 
 
-	// --- Amount input ---
-	const [amountInSats, setAmountInSats] = useState<Satoshi | null>(null);
-	const [unit, setUnit] = useState<"BTC" | "sats">("sats");
-	const [displayValue, setDisplayValue] = useState("");
-	const [isFilled, setIsFilled] = useState(false); // Was the amount automatically filled by invoice, fixed noffer, etc
-	const [limits, setLimits] = useState<{
-		minSats: Satoshi;
-		maxSats: Satoshi;
-	}>({
-		minSats: 1 as Satoshi,
-		maxSats: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
-	});
-	const [isAmountInputDisabled, setIsAmountInputDisabled] = useState(false);
+
+
+
+
 
 	// Amount input ref, used to focus the input after a valid recipient is parsed, when applicable
 	const satsInputRef = useRef<HTMLIonInputElement>(null);
+	const amountInput = useAmountInput({
+		userBalance: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats"),
+	})
 
 	const [note, setNote] = useState("");
 
-	const resetValues = useCallback((skipAmount = false) => {
-		if (!skipAmount) {
-			setAmountInSats(null);
-			setDisplayValue("");
-		}
-		setNote("");
-		setIsAmountInputDisabled(false);
-	}, [])
+
 
 
 	// --- Recipient input ---
@@ -162,18 +152,49 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		status: "idle",
 		inputValue: ""
 	});
+
+	const inputStateChange = useCallback((newState: InputState) => {
+		setInputState(prevState => {
+			if (prevState.status === "parsedOk") {
+				if (
+					prevState.parsedData.type === InputClassification.LN_INVOICE ||
+					(
+						prevState.parsedData.type === InputClassification.NOFFER &&
+						prevState.parsedData.priceType !== nip19.OfferPriceType.Spontaneous
+					)
+				) {
+
+					amountInput.clearFixed();
+
+				}
+
+			}
+
+			return newState;
+		});
+	}, [amountInput]);
+
 	const [isTouched, setIsTouched] = useState(false);
 	// Recipient input ref, used to enforce removal of error class when input is changed
 	const inputRef = useRef<HTMLIonInputElement>(null);
 
-	useEffect(() => {
-		resetValues(isFilled); // When the recipient changes, reset the values
-		setIsFilled(false); // Reset the isFilled state
+	const defaultLimits = useCallback(
+		() => ({
+			min: 1 as Satoshi,
+			max: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats") as Satoshi,
+		}),
+		[selectedSource]
+	);
 
+
+
+	useEffect(() => {
+		amountInput.setLimits(defaultLimits());
 		if (!debouncedRecepient.trim()) {
-			setInputState({ status: "idle", inputValue: "" });
+			inputStateChange({ status: "idle", inputValue: "" });
 			return;
 		}
+
 		const classification = identifyBitcoinInput(
 			debouncedRecepient,
 			!selectedSource.pubSource ?
@@ -183,10 +204,10 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		);
 
 		if (classification === InputClassification.UNKNOWN) {
-			setInputState({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
+			inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
 			return;
 		}
-		setInputState({
+		inputStateChange({
 			status: "loading",
 			inputValue: debouncedRecepient,
 			classification
@@ -195,7 +216,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		parseBitcoinInput(debouncedRecepient, classification, selectedSource.keys)
 			.then(parsed => {
 				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-					setInputState({
+					inputStateChange({
 						error: "Lnurl cannot be a lnurl-withdraw",
 						status: "error",
 						inputValue: debouncedRecepient,
@@ -206,7 +227,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 				if (parsed.type === InputClassification.LN_INVOICE) {
 					if (!parsed.amount) {
-						setInputState({
+						inputStateChange({
 							error: "Zero value invoices are not supported",
 							status: "error",
 							inputValue: debouncedRecepient,
@@ -214,11 +235,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 						});
 						return;
 					}
-					// Update amount with the invoice's decoded amount
-					const newDisplayValue = validateAndFormatAmountInput(parsed.amount.toString(), "sats");
-					setDisplayValue(newDisplayValue);
-					setIsFilled(true);
-					setIsAmountInputDisabled(true); // Disable the amount input, as it is already filled by the invoice
+
+					amountInput.setFixed(parsed.amount);
 
 					// If the invoice has a description, set it as the note
 					if (parsed.memo) {
@@ -228,42 +246,40 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 				// If it's a LNURL or LN address, set the limits
 				if (parsed.type === InputClassification.LNURL_PAY || parsed.type === InputClassification.LN_ADDRESS) {
-					setLimits({
-						minSats: parsed.min,
-						maxSats: Math.min(parsed.max, parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
-					})
+					amountInput.setLimits({
+						min: parsed.min,
+						max: Math.min(
+							parsed.max,
+							parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+						) as Satoshi,
+					});
+
+					satsInputRef.current?.setFocus();
+
+				}
+
+				if (
+					parsed.type === InputClassification.BITCOIN_ADDRESS ||
+					(parsed.type === InputClassification.NOFFER &&
+						parsed.priceType === nip19.OfferPriceType.Spontaneous)
+				) {
+					satsInputRef.current?.setFocus();
 				}
 
 				// If it's a noffer with no spontaneous price type, set the amount from the invoice
 				if (parsed.type === InputClassification.NOFFER) {
 					if (parsed.priceType === nip19.OfferPriceType.Fixed || parsed.priceType === nip19.OfferPriceType.Variable) {
-						setDisplayValue(parsed.invoiceData.amount.toString());
-						setIsFilled(true);
-						setIsAmountInputDisabled(true); // Disable the amount input, as it is already filled by noffer
+						amountInput.setFixed(parsed.invoiceData.amount);
 					}
 				}
-
-
-				// When the recipient expects amount input, focus the amount input
-				// after the recipient is parsed
-				if (
-					parsed.type === InputClassification.LNURL_PAY ||
-					parsed.type === InputClassification.LN_ADDRESS ||
-					(parsed.type === InputClassification.NOFFER && parsed.priceType === nip19.OfferPriceType.Spontaneous) ||
-					parsed.type === InputClassification.BITCOIN_ADDRESS
-				) {
-					satsInputRef.current?.setFocus();
-				}
-
-
-				setInputState({
+				inputStateChange({
 					status: "parsedOk",
 					inputValue: debouncedRecepient,
 					parsedData: parsed
 				});
 			})
 			.catch((err: any) => {
-				setInputState({
+				inputStateChange({
 					status: "error",
 					inputValue: debouncedRecepient,
 					error: err.message,
@@ -271,7 +287,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				});
 			})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [debouncedRecepient, selectedSource, resetValues]);
+	}, [debouncedRecepient, selectedSource]);
 
 	// Recipient might be passed in location.state
 	useEffect(() => {
@@ -293,8 +309,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	}
 
 	const onRecipientChange = (e: CustomEvent) => {
-		clearRecipientError();
 		setRecipient(e.detail.value || "");
+		inputStateChange({ status: "idle", inputValue: "" });
+		clearRecipientError();
 	}
 
 
@@ -353,19 +370,20 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 	// --- Handle Payment ---
 	const canPay = useMemo(() =>
-		inputState.status === "parsedOk" && amountInSats !== null && amountInSats !== 0 && parseUserInputToSats((selectedSource?.maxWithdrawable || "0"), "sats") > amountInSats
-		, [inputState, amountInSats, selectedSource]);
+		inputState.status === "parsedOk" && amountInput.effectiveSats !== null && amountInput.effectiveSats !== 0 && parseUserInputToSats((selectedSource?.maxWithdrawable || "0"), "sats") >= amountInput.effectiveSats
+		, [inputState, amountInput.effectiveSats, selectedSource]);
+
 
 	const handlePayment = useCallback(async () => {
 		if (inputState.status !== "parsedOk") {
 
 			return;
 		}
-		if (amountInSats === null) {
+		if (amountInput.effectiveSats === null) {
 
 			return;
 		}
-		if (amountInSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) {
+		if (amountInput.effectiveSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) {
 			return;
 		}
 
@@ -373,7 +391,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			const res = await dispatch(sendPaymentThunk({
 				sourceId: selectedSource.id,
 				parsedInput: inputState.parsedData,
-				amount: amountInSats,
+				amount: amountInput.effectiveSats,
 				note,
 				satsPerVByte: feeTiers[selectedFeeTier].rate,
 				showToast
@@ -383,9 +401,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				inputState.parsedData.priceType === nip19.OfferPriceType.Spontaneous &&
 				res?.error
 			) {
-				setLimits({
-					minSats: parseUserInputToSats(res.range.min.toString(), "sats"),
-					maxSats: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
+				amountInput.setLimits({
+					min: parseUserInputToSats(res.range.min.toString(), "sats"),
+					max: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
 
 				})
 
@@ -397,7 +415,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			showToast({ message: err?.message || "Payment failed", color: "danger" });
 		}
 
-	}, [amountInSats, inputState, selectedSource, dispatch, history, showToast, feeTiers, selectedFeeTier, note]);
+	}, [amountInput, inputState, selectedSource, dispatch, history, showToast, feeTiers, selectedFeeTier, note]);
 
 
 	return (
@@ -416,16 +434,17 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								color="primary"
 								className="filled-input"
 								labelPlacement="stacked"
-								amountInSats={amountInSats}
-								setAmountInSats={setAmountInSats}
-								unit={unit}
-								setUnit={setUnit}
-								displayValue={displayValue}
-								setDisplayValue={setDisplayValue}
+								unit={amountInput.unit}
+								displayValue={amountInput.displayValue}
 								fill="solid"
 								mode="md"
-								limits={limits}
-								disabled={isAmountInputDisabled}
+								limits={amountInput.limits}
+								isDisabled={amountInput.inputDisabled}
+								effectiveSats={amountInput.effectiveSats}
+								error={amountInput.error}
+								onType={amountInput.typeAmount}
+								onPressMax={amountInput.pressMax}
+								onToggleUnit={amountInput.toggleUnit}
 							/>
 						</IonCol>
 					</IonRow>
@@ -592,38 +611,41 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 						</IonCol>
 					</IonRow>
-					<IonRow className="ion-align-items-center ion-margin-top">
-						<IonCol size="auto" >
-							<IonText style={{ fontSize: "0.8rem" }} color="primary">
-								<span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-									Note: {(+selectedSource?.balance - +(selectedSource?.maxWithdrawable || "0")).toLocaleString()} sats of your balance is held in reserve for network fees.
-									<IonButton
-										fill="clear"
-										shape="round"
-										onClick={() => setPopovers({ ...popovers, reserve: true })}
-									>
-										<IonIcon icon={helpCircleOutline} slot="icon-only" />
-									</IonButton>
-								</span>
-							</IonText>
-						</IonCol>
-						<IonPopover
-							isOpen={popovers.reserve}
-							onDidDismiss={() => setPopovers({ ...popovers, reserve: false })}
-						>
-							<IonContent className="ion-padding">
-								<IonText>
-									Lightning fees are based on the amount of sats you are
-									sending, and so you must have more sats than you send.
-									To ensure high success rates and low overall fees, the node
-									has defined a fee budget to hold as a fee reserve for sends.
-								</IonText>
-							</IonContent>
-						</IonPopover>
-
-
-					</IonRow>
+					{
+						parseUserInputToSats(selectedSource?.maxWithdrawable || "0", "sats") > 0 && (
+							<IonRow className="ion-align-items-center ion-margin-top">
+								<IonCol size="auto" >
+									<IonText style={{ fontSize: "0.8rem" }} color="primary">
+										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+											Note: {(+selectedSource?.balance - +(selectedSource?.maxWithdrawable || "0")).toLocaleString()} sats of your balance is held in reserve for network fees.
+											<IonButton
+												fill="clear"
+												shape="round"
+												onClick={() => setPopovers({ ...popovers, reserve: true })}
+											>
+												<IonIcon icon={helpCircleOutline} slot="icon-only" />
+											</IonButton>
+										</span>
+									</IonText>
+								</IonCol>
+							</IonRow>
+						)
+					}
 				</IonGrid>
+
+				<IonPopover
+					isOpen={popovers.reserve}
+					onDidDismiss={() => setPopovers({ ...popovers, reserve: false })}
+				>
+					<IonContent className="ion-padding">
+						<IonText>
+							Lightning fees are based on the amount of sats you are
+							sending, and so you must have more sats than you amountInput.
+							To ensure high success rates and low overall fees, the node
+							has defined a fee budget to hold as a fee reserve for sends.
+						</IonText>
+					</IonContent>
+				</IonPopover>
 
 				<IonModal
 					trigger="recipient-types-info"

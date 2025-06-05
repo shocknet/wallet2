@@ -131,8 +131,6 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	}, [history, showToast]);
 
 
-
-
 	const openScan = async () => {
 		try {
 			const scanned = await scanSingleBarcode("Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address");
@@ -147,8 +145,6 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 		}
 	}
 
-
-	// Triple click logo to metrics
 
 
 	return (

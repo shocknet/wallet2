@@ -127,12 +127,12 @@ export const isAnyArrayLong = (arrays: any[][], max: number): boolean => {
 
 export const populateCursorRequest = (p: HistoryCursor) => {
 	const cursor = {
-		latestIncomingInvoice: p.latestIncomingInvoice ? p.latestIncomingInvoice + 1 : 0,
-		latestOutgoingInvoice: p.latestOutgoingInvoice ? p.latestOutgoingInvoice + 1 : 0,
-		latestIncomingTx: p.latestIncomingTx ? p.latestIncomingTx + 1 : 0,
-		latestOutgoingTx: p.latestOutgoingTx ? p.latestOutgoingTx + 1 : 0,
-		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ? p.latestIncomingUserToUserPayment + 1 : 0,
-		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ? p.latestOutgoingUserToUserPayment + 1 : 0,
+		latestIncomingInvoice: p.latestIncomingInvoice ?? 0,
+		latestOutgoingInvoice: p.latestOutgoingInvoice ?? 0,
+		latestIncomingTx: p.latestIncomingTx ?? 0,
+		latestOutgoingTx: p.latestOutgoingTx ?? 0,
+		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ?? 0,
+		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ?? 0,
 		max_size: 10
 	}
 
