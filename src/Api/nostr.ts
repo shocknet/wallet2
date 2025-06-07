@@ -43,18 +43,18 @@ export class ClientsCluster {
     onRelayEvent = (event: NostrEvent) => {
         const res = this.handleEventContent(event.content)
         if (!res) {
-            console.log("got shard")
             return
         }
+        const e = { ...event, parsedData: res }
         for (const key in this.clients) {
             const c = this.clients[key]
-            if (c.client.onEvent(event)) {
+            if (c.client.onEvent(e)) {
                 return
             }
         }
         for (const key in this.tempClients) {
             const c = this.tempClients[key]
-            if (c.client.onEvent(event)) {
+            if (c.client.onEvent(e)) {
                 return
             }
         }
@@ -66,7 +66,7 @@ export class ClientsCluster {
         if (!res.shardsId) {
             return res as { requestId: string }
         }
-        const shard = res as { index: number, totalShards: number, shardsId: string }
+        const shard = res as { part: string, index: number, totalShards: number, shardsId: string }
         let existingShards = this.shards[shard.shardsId]
         if (!existingShards) {
             existingShards = {
@@ -75,11 +75,12 @@ export class ClientsCluster {
             }
             this.shards[shard.shardsId] = existingShards
         }
-        existingShards.parts[shard.index] = content
+        existingShards.parts[shard.index] = shard.part
         if (existingShards.parts.every(p => p !== null)) {
             const fullContent = existingShards.parts.join('')
             delete this.shards[shard.shardsId]
-            return JSON.parse(fullContent) as { requestId: string }
+            const parsed = JSON.parse(fullContent) as { requestId: string }
+            return parsed
         }
         return null
     }
@@ -156,8 +157,8 @@ export class NostrClient {
         }, this.clientSend, this.clientSub)
     }
 
-    onEvent = (event: NostrEvent) => {
-        const res = JSON.parse(event.content) as { requestId: string }
+    onEvent = (event: (NostrEvent & { parsedData?: { requestId: string } })) => {
+        const res = event.parsedData ? event.parsedData : JSON.parse(event.content) as { requestId: string }
         if (event.pub !== this.pubDestination) {
             return false
         }
