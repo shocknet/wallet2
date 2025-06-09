@@ -16,6 +16,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -110,12 +118,6 @@ jobs:
           else
             ionic cap build android --no-interactive
           fi
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Cache Gradle packages
         uses: actions/cache@v3
