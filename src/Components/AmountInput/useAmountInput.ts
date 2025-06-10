@@ -108,7 +108,6 @@ export function useAmountInput({ userBalance }: UseAmountInputArgs) {
 	const error: string | undefined = useMemo(() => {
 		if (!state.limits) return undefined;
 		if (!effectiveSats) return undefined;
-		console.log({ effectiveSats })
 		if (effectiveSats < state.limits.min)
 			return `Minimum amount is ${formatSatoshi(state.limits.min)}`;
 		if (effectiveSats > state.limits.max)
@@ -142,6 +141,7 @@ export function useAmountInput({ userBalance }: UseAmountInputArgs) {
 		limits: state.limits,
 		error,
 		inputDisabled,
+		state,
 		...actions,
 	};
 }

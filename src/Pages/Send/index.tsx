@@ -55,6 +55,7 @@ import AmountInput from '@/Components/AmountInput';
 import { nip19 } from 'nostr-tools';
 import { scanSingleBarcode } from '@/lib/scan';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
+import { OfferPriceType } from '@shocknet/clink-sdk';
 
 
 const LnurlCard = lazy(() => import("./LnurlCard"));
@@ -155,19 +156,20 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 	const inputStateChange = useCallback((newState: InputState) => {
 		setInputState(prevState => {
-			if (prevState.status === "parsedOk") {
-				if (
+			const recipientChanged = prevState.inputValue !== newState.inputValue;
+
+			if (
+				recipientChanged &&
+				prevState.status === "parsedOk" &&
+				(
 					prevState.parsedData.type === InputClassification.LN_INVOICE ||
 					(
 						prevState.parsedData.type === InputClassification.NOFFER &&
-						prevState.parsedData.priceType !== nip19.OfferPriceType.Spontaneous
+						prevState.parsedData.priceType !== OfferPriceType.Spontaneous
 					)
-				) {
-
-					amountInput.clearFixed();
-
-				}
-
+				)
+			) {
+				amountInput.clearFixed();
 			}
 
 			return newState;
@@ -261,14 +263,14 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				if (
 					parsed.type === InputClassification.BITCOIN_ADDRESS ||
 					(parsed.type === InputClassification.NOFFER &&
-						parsed.priceType === nip19.OfferPriceType.Spontaneous)
+						parsed.priceType === OfferPriceType.Spontaneous)
 				) {
 					satsInputRef.current?.setFocus();
 				}
 
 				// If it's a noffer with no spontaneous price type, set the amount from the invoice
 				if (parsed.type === InputClassification.NOFFER) {
-					if (parsed.priceType === nip19.OfferPriceType.Fixed || parsed.priceType === nip19.OfferPriceType.Variable) {
+					if (parsed.priceType === OfferPriceType.Fixed || parsed.priceType === OfferPriceType.Variable) {
 						amountInput.setFixed(parsed.invoiceData.amount);
 					}
 				}
@@ -288,6 +290,24 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedRecepient, selectedSource]);
+
+
+	// If the amount is fixed (invoice, fixed noffer, etc.),
+	// and the amount is greater than the max withdrawable of selected source,
+	// then find and change to a source that has enough balance.
+	// If there is no such source, do nothing.
+	useEffect(() => {
+		if (
+			amountInput.state.mode === "fixed" &&
+			amountInput.effectiveSats !== null &&
+			amountInput.effectiveSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+		) {
+			const foundOneWithEnoughBalance = enabledSpendSources.find(s => parseUserInputToSats(s.maxWithdrawable || "0", "sats") >= amountInput.effectiveSats!);
+			if (foundOneWithEnoughBalance) {
+				setSelectedSource(foundOneWithEnoughBalance)
+			}
+		}
+	}, [amountInput])
 
 	// Recipient might be passed in location.state
 	useEffect(() => {
@@ -398,7 +418,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			})).unwrap();
 			if (
 				inputState.parsedData.type === InputClassification.NOFFER &&
-				inputState.parsedData.priceType === nip19.OfferPriceType.Spontaneous &&
+				inputState.parsedData.priceType === OfferPriceType.Spontaneous &&
 				res?.error
 			) {
 				amountInput.setLimits({

@@ -8,6 +8,7 @@ import { nip19 } from "nostr-tools";
 import { NostrKeyPair } from "@/Api/nostrHandler";
 import { Satoshi } from "./types/units";
 import { parseUserInputToSats } from "./units";
+import { OfferPriceType } from "@shocknet/clink-sdk";
 
 
 const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
@@ -121,7 +122,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 				type: InputClassification.NOFFER,
 				data: input,
 				noffer: decoded,
-				priceType: nip19.OfferPriceType.Spontaneous,
+				priceType: OfferPriceType.Spontaneous,
 			}
 
 			// Default to spontaneous if neither field exists
@@ -131,8 +132,8 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 
 			let parsedInvoice: ParsedInvoiceInput;
 			switch (priceType) {
-				case nip19.OfferPriceType.Fixed:
-				case nip19.OfferPriceType.Variable: {
+				case OfferPriceType.Fixed:
+				case OfferPriceType.Variable: {
 					// For Fixed and Variable, we want to get an invoice right away, so the user can see the amount before sending.
 					const invoice = await createNofferInvoice(decoded, keyPair);
 					if (typeof invoice !== "string") {
@@ -153,7 +154,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 				}
 
 
-				case nip19.OfferPriceType.Spontaneous:
+				case OfferPriceType.Spontaneous:
 					return base;
 				default:
 					throw new Error("Invalid price type");
