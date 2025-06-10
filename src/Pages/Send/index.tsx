@@ -302,10 +302,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			amountInput.effectiveSats !== null &&
 			amountInput.effectiveSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
 		) {
-			const foundOneWithBalance = enabledSpendSources.find(s => parseUserInputToSats(s.maxWithdrawable || "0", "sats") >= amountInput.effectiveSats!);
-			console.log({ foundOneWithBalance })
-			if (foundOneWithBalance) {
-				setSelectedSource(foundOneWithBalance)
+			const foundOneWithEnoughBalance = enabledSpendSources.find(s => parseUserInputToSats(s.maxWithdrawable || "0", "sats") >= amountInput.effectiveSats!);
+			if (foundOneWithEnoughBalance) {
+				setSelectedSource(foundOneWithEnoughBalance)
 			}
 		}
 	}, [amountInput])
