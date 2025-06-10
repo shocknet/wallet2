@@ -1,7 +1,8 @@
 import { nip19 } from "nostr-tools";
 import { LnurlPayServiceResponse, LnurlWithdrawServiceResponse } from "./lnurl";
 import { Satoshi } from "./units";
-import { OfferPriceType } from "nostr-tools/lib/types/nip19";
+import { OfferPointer, OfferPriceType } from "@shocknet/clink-sdk";
+
 
 
 /* Standardized types for handling all "bitcoin things" input across shockwallet */
@@ -30,7 +31,7 @@ export interface ParsedLnurlPayInput extends ParsedInputBase, LnurlPayServiceRes
 }
 export interface ParsedLightningAddressInput extends ParsedInputBase, LnurlPayServiceResponse {
 	type: InputClassification.LN_ADDRESS;
-	noffer?: nip19.OfferPointer;
+	noffer?: OfferPriceType;
 }
 export interface ParsedLnurlWithdrawInput extends ParsedInputBase, LnurlWithdrawServiceResponse {
 	type: InputClassification.LNURL_WITHDRAW;
@@ -40,7 +41,7 @@ export interface ParsedBitcoinAddressInput extends ParsedInputBase {
 }
 export type ParsedNofferInput = ParsedInputBase & {
 	type: InputClassification.NOFFER;
-	noffer: nip19.OfferPointer;
+	noffer: OfferPointer;
 } & (
 		| {
 			priceType: OfferPriceType.Fixed;
