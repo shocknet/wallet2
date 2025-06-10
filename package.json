@@ -85,7 +85,7 @@
     "react-toastify": "^10.0.4",
     "redux-persist": "^6.0.0",
     "sortablejs": "^1.15.1",
-    "styled-components": "^6.0.8",
+    "styled-components": "^6.1.18",
     "swiper": "^11.2.2",
     "uuid": "^10.0.0"
   },
