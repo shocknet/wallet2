@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import moment from 'moment';
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { stringToColor } from '../../constants';
-import Dropdown from '../../Components/Dropdowns/LVDropdown';
+import Dropdown, { Period, periodOptionsArray, getPeriodText } from '../../Components/Dropdowns/LVDropdown';
 import { collapseToast, toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { SpendFrom } from '../../globalTypes';
@@ -20,6 +20,7 @@ import { Client } from '../../Api/nostr';
 import Manage from '../Manage';
 import Channels from '../Channels';
 import { AdminGuard, AdminSource } from '../../Components/AdminGuard';
+import { getUnixTimeRange } from './earnings';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -60,49 +61,12 @@ const getCreds = () => {
   return JSON.parse(v) as Creds
 }
 
-export enum Period {
-  THIS_WEEK = "This Week",
-  THIS_MONTH = "This Month",
-  THIS_YEAR = "This Year",
-  ALL_TIME = "All Time",
-}
 
-const periodOptionsArray = Object.values(Period);
 
-const getUnixTimeRange = (period: Period) => {
-  const now = new Date();
-  let from_unix: number, to_unix: number;
 
-  switch (period) {
-    case Period.THIS_WEEK: {
-      const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0, 0, 0, 0);
-      const lastDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6)).setHours(23, 59, 59, 999);
-      from_unix = Math.floor(firstDayOfWeek / 1000);
-      to_unix = Math.floor(lastDayOfWeek / 1000);
-      break;
-    }
 
-    case Period.THIS_MONTH: {
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).setHours(23, 59, 59, 999);
-      from_unix = Math.floor(firstDayOfMonth / 1000);
-      to_unix = Math.floor(lastDayOfMonth / 1000);
-      break;
-    }
 
-    case Period.THIS_YEAR: {
-      const firstDayOfYear = new Date(now.getFullYear(), 0, 1).getTime();
-      const lastDayOfYear = new Date(now.getFullYear(), 11, 31).setHours(23, 59, 59, 999);
-      from_unix = Math.floor(firstDayOfYear / 1000);
-      to_unix = Math.floor(lastDayOfYear / 1000);
-      break;
-    }
-    case Period.ALL_TIME:
-      return undefined
-  }
 
-  return { from_unix, to_unix };
-}
 
 const Metrics = () => {
   //const [url, setUrl] = useState("")
@@ -116,7 +80,7 @@ const Metrics = () => {
   //const [lndGraphsData, setLndGraphsData] = useState<LndGraphs>()
   const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
   const [appsInfo, setAppsInfo] = useState<AppsInfo>()
-  const [period, setPeriod] = useState<Period>(Period.ALL_TIME);
+  const [period, setPeriod] = useState<Period>(Period.WEEK);
   /* const [firstRender, setFirstRender] = useState(true); */
   const [error, setError] = useState("")
   const [lndStatus, setLndStatus] = useState("Loading...")
@@ -126,18 +90,19 @@ const Metrics = () => {
   const [showManage, setShowManage] = useState(false)
   const [showChannels, setShowChannels] = useState(false)
   const [adminSource, setAdminSource] = useState<AdminSource | null>(null)
+  const [offset, setOffset] = useState(0)
 
   /* const spendSources = useSelector(state => state.spendSource) */
   const dispatch = useDispatch();
 
-  const otherOptions = periodOptionsArray.filter((o) => o !== period);
+  //const otherOptions = periodOptionsArray.filter((o) => o !== period);
   /* const selectedSource = useMemo(() => {
     return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
   }, [spendSources]) */
 
   useEffect(() => {
     fetchMetrics();
-  }, [adminSource, period]);
+  }, [adminSource, period, offset]);
 
   const fetchInfo = useCallback(async (client: Client) => {
     const info = await client.LndGetInfo({ nodeId: 0 })
@@ -173,7 +138,7 @@ const Metrics = () => {
     console.log("fetching metrics2")
     dispatch(toggleLoading({ loadingMessage: "Fetching metrics..." }));
     const client = await getNostrClient(adminSource.nprofile, adminSource.keys)
-    const periodRange = getUnixTimeRange(period);
+    const periodRange = getUnixTimeRange(period, offset);
     let apps: ResultError | ({ status: 'OK' } & Types.AppsMetrics), lnd: ResultError | ({ status: 'OK' } & Types.LndMetrics)
     try {
       [apps, lnd] = await Promise.all([client.GetAppsMetrics({ include_operations: false, ...periodRange }), client.GetLndMetrics({ ...periodRange }), fetchInfo(client)])
@@ -282,8 +247,21 @@ const Metrics = () => {
     })
     setLoading(false)
     dispatch(toggleLoading({ loadingMessage: "" }));
-  }, [dispatch, period, adminSource]);
+  }, [dispatch, period, adminSource, offset]);
 
+  const nextOffset = () => {
+    if (period === Period.ALL_TIME || offset >= 0) {
+      return
+    }
+    setOffset(offset + 1)
+  }
+
+  const prevOffset = () => {
+    if (period === Period.ALL_TIME) {
+      return
+    }
+    setOffset(offset - 1)
+  }
   if (!adminSource) {
     return <AdminGuard updateSource={s => { console.log({ adminSource }); setAdminSource(s) }} />
   }
@@ -407,15 +385,17 @@ const Metrics = () => {
         <div className={styles["between"]}>
           <div className={styles["center"]}>
             <Dropdown<Period>
-              setState={(value) => setPeriod(value)}
-              otherOptions={otherOptions}
+              setState={(value) => { setPeriod(value); setOffset(0) }}
+              otherOptions={periodOptionsArray}
               jsx={<div className={classNames(styles["center"], styles["box"])}>
                 <span className={styles["icon_pub"]}>{Icons.Automation()}</span>
-                <span>{period}</span>
+                <span>{getPeriodText(period, offset)}</span>
               </div>}
             />
-            <div className={classNames(styles["arrows"], styles["box"])}>
-              {Icons.pathLeft()}{Icons.verticalLine()}{Icons.pathLeft()}
+            <div style={{ display: 'flex', alignItems: 'center', }} className={styles["box"]}>
+              <div onClick={() => prevOffset()} >{Icons.arrowLeft()}</div>
+              {Icons.verticalLine()}
+              <div onClick={() => nextOffset()} >{Icons.arrowRight()}</div>
             </div>
           </div>
           <div onClick={() => setShowManage(true)} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
@@ -446,7 +426,7 @@ const Metrics = () => {
       <div className={styles["section"]}>
         <h3 className={styles["sub-title"]}>Highlights</h3>
         <div className={styles["cards-container"]}>
-          <div className={classNames(styles["card"], styles["net"])}>
+          <div className={classNames(styles["card"], styles["net"])} onClick={() => router.push("/earnings?period=" + period + "&offset=" + offset)}>
             <div className={styles["top"]}>
               <div className={styles["flx-column"]}>
                 <h4 className={styles["card-label"]}>Net</h4>
@@ -559,3 +539,4 @@ const Metrics = () => {
 }
 
 export default Metrics;
+
