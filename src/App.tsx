@@ -29,6 +29,7 @@ const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
 const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
 const OfferInfo = lazy(() => import("./Pages/OfferInfo"));
+const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
 
 import { Background } from "./Components/Background";
 import { Provider } from 'react-redux';
@@ -214,6 +215,13 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 
+				</Route>
+				<Route exact path="/earnings">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Earnings />
+						</Layout>
+					</Suspense>
 				</Route>
 				{/*         <Route exact path="/manage">
           <Layout>
