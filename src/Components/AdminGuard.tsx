@@ -12,7 +12,7 @@ export type AdminSource = {
     nprofile: string
     keys: NostrKeyPair
 }
-const getAdminSource = (): AdminSource | undefined => {
+export const getAdminSource = (): AdminSource | undefined => {
     const adminSource = localStorage.getItem(ADMIN_SOURCE_STORAGE_KEY)
     if (!adminSource) {
         return undefined

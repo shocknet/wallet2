@@ -22,7 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
   const pathname = location?.pathname || window.location.pathname;
 
   const isScan: boolean = pathname === "/scan";
-  const isPub: boolean = pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
+  const isPub: boolean = false //pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
 
   const dispatch = useDispatch();
 
