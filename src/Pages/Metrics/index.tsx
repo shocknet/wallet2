@@ -426,7 +426,7 @@ const Metrics = () => {
       <div className={styles["section"]}>
         <h3 className={styles["sub-title"]}>Highlights</h3>
         <div className={styles["cards-container"]}>
-          <div className={classNames(styles["card"], styles["net"])} onClick={() => router.push("/earnings?period=" + period + "&offset=" + offset)}>
+          <div className={classNames(styles["card"], styles["net"])} onClick={() => router.push("/metrics/earnings?period=" + period + "&offset=" + offset)}>
             <div className={styles["top"]}>
               <div className={styles["flx-column"]}>
                 <h4 className={styles["card-label"]}>Net</h4>
