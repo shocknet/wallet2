@@ -28,15 +28,15 @@ export type MetricsContext = {
     app_id: string
     operator_id: string
 }
-export type MetricsMethodInputs = GetAppsMetrics_Input | GetBundleMetrics_Input | GetErrorStats_Input | GetLndMetrics_Input | GetSingleBundleMetrics_Input | GetSingleUsageMetrics_Input | GetUsageMetrics_Input | SubmitWebRtcMessage_Input
-export type MetricsMethodOutputs = GetAppsMetrics_Output | GetBundleMetrics_Output | GetErrorStats_Output | GetLndMetrics_Output | GetSingleBundleMetrics_Output | GetSingleUsageMetrics_Output | GetUsageMetrics_Output | SubmitWebRtcMessage_Output
+export type MetricsMethodInputs = GetAppsMetrics_Input | GetBundleMetrics_Input | GetErrorStats_Input | GetLndForwardingMetrics_Input | GetLndMetrics_Input | GetProvidersDisruption_Input | GetSingleBundleMetrics_Input | GetSingleUsageMetrics_Input | GetUsageMetrics_Input | PingSubProcesses_Input | ResetMetricsStorages_Input | SubmitWebRtcMessage_Input | ZipMetricsStorages_Input
+export type MetricsMethodOutputs = GetAppsMetrics_Output | GetBundleMetrics_Output | GetErrorStats_Output | GetLndForwardingMetrics_Output | GetLndMetrics_Output | GetProvidersDisruption_Output | GetSingleBundleMetrics_Output | GetSingleUsageMetrics_Output | GetUsageMetrics_Output | PingSubProcesses_Output | ResetMetricsStorages_Output | SubmitWebRtcMessage_Output | ZipMetricsStorages_Output
 export type UserContext = {
     app_id: string
     app_user_id: string
     user_id: string
 }
-export type UserMethodInputs = AddProduct_Input | AddUserOffer_Input | AuthorizeDebit_Input | BanDebit_Input | DecodeInvoice_Input | DeleteUserOffer_Input | EditDebit_Input | EnrollAdminToken_Input | GetDebitAuthorizations_Input | GetLNURLChannelLink_Input | GetLnurlPayLink_Input | GetLnurlWithdrawLink_Input | GetPaymentState_Input | GetUserInfo_Input | GetUserOffer_Input | GetUserOfferInvoices_Input | GetUserOffers_Input | GetUserOperations_Input | NewAddress_Input | NewInvoice_Input | NewProductInvoice_Input | PayAddress_Input | PayInvoice_Input | ResetDebit_Input | RespondToDebit_Input | UpdateCallbackUrl_Input | UpdateUserOffer_Input | UserHealth_Input
-export type UserMethodOutputs = AddProduct_Output | AddUserOffer_Output | AuthorizeDebit_Output | BanDebit_Output | DecodeInvoice_Output | DeleteUserOffer_Output | EditDebit_Output | EnrollAdminToken_Output | GetDebitAuthorizations_Output | GetLNURLChannelLink_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetPaymentState_Output | GetUserInfo_Output | GetUserOffer_Output | GetUserOfferInvoices_Output | GetUserOffers_Output | GetUserOperations_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | PayAddress_Output | PayInvoice_Output | ResetDebit_Output | RespondToDebit_Output | UpdateCallbackUrl_Output | UpdateUserOffer_Output | UserHealth_Output
+export type UserMethodInputs = AddProduct_Input | AddUserOffer_Input | AuthorizeDebit_Input | BanDebit_Input | DecodeInvoice_Input | DeleteUserOffer_Input | EditDebit_Input | EnrollAdminToken_Input | GetDebitAuthorizations_Input | GetHttpCreds_Input | GetLNURLChannelLink_Input | GetLnurlPayLink_Input | GetLnurlWithdrawLink_Input | GetPaymentState_Input | GetUserInfo_Input | GetUserOffer_Input | GetUserOfferInvoices_Input | GetUserOffers_Input | GetUserOperations_Input | NewAddress_Input | NewInvoice_Input | NewProductInvoice_Input | PayAddress_Input | PayInvoice_Input | ResetDebit_Input | RespondToDebit_Input | UpdateCallbackUrl_Input | UpdateUserOffer_Input | UserHealth_Input
+export type UserMethodOutputs = AddProduct_Output | AddUserOffer_Output | AuthorizeDebit_Output | BanDebit_Output | DecodeInvoice_Output | DeleteUserOffer_Output | EditDebit_Output | EnrollAdminToken_Output | GetDebitAuthorizations_Output | GetHttpCreds_Output | GetLNURLChannelLink_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetPaymentState_Output | GetUserInfo_Output | GetUserOffer_Output | GetUserOfferInvoices_Output | GetUserOffers_Output | GetUserOperations_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | PayAddress_Output | PayInvoice_Output | ResetDebit_Output | RespondToDebit_Output | UpdateCallbackUrl_Output | UpdateUserOffer_Output | UserHealth_Output
 export type AuthContext = AdminContext | AppContext | GuestContext | GuestWithPubContext | MetricsContext | UserContext
 
 export type AddApp_Input = { rpcName: 'AddApp', req: AddAppRequest }
@@ -117,8 +117,8 @@ export type GetDebitAuthorizations_Output = ResultError | ({ status: 'OK' } & De
 export type GetErrorStats_Input = { rpcName: 'GetErrorStats' }
 export type GetErrorStats_Output = ResultError | ({ status: 'OK' } & ErrorStats)
 
-export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds', cb: (res: HttpCreds, err: Error | null) => void }
-export type GetHttpCreds_Output = ResultError | { status: 'OK' }
+export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds' }
+export type GetHttpCreds_Output = ResultError | ({ status: 'OK' } & HttpCreds)
 
 export type GetInviteLinkState_Input = { rpcName: 'GetInviteLinkState', req: GetInviteTokenStateRequest }
 export type GetInviteLinkState_Output = ResultError | ({ status: 'OK' } & GetInviteTokenStateResponse)
@@ -131,6 +131,9 @@ export type GetLiveDebitRequests_Output = ResultError | { status: 'OK' }
 
 export type GetLiveUserOperations_Input = { rpcName: 'GetLiveUserOperations', cb: (res: LiveUserOperation, err: Error | null) => void }
 export type GetLiveUserOperations_Output = ResultError | { status: 'OK' }
+
+export type GetLndForwardingMetrics_Input = { rpcName: 'GetLndForwardingMetrics', req: LndMetricsRequest }
+export type GetLndForwardingMetrics_Output = ResultError | ({ status: 'OK' } & LndForwardingMetrics)
 
 export type GetLndMetrics_Input = { rpcName: 'GetLndMetrics', req: LndMetricsRequest }
 export type GetLndMetrics_Output = ResultError | ({ status: 'OK' } & LndMetrics)
@@ -161,6 +164,9 @@ export type GetNPubLinkingState_Output = ResultError | ({ status: 'OK' } & NPubL
 
 export type GetPaymentState_Input = { rpcName: 'GetPaymentState', req: GetPaymentStateRequest }
 export type GetPaymentState_Output = ResultError | ({ status: 'OK' } & PaymentState)
+
+export type GetProvidersDisruption_Input = { rpcName: 'GetProvidersDisruption' }
+export type GetProvidersDisruption_Output = ResultError | ({ status: 'OK' } & ProvidersDisruption)
 
 export type GetSeed_Input = { rpcName: 'GetSeed' }
 export type GetSeed_Output = ResultError | ({ status: 'OK' } & LndSeed)
@@ -247,11 +253,17 @@ export type PayAppUserInvoice_Output = ResultError | ({ status: 'OK' } & PayInvo
 export type PayInvoice_Input = { rpcName: 'PayInvoice', req: PayInvoiceRequest }
 export type PayInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
+export type PingSubProcesses_Input = { rpcName: 'PingSubProcesses' }
+export type PingSubProcesses_Output = ResultError | { status: 'OK' }
+
 export type RequestNPubLinkingToken_Input = { rpcName: 'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
 export type RequestNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
 export type ResetDebit_Input = { rpcName: 'ResetDebit', req: DebitOperation }
 export type ResetDebit_Output = ResultError | { status: 'OK' }
+
+export type ResetMetricsStorages_Input = { rpcName: 'ResetMetricsStorages' }
+export type ResetMetricsStorages_Output = ResultError | { status: 'OK' }
 
 export type ResetNPubLinkingToken_Input = { rpcName: 'ResetNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
 export type ResetNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
@@ -295,6 +307,9 @@ export type UseInviteLink_Output = ResultError | { status: 'OK' }
 export type UserHealth_Input = { rpcName: 'UserHealth' }
 export type UserHealth_Output = ResultError | ({ status: 'OK' } & UserHealthState)
 
+export type ZipMetricsStorages_Input = { rpcName: 'ZipMetricsStorages' }
+export type ZipMetricsStorages_Output = ResultError | ({ status: 'OK' } & ZippedMetrics)
+
 export type ServerMethods = {
     AddApp?: (req: AddApp_Input & { ctx: AdminContext }) => Promise<AuthApp>
     AddAppInvoice?: (req: AddAppInvoice_Input & { ctx: AppContext }) => Promise<NewInvoiceResponse>
@@ -321,11 +336,12 @@ export type ServerMethods = {
     GetBundleMetrics?: (req: GetBundleMetrics_Input & { ctx: MetricsContext }) => Promise<BundleMetrics>
     GetDebitAuthorizations?: (req: GetDebitAuthorizations_Input & { ctx: UserContext }) => Promise<DebitAuthorizations>
     GetErrorStats?: (req: GetErrorStats_Input & { ctx: MetricsContext }) => Promise<ErrorStats>
-    GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext }) => Promise<void>
+    GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext }) => Promise<HttpCreds>
     GetInviteLinkState?: (req: GetInviteLinkState_Input & { ctx: AdminContext }) => Promise<GetInviteTokenStateResponse>
     GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
     GetLiveDebitRequests?: (req: GetLiveDebitRequests_Input & { ctx: UserContext }) => Promise<void>
     GetLiveUserOperations?: (req: GetLiveUserOperations_Input & { ctx: UserContext }) => Promise<void>
+    GetLndForwardingMetrics?: (req: GetLndForwardingMetrics_Input & { ctx: MetricsContext }) => Promise<LndForwardingMetrics>
     GetLndMetrics?: (req: GetLndMetrics_Input & { ctx: MetricsContext }) => Promise<LndMetrics>
     GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & { ctx: GuestContext }) => Promise<LnurlPayInfoResponse>
     GetLnurlPayLink?: (req: GetLnurlPayLink_Input & { ctx: UserContext }) => Promise<LnurlLinkResponse>
@@ -334,6 +350,7 @@ export type ServerMethods = {
     GetMigrationUpdate?: (req: GetMigrationUpdate_Input & { ctx: UserContext }) => Promise<void>
     GetNPubLinkingState?: (req: GetNPubLinkingState_Input & { ctx: AppContext }) => Promise<NPubLinking>
     GetPaymentState?: (req: GetPaymentState_Input & { ctx: UserContext }) => Promise<PaymentState>
+    GetProvidersDisruption?: (req: GetProvidersDisruption_Input & { ctx: MetricsContext }) => Promise<ProvidersDisruption>
     GetSeed?: (req: GetSeed_Input & { ctx: AdminContext }) => Promise<LndSeed>
     GetSingleBundleMetrics?: (req: GetSingleBundleMetrics_Input & { ctx: MetricsContext }) => Promise<BundleData>
     GetSingleUsageMetrics?: (req: GetSingleUsageMetrics_Input & { ctx: MetricsContext }) => Promise<UsageMetricTlv>
@@ -357,8 +374,10 @@ export type ServerMethods = {
     PayAddress?: (req: PayAddress_Input & { ctx: UserContext }) => Promise<PayAddressResponse>
     PayAppUserInvoice?: (req: PayAppUserInvoice_Input & { ctx: AppContext }) => Promise<PayInvoiceResponse>
     PayInvoice?: (req: PayInvoice_Input & { ctx: UserContext }) => Promise<PayInvoiceResponse>
+    PingSubProcesses?: (req: PingSubProcesses_Input & { ctx: MetricsContext }) => Promise<void>
     RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
     ResetDebit?: (req: ResetDebit_Input & { ctx: UserContext }) => Promise<void>
+    ResetMetricsStorages?: (req: ResetMetricsStorages_Input & { ctx: MetricsContext }) => Promise<void>
     ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & { ctx: AppContext }) => Promise<RequestNPubLinkingTokenResponse>
     RespondToDebit?: (req: RespondToDebit_Input & { ctx: UserContext }) => Promise<void>
     SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & { ctx: AppContext }) => Promise<void>
@@ -373,6 +392,7 @@ export type ServerMethods = {
     UpdateUserOffer?: (req: UpdateUserOffer_Input & { ctx: UserContext }) => Promise<void>
     UseInviteLink?: (req: UseInviteLink_Input & { ctx: GuestWithPubContext }) => Promise<void>
     UserHealth?: (req: UserHealth_Input & { ctx: UserContext }) => Promise<UserHealthState>
+    ZipMetricsStorages?: (req: ZipMetricsStorages_Input & { ctx: MetricsContext }) => Promise<ZippedMetrics>
 }
 
 export enum AddressType {
@@ -2033,6 +2053,77 @@ export const LndChannelsValidate = (o?: LndChannels, opts: LndChannelsOptions = 
     return null
 }
 
+export type LndForwardingEvent = {
+    amt_in: number
+    amt_out: number
+    at_unix: number
+    chan_id_in: string
+    chan_id_out: string
+    fee: number
+}
+export const LndForwardingEventOptionalFields: [] = []
+export type LndForwardingEventOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    amt_in_CustomCheck?: (v: number) => boolean
+    amt_out_CustomCheck?: (v: number) => boolean
+    at_unix_CustomCheck?: (v: number) => boolean
+    chan_id_in_CustomCheck?: (v: string) => boolean
+    chan_id_out_CustomCheck?: (v: string) => boolean
+    fee_CustomCheck?: (v: number) => boolean
+}
+export const LndForwardingEventValidate = (o?: LndForwardingEvent, opts: LndForwardingEventOptions = {}, path: string = 'LndForwardingEvent::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amt_in !== 'number') return new Error(`${path}.amt_in: is not a number`)
+    if (opts.amt_in_CustomCheck && !opts.amt_in_CustomCheck(o.amt_in)) return new Error(`${path}.amt_in: custom check failed`)
+
+    if (typeof o.amt_out !== 'number') return new Error(`${path}.amt_out: is not a number`)
+    if (opts.amt_out_CustomCheck && !opts.amt_out_CustomCheck(o.amt_out)) return new Error(`${path}.amt_out: custom check failed`)
+
+    if (typeof o.at_unix !== 'number') return new Error(`${path}.at_unix: is not a number`)
+    if (opts.at_unix_CustomCheck && !opts.at_unix_CustomCheck(o.at_unix)) return new Error(`${path}.at_unix: custom check failed`)
+
+    if (typeof o.chan_id_in !== 'string') return new Error(`${path}.chan_id_in: is not a string`)
+    if (opts.chan_id_in_CustomCheck && !opts.chan_id_in_CustomCheck(o.chan_id_in)) return new Error(`${path}.chan_id_in: custom check failed`)
+
+    if (typeof o.chan_id_out !== 'string') return new Error(`${path}.chan_id_out: is not a string`)
+    if (opts.chan_id_out_CustomCheck && !opts.chan_id_out_CustomCheck(o.chan_id_out)) return new Error(`${path}.chan_id_out: custom check failed`)
+
+    if (typeof o.fee !== 'number') return new Error(`${path}.fee: is not a number`)
+    if (opts.fee_CustomCheck && !opts.fee_CustomCheck(o.fee)) return new Error(`${path}.fee: custom check failed`)
+
+    return null
+}
+
+export type LndForwardingMetrics = {
+    events: LndForwardingEvent[]
+    total_fees: number
+}
+export const LndForwardingMetricsOptionalFields: [] = []
+export type LndForwardingMetricsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    events_ItemOptions?: LndForwardingEventOptions
+    events_CustomCheck?: (v: LndForwardingEvent[]) => boolean
+    total_fees_CustomCheck?: (v: number) => boolean
+}
+export const LndForwardingMetricsValidate = (o?: LndForwardingMetrics, opts: LndForwardingMetricsOptions = {}, path: string = 'LndForwardingMetrics::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.events)) return new Error(`${path}.events: is not an array`)
+    for (let index = 0; index < o.events.length; index++) {
+        const eventsErr = LndForwardingEventValidate(o.events[index], opts.events_ItemOptions, `${path}.events[${index}]`)
+        if (eventsErr !== null) return eventsErr
+    }
+    if (opts.events_CustomCheck && !opts.events_CustomCheck(o.events)) return new Error(`${path}.events: custom check failed`)
+
+    if (typeof o.total_fees !== 'number') return new Error(`${path}.total_fees: is not a number`)
+    if (opts.total_fees_CustomCheck && !opts.total_fees_CustomCheck(o.total_fees)) return new Error(`${path}.total_fees: custom check failed`)
+
+    return null
+}
+
 export type LndGetInfoRequest = {
     nodeId: number
 }
@@ -3022,6 +3113,57 @@ export const ProductValidate = (o?: Product, opts: ProductOptions = {}, path: st
     return null
 }
 
+export type ProviderDisruption = {
+    provider_pubkey: string
+    provider_type: string
+    since_unix: number
+}
+export const ProviderDisruptionOptionalFields: [] = []
+export type ProviderDisruptionOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    provider_pubkey_CustomCheck?: (v: string) => boolean
+    provider_type_CustomCheck?: (v: string) => boolean
+    since_unix_CustomCheck?: (v: number) => boolean
+}
+export const ProviderDisruptionValidate = (o?: ProviderDisruption, opts: ProviderDisruptionOptions = {}, path: string = 'ProviderDisruption::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.provider_pubkey !== 'string') return new Error(`${path}.provider_pubkey: is not a string`)
+    if (opts.provider_pubkey_CustomCheck && !opts.provider_pubkey_CustomCheck(o.provider_pubkey)) return new Error(`${path}.provider_pubkey: custom check failed`)
+
+    if (typeof o.provider_type !== 'string') return new Error(`${path}.provider_type: is not a string`)
+    if (opts.provider_type_CustomCheck && !opts.provider_type_CustomCheck(o.provider_type)) return new Error(`${path}.provider_type: custom check failed`)
+
+    if (typeof o.since_unix !== 'number') return new Error(`${path}.since_unix: is not a number`)
+    if (opts.since_unix_CustomCheck && !opts.since_unix_CustomCheck(o.since_unix)) return new Error(`${path}.since_unix: custom check failed`)
+
+    return null
+}
+
+export type ProvidersDisruption = {
+    disruptions: ProviderDisruption[]
+}
+export const ProvidersDisruptionOptionalFields: [] = []
+export type ProvidersDisruptionOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    disruptions_ItemOptions?: ProviderDisruptionOptions
+    disruptions_CustomCheck?: (v: ProviderDisruption[]) => boolean
+}
+export const ProvidersDisruptionValidate = (o?: ProvidersDisruption, opts: ProvidersDisruptionOptions = {}, path: string = 'ProvidersDisruption::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.disruptions)) return new Error(`${path}.disruptions: is not an array`)
+    for (let index = 0; index < o.disruptions.length; index++) {
+        const disruptionsErr = ProviderDisruptionValidate(o.disruptions[index], opts.disruptions_ItemOptions, `${path}.disruptions[${index}]`)
+        if (disruptionsErr !== null) return disruptionsErr
+    }
+    if (opts.disruptions_CustomCheck && !opts.disruptions_CustomCheck(o.disruptions)) return new Error(`${path}.disruptions: custom check failed`)
+
+    return null
+}
+
 export type RelaysMigration = {
     relays: string[]
 }
@@ -3812,6 +3954,24 @@ export const WebRtcMessageValidate = (o?: WebRtcMessage, opts: WebRtcMessageOpti
     const messageErr = WebRtcMessage_messageValidate(o.message, opts.message_Options, `${path}.message`)
     if (messageErr !== null) return messageErr
 
+
+    return null
+}
+
+export type ZippedMetrics = {
+    path: string
+}
+export const ZippedMetricsOptionalFields: [] = []
+export type ZippedMetricsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    path_CustomCheck?: (v: string) => boolean
+}
+export const ZippedMetricsValidate = (o?: ZippedMetrics, opts: ZippedMetricsOptions = {}, path: string = 'ZippedMetrics::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.path !== 'string') return new Error(`${path}.path: is not a string`)
+    if (opts.path_CustomCheck && !opts.path_CustomCheck(o.path)) return new Error(`${path}.path: custom check failed`)
 
     return null
 }

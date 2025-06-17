@@ -216,7 +216,7 @@ const AppContent: React.FC = () => {
 					</Suspense>
 
 				</Route>
-				<Route exact path="/earnings">
+				<Route exact path="/metrics/earnings">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Earnings />

@@ -96,7 +96,11 @@ export const Header = () => {
     let tripeClickTimer: NodeJS.Timeout;
     if (logoClickCounter === 1) {
       singleClickTimer = setTimeout(() => {
-        router.push("/");
+        if (location.pathname.startsWith("/metrics")) {
+          router.push("/metrics");
+        } else {
+          router.push("/");
+        }
         setLogoClickCounter(0);
       }, 500);
     } else {
@@ -240,8 +244,6 @@ export const PubHeader = () => {
   useEffect(() => {
     getNotifyBadge();
   }, []);
-
-
   useEffect(() => {
     let singleClickTimer: NodeJS.Timeout;
     let tripeClickTimer: NodeJS.Timeout;
@@ -262,7 +264,7 @@ export const PubHeader = () => {
       clearTimeout(singleClickTimer)
       clearTimeout(tripeClickTimer);
     };
-  }, [logoClickCounter, router]);
+  }, [logoClickCounter, router, location.pathname]);
 
   useEffect(() => {
     if (isPlatform('ios')) {

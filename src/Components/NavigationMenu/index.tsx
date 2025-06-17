@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react"
 import { AdminSource, getAdminSource } from "../AdminGuard"
 import { useSelector } from "../../State/store"
 const getMenuItems = (adminSource: AdminSource | undefined) => {
-	const items = [
+	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
 		{ title: "Contacts", icon: peopleOutline, path: "/contacts" },
 		{ title: "Linked Apps", icon: starOutline, path: "/lapps" },
@@ -27,7 +27,7 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 		{ title: "Backup and Sync", icon: keyOutline, path: "/auth" },
 	]
 	if (adminSource) {
-		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics" })
+		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics", color: '#c740c7' })
 	}
 	return items
 }
@@ -63,7 +63,8 @@ const NavigationMenu = () => {
 								return (
 									<IonMenuToggle key={index} autoHide={false}>
 										<IonItem routerLink={item.path} routerDirection="none">
-											<IonIcon color="primary" icon={item.icon} slot="start" />
+											{item.color && <IonIcon style={{ color: item.color }} icon={item.icon} slot="start" />}
+											{!item.color && <IonIcon color="primary" icon={item.icon} slot="start" />}
 											<IonLabel>{item.title}</IonLabel>
 										</IonItem>
 									</IonMenuToggle>

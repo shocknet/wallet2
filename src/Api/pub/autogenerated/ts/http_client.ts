@@ -360,7 +360,20 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    GetHttpCreds: async (cb: (v: ResultError | ({ status: 'OK' } & Types.HttpCreds)) => void): Promise<void> => { throw new Error('http streams are not supported') },
+    GetHttpCreds: async (): Promise<ResultError | ({ status: 'OK' } & Types.HttpCreds)> => {
+        const auth = await params.retrieveUserAuth()
+        if (auth === null) throw new Error('retrieveUserAuth() returned null')
+        let finalRoute = '/api/user/http_creds'
+        const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.HttpCredsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetInviteLinkState: async (request: Types.GetInviteTokenStateRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetInviteTokenStateResponse)> => {
         const auth = await params.retrieveAdminAuth()
         if (auth === null) throw new Error('retrieveAdminAuth() returned null')
@@ -391,6 +404,20 @@ export default (params: ClientParams) => ({
     },
     GetLiveDebitRequests: async (cb: (v: ResultError | ({ status: 'OK' } & Types.LiveDebitRequest)) => void): Promise<void> => { throw new Error('http streams are not supported') },
     GetLiveUserOperations: async (cb: (v: ResultError | ({ status: 'OK' } & Types.LiveUserOperation)) => void): Promise<void> => { throw new Error('http streams are not supported') },
+    GetLndForwardingMetrics: async (request: Types.LndMetricsRequest): Promise<ResultError | ({ status: 'OK' } & Types.LndForwardingMetrics)> => {
+        const auth = await params.retrieveMetricsAuth()
+        if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
+        let finalRoute = '/api/reports/lnd/forwarding'
+        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.LndForwardingMetricsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetLndMetrics: async (request: Types.LndMetricsRequest): Promise<ResultError | ({ status: 'OK' } & Types.LndMetrics)> => {
         const auth = await params.retrieveMetricsAuth()
         if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
@@ -490,6 +517,20 @@ export default (params: ClientParams) => ({
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.PaymentStateValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    GetProvidersDisruption: async (): Promise<ResultError | ({ status: 'OK' } & Types.ProvidersDisruption)> => {
+        const auth = await params.retrieveMetricsAuth()
+        if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
+        let finalRoute = '/api/metrics/providers/disruption'
+        const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ProvidersDisruptionValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
@@ -814,6 +855,17 @@ export default (params: ClientParams) => ({
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    PingSubProcesses: async (): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveMetricsAuth()
+        if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
+        let finalRoute = '/api/metrics/ping'
+        const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     RequestNPubLinkingToken: async (request: Types.RequestNPubLinkingTokenRequest): Promise<ResultError | ({ status: 'OK' } & Types.RequestNPubLinkingTokenResponse)> => {
         const auth = await params.retrieveAppAuth()
         if (auth === null) throw new Error('retrieveAppAuth() returned null')
@@ -833,6 +885,17 @@ export default (params: ClientParams) => ({
         if (auth === null) throw new Error('retrieveUserAuth() returned null')
         let finalRoute = '/api/user/debit/reset'
         const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    ResetMetricsStorages: async (): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveMetricsAuth()
+        if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
+        let finalRoute = '/api/metrics/reset'
+        const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') {
             return data
@@ -991,6 +1054,20 @@ export default (params: ClientParams) => ({
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.UserHealthStateValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    ZipMetricsStorages: async (): Promise<ResultError | ({ status: 'OK' } & Types.ZippedMetrics)> => {
+        const auth = await params.retrieveMetricsAuth()
+        if (auth === null) throw new Error('retrieveMetricsAuth() returned null')
+        let finalRoute = '/api/metrics/zip'
+        const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ZippedMetricsValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
