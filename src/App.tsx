@@ -52,6 +52,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 
+
 import "./theme/variables.css";
 
 import LoadingOverlay from "./Components/LoadingOverlay";
@@ -78,6 +79,7 @@ addIcons({
 
 
 setupIonicReact();
+document.documentElement.classList.add('dark');
 
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
@@ -235,9 +237,7 @@ const AppContent: React.FC = () => {
 				</Route>
 				<Route exact path="/Offers">
 					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Offers />
-						</Layout>
+						<Offers />
 					</Suspense>
 				</Route>
 				<Route exact path="/OfferInfo">

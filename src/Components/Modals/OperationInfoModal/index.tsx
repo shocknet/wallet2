@@ -195,7 +195,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 								<div className={styles["long-text-container"]}>
 									<div className={styles["long-text-text"]}>
 
-										<IonNote color="medium" className={classNames("ion-text-wrap", styles["text"])}>{data.txHash}</IonNote>
+										<IonNote className={classNames("ion-text-wrap text-low", styles["text"])}>{data.txHash}</IonNote>
 									</div>
 									<div className={styles["long-text-icon"]}>
 										<IonButton size="large" shape="round" fill="clear">
@@ -281,7 +281,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				<IonItem>
 					<IonLabel color="primary">
 						Invoice
-						<IonNote style={{ display: "block", fontSize: "0.8rem" }} color="medium" className="ion-text-wrap">{operation.invoice}</IonNote>
+						<IonNote style={{ display: "block", fontSize: "0.8rem" }} className="ion-text-wrap text-low">{operation.invoice}</IonNote>
 					</IonLabel>
 					<IonIcon icon={copy} slot="end" onClick={() => navigator.clipboard.writeText(operation.invoice)} />
 				</IonItem>
@@ -291,7 +291,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 						<IonItem>
 							<IonLabel color="primary">
 								Invoice Memo
-								<IonNote style={{ display: "block", fontSize: "0.9rem" }} color="medium" className="ion-text-wrap">{operation.invoiceMemo}</IonNote>
+								<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-medium">{operation.invoiceMemo}</IonNote>
 							</IonLabel>
 						</IonItem>
 					)
@@ -410,7 +410,7 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 				<IonItem>
 					<IonLabel color="primary">
 						Paste Field
-						<IonNote style={{ display: "block", fontSize: "0.8rem" }} color="medium" className="ion-text-wrap">{operationSource.pasteField}</IonNote>
+						<IonNote style={{ display: "block", fontSize: "0.8rem" }} className="ion-text-wrap text-low">{operationSource.pasteField}</IonNote>
 					</IonLabel>
 				</IonItem>
 			</IonList>
@@ -481,7 +481,7 @@ const NoteField = ({ note: initialNote, sourceId, operationId }: { note?: string
 							<div className={styles["long-text-container"]}>
 								<div className={styles["long-text-text"]}>
 
-									<IonNote color="medium" className={classNames("ion-text-wrap", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
+									<IonNote className={classNames("ion-text-wrap text-medium", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
 								</div>
 								<div className={styles["long-text-icon"]}>
 
