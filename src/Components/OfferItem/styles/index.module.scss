@@ -1,0 +1,47 @@
+.offer-item {
+	--inner-padding-start: 8px;
+	--inner-padding-bottom: 0px;
+	--inner-padding-end: 0px;
+	--padding-start: 0px;
+
+
+	margin-bottom: 0.9rem;
+
+	--background: var(--ion-color-secondary);
+
+	.offer-item-label {
+		display: block;
+		font-size: 1.2rem;
+		color: var(--ion-text-color-step-100);
+		margin-bottom: 0.2rem;
+	}
+
+	.offer-item-chips-container {
+		margin-bottom: 0.3rem;
+	}
+
+
+
+	.chip-label {
+		font-size: 0.8rem;
+
+		@media screen and (max-width: 600px) {
+			font-size: 0.7rem;
+
+		}
+
+	}
+
+
+
+	.offer-string {
+		font-size: 0.9rem;
+		color: var(--ion-text-color-step-400);
+	}
+
+	.offer-item-copy-button {
+		margin: 0;
+	}
+
+
+}

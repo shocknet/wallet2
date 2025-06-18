@@ -62,17 +62,17 @@ export function CustomSelect<T>({
 				className="item-select input-box-shadow"
 			>
 				{label && <IonLabel position="floating">{label}</IonLabel>}
-				<div slot="start" className="ion-align-items-center ion-justify-content-between">
-					{selectedItem ? (
-						renderSelected ? (
-							renderSelected(selectedItem)
-						) : (
-							<IonText>{String(selectedItem)}</IonText>
-						)
+
+				{selectedItem ? (
+					renderSelected ? (
+						renderSelected(selectedItem)
 					) : (
-						<IonText color="medium">{placeholder}</IonText>
-					)}
-				</div>
+						<IonLabel>{String(selectedItem)}</IonLabel>
+					)
+				) : (
+					<IonLabel color="medium">{placeholder}</IonLabel>
+				)}
+
 			</IonItem>
 
 
