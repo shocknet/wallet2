@@ -133,7 +133,7 @@ const Channels = ({ done }: { done: () => void }) => {
                   </div>
                   <div className="time">
                     <span>
-                      {channel.timeStamp && channel.timeStamp > 0 && moment(channel.timeStamp * 1000).fromNow()}
+                      {typeof channel.timeStamp}{channel.timeStamp}
                     </span>
                   </div>
                 </div>
