@@ -21,6 +21,7 @@ import Manage from '../Manage';
 import Channels from '../Channels';
 import { AdminGuard, AdminSource } from '../../Components/AdminGuard';
 import { getUnixTimeRange } from './earnings';
+import PeriodSelector from '@/Components/Dropdowns/PeriodDropdown/PeriodSelector';
 
 const trimText = (text: string) => {
   return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -383,25 +384,11 @@ const Metrics = () => {
       </div>
       <div className={styles["section"]}>
         <div className={styles["between"]}>
-          <div className={styles["center"]}>
-            <Dropdown<Period>
-              setState={(value) => { setPeriod(value); setOffset(0) }}
-              otherOptions={periodOptionsArray}
-              jsx={<div className={classNames(styles["center"], styles["box"])}>
-                <span className={styles["icon_pub"]}>{Icons.Automation()}</span>
-                <span>{getPeriodText(period, offset)}</span>
-              </div>}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', }} className={styles["box"]}>
-              <div onClick={() => prevOffset()} >{Icons.arrowLeft()}</div>
-              {Icons.verticalLine()}
-              <div onClick={() => nextOffset()} >{Icons.arrowRight()}</div>
-            </div>
-          </div>
+
+          <PeriodSelector period={period} offset={offset} setPeriod={setPeriod} resetOffset={() => setOffset(0)} prevOffset={prevOffset} nextOffset={nextOffset} />
           <div onClick={() => setShowManage(true)} style={{ cursor: "pointer" }} className={classNames(styles["box"], styles["border"])}>
             Manage
           </div>
-
         </div>
       </div>
       <div className={styles["section"]}><span className={styles["separator"]}></span></div>
@@ -473,7 +460,7 @@ const Metrics = () => {
               </div>
             </div>
           </div>
-          <div className={classNames(styles["card"], styles["top-channels"], styles["routing"])}>
+          <div className={classNames(styles["card"], styles["top-channels"], styles["routing"])} onClick={() => router.push("/metrics/routing?period=" + period + "&offset=" + offset)}>
             <div className={styles["top"]}>
               <h4 className={styles["card-label"]}>Routing</h4>
             </div>
