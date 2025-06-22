@@ -1,24 +1,33 @@
-import { TOKEN_RX } from "./utils";
+import { parseUrlComponents } from "./utils";
 
-export const highlightUrl = (url: string, invalidTokens = new Set<string>) => {
+export function highlightUrl(url: string, invalidTokens: Set<string>) {
+	// Use parseUrlComponents to get components
+	const components = parseUrlComponents(url);
 	const parts: JSX.Element[] = [];
-	let last = 0,
-		idx = 0;
-	for (const m of url.matchAll(TOKEN_RX)) {
-		const [full, tok] = m;
-		const start = m.index ?? 0;
-		if (start > last)
-			parts.push(<span key={`t-${idx++}`}>{url.slice(last, start)}</span>);
+
+	components.forEach(comp => {
+		let content = comp.value;
+		let isInvalid = false;
+
+		if (comp.type === "template") {
+			// Check if template contains invalid tokens
+			const tokens = content.split(',').map(t => t.trim());
+			isInvalid = tokens.some(t => invalidTokens.has(t));
+			content = `{${content}}`;
+		}
+
 		parts.push(
 			<span
-				key={`v-${idx++}`}
-				style={{ color: invalidTokens.has(tok) ? "var(--ion-color-danger)" : "#2aabe1" }}
+				key={`${comp.start}-${comp.end}`}
+				style={{
+					color: isInvalid ? "var(--ion-color-danger)" :
+						comp.type === "template" ? "#2aabe1" : "inherit"
+				}}
 			>
-				%{`[${tok}]`}
+				{content}
 			</span>
 		);
-		last = start + full.length;
-	}
-	if (last < url.length) parts.push(<span key="tail">{url.slice(last)}</span>);
+	});
+
 	return parts;
-};
+}
