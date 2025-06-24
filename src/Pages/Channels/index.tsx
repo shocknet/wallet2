@@ -69,7 +69,7 @@ const Channels = ({ done }: { done: () => void }) => {
       if (c.active) {
         active.push({ avatar: "", id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance, channel: c })
       } else {
-        offline.push({ avatar: "", id: i, name: c.label, satAmount: c.capacity, timeStamp: c.lifetime, subNode: "Initiate force-close", channel: c })
+        offline.push({ avatar: "", id: i, name: c.label, satAmount: c.capacity, timeStamp: c.inactive_since_unix, subNode: "Initiate force-close", channel: c })
       }
     })
     setMaxBalance(max)
@@ -133,7 +133,7 @@ const Channels = ({ done }: { done: () => void }) => {
                   </div>
                   <div className="time">
                     <span>
-                      {typeof channel.timeStamp}{channel.timeStamp}
+                      last seen: {channel.timeStamp ? moment(channel.timeStamp * 1000).fromNow() : "Never"}
                     </span>
                   </div>
                 </div>
