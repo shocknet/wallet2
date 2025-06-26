@@ -52,7 +52,7 @@ export const EditChannel = ({ adminSource, selectedChannel, deselect }: { adminS
       toast.error('No channel selected')
       return
     }
-    if (satsPerVByte <= 0) {
+    if (satsPerVByte <= 0 && !force) {
       toast.error('Please enter a valid sats per vbyte')
       return
     }
