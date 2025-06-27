@@ -25,9 +25,9 @@ import deepEqual from "fast-deep-equal";
 import AmountInput from "@/Components/AmountInput";
 import { useAmountInput } from "@/Components/AmountInput/useAmountInput";
 import PayerDataEditor from "./PayerDataEditor";
-import WebhookUrlBuilder from "./WebhookUrlBuilder";
+import WebhookUrlBuilder from "./WebhookBuilder";
 import { keysToPayerData } from "./utils";
-import { highlightUrl } from "./helpers";
+import { highlightUrlTemplate } from "./WebhookBuilder/utils/jsxHelpers";
 import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 
@@ -247,7 +247,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 											draft.callback_url
 											&&
 											<IonText style={{ display: "block", marginTop: "0.3rem" }} className={classNames("text-low", "ion-text-wrap")}>
-												{highlightUrl(draft.callback_url)}
+												{highlightUrlTemplate(draft.callback_url)}
 											</IonText>
 										}
 									</IonLabel>
