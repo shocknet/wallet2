@@ -123,7 +123,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 			isOpen={isOpen}
 			onDidDismiss={onClose}
 			style={{ "--background": "var(--ion-color-secondary)" }}
-			className="wallet-modal"
+			className="wallet-modal big-desktop-modal"
 		>
 			<DndProvider backend={backend}>
 				<IonHeader>
@@ -194,7 +194,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 									onValidityChange={(valid) => setIsUrlValid(valid)}
 								/>
 
-								<IonList className="ion-margin-top" style={{ borderRadius: "12px" }} lines="none">
+								<IonList className={styles["edit-list"]} lines="none">
 									<IonItem className={styles["edit-item-input"]}>
 										<AmountInput
 											labelPlacement="stacked"
@@ -210,7 +210,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 											mode="md"
 											fill="outline"
 											className="ion-margin-top"
-											helperText="Set the price for this offer. Set to 0 for spontaneous payments."
+											helperText="Set the price for this offer. Leave empty for spontaneous payments."
 											label="Price"
 											placeholder="Enter price"
 										/>
@@ -218,7 +218,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 								</IonList>
 							</>
 						) : (
-							<IonList lines="none">
+							<IonList className={styles["edit-list"]} lines="none">
 								<IonItem>
 									<IonLabel color="primary">Label</IonLabel>
 									<IonText className="text-medium">{draft.label}</IonText>

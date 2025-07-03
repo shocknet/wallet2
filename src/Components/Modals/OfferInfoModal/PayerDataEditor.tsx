@@ -180,7 +180,7 @@ const PayerDataEditor = ({
 					onClick={addRow}
 					className="ion-margin-top"
 					style={{ fontWeight: "600" }}
-
+					disabled={(rows[rows.length - 1].trim() === "" || !!problems[rows.length - 1])}
 				>
 					<IonIcon icon={add} slot="start" />
 					Add new attribute

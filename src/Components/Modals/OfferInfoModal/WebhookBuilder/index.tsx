@@ -1,14 +1,14 @@
-import { IonChip, IonInput, IonItem, IonLabel, IonList, IonNote, IonPopover, IonText, IonToggle } from "@ionic/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { IonButton, IonChip, IonCol, IonGrid, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonReorder, IonReorderGroup, IonRow, IonTextarea, IonToggle } from "@ionic/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "../styles/index.module.scss";
 import { useDrag, useDrop } from "react-dnd";
-import { charIndexAtX, insertionHeuristics, prefixWidthPx, BUILT_INS, stringify } from "./utils/utils";
-import { throttle } from "@/lib/throttle";
-import useDebounce from "@/Hooks/useDebounce";
-import { Variable } from "uri-template/dist/ast";
-import { useTemplateValidation } from "./hooks/useTemplateValidation";
-import { useToast } from "@/lib/contexts/useToast";
-import { InsertionMode } from "./types";
+import { BUILT_INS, parseAndValidate, emptyPieces, buildTemplate, ValidationFlags, makeExpr, removeAt } from "./utils/utils";
+
+import { Expression, Variable } from "uri-template/dist/ast";
+import { Pieces } from "./types";
+import classNames from "classnames";
+import { highlightExpanded, highlightUrlTemplate } from "./utils/jsxHelpers";
+import { close } from "ionicons/icons";
 
 interface WebhookUrlBuilderProps {
 	rows: string[];
@@ -17,343 +17,459 @@ interface WebhookUrlBuilderProps {
 	onValidityChange?: (valid: boolean) => void;
 }
 
-
-
-
 const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBuilderProps) => {
-	const { showToast } = useToast();
-	const urlInputRef = useRef<HTMLIonInputElement | null>(null);
-	const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-	const [caret, setCaret] = useState<{ left: number; top: number; height: number } | null>(null);
-	const [isDraggingToken, setIsDraggingToken] = useState<string | null>(null);
 	const [forceSSL, setForceSSL] = useState(true);
 
-	const [pendingInsertion, setPendingInsertion] = useState<(InsertionMode & { token: string })[] | null>(null);
+	const [pieces, setPieces] = useState<Pieces>(emptyPieces());
 
-	const debouncedUrl = useDebounce(url, 200);
 
+	const [rawMode, setRawMode] = useState(false);
+	const [initialUrl, setInitialUrl] = useState(url);
+
+	const [flags, setFlags] = useState<ValidationFlags>({});
 
 	const allowedTokens = useMemo(
 		() => [...new Set([...rows.map(r => r.trim()).filter(Boolean), ...BUILT_INS])],
 		[rows]
 	);
 
-	const {
-		ok: isValid,
-		syntaxOK,
-		httpsOK,
-		unknown,
-		expanded,
-		ast,
-		components
-	} = useTemplateValidation(debouncedUrl, forceSSL, allowedTokens);
 
-
-
-
-	const compute = useCallback(async (clientX: number) => {
-		if (!urlInputRef.current) return null;
-		const native = await urlInputRef.current.getInputElement();
-		const rect = native.getBoundingClientRect();
-		const relX = clientX - rect.left;
-		const index = charIndexAtX(native, relX, debouncedUrl);
-		const width = prefixWidthPx(native, index, debouncedUrl);
-		return {
-			index,
-			width,
-			rect,
-		};
-	}, [debouncedUrl]);
-
-
-
-
+	// Check the validty of an existing URL template
+	// If it has a fatal error, switch to raw mode
 	useEffect(() => {
-		onValidityChange?.(isValid);
-	}, [isValid, onValidityChange]);
+		const res = parseAndValidate(initialUrl, allowedTokens, false, 'initial');
+		setFlags(res.flags);
+		setPieces(res.pieces);
+		setRawMode(res.fatal);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [initialUrl]);
 
 
+	const handleSetUrl = useCallback((newUrl: string) => {
+		let finalUrl = newUrl.trim();
+		if (!/^\w+:\/\//.test(finalUrl)) {
+			finalUrl = 'https://' + finalUrl;   // modify pieces.baseUrl here
+			console.log({ newUrl })
 
-
-	const insertToken = useCallback((token: string, mode: InsertionMode) => {
-		const opGoal = mode.type === "path" ? "/" : debouncedUrl.includes("?") ? "&" : "?";
-		let newUrl = "";
-		switch (mode.kind) {
-			case "merge": {
-				mode.node.variables.push({ type: "variable", name: token } as Variable);
-				if (!ast) return;
-				newUrl = stringify(ast);
-				break;
-			}
-			case "insert": {
-				const exprStr = `{${opGoal}${token}}`;
-				newUrl = debouncedUrl.slice(0, mode.position) + exprStr + debouncedUrl.slice(mode.position);
-				break;
-			}
 		}
-		setUrl(newUrl)
-	}, [debouncedUrl, ast, setUrl]);
+		setUrl(finalUrl);
+	}, [setUrl]);
 
 
-
-
-
-	const [{ isOver, canDrop }, dropRef] = useDrop({
-		accept: "TOKEN",
-		drop: async ({ token }: { token: string }, monitor) => {
-			if (!ast) {
-				showToast({
-					message: "Template is invalid. Please fix the syntax first.",
-					color: "danger",
-				});
-				return;
+	// Validate the template on every change
+	const liveValidate = useCallback(
+		(nextPieces: Pieces) => {
+			console.log({ nextPieces })
+			const template = buildTemplate(nextPieces);
+			const res = parseAndValidate(template, allowedTokens, forceSSL, 'live');
+			setFlags(res.flags);
+			setPieces(res.pieces);
+			if (!res.fatal) {
+				handleSetUrl(template);
 			}
-			const client = monitor.getClientOffset();
-			if (!client) return;
-			const index = (await compute(client.x))?.index ?? url.length;
-			const options = insertionHeuristics(index, token, components)
-			if (options === null) {
-				return;
-			}
-
-			if (options.length === 1) {
-				insertToken(token, options[0]);
-			} else {
-				// ambiguous; ask user
-				setPendingInsertion(
-					options.map(o => ({
-						...o,
-						token,
-					}))
-				);
-			}
-			setCaret(null);
-
+			onValidityChange?.(res.ok);
 		},
-		hover: throttle(async (item: { token: string }, monitor) => {
-			const client = monitor.getClientOffset();
-			if (!client || !wrapperRef.current) return;
+		[allowedTokens, forceSSL, onValidityChange, handleSetUrl]
+	);
 
-			setIsDraggingToken(item.token);
+	// On every change of allowed tokens or forceSSL, re-validate the pieces
+	useEffect(() => {
+		if (pieces.ast) { // Only run if it's not the first render
+			liveValidate(pieces);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [allowedTokens, forceSSL])
 
-			const info = await compute(client.x);
-			if (!info) return;
-			const { width, rect } = info;
 
-			const wrapperRect = wrapperRef.current.getBoundingClientRect();
-			setCaret({
-				left: rect.left - wrapperRect.left + width,
-				top: rect.top - wrapperRect.top,
-				height: rect.height,
-			});
-		}),
+
+
+
+	// Once raw mode is enabled, user has to fix the existing URL
+	// manually, or opt
+	const onRawInput = (value: string) => {
+		setInitialUrl(value);
+		const res = parseAndValidate(value, allowedTokens, forceSSL, 'initial');
+
+		setFlags(res.flags);
+		if (!res.fatal) {
+
+			setRawMode(false);
+			setPieces(res.pieces);
+
+			handleSetUrl(value);
+		}
+
+		onValidityChange?.(res.ok);
+	};
+
+	const addPath = (token: string) => {
+
+		if (pieces.baseUrl.includes("?")) return; // cannot add path if base url has a query
+
+		let pathExpr: Expression;
+		if (pieces.pathTemplate) {
+			/* clone the fields we care about */
+			pathExpr = {
+				operator: pieces.pathTemplate.operator,   // '\/'
+				variables: [...pieces.pathTemplate.variables, { type: 'variable', name: token }],
+			} as Expression;
+		} else {
+			pathExpr = makeExpr('/', token);          // first path token
+		}
+
+		const next = { ...pieces, pathTemplate: pathExpr };
+		liveValidate(next);
+		return next;
+
+	}
+
+	const removePathVar = (idx: number) => {
+
+		if (!pieces.pathTemplate) return;
+		const newVars = removeAt(pieces.pathTemplate.variables, idx);
+		const next = {
+			...pieces,
+			pathTemplate: newVars.length
+				? { ...pieces.pathTemplate, variables: newVars }
+				: null               // becomes empty → zone shows placeholder again
+		};
+		liveValidate(next);
+		return next;
+
+	}
+
+	const removeQueryVar = (idx: number) => {
+
+		if (!pieces.queryTemplate) return;
+		const newVars = removeAt(pieces.queryTemplate.variables, idx);
+		const next = {
+			...pieces,
+			queryTemplate: newVars.length
+				? { ...pieces.queryTemplate, variables: newVars }
+				: null
+		};
+		liveValidate(next);
+		return next;
+	}
+
+
+
+	const handleReorder = (
+		vars: Variable[],
+		from: number,
+		to: number
+	): Variable[] => {
+		const clone = JSON.parse(JSON.stringify(vars));
+		const [moved] = clone.splice(from, 1);
+		clone.splice(to, 0, moved);
+		return clone;
+	};
+
+	const reorderPath = (from: number, to: number) => {
+
+		if (!pieces.pathTemplate) return;
+		const next = {
+			...pieces,
+			pathTemplate: {
+				...pieces.pathTemplate,
+				variables: handleReorder(pieces.pathTemplate.variables, from, to)
+			}
+		};
+		liveValidate(next);
+		return next;
+	}
+
+
+
+
+
+
+	const addQuery = (token: string) => {
+
+		let queryExpr: Expression;
+		if (pieces.queryTemplate) {
+			queryExpr = {
+				operator: pieces.queryTemplate.operator,
+				variables: [...pieces.queryTemplate.variables, { type: 'variable', name: token }],
+			} as Expression;
+		} else {
+			queryExpr = makeExpr(pieces.baseUrl.includes('?') ? '&' : '?', token); // first query token
+		}
+
+
+
+		const next = { ...pieces, queryTemplate: queryExpr };
+		liveValidate(next);
+		return next;
+
+	};
+
+
+
+
+
+	const [{ isOver: isPathOver, canDrop: pathCanDrop }, pathDropRef] = useDrop({
+		accept: "TOKEN",
+		canDrop: ({ token }) => allowPathDrop && !pieces.pathTemplate?.variables.find(v => v.name === token),
+		drop: ({ token }: { token: string }) => {
+			console.log("dropped")
+			if (!pieces.ast) return;
+
+			addPath(token);
+		},
 		collect: (monitor) => ({
 			isOver: monitor.isOver({ shallow: true }),
 			canDrop: monitor.canDrop()
 		}),
+	})
 
-	});
+	const [{ isOver: isQueryOver, canDrop: queryCanDrop }, queryDropRef] = useDrop({
+		accept: "TOKEN",
+		canDrop: ({ token }) => allowQueryDrop && !pieces.queryTemplate?.variables.find(v => v.name === token),
+		drop: ({ token }: { token: string }) => {
+			if (!pieces.ast) return;
+
+			addQuery(token);
+		},
+		collect: (monitor) => ({
+			isOver: monitor.isOver({ shallow: true }),
+			canDrop: monitor.canDrop()
+		}),
+	})
 
 
-	const insertByCaret = useCallback(async (token: string) => {
-		if (!urlInputRef.current) return;
-		if (!ast) {
-			showToast({
-				message: "Template is invalid. Please fix the syntax first.",
-				color: "danger",
-			});
-			return;
-		}
-		const index = debouncedUrl.length;
-		const options = insertionHeuristics(index, token, components);
-		if (options === null) {
-			return;
-		}
 
-		if (options.length === 1) {
-			insertToken(token, options[0]);
+
+
+	const pathEmpty = !pieces.pathTemplate;
+	const queryEmpty = !pieces.queryTemplate;
+
+	const highlightedExpanded = useMemo(() => {
+		const sample: Record<string, string> = {};
+		allowedTokens.forEach(k => (sample[k] = `[${k}]`));
+		if (pieces.ast) {
+			return highlightExpanded(pieces.ast, sample)
+
 		} else {
-			// ambiguous; ask user
-			setPendingInsertion(
-				options.map(o => ({
-					...o,
-					token,
-				}))
-			);
+			return null;
 		}
 
 
-	}, [insertToken, components, debouncedUrl, ast, showToast]);
-
-	useEffect(() => {
-		if (!isOver) {
-			setIsDraggingToken(null);
-			setCaret(null);
-		}
-	}, [isOver]);
+	}, [allowedTokens, pieces])
 
 
-	const closePopover = () => {
-		setPendingInsertion(null);
+	if (rawMode) {
+		return (
+			<IonList className={styles["edit-list"]} lines="none">
+				<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }}>
+					<IonLabel >Webhook URL</IonLabel>
+				</IonListHeader>
+				<IonItem>
+					<IonTextarea
+						label="Raw URL"
+						labelPlacement="stacked"
+						fill="outline"
+						mode="md"
+						autoGrow
+						value={initialUrl}
+						onIonInput={(e) => onRawInput(e.detail.value ?? '')}
+						className="ion-margin-top"
+						helperText="This existing offer has a template URL that the builder cannot interpret. Fix it here or discard it."
+					/>
+				</IonItem>
+				<IonItem lines="none">
+
+					{Object.values(flags)[0] && (
+						<IonLabel color="danger">{Object.values(flags)[0]}</IonLabel>
+					)}
+				</IonItem>
+
+				<IonItem lines="none">
+					<IonButton
+						color="tertiary"
+						slot="end"
+						onClick={() => {
+							setInitialUrl("");
+							setRawMode(false);
+							setPieces(emptyPieces());
+							setFlags({});
+							setUrl('');
+						}}
+					>
+						Discard &amp; start new
+					</IonButton>
+				</IonItem>
+			</IonList>
+		);
 	}
+
+	const allowPathDrop =
+		!flags.pathAfterQuery && !flags.duplicateQmark && !pieces.baseUrl.includes('?');
+	const allowQueryDrop = !flags.duplicateQmark;
 
 
 	return (
 
 
 		<IonList className={styles["edit-list"]} lines="none">
-			<IonPopover
-				isOpen={!!pendingInsertion}
-				onDidDismiss={closePopover}
-				trigger="none"
-				showBackdrop
-			>
-				<IonList lines="none">
-					{
-						pendingInsertion?.map((mode) => (
-							<IonItem
-								key={mode.type}
-								button
-								onClick={() => {
-									insertToken(mode.token, mode);
-									closePopover();
-								}}
-							>
-								<IonLabel>
-									Insert as {mode.type === "path" ? "path segment" : "query param"}
-								</IonLabel>
-							</IonItem>
-						))
-					}
-				</IonList>
-			</IonPopover>
-			<IonItem lines="full" className="ion-margin-bottom">
+
+			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }}>
+				<IonLabel >Webhook URL</IonLabel>
+			</IonListHeader>
+			<IonItem className="ion-margin-bottom">
 				<IonToggle
 					checked={forceSSL}
 					justify="space-between"
 					onIonChange={e => setForceSSL(e.detail.checked)}
-					className="text-medium"
-					style={{ fontWeight: "600" }}
+					className="text-low"
+					style={{ fontWeight: "600", fontSize: "0.85rem" }}
 				>
 					Force SSL (https)
 				</IonToggle>
 			</IonItem>
-			<IonItem className={styles["edit-item-input"]}>
-				<div
-					ref={el => {
-						wrapperRef.current = el;
-						dropRef(el);
+			<IonItem>
+				<IonInput
+
+					label="Base URL"
+					value={pieces.baseUrl}
+					pattern="[A-Za-z0-9:/?&._\-~%#=]*"
+					inputmode="url"
+					type="url"
+					autocapitalize="off"
+					placeholder="https://example.com/payments"
+					onIonInput={e => {
+						const clean = e.detail.value!.replace(/[{}]/g, '');
+						const next = { ...pieces, baseUrl: clean };
+						liveValidate(next);
 					}}
-					style={{ position: 'relative', width: '100%' }}
+					mode="md"
+					fill="outline"
+					labelPlacement="stacked"
+					className="ion-margin-top"
 				>
-
-					<IonInput
-						ref={urlInputRef}
-						label="Callback URL"
-						value={url}
-						inputmode="url"
-						autocapitalize="off"
-						placeholder="https://example.com?i=%[invoice]&a=%[amount]"
-						onIonInput={e => setUrl(e.detail.value ?? "")}
-						mode="md"
-						fill="outline"
-						labelPlacement="stacked"
-						className="ion-margin-top"
-						style={{
-							backgroundColor: isOver ? 'rgba(56, 128, 255, 0.05)' : undefined,
-							border: canDrop ? '2px dashed var(--ion-color-primary)' : undefined,
-							transition: 'all 0.2s ease'
-						}}
-					>
-					</IonInput>
-
-					{isOver && caret && (
-						<div
-							role="presentation"
-							style={{
-								position: 'absolute',
-								left: caret.left,
-								top: caret.top,
-								height: caret.height,
-								width: '2px',
-								backgroundColor: 'var(--ion-color-primary)',
-								zIndex: 10,
-								pointerEvents: 'none',
-								animation: 'caretBlink 1s step-end infinite'
-							}}
-						/>
-					)}
-
-					{/* Token preview */}
-					{isOver && isDraggingToken && caret && (
-						<div
-							style={{
-								position: 'absolute',
-								left: caret.left,
-								top: caret.top + 4,
-								padding: '2px 6px',
-								background: 'var(--ion-color-primary)',
-								color: 'white',
-								borderRadius: '4px',
-								fontSize: '0.8rem',
-								zIndex: 11,
-								pointerEvents: 'none',
-								transform: 'translateY(-100%)',
-								boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
-							}}
-						>
-							{isDraggingToken}
-						</div>
-					)}
-				</div>
-
-
-
-
+				</IonInput>
 			</IonItem>
 			<IonItem lines="none">
-				<IonLabel>
-					<span className="text-quiet ion-margin-bottom">Expanded Preview:</span>
-					<IonText style={{ display: "block", fontStyle: "italic" }} className="ion-text-wrap text-low">
-						{expanded}
-					</IonText>
-				</IonLabel>
-			</IonItem>
+				{Object.values(flags).some(Boolean) && (
 
-			{!isValid && (
-				<IonItem lines="none">
-					<IonNote color="danger">
-						{!syntaxOK
-							? "Unbalanced or invalid template"
-							: !httpsOK
-								? "Only https:// URLs are allowed"
-								: "Unknown attribute(s): " + unknown.join(", ")}
-					</IonNote>
-				</IonItem>
-			)}
-			<IonItem>
-				<span style={{ fontSize: "0.75rem" }} className="text-low">Drag and drop your payer data keys into the url input</span>
+					<IonLabel color="danger">
+						{flags.pathAfterQuery ||
+							flags.duplicateQmark ||
+							flags.protocolErr ||
+							flags.forceSSLErr ||
+							flags.unknownVars?.length && 'Unknown vars: ' + flags.unknownVars.join(', ')}
+					</IonLabel>
+				)}
 			</IonItem>
-			<div className="ion-padding-horizontal ion-padding-bottom" style={{
+			<IonGrid className="ion-no-padding">
+				<IonRow className="ion-justify-content-center ion-align-items-center ion-no-margin" style={{ width: "100%" }}>
+					<IonCol size="6">
+						<div className={classNames(
+							styles["zone"],
+							styles["zone-left"],
+							pathCanDrop && styles["dragging"],
+							isPathOver && styles["over"],
+							!allowPathDrop && styles["zone-disabled"]
+						)}
+							ref={pathDropRef}
+
+						>
+							{pathEmpty ? (
+								<div >
+									<div className={styles["zone-header"]}>Path attributes</div>
+									<div className={styles["zone-description"]}>drag and drop attributes from below here as paths</div>
+								</div>
+							) : (
+								<>
+									<div className={styles["zone-header"]}>Path attributes</div>
+									<IonReorderGroup
+										disabled={pieces.pathTemplate!.variables.length < 2}
+										onIonItemReorder={e => {
+											const from = e.detail.from;
+											const to = e.detail.to;
+											e.detail.complete();  // close animation
+											reorderPath(from, to);
+										}}
+									>
+										{pieces.pathTemplate!.variables.map((v, i) => (
+											<IonItem key={v.name} className={styles["zone-token-line"]}>
+												<IonReorder slot="start">
+												</IonReorder>
+												<IonChip
+													onClick={() => removePathVar(i)}
+													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+												>
+													<IonLabel>{v.name}</IonLabel>
+													<IonIcon icon={close}></IonIcon>
+												</IonChip>
+
+											</IonItem>
+										))}
+									</IonReorderGroup>
+								</>
+							)}
+
+						</div>
+					</IonCol>
+					<IonCol size="6">
+						<div className={classNames(
+							styles["zone"],
+							styles["zone-right"],
+							queryCanDrop && styles["dragging"],
+							isQueryOver && styles["over"],
+							!allowQueryDrop && styles["zone-disabled"]
+						)}
+							ref={queryDropRef}
+
+						>
+							{queryEmpty ? (
+								<div >
+									<div className={styles["zone-header"]}>Query attributes</div>
+									<div className={styles["zone-description"]}>drag and drop attributes from below here as query params</div>
+								</div>
+							) : (
+								<>
+									<div className={styles["zone-header"]}>Query attributes</div>
+									<IonList style={{ background: "transparent" }}>
+										{pieces.queryTemplate!.variables.map((v, i) => (
+											<IonItem key={v.name} className={styles["zone-token-line"]}>
+												<IonChip
+													onClick={() => removeQueryVar(i)}
+													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+												>
+													<IonLabel>{v.name}</IonLabel>
+													<IonIcon icon={close}></IonIcon>
+												</IonChip>
+											</IonItem>
+										))}
+									</IonList>
+								</>
+							)}
+						</div>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+			<div className="ion-padding-horizontal ion-margin-top" style={{
 				minHeight: '60px',
-				border: isOver ? '2px dashed var(--ion-color-primary-tint)' : 'none',
-				borderRadius: '8px',
-				transition: 'all 0.2s ease',
-				backgroundColor: isOver ? 'rgba(56, 128, 255, 0.03)' : 'transparent'
+				display: 'flex',
+				flexWrap: 'wrap',
+				justifyContent: 'center',
+				alignItems: 'center',
 			}}>
 				<div style={{
 					display: 'flex',
 					flexWrap: 'wrap',
 					gap: '8px',
-					opacity: isOver ? 0.7 : 1,
-					transition: 'opacity 0.2s ease'
 				}}>
 					{allowedTokens.map(t => (
-						<DraggableChip key={t} token={t} handleClick={insertByCaret} />
+						<DraggableChip key={t} token={t} />
 					))}
 				</div>
 			</div>
+			<CodeBox label="Full URL template" value={highlightUrlTemplate(url, flags.unknownVars ? new Set(...flags.unknownVars) : undefined)} />
+			<CodeBox label="Expanded template" value={highlightedExpanded} />
 
 		</IonList>
 
@@ -362,7 +478,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 }
 
 
-const DraggableChip = ({ token, handleClick }: { token: string, handleClick: (token: string) => void }) => {
+const DraggableChip = ({ token }: { token: string }) => {
 	const [{ isDragging }, dragRef] = useDrag({
 		type: "TOKEN",
 		item: { token },
@@ -382,7 +498,6 @@ const DraggableChip = ({ token, handleClick }: { token: string, handleClick: (to
 				transform: isDragging ? 'scale(1.1)' : 'scale(1)',
 				transition: 'transform 0.2s ease'
 			}}
-			onClick={() => handleClick(token)}
 		>
 			{token}
 		</IonChip>
@@ -395,3 +510,23 @@ export default WebhookUrlBuilder;
 
 
 
+
+
+
+const CodeBox = ({ label, value }: { label: string; value: string | JSX.Element[] | null }) => (
+	<div className=" ion-padding" style={{ width: '100%' }}>
+		<div style={{ fontSize: '.75rem' }} className="text-low">{label}</div>
+		<pre style={{
+			whiteSpace: 'pre-wrap',
+			wordBreak: 'break-all',
+			background: "var(--ion-color-tertiary)",
+
+			borderRadius: '6px',
+			fontFamily: 'monospace',
+			padding: '8px',
+			margin: 0
+		}}>
+			{value || '—'}
+		</pre>
+	</div>
+);

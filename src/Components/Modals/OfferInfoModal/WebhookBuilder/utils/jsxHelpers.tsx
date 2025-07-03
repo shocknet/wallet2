@@ -1,5 +1,6 @@
 import { expandExpression, parse } from "uri-template";
 import { Expression, Literal } from "uri-template/dist/ast";
+import { stringifyExpression } from "./utils";
 
 
 export function highlightExpanded(
@@ -9,17 +10,26 @@ export function highlightExpanded(
 	if (!ast) return [];
 
 	const parts: JSX.Element[] = [];
-	let key = 0;
 
-	ast.parts.forEach(p => {
+	const first = ast.parts[0];
+	if (
+		first?.type === 'literal' &&
+		!/^\w+:\/\//.test(first.value)       // no scheme
+	) {
+		parts.push(
+			<span key="scheme">https://</span>
+		);
+	}
+
+	ast.parts.forEach((p, idx) => {
 		if (p.type === "literal") {
-			parts.push(<span key={key++}>{(p as Literal).value}</span>);
+			parts.push(<span key={`lit-${idx}-${p.value}`}>{(p as Literal).value}</span>);
 		} else {
-			const seg = expandExpression(p as Expression, sampleValues);
+			const seg = decodeURIComponent(expandExpression(p as Expression, sampleValues));
+			const id = stringifyExpression(p);
 			parts.push(
-				<span key={key++} style={{ color: "var(--ion-color-primary)" }}>
-					{/* if the sample value has special characters, expand will encode them. So decodeURIComponent here */}
-					{decodeURIComponent(seg)}
+				<span key={`expr-${id}`} style={{ color: "var(--ion-color-primary)" }}>
+					{seg}
 				</span>,
 			);
 		}
