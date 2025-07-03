@@ -658,7 +658,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					onDidDismiss={() => setPopovers({ ...popovers, reserve: false })}
 				>
 					<IonContent className="ion-padding">
-						<IonText>
+						<IonText className="text-medium">
 							Lightning fees are based on the amount of sats you are
 							sending, and so you must have more sats than you amountInput.
 							To ensure high success rates and low overall fees, the node

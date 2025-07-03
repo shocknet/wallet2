@@ -1,33 +1,11 @@
+import { parse } from "uri-template";
 import { Expression } from "uri-template/dist/ast";
 
-interface URLComponentBase {
-	start: number;
-	end: number;
+
+
+export interface Pieces {
+	baseUrl: string;
+	pathTemplate: Expression | null;
+	queryTemplate: Expression | null;
+	ast: ReturnType<typeof parse>["ast"] | null;
 }
-
-interface URLComponentTemplate extends URLComponentBase {
-	type: "template";
-	node: Expression;
-}
-interface URLComponentNonTemplate extends URLComponentBase {
-	type: "scheme" | "host" | "path" | "query" | "fragment";
-	value: string;
-}
-
-export type URLComponent = URLComponentTemplate | URLComponentNonTemplate;
-
-
-
-
-interface MergeInsertion {
-	kind: "merge";
-	type: "path" | "query";
-	node: Expression;
-}
-interface InsertInsertion {
-	kind: "insert";
-	type: "path" | "query";
-	position: number;
-}
-
-export type InsertionMode = MergeInsertion | InsertInsertion
