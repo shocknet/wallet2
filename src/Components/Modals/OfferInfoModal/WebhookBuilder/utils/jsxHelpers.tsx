@@ -1,6 +1,24 @@
 import { expandExpression, parse } from "uri-template";
 import { Expression, Literal } from "uri-template/dist/ast";
-import { stringifyExpression } from "./utils";
+import { BUILT_INS, stringifyExpression } from "./utils";
+
+
+export function expandAndHighlight(raw: string, payerData: string[]): JSX.Element[] | null {
+
+	let parsed: ReturnType<typeof parse> | null = null;
+
+	try {
+		parsed = parse(raw);
+	} catch {
+		return null; // Invalid template syntax
+	}
+	const keys = new Set([...BUILT_INS, ...payerData]);
+
+
+	const sample: Record<string, string> = {};
+	keys.forEach(k => (sample[k] = `[${k}]`));
+	return highlightExpanded(parsed.ast, sample);
+}
 
 
 export function highlightExpanded(
@@ -11,19 +29,10 @@ export function highlightExpanded(
 
 	const parts: JSX.Element[] = [];
 
-	const first = ast.parts[0];
-	if (
-		first?.type === 'literal' &&
-		!/^\w+:\/\//.test(first.value)       // no scheme
-	) {
-		parts.push(
-			<span key="scheme">https://</span>
-		);
-	}
 
 	ast.parts.forEach((p, idx) => {
 		if (p.type === "literal") {
-			parts.push(<span key={`lit-${idx}-${p.value}`}>{(p as Literal).value}</span>);
+			parts.push(<span key={`lit-${idx}-${p.value}`} style={{ color: "var(--ion-text-color-step-150)" }}>{(p as Literal).value}</span>);
 		} else {
 			const seg = decodeURIComponent(expandExpression(p as Expression, sampleValues));
 			const id = stringifyExpression(p);
@@ -37,6 +46,7 @@ export function highlightExpanded(
 
 	return parts;
 }
+
 
 
 export function highlightUrlTemplate(

@@ -6,11 +6,10 @@ import {
 	IonItem,
 	IonLabel,
 	IonIcon,
-	IonText,
 	IonFooter,
 	IonButtons
 } from '@ionic/react';
-import { caretDownSharp, checkmarkCircle, checkmarkCircleOutline } from 'ionicons/icons';
+import { caretDownSharp, checkmarkCircleOutline } from 'ionicons/icons';
 import { useState } from 'react';
 import "./styles/index.css";
 

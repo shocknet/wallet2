@@ -71,7 +71,7 @@ const OfferItem = ({ offer, handleSelectOffer }: OfferItemProps) => {
 							}
 						</IonCol>
 					</IonRow>
-					<IonRow className="ion-justify-content-between ion-align-items-center ion-nowrap">
+					<IonRow className="ion-justify-content-between ion-align-items-center ion-nowrap ion-margin-top">
 						<IonCol size="8">
 							<IonNote className={classNames("ion-text-wrap", styles["offer-string"])}>
 								{truncateTextMiddle(offer.noffer, 60, 0)}

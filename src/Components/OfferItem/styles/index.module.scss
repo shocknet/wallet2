@@ -11,9 +11,14 @@
 
 	.offer-item-label {
 		display: block;
-		font-size: 1.2rem;
-		color: var(--ion-text-color-step-100);
+		font-size: 0.95rem;
+		color: var(--ion-text-color-step-200);
 		margin-bottom: 0.2rem;
+
+		@media screen and (min-width: 768px) {
+			font-size: 1.2rem;
+
+		}
 	}
 
 	.offer-item-chips-container {
@@ -37,6 +42,12 @@
 	.offer-string {
 		font-size: 0.9rem;
 		color: var(--ion-text-color-step-400);
+		white-space: 'pre-wrap';
+		word-break: 'break-all';
+
+		font-family: 'monospace';
+		padding: '8px';
+		margin: 0;
 	}
 
 	.offer-item-copy-button {
