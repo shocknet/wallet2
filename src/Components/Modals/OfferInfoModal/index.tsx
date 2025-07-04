@@ -1,6 +1,7 @@
 import {
 	IonButton,
 	IonButtons,
+	IonCheckbox,
 	IonChip,
 	IonContent,
 	IonHeader,
@@ -10,8 +11,6 @@ import {
 	IonList,
 	IonListHeader,
 	IonModal,
-	IonRadio,
-	IonRadioGroup,
 	IonText,
 	IonTitle,
 	IonToolbar,
@@ -69,9 +68,8 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 
 	const [rows, setRows] = useState<string[]>([]);
 
-	const [pricingMode, setPricingMode] = useState<'fixed' | 'spontaneous'>(
-		initialOffer?.price_sats ? 'fixed' : 'spontaneous'
-	);
+	const [isSpontaneous, setIsSpontaneous] = useState(initialOffer ? initialOffer.price_sats === 0 : true);
+	console.log({ initialOffer })
 
 	useEffect(() => {
 		if (initialOffer) {
@@ -90,6 +88,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 			setEditMode(isNew);
 			amountInput.clearFixed();
 			amountInput.typeAmount(initialOffer?.price_sats.toString() || "");
+			setIsSpontaneous(initialOffer ? initialOffer.price_sats === 0 : true);
 			setUrl(initialOffer?.callback_url || "");
 		}
 
@@ -126,9 +125,10 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 		setDraft(d => ({ ...d, [key]: val }));
 
 
-	const handleModeChange = (value: 'fixed' | 'spontaneous') => {
-		setPricingMode(value);
-		if (value === 'spontaneous') {
+	const handleModeChange = (spon: boolean) => {
+		setIsSpontaneous(spon);
+		if (spon) {
+			amountInput.clearFixed();
 			amountInput.typeAmount('');
 		}
 	};
@@ -213,23 +213,6 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 									</IonListHeader>
 
 
-									<IonRadioGroup
-										value={pricingMode}
-										onIonChange={e => handleModeChange(e.detail.value)}
-									>
-										<IonItem>
-											<IonRadio value="fixed" justify="space-between" className="text-low"
-												style={{ fontWeight: "600", fontSize: "0.85rem" }}>
-												Fixed
-											</IonRadio>
-										</IonItem>
-										<IonItem>
-											<IonRadio value="spontaneous" justify="space-between" className="text-low"
-												style={{ fontWeight: "600", fontSize: "0.85rem" }}>
-												Spontaneous (Payer chooses price)
-											</IonRadio>
-										</IonItem>
-									</IonRadioGroup>
 
 
 									<IonItem className={styles["edit-item-input"]}>
@@ -238,7 +221,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 											unit={amountInput.unit}
 											displayValue={amountInput.displayValue}
 											limits={amountInput.limits}
-											isDisabled={amountInput.inputDisabled || pricingMode === 'spontaneous'}
+											isDisabled={amountInput.inputDisabled || isSpontaneous}
 											effectiveSats={amountInput.effectiveSats}
 											error={amountInput.error}
 											onType={amountInput.typeAmount}
@@ -251,6 +234,19 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 											placeholder="Enter price"
 										/>
 									</IonItem>
+									<div className="ion-padding-horizontal ion-padding-bottom">
+
+										<IonCheckbox
+											checked={isSpontaneous}
+											justify="start"
+											onIonChange={e => handleModeChange(e.detail.checked)}
+											className="text-low"
+											style={{ fontWeight: "600", fontSize: "0.85rem" }}
+										>
+											Spontaneous (payer chooses price)
+										</IonCheckbox>
+									</div>
+
 								</IonList>
 
 								<PayerDataEditor
