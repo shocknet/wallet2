@@ -87,5 +87,20 @@ $dropzone-min-height: 300px;
 		margin: 0 auto;
 	}
 
+	.zone-token-chip {
+		max-width: clamp(5.5rem, 28vw, 10rem);
+		width: fit-content
+	}
+
+
+
+	.zone-token-chip ion-label {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 
 }

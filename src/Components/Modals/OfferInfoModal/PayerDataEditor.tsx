@@ -122,7 +122,7 @@ const PayerDataEditor = ({
 
 	return (
 		<IonList lines="none" className="ion-margin-top" style={{ borderRadius: "12px" }}>
-			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }}>
+			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 				<IonLabel >Payer data</IonLabel>
 			</IonListHeader>
 

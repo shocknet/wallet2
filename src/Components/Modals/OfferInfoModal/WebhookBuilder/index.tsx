@@ -7,8 +7,9 @@ import { BUILT_INS, parseAndValidate, emptyPieces, buildTemplate, ValidationFlag
 import { Expression, Variable } from "uri-template/dist/ast";
 import { Pieces } from "./types";
 import classNames from "classnames";
-import { highlightExpanded, highlightUrlTemplate } from "./utils/jsxHelpers";
+import { highlightExpanded } from "./utils/jsxHelpers";
 import { close } from "ionicons/icons";
+import CodeBox from "../CodeBox";
 
 interface WebhookUrlBuilderProps {
 	rows: string[];
@@ -47,31 +48,22 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 	}, [initialUrl]);
 
 
-	const handleSetUrl = useCallback((newUrl: string) => {
-		let finalUrl = newUrl.trim();
-		if (!/^\w+:\/\//.test(finalUrl)) {
-			finalUrl = 'https://' + finalUrl;   // modify pieces.baseUrl here
-			console.log({ newUrl })
 
-		}
-		setUrl(finalUrl);
-	}, [setUrl]);
 
 
 	// Validate the template on every change
 	const liveValidate = useCallback(
 		(nextPieces: Pieces) => {
-			console.log({ nextPieces })
 			const template = buildTemplate(nextPieces);
 			const res = parseAndValidate(template, allowedTokens, forceSSL, 'live');
 			setFlags(res.flags);
 			setPieces(res.pieces);
 			if (!res.fatal) {
-				handleSetUrl(template);
+				setUrl(template);
 			}
 			onValidityChange?.(res.ok);
 		},
-		[allowedTokens, forceSSL, onValidityChange, handleSetUrl]
+		[allowedTokens, forceSSL, onValidityChange, setUrl]
 	);
 
 	// On every change of allowed tokens or forceSSL, re-validate the pieces
@@ -98,7 +90,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 			setRawMode(false);
 			setPieces(res.pieces);
 
-			handleSetUrl(value);
+			setUrl(value);
 		}
 
 		onValidityChange?.(res.ok);
@@ -210,11 +202,11 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 
 
 
+
 	const [{ isOver: isPathOver, canDrop: pathCanDrop }, pathDropRef] = useDrop({
 		accept: "TOKEN",
 		canDrop: ({ token }) => allowPathDrop && !pieces.pathTemplate?.variables.find(v => v.name === token),
 		drop: ({ token }: { token: string }) => {
-			console.log("dropped")
 			if (!pieces.ast) return;
 
 			addPath(token);
@@ -263,7 +255,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 	if (rawMode) {
 		return (
 			<IonList className={styles["edit-list"]} lines="none">
-				<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }}>
+				<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 					<IonLabel >Webhook URL</IonLabel>
 				</IonListHeader>
 				<IonItem>
@@ -315,14 +307,26 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 
 		<IonList className={styles["edit-list"]} lines="none">
 
-			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }}>
+			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 				<IonLabel >Webhook URL</IonLabel>
 			</IonListHeader>
 			<IonItem className="ion-margin-bottom">
 				<IonToggle
 					checked={forceSSL}
 					justify="space-between"
-					onIonChange={e => setForceSSL(e.detail.checked)}
+					onIonChange={e => {
+						const on = e.detail.checked;
+						setForceSSL(on);
+
+						if (on && pieces.baseUrl.startsWith('http://')) {
+							const httpsBase = pieces.baseUrl.replace(/^http:/, 'https:');
+							const next = { ...pieces, baseUrl: httpsBase };
+							liveValidate(next);       // re-validate and update URL
+						} else {
+							// simply re-validate under new SSL requirement
+							liveValidate(pieces);
+						}
+					}}
 					className="text-low"
 					style={{ fontWeight: "600", fontSize: "0.85rem" }}
 				>
@@ -359,7 +363,8 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 							flags.duplicateQmark ||
 							flags.protocolErr ||
 							flags.forceSSLErr ||
-							flags.unknownVars?.length && 'Unknown vars: ' + flags.unknownVars.join(', ')}
+							flags.noExpression ||
+							flags.unknownVars?.length && 'Unknown attributes: ' + flags.unknownVars.join(', ')}
 					</IonLabel>
 				)}
 			</IonItem>
@@ -400,6 +405,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 												<IonChip
 													onClick={() => removePathVar(i)}
 													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+													className={styles["zone-token-chip"]}
 												>
 													<IonLabel>{v.name}</IonLabel>
 													<IonIcon icon={close}></IonIcon>
@@ -438,6 +444,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 												<IonChip
 													onClick={() => removeQueryVar(i)}
 													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+													className={styles["zone-token-chip"]}
 												>
 													<IonLabel>{v.name}</IonLabel>
 													<IonIcon icon={close}></IonIcon>
@@ -468,8 +475,12 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 					))}
 				</div>
 			</div>
-			<CodeBox label="Full URL template" value={highlightUrlTemplate(url, flags.unknownVars ? new Set(...flags.unknownVars) : undefined)} />
-			<CodeBox label="Expanded template" value={highlightedExpanded} />
+
+
+			<div style={{ visibility: pieces.baseUrl ? "visible" : "hidden" }}>
+				<CodeBox label="Expanded template" value={highlightedExpanded} />
+			</div>
+
 
 		</IonList>
 
@@ -477,6 +488,7 @@ const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBu
 
 }
 
+export default WebhookUrlBuilder;
 
 const DraggableChip = ({ token }: { token: string }) => {
 	const [{ isDragging }, dragRef] = useDrag({
@@ -504,29 +516,5 @@ const DraggableChip = ({ token }: { token: string }) => {
 	);
 };
 
-export default WebhookUrlBuilder;
 
 
-
-
-
-
-
-
-const CodeBox = ({ label, value }: { label: string; value: string | JSX.Element[] | null }) => (
-	<div className=" ion-padding" style={{ width: '100%' }}>
-		<div style={{ fontSize: '.75rem' }} className="text-low">{label}</div>
-		<pre style={{
-			whiteSpace: 'pre-wrap',
-			wordBreak: 'break-all',
-			background: "var(--ion-color-tertiary)",
-
-			borderRadius: '6px',
-			fontFamily: 'monospace',
-			padding: '8px',
-			margin: 0
-		}}>
-			{value || '—'}
-		</pre>
-	</div>
-);

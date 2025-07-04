@@ -30,6 +30,8 @@ export interface ValidationFlags {
 	unknownVars?: string[];
 	protocolErr?: string;
 	forceSSLErr?: string;
+	noBaseUrl?: string;
+	noExpression?: string; // no expressions at all
 }
 
 export function parseAndValidate(
@@ -67,7 +69,6 @@ export function parseAndValidate(
 			if (!hitTemplate) pieces.baseUrl += p.value;
 			if (hitTemplate && p.value.trim() !== "") literalSinceExpr = true;
 		} else {
-			console.log("Found template part", p);
 			const expr = p as Expression;
 
 			/* unsupported operator */
@@ -96,6 +97,8 @@ export function parseAndValidate(
 			literalSinceExpr = false; // reset for next iteration
 		}
 	});
+
+
 
 
 
@@ -136,21 +139,28 @@ export function parseAndValidate(
 
 
 
-	try {
-		const probe = /^\w+:\/\//.test(pieces.baseUrl)
-			? pieces.baseUrl
-			: 'http://x' + pieces.baseUrl;
-		const u = new URL(probe);
-		if (!["http:", "https:"].includes(u.protocol)) {
-			flags.protocolErr = `Unsupported protocol "${u.protocol}"`;
+	if (pieces.baseUrl.trim() === "") {
+		flags.noBaseUrl = 'Base URL is required';
+	} else if (!/^\w+:\/\//.test(pieces.baseUrl)) {
+		flags.protocolErr = 'Base URL must include http:// or https://';
+	} else {
+		try {
+			const u = new URL(pieces.baseUrl);
+
+			if (u.protocol === 'http:' && forceSSL) {
+				// Either no protocol supplied, or http while SSL forced
+				flags.protocolErr = 'Base must start with https:// (Force SSL enabled)'
+
+			} else if (!['http:', 'https:'].includes(u.protocol)) {
+				flags.protocolErr = `Unsupported protocol "${u.protocol}"`;
+			}
+		} catch {
+			flags.protocolErr = "Base part is not a vlid URL";
 		}
+	}
 
-
-		console.log("Parsed URL", u);
-		if (forceSSL !== undefined && forceSSL && u.protocol && u.protocol !== 'https:')
-			flags.forceSSLErr = "Base must start with https:// (Force SSL enabled)";
-	} catch {
-		flags.protocolErr = "Base part is not a vlid URL";
+	if (pieces.baseUrl && !pieces.pathTemplate && !pieces.queryTemplate) {
+		flags.noExpression = "Template must contain at least one expression (path or query)";
 	}
 
 	const fatal =
@@ -161,6 +171,8 @@ export function parseAndValidate(
 
 
 	const ok = !(
+		flags.noExpression ||
+		flags.noBaseUrl ||
 		flags.syntaxErr ||
 		flags.operatorErr ||
 		flags.interleaveErr ||
@@ -190,7 +202,6 @@ export function buildTemplate({ baseUrl, pathTemplate, queryTemplate }: Pieces):
 
 
 export function stringifyExpression(expr: Expression | null): string {
-	console.log({ expr });
 	return expr ? `{${expr.operator}${expr.variables.map(v => v.name).join(",")}}` : "";
 }
 

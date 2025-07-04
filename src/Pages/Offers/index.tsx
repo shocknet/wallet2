@@ -92,7 +92,7 @@ const Offers = () => {
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Offers" />
-				<IonToolbar>
+				<IonToolbar className="ion-padding-horizontal ion-padding-bottom">
 					<CustomSelect<PayTo>
 						items={enabledNostrPaySources}
 						selectedItem={selectedSource}
