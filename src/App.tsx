@@ -70,6 +70,7 @@ import { ToastProvider } from "./lib/contexts/useToast";
 import nostrSvg from "../icons/nostr.svg"
 import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
+import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 
 
 
@@ -288,28 +289,29 @@ const App: React.FC = () => {
 	return (
 		<Provider store={store}>
 			<PersistGate loading={null} persistor={persistor}>
-				<IonApp>
-					<ErrorBoundary>
-						<IonReactRouter>
-							<AlertProvider>
-								<ToastProvider>
-									<AppContent />
-								</ToastProvider>
-							</AlertProvider>
-						</IonReactRouter>
-					</ErrorBoundary>
-					<ToastContainer
-						theme="colored"
-						position="top-center"
-						closeOnClick
-						pauseOnHover
-						autoClose={4000}
-						limit={2}
-						pauseOnFocusLoss={false}
-					/>
-				</IonApp>
+				<ScannerProvider>
+					<IonApp>
+						<ErrorBoundary>
+							<IonReactRouter>
+								<AlertProvider>
+									<ToastProvider>
+										<AppContent />
+									</ToastProvider>
+								</AlertProvider>
+							</IonReactRouter>
+						</ErrorBoundary>
+						<ToastContainer
+							theme="colored"
+							position="top-center"
+							closeOnClick
+							pauseOnHover
+							autoClose={4000}
+							limit={2}
+							pauseOnFocusLoss={false}
+						/>
+					</IonApp>
+				</ScannerProvider>
 			</PersistGate>
-
 		</Provider>
 	);
 };

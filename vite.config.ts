@@ -34,6 +34,9 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
       }
     })
   ],
