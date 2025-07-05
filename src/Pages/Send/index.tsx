@@ -52,10 +52,10 @@ import { getIconFromClassification } from '@/lib/icons';
 import { useAlert } from '@/lib/contexts/useAlert';
 import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
-import { nip19 } from 'nostr-tools';
-import { scanSingleBarcode } from '@/lib/scan';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
+import { useQrScanner } from '@/lib/hooks/useQrScanner';
+
 
 
 const LnurlCard = lazy(() => import("./LnurlCard"));
@@ -307,6 +307,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				setSelectedSource(foundOneWithEnoughBalance)
 			}
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [amountInput])
 
 	// Recipient might be passed in location.state
@@ -363,6 +364,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 
 
+	const { scanSingleBarcode } = useQrScanner();
 	const openScan = async () => {
 		const instruction = isPubSource ?
 			"Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address" :
@@ -370,13 +372,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		try {
 			const input = await scanSingleBarcode(instruction);
 			setRecipient(input);
-		} catch (err: any) {
-			console.error(err);
-			if (err?.message && err.message.contains("cancelled")) return;
-			showToast({
-				message: err?.message || "Error when scanning QR code",
-				color: "danger",
-			});
+		} catch {
+			/*  */
 		}
 	}
 
