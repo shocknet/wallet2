@@ -19,7 +19,7 @@ const InvoiceInfoDisplay = ({ invoiceData, inset, labelsColor }: Props) => {
 				<IonItem>
 					<IonLabel color={labelsColor}>
 						Description
-						<IonNote style={{ display: "block", fontSize: "0.9rem" }} color="medium" className="ion-text-wrap">{invoiceData.memo}</IonNote>
+						<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{invoiceData.memo}</IonNote>
 					</IonLabel>
 				</IonItem>
 			)}

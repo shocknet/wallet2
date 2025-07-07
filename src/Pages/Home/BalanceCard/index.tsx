@@ -80,7 +80,7 @@ const BalanceCard = () => {
 			<IonText color="light" className={styles["amount"]}>{displayBalance}</IonText>
 			<IonButton onClick={toggleUnit} fill="clear" className="ion-no-margin">{unit}</IonButton>
 			{
-				money && <IonNote>~ {money}</IonNote>
+				money && <IonNote className="text-medium">~ {money}</IonNote>
 			}
 		</div>
 	);

@@ -8,11 +8,12 @@ import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "./usePreference";
 import { isPlatform } from "@ionic/react";
 import { Clipboard } from "@capacitor/clipboard";
-import { identifyBitcoinInput } from "../parse";
+import { identifyBitcoinInput, parseBitcoinInput } from "../parse";
 import { InputClassification } from "../types/parse";
 import { addAsset } from "@/State/Slices/generatedAssets";
 import { useHistory } from "react-router";
 import { truncateTextMiddle } from "../format";
+import { parseBitcoinInput as legacyParseBitcoinInput } from "@/constants";
 
 const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
@@ -171,16 +172,49 @@ const useWatchClipboard = () => {
 			return;
 		}
 
+		const classification = identifyBitcoinInput(text);
+
 		if (
 			!text.length ||
 			(savedAssets || []).includes(text) ||
 			clipboardAlertShown.current ||
-			identifyBitcoinInput(text) === InputClassification.UNKNOWN
+			classification === InputClassification.UNKNOWN
 		) {
 			return;
 		}
 
-		clipboardAlertShown.current = true
+		clipboardAlertShown.current = true;
+
+		const parsed = await parseBitcoinInput(text, classification);
+		const clipboardAlertHandler = async () => {
+			try {
+				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
+					const legacyParsedLnurlW = await legacyParseBitcoinInput(text);
+					history.push({
+						pathname: "/sources",
+						state: legacyParsedLnurlW
+					})
+					return;
+				} else {
+					history.push({
+						pathname: "/send",
+						state: {
+							// pass the input string as opposed to parsed object because in the case of noffer it needs the selected source
+							input: parsed.data
+						}
+					})
+				}
+			} catch (err: any) {
+				console.error("Error parsing clipboard input:", err);
+				showAlert({
+					header: "Error",
+					message: err?.message || "Unknown error occurred while parsing clipboard input.",
+					buttons: ["OK"]
+				});
+			}
+		}
+
+
 		showAlert({
 			header: "Clipboard Detected",
 			subHeader: "Do you want to use the content from your clipboard?",
@@ -196,14 +230,7 @@ const useWatchClipboard = () => {
 				},
 				{
 					text: "Yes",
-					handler: () => {
-						history.replace({
-							pathname: "/send",
-							state: {
-								input: text
-							}
-						})
-					}
+					handler: clipboardAlertHandler,
 				}
 			]
 		})

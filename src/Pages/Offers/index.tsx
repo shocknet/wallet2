@@ -108,7 +108,7 @@ const Offers = () => {
 									</IonAvatar>
 									<IonLabel style={{ width: "100%" }}>
 										<h2>{source.label}</h2>
-										<IonNote color="medium" className="ion-text-no-wrap" style={{ display: "block" }}>
+										<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
 											{source.pubSource
 												? "Lightning.Pub Source"
 												: "LNURL Withdraw Source"}

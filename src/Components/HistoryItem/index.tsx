@@ -99,11 +99,11 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 					</IonRow>
 					<IonRow>
 						<IonCol>
-							<IonNote color="medium">{date}</IonNote>
+							<IonNote className="text-low">{date}</IonNote>
 						</IonCol>
 						<IonCol size="auto">
 							{fiatAmount &&
-								(<IonNote color={color}>
+								(<IonNote className="text-low">
 									{sign}{fiatAmount}
 								</IonNote>)}
 						</IonCol>
