@@ -291,7 +291,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 						<IonItem>
 							<IonLabel color="primary">
 								Invoice Memo
-								<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-medium">{operation.invoiceMemo}</IonNote>
+								<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{operation.invoiceMemo}</IonNote>
 							</IonLabel>
 						</IonItem>
 					)

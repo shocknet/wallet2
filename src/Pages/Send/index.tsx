@@ -603,7 +603,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 											</IonAvatar>
 											<IonLabel style={{ width: "100%" }}>
 												<h2>{source.label}</h2>
-												<IonNote color="medium" className="ion-text-no-wrap" style={{ display: "block" }}>
+												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
 													{source.pubSource
 														? "Lightning.Pub Source"
 														: "LNURL Withdraw Source"}
@@ -616,9 +616,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 									)
 								}}
 								renderSelected={(source) => (
-									<IonText>
+									<IonText className="text-medium">
 										{source?.label || ''}
-										<IonNote color="medium" style={{ display: 'block' }}>
+										<IonNote className="text-low" style={{ display: 'block' }}>
 											{(+source?.balance).toLocaleString()} sats
 										</IonNote>
 									</IonText>

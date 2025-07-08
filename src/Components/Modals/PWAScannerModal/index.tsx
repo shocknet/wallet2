@@ -1,5 +1,5 @@
 
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 import {
 	IonModal,
@@ -10,6 +10,9 @@ import {
 	IonButton,
 	IonIcon,
 	IonContent,
+	IonGrid,
+	IonRow,
+	IonCol,
 } from '@ionic/react';
 import { closeOutline } from 'ionicons/icons';
 import { useRef } from 'react';
@@ -33,16 +36,18 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScanne
 	const handleDidPresent = async () => {
 		if (!regionRef.current) return;
 
-		const html5 = new Html5Qrcode(regionRef.current.id);
+		const html5 = new Html5Qrcode(regionRef.current.id, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
 		html5Ref.current = html5;
 
 		try {
 			await html5.start(
 				{ facingMode: 'environment' },
 				{
-					fps: 12,
-					qrbox: { width: 250, height: 250 },
-
+					fps: 4,
+					qrbox: (w, h) => {
+						const side = Math.floor(Math.min(w, h) / 2);
+						return { width: side, height: side };
+					},
 				},
 				(txt) => {
 					stopScanner();
@@ -76,13 +81,23 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScanne
 				</IonToolbar>
 			</IonHeader>
 
-			<IonContent className="ion-padding" scrollY={false} onClick={() => console.log("haha")}>
-				<p style={{ textAlign: 'center', marginBottom: '0.5rem' }}>{instruction}</p>
-				<div
-					id="qr-region"
-					ref={regionRef}
+			<IonContent className="ion-padding" scrollY={false}>
+				<IonGrid>
+					<IonRow>
+						<IonCol>
+							<p className="text-medium" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: 600 }}>{instruction}</p>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center ion-align-items-center">
+						<IonCol size="12">
+							<div
+								id="qr-region"
+								ref={regionRef}
 
-				/>
+							/>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
 			</IonContent>
 		</IonModal>
 	);
