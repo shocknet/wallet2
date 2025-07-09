@@ -185,9 +185,9 @@ const useWatchClipboard = () => {
 
 		clipboardAlertShown.current = true;
 
-		const parsed = await parseBitcoinInput(text, classification);
 		const clipboardAlertHandler = async () => {
 			try {
+				const parsed = await parseBitcoinInput(text, classification);
 				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
 					const legacyParsedLnurlW = await legacyParseBitcoinInput(text);
 					history.push({
