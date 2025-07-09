@@ -4,6 +4,7 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -40,12 +41,29 @@ export default defineConfig({
       }
     })
   ],
-  // Remove the 'test' configuration from here
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('@ionic/')) return 'ionic';
+          if (id.includes('framer-motion')) return 'framer-motion';
+          if (id.includes('html5-qrcode')) return 'html5-qrcode';
+          if (id.includes('react')) return 'react';
+
+
+          return 'vendor';
+        }
       },
+      plugins: [
+        visualizer({
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+          filename: 'bundle-report.html',
+        }),
+      ],
     },
   },
   server: {
