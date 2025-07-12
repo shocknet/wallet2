@@ -7,6 +7,7 @@ import { copyOutline } from 'ionicons/icons';
 import { useDispatch } from '@/State/store';
 import { copyToClipboard } from '@/State/thunks/copyToClipboard';
 import { useToast } from '@/lib/contexts/useToast';
+import { BITCOIN_ADDRESS_BASE58_REGEX } from '@/lib/parse';
 
 interface QrCodeProps {
 	value: string;
@@ -29,7 +30,12 @@ const QrCode = memo(({ value, prefix, uppercase = true }: QrCodeProps) => {
 	if (prefix) {
 		qrCodeValue = `${prefix}:${value}`;
 	}
-	if (uppercase) {
+
+	/*
+	 * Only uppercase qr code content if content is not base58 btc address
+	 * Anything else maybe be uppercased to improve QR scannability
+	*/
+	if (uppercase && !BITCOIN_ADDRESS_BASE58_REGEX.test(value)) {
 		qrCodeValue = qrCodeValue.toUpperCase();
 	}
 

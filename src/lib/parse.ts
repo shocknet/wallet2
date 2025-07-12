@@ -4,14 +4,14 @@ import { InputClassification, ParsedInput, ParsedInvoiceInput, ParsedNofferInput
 import { requestLnurlServiceParams } from "./lnurl/get";
 import { validateAddress } from "./address";
 import { decodeInvoice } from "./invoice";
-import { nip19 } from "nostr-tools";
 import { NostrKeyPair } from "@/Api/nostrHandler";
 import { Satoshi } from "./types/units";
 import { parseUserInputToSats } from "./units";
 import { OfferPriceType } from "@shocknet/clink-sdk";
 
 
-const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/;
+const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?(bc1[qp][ac-hj-np-z02-9]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{24,34})$/;
+export const BITCOIN_ADDRESS_BASE58_REGEX = /^[13][1-9A-HJ-NP-Za-km-z]{24,34}$/;
 const LN_INVOICE_REGEX = /^(lightning:)?(lnbc|lntb)[0-9a-zA-Z]+$/;
 const LNURL_REGEX = /^(lightning:)?[Ll][Nn][Uu][Rr][Ll][0-9a-zA-Z]+$/;
 const NOFFER_REGEX = /^(lightning:)?[Nn][Oo][Ff][Ff][Ee][Rr][0-9a-zA-Z]+$/;
