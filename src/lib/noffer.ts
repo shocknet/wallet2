@@ -44,7 +44,7 @@ export function priceTypeToString(priceType: OfferPriceType) {
 }
 
 
-export async function getUserOfer(pastefield: string, keys: NostrKeyPair, offerId: string): Promise<OfferConfig> {
+export async function getUserOffer(pastefield: string, keys: NostrKeyPair, offerId: string): Promise<OfferConfig> {
 	const client = await getNostrClient(pastefield, keys);
 	const res = await client.GetUserOffer({ offer_id: offerId });
 	if (res.status !== "OK") {

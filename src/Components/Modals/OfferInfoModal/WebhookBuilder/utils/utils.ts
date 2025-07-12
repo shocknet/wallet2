@@ -155,7 +155,7 @@ export function parseAndValidate(
 				flags.protocolErr = `Unsupported protocol "${u.protocol}"`;
 			}
 		} catch {
-			flags.protocolErr = "Base part is not a vlid URL";
+			flags.protocolErr = "Base part is not a valid URL";
 		}
 	}
 

@@ -69,7 +69,6 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer }: Props) => {
 	const [rows, setRows] = useState<string[]>([]);
 
 	const [isSpontaneous, setIsSpontaneous] = useState(initialOffer ? initialOffer.price_sats === 0 : true);
-	console.log({ initialOffer })
 
 	useEffect(() => {
 		if (initialOffer) {
