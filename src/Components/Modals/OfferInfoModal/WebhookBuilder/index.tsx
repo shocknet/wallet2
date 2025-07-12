@@ -1,0 +1,520 @@
+import { IonButton, IonChip, IonCol, IonGrid, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonReorder, IonReorderGroup, IonRow, IonTextarea, IonToggle } from "@ionic/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import styles from "../styles/index.module.scss";
+import { useDrag, useDrop } from "react-dnd";
+import { BUILT_INS, parseAndValidate, emptyPieces, buildTemplate, ValidationFlags, makeExpr, removeAt } from "./utils/utils";
+
+import { Expression, Variable } from "uri-template/dist/ast";
+import { Pieces } from "./types";
+import classNames from "classnames";
+import { highlightExpanded } from "./utils/jsxHelpers";
+import { close } from "ionicons/icons";
+import CodeBox from "../CodeBox";
+
+interface WebhookUrlBuilderProps {
+	rows: string[];
+	setUrl: (url: string) => void;
+	url: string;
+	onValidityChange?: (valid: boolean) => void;
+}
+
+const WebhookUrlBuilder = ({ rows, setUrl, url, onValidityChange }: WebhookUrlBuilderProps) => {
+
+	const [forceSSL, setForceSSL] = useState(true);
+
+	const [pieces, setPieces] = useState<Pieces>(emptyPieces());
+
+
+	const [rawMode, setRawMode] = useState(false);
+	const [initialUrl, setInitialUrl] = useState(url);
+
+	const [flags, setFlags] = useState<ValidationFlags>({});
+
+	const allowedTokens = useMemo(
+		() => [...new Set([...rows.map(r => r.trim()).filter(Boolean), ...BUILT_INS])],
+		[rows]
+	);
+
+
+	// Check the validty of an existing URL template
+	// If it has a fatal error, switch to raw mode
+	useEffect(() => {
+		const res = parseAndValidate(initialUrl, allowedTokens, false, 'initial');
+		setFlags(res.flags);
+		setPieces(res.pieces);
+		setRawMode(res.fatal);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [initialUrl]);
+
+
+
+
+
+	// Validate the template on every change
+	const liveValidate = useCallback(
+		(nextPieces: Pieces) => {
+			const template = buildTemplate(nextPieces);
+			const res = parseAndValidate(template, allowedTokens, forceSSL, 'live');
+			setFlags(res.flags);
+			setPieces(res.pieces);
+			if (!res.fatal) {
+				setUrl(template);
+			}
+			onValidityChange?.(res.ok);
+		},
+		[allowedTokens, forceSSL, onValidityChange, setUrl]
+	);
+
+	// On every change of allowed tokens or forceSSL, re-validate the pieces
+	useEffect(() => {
+		if (pieces.ast) { // Only run if it's not the first render
+			liveValidate(pieces);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [allowedTokens, forceSSL])
+
+
+
+
+
+	// Once raw mode is enabled, user has to fix the existing URL
+	// manually, or opt
+	const onRawInput = (value: string) => {
+		setInitialUrl(value);
+		const res = parseAndValidate(value, allowedTokens, forceSSL, 'initial');
+
+		setFlags(res.flags);
+		if (!res.fatal) {
+
+			setRawMode(false);
+			setPieces(res.pieces);
+
+			setUrl(value);
+		}
+
+		onValidityChange?.(res.ok);
+	};
+
+	const addPath = (token: string) => {
+
+		if (pieces.baseUrl.includes("?")) return; // cannot add path if base url has a query
+
+		let pathExpr: Expression;
+		if (pieces.pathTemplate) {
+			/* clone the fields we care about */
+			pathExpr = {
+				operator: pieces.pathTemplate.operator,   // '\/'
+				variables: [...pieces.pathTemplate.variables, { type: 'variable', name: token }],
+			} as Expression;
+		} else {
+			pathExpr = makeExpr('/', token);          // first path token
+		}
+
+		const next = { ...pieces, pathTemplate: pathExpr };
+		liveValidate(next);
+		return next;
+
+	}
+
+	const removePathVar = (idx: number) => {
+
+		if (!pieces.pathTemplate) return;
+		const newVars = removeAt(pieces.pathTemplate.variables, idx);
+		const next = {
+			...pieces,
+			pathTemplate: newVars.length
+				? { ...pieces.pathTemplate, variables: newVars }
+				: null               // becomes empty → zone shows placeholder again
+		};
+		liveValidate(next);
+		return next;
+
+	}
+
+	const removeQueryVar = (idx: number) => {
+
+		if (!pieces.queryTemplate) return;
+		const newVars = removeAt(pieces.queryTemplate.variables, idx);
+		const next = {
+			...pieces,
+			queryTemplate: newVars.length
+				? { ...pieces.queryTemplate, variables: newVars }
+				: null
+		};
+		liveValidate(next);
+		return next;
+	}
+
+
+
+	const handleReorder = (
+		vars: Variable[],
+		from: number,
+		to: number
+	): Variable[] => {
+		const clone = JSON.parse(JSON.stringify(vars));
+		const [moved] = clone.splice(from, 1);
+		clone.splice(to, 0, moved);
+		return clone;
+	};
+
+	const reorderPath = (from: number, to: number) => {
+
+		if (!pieces.pathTemplate) return;
+		const next = {
+			...pieces,
+			pathTemplate: {
+				...pieces.pathTemplate,
+				variables: handleReorder(pieces.pathTemplate.variables, from, to)
+			}
+		};
+		liveValidate(next);
+		return next;
+	}
+
+
+
+
+
+
+	const addQuery = (token: string) => {
+
+		let queryExpr: Expression;
+		if (pieces.queryTemplate) {
+			queryExpr = {
+				operator: pieces.queryTemplate.operator,
+				variables: [...pieces.queryTemplate.variables, { type: 'variable', name: token }],
+			} as Expression;
+		} else {
+			queryExpr = makeExpr(pieces.baseUrl.includes('?') ? '&' : '?', token); // first query token
+		}
+
+
+
+		const next = { ...pieces, queryTemplate: queryExpr };
+		liveValidate(next);
+		return next;
+
+	};
+
+
+
+
+
+
+	const [{ isOver: isPathOver, canDrop: pathCanDrop }, pathDropRef] = useDrop({
+		accept: "TOKEN",
+		canDrop: ({ token }) => allowPathDrop && !pieces.pathTemplate?.variables.find(v => v.name === token),
+		drop: ({ token }: { token: string }) => {
+			if (!pieces.ast) return;
+
+			addPath(token);
+		},
+		collect: (monitor) => ({
+			isOver: monitor.isOver({ shallow: true }),
+			canDrop: monitor.canDrop()
+		}),
+	})
+
+	const [{ isOver: isQueryOver, canDrop: queryCanDrop }, queryDropRef] = useDrop({
+		accept: "TOKEN",
+		canDrop: ({ token }) => allowQueryDrop && !pieces.queryTemplate?.variables.find(v => v.name === token),
+		drop: ({ token }: { token: string }) => {
+			if (!pieces.ast) return;
+
+			addQuery(token);
+		},
+		collect: (monitor) => ({
+			isOver: monitor.isOver({ shallow: true }),
+			canDrop: monitor.canDrop()
+		}),
+	})
+
+
+
+
+
+	const pathEmpty = !pieces.pathTemplate;
+	const queryEmpty = !pieces.queryTemplate;
+
+	const highlightedExpanded = useMemo(() => {
+		const sample: Record<string, string> = {};
+		allowedTokens.forEach(k => (sample[k] = `[${k}]`));
+		if (pieces.ast) {
+			return highlightExpanded(pieces.ast, sample)
+
+		} else {
+			return null;
+		}
+
+
+	}, [allowedTokens, pieces])
+
+
+	if (rawMode) {
+		return (
+			<IonList className={styles["edit-list"]} lines="none">
+				<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+					<IonLabel >Webhook URL</IonLabel>
+				</IonListHeader>
+				<IonItem>
+					<IonTextarea
+						label="Raw URL"
+						labelPlacement="stacked"
+						fill="outline"
+						mode="md"
+						autoGrow
+						value={initialUrl}
+						onIonInput={(e) => onRawInput(e.detail.value ?? '')}
+						className="ion-margin-top"
+						helperText="This existing offer has a template URL that the builder cannot interpret. Fix it here or discard it."
+					/>
+				</IonItem>
+				<IonItem lines="none">
+
+					{Object.values(flags)[0] && (
+						<IonLabel color="danger">{Object.values(flags)[0]}</IonLabel>
+					)}
+				</IonItem>
+
+				<IonItem lines="none">
+					<IonButton
+						color="tertiary"
+						slot="end"
+						onClick={() => {
+							setInitialUrl("");
+							setRawMode(false);
+							setPieces(emptyPieces());
+							setFlags({});
+							setUrl('');
+						}}
+					>
+						Discard &amp; start new
+					</IonButton>
+				</IonItem>
+			</IonList>
+		);
+	}
+
+	const allowPathDrop =
+		!flags.pathAfterQuery && !flags.duplicateQmark && !pieces.baseUrl.includes('?');
+	const allowQueryDrop = !flags.duplicateQmark;
+
+
+	return (
+
+
+		<IonList className={styles["edit-list"]} lines="none">
+
+			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+				<IonLabel >Webhook URL</IonLabel>
+			</IonListHeader>
+			<IonItem className="ion-margin-bottom">
+				<IonToggle
+					checked={forceSSL}
+					justify="space-between"
+					onIonChange={e => {
+						const on = e.detail.checked;
+						setForceSSL(on);
+
+						if (on && pieces.baseUrl.startsWith('http://')) {
+							const httpsBase = pieces.baseUrl.replace(/^http:/, 'https:');
+							const next = { ...pieces, baseUrl: httpsBase };
+							liveValidate(next);       // re-validate and update URL
+						} else {
+							// simply re-validate under new SSL requirement
+							liveValidate(pieces);
+						}
+					}}
+					className="text-low"
+					style={{ fontWeight: "600", fontSize: "0.85rem" }}
+				>
+					Force SSL (https)
+				</IonToggle>
+			</IonItem>
+			<IonItem>
+				<IonInput
+
+					label="Base URL"
+					value={pieces.baseUrl}
+					pattern="[A-Za-z0-9:/?&._\-~%#=]*"
+					inputmode="url"
+					type="url"
+					autocapitalize="off"
+					placeholder="https://example.com/payments"
+					onIonInput={e => {
+						const clean = e.detail.value!.replace(/[{}]/g, '');
+						const next = { ...pieces, baseUrl: clean };
+						liveValidate(next);
+					}}
+					mode="md"
+					fill="outline"
+					labelPlacement="stacked"
+					className="ion-margin-top"
+				>
+				</IonInput>
+			</IonItem>
+			<IonItem lines="none">
+				{Object.values(flags).some(Boolean) && (
+
+					<IonLabel color="danger">
+						{flags.pathAfterQuery ||
+							flags.duplicateQmark ||
+							flags.protocolErr ||
+							flags.forceSSLErr ||
+							flags.noExpression ||
+							flags.unknownVars?.length && 'Unknown attributes: ' + flags.unknownVars.join(', ')}
+					</IonLabel>
+				)}
+			</IonItem>
+			<IonGrid className="ion-no-padding">
+				<IonRow className="ion-justify-content-center ion-align-items-center ion-no-margin" style={{ width: "100%" }}>
+					<IonCol size="6">
+						<div className={classNames(
+							styles["zone"],
+							styles["zone-left"],
+							pathCanDrop && styles["dragging"],
+							isPathOver && styles["over"],
+							!allowPathDrop && styles["zone-disabled"]
+						)}
+							ref={pathDropRef}
+
+						>
+							{pathEmpty ? (
+								<div >
+									<div className={styles["zone-header"]}>Path attributes</div>
+									<div className={styles["zone-description"]}>drag and drop attributes from below here as paths</div>
+								</div>
+							) : (
+								<>
+									<div className={styles["zone-header"]}>Path attributes</div>
+									<IonReorderGroup
+										disabled={pieces.pathTemplate!.variables.length < 2}
+										onIonItemReorder={e => {
+											const from = e.detail.from;
+											const to = e.detail.to;
+											e.detail.complete();  // close animation
+											reorderPath(from, to);
+										}}
+									>
+										{pieces.pathTemplate!.variables.map((v, i) => (
+											<IonItem key={v.name} className={styles["zone-token-line"]}>
+												<IonReorder slot="start">
+												</IonReorder>
+												<IonChip
+													onClick={() => removePathVar(i)}
+													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+													className={styles["zone-token-chip"]}
+												>
+													<IonLabel>{v.name}</IonLabel>
+													<IonIcon icon={close}></IonIcon>
+												</IonChip>
+
+											</IonItem>
+										))}
+									</IonReorderGroup>
+								</>
+							)}
+
+						</div>
+					</IonCol>
+					<IonCol size="6">
+						<div className={classNames(
+							styles["zone"],
+							styles["zone-right"],
+							queryCanDrop && styles["dragging"],
+							isQueryOver && styles["over"],
+							!allowQueryDrop && styles["zone-disabled"]
+						)}
+							ref={queryDropRef}
+
+						>
+							{queryEmpty ? (
+								<div >
+									<div className={styles["zone-header"]}>Query attributes</div>
+									<div className={styles["zone-description"]}>drag and drop attributes from below here as query params</div>
+								</div>
+							) : (
+								<>
+									<div className={styles["zone-header"]}>Query attributes</div>
+									<IonList style={{ background: "transparent" }}>
+										{pieces.queryTemplate!.variables.map((v, i) => (
+											<IonItem key={v.name} className={styles["zone-token-line"]}>
+												<IonChip
+													onClick={() => removeQueryVar(i)}
+													color={flags.unknownVars?.includes(v.name) ? "danger" : "primary"}
+													className={styles["zone-token-chip"]}
+												>
+													<IonLabel>{v.name}</IonLabel>
+													<IonIcon icon={close}></IonIcon>
+												</IonChip>
+											</IonItem>
+										))}
+									</IonList>
+								</>
+							)}
+						</div>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+			<div className="ion-padding-horizontal ion-margin-top" style={{
+				minHeight: '60px',
+				display: 'flex',
+				flexWrap: 'wrap',
+				justifyContent: 'center',
+				alignItems: 'center',
+			}}>
+				<div style={{
+					display: 'flex',
+					flexWrap: 'wrap',
+					gap: '8px',
+				}}>
+					{allowedTokens.map(t => (
+						<DraggableChip key={t} token={t} />
+					))}
+				</div>
+			</div>
+
+
+			<div style={{ visibility: pieces.baseUrl ? "visible" : "hidden" }}>
+				<CodeBox label="Expanded template" value={highlightedExpanded} />
+			</div>
+
+
+		</IonList>
+
+	)
+
+}
+
+export default WebhookUrlBuilder;
+
+const DraggableChip = ({ token }: { token: string }) => {
+	const [{ isDragging }, dragRef] = useDrag({
+		type: "TOKEN",
+		item: { token },
+		collect: (monitor) => ({
+			isDragging: monitor.isDragging(),
+		}),
+
+	});
+
+	return (
+		<IonChip
+			ref={dragRef}
+			color="primary"
+			style={{
+				opacity: isDragging ? 0.7 : 1,
+				cursor: 'grab',
+				transform: isDragging ? 'scale(1.1)' : 'scale(1)',
+				transition: 'transform 0.2s ease'
+			}}
+		>
+			{token}
+		</IonChip>
+	);
+};
+
+
+

@@ -479,7 +479,7 @@ const InvoiceTab = memo(() => {
 							</IonRow>
 							<IonRow className="ion-justify-content-center">
 								<IonCol size="auto" style={{ padding: "0px" }}>
-									<IonNote>{`~ ${money}`}</IonNote>
+									<IonNote className="text-medium">{`~ ${money}`}</IonNote>
 								</IonCol>
 							</IonRow>
 						</>
