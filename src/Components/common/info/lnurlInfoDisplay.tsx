@@ -28,7 +28,7 @@ const LnurlInfoDisplay = ({ lnurlData, inset, labelsColor }: Props) => {
 					<IonItem >
 						<IonLabel color={labelsColor}>
 							Description
-							<IonNote style={{ display: "block", fontSize: "0.9rem" }} color="medium" className="ion-text-wrap">{lnurlData.description}</IonNote>
+							<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{lnurlData.description}</IonNote>
 						</IonLabel>
 					</IonItem>
 				)}
@@ -36,7 +36,7 @@ const LnurlInfoDisplay = ({ lnurlData, inset, labelsColor }: Props) => {
 					<IonItem onClick={() => setExpandImage(true)} button>
 						<IonLabel color={labelsColor}>
 							Image
-							<IonNote style={{ display: "block", fontSize: "0.7rem" }} color="medium">(Tap to expand)</IonNote>
+							<IonNote style={{ display: "block", fontSize: "0.7rem" }} className="text-low">(Tap to expand)</IonNote>
 						</IonLabel>
 						<IonThumbnail>
 							<img src={lnurlData.image} alt="LNURL Pay Merchant" />

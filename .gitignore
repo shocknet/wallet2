@@ -44,9 +44,11 @@ android/app/release/output-metadata.json
 android/app/src/main/AndroidManifest.xml
 ios/App/App/Info.plist
 ios/App/App/App.entitlements
+bundle-report.html
 
 # actions tests
 act
 event.json
 run.log
 android_key.base64
+

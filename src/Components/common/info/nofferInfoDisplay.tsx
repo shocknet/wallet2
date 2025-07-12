@@ -17,7 +17,7 @@ const NofferInfoDisplay = ({ nofferData, inset, labelsColor }: Props) => {
 			<IonItem>
 				<IonLabel color={labelsColor}>
 					Offer
-					<IonNote style={{ display: "block", fontSize: "0.9rem" }} color="medium" className="ion-text-wrap">{nofferData.noffer.offer}</IonNote>
+					<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{nofferData.noffer.offer}</IonNote>
 				</IonLabel>
 			</IonItem>
 			<IonItem>
@@ -35,7 +35,7 @@ const NofferInfoDisplay = ({ nofferData, inset, labelsColor }: Props) => {
 			<IonItem>
 				<IonLabel color={labelsColor}>
 					Pubkey
-					<IonNote style={{ display: "block", fontSize: "0.9rem" }} color="medium" className="ion-text-wrap">{nofferData.noffer.pubkey}</IonNote>
+					<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{nofferData.noffer.pubkey}</IonNote>
 				</IonLabel>
 			</IonItem>
 			<IonItem>

@@ -54,6 +54,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 
+
 import "./theme/variables.css";
 
 import LoadingOverlay from "./Components/LoadingOverlay";
@@ -70,6 +71,7 @@ import { ToastProvider } from "./lib/contexts/useToast";
 import nostrSvg from "../icons/nostr.svg"
 import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
+import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 
 
 
@@ -80,6 +82,7 @@ addIcons({
 
 
 setupIonicReact();
+document.documentElement.classList.add('dark');
 
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
@@ -251,9 +254,7 @@ const AppContent: React.FC = () => {
 				</Route>
 				<Route exact path="/Offers">
 					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Offers />
-						</Layout>
+						<Offers />
 					</Suspense>
 				</Route>
 				<Route exact path="/OfferInfo">
@@ -296,28 +297,29 @@ const App: React.FC = () => {
 	return (
 		<Provider store={store}>
 			<PersistGate loading={null} persistor={persistor}>
-				<IonApp>
-					<ErrorBoundary>
-						<IonReactRouter>
-							<AlertProvider>
-								<ToastProvider>
-									<AppContent />
-								</ToastProvider>
-							</AlertProvider>
-						</IonReactRouter>
-					</ErrorBoundary>
-					<ToastContainer
-						theme="colored"
-						position="top-center"
-						closeOnClick
-						pauseOnHover
-						autoClose={4000}
-						limit={2}
-						pauseOnFocusLoss={false}
-					/>
-				</IonApp>
+				<ScannerProvider>
+					<IonApp>
+						<ErrorBoundary>
+							<IonReactRouter>
+								<AlertProvider>
+									<ToastProvider>
+										<AppContent />
+									</ToastProvider>
+								</AlertProvider>
+							</IonReactRouter>
+						</ErrorBoundary>
+						<ToastContainer
+							theme="colored"
+							position="top-center"
+							closeOnClick
+							pauseOnHover
+							autoClose={4000}
+							limit={2}
+							pauseOnFocusLoss={false}
+						/>
+					</IonApp>
+				</ScannerProvider>
 			</PersistGate>
-
 		</Provider>
 	);
 };

@@ -32,7 +32,7 @@ import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
 import { removeOptimisticOperation } from "@/State/history";
-import { scanSingleBarcode } from "@/lib/scan";
+import { useQrScanner } from "@/lib/hooks/useQrScanner";
 
 
 
@@ -131,17 +131,13 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	}, [history, showToast]);
 
 
+	const { scanSingleBarcode } = useQrScanner();
 	const openScan = async () => {
 		try {
 			const scanned = await scanSingleBarcode("Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address");
 			handleScanned(scanned);
-		} catch (err: any) {
-			console.error(err);
-			if (err?.message && err.message.contains("cancelled")) return;
-			showToast({
-				message: err?.message || "Error when scanning QR code",
-				color: "danger",
-			});
+		} catch {
+			/*  */
 		}
 	}
 
