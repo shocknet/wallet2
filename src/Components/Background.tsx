@@ -15,6 +15,7 @@ import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
 import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
 import { subToBeacons } from "@/Api/nostr";
 import { updateSourceState } from "@/Api/health";
+import { ManageRequestHandler } from "./BackgroundJobs/ManageRequestHandler";
 
 
 
@@ -134,5 +135,6 @@ export const Background = () => {
 		<NodeUpCheck />
 		<RemoteBackup />
 		<DebitRequestHandler />
+		<ManageRequestHandler />
 	</div>
 }

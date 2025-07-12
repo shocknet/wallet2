@@ -47,7 +47,6 @@ const NavigationMenu = () => {
 			setAdminSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
 		}
 	}, [spendSources])
-	console.log("adminSource", adminSource)
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
 			<IonHeader>
