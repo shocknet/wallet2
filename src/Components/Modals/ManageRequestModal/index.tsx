@@ -82,6 +82,13 @@ export const ManageRequestModal = () => {
 	}, [dispatch, currentRequest]);
 
 
+	const removeCurrentRequest = useCallback(() => {
+		if (!currentRequest) return;
+		dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
+		dispatch(refetchManageRequests())
+	}, [dispatch, currentRequest])
+
+
 
 
 
@@ -100,6 +107,15 @@ export const ManageRequestModal = () => {
 				ban: true
 			});
 			dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }));
+		}
+	}, [currentRequest, dispatch])
+
+	const handleDenyRequest = useCallback(() => {
+		if (!currentRequest) return;
+		if (isBanPrompt) {
+			banRequest();
+		} else {
+			removeCurrentRequest();
 		}
 	}, [currentRequest, dispatch])
 
@@ -125,14 +141,14 @@ export const ManageRequestModal = () => {
 					{
 						isBanPrompt
 							?
-							<PromptBanApp banAppCallback={banRequest} dismissCallback={() => banRequest()} />
+							<PromptBanApp banAppCallback={banRequest} dismissCallback={() => removeCurrentRequest()} />
 							:
 							<>
 								<div className={styles["debit-info"]}>
 									<span className={styles["orange-text"]}>Wants to create offers for you</span>
 								</div>
 								<div className={styles["buttons-container"]}>
-									<button onClick={() => banRequest()}>
+									<button onClick={() => handleDenyRequest()}>
 										<>
 											<CrossIcon />
 											Deny
@@ -155,7 +171,7 @@ export const ManageRequestModal = () => {
 
 
 
-	return <Modal isShown={!!currentRequest} hide={() => banRequest()} modalContent={modalContent} headerText={''} />
+	return <Modal isShown={!!currentRequest} hide={() => handleDenyRequest()} modalContent={modalContent} headerText={''} />
 }
 
 interface PromptBanAppProps {
