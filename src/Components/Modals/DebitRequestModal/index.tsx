@@ -64,9 +64,11 @@ export const DebitRequestModal = () => {
 				setIsRecurringPayment(true)
 				setRequestAmount(req.request.debit.frequency.amount.toString())
 				return { request: req.request, source: spendSources.sources[req.sourceId] }
-			} else {
+			} else if (req.request.debit.type === Types.LiveDebitRequest_debit_type.INVOICE) {
 				const { amount } = decodeInvoice(req.request.debit.invoice)
 				setRequestAmount(amount.toString())
+				return { request: req.request, source: spendSources.sources[req.sourceId] }
+			} else {
 				return { request: req.request, source: spendSources.sources[req.sourceId] }
 			}
 
