@@ -30,6 +30,8 @@ const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
 const OfferInfo = lazy(() => import("./Pages/OfferInfo"));
 const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
+const Routing = lazy(() => import("./Pages/Metrics/routing"));
+const Management = lazy(() => import("./Pages/Management"));
 
 import { Background } from "./Components/Background";
 import { Provider } from 'react-redux';
@@ -70,6 +72,7 @@ import { ToastProvider } from "./lib/contexts/useToast";
 import nostrSvg from "../icons/nostr.svg"
 import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
+import { ManageRequestModal } from "./Components/Modals/ManageRequestModal";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 
 
@@ -119,6 +122,7 @@ const AppContent: React.FC = () => {
 			<DebitRequestModal />
 			<EditDebitModal />
 			<EditSourceModal />
+			<ManageRequestModal />
 			{/* Modals */}
 			<NavigationMenu />
 
@@ -219,10 +223,17 @@ const AppContent: React.FC = () => {
 					</Suspense>
 
 				</Route>
-				<Route exact path="/earnings">
+				<Route exact path="/metrics/earnings">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Earnings />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/metrics/routing">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Routing />
 						</Layout>
 					</Suspense>
 				</Route>
@@ -241,6 +252,13 @@ const AppContent: React.FC = () => {
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<LinkedApp />
+						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/management">
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Management />
 						</Layout>
 					</Suspense>
 				</Route>

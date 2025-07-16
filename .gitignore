@@ -13,6 +13,7 @@ yarn.lock
 /build
 
 # misc
+.specstory
 .DS_Store
 .env.local
 .env.development.local

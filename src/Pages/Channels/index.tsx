@@ -14,7 +14,7 @@ interface OfflineChannel {
   name: string;
   subNode: string;
   timeStamp?: number;
-  satAmount: number;
+  encumbered: number;
   channel: Types.OpenChannel
 }
 
@@ -69,7 +69,7 @@ const Channels = ({ done }: { done: () => void }) => {
       if (c.active) {
         active.push({ avatar: "", id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance, channel: c })
       } else {
-        offline.push({ avatar: "", id: i, name: c.label, satAmount: c.capacity, timeStamp: c.lifetime, subNode: "Initiate force-close", channel: c })
+        offline.push({ avatar: "", id: i, name: c.label, encumbered: c.local_balance, timeStamp: c.inactive_since_unix, subNode: "Initiate force-close", channel: c })
       }
     })
     setMaxBalance(max)
@@ -79,8 +79,8 @@ const Channels = ({ done }: { done: () => void }) => {
   }
 
 
-  const totalSatAmount: number = offlineChannels.reduce(
-    (acc, obj) => acc + obj.satAmount,
+  const totalEncumbered: number = offlineChannels.reduce(
+    (acc, obj) => acc + obj.encumbered,
     0
   );
 
@@ -104,7 +104,7 @@ const Channels = ({ done }: { done: () => void }) => {
                 <span>🚨</span> Offline Channels
               </div>
               <div className="sub-title">
-                {formatCryptoAmount(totalSatAmount)} Encumbered
+                {formatCryptoAmount(totalEncumbered)} Encumbered
               </div>
             </div>
             <div className="line" />
@@ -129,11 +129,11 @@ const Channels = ({ done }: { done: () => void }) => {
                 </div>
                 <div>
                   <div className="amount">
-                    {formatCryptoAmount(channel.satAmount)}
+                    {formatCryptoAmount(channel.encumbered)}
                   </div>
                   <div className="time">
                     <span>
-                      {!!channel.timeStamp && moment(channel.timeStamp).fromNow()}
+                      last seen: {channel.timeStamp ? moment(channel.timeStamp * 1000).fromNow() : "Never"}
                     </span>
                   </div>
                 </div>

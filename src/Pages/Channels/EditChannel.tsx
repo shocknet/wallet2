@@ -52,7 +52,7 @@ export const EditChannel = ({ adminSource, selectedChannel, deselect }: { adminS
       toast.error('No channel selected')
       return
     }
-    if (satsPerVByte <= 0) {
+    if (satsPerVByte <= 0 && !force) {
       toast.error('Please enter a valid sats per vbyte')
       return
     }
@@ -62,7 +62,7 @@ export const EditChannel = ({ adminSource, selectedChannel, deselect }: { adminS
       funding_txid: txid,
       output_index: +output,
       force: force,
-      sat_per_v_byte: satsPerVByte
+      sat_per_v_byte: force ? 0 : satsPerVByte
     })
     if (res.status === 'ERROR') {
       toast.error(res.reason)
@@ -134,10 +134,10 @@ export const EditChannel = ({ adminSource, selectedChannel, deselect }: { adminS
       action={() => { closeChannel(); setOpenModal('showPolicy') }}
       jsx={<>
         <p>Are you sure you want to close the channel?</p>
-        <div>
+        {!force && <div>
           <label >Sats per VByte:</label>
           <input type="text" style={{ backgroundColor: 'black' }} placeholder="satPerVByte" value={satsPerVByte} onChange={e => { setSatsPerVByte(+e.target.value) }}></input>
-        </div>
+        </div>}
         <div>
           <label >Force:</label>
           <Checkbox state={force} setState={(e) => { setForce(e.target.checked) }} id="forceClose" />
