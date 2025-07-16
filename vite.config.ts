@@ -38,24 +38,12 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       }
     })
   ],
   build: {
     rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return;
-
-          if (id.includes('@ionic/')) return 'ionic';
-          if (id.includes('framer-motion')) return 'framer-motion';
-          if (id.includes('html5-qrcode')) return 'html5-qrcode';
-          if (id.includes('react')) return 'react';
-
-
-          return 'vendor';
-        }
-      },
       plugins: [
         visualizer({
           open: true,

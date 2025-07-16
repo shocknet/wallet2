@@ -32,6 +32,7 @@ export interface ValidationFlags {
 	forceSSLErr?: string;
 	noBaseUrl?: string;
 	noExpression?: string; // no expressions at all
+	sslWarning?: string; // Warn when url is https but enforceSSL is off
 }
 
 export function parseAndValidate(
@@ -138,21 +139,22 @@ export function parseAndValidate(
 
 
 
-
 	if (pieces.baseUrl.trim() === "") {
 		flags.noBaseUrl = 'Base URL is required';
-	} else if (!/^\w+:\/\//.test(pieces.baseUrl)) {
-		flags.protocolErr = 'Base URL must include http:// or https://';
+	} else if (!/^https?:\/\//i.test(pieces.baseUrl)) {
+		flags.protocolErr = 'Base URL must start with http:// or https://';
 	} else {
 		try {
 			const u = new URL(pieces.baseUrl);
 
-			if (u.protocol === 'http:' && forceSSL) {
+			if (forceSSL && u.protocol !== "https:") {
 				// Either no protocol supplied, or http while SSL forced
-				flags.protocolErr = 'Base must start with https:// (Force SSL enabled)'
+				flags.protocolErr = 'Base URL must start with https:// (Force SSL enabled)'
 
 			} else if (!['http:', 'https:'].includes(u.protocol)) {
 				flags.protocolErr = `Unsupported protocol "${u.protocol}"`;
+			} else if (!forceSSL && u.protocol === "https:") {
+				flags.sslWarning = "You're using HTTPS but ssl verification is not enabled"
 			}
 		} catch {
 			flags.protocolErr = "Base part is not a valid URL";

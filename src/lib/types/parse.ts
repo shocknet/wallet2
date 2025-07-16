@@ -1,4 +1,3 @@
-import { nip19 } from "nostr-tools";
 import { LnurlPayServiceResponse, LnurlWithdrawServiceResponse } from "./lnurl";
 import { Satoshi } from "./units";
 import { OfferPointer, OfferPriceType } from "@shocknet/clink-sdk";

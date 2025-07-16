@@ -54,7 +54,7 @@ export function identifyBitcoinInput(incomingInput: string, config?: InputClassi
 	return matchedType;
 }
 
-const parseInvoiceInput = (input: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
+export const parseInvoiceInput = (input: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
 	const invoice = removePrefixIfExists(input, "lightning:");
 	const { amount, description } = decodeInvoice(invoice, expectedAmount);
 
