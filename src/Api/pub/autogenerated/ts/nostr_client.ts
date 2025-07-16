@@ -99,6 +99,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    AuthorizeManage: async (request: Types.ManageAuthorizationRequest): Promise<ResultError | ({ status: 'OK' } & Types.ManageAuthorization)> => {
+        const auth = await params.retrieveNostrUserAuth()
+        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'AuthorizeManage', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ManageAuthorizationValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     BanDebit: async (request: Types.DebitOperation): Promise<ResultError | ({ status: 'OK' })> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
@@ -276,20 +291,19 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    GetHttpCreds: async (cb: (res: ResultError | ({ status: 'OK' } & Types.HttpCreds)) => void): Promise<void> => {
+    GetHttpCreds: async (): Promise<ResultError | ({ status: 'OK' } & Types.HttpCreds)> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
         const nostrRequest: NostrRequest = {}
-        subscribe(params.pubDestination, { rpcName: 'GetHttpCreds', authIdentifier: auth, ...nostrRequest }, (data) => {
-            if (data.status === 'ERROR' && typeof data.reason === 'string') return cb(data)
-            if (data.status === 'OK') {
-                const result = data
-                if (!params.checkResult) return cb({ status: 'OK', ...result })
-                const error = Types.HttpCredsValidate(result)
-                if (error === null) { return cb({ status: 'OK', ...result }) } else return cb({ status: 'ERROR', reason: error.message })
-            }
-            return cb({ status: 'ERROR', reason: 'invalid response' })
-        })
+        const data = await send(params.pubDestination, { rpcName: 'GetHttpCreds', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.HttpCredsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
     },
     GetInviteLinkState: async (request: Types.GetInviteTokenStateRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetInviteTokenStateResponse)> => {
         const auth = await params.retrieveNostrAdminAuth()
@@ -335,6 +349,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             return cb({ status: 'ERROR', reason: 'invalid response' })
         })
     },
+    GetLiveManageRequests: async (cb: (res: ResultError | ({ status: 'OK' } & Types.LiveManageRequest)) => void): Promise<void> => {
+        const auth = await params.retrieveNostrUserAuth()
+        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        subscribe(params.pubDestination, { rpcName: 'GetLiveManageRequests', authIdentifier: auth, ...nostrRequest }, (data) => {
+            if (data.status === 'ERROR' && typeof data.reason === 'string') return cb(data)
+            if (data.status === 'OK') {
+                const result = data
+                if (!params.checkResult) return cb({ status: 'OK', ...result })
+                const error = Types.LiveManageRequestValidate(result)
+                if (error === null) { return cb({ status: 'OK', ...result }) } else return cb({ status: 'ERROR', reason: error.message })
+            }
+            return cb({ status: 'ERROR', reason: 'invalid response' })
+        })
+    },
     GetLiveUserOperations: async (cb: (res: ResultError | ({ status: 'OK' } & Types.LiveUserOperation)) => void): Promise<void> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
@@ -349,6 +378,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             }
             return cb({ status: 'ERROR', reason: 'invalid response' })
         })
+    },
+    GetLndForwardingMetrics: async (request: Types.LndMetricsRequest): Promise<ResultError | ({ status: 'OK' } & Types.LndForwardingMetrics)> => {
+        const auth = await params.retrieveNostrMetricsAuth()
+        if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'GetLndForwardingMetrics', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.LndForwardingMetricsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
     },
     GetLndMetrics: async (request: Types.LndMetricsRequest): Promise<ResultError | ({ status: 'OK' } & Types.LndMetrics)> => {
         const auth = await params.retrieveNostrMetricsAuth()
@@ -393,6 +437,20 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    GetManageAuthorizations: async (): Promise<ResultError | ({ status: 'OK' } & Types.ManageAuthorizations)> => {
+        const auth = await params.retrieveNostrUserAuth()
+        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'GetManageAuthorizations', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ManageAuthorizationsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetMigrationUpdate: async (cb: (res: ResultError | ({ status: 'OK' } & Types.MigrationUpdate)) => void): Promise<void> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
@@ -419,6 +477,20 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.PaymentStateValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    GetProvidersDisruption: async (): Promise<ResultError | ({ status: 'OK' } & Types.ProvidersDisruption)> => {
+        const auth = await params.retrieveNostrMetricsAuth()
+        if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'GetProvidersDisruption', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ProvidersDisruptionValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
@@ -686,12 +758,46 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    PingSubProcesses: async (): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveNostrMetricsAuth()
+        if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'PingSubProcesses', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     ResetDebit: async (request: Types.DebitOperation): Promise<ResultError | ({ status: 'OK' })> => {
         const auth = await params.retrieveNostrUserAuth()
         if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
         const nostrRequest: NostrRequest = {}
         nostrRequest.body = request
         const data = await send(params.pubDestination, { rpcName: 'ResetDebit', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    ResetManage: async (request: Types.ManageOperation): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveNostrUserAuth()
+        if (auth === null) throw new Error('retrieveNostrUserAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'ResetManage', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    ResetMetricsStorages: async (): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveNostrMetricsAuth()
+        if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'ResetMetricsStorages', authIdentifier: auth, ...nostrRequest })
         if (data.status === 'ERROR' && typeof data.reason === 'string') return data
         if (data.status === 'OK') {
             return data
@@ -801,6 +907,20 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.UserHealthStateValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    ZipMetricsStorages: async (): Promise<ResultError | ({ status: 'OK' } & Types.ZippedMetrics)> => {
+        const auth = await params.retrieveNostrMetricsAuth()
+        if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'ZipMetricsStorages', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.ZippedMetricsValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }

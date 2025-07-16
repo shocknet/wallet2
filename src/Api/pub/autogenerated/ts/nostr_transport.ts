@@ -128,6 +128,22 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
+            case 'AuthorizeManage':
+                try {
+                    if (!methods.AuthorizeManage) throw new Error('method: AuthorizeManage is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    const request = req.body
+                    const error = Types.ManageAuthorizationRequestValidate(request)
+                    stats.validate = process.hrtime.bigint()
+                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+                    const response = await methods.AuthorizeManage({ rpcName: 'AuthorizeManage', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
             case 'BanDebit':
                 try {
                     if (!methods.BanDebit) throw new Error('method: BanDebit is not implemented')
@@ -215,6 +231,18 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
                                     break
+                                case 'AuthorizeManage':
+                                    if (!methods.AuthorizeManage) {
+                                        throw new Error('method not defined: AuthorizeManage')
+                                    } else {
+                                        const error = Types.ManageAuthorizationRequestValidate(operation.req)
+                                        opStats.validate = process.hrtime.bigint()
+                                        if (error !== null) throw error
+                                        const res = await methods.AuthorizeManage({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
                                 case 'BanDebit':
                                     if (!methods.BanDebit) {
                                         throw new Error('method not defined: BanDebit')
@@ -285,6 +313,16 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
                                     break
+                                case 'GetHttpCreds':
+                                    if (!methods.GetHttpCreds) {
+                                        throw new Error('method not defined: GetHttpCreds')
+                                    } else {
+                                        opStats.validate = opStats.guard
+                                        const res = await methods.GetHttpCreds({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
                                 case 'GetLNURLChannelLink':
                                     if (!methods.GetLNURLChannelLink) {
                                         throw new Error('method not defined: GetLNURLChannelLink')
@@ -311,6 +349,16 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                     } else {
                                         opStats.validate = opStats.guard
                                         const res = await methods.GetLnurlWithdrawLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
+                                case 'GetManageAuthorizations':
+                                    if (!methods.GetManageAuthorizations) {
+                                        throw new Error('method not defined: GetManageAuthorizations')
+                                    } else {
+                                        opStats.validate = opStats.guard
+                                        const res = await methods.GetManageAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -449,6 +497,18 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                                         opStats.validate = process.hrtime.bigint()
                                         if (error !== null) throw error
                                         await methods.ResetDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
+                                        opStats.handle = process.hrtime.bigint()
+                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+                                    }
+                                    break
+                                case 'ResetManage':
+                                    if (!methods.ResetManage) {
+                                        throw new Error('method not defined: ResetManage')
+                                    } else {
+                                        const error = Types.ManageOperationValidate(operation.req)
+                                        opStats.validate = process.hrtime.bigint()
+                                        if (error !== null) throw error
+                                        await methods.ResetManage({ ...operation, ctx }); responses.push({ status: 'OK' })
                                         opStats.handle = process.hrtime.bigint()
                                         callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
                                     }
@@ -670,12 +730,10 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.guard = process.hrtime.bigint()
                     authCtx = authContext
                     stats.validate = stats.guard
-                    methods.GetHttpCreds({
-                        rpcName: 'GetHttpCreds', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
+                    const response = await methods.GetHttpCreds({ rpcName: 'GetHttpCreds', ctx: authContext })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetInviteLinkState':
@@ -722,6 +780,21 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     })
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
+            case 'GetLiveManageRequests':
+                try {
+                    if (!methods.GetLiveManageRequests) throw new Error('method: GetLiveManageRequests is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    methods.GetLiveManageRequests({
+                        rpcName: 'GetLiveManageRequests', ctx: authContext, cb: (response, err) => {
+                            stats.handle = process.hrtime.bigint()
+                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+                        }
+                    })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
             case 'GetLiveUserOperations':
                 try {
                     if (!methods.GetLiveUserOperations) throw new Error('method: GetLiveUserOperations is not implemented')
@@ -735,6 +808,22 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                             if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
                         }
                     })
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'GetLndForwardingMetrics':
+                try {
+                    if (!methods.GetLndForwardingMetrics) throw new Error('method: GetLndForwardingMetrics is not implemented')
+                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    const request = req.body
+                    const error = Types.LndMetricsRequestValidate(request)
+                    stats.validate = process.hrtime.bigint()
+                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+                    const response = await methods.GetLndForwardingMetrics({ rpcName: 'GetLndForwardingMetrics', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
             case 'GetLndMetrics':
@@ -779,6 +868,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
+            case 'GetManageAuthorizations':
+                try {
+                    if (!methods.GetManageAuthorizations) throw new Error('method: GetManageAuthorizations is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    const response = await methods.GetManageAuthorizations({ rpcName: 'GetManageAuthorizations', ctx: authContext })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
             case 'GetMigrationUpdate':
                 try {
                     if (!methods.GetMigrationUpdate) throw new Error('method: GetMigrationUpdate is not implemented')
@@ -805,6 +907,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
                     const response = await methods.GetPaymentState({ rpcName: 'GetPaymentState', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'GetProvidersDisruption':
+                try {
+                    if (!methods.GetProvidersDisruption) throw new Error('method: GetProvidersDisruption is not implemented')
+                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    const response = await methods.GetProvidersDisruption({ rpcName: 'GetProvidersDisruption', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
                     res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
@@ -1083,6 +1198,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
                 } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
                 break
+            case 'PingSubProcesses':
+                try {
+                    if (!methods.PingSubProcesses) throw new Error('method: PingSubProcesses is not implemented')
+                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    await methods.PingSubProcesses({ rpcName: 'PingSubProcesses', ctx: authContext })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK' })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
             case 'ResetDebit':
                 try {
                     if (!methods.ResetDebit) throw new Error('method: ResetDebit is not implemented')
@@ -1094,6 +1222,35 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     stats.validate = process.hrtime.bigint()
                     if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
                     await methods.ResetDebit({ rpcName: 'ResetDebit', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK' })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'ResetManage':
+                try {
+                    if (!methods.ResetManage) throw new Error('method: ResetManage is not implemented')
+                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    const request = req.body
+                    const error = Types.ManageOperationValidate(request)
+                    stats.validate = process.hrtime.bigint()
+                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+                    await methods.ResetManage({ rpcName: 'ResetManage', ctx: authContext, req: request })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK' })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'ResetMetricsStorages':
+                try {
+                    if (!methods.ResetMetricsStorages) throw new Error('method: ResetMetricsStorages is not implemented')
+                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    await methods.ResetMetricsStorages({ rpcName: 'ResetMetricsStorages', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
                     res({ status: 'OK' })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
@@ -1218,6 +1375,19 @@ export default (methods: Types.ServerMethods, opts: NostrOptions) => {
                     authCtx = authContext
                     stats.validate = stats.guard
                     const response = await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
+                    stats.handle = process.hrtime.bigint()
+                    res({ status: 'OK', ...response })
+                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+                break
+            case 'ZipMetricsStorages':
+                try {
+                    if (!methods.ZipMetricsStorages) throw new Error('method: ZipMetricsStorages is not implemented')
+                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+                    stats.guard = process.hrtime.bigint()
+                    authCtx = authContext
+                    stats.validate = stats.guard
+                    const response = await methods.ZipMetricsStorages({ rpcName: 'ZipMetricsStorages', ctx: authContext })
                     stats.handle = process.hrtime.bigint()
                     res({ status: 'OK', ...response })
                     opts.metricsCallback([{ ...info, ...stats, ...authContext }])
