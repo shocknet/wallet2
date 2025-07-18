@@ -108,6 +108,7 @@ const paymentHistorySlice = createSlice({
 		) => {
 			for (const sourceId in state.sources) {
 				state.sources[sourceId].cursor = emptyCursor;
+				state.sources[sourceId].data = [];
 			}
 
 		}
