@@ -141,12 +141,12 @@ export const populateCursorRequest = (p: HistoryCursor) => {
 
 export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor) => {
 	const newCursor: HistoryCursor = {
-		latestIncomingInvoice: r.latestIncomingInvoiceOperations.toIndex || c.latestIncomingInvoice,
-		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.toIndex || c.latestOutgoingInvoice,
-		latestIncomingTx: r.latestIncomingTxOperations.toIndex || c.latestIncomingTx,
-		latestOutgoingTx: r.latestOutgoingTxOperations.toIndex || c.latestOutgoingTx,
-		latestIncomingUserToUserPayment: r.latestIncomingUserToUserPayemnts.toIndex || c.latestIncomingUserToUserPayment,
-		latestOutgoingUserToUserPayment: r.latestOutgoingUserToUserPayemnts.toIndex || c.latestOutgoingUserToUserPayment,
+		latestIncomingInvoice: r.latestIncomingInvoiceOperations.operations.length ? r.latestIncomingInvoiceOperations.toIndex + 1 : c.latestIncomingInvoice,
+		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.operations.length ? r.latestOutgoingInvoiceOperations.toIndex + 1 : c.latestOutgoingInvoice,
+		latestIncomingTx: r.latestIncomingTxOperations.operations.length ? r.latestIncomingTxOperations.toIndex + 1 : c.latestIncomingTx,
+		latestOutgoingTx: r.latestOutgoingTxOperations.operations.length ? r.latestOutgoingTxOperations.toIndex + 1 : c.latestOutgoingTx,
+		latestIncomingUserToUserPayment: r.latestIncomingUserToUserPayemnts.operations.length ? r.latestIncomingUserToUserPayemnts.toIndex + 1 : c.latestIncomingUserToUserPayment,
+		latestOutgoingUserToUserPayment: r.latestOutgoingUserToUserPayemnts.operations.length ? r.latestOutgoingUserToUserPayemnts.toIndex + 1 : c.latestOutgoingUserToUserPayment,
 		max_size: 10
 	}
 
