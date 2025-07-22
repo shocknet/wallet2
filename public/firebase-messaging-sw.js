@@ -1,5 +1,5 @@
-importScripts('https://www.gstatic.com/firebasejs/3.5.2/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/3.5.2/firebase-messaging.js');
+importScripts('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js');
 // Line below makes typescript happy by importing the definitions required for ServiceWorkerGlobalScope
 // import { precacheAndRoute as _ } from 'workbox-precaching';
 const firebaseConfig = {
