@@ -21,10 +21,11 @@ export default defineConfig({
       filename: 'firebase-messaging-sw.ts',
       workbox: {
         globPatterns: [],
-        globIgnores: ['*'],
-        cleanupOutdatedCaches: true,
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globIgnores: ['*']
       },
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      }
     }),
     VitePWA({
       registerType: 'autoUpdate',
