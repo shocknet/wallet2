@@ -1,7 +1,7 @@
-import { initializeApp } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging/sw';
+importScripts('https://www.gstatic.com/firebasejs/3.5.2/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/3.5.2/firebase-messaging.js');
 // Line below makes typescript happy by importing the definitions required for ServiceWorkerGlobalScope
-import { precacheAndRoute as _ } from 'workbox-precaching';
+// import { precacheAndRoute as _ } from 'workbox-precaching';
 const firebaseConfig = {
     apiKey: "AIzaSyA6YFA5tr2AHMVVXwLU00s_bVQekvXyN-w",
     authDomain: "shockwallet-11a9c.firebaseapp.com",
@@ -11,7 +11,7 @@ const firebaseConfig = {
     appId: "1:73069543153:web:048e09fb8a258acb7ab350",
     measurementId: "G-HQ89PZ3GPW"
 };
-declare let self: ServiceWorkerGlobalScope;
+let self//: ServiceWorkerGlobalScope;
 const firebaseApp = initializeApp(firebaseConfig);
 if (Notification.permission === 'granted') {
     getMessaging(firebaseApp);
