@@ -11,7 +11,7 @@ const firebaseConfig = {
     appId: "1:73069543153:web:048e09fb8a258acb7ab350",
     measurementId: "G-HQ89PZ3GPW"
 };
-let self//: ServiceWorkerGlobalScope;
+declare let self: ServiceWorkerGlobalScope;
 const firebaseApp = initializeApp(firebaseConfig);
 if (Notification.permission === 'granted') {
     getMessaging(firebaseApp);
