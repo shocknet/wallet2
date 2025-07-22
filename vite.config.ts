@@ -22,6 +22,7 @@ export default defineConfig({
       workbox: {
         globPatterns: [],
         globIgnores: ['*'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
     VitePWA({
