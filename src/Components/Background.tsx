@@ -16,6 +16,7 @@ import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
 import { subToBeacons } from "@/Api/nostr";
 import { updateSourceState } from "@/Api/health";
 import { ManageRequestHandler } from "./BackgroundJobs/ManageRequestHandler";
+import { FirebaseHandler } from "./BackgroundJobs/FirebaseHandler";
 
 
 
@@ -136,5 +137,6 @@ export const Background = () => {
 		<RemoteBackup />
 		<DebitRequestHandler />
 		<ManageRequestHandler />
+		<FirebaseHandler />
 	</div>
 }
