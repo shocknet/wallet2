@@ -19,9 +19,11 @@ const firebaseConfig = {
 const vapidKey = "BExGVgcmXFE2pMPG2iPGCyYINHGD6B_dzkcH3EqbzXK8bpS6uuSt_bs78blau2NrJoyBOv044CgA0-UtVz8YzrI"
 
 const enrollToken = async (nostrSpends: SpendFrom[]) => {
+	console.log("enrolling messagingtoken")
 	const firebaseApp = initializeApp(firebaseConfig)
 	const firebaseMessaging = getMessaging(firebaseApp);
 	const token = await getToken(firebaseMessaging, { vapidKey })
+	console.log({ messagingToken: token })
 	for (const source of nostrSpends) {
 		const { pubkey, relays } = parseNprofile(source.pasteField)
 		const c = await getNostrClient({ pubkey, relays }, source.keys)
