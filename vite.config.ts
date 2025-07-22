@@ -16,6 +16,15 @@ export default defineConfig({
       failOnWarning: false
     }),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'firebase-messaging-sw.ts',
+      workbox: {
+        globPatterns: [],
+        globIgnores: ['*'],
+      },
+    }),
+    VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
