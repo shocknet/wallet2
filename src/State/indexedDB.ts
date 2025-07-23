@@ -24,7 +24,7 @@ export const saveKeys = async (toSave: KeyToSave) => {
     await db.put('keyval', toSave.keys, toSave.appNpub);
 }
 
-export const getKeys = async (appNpub: string) => {
+export const getKeys = async (appNpub: string): Promise<NostrKeyPair | undefined> => {
     const db = await getDB();
     return db.get('keyval', appNpub);
 }
