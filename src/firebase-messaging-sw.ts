@@ -37,7 +37,7 @@ if (Notification.permission === 'granted') {
             return;
         }
         const encryptedData: { encrypted: string, app_npub: string } = JSON.parse(payload.data.raw)
-        console.log('[firebase-messaging-sw.js] Encrypted data', encryptedData)
+        console.log('[firebase-messaging-sw.js] Encrypted data', encryptedData.encrypted)
         const keys = await getKeys(encryptedData.app_npub)
         if (!keys) {
             console.log('[firebase-messaging-sw.js] No keys found for app_npub', encryptedData.app_npub)
