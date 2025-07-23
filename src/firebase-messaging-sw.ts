@@ -45,6 +45,7 @@ if (Notification.permission === 'granted') {
         }
         console.log('[firebase-messaging-sw.js] Got Keys')
         const ck = nip44.getConversationKey(Buffer.from(keys.privateKey, 'hex'), encryptedData.app_npub)
+        console.log('[firebase-messaging-sw.js] Got Conversation Key')
         const decrypted = nip44.decrypt(encryptedData.encrypted, ck)
         console.log('[firebase-messaging-sw.js] Decrypted', decrypted)
         const op: Types.UserOperation = JSON.parse(decrypted)
