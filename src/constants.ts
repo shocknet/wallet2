@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { randomBytes } from "@noble/hashes/utils";
 import { bech32 } from 'bech32';
 import axios from "axios";
 import { validate } from 'bitcoin-address-validation';
@@ -232,7 +232,7 @@ export const getDeviceId = () => {
 	if (stored) {
 		return stored
 	}
-	const newId = crypto.randomBytes(32).toString('hex')
+	const newId = Buffer.from(randomBytes(32)).toString('hex')
 	localStorage.setItem(DEVICE_ID_STORAGE_KEY, newId)
 	return newId
 
