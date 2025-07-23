@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { randomBytes } from "@noble/hashes/utils";
 import { bech32 } from 'bech32';
 import axios from "axios";
