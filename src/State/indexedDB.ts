@@ -1,4 +1,4 @@
-import { NostrKeyPair } from '../Api/nostrHandler';
+import type { NostrKeyPair } from '../Api/nostrHandler';
 import { openDB } from 'idb';
 export const DbName = 'shockwallet:notifications';
 const getDB = async () => {
