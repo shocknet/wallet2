@@ -40,8 +40,8 @@ if (Notification.permission === 'granted') {
         const m: Types.LiveUserOperation & { requestId: string, status: 'OK' } = JSON.parse(payload.data.raw)
         const notificationTitle = m.operation.inbound ? `You received ${m.operation.amount} sats` : `You spent ${m.operation.amount} sats`
         const notificationOptions: NotificationOptions = {
-            body: m.operation.type,
-            data: payload.data + " " + keys.length
+            body: m.operation.type + " " + keys.length,
+            data: payload.data
         };
 
         return self.registration.showNotification(notificationTitle, notificationOptions);
