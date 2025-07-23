@@ -39,10 +39,12 @@ if (Notification.permission === 'granted') {
         const encryptedData: { encrypted: string, app_npub: string } = JSON.parse(payload.data.raw)
         const keys = await getKeys(encryptedData.app_npub)
         if (!keys) {
+            console.log('[firebase-messaging-sw.js] No keys found for app_npub', encryptedData.app_npub)
             return;
         }
         const ck = nip44.getConversationKey(Buffer.from(keys.privateKey, 'hex'), encryptedData.app_npub)
         const decrypted = nip44.decrypt(encryptedData.encrypted, ck)
+        console.log('[firebase-messaging-sw.js] Decrypted', decrypted)
         const op: Types.UserOperation = JSON.parse(decrypted)
         //const m: Types.LiveUserOperation & { requestId: string, status: 'OK' } = JSON.parse(payload.data.raw)
         const notificationTitle = op.inbound ? `You received ${op.amount} sats` : `You spent ${op.amount} sats`
