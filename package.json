@@ -74,6 +74,7 @@
     "framer-motion": "^10.17.9",
     "html5-qrcode": "^2.3.8",
     "i": "^0.3.7",
+    "idb": "^8.0.3",
     "ionicons": "^7.4.0",
     "moment": "^2.29.4",
     "nostr-tools": "^2.13.0",

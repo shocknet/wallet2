@@ -4,11 +4,12 @@ import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile } from '../../constants';
 import { syncRedux } from '../store';
-import { getNostrPrivateKey } from '../../Api/nostr';
+import { getNostrPrivateKey, parseNprofile } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { nip19 } from 'nostr-tools'
 import { Buffer } from 'buffer';
+import { saveMultipleKeys } from '../indexedDB';
 
 const { nprofileEncode: encodeNprofile } = nip19
 
@@ -124,7 +125,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
   },
   5: (state) => {
     // option field more strict
-    console.log({state})
+    console.log({ state })
     state.order.forEach((id: any) => {
       const source = state.sources[id];
       if (!source.option) {
@@ -136,7 +137,7 @@ export const migrations: Record<number, MigrationFunction<any>> = {
       } else {
         state.sources[id] = { ...source, option: SourceTrustLevel.HIGH }
       }
-      
+
     })
     return state
   }
@@ -185,6 +186,12 @@ const update = (value: PaySourceState) => {
 
 
 const initialState: PaySourceState = loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
+const HAS_SENT_KEYS_TO_NOTIFICATIONS = 'has_sent_keys_to_notifications'
+if (!localStorage.getItem(HAS_SENT_KEYS_TO_NOTIFICATIONS)) {
+  //localStorage.setItem(HAS_SENT_KEYS_TO_NOTIFICATIONS, 'true')
+  const req = Object.values(initialState.sources).map(s => ({ keys: s.keys, appNpub: parseNprofile(s.pasteField).pubkey }))
+  saveMultipleKeys(req)
+}
 
 
 
@@ -194,7 +201,6 @@ const paySourcesSlice = createSlice({
   reducers: {
     addPaySources: (state: PaySourceState, action: PayloadAction<{ source: PayTo, first?: boolean }>) => {
       if (state.sources[action.payload.source.id]) return;
-
       state.sources[action.payload.source.id] = action.payload.source;
       if (action.payload.first) {
         state.order.unshift(action.payload.source.id);

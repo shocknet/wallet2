@@ -28,6 +28,7 @@ import { getNostrClient } from '../../Api';
 import { fetchBeacon } from '../../helpers/remoteBackups';
 import { nip19 } from 'nostr-tools';
 import { setSourceToEdit } from '../../State/Slices/modalsSlice';
+import { saveKeys } from '@/State/indexedDB';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -323,6 +324,7 @@ const Sources = () => {
         adminToken: adminEnrollToken
       } as SpendFrom;
       dispatch(addSpendSources({ source: addedSpendSource }));
+      saveKeys({ keys: newSourceKeyPair, appNpub: data!.pubkey })
     } else {
       // not nprofile, now checking for other cases
 
