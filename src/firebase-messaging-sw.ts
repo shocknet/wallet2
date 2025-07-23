@@ -32,22 +32,22 @@ if (Notification.permission === 'granted') {
 
     // Handle background messages
     onBackgroundMessage(messaging, async (payload) => {
-        console.log('[firebase-messaging-sw.js] Received background message ', payload);
+        //console.log('[firebase-messaging-sw.js] Received background message ', payload);
         if (!payload.data) {
             return;
         }
         const encryptedData: { encrypted: string, app_npub: string } = JSON.parse(payload.data.raw)
-        console.log('[firebase-messaging-sw.js] Encrypted data', encryptedData.encrypted)
+        //console.log('[firebase-messaging-sw.js] Encrypted data', encryptedData.encrypted)
         const keys = await getKeys(encryptedData.app_npub)
         if (!keys) {
             console.log('[firebase-messaging-sw.js] No keys found for app_npub', encryptedData.app_npub)
             return;
         }
-        console.log('[firebase-messaging-sw.js] Got Keys')
+        //console.log('[firebase-messaging-sw.js] Got Keys')
         const ck = nip44.getConversationKey(Buffer.from(keys.privateKey, 'hex'), encryptedData.app_npub)
-        console.log('[firebase-messaging-sw.js] Got Conversation Key')
+        //console.log('[firebase-messaging-sw.js] Got Conversation Key')
         const decrypted = nip44.decrypt(encryptedData.encrypted, ck)
-        console.log('[firebase-messaging-sw.js] Decrypted', decrypted)
+        //console.log('[firebase-messaging-sw.js] Decrypted')
         const op: Types.UserOperation = JSON.parse(decrypted)
         //const m: Types.LiveUserOperation & { requestId: string, status: 'OK' } = JSON.parse(payload.data.raw)
         const notificationTitle = op.inbound ? `You received ${op.amount} sats` : `You spent ${op.amount} sats`
