@@ -25,6 +25,7 @@ const enrollToken = async (nostrSpends: SpendFrom[]) => {
 	const token = await getToken(firebaseMessaging, { vapidKey })
 	console.log({ messagingToken: token })
 	for (const source of nostrSpends) {
+		if (!source.keys || !source.pubSource) continue;
 		const { pubkey, relays } = parseNprofile(source.pasteField)
 		const c = await getNostrClient({ pubkey, relays }, source.keys)
 		const res = await c.EnrollMessagingToken({ device_id: getDeviceId(), firebase_messaging_token: token })

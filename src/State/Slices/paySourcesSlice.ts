@@ -188,8 +188,8 @@ const update = (value: PaySourceState) => {
 const initialState: PaySourceState = loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
 const HAS_SENT_KEYS_TO_NOTIFICATIONS = 'has_sent_keys_to_notifications'
 if (!localStorage.getItem(HAS_SENT_KEYS_TO_NOTIFICATIONS)) {
-  //localStorage.setItem(HAS_SENT_KEYS_TO_NOTIFICATIONS, 'true')
-  const req = Object.values(initialState.sources).map(s => ({ keys: s.keys, appNpub: parseNprofile(s.pasteField).pubkey }))
+  localStorage.setItem(HAS_SENT_KEYS_TO_NOTIFICATIONS, 'true')
+  const req = Object.values(initialState.sources).filter(s => s.keys && s.pubSource).map(s => ({ keys: s.keys, appNpub: parseNprofile(s.pasteField).pubkey }))
   saveMultipleKeys(req)
 }
 
