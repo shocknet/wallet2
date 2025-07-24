@@ -125,28 +125,25 @@ export const isAnyArrayLong = (arrays: any[][], max: number): boolean => {
 	return false
 }
 
-export const populateCursorRequest = (p: HistoryCursor) => {
-	const cursor = {
-		latestIncomingInvoice: p.latestIncomingInvoice ?? 0,
-		latestOutgoingInvoice: p.latestOutgoingInvoice ?? 0,
-		latestIncomingTx: p.latestIncomingTx ?? 0,
-		latestOutgoingTx: p.latestOutgoingTx ?? 0,
-		latestIncomingUserToUserPayment: p.latestIncomingUserToUserPayment ?? 0,
-		latestOutgoingUserToUserPayment: p.latestOutgoingUserToUserPayment ?? 0,
-		max_size: 10
-	}
+export const emptyCursor = (): HistoryCursor => ({
+	latestIncomingInvoice: { ts: 0, id: 0 },
+	latestIncomingTx: { ts: 0, id: 0 },
+	latestIncomingUserToUserPayment: { ts: 0, id: 0 },
+	latestOutgoingInvoice: { ts: 0, id: 0 },
+	latestOutgoingTx: { ts: 0, id: 0 },
+	latestOutgoingUserToUserPayment: { ts: 0, id: 0 },
+	max_size: 10
+})
 
-	return cursor
-}
 
 export const parseOperationsResponse = (r: GetUserOperationsResponse, c: HistoryCursor) => {
 	const newCursor: HistoryCursor = {
-		latestIncomingInvoice: r.latestIncomingInvoiceOperations.operations.length ? r.latestIncomingInvoiceOperations.toIndex + 1 : c.latestIncomingInvoice,
-		latestOutgoingInvoice: r.latestOutgoingInvoiceOperations.operations.length ? r.latestOutgoingInvoiceOperations.toIndex + 1 : c.latestOutgoingInvoice,
-		latestIncomingTx: r.latestIncomingTxOperations.operations.length ? r.latestIncomingTxOperations.toIndex + 1 : c.latestIncomingTx,
-		latestOutgoingTx: r.latestOutgoingTxOperations.operations.length ? r.latestOutgoingTxOperations.toIndex + 1 : c.latestOutgoingTx,
-		latestIncomingUserToUserPayment: r.latestIncomingUserToUserPayemnts.operations.length ? r.latestIncomingUserToUserPayemnts.toIndex + 1 : c.latestIncomingUserToUserPayment,
-		latestOutgoingUserToUserPayment: r.latestOutgoingUserToUserPayemnts.operations.length ? r.latestOutgoingUserToUserPayemnts.toIndex + 1 : c.latestOutgoingUserToUserPayment,
+		latestIncomingInvoice: { ts: r.latestIncomingInvoiceOperations.toIndex.ts || c.latestIncomingInvoice.ts, id: r.latestIncomingInvoiceOperations.toIndex.id || c.latestIncomingInvoice.id },
+		latestOutgoingInvoice: { ts: r.latestOutgoingInvoiceOperations.toIndex.ts || c.latestOutgoingInvoice.ts, id: r.latestOutgoingInvoiceOperations.toIndex.id || c.latestOutgoingInvoice.id },
+		latestIncomingTx: { ts: r.latestIncomingTxOperations.toIndex.ts || c.latestIncomingTx.ts, id: r.latestIncomingTxOperations.toIndex.id || c.latestIncomingTx.id },
+		latestOutgoingTx: { ts: r.latestOutgoingTxOperations.toIndex.ts || c.latestOutgoingTx.ts, id: r.latestOutgoingTxOperations.toIndex.id || c.latestOutgoingTx.id },
+		latestIncomingUserToUserPayment: { ts: r.latestIncomingUserToUserPayemnts.toIndex.ts || c.latestIncomingUserToUserPayment.ts, id: r.latestIncomingUserToUserPayemnts.toIndex.id || c.latestIncomingUserToUserPayment.id },
+		latestOutgoingUserToUserPayment: { ts: r.latestOutgoingUserToUserPayemnts.toIndex.ts || c.latestOutgoingUserToUserPayment.ts, id: r.latestOutgoingUserToUserPayemnts.toIndex.id || c.latestOutgoingUserToUserPayment.id },
 		max_size: 10
 	}
 

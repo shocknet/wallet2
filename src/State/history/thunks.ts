@@ -1,5 +1,5 @@
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import { parseOperationsResponse, payInvoiceReponseToSourceOperation, populateCursorRequest, userOperationToSourceOperation, } from './helpers';
+import { emptyCursor, parseOperationsResponse, payInvoiceReponseToSourceOperation, userOperationToSourceOperation, } from './helpers';
 import { addNewOperation, addOptimisticOperation, removeOptimisticOperation, updateOptimsticOperation, } from '.';
 import { AppDispatch, selectNostrPays, selectNostrSpends, State } from '../store';
 import { getNostrClient } from '../../Api';
@@ -48,12 +48,11 @@ export const fetchHistoryForSource = appCreateAsyncThunk(
 		const client = await getNostrClient(source.pasteField, source.keys);
 
 		const newOps: UserOperation[] = [];
-		const cursor = getState().history.sources[sourceId]?.cursor || {};
 
 
 
 		let needMore = true;
-		let populatedCursor = populateCursorRequest(cursor);
+		let populatedCursor = getState().history.sources[sourceId]?.cursor || emptyCursor();
 		while (needMore) {
 			const res = await client.GetUserOperations(populatedCursor);
 			if (res.status !== "OK") {
@@ -73,9 +72,7 @@ export const fetchHistoryForSource = appCreateAsyncThunk(
 
 		})
 
-		if (processedOperations.length > 0) {
-			dispatch(getSourceInfo(sourceId));
-		}
+		dispatch(getSourceInfo(sourceId));
 
 		return { sourceId, newOps: processedOperations, newCursor: populatedCursor };
 	})
