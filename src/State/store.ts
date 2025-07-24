@@ -19,8 +19,8 @@ import { BackupAction } from './types';
 import { bridgeMiddleware } from './bridgeMiddleware';
 import modalsSlice from './Slices/modalsSlice';
 import { ndebitMiddleware } from './ndebitDiscoverableMiddleware';
-import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
-import history from './history';
+import { createMigrate, FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
+import history, { historyMigrations } from './history';
 import IonicStorageAdapter from '../storage/redux-persist-ionic-storage-adapter';
 import { HistoryState } from './history/types';
 import { parseUserInputToSats } from '@/lib/units';
@@ -33,7 +33,8 @@ export const syncRedux = createAction('SYNC_REDUX');
 const PaymentHistoryPersistConfig = {
   key: 'paymentHistory',
   storage: IonicStorageAdapter,
-
+  version: 0,
+  migrate: createMigrate(historyMigrations, { debug: true })
 }
 
 export const reducer = combineReducers({
