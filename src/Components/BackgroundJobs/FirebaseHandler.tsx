@@ -7,7 +7,7 @@ import { getDeviceId } from "../../constants";
 import { SpendFrom } from "../../globalTypes";
 
 
-const firebaseConfig = {
+/* const firebaseConfig = {
 	apiKey: "AIzaSyA6YFA5tr2AHMVVXwLU00s_bVQekvXyN-w",
 	authDomain: "shockwallet-11a9c.firebaseapp.com",
 	projectId: "shockwallet-11a9c",
@@ -16,13 +16,13 @@ const firebaseConfig = {
 	appId: "1:73069543153:web:048e09fb8a258acb7ab350",
 	measurementId: "G-HQ89PZ3GPW"
 };
-const vapidKey = "BExGVgcmXFE2pMPG2iPGCyYINHGD6B_dzkcH3EqbzXK8bpS6uuSt_bs78blau2NrJoyBOv044CgA0-UtVz8YzrI"
+const vapidKey = "BExGVgcmXFE2pMPG2iPGCyYINHGD6B_dzkcH3EqbzXK8bpS6uuSt_bs78blau2NrJoyBOv044CgA0-UtVz8YzrI" */
 
 const enrollToken = async (nostrSpends: SpendFrom[]) => {
 	console.log("enrolling messagingtoken")
-	const firebaseApp = initializeApp(firebaseConfig)
+	const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG))
 	const firebaseMessaging = getMessaging(firebaseApp);
-	const token = await getToken(firebaseMessaging, { vapidKey })
+	const token = await getToken(firebaseMessaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
 	console.log({ messagingToken: token })
 	for (const source of nostrSpends) {
 		if (!source.keys || !source.pubSource) continue;
