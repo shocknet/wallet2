@@ -4,15 +4,17 @@
   "version": "0.0.1",
   "scripts": {
     "start": "vite",
+    "buildionic": "rm -rf dist && ionic build prod",
     "start:22k": "vite --port 22000",
     "dev": "vite",
-    "build": "node ./preBuild/preBuild.ts && ionic cap build",
-    "prebuild": "node ./preBuild/preBuild.ts",
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
     "lint": "eslint . --ext .ts",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "android:sync": "npm run buildionic && npx cap sync android",
+    "android:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
+    "android:run": "npm run android:sync && npx cap run android"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -123,7 +125,8 @@
     "vite": "^6.3.5",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-pwa": "^1.0.0",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "yargs": "^18.0.0"
   },
   "description": "An Ionic project"
 }

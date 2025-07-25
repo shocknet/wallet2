@@ -84,40 +84,6 @@ jobs:
           mkdir -p android/app/src/main/java
           mkdir -p android/app/src/main/res/values
 
-      - name: Run pre-build script
-        run: |
-          npm run prebuild
-
-      - name: Verify Android project structure
-        run: |
-          echo "Android project structure:"
-          tree android/app/src/main
-          echo "MainActivity.java contents:"
-          cat android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
-          echo "AndroidManifest.xml package and URL:"
-          grep 'package=' android/app/src/main/AndroidManifest.xml
-          grep 'android:host=' android/app/src/main/AndroidManifest.xml
-          echo "build.gradle applicationId and version:"
-          grep 'applicationId' android/app/build.gradle
-          grep 'versionCode' android/app/build.gradle
-          grep 'versionName' android/app/build.gradle
-          echo "MainActivity.java package:"
-          grep 'package' android/app/src/main/java/${VITE_ANDROID_APPLICATION_ID//./\/}/MainActivity.java
-          echo "strings.xml app name:"
-          grep 'app_name' android/app/src/main/res/values/strings.xml
-          echo "capacitor.config.json package name:"
-          grep 'packageName' capacitor.config.json || echo "capacitor.config.json not found"
-
-      - name: Build Android app
-        run: |
-          source .env
-          ionic cap sync android
-          if [[ ${{ github.event_name }} == 'release' ]]; then
-            ionic cap build android --no-interactive --prod
-          else
-            ionic cap build android --no-interactive
-          fi
-
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -131,20 +97,13 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./android/gradlew
 
-      - name: Build with Gradle
+      - name: Build ionic, sync, build gradle
         run: |
-          cd android
-          ./gradlew assembleRelease --info \
-            -PversionCode=${{ env.VERSION_CODE }} \
-            -PversionName=${{ env.VERSION }} \
-            -PappName="${{ env.VITE_APP_NAME }}" \
-            -PapplicationId="${{ env.VITE_ANDROID_APPLICATION_ID }}" \
-            -PappUrl="${{ env.VITE_APP_URL }}"
+          npm run android:release
 
-      - name: Check AndroidManifest.xml after Gradle build
+      - name: Check merged manifest
         run: |
-          echo "AndroidManifest.xml contents after Gradle build:"
-          cat android/app/src/main/AndroidManifest.xml
+          cat android/app/build/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
 
       - name: List available Android SDK packages
         run: |
@@ -187,10 +146,6 @@ jobs:
         with:
           name: app-release-dev
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
-
-      - name: Check AndroidManifest.xml
-        run: |
-          cat android/app/src/main/AndroidManifest.xml
 
       - name: Debug Build Environment
         run: |
