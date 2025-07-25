@@ -53,3 +53,4 @@ event.json
 run.log
 android_key.base64
 
+/dist
