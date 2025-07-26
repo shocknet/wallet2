@@ -43,11 +43,6 @@ android {
     namespace "app.shockwallet"
     compileSdk rootProject.ext.compileSdkVersion
 
-		compileOptions {
-			sourceCompatibility JavaVersion.VERSION_17
-      targetCompatibility JavaVersion.VERSION_17
-		}
-
     defaultConfig {
 				applicationId getEnvVar("VITE_ANDROID_APPLICATION_ID", "app.shockwallet.my")
 				versionName getEnvVar("VERSION", "0.0.0-dev")
@@ -68,12 +63,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
-
-java {
-	toolchain {
-			languageVersion = JavaLanguageVersion.of(21)
-	}
 }
 
 repositories {
