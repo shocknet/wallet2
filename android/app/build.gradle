@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "app.shockwallet"
+    namespace "app.shockwallet.my"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.shockwallet"
+        applicationId "app.shockwallet.my"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "2"
+        versionCode undefined
+        versionName "undefined"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "app_name", project.hasProperty('appName') ? project.property('appName') : "Shockwallet"
         manifestPlaceholders = [appUrl: project.hasProperty('appUrl') ? project.property('appUrl') : (project.hasProperty('applicationId') ? project.property('applicationId').replace('app.', '') : "my.shockwallet.app")]
