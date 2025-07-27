@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "vite",
-    "buildionic": "rm -rf dist && ionic build prod",
+    "buildionic": "rm -rf dist && ionic build --prod",
     "start:22k": "vite --port 22000",
     "dev": "vite",
     "preview": "vite preview",
