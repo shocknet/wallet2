@@ -3,45 +3,49 @@ import { type Satoshi } from "./types/units";
 import { satsToBtc } from "./units";
 
 interface CurrencyCache {
-	rate: number | null;
+	rate: number;
 	timestamp: number;
 }
 
 
 const CACHE_DURATION = 5 * 60 * 1000;
-const cache: Record<string, CurrencyCache> = {};
-
-
-async function fetchExchangeRates(url: string): Promise<number | null> {
-
-
-	try {
-		const response = await axios.get(url);
-
-
-
-		const { amount } = response.data.data;
-		return parseFloat(amount);
-
-	} catch (err) {
-
-		console.error('Error fetching exchange rate:', err);
-		return null;
-	}
-}
-
+const cache = new Map<string, CurrencyCache>();
+const pendingPromises = new Map<string, Promise<number | null>>(); // promise per currency to control concurrency
 
 async function getExchangeRate(currency: string, url: string): Promise<number | null> {
 	const now = Date.now();
-	const cached = cache[currency];
+	const cached = cache.get(currency);
 
 	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
 		return cached.rate;
 	}
 
-	const rate = await fetchExchangeRates(url);
-	cache[currency] = { rate, timestamp: now };
-	return rate;
+	if (pendingPromises.has(currency)) {
+		return pendingPromises.get(currency)!;
+	}
+
+	const fetchPromise = (async () => {
+		try {
+			const rate = await fetchExchangeRates(url);
+			cache.set(currency, { rate, timestamp: Date.now() });
+			return rate;
+		} catch (err) {
+			console.error('Error fetching exchange rate:', err);
+			return null;
+		} finally {
+			pendingPromises.delete(currency); // Always clean up
+		}
+	})();
+
+	pendingPromises.set(currency, fetchPromise);
+	return fetchPromise;
+}
+
+async function fetchExchangeRates(url: string): Promise<number> {
+	const response = await axios.get(url);
+	const { amount } = response.data.data;
+	return parseFloat(amount);
+
 }
 
 
