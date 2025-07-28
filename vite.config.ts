@@ -15,36 +15,46 @@ export default defineConfig({
       failOnError: false,
       failOnWarning: false
     }),
-    VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'firebase-messaging-sw.ts',
-      workbox: {
-        globPatterns: [],
-        globIgnores: ['*']
-      },
-      injectManifest: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-      }
-    }),
+
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'shockwallet-logo.svg'],
       manifest: {
-        name: 'Your App Name',
+        name: 'Shockwallet',
         short_name: 'App',
-        description: 'Your app description',
-        theme_color: '#ffffff',
+        description: 'Lightning for Everyone',
+        theme_color: '#29abe2',
+        background_color: '#16191c',
         icons: [
+          {
+            src: 'pwa-64x64.png',
+            sizes: '64x64',
+            type: 'image/png',
+            purpose: 'any'
+          },
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/pwa-maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       },
