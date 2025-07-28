@@ -11,13 +11,18 @@ import {
 	helpCircleOutline,
 	logoBitcoin,
 	analyticsOutline,
-	informationCircle
 } from "ionicons/icons"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { AdminSource, getAdminSource } from "../AdminGuard"
 import { useSelector } from "../../State/store"
 import { App } from "@capacitor/app"
-import { useAlert } from "@/lib/contexts/useAlert"
+
+
+interface AppBuildInfo {
+	appId: string;
+	versionCode: string;
+	versionName: string;
+}
 const getMenuItems = (adminSource: AdminSource | undefined) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
@@ -36,7 +41,7 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 }
 
 const NavigationMenu = () => {
-	const { showAlert } = useAlert();
+	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
 	const spendSources = useSelector(state => state.spendSource)
 	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
 	useEffect(() => {
@@ -52,17 +57,27 @@ const NavigationMenu = () => {
 		}
 	}, [spendSources])
 
+	useEffect(() => {
+		const setupAppBuildInfo = async () => {
+			try {
 
-	const reportAppBuildInfo = useCallback(async () => {
-		const appInfo = await App.getInfo();
-		showAlert({
-			header: "App build version",
-			message: `App ID: ${appInfo.id}\n
-			Vesrion Code: ${appInfo.build}\n
-			Version Name: ${appInfo.version}
-			`
-		})
-	}, [showAlert]);
+				if (isPlatform("hybrid")) {
+					const res = await App.getInfo();
+					setAppInfo({
+						appId: res.id,
+						versionCode: res.build,
+						versionName: res.version
+					})
+				} else {
+					// TODO: give web build a notion of build version
+				}
+			} catch (err: any) {
+				console.error("Error getting app build info: ", err?.message || "")
+			}
+		}
+		setupAppBuildInfo();
+	}, [])
+
 
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
@@ -98,15 +113,26 @@ const NavigationMenu = () => {
 							<IonIcon color="success" icon={helpCircleOutline} slot="start" />
 							<IonLabel>Help/About</IonLabel>
 						</IonItem>
-						{
-							isPlatform("hybrid") &&
-							<IonItem button onClick={reportAppBuildInfo}>
-								<IonIcon color="primary" icon={informationCircle} slot="start" />
-								<IonLabel>App Info</IonLabel>
-							</IonItem>
-						}
+
 					</IonItemGroup>
 				</IonList>
+				<div
+					style={{
+						position: "absolute",
+						bottom: "5px",
+						transform: "translateX(50%)",
+						color: "var(--ion-text-color-step-700)",
+						fontSize: "0.8rem"
+					}}>
+					{
+						(appInfo !== null) &&
+						Object.entries(appInfo).map(([key, value]) => (
+							<div key={key}>
+								<span>{key}:&nbsp;</span><span>{value}</span>
+							</div>
+						))
+					}
+				</div>
 			</IonContent>
 		</IonMenu>
 	)
