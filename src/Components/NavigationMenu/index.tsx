@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuToggle, IonTitle, IonToolbar } from "@ionic/react"
+import { IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuToggle, IonTitle, IonToolbar, isPlatform } from "@ionic/react"
 import {
 	calendarNumberOutline,
 	peopleOutline,
@@ -10,11 +10,14 @@ import {
 	keyOutline,
 	helpCircleOutline,
 	logoBitcoin,
-	analyticsOutline
+	analyticsOutline,
+	informationCircle
 } from "ionicons/icons"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { AdminSource, getAdminSource } from "../AdminGuard"
 import { useSelector } from "../../State/store"
+import { App } from "@capacitor/app"
+import { useAlert } from "@/lib/contexts/useAlert"
 const getMenuItems = (adminSource: AdminSource | undefined) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
@@ -33,6 +36,7 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 }
 
 const NavigationMenu = () => {
+	const { showAlert } = useAlert();
 	const spendSources = useSelector(state => state.spendSource)
 	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
 	useEffect(() => {
@@ -47,6 +51,19 @@ const NavigationMenu = () => {
 			setAdminSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
 		}
 	}, [spendSources])
+
+
+	const reportAppBuildInfo = useCallback(async () => {
+		const appInfo = await App.getInfo();
+		showAlert({
+			header: "App build version",
+			message: `App ID: ${appInfo.id}\n
+			Vesrion Code: ${appInfo.build}\n
+			Version Name: ${appInfo.version}
+			`
+		})
+	}, [showAlert]);
+
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
 			<IonHeader>
@@ -81,7 +98,13 @@ const NavigationMenu = () => {
 							<IonIcon color="success" icon={helpCircleOutline} slot="start" />
 							<IonLabel>Help/About</IonLabel>
 						</IonItem>
-
+						{
+							isPlatform("hybrid") &&
+							<IonItem button onClick={reportAppBuildInfo}>
+								<IonIcon color="primary" icon={informationCircle} slot="start" />
+								<IonLabel>App Info</IonLabel>
+							</IonItem>
+						}
 					</IonItemGroup>
 				</IonList>
 			</IonContent>
