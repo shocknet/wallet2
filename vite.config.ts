@@ -15,7 +15,6 @@ export default defineConfig({
       failOnError: false,
       failOnWarning: false
     }),
-
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'shockwallet-logo.svg'],
@@ -62,7 +61,19 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       }
-    })
+    }),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'firebase-messaging-sw.ts',
+      workbox: {
+        globPatterns: [],
+        globIgnores: ['*']
+      },
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      }
+    }),
   ],
   build: {
     rollupOptions: {
