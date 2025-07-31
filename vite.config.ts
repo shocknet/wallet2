@@ -5,6 +5,7 @@ import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer';
+import vitePluginCompression from 'vite-plugin-compression'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,6 +15,9 @@ export default defineConfig({
     eslint({
       failOnError: false,
       failOnWarning: false
+    }),
+    vitePluginCompression({
+      algorithm: "gzip"
     }),
     VitePWA({
       registerType: 'autoUpdate',
