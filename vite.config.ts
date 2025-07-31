@@ -17,7 +17,6 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'shockwallet-logo.svg'],
       manifest: {
         name: 'Shockwallet',
         short_name: 'App',
@@ -85,6 +84,73 @@ export default defineConfig({
           filename: 'bundle-report.html',
         }),
       ],
+
+      output: {
+        manualChunks(id) {
+          if (id.includes('commonjsHelpers')) return 'commonjsHelpers'
+          if (!id.includes('node_modules')) return
+
+          // Ionic ecosystem
+          if (
+            id.includes('/@ionic/') ||
+            id.includes('/@ionic/react/') ||
+            id.includes('/@ionic/react-router/') ||
+            id.includes('/@ionic/pwa-elements/') ||
+            id.includes('/@ionic/storage/') ||
+            id.includes('/ionicons/') ||
+            id.includes('/@capacitor/') ||
+            id.includes('/@stencil/core/')
+          ) return 'ionic-ecosystem';
+
+
+          // React core ecosystem
+          if (
+            id.includes('/react/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/scheduler/') ||
+            id.includes('/react-is/') ||
+            id.includes('/use-sync-external-store/') ||
+            id.includes('/hoist-non-react-statics/') ||
+            id.includes('/styled-components/') ||
+            id.includes('/prop-types/') ||
+            id.includes('/react-chartjs-2/') ||
+            id.includes('/react-router/') ||
+            id.includes('/history/')
+
+          ) return 'react-core';
+
+          // State management
+          if (
+            id.includes('/redux/') ||
+            id.includes('/redux-thunk/') ||
+            id.includes('/react-redux/') ||
+            id.includes('/redux-persist/') ||
+            id.includes('/@reduxjs/toolkit') ||
+            id.includes('/reselect/')
+          ) return "state-management";
+
+
+
+          // Framer Motion
+          if (id.includes('/framer-motion/')) return 'framer-motion';
+
+          // React Router
+          if (id.includes('/react-router/') || id.includes('/history/')) return 'react-router';
+
+          // UI libraries
+          if (
+            id.includes('/react-toastify/') ||
+            id.includes('dnd') ||
+            id.includes('/swiper/') ||
+            id.includes('/qrcode.react/') ||
+            id.includes('/html5-qrcode/')
+          ) return 'ui-libraries';
+
+
+          // Vendor catch-all
+          return 'vendor';
+        }
+      },
     },
   },
   server: {
@@ -99,5 +165,6 @@ export default defineConfig({
     alias: {
       "@": resolve(__dirname, "src"),
     },
+    dedupe: ['react', 'react-dom', 'react-is', 'scheduler', 'use-sync-external-store']
   },
 })
