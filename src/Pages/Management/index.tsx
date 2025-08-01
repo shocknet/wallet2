@@ -34,6 +34,7 @@ const Management = () => {
   const [displayData, setDisplayData] = useState<PayTo>();
   const [offerValue, setOfferValue] = useState<string>("");
   const [manageAuths, setManageAuths] = useState<Types.ManageAuthorization[]>([]);
+  const [nmanage, setNmanage] = useState<string>("");
 
   useEffect(() => {
     setShowDropDown(showDropDown);
@@ -49,9 +50,20 @@ const Management = () => {
     }
   }
 
+  const fetchUserInfo = async () => {
+    const client = await getNostrClient(value.pasteField, value.keys)
+    const res = await client.GetUserInfo()
+    if (res.status === "OK") {
+      setNmanage(res.nmanage)
+    } else {
+      toast.error(res.reason)
+    }
+  }
+
   useEffect(() => {
     setDisplayData(value)
     fetchManageAuths()
+    fetchUserInfo()
   }, [value]);
 
   const dropdown = () => {
@@ -193,6 +205,7 @@ const Management = () => {
             {Icons.arrow()}
           </div>
         </div>
+        <p style={{ fontSize: "12px", color: "gray" }}> {nmanage} </p>
         {manageAuths.map(((o, i) => <div key={i} className="Offers_source">
           <div className="source_header">
             <div className="title">{o.npub}</div>
