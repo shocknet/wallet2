@@ -7,6 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer';
 import vitePluginCompression from 'vite-plugin-compression'
 
+// Check if this is an Android build
+const isAndroidBuild = process.env.CAPACITOR_PLATFORM === 'android'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -16,14 +19,16 @@ export default defineConfig({
       failOnError: false,
       failOnWarning: false
     }),
-    vitePluginCompression({
-      algorithm: "gzip",
-      deleteOriginFile: true,
-      filter: (file) => {
-        // Don't delete index.html as it's needed by Capacitor
-        return !file.endsWith('index.html');
-      }
-    }),
+    // Only apply compression for web builds, not Android builds
+    ...(isAndroidBuild ? [] : [
+      vitePluginCompression({
+        algorithm: "gzip",
+        filter: (file) => {
+          // Only compress JavaScript and CSS files
+          return file.endsWith('.js') || file.endsWith('.css');
+        }
+      })
+    ]),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
