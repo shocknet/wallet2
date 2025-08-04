@@ -9,6 +9,8 @@ import vitePluginCompression from 'vite-plugin-compression'
 
 // Check if this is an Android build
 const isAndroidBuild = process.env.CAPACITOR_PLATFORM === 'android'
+// Disable compression plugin since Caddy handles compression with zstd
+const disableCompression = true
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,16 +21,16 @@ export default defineConfig({
       failOnError: false,
       failOnWarning: false
     }),
-    // Only apply compression for web builds, not Android builds
-    ...(isAndroidBuild ? [] : [
-      vitePluginCompression({
-        algorithm: "gzip",
-        filter: (file) => {
-          // Only compress JavaScript and CSS files
-          return file.endsWith('.js') || file.endsWith('.css');
-        }
-      })
-    ]),
+    // Disable compression plugin since Caddy handles compression with zstd
+    // ...(isAndroidBuild ? [] : [
+    //   vitePluginCompression({
+    //     algorithm: "gzip",
+    //     filter: (file) => {
+    //       // Only compress JavaScript and CSS files
+    //       return file.endsWith('.js') || file.endsWith('.css');
+    //     }
+    //   })
+    // ]),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
