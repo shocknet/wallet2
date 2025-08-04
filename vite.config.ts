@@ -17,7 +17,12 @@ export default defineConfig({
       failOnWarning: false
     }),
     vitePluginCompression({
-      algorithm: "gzip"
+      algorithm: "gzip",
+      deleteOriginFile: true,
+      filter: (file) => {
+        // Don't delete index.html as it's needed by Capacitor
+        return !file.endsWith('index.html');
+      }
     }),
     VitePWA({
       registerType: 'autoUpdate',
