@@ -74,13 +74,13 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 				icon={typeIcon}
 				style={{ color: typeIconColor, margin: "10px", alignSelf: "start" }}
 			></IonIcon>
-			<IonLabel color="primary" >
+			<IonLabel color="primary">
 				<IonGrid>
 					<IonRow className="ion-nowrap">
-						<IonCol size="8" sizeXs="6" className="ion-text-start" >
+						<IonCol size="10" className="ion-text-start" >
 							<h2>{label || <span style={{ opacity: 0.8 }}>&lt;no label&gt;</span>}</h2>
 						</IonCol>
-						<IonCol size="4" sizeXs="6">
+						<IonCol size="2" >
 							<IonRow className="ion-text-end ion-nowrap">
 								<IonCol size="auto" style={{ marginLeft: "auto" }}>
 									<IonIcon
@@ -97,7 +97,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 							</IonRow>
 						</IonCol>
 					</IonRow>
-					<IonRow>
+					<IonRow style={{ marginTop: "0.3rem" }}>
 						<IonCol>
 							<IonNote className="text-low">{date}</IonNote>
 						</IonCol>
