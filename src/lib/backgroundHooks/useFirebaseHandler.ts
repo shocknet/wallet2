@@ -23,7 +23,8 @@ const enrollToken = async (nostrSpends: SpendFrom[]) => {
 	console.log("enrolling messagingtoken")
 	const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG))
 	const firebaseMessaging = getMessaging(firebaseApp);
-	const token = await getToken(firebaseMessaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
+	const swReg = await navigator.serviceWorker.ready; // Get sw.js registration and pass it to getToken
+	const token = await getToken(firebaseMessaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg });
 	console.log({ messagingToken: token })
 	for (const source of nostrSpends) {
 		if (!source.keys || !source.pubSource) continue;
