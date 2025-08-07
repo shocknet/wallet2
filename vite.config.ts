@@ -4,19 +4,19 @@ import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer';
-import vitePluginCompression from 'vite-plugin-compression'
+
+// Check if this is an Android build
+const isAndroidBuild = process.env.CAPACITOR_PLATFORM === 'android'
+// Disable compression plugin since Caddy handles compression with zstd
+const disableCompression = true
 
 // https://vitejs.dev/config/
 export default defineConfig({
-
 	plugins: [
 		react(),
 		eslint({
 			failOnError: false,
 			failOnWarning: false
-		}),
-		vitePluginCompression({
-			algorithm: "gzip"
 		}),
 		VitePWA({
 			registerType: 'autoUpdate',
