@@ -6,7 +6,7 @@ import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";
-import { fetchAllSourcesHistory } from "@/State/history/thunks";
+import { fetchAllSourcesHistory } from "@/State/history";
 import { resetCursors } from "@/State/history";
 import { useToast } from "@/lib/contexts/useToast";
 
@@ -22,7 +22,7 @@ const BalanceCard = () => {
 	const { url, currency } = useSelector(state => state.prefs.FiatUnit);
 	const balance = useSelector(selectSpendsTotalBalance);
 	const [money, setMoney] = useState("");
-	const [displayBalance, setDisplayBalance] = useState(unit === "sats" ? formatSatoshi(balance) : formatBitcoin(satsToBtc(balance)));
+	const displayBalance = unit === "sats" ? formatSatoshi(balance) : formatBitcoin(satsToBtc(balance))
 
 	const holdTimer = useRef<NodeJS.Timeout | null>(null);
 	const handlePointerDown = () => {
@@ -43,17 +43,9 @@ const BalanceCard = () => {
 	};
 
 
-	useEffect(() => {
-		if (unit === "BTC") {
-			setDisplayBalance(formatBitcoin(satsToBtc(balance)));
-		}
-		else {
-			setDisplayBalance(formatSatoshi(balance));
-		}
-	}, [unit, balance]);
+
 
 	useEffect(() => {
-		setDisplayBalance(formatSatoshi(balance));
 		const setFiat = async () => {
 			const fiat = await convertSatsToFiat(balance, currency, url);
 			setMoney(formatFiat(fiat, currency));
@@ -75,6 +67,7 @@ const BalanceCard = () => {
 			onPointerDown={handlePointerDown}
 			onPointerUp={clearHoldTimer}
 			onPointerLeave={clearHoldTimer}
+			style={{ marginBottom: "1rem" }}
 		>
 			<IonRippleEffect></IonRippleEffect>
 			<IonText color="light" className={styles["amount"]}>{displayBalance}</IonText>

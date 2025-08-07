@@ -1,17 +1,19 @@
-import {
-	CapacitorBarcodeScanner,
-	CapacitorBarcodeScannerAndroidScanningLibrary,
-	CapacitorBarcodeScannerCameraDirection,
-	CapacitorBarcodeScannerTypeHint,
-} from '@capacitor/barcode-scanner';
 import { useScanner } from '../contexts/pwaScannerProvider';
 import { useToast } from '../contexts/useToast';
 import { useCallback } from 'react';
 import { isPlatform } from '@ionic/react';
-import { BITCOIN_ADDRESS_BASE58_REGEX } from '../parse';
+import { BITCOIN_ADDRESS_BASE58_REGEX } from '../regex';
+
 
 // Native scanning function
 async function nativeScan(instruction: string): Promise<string> {
+	const {
+		CapacitorBarcodeScanner,
+		CapacitorBarcodeScannerAndroidScanningLibrary,
+		CapacitorBarcodeScannerCameraDirection,
+		CapacitorBarcodeScannerTypeHint
+	} = await import("@capacitor/barcode-scanner");
+
 	const result = await CapacitorBarcodeScanner.scanBarcode({
 		hint: CapacitorBarcodeScannerTypeHint.QR_CODE,
 		scanInstructions: " " + instruction,

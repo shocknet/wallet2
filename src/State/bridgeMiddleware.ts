@@ -1,8 +1,8 @@
 import { AnyAction, createAction, createListenerMiddleware, isAnyOf, ListenerEffectAPI, TypedStartListening } from "@reduxjs/toolkit";
 import { addPaySources } from "./Slices/paySourcesSlice";
-import { AppDispatch, State } from "./store";
+import { AppDispatch, dynamicMiddleware, State } from "./store";
 import { PayTo } from "../globalTypes";
-import { getNostrClient } from "../Api";
+import { getNostrClient } from "@/Api/nostr";
 import Bridge from "../Api/bridge";
 import { Buffer } from "buffer";
 
@@ -51,7 +51,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 
 }
 
-export const bridgeListener = {
+const bridgeListener = {
 	matcher: isAnyOf(addPaySources, upgradeSourcesToNofferBridge),
 	effect: async (action: AnyAction, listenerApi: ListenerEffectAPI<State, AppDispatch>) => {
 		if (upgradeSourcesToNofferBridge.match(action)) {
@@ -82,6 +82,7 @@ export const bridgeListener = {
 	}
 }
 
-export const bridgeMiddleware = createListenerMiddleware()
+const bridgeMiddleware = createListenerMiddleware();
+dynamicMiddleware.addMiddleware(bridgeMiddleware.middleware);
 const typedStartListening = bridgeMiddleware.startListening as TypedStartListening<State, AppDispatch>
 typedStartListening(bridgeListener);

@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { syncRedux } from '../store';
+import { syncRedux } from '../thunks/syncRedux';
 export const storageKey = "invitations"
 
 interface InvitationEntry {

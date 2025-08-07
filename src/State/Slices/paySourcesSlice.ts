@@ -3,13 +3,13 @@ import { PayTo, SourceTrustLevel } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile } from '../../constants';
-import { syncRedux } from '../store';
-import { getNostrPrivateKey, parseNprofile } from '../../Api/nostr';
+import { getNostrPrivateKey, parseNprofile } from '@/lib/nprofile';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { nip19 } from 'nostr-tools'
 import { Buffer } from 'buffer';
 import { saveMultipleKeys } from '../indexedDB';
+import { syncRedux } from '../thunks/syncRedux';
 
 const { nprofileEncode: encodeNprofile } = nip19
 

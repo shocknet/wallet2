@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
-import { syncRedux } from '../store';
 import { BackupAction } from '../types';
+import { syncRedux } from '../thunks/syncRedux';
 type FeeOptions = "asap" | "avg" | "eco" | ""
 type FiatCurrencyUrl = {
   url: string
@@ -31,7 +31,7 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
   // Neither Fiaturl or FiatUnit existing at all migration
   2: (state) => {
     if (!state.FiatUnit) {
-      state.FiatUnit = {url: "https://api.coinbase.com/v2/prices/BTC-USD/spot", symbol: "$", currency: "USD"};
+      state.FiatUnit = { url: "https://api.coinbase.com/v2/prices/BTC-USD/spot", symbol: "$", currency: "USD" };
       return state;
     }
     return state;
@@ -68,7 +68,6 @@ export const mergeLogic = (serialLocal: string, serialRemote: string): { data: s
     }),
     actions
   }
-  
 }
 
 

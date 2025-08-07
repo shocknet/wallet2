@@ -1,12 +1,12 @@
-import { useEffect, useLayoutEffect } from "react";
-import { useDispatch, useSelector } from "../../State/store";
-import { setPrivateKey } from "../../State/Slices/nostrPrivateKey";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "@/State/store";
+import { setPrivateKey } from "@/State/Slices/nostrPrivateKey";
 import { useHistory } from "react-router";
-import { fixSpendDuplicates } from "../../State/Slices/spendSourcesSlice";
-import { fixPayDuplicates } from "../../State/Slices/paySourcesSlice";
+import { fixSpendDuplicates } from "@/State/Slices/spendSourcesSlice";
+import { fixPayDuplicates } from "@/State/Slices/paySourcesSlice";
 
 
-export const NodeUpCheck = () => {
+export const useNodeUpCheck = () => {
 	const history = useHistory()
 	const dispatch = useDispatch();
 	const paySource = useSelector((state) => state.paySource);
@@ -17,13 +17,15 @@ export const NodeUpCheck = () => {
 		if (!nodedUp && (paySource.order.length > 0 || spendSource.order.length > 0)) {
 			dispatch(setPrivateKey());
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [paySource, spendSource])
 
-	useLayoutEffect(() => {
+	useEffect(() => {
 		const routes = ["/nodeup", "/sources", "/auth", "/scan", "/metrics", "/stats"];
 		if (!nodedUp && !routes.includes(history.location.pathname)) {
 			history.push("/");
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [history.location, nodedUp])
 
 
@@ -31,5 +33,4 @@ export const NodeUpCheck = () => {
 		dispatch(fixSpendDuplicates());
 		dispatch(fixPayDuplicates());
 	}, [dispatch])
-	return null;
 }

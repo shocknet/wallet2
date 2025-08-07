@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useIonRouter } from "@ionic/react";
+import React, { useMemo, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { useSelector } from "../../State/store";
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
-import { getHttpClient, getNostrClient } from '../../Api';
+import { getNostrClient } from "@/Api/nostr";
 
 const Manage = ({ done }: { done: () => void }) => {
   //const router = useIonRouter();

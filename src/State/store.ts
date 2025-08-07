@@ -1,6 +1,6 @@
 // src/state/store.ts
 
-import { AnyAction, combineReducers, configureStore, createAction, createListenerMiddleware, createSelector, TypedStartListening } from '@reduxjs/toolkit';
+import { combineSlices, configureStore, createAction, createListenerMiddleware, createSelector, createSlice, TypedStartListening } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from './Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from './Slices/spendSourcesSlice';
 import usdToBTCReducer from './Slices/usdToBTCSlice';
@@ -14,36 +14,25 @@ import oneTimeInviteLinkSlice from './Slices/oneTimeInviteLinkSlice';
 import nostrPrivateKey from './Slices/nostrPrivateKey';
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
 import backupStateSlice from './Slices/backupState';
-import { backup } from './backupMiddleware';
-import { BackupAction } from './types';
-import { bridgeMiddleware } from './bridgeMiddleware';
+import { createDynamicMiddleware } from "@reduxjs/toolkit/react";
+import type { BackupAction } from './types';
 import modalsSlice from './Slices/modalsSlice';
-import { ndebitMiddleware } from './ndebitDiscoverableMiddleware';
-import { createMigrate, FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
-import history, { historyMigrations } from './history';
-import IonicStorageAdapter from '../storage/redux-persist-ionic-storage-adapter';
-import { HistoryState } from './history/types';
+import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import { parseUserInputToSats } from '@/lib/units';
-import { Satoshi } from '@/lib/types/units';
-import { PayTo, SpendFrom } from '@/globalTypes';
-
-export const syncRedux = createAction('SYNC_REDUX');
+import type { Satoshi } from '@/lib/types/units';
+import type { PayTo, SpendFrom } from '@/globalTypes';
 
 
-const PaymentHistoryPersistConfig = {
-  key: 'paymentHistory',
-  storage: IonicStorageAdapter,
-  version: 0,
-  migrate: createMigrate(historyMigrations, { debug: true })
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface LazyLoadedSlices { }
 
-export const reducer = combineReducers({
+
+export const reducer = combineSlices({
   paySource: paySourcesReducer,
   spendSource: spendSourcesReducer,
   usdToBTC: usdToBTCReducer,
   prefs: prefsSlice,
   addressbook: addressbookSlice,
-  history: persistReducer<HistoryState, AnyAction>(PaymentHistoryPersistConfig, history),
   notify: notificationSlice,
   subscriptions: subscriptionsSlice,
   generatedAssets,
@@ -52,19 +41,19 @@ export const reducer = combineReducers({
   backupStateSlice,
   oneTimeInviteLinkSlice,
   modalsSlice,
-})
+
+}).withLazyLoadedSlices<LazyLoadedSlices>();
 
 
-
-
+export const dynamicMiddleware = createDynamicMiddleware();
 const store = configureStore({
   reducer: reducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER],
       },
-    }).prepend(backup.middleware, bridgeMiddleware.middleware, ndebitMiddleware.middleware),
+    }).prepend(dynamicMiddleware.middleware)
 });
 
 export const persistor = persistStore(store);
@@ -91,8 +80,6 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
       return prefsMergeLogic
     case addressbookStorageKey:
       return addressbookMergeLogic
-    /* case historyStorageKey:
-      return historyMergeLogic */
     default:
       return null
   }

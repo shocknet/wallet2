@@ -1,5 +1,5 @@
 import { InputClassification } from "@/lib/types/parse";
-import { SourceOperation } from "@/State/history/types";
+import type { SourceOperation } from "@/State/history/types";
 import { flashOutline, hourglass, linkOutline, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
 import moment from "moment";
 

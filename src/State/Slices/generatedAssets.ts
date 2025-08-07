@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { syncRedux } from '../store';
+import { syncRedux } from '../thunks/syncRedux';
 
 export const storageKey = "generatedAssets"
 interface GeneratedAssets {
@@ -44,10 +44,10 @@ const generatedAssetsSlice = createSlice({
 		},
 	},
 	extraReducers: (builder) => {
-    builder.addCase(syncRedux, () => {
-      return JSON.parse(localStorage.getItem(storageKey) ?? "{}");
-    })
-  }
+		builder.addCase(syncRedux, () => {
+			return JSON.parse(localStorage.getItem(storageKey) ?? "{}");
+		})
+	}
 });
 
 export const { addAsset } = generatedAssetsSlice.actions;

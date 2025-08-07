@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
-import { getNostrClient, parseNprofile } from "../../Api/nostr";
-import { selectNostrSpends, useSelector } from "../../State/store";
-import { getDeviceId } from "../../constants";
-import { SpendFrom } from "../../globalTypes";
+import { getNostrClient } from "@/Api/nostr";
+import { selectNostrSpends, useSelector } from "@/State/store";
+import { getDeviceId } from "@/constants";
+import { SpendFrom } from "@/globalTypes";
+import { parseNprofile } from "../nprofile";
 
 
 /* const firebaseConfig = {
@@ -37,7 +38,7 @@ const enrollToken = async (nostrSpends: SpendFrom[]) => {
 	}
 }
 
-export const FirebaseHandler = () => {
+export const useFirebaseHandler = () => {
 	const nostrSpends = useSelector(selectNostrSpends);
 	const nodedUp = !!useSelector(state => state.nostrPrivateKey);
 
@@ -47,7 +48,5 @@ export const FirebaseHandler = () => {
 		}
 		enrollToken(nostrSpends)
 	}, [nodedUp, nostrSpends])
-
-	return null
 }
 

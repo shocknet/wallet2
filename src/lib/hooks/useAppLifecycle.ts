@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { App } from "@capacitor/app";
 import { useDispatch, useSelector } from "@/State/store";
-import { listenforNewOperations } from "@/State/history/thunks";
+import { listenforNewOperations } from "@/State/history";
 import { SplashScreen } from "@capacitor/splash-screen";
-import { initLocalNotifications } from "../local-notifications";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "./usePreference";
 import { isPlatform } from "@ionic/react";
 import { Clipboard } from "@capacitor/clipboard";
-import { identifyBitcoinInput, parseBitcoinInput } from "../parse";
 import { InputClassification } from "../types/parse";
 import { addAsset } from "@/State/Slices/generatedAssets";
 import { useHistory } from "react-router";
@@ -76,7 +74,7 @@ export const useAppLifecycle = () => {
 		});
 
 		return () => {
-			listener.remove();
+			listener.then(h => h.remove());
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [dispatch, nodedUp]);
@@ -86,6 +84,14 @@ export const useAppLifecycle = () => {
 	/* Handle notifications */
 	const handleInitNotifications = useCallback(async () => {
 		if (cachedValue) {
+			return;
+		}
+
+		let initLocalNotifications;
+		try {
+			({ initLocalNotifications } = await import("@/lib/local-notifications"))
+		} catch (err) {
+			console.error('Failed to lazy-load "@/lib/local-notifications"', err);
 			return;
 		}
 
@@ -133,7 +139,7 @@ export const useAppLifecycle = () => {
 		});
 
 		return () => {
-			listener.remove();
+			listener.then(h => h.remove());
 		};
 	}, [dispatch, isLoaded, handleInitNotifications])
 };
@@ -169,6 +175,18 @@ const useWatchClipboard = () => {
 			}
 		} catch (err) {
 			console.error("Cannot read clipboard", err);
+			return;
+		}
+
+
+
+		let identifyBitcoinInput
+		let parseBitcoinInput
+
+		try {
+			({ identifyBitcoinInput, parseBitcoinInput } = await import('@/lib/parse'));
+		} catch (err) {
+			console.error('Failed to lazy-load "@/lib/parse"', err);
 			return;
 		}
 
@@ -260,7 +278,7 @@ const useWatchClipboard = () => {
 		return () => {
 			document.removeEventListener("visibilitychange", visHandler);
 			window.removeEventListener("focus", focusHandler);
-			sub.remove();
+			sub.then(h => h.remove())
 			clearTimeout(retryTimer.current!);
 		};
 	}, [checkClipboard]);
