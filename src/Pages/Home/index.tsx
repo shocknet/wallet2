@@ -28,9 +28,9 @@ import { InputClassification } from "@/lib/types/parse";
 import { useQrScanner } from "@/lib/hooks/useQrScanner";
 import { makeSelectSortedOperationsArray, removeOptimisticOperation, fetchAllSourcesHistory } from "@/State/history";
 import { Virtuoso } from 'react-virtuoso'
+import HistoryItem from "@/Components/HistoryItem";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
-const HistoryItem = lazy(() => import("@/Components/HistoryItem"))
 
 
 
@@ -165,14 +165,20 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 				<Virtuoso
 					style={{ height: "100%" }}
 					data={operations}
-					itemContent={(index, op) => (
-						<div key={op.operationId} style={{ height: "56px", padding: "0 1rem" }}>
-							<Suspense fallback={null}>
-								<HistoryItem
-									operation={op}
-									handleSelectOperation={handleSelectOperation}
-								/>
-							</Suspense>
+					defaultItemHeight={56}
+					itemContent={(_, op) => (
+
+						<div
+							key={op.operationId}
+							style={{
+								minHeight: 56,
+								padding: "0 1rem"
+							}}
+						>
+							<HistoryItem
+								operation={op}
+								handleSelectOperation={handleSelectOperation}
+							/>
 						</div>
 					)}
 				/>
