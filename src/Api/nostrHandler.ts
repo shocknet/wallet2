@@ -1,4 +1,4 @@
-import { Event, UnsignedEvent, Relay, finalizeEvent, nip04 } from 'nostr-tools'
+import { Event, UnsignedEvent, Relay, finalizeEvent, nip04, Filter } from 'nostr-tools'
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk"
 import { Buffer } from 'buffer';
 //import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'

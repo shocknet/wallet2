@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { getDiffAsActionDispatch, } from './dataMerge';
-import { syncRedux } from '../store';
 import { BackupAction } from '../types';
+import { syncRedux } from '../thunks/syncRedux';
 export const storageKey = "addressbook"
 type AddressBook = {
   contacts: Record<string, string>

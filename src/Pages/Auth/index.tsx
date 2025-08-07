@@ -7,22 +7,20 @@ import { AES, enc } from 'crypto-js';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { isPlatform } from '@ionic/react';
 import { ignoredStorageKeys, parseBitcoinInput } from '../../constants';
-import { fetchRemoteBackup } from '../../helpers/remoteBackups';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 import { SANCTUM_URL } from "../../constants";
-
 import { useStore } from 'react-redux';
-import { syncRedux, useDispatch, useSelector } from '../../State/store';
+import { useDispatch, useSelector } from '../../State/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import SanctumBox from '../../Components/SanctumBox';
-import { getNostrExtention } from '../../helpers/nip07Extention';
 import { Interval, getPeriodSeconds } from '../Automation';
 import { v4 as uuid } from "uuid";
 import { Subscription, updateActiveSub } from '../../State/Slices/subscriptionsSlice';
 import { updateBackupData } from '../../State/Slices/backupState';
 import Checkbox from '../../Components/Checkbox';
 import classNames from 'classnames';
+import { syncRedux } from '@/State/thunks/syncRedux';
 
 
 const FILENAME = "shockw";

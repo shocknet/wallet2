@@ -1,4 +1,4 @@
-import { SourceActualOperation, SourceOperation } from "@/State/history/types";
+import type { SourceActualOperation, SourceOperation } from "@/State/history/types";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
@@ -68,7 +68,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 	return (
 
 
-		<IonItem className={styles["history-item"]} detail={false} button onClick={handleItemClick}>
+		<IonItem lines="full" className={styles["history-item"]} detail={false} button onClick={handleItemClick}>
 			<IonIcon
 				slot="start"
 				icon={typeIcon}

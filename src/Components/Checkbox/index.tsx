@@ -1,7 +1,7 @@
+import { check } from "@/Assets/SvgIconLibrary";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { ChangeEvent } from "react";
-import * as Icons from "../../Assets/SvgIconLibrary";
 
 interface Props {
   state: boolean;
@@ -29,7 +29,7 @@ const Checkbox = ({ state, setState, id, inline }: Props) => {
         })}
         onClick={handleCheckboxClick}
       >
-        {state ? Icons.check() : null}
+        {state ? check() : null}
       </div>
       <input
         type="checkbox"

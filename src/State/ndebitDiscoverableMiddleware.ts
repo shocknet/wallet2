@@ -1,15 +1,11 @@
-import {  createListenerMiddleware,  ListenerEffectAPI, PayloadAction, TypedStartListening } from "@reduxjs/toolkit";
+import { addListener, createListenerMiddleware, ListenerEffectAPI, PayloadAction, TypedStartListening } from "@reduxjs/toolkit";
 import { flipSourceNdebitDiscoverable } from "./Slices/paySourcesSlice";
-import { AppDispatch, State } from "./store";
+import { AppDispatch, dynamicMiddleware, State } from "./store";
 import { PayTo } from "../globalTypes";
 import Bridge from "../Api/bridge";
 import { Buffer } from "buffer";
-
 import { finalizeEvent, nip98 } from 'nostr-tools'
 const { getToken } = nip98
-
-
-
 
 
 
@@ -37,11 +33,9 @@ export const ndebitDiscoverableListener = {
 				}
 			}
 		}
-
-	
 	}
 }
 
-export const ndebitMiddleware = createListenerMiddleware()
-const typedStartListening = ndebitMiddleware.startListening as TypedStartListening<State, AppDispatch>
-typedStartListening(ndebitDiscoverableListener);
+const ndebitMiddleware = createListenerMiddleware()
+export const addNdebitDiscoverableListener = addListener.withTypes<State, AppDispatch>();
+export const useNdebitDiscoverableDipstach = dynamicMiddleware.createDispatchWithMiddlewareHook(ndebitMiddleware.middleware);

@@ -1,4 +1,18 @@
-import { IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuToggle, IonTitle, IonToolbar, isPlatform } from "@ionic/react"
+import {
+	IonContent,
+	IonHeader,
+	IonIcon,
+	IonItem,
+	IonItemDivider,
+	IonItemGroup,
+	IonLabel,
+	IonList,
+	IonMenu,
+	IonMenuToggle,
+	IonTitle,
+	IonToolbar,
+	isPlatform
+} from "@ionic/react"
 import {
 	calendarNumberOutline,
 	peopleOutline,
@@ -13,9 +27,9 @@ import {
 	analyticsOutline,
 } from "ionicons/icons"
 import { useEffect, useState } from "react"
-import { AdminSource, getAdminSource } from "../AdminGuard"
 import { useSelector } from "../../State/store"
 import { App } from "@capacitor/app"
+import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 
 
 interface AppBuildInfo {

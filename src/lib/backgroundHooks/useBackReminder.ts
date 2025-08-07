@@ -1,53 +1,19 @@
 import { useEffect } from "react";
-import { selectNostrSpends, useDispatch, useSelector } from "../State/store";
-import { addNotification } from "../State/Slices/notificationSlice";
-import { decodeLnurl } from "../constants";
-import { useIonRouter } from "@ionic/react";
-import { editSpendSources } from "../State/Slices/spendSourcesSlice";
-import axios, { isAxiosError } from "axios";
-import { SubscriptionsBackground } from "./BackgroundJobs/subscriptions";
-import { LnAddressCheck } from "./BackgroundJobs/LnAddressCheck";
-import { NewSourceCheck } from "./BackgroundJobs/NewSourceCheck";
-import { NodeUpCheck } from "./BackgroundJobs/NodeUpCheck";
+import { selectNostrSpends, useDispatch, useSelector } from "@/State/store";
+import { addNotification } from "@/State/Slices/notificationSlice";
 import { toast } from "react-toastify";
-import Toast from "./Toast";
-import { RemoteBackup } from "./BackgroundJobs/RemoteBackup";
-import { DebitRequestHandler } from "./BackgroundJobs/DebitRequestHandler";
-import { subToBeacons } from "@/Api/nostr";
-import { updateSourceState } from "@/Api/health";
-import { ManageRequestHandler } from "./BackgroundJobs/ManageRequestHandler";
-import { FirebaseHandler } from "./BackgroundJobs/FirebaseHandler";
+import { useIonRouter } from "@ionic/react";
+import axios, { isAxiosError } from "axios";
+import { editSpendSources } from "@/State/Slices/spendSourcesSlice";
+import { decodeLnurl } from "@/constants";
 
-
-
-
-export const Background = () => {
+export const useBackupReminder = () => {
 	const router = useIonRouter();
-
 	const spendSource = useSelector((state) => state.spendSource)
 	const nostrSpends = useSelector(selectNostrSpends);
 	const paySource = useSelector((state) => state.paySource)
 	const backupState = useSelector(state => state.backupStateSlice)
 	const dispatch = useDispatch();
-
-
-	window.onbeforeunload = function () { return null; };
-
-	useEffect(() => {
-		const handleBeforeUnload = () => {
-			// Call your function here
-			localStorage.setItem("userStatus", "offline");
-			return false;
-		};
-
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
-		return () => {
-			return window.removeEventListener('beforeunload', handleBeforeUnload);
-		}
-	}, []);
-
-
 	useEffect(() => {
 		const otherPaySources = Object.values(paySource.sources).filter((e) => !e.pubSource);
 		const otherSpendSources = Object.values(spendSource.sources).filter((e) => !e.pubSource);
@@ -65,18 +31,15 @@ export const Background = () => {
 			}))
 			localStorage.setItem("isBackUp", "1")
 			toast.warn(
-				<Toast
-					title="Reminder"
-					message="Please back up your credentials"
-				/>,
+				"Please back up your credentials"
+				,
 				{
 					onClick: () => router.push("/auth")
 				}
 			)
 		}
-	}, [paySource, spendSource, dispatch, router])
-
-
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [paySource, spendSource, dispatch, router]);
 
 
 	// reset spend for lnurl
@@ -110,33 +73,13 @@ export const Background = () => {
 							meta: { skipChangelog: true }
 						});
 					} else if (err instanceof Error) {
-						toast.error(<Toast title="Source Error" message={err.message} />)
+						toast.error(err.message);
 					} else {
 						console.log("Unknown error occured", err);
 					}
 				}
 			}
 		})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [router, dispatch])
-
-	useEffect(() => {
-		return subToBeacons(up => {
-			updateSourceState(up.createdByPub, { disconnected: false, name: up.name })
-		})
-	}, [spendSource, paySource])
-
-
-
-
-
-	return <div id="focus_div">
-		<SubscriptionsBackground />
-		<NewSourceCheck />
-		<LnAddressCheck />
-		<NodeUpCheck />
-		<RemoteBackup />
-		<DebitRequestHandler />
-		<ManageRequestHandler />
-		<FirebaseHandler />
-	</div>
 }

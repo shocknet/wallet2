@@ -2,7 +2,6 @@ import { Buffer } from 'buffer';
 import { randomBytes } from "@noble/hashes/utils";
 import { bech32 } from 'bech32';
 import axios from "axios";
-import { validate } from 'bitcoin-address-validation';
 import { decode } from "@gandlaf21/bolt11-decode";
 import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
 import { nip19 } from 'nostr-tools'

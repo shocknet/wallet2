@@ -1,4 +1,4 @@
-import { getNostrClient } from "@/Api";
+import { getNostrClient } from "@/Api/nostr";
 import { appCreateAsyncThunk } from "../appCreateAsyncThunk";
 
 export const getSourceInfo = appCreateAsyncThunk(

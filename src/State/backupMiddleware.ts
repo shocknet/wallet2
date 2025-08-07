@@ -1,13 +1,14 @@
-import { addListener, AnyAction, TypedAddListener, createAction, createListenerMiddleware, ListenerEffectAPI, TaskAbortError, ThunkDispatch, removeListener, TypedRemoveListener, TypedStartListening } from "@reduxjs/toolkit";
+import { addListener, AnyAction, createAction, createListenerMiddleware, ListenerEffectAPI, TaskAbortError, ThunkDispatch, removeListener } from "@reduxjs/toolkit";
 import { addPaySources, deletePaySources, editPaySources, flipSourceNdebitDiscoverable, PaySourceRecord, setPaySources } from "./Slices/paySourcesSlice";
 import { addSpendSources, deleteSpendSources, editSpendSources, setSpendSources, SpendSourceRecord } from "./Slices/spendSourcesSlice";
 import { fetchRemoteBackup, saveChangelog, saveRemoteBackup, subscribeToRemoteChangelogs } from "../helpers/remoteBackups";
-import { AppDispatch, findReducerMerger, reducer, State, syncRedux } from "./store";
+import { AppDispatch, dynamicMiddleware, findReducerMerger, reducer, State } from "./store";
 import { CHANGELOG_TIMESTAMP, getDeviceId, STATE_HASH } from "../constants";
-import { BackupAction, Changelog, GeneralShard, LNURL_OPERATIONS_DTAG, PREFS_DTAG, ShardsTagsRecord } from "./types";
+import { BackupAction, Changelog, GeneralShard, PREFS_DTAG, ShardsTagsRecord } from "./types";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import { setPrefs } from "./Slices/prefsSlice";
+import { syncRedux } from "./thunks/syncRedux";
 
 
 
@@ -53,18 +54,8 @@ const getStateHash = (state: State) => {
 			}, {} as SpendSourceRecord | PaySourceRecord);
 	}
 
-	// same as the previous function minus the filtering
-	/* const reorderRecords = (obj: Record<string, string>) => {
-		return Object.keys(obj)
-			.sort()
-			.reduce((sortedObj, key) => {
-				sortedObj[key] = obj[key]
-				return sortedObj
-			}, {} as Record<string, string>)
-	} */
 
 	const hashInput = {
-		/* 		history: state.history.lnurlOperations, */
 		pay: reorderSourcesRecord(state.paySource.sources),
 		spend: reorderSourcesRecord(state.spendSource.sources),
 		payOrder: state.paySource.order,
@@ -120,12 +111,6 @@ const shardAndBackupState = async (state: State, stateHash: string, changelogs?:
 	dtags.push(`${PREFS_DTAG}:${id}`)
 
 
-
-	// lnurl operations into a shard
-	/* 	if (Object.values(state.history.lnurlOperations).length > 0) {
-			backupPromises.push((saveRemoteBackup(JSON.stringify({ operations: state.history.lnurlOperations, kind: "lnurlOps" }), `${LNURL_OPERATIONS_DTAG}:${id}`)));
-			dtags.push(`${LNURL_OPERATIONS_DTAG}:${id}`);
-		} */
 
 
 	try {
@@ -355,19 +340,6 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 				changelogs.push(changelog);
 			})
 
-			/* if (Object.values(originalState.history.lnurlOperations).length > 0) {
-				changelogs.push({
-					previousHash: remoteHash,
-					newHash: newHash,
-					partial: true,
-					id,
-					action: {
-						type: "history/setLnurlOperations",
-						payload: originalState.history.lnurlOperations
-					}
-				})
-			} */
-
 			// send changelogs for new sources on local
 			return shardAndBackupState(newState, newHash, changelogs);
 
@@ -413,7 +385,7 @@ const syncNewDeviceWithRemote = async (api: ListenerEffectAPI<State, ThunkDispat
 	}
 }
 let changelogsTasksQueue: Changelog[] = [];
-export const backupMiddleware = {
+export const backupMiddlewareListner = {
 	predicate: (action: AnyAction) => {
 		return (
 			!action.meta?.skipChangelog &&
@@ -457,9 +429,9 @@ export const backupMiddleware = {
 
 export const backupSubStarted = createAction('backupSub/started')
 export const backupSubStopped = createAction('backupSub/stopped')
-export const batchProcessingDone = createAction("backupSub/processingDone");
-let timer: NodeJS.Timeout | null = null
 
+
+let timer: NodeJS.Timeout | null = null
 // handleChangelogs is the function that is responsible for applying received changelogs
 let aggregatedChangelogs: (Changelog & { timestamp: number })[] = [];
 const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>, unknown>) => {
@@ -467,7 +439,7 @@ const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispa
 		clearTimeout(timer);
 	}
 
-	// If the changelogs has mutiple sources additions then the order of the sources is critical, that's why we sort 
+	// If the changelogs has mutiple sources additions then the order of the sources is critical, that's why we sort
 	aggregatedChangelogs = aggregatedChangelogs.sort((a, b) => {
 		if (a.order !== undefined && b.order !== undefined) {
 			return a.order - b.order
@@ -521,7 +493,7 @@ const handleChangelogs = async (listenerApi: ListenerEffectAPI<State, ThunkDispa
 }
 
 
-export const backupPollingMiddleware = {
+export const backupPollingListener = {
 	actionCreator: backupSubStarted,
 	effect: async (_action: AnyAction, listenerApi: ListenerEffectAPI<State, ThunkDispatch<unknown, unknown, AnyAction>, unknown>) => {
 
@@ -576,10 +548,11 @@ export const backupPollingMiddleware = {
 		pollingTask.cancel();
 	}
 }
+const backupMiddleware = createListenerMiddleware();
+export const useBackupMiddlewareListenerDispatch = dynamicMiddleware.createDispatchWithMiddlewareHook(backupMiddleware.middleware);
 
-export const backup = createListenerMiddleware()
-const typedStartListening = backup.startListening as TypedStartListening<State, AppDispatch>
-typedStartListening(backupPollingMiddleware);
 
-export const typedAddListener = addListener as TypedAddListener<State, AppDispatch>
-export const typedRemoveListener = removeListener as TypedRemoveListener<State, AppDispatch>
+
+export const addBackupListener = addListener.withTypes<State, AppDispatch>();
+export const removeBackupListener = removeListener.withTypes<State, AppDispatch>();
+
