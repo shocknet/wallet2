@@ -36,7 +36,6 @@ import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
-import { SplashScreen } from "@capacitor/splash-screen";
 
 
 
@@ -85,7 +84,6 @@ const AppContent: React.FC = () => {
 	*/
 	const [loadBackgroundJobs, setLoadBackgroundJobs] = useState(false);
 	useEffect(() => {
-		SplashScreen.hide();
 		// Prefer requestIdleCallback; fall back to a small timeout
 		const id = ('requestIdleCallback' in window)
 			? requestIdleCallback(
