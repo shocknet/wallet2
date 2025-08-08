@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import legacy from "@vitejs/plugin-legacy"
 import { resolve } from 'path';
 import { defineConfig } from 'vite'
 import eslint from 'vite-plugin-eslint';
@@ -66,9 +67,12 @@ export default defineConfig({
 				]
 			},
 		}),
+		legacy({
+			renderLegacyChunks: false,
+			modernPolyfills: true,
+		}),
 	],
 	build: {
-		target: 'es2020',
 		rollupOptions: {
 			plugins: [
 				visualizer({
