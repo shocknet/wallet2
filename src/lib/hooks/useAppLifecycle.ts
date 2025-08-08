@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { App } from "@capacitor/app";
 import { useDispatch, useSelector } from "@/State/store";
 import { listenforNewOperations } from "@/State/history";
-import { SplashScreen } from "@capacitor/splash-screen";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "./usePreference";
 import { isPlatform } from "@ionic/react";
@@ -46,7 +45,6 @@ export const useAppLifecycle = () => {
 			if (nodedUp) { // tasks that should only take place after noding up
 				tasks()
 			}
-			SplashScreen.hide();
 		}
 		appStartUp();
 

@@ -19,7 +19,6 @@ import { Redirect, Route } from "react-router-dom";
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import AppUrlListener from "./Hooks/appUrlListener";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
 import store, { useSelector } from './State/store';
@@ -36,6 +35,8 @@ import nostrSvg from "../icons/nostr.svg"
 import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
+import { useAppUrlListener } from './Hooks/appUrlListener';
+import { SplashScreen } from "@capacitor/splash-screen";
 
 
 
@@ -74,6 +75,7 @@ document.documentElement.classList.add('dark');
 
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
+	useAppUrlListener();
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
@@ -83,6 +85,7 @@ const AppContent: React.FC = () => {
 	*/
 	const [loadBackgroundJobs, setLoadBackgroundJobs] = useState(false);
 	useEffect(() => {
+		SplashScreen.hide();
 		// Prefer requestIdleCallback; fall back to a small timeout
 		const id = ('requestIdleCallback' in window)
 			? requestIdleCallback(
@@ -127,7 +130,6 @@ const AppContent: React.FC = () => {
 
 	return (
 		<>
-			<AppUrlListener />
 			{
 				loadBackgroundJobs
 				&&
