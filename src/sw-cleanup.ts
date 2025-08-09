@@ -1,13 +1,20 @@
 import { Capacitor } from '@capacitor/core';
 
-const CLEAN_FLAG = 'sw_cleanup_done';
+const CLEAN_FLAG = 'sw_cleanup_done_2';
 const KEEP_FILENAME = 'sw.js';
 
 export async function cleanupStaleServiceWorkers() {
-	if (!('serviceWorker' in navigator)) return;
+	if (!('serviceWorker' in navigator)) {
+		console.log("CLEANUP: no serviceWorker in browser");
+		return;
+	}
 
 
-	if (localStorage.getItem(CLEAN_FLAG)) return;
+
+	if (localStorage.getItem(CLEAN_FLAG)) {
+		console.log("CLEANUP: already ran before");
+		return;
+	}
 
 	const isNative = Capacitor.isNativePlatform();
 	const regs = await navigator.serviceWorker.getRegistrations();
@@ -20,6 +27,7 @@ export async function cleanupStaleServiceWorkers() {
 
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
 		const filename = url.split('/').pop() || '';
+		console.log("CLEANUP: one of sw registrations: ", JSON.stringify(reg))
 
 
 		if (isNative) {
@@ -40,7 +48,9 @@ export async function cleanupStaleServiceWorkers() {
 		try {
 			await reg.update();
 			reg.waiting?.postMessage('SKIP_WAITING');
-		} catch {/*  */ }
+		} catch (err) {
+			console.error("CLEANUP: update toKeep error ", err);
+		}
 	}
 
 
@@ -48,10 +58,14 @@ export async function cleanupStaleServiceWorkers() {
 		try {
 			reg.waiting?.postMessage('SKIP_WAITING');
 			reg.active?.postMessage('SKIP_WAITING');
-		} catch {/*  */ }
+		} catch (err) {
+			console.error("CLEANUP: toRemove skip_waiting error ", err);
+		}
 		try {
 			await reg.unregister();
-		} catch {/*  */ }
+		} catch (err) {
+			console.error("CLEANUP: toRemove unregiser error ", err);
+		}
 	}
 
 	try {
@@ -62,11 +76,13 @@ export async function cleanupStaleServiceWorkers() {
 
 			})
 		);
-	} catch {/*  */ }
+	} catch (err) {
+		console.error("CLEANUP: caches delete error", err);
+	}
 
 	localStorage.setItem(CLEAN_FLAG, '1');
 
-	if (toRemove.length > 0) {
-		location.reload();
-	}
+
+	location.reload();
+
 }
