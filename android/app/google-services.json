@@ -1,0 +1,29 @@
+{
+	"project_info": {
+		"project_number": "73069543153",
+		"project_id": "shockwallet-11a9c",
+		"storage_bucket": "shockwallet-11a9c.firebasestorage.app"
+	},
+	"client": [
+		{
+			"client_info": {
+				"mobilesdk_app_id": "1:73069543153:android:072040013f06f0747ab350",
+				"android_client_info": {
+					"package_name": "app.shockwallet.my"
+				}
+			},
+			"oauth_client": [],
+			"api_key": [
+				{
+					"current_key": "AIzaSyAFhJWjb4LbyNOuefuO5hzDb0rlIA57Oqo"
+				}
+			],
+			"services": {
+				"appinvite_service": {
+					"other_platform_oauth_client": []
+				}
+			}
+		}
+	],
+	"configuration_version": "1"
+}
