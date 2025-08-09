@@ -18,7 +18,7 @@ export default defineConfig({
 			failOnWarning: false
 		}),
 		VitePWA({
-			disable: isNativeBuild,
+			selfDestroying: isNativeBuild,
 			registerType: 'autoUpdate',
 			strategies: "injectManifest",
 			srcDir: "src",
