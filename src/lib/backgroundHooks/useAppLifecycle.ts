@@ -3,7 +3,7 @@ import { App } from "@capacitor/app";
 import { useDispatch, useSelector } from "@/State/store";
 import { listenforNewOperations } from "@/State/history";
 import { useAlert } from "../contexts/useAlert";
-import { usePreference } from "./usePreference";
+import { usePreference } from "../hooks/usePreference";
 import { isPlatform } from "@ionic/react";
 import { Clipboard } from "@capacitor/clipboard";
 import { InputClassification } from "../types/parse";
@@ -37,13 +37,12 @@ export const useAppLifecycle = () => {
 
 		const tasks = () => {
 			dispatch(listenforNewOperations());
-
 		}
 
 		// App start
 		const appStartUp = async () => {
 			if (nodedUp) { // tasks that should only take place after noding up
-				tasks()
+				tasks();
 			}
 		}
 		appStartUp();
@@ -60,7 +59,7 @@ export const useAppLifecycle = () => {
 		// App pause
 		const onAppPause = () => {
 			console.log("App paused.");
-			// Handle background tasks if needed
+
 		};
 
 		const listener = App.addListener("appStateChange", (state) => {

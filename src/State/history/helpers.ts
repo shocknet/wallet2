@@ -11,11 +11,11 @@ import type { Satoshi } from "@/lib/types/units";
 export const userOperationToSourceOperation = (op: UserOperation, sourceId: string, local?: SourceOperation): SourceActualOperation => {
 	const incoming = transformUserOperationToSourceOperation(op, sourceId);
 	if (local === undefined) {
-		/* if (incoming.inbound) {
+		if (incoming.inbound) {
 			import("@/lib/local-notifications")
 				.then(({ notifyReceivedOperation }) => notifyReceivedOperation(incoming.amount, incoming.operationId, incoming.type === "ON-CHAIN"))
 				.catch(err => console.error('Failed to lazy-load "@/lib/local-notifications', err));
-		} */
+		}
 		return incoming;
 	}
 
