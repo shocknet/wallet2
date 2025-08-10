@@ -36,6 +36,7 @@ import { addIcons } from "ionicons";
 import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
+import { cleanupStaleServiceWorkers } from './sw-cleanup';
 
 
 
@@ -79,6 +80,10 @@ const AppContent: React.FC = () => {
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
 
+	useEffect(() => {
+		cleanupStaleServiceWorkers()
+	}, []);
+
 	/*
 	* Defer loading in the background jobs until browser decides main thread is idle
 	*/
@@ -87,8 +92,7 @@ const AppContent: React.FC = () => {
 		// Prefer requestIdleCallback; fall back to a small timeout
 		const id = ('requestIdleCallback' in window)
 			? requestIdleCallback(
-				(idleDeadline) => {
-					console.log("did timeout?", idleDeadline.didTimeout);
+				() => {
 					setLoadBackgroundJobs(true)
 				},
 				{ timeout: 3000 }

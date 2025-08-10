@@ -6,12 +6,10 @@ import eslint from 'vite-plugin-eslint';
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer';
 
-// Check if this is an Android build
-const isAndroidBuild = process.env.CAPACITOR_PLATFORM === 'android'
-// Disable compression plugin since Caddy handles compression with zstd
-const disableCompression = true
+// Check if this is native or web build
+const isNativeBuild = process.env.CAPACITOR_PLATFORM === 'android' || process.env.CAPACITOR_PLATFORM === 'ios'
 
-// https://vitejs.dev/config/
+
 export default defineConfig({
 	plugins: [
 		react(),
@@ -20,6 +18,7 @@ export default defineConfig({
 			failOnWarning: false
 		}),
 		VitePWA({
+			selfDestroying: isNativeBuild,
 			registerType: 'autoUpdate',
 			strategies: "injectManifest",
 			srcDir: "src",
