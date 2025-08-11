@@ -3,7 +3,7 @@ import { getTransaction } from "@/lib/mempool";
 import { BitcoinTransaction } from "@/lib/types/mempool";
 import { Satoshi } from "@/lib/types/units";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
-import { SourceOperation, SourceOperationInvoice, SourceOperationOnChain, SourceOptimsiticInvoice, SourceOptimsiticOnChain, SourceUserToUserOperation } from "@/State/history/types";
+import type { SourceOperation, SourceOperationInvoice, SourceOperationOnChain, SourceOptimsiticInvoice, SourceOptimsiticOnChain, SourceUserToUserOperation } from "@/State/history/types";
 import {
 	IonAccordion,
 	IonAccordionGroup,

@@ -1,11 +1,9 @@
-import HistoryItem from "@/Components/HistoryItem";
 import { useDispatch, useSelector } from "@/State/store";
 import {
 	IonButton,
 	IonContent,
 	IonFooter,
 	IonIcon,
-	IonList,
 	IonPage,
 	IonRefresher,
 	IonRefresherContent,
@@ -20,19 +18,19 @@ import {
 import { RouteComponentProps } from "react-router";
 import BalanceCard from "./BalanceCard";
 import HomeHeader from "@/Layout2/HomeHeader";
-import { makeSelectSortedOperationsArray } from "@/State/history/selectors";
 import styles from "./styles/index.module.scss";
-import { useCallback, useMemo, useState } from "react";
-import { SourceOperation } from "@/State/history/types";
-import OperationModal from "@/Components/Modals/OperationInfoModal";
-import { fetchAllSourcesHistory } from "@/State/history/thunks";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import type { SourceOperation } from "@/State/history/types";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
-import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
-import { removeOptimisticOperation } from "@/State/history";
 import { useQrScanner } from "@/lib/hooks/useQrScanner";
+import { makeSelectSortedOperationsArray, removeOptimisticOperation, fetchAllSourcesHistory } from "@/State/history";
+import { Virtuoso } from 'react-virtuoso'
+import HistoryItem from "@/Components/HistoryItem";
+
+const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
 
 
@@ -41,7 +39,6 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	const dispatch = useDispatch();
 
 	const { showToast } = useToast();
-
 
 	const selectOperationsArray = useMemo(makeSelectSortedOperationsArray, []);
 	const operations = useSelector(selectOperationsArray);
@@ -81,12 +78,16 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	})
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
+	const [loadOperationModal, setLoadOperationModal] = useState(false);
 
 
 
 	const handleSelectOperation = useCallback((operation: SourceOperation) => {
 		setSelectedOperation(operation);
-	}, []);
+		if (!loadOperationModal) {
+			setLoadOperationModal(true);
+		}
+	}, [loadOperationModal]);
 
 
 	const handleRefresh = useCallback(async (event: CustomEvent<RefresherEventDetail>) => {
@@ -98,6 +99,15 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	const handleScanned = useCallback(async (input: string) => {
 		if (!input.trim()) {
 			showToast({ message: "Empty input", color: "danger" });
+			return;
+		}
+		let identifyBitcoinInput;
+		let parseBitcoinInput;
+
+		try {
+			({ identifyBitcoinInput, parseBitcoinInput } = await import('@/lib/parse'));
+		} catch {
+			showToast({ message: "Failed to lazy-load '@/lib/parse'", color: "danger" });
 			return;
 		}
 		const classification = identifyBitcoinInput(input);
@@ -148,16 +158,30 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 			<HomeHeader {...props}>
 				<BalanceCard />
 			</HomeHeader>
-			<IonContent>
+			<IonContent scrollY={false}>
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
-				<IonList lines="full" inset>
-					{operations.map(op => (
-						<HistoryItem key={op.operationId} operation={op} handleSelectOperation={handleSelectOperation} />
-					))}
-				</IonList>
+				<Virtuoso
+					style={{ height: "100%" }}
+					data={operations}
+					defaultItemHeight={56}
+					itemContent={(_, op) => (
 
+						<div
+							key={op.operationId}
+							style={{
+								minHeight: 56,
+								padding: "0 1rem"
+							}}
+						>
+							<HistoryItem
+								operation={op}
+								handleSelectOperation={handleSelectOperation}
+							/>
+						</div>
+					)}
+				/>
 			</IonContent>
 			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
 				<div className={styles["toolbar"]}>
@@ -178,11 +202,16 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 					</IonButton>
 				</div>
 			</IonFooter>
-			<OperationModal
-				operation={selectedOperation}
-				isOpen={!!selectedOperation}
-				onClose={() => setSelectedOperation(null)}
-			/>
+			{
+				loadOperationModal &&
+				<Suspense fallback={null}>
+					<OperationModal
+						operation={selectedOperation}
+						isOpen={!!selectedOperation}
+						onClose={() => setSelectedOperation(null)}
+					/>
+				</Suspense>
+			}
 		</IonPage>
 
 	)

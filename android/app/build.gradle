@@ -1,17 +1,61 @@
 apply plugin: 'com.android.application'
 
+// Function to get environment variables with proper scoping
+def getEnvVar(String key, String defaultValue) {
+    // 1. Check system environment
+    if (System.getenv(key) != null) {
+        return System.getenv(key)
+    }
+
+    // 2. Check project properties (-P flags)
+    if (project.hasProperty(key)) {
+        return project.property(key)
+    }
+
+    // 3. Check .env file (located in Ionic project root)
+    def envFile = rootProject.rootDir.parentFile?.toPath()?.resolve('.env')?.toFile()
+    if (envFile?.exists()) {
+        def envVars = [:]
+        envFile.eachLine { line ->
+            def parts = line.split('=', 2)
+            if (parts.size() == 2) {
+                def i = parts[0].trim()
+                def value = parts[1].trim().replaceAll('^\"|\"$', '')
+                envVars[i] = value
+            }
+        }
+        if (envVars.containsKey(key)) {
+            return envVars[key]
+        }
+    }
+
+    // 4. Return default if nothing found
+    return defaultValue
+}
+
+def getIntegerEnvVar(String key, int defaultValue) {
+		def value = getEnvVar(key, null)
+		return value ? value.toInteger() : defaultValue
+}
+
+
 android {
     namespace "app.shockwallet"
     compileSdk rootProject.ext.compileSdkVersion
+
     defaultConfig {
-        applicationId "app.shockwallet"
+				applicationId getEnvVar("VITE_ANDROID_APPLICATION_ID", "app.shockwallet.my")
+				versionName getEnvVar("VERSION", "0.0.0-dev")
+				versionCode getIntegerEnvVar("VERSION_CODE", 3)
+
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        resValue "string", "app_name", project.hasProperty('appName') ? project.property('appName') : "Shockwallet"
-        manifestPlaceholders = [appUrl: project.hasProperty('appUrl') ? project.property('appUrl') : (project.hasProperty('applicationId') ? project.property('applicationId').replace('app.', '') : "my.shockwallet.app")]
+
+				manifestPlaceholders = [
+					appLabel : getEnvVar("VITE_APP_NAME", "Wallet"),
+          hostName : getEnvVar("VITE_APP_URL", "wallet.exampl"),
+        ]
     }
     buildTypes {
         release {

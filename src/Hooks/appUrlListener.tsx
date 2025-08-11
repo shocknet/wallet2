@@ -1,63 +1,78 @@
-import React, { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { useIonRouter } from '@ionic/react';
-import { bech32 } from 'bech32';
-import { Buffer } from 'buffer';
+import { InputClassification } from '@/lib/types/parse';
+import { useHistory } from 'react-router';
+import { parseBitcoinInput as legacyParseBitcoinInput } from '@/constants';
+import { useToast } from '@/lib/contexts/useToast';
 
-const AppUrlListener: React.FC<any> = () => {
-  const router = useIonRouter();
-  const requestTag = {
-    lnurlPay: "pay",
-    lnurlWithdraw: "withdraw",
-  }
+export const useAppUrlListener = () => {
+	const history = useHistory();
+	const { showToast } = useToast();
 
-  useEffect(() => {
-    App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      const slug = event.url.split(".app").pop();
-      if(event.url.includes('https') && slug){
-        if(slug.includes('#')) {
-          return router.push(slug.substring(2));
-        }
-        return router.push(slug);
-      }
-      recogParam(event.url)
-    });
-  }, []);
 
-  const recogParam = (param: string) => {
-    param = param.toLowerCase();
-    const paramArr = param.split(":");
-    switch (paramArr[0]) {
-      case "lightning":
-        decodeLNURL(paramArr[1])
-        break;
-      case "bitcoin":
-        break;
-      default:
-        break;
-    }
-  }
-  //when get lnurl protocol
-  const decodeLNURL = (lnurl: string) => {
-    if ((lnurl[0] + lnurl[1]) == "ln") {
-      router.push("/send?url=" + lnurl)
-    } else {
-      try {
-        let { words: dataPart } = bech32.decode(lnurl, 2000);
-        let sourceURL = bech32.fromWords(dataPart);
-        const lnurlLink = Buffer.from(sourceURL).toString();
+	const parseDeepLink = useCallback(async (input: string) => {
+		try {
+			const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse")
+			const classification = identifyBitcoinInput(input);
+			if (classification === InputClassification.UNKNOWN) {
+				showToast({ message: "Unknown input", color: "danger" });
+				return;
+			}
 
-        if (lnurlLink.includes(requestTag.lnurlPay)) {
-          router.push("/send?url=" + lnurl)
-        } else if (lnurlLink.includes(requestTag.lnurlWithdraw)) {
-          router.push("/sources?url=" + lnurl)
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  }
-  return null;
+			const parsed = await parseBitcoinInput(input, classification);
+			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
+				const legacyParsedLnurlW = await legacyParseBitcoinInput(input);
+				history.push({
+					pathname: "/sources",
+					state: legacyParsedLnurlW
+				})
+			} else {
+				history.push({
+					pathname: "/send",
+					state: {
+						// pass the input string as opposed to parsed object because in the case of noffer it needs the selected source
+						input: parsed.data
+					}
+				})
+			}
+		} catch (err: any) {
+			console.error("An error occured when parsing deep link ", input, err);
+			showToast({
+				header: "An error occured when parsing deeplink",
+				message: err?.message || "",
+				color: "danger"
+			});
+		}
+
+	}, [history, showToast]);
+
+	useEffect(() => {
+		App.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
+			try {
+				const url = new URL(event.url);
+				if (
+					url.pathname === "/sources" &&
+					(
+						url.searchParams.get("addSource") ||
+						url.searchParams.get("lnAddress") ||
+						url.searchParams.get("token") ||
+						url.searchParams.get("inviteToken")
+					)
+				) {
+					history.push(url.pathname + url.search);
+				} else {
+					showToast({
+						message: "Usupported deeplink",
+						color: "danger"
+					});
+				}
+			} catch { // Not a url
+				parseDeepLink(event.url);
+			}
+
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 };
 
-export default AppUrlListener;
+

@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { NotifyItemData } from '../../globalTypes';
-import { syncRedux } from '../store';
+import { syncRedux } from '../thunks/syncRedux';
 export const storageKey = "notifications"
 
 interface NotificationType {

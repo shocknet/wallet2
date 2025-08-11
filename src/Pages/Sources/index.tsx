@@ -21,13 +21,15 @@ import { createLnurlInvoice, createNostrInvoice, generateNewKeyPair, handlePayIn
 import { toggleLoading } from '../../State/Slices/loadingOverlay';
 import { useLocation } from 'react-router';
 
-import { Icons, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { truncateString } from '../../Hooks/truncateString';
-import { getNostrClient } from '../../Api';
+import { getNostrClient } from '@/Api/nostr';
 import { fetchBeacon } from '../../helpers/remoteBackups';
 import { nip19 } from 'nostr-tools';
 import { setSourceToEdit } from '../../State/Slices/modalsSlice';
+import { saveKeys } from '@/State/indexedDB';
+import { EditSourceModal } from '@/Components/Modals/EditSourceModal';
 
 const arrayMove = (arr: string[], oldIndex: number, newIndex: number) => {
   const newArr = arr.map(e => e);
@@ -323,6 +325,7 @@ const Sources = () => {
         adminToken: adminEnrollToken
       } as SpendFrom;
       dispatch(addSpendSources({ source: addedSpendSource }));
+      saveKeys({ keys: newSourceKeyPair, appNpub: data!.pubkey })
     } else {
       // not nprofile, now checking for other cases
 
@@ -669,6 +672,7 @@ const Sources = () => {
         <button onClick={openAddSourceModal}>{icons.plusIcon()}ADD</button>
       </div>
       <Modal isShown={isShown} hide={toggle} modalContent={switchContent(modalContent)} headerText={''} />
+      <EditSourceModal />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { syncRedux } from '../store';
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from '../../constants';
-import { setNostrPrivateKey } from '../../Api/nostr';
+import { setNostrPrivateKey } from '@/lib/nprofile';
+import { syncRedux } from '../thunks/syncRedux';
 
 export const storageKey = NOSTR_PRIVATE_KEY_STORAGE_KEY
 
@@ -24,10 +24,10 @@ const generatedAssetsSlice = createSlice({
 		},
 	},
 	extraReducers: (builder) => {
-    builder.addCase(syncRedux, () => {
-      return localStorage.getItem(storageKey) ?? "";
-    })
-  }
+		builder.addCase(syncRedux, () => {
+			return localStorage.getItem(storageKey) ?? "";
+		})
+	}
 });
 
 export const { setPrivateKey } = generatedAssetsSlice.actions;

@@ -2,12 +2,12 @@ import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import { SourceTrustLevel, SpendFrom } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, applyMigrations, getStateAndVersion } from './migrations';
-import { syncRedux } from '../store';
-import { getNostrPrivateKey } from '../../Api/nostr';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { decodeNprofile } from '../../constants';
 import { Buffer } from 'buffer';
+import { getNostrPrivateKey } from '@/lib/nprofile';
+import { syncRedux } from '../thunks/syncRedux';
 
 
 export const storageKey = "spendFrom"

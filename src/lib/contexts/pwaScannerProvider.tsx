@@ -1,5 +1,7 @@
-import { createContext, useCallback, useContext, useState } from 'react';
-import PWAScannerModal from '@/Components/Modals/PWAScannerModal';
+import FullSpinner from '@/Components/common/ui/fullSpinner';
+import { createContext, lazy, Suspense, useCallback, useContext, useState } from 'react';
+
+const PWAScannerModal = lazy(() => import('@/Components/Modals/PWAScannerModal'));
 
 interface ScannerContextType {
 	scanBarcode: (instruction?: string) => Promise<string>;
@@ -38,15 +40,19 @@ export function ScannerProvider({ children }: { children: React.ReactNode }) {
 	return (
 		<ScannerContext.Provider value={{ scanBarcode }}>
 			{children}
-			{scanConfig && (
-				<PWAScannerModal
-					instruction={scanConfig.instruction}
-					onResult={handleResult}
-					onCancel={handleCancel}
-					onError={handleError}
-				/>
-			)}
-		</ScannerContext.Provider>
+			{
+				scanConfig && (
+					<Suspense fallback={<FullSpinner />}>
+						<PWAScannerModal
+							instruction={scanConfig.instruction}
+							onResult={handleResult}
+							onCancel={handleCancel}
+							onError={handleError}
+						/>
+					</Suspense>
+				)
+			}
+		</ScannerContext.Provider >
 	);
 }
 

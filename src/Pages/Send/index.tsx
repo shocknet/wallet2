@@ -41,10 +41,8 @@ import {
 import { SpendFrom } from '@/globalTypes';
 import { CustomSelect } from '@/Components/CustomSelect';
 import { InputState } from './types';
-import { sendPaymentThunk } from '@/State/history/thunks';
 import { useToast } from '@/lib/contexts/useToast';
 import { InputClassification } from '@/lib/types/parse';
-import { identifyBitcoinInput, parseBitcoinInput } from '@/lib/parse';
 import { FeeTier, getFeeTiers } from '@/lib/fees';
 import { Satoshi } from '@/lib/types/units';
 import { parseUserInputToSats } from '@/lib/units';
@@ -55,6 +53,7 @@ import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
 import { useQrScanner } from '@/lib/hooks/useQrScanner';
+import { sendPaymentThunk } from '@/State/history';
 
 
 
@@ -197,97 +196,105 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			return;
 		}
 
-		const classification = identifyBitcoinInput(
-			debouncedRecepient,
-			!selectedSource.pubSource ?
-				{ disallowed: [InputClassification.BITCOIN_ADDRESS, InputClassification.NOFFER] }
-				:
-				undefined
-		);
-
-		if (classification === InputClassification.UNKNOWN) {
-			inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
-			return;
-		}
-		inputStateChange({
-			status: "loading",
-			inputValue: debouncedRecepient,
-			classification
-		});
-
-		parseBitcoinInput(debouncedRecepient, classification, selectedSource.keys)
-			.then(parsed => {
-				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-					inputStateChange({
-						error: "Lnurl cannot be a lnurl-withdraw",
-						status: "error",
-						inputValue: debouncedRecepient,
-						classification: parsed.type
-					});
+		import("@/lib/parse")
+			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
+				const classification = identifyBitcoinInput(
+					debouncedRecepient,
+					!selectedSource.pubSource ?
+						{ disallowed: [InputClassification.BITCOIN_ADDRESS, InputClassification.NOFFER] }
+						:
+						undefined
+				);
+				if (classification === InputClassification.UNKNOWN) {
+					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
 					return;
 				}
-
-				if (parsed.type === InputClassification.LN_INVOICE) {
-					if (!parsed.amount) {
-						inputStateChange({
-							error: "Zero value invoices are not supported",
-							status: "error",
-							inputValue: debouncedRecepient,
-							classification: parsed.type
-						});
-						return;
-					}
-
-					amountInput.setFixed(parsed.amount);
-
-					// If the invoice has a description, set it as the note
-					if (parsed.memo) {
-						setNote(parsed.memo);
-					}
-				}
-
-				// If it's a LNURL or LN address, set the limits
-				if (parsed.type === InputClassification.LNURL_PAY || parsed.type === InputClassification.LN_ADDRESS) {
-					amountInput.setLimits({
-						min: parsed.min,
-						max: Math.min(
-							parsed.max,
-							parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
-						) as Satoshi,
-					});
-
-					satsInputRef.current?.setFocus();
-
-				}
-
-				if (
-					parsed.type === InputClassification.BITCOIN_ADDRESS ||
-					(parsed.type === InputClassification.NOFFER &&
-						parsed.priceType === OfferPriceType.Spontaneous)
-				) {
-					satsInputRef.current?.setFocus();
-				}
-
-				// If it's a noffer with no spontaneous price type, set the amount from the invoice
-				if (parsed.type === InputClassification.NOFFER) {
-					if (parsed.priceType === OfferPriceType.Fixed || parsed.priceType === OfferPriceType.Variable) {
-						amountInput.setFixed(parsed.invoiceData.amount);
-					}
-				}
 				inputStateChange({
-					status: "parsedOk",
+					status: "loading",
 					inputValue: debouncedRecepient,
-					parsedData: parsed
-				});
-			})
-			.catch((err: any) => {
-				inputStateChange({
-					status: "error",
-					inputValue: debouncedRecepient,
-					error: err.message,
 					classification
 				});
+
+				parseBitcoinInput(debouncedRecepient, classification, selectedSource.keys)
+					.then(parsed => {
+						if (parsed.type === InputClassification.LNURL_WITHDRAW) {
+							inputStateChange({
+								error: "Lnurl cannot be a lnurl-withdraw",
+								status: "error",
+								inputValue: debouncedRecepient,
+								classification: parsed.type
+							});
+							return;
+						}
+
+						if (parsed.type === InputClassification.LN_INVOICE) {
+							if (!parsed.amount) {
+								inputStateChange({
+									error: "Zero value invoices are not supported",
+									status: "error",
+									inputValue: debouncedRecepient,
+									classification: parsed.type
+								});
+								return;
+							}
+
+							amountInput.setFixed(parsed.amount);
+
+							// If the invoice has a description, set it as the note
+							if (parsed.memo) {
+								setNote(parsed.memo);
+							}
+						}
+
+						// If it's a LNURL or LN address, set the limits
+						if (parsed.type === InputClassification.LNURL_PAY || parsed.type === InputClassification.LN_ADDRESS) {
+							amountInput.setLimits({
+								min: parsed.min,
+								max: Math.min(
+									parsed.max,
+									parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+								) as Satoshi,
+							});
+
+							satsInputRef.current?.setFocus();
+
+						}
+
+						if (
+							parsed.type === InputClassification.BITCOIN_ADDRESS ||
+							(parsed.type === InputClassification.NOFFER &&
+								parsed.priceType === OfferPriceType.Spontaneous)
+						) {
+							satsInputRef.current?.setFocus();
+						}
+
+						// If it's a noffer with no spontaneous price type, set the amount from the invoice
+						if (parsed.type === InputClassification.NOFFER) {
+							if (parsed.priceType === OfferPriceType.Fixed || parsed.priceType === OfferPriceType.Variable) {
+								amountInput.setFixed(parsed.invoiceData.amount);
+							}
+						}
+						inputStateChange({
+							status: "parsedOk",
+							inputValue: debouncedRecepient,
+							parsedData: parsed
+						});
+					})
+					.catch((err: any) => {
+						inputStateChange({
+							status: "error",
+							inputValue: debouncedRecepient,
+							error: err.message,
+							classification
+						});
+					})
 			})
+			.catch(() => {
+				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
+			})
+
+
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedRecepient, selectedSource]);
 

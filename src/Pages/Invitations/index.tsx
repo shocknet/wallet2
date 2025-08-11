@@ -1,13 +1,13 @@
 import { Clipboard } from "@capacitor/clipboard";
 import { toast } from "react-toastify";
-import * as Icons from "../../Assets/SvgIconLibrary";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "../../State/store";
 import Toast from "../../Components/Toast";
-import { getNostrClient } from "../../Api";
+import { getNostrClient } from "@/Api/nostr";
 import { addInvitation, setInvitationToUsed } from "../../State/Slices/oneTimeInviteLinkSlice";
 import { WALLET_URL } from "../../constants";
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
+import { check, copyWhite } from "@/Assets/SvgIconLibrary";
 
 
 
@@ -130,9 +130,9 @@ const Invitations = () => {
                   disabled={inv.used}
                 >
                   {inv.used ? (
-                    Icons.check()
+                    check()
                   ) : (
-                    <span>{Icons.copyWhite()}</span>
+                    <span>{copyWhite()}</span>
                   )}
                 </button>
               </div>
@@ -164,7 +164,7 @@ const Invitations = () => {
               onClick={() => copyToClip(reusableLink.link)}
               className="clipboard-copy"
             >
-              {Icons.copyWhite()}COPY
+              {copyWhite()}COPY
             </button>
           </>
         }

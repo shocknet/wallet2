@@ -22,15 +22,17 @@ const config: CapacitorConfig = {
 		SplashScreen: {
 			backgroundColor: "#16191c",
 			androidScaleType: "CENTER_CROP",
-			launchAutoHide: false,
+			launchAutoHide: true,
 			splashFullScreen: true,
 		},
 		LocalNotifications: {
 			smallIcon: "ic_notification",
 			iconColor: "#29abe2",
+		},
+		PushNotifications: {
+			presentationOptions: ["badge", "sound", "alert"]
 		}
 	}
-
 };
 
 export default config;

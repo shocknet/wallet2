@@ -56,7 +56,7 @@ export const usePreference = <T>(key: string, defaultValue: T) => {
 		});
 
 		return () => {
-			handler.remove();
+			handler.then((r) => r.remove());
 		};
 	}, [key, cachedValue]);
 

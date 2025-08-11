@@ -7,7 +7,8 @@ import { copyOutline } from 'ionicons/icons';
 import { useDispatch } from '@/State/store';
 import { copyToClipboard } from '@/State/thunks/copyToClipboard';
 import { useToast } from '@/lib/contexts/useToast';
-import { BITCOIN_ADDRESS_BASE58_REGEX } from '@/lib/parse';
+import { BITCOIN_ADDRESS_BASE58_REGEX } from '@/lib/regex';
+
 
 interface QrCodeProps {
 	value: string;

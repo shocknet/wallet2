@@ -1,4 +1,4 @@
-import { SourceActualOperation, SourceOperation } from "@/State/history/types";
+import type { SourceActualOperation, SourceOperation } from "@/State/history/types";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
@@ -68,7 +68,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 	return (
 
 
-		<IonItem className={styles["history-item"]} detail={false} button onClick={handleItemClick}>
+		<IonItem lines="full" className={styles["history-item"]} detail={false} button onClick={handleItemClick}>
 			<IonIcon
 				slot="start"
 				icon={typeIcon}
@@ -76,11 +76,11 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 			></IonIcon>
 			<IonLabel color="primary" >
 				<IonGrid>
-					<IonRow className="ion-nowrap">
-						<IonCol size="8" sizeXs="6" className="ion-text-start" >
+					<IonRow className="ion-nowrap ion-align-items-center">
+						<IonCol className="ion-text-start" style={{ flex: "1 1 0", minWidth: 0 }} >
 							<h2>{label || <span style={{ opacity: 0.8 }}>&lt;no label&gt;</span>}</h2>
 						</IonCol>
-						<IonCol size="4" sizeXs="6">
+						<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto" }} >
 							<IonRow className="ion-text-end ion-nowrap">
 								<IonCol size="auto" style={{ marginLeft: "auto" }}>
 									<IonIcon
@@ -97,7 +97,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 							</IonRow>
 						</IonCol>
 					</IonRow>
-					<IonRow>
+					<IonRow style={{ marginTop: "0.3rem" }}>
 						<IonCol>
 							<IonNote className="text-low">{date}</IonNote>
 						</IonCol>

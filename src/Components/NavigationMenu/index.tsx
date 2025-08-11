@@ -1,4 +1,18 @@
-import { IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuToggle, IonTitle, IonToolbar } from "@ionic/react"
+import {
+	IonContent,
+	IonHeader,
+	IonIcon,
+	IonItem,
+	IonItemDivider,
+	IonItemGroup,
+	IonLabel,
+	IonList,
+	IonMenu,
+	IonMenuToggle,
+	IonTitle,
+	IonToolbar,
+	isPlatform
+} from "@ionic/react"
 import {
 	calendarNumberOutline,
 	peopleOutline,
@@ -10,11 +24,19 @@ import {
 	keyOutline,
 	helpCircleOutline,
 	logoBitcoin,
-	analyticsOutline
+	analyticsOutline,
 } from "ionicons/icons"
-import { useEffect, useMemo, useState } from "react"
-import { AdminSource, getAdminSource } from "../AdminGuard"
+import { useEffect, useState } from "react"
 import { useSelector } from "../../State/store"
+import { App } from "@capacitor/app"
+import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
+
+
+interface AppBuildInfo {
+	appId: string;
+	versionCode: string;
+	versionName: string;
+}
 const getMenuItems = (adminSource: AdminSource | undefined) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
@@ -33,6 +55,7 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 }
 
 const NavigationMenu = () => {
+	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
 	const spendSources = useSelector(state => state.spendSource)
 	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
 	useEffect(() => {
@@ -47,6 +70,29 @@ const NavigationMenu = () => {
 			setAdminSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
 		}
 	}, [spendSources])
+
+	useEffect(() => {
+		const setupAppBuildInfo = async () => {
+			try {
+
+				if (isPlatform("hybrid")) {
+					const res = await App.getInfo();
+					setAppInfo({
+						appId: res.id,
+						versionCode: res.build,
+						versionName: res.version
+					})
+				} else {
+					// TODO: give web build a notion of build version
+				}
+			} catch (err: any) {
+				console.error("Error getting app build info: ", err?.message || "")
+			}
+		}
+		setupAppBuildInfo();
+	}, [])
+
+
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
 			<IonHeader>
@@ -84,6 +130,23 @@ const NavigationMenu = () => {
 
 					</IonItemGroup>
 				</IonList>
+				<div
+					style={{
+						position: "absolute",
+						bottom: "5px",
+						transform: "translateX(50%)",
+						color: "var(--ion-text-color-step-700)",
+						fontSize: "0.8rem"
+					}}>
+					{
+						(appInfo !== null) &&
+						Object.entries(appInfo).map(([key, value]) => (
+							<div key={key}>
+								<span>{key}:&nbsp;</span><span>{value}</span>
+							</div>
+						))
+					}
+				</div>
 			</IonContent>
 		</IonMenu>
 	)

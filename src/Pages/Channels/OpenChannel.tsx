@@ -1,10 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
-import * as Icons from "../../Assets/SvgIconLibrary";
-import { useSelector } from "../../State/store";
-import { getNostrClient } from "../../Api";
-import { NostrKeyPair } from "../../Api/nostrHandler";
+import { useState } from "react";
+import { getNostrClient } from "@/Api/nostr";
 import PromptForActionModal, { ActionType } from "../../Components/Modals/PromptForActionModal";
-import { SpendFrom } from "../../globalTypes";
+import type { SpendFrom } from "../../globalTypes";
 import { toast } from "react-toastify";
 
 export const OpenChannel = ({ adminSource }: { adminSource: SpendFrom }) => {

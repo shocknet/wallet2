@@ -3,11 +3,13 @@ import { State } from "../store";
 
 
 export const makeSelectSortedOperationsArray = () => {
-	const constselectSortedOperationsArray = createSelector(
+	const selectSortedOperationsArray = createSelector(
 		[
-			(state: State) => state.history.sources,
+			(state: State) => state.history,
 		],
-		(sources) => {
+		(history) => {
+			if (history === undefined) return [];
+			const sources = history.sources;
 			const mergedOps = Object.entries(sources).flatMap(
 				([sourceId, sourceHistory]) =>
 					sourceHistory.data.map(op => ({ ...op, sourceId }))
@@ -16,7 +18,6 @@ export const makeSelectSortedOperationsArray = () => {
 		}
 	);
 
-	return constselectSortedOperationsArray;
+	return selectSortedOperationsArray;
 
 }
-
