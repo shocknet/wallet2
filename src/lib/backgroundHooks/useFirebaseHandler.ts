@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 import { getNostrClient } from "@/Api/nostr";
 import { selectNostrSpends, useSelector } from "@/State/store";
-import { getDeviceId } from "@/constants";
+import { getDeviceId, FIREBASE_CONFIG, FIREBASE_VAPID_KEY } from "@/constants";
 import { SpendFrom } from "@/globalTypes";
 import { parseNprofile } from "../nprofile";
 
@@ -21,21 +21,26 @@ const vapidKey = "BExGVgcmXFE2pMPG2iPGCyYINHGD6B_dzkcH3EqbzXK8bpS6uuSt_bs78blau2
 
 const enrollToken = async (nostrSpends: SpendFrom[]) => {
 	console.log("enrolling messagingtoken")
-	const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG))
-	const firebaseMessaging = getMessaging(firebaseApp);
-	const swReg = await navigator.serviceWorker.ready; // Get sw.js registration and pass it to getToken
-	const token = await getToken(firebaseMessaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg });
-	console.log({ messagingToken: token })
-	for (const source of nostrSpends) {
-		if (!source.keys || !source.pubSource) continue;
-		const { pubkey, relays } = parseNprofile(source.pasteField)
-		const c = await getNostrClient({ pubkey, relays }, source.keys)
-		const res = await c.EnrollMessagingToken({ device_id: getDeviceId(), firebase_messaging_token: token })
-		if (res.status === "OK") {
-			console.log("enrolled token for", source.label)
-		} else {
-			console.error("error enrolling token for", source.label, res.reason)
+	try {
+		const firebaseApp = initializeApp(JSON.parse(FIREBASE_CONFIG))
+		const firebaseMessaging = getMessaging(firebaseApp);
+		const swReg = await navigator.serviceWorker.ready; // Get sw.js registration and pass it to getToken
+		const token = await getToken(firebaseMessaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg });
+		console.log({ messagingToken: token })
+		for (const source of nostrSpends) {
+			if (!source.keys || !source.pubSource) continue;
+			const { pubkey, relays } = parseNprofile(source.pasteField)
+			const c = await getNostrClient({ pubkey, relays }, source.keys)
+			const res = await c.EnrollMessagingToken({ device_id: getDeviceId(), firebase_messaging_token: token })
+			if (res.status === "OK") {
+				console.log("enrolled token for", source.label)
+			} else {
+				console.error("error enrolling token for", source.label, res.reason)
+			}
 		}
+	} catch (error) {
+		console.warn('Firebase messaging token enrollment failed:', error);
+		// Continue without push notifications rather than crashing the app
 	}
 }
 

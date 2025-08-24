@@ -6,7 +6,7 @@ import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messagi
 import { selectNostrSpends, useSelector } from '@/State/store';
 import { parseNprofile } from '../nprofile';
 import { getNostrClient } from '@/Api/nostr';
-import { getDeviceId } from '@/constants';
+import { getDeviceId, FIREBASE_CONFIG, FIREBASE_VAPID_KEY } from '@/constants';
 import { useToast } from '../contexts/useToast';
 
 type Handlers = {
@@ -34,84 +34,91 @@ async function initWebFCM(handlers: Handlers) {
 		return () => { webInited = false; };
 	}
 
-	const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
+	try {
+		const firebaseApp = initializeApp(JSON.parse(FIREBASE_CONFIG));
+		const messaging = getMessaging(firebaseApp);
 
-	const messaging = getMessaging(firebaseApp);
+		const permission = await Notification.requestPermission();
+		if (permission !== 'granted') {
+			handlers.onError?.(new Error(`Notification permission: ${permission}`));
+			return () => { webInited = false; };
+		}
 
-	const permission = await Notification.requestPermission();
-	if (permission !== 'granted') {
-		handlers.onError?.(new Error(`Notification permission: ${permission}`));
+		const swReg = await navigator.serviceWorker.ready;
+		const token = await getToken(messaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg }).catch((e) => {
+			handlers.onError?.(e);
+			return;
+		});
+
+		if (token) handlers.onToken?.(token);
+
+		const unsubscribe = onMessage(messaging, (payload) => {
+			handlers.onForegroundMessage?.(payload);
+		});
+		return () => {
+			unsubscribe();
+			webInited = false;
+		}
+	} catch (error) {
+		console.warn('Firebase initialization failed, push notifications disabled:', error);
+		handlers.onError?.(new Error('Firebase configuration not available'));
 		return () => { webInited = false; };
 	}
-
-
-	const swReg = await navigator.serviceWorker.ready;
-	const token = await getToken(messaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: swReg }).catch((e) => {
-		handlers.onError?.(e);
-		return;
-	});
-
-	if (token) handlers.onToken?.(token);
-
-
-	const unsubscribe = onMessage(messaging, (payload) => {
-		handlers.onForegroundMessage?.(payload);
-	});
-	return () => {
-		unsubscribe();
-		webInited = false;
-	}
-
 }
 
 async function initNative(handlers: Handlers) {
 	if (nativeInited) return () => { }; // idempotent
 	nativeInited = true;
-	let permStatus = await PushNotifications.checkPermissions();
+	
+	try {
+		let permStatus = await PushNotifications.checkPermissions();
 
-	if (permStatus.receive === 'prompt') {
-		permStatus = await PushNotifications.requestPermissions();
-	}
+		if (permStatus.receive === 'prompt') {
+			permStatus = await PushNotifications.requestPermissions();
+		}
 
-	if (permStatus.receive !== 'granted') {
-		handlers.onError?.(new Error('Push permission not granted'));
+		if (permStatus.receive !== 'granted') {
+			handlers.onError?.(new Error('Push permission not granted'));
+			return () => { nativeInited = false; };
+		}
+		// Register with APNs/FCM
+		await PushNotifications.register();
+
+		const handles: PluginListenerHandle[] = [];
+
+		handles.push(
+			await PushNotifications.addListener('registration', (token: Token) => {
+				handlers.onToken?.(token.value);
+			})
+		);
+		handles.push(
+			await PushNotifications.addListener('registrationError', (err) => {
+				handlers.onError?.(err);
+			})
+		);
+		handles.push(
+			await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+				handlers.onForegroundMessage?.(notification);
+			})
+		);
+		handles.push(
+			await PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+				handlers.onNotificationTap?.(action.notification.data);
+			})
+		);
+
+		// Cleanup
+		return () => {
+			handles.forEach(h => {
+				try { h.remove(); } catch { /*  */ }
+			});
+			nativeInited = false;
+		};
+	} catch (error) {
+		console.warn('Native push notification initialization failed:', error);
+		handlers.onError?.(new Error('Push notification service not available'));
 		return () => { nativeInited = false; };
 	}
-	// Register with APNs/FCM
-	await PushNotifications.register();
-
-
-	const handles: PluginListenerHandle[] = [];
-
-	handles.push(
-		await PushNotifications.addListener('registration', (token: Token) => {
-			handlers.onToken?.(token.value);
-		})
-	);
-	handles.push(
-		await PushNotifications.addListener('registrationError', (err) => {
-			handlers.onError?.(err);
-		})
-	);
-	handles.push(
-		await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-			handlers.onForegroundMessage?.(notification);
-		})
-	);
-	handles.push(
-		await PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-			handlers.onNotificationTap?.(action.notification.data);
-		})
-	);
-
-	// Cleanup
-	return () => {
-		handles.forEach(h => {
-			try { h.remove(); } catch { /*  */ }
-		});
-		nativeInited = false;
-	};
-
 }
 
 async function initPush(handlers: Handlers = {}) {
@@ -159,10 +166,13 @@ export const usePush = () => {
 					console.log({ data })
 				},
 				onError: (e) => {
-					showToast({
-						message: e?.message || "",
-						color: "danger"
-					})
+					// Only show toast for user-facing errors, not Firebase initialization failures
+					if (e?.message && !e.message.includes('Firebase') && !e.message.includes('Push notification service not available')) {
+						showToast({
+							message: e?.message || "",
+							color: "danger"
+						})
+					}
 					console.error('Push init error', e);
 				},
 			});

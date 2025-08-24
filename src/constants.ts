@@ -39,6 +39,20 @@ export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION 
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const SANCTUM_URL = import.meta.env.VITE_SANCTUM_URL || "https://test-auth.shock.network"
+
+// Firebase configuration fallbacks for Play Store builds
+export const FIREBASE_CONFIG = import.meta.env.VITE_FIREBASE_CONFIG || JSON.stringify({
+	apiKey: "AIzaSyA6YFA5tr2AHMVVXwLU00s_bVQekvXyN-w",
+	authDomain: "shockwallet-11a9c.firebaseapp.com",
+	projectId: "shockwallet-11a9c",
+	storageBucket: "shockwallet-11a9c.firebasestorage.app",
+	messagingSenderId: "73069543153",
+	appId: "1:73069543153:web:048e09fb8a258acb7ab350",
+	measurementId: "G-HQ89PZ3GPW"
+});
+
+export const FIREBASE_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || "BExGVgcmXFE2pMPG2iPGCyYINHGD6B_dzkcH3EqbzXK8bpS6uuSt_bs78blau2NrJoy";
+
 export const TIMESTAMP_STORAGE_KEY = "BACKUP_TIMESTAMP";
 export const VERSION_STORAGE_KEY = "BACKUP_VERSION";
 export const CHANGELOG_TIMESTAMP = "CHANGELOG_TIMESTAMP";
