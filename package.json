@@ -66,7 +66,7 @@
     "@types/sortablejs": "^1.15.2",
     "@types/styled-components": "^5.1.26",
     "antd": "^5.11.1",
-    "axios": "^1.5.0",
+    "axios": "^1.12.0",
     "bech32": "^2.0.0",
     "bitcoin-address-validation": "^2.2.3",
     "buffer": "^6.0.3",
