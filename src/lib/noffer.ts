@@ -16,7 +16,7 @@ export function decodeNoffer(data: string) {
 
 export async function createNofferInvoice(noffer: OfferPointer, keys: NostrKeyPair, amount?: Satoshi): Promise<string | NofferError> {
 	const { offer } = noffer
-	const res = await sendNip69(noffer, { offer, amount }, keys)
+	const res = await sendNip69(noffer, { offer, amount_sats:amount }, keys)
 	const resErr = res as NofferError
 	if (resErr.error) {
 		// If the error is a 5 (range error), we want that error returned to use the reported range
