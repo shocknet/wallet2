@@ -4,82 +4,82 @@ import { Header, PubHeader } from "../Containers/Header";
 import { Footer } from "../Containers/Footer";
 import { LayoutProps } from "./types";
 import axios from "axios";
-import { useDispatch, useSelector } from "../State/store";
+import { useDispatch, useSelector } from "../State/store/store";
 import { setAmount } from "../State/Slices/usdToBTCSlice";
 import { useLocation } from 'react-router-dom';
 
 interface Price {
-  buyPrice: number,
-  sellPrice: number,
+	buyPrice: number,
+	sellPrice: number,
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }): JSX.Element => {
 
-  //reducer
-  const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
+	//reducer
+	const BTCFiatUnit = useSelector(({ prefs }) => prefs.FiatUnit)
 
-  const location = useLocation();
-  const pathname = location?.pathname || window.location.pathname;
+	const location = useLocation();
+	const pathname = location?.pathname || window.location.pathname;
 
-  const isScan: boolean = pathname === "/scan";
-  const isPub: boolean = false //pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
+	const isScan: boolean = pathname === "/scan";
+	const isPub: boolean = false //pathname === "/metrics" || pathname === "/manage" || pathname === "/channels"
 
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-  const getPrice = async () => {
-    try {
-      const buyInfo = await axios.get<any>(BTCFiatUnit.url);
+	const getPrice = async () => {
+		try {
+			const buyInfo = await axios.get<any>(BTCFiatUnit.url);
 
-      dispatch(setAmount(
-        {
-          buyPrice: buyInfo.data.data.amount,
-          sellPrice: buyInfo.data.data.amount,
-        } as Price
-      ))
-    } catch (error) {
-      console.log(error);
-    }
-  }
+			dispatch(setAmount(
+				{
+					buyPrice: buyInfo.data.data.amount,
+					sellPrice: buyInfo.data.data.amount,
+				} as Price
+			))
+		} catch (error) {
+			console.log(error);
+		}
+	}
 
-  useEffect(() => {
-    getPrice();
+	useEffect(() => {
+		getPrice();
 
-    const interval = setInterval(() => {
-      getPrice();
-    }, 5 * 60 * 1000);
+		const interval = setInterval(() => {
+			getPrice();
+		}, 5 * 60 * 1000);
 
-    return () => {
-      clearInterval(interval); // Clear the interval when the component unmounts
-    };
-  }, [getPrice]); // Include getPrice in the dependency array
+		return () => {
+			clearInterval(interval); // Clear the interval when the component unmounts
+		};
+	}, [getPrice]); // Include getPrice in the dependency array
 
 
-  return (
+	return (
 
-    <IonPage>
-      {
-        !isScan
-          &&
-          isPub ?
-          <IonHeader style={{ boxShadow: "none" }} className="custom-header">
-            <PubHeader />
-          </IonHeader>
-          :
-          <IonHeader style={{ boxShadow: "none" }} className="custom-header">
-            <Header />
-          </IonHeader>
-      }
-      <IonContent className="ion-padding">
-        {children}
-      </IonContent>
-      {
-        !isScan
-        &&
-        <IonFooter>
-          <Footer />
-        </IonFooter>
-      }
-    </IonPage>
+		<IonPage>
+			{
+				!isScan
+					&&
+					isPub ?
+					<IonHeader style={{ boxShadow: "none" }} className="custom-header">
+						<PubHeader />
+					</IonHeader>
+					:
+					<IonHeader style={{ boxShadow: "none" }} className="custom-header">
+						<Header />
+					</IonHeader>
+			}
+			<IonContent className="ion-padding">
+				{children}
+			</IonContent>
+			{
+				!isScan
+				&&
+				<IonFooter>
+					<Footer />
+				</IonFooter>
+			}
+		</IonPage>
 
-  )
+	)
 }

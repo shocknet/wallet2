@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "@/State/store";
+
 import {
 	IonButton,
 	IonContent,
@@ -19,16 +19,20 @@ import { RouteComponentProps } from "react-router";
 import BalanceCard from "./BalanceCard";
 import HomeHeader from "@/Layout2/HomeHeader";
 import styles from "./styles/index.module.scss";
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
-import type { SourceOperation } from "@/State/history/types";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
 import { useQrScanner } from "@/lib/hooks/useQrScanner";
-import { makeSelectSortedOperationsArray, removeOptimisticOperation, fetchAllSourcesHistory } from "@/State/history";
 import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
+
+
+import { historySelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
@@ -36,12 +40,11 @@ const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal
 
 const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	const { history } = props;
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 
 	const { showToast } = useToast();
 
-	const selectOperationsArray = useMemo(makeSelectSortedOperationsArray, []);
-	const operations = useSelector(selectOperationsArray);
+	const operations = useAppSelector(historySelectors.selectAll);
 
 
 	useIonViewWillEnter(() => {
@@ -63,10 +66,10 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 		operations.forEach(op => {
 			if ("optimistic" in op && op.optimistic) {
 				if (op.type === "INVOICE") {
-					dispatch(removeOptimisticOperation({ sourceId: op.sourceId, operationId: op.operationId }));
+					dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
 				} else {
 					if (op.status === "broadcasting") {
-						dispatch(removeOptimisticOperation({ sourceId: op.sourceId, operationId: op.operationId }));
+						dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
 					}
 				}
 			}

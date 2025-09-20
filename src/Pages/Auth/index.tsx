@@ -10,7 +10,7 @@ import { ignoredStorageKeys, parseBitcoinInput } from '../../constants';
 import { setSanctumAccessToken } from '../../Api/sanctum';
 import { SANCTUM_URL } from "../../constants";
 import { useStore } from 'react-redux';
-import { useDispatch, useSelector } from '../../State/store';
+import { useDispatch, useSelector } from '../../State/store/store';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import SanctumBox from '../../Components/SanctumBox';

@@ -1,94 +1,70 @@
 
 
-import { payInvoiceReponseToSourceOperation, } from './helpers';
-import { addNewOperation, addOptimisticOperation, removeOptimisticOperation, updateOptimsticOperation } from "./slice";
-import { type AppDispatch } from '../store';
+import { makeKey, payInvoiceReponseToSourceOperation, } from './helpers';
 import { getNostrClient } from '@/Api/nostr';
-import type { SourceActualOperation, SourceOperationInvoice, SourceOptimsiticInvoice, SourceOptimsiticOnChain } from './types';
-import type { SpendFrom } from '@/globalTypes';
+import type { SourceActualOperation, SourceOptimsiticInvoice, SourceOptimsiticOnChain } from './types';
 import { ShowToast } from '@/lib/contexts/useToast';
 import type { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
 import { InputClassification, ParsedInput, ParsedInvoiceInput } from '@/lib/types/parse';
-import { getSourceInfo } from '../thunks/spendFrom';
-import { appCreateAsyncThunk } from '../appCreateAsyncThunk';
 import { OfferPriceType } from '@shocknet/clink-sdk';
 import { fetchHistoryForSource } from './thunks';
+import { historyActions } from './slice';
+import { refreshSourceInfo } from '../metadata/thunks';
+import { AppThunk, AppThunkDispatch } from '@/State/store/store';
+import { NprofileView, selectSourceViewById } from '../selectors';
+import { SourceType } from '@/State/scoped/common';
+
 
 
 /*
  * The main function to send a payment
  */
-export const sendPaymentThunk = appCreateAsyncThunk(
-	'paymentHistory/sendPayment',
-	async (
-		{
-			sourceId,
-			parsedInput,
-			amount,
-			note,
-			satsPerVByte,
-			showToast
-		}: {
-			sourceId: string,
-			parsedInput: ParsedInput,
-			amount: Satoshi,
-			note?: string,
-			satsPerVByte: number,
-			showToast: ShowToast
-		}, {
-			dispatch, getState
-		}) => {
-
-		const selectedSource = getState().spendSource.sources[sourceId];
-		if (!selectedSource) {
-			throw new Error("Source not found");
+export const sendPaymentThunk = (
+	{
+		sourceId,
+		parsedInput,
+		amount,
+		note,
+		satsPerVByte,
+		showToast
+	}: {
+		sourceId: string,
+		parsedInput: ParsedInput,
+		amount: Satoshi,
+		note?: string,
+		satsPerVByte: number,
+		showToast: ShowToast
+	}
+): AppThunk<void> => {
+	return async (dispatch, getState) => {
+		const selectedSource = selectSourceViewById(getState(), sourceId);
+		if (!selectedSource || selectedSource.type !== SourceType.NPROFILE_SOURCE) {
+			throw new Error("Source not found or is not nprofile");
 		}
 
-		const isPubSource = !!selectedSource.pubSource;
-		const optimisticOperationId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; // Timestamp + random
+
+		const optimisticOperationId = makeKey(selectedSource.sourceId, `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`); // Timestamp + random
 
 
 		const payInvoice = async (parsedInvoice: ParsedInvoiceInput, optimisticOperationId: string, optimisticOperation: SourceOptimsiticInvoice) => {
 			try {
-				if (isPubSource) {
-					const res = await (await getNostrClient(selectedSource.pasteField, selectedSource.keys)).PayInvoice({
-						invoice: parsedInvoice.data,
-						amount: 0,
-					})
-					if (res.status !== "OK") {
-						throw new Error(res.reason);
-					}
 
-					handlePaymentSuccess(dispatch, amount, selectedSource, optimisticOperationId, payInvoiceReponseToSourceOperation(res, optimisticOperation), showToast);
-
-
-					dispatch(fetchHistoryForSource(sourceId));
-				} else {
-					// lnurl withdraw spend source
-					const { requestLnurlWithdraw } = await import("@/lib/lnurl/withdraw");
-
-
-					await requestLnurlWithdraw({ invoice: parsedInvoice.data, amountSats: amount, lnurl: selectedSource.pasteField });
-
-					const operation: SourceOperationInvoice = {
-						sourceId: sourceId,
-						amount: amount,
-						operationId: `lnurl-withdraw-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-						type: "LNURL_WITHDRAW",
-						invoice: parsedInvoice.data,
-						invoiceMemo: parsedInvoice.memo,
-						memo: optimisticOperation.memo,
-						invoiceSource: optimisticOperation.invoiceSource,
-						inbound: false,
-						internal: false,
-						paidAtUnix: Date.now(),
-					}
-
-					handlePaymentSuccess(dispatch, amount, selectedSource, optimisticOperationId, operation, showToast);
+				const res = await (await getNostrClient({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys)).PayInvoice({
+					invoice: parsedInvoice.data,
+					amount: 0,
+				})
+				if (res.status !== "OK") {
+					throw new Error(res.reason);
 				}
+
+				handlePaymentSuccess(dispatch, amount, selectedSource, optimisticOperationId, payInvoiceReponseToSourceOperation(res, optimisticOperation), showToast);
+
+
+				dispatch(fetchHistoryForSource(selectedSource));
+
 			} catch (err) {
-				handlePaymentError(err, dispatch, selectedSource.id, optimisticOperationId, showToast);
+				handlePaymentError(err, dispatch, selectedSource.sourceId, optimisticOperationId, showToast);
 			}
 		}
 
@@ -107,7 +83,7 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 					invoiceMemo: parsedInput.memo,
 					memo: note,
 				};
-				dispatch(addOptimisticOperation({ sourceId: selectedSource.id, operation: optimsticOperation }));
+				dispatch(historyActions.addOptimistic({ sourceId: selectedSource.sourceId, operation: optimsticOperation }));
 
 				// We do not wait for the payInvoice to finish
 				payInvoice(parsedInput, optimisticOperationId, optimsticOperation);
@@ -120,7 +96,7 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 				let parsedInvoice: ParsedInvoiceInput;
 				try {
 					let invoice = "";
-					if (parsedInput.noffer && isPubSource) {
+					if (parsedInput.noffer) {
 						const { createNofferInvoice } = await import("@/lib/noffer");
 						const nofferRes = await createNofferInvoice(parsedInput.noffer, selectedSource.keys, amount);
 						if (typeof nofferRes !== "string") {
@@ -165,14 +141,13 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 					invoiceSource: parsedInput,
 					memo: note,
 				};
-				dispatch(addOptimisticOperation({ sourceId: selectedSource.id, operation: optimsticOperation }));
+				dispatch(historyActions.addOptimistic({ sourceId: selectedSource.sourceId, operation: optimsticOperation }));
 
 
 				payInvoice(parsedInvoice, optimisticOperationId, optimsticOperation);
 				return;
 			}
 			case InputClassification.NOFFER: {
-
 
 				let parsedInvoice: ParsedInvoiceInput;
 				if (parsedInput.priceType !== OfferPriceType.Spontaneous) {
@@ -220,7 +195,7 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 					invoiceSource: parsedInput,
 					memo: note,
 				};
-				dispatch(addOptimisticOperation({ sourceId: selectedSource.id, operation: optimsticOperation }));
+				dispatch(historyActions.addOptimistic({ sourceId: selectedSource.sourceId, operation: optimsticOperation }));
 
 
 				payInvoice(parsedInvoice, optimisticOperationId, optimsticOperation);
@@ -244,11 +219,11 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 					memo: note,
 				};
 
-				dispatch(addOptimisticOperation({ sourceId: selectedSource.id, operation: optimisticOperation }));
+				dispatch(historyActions.addOptimistic({ sourceId: selectedSource.sourceId, operation: optimisticOperation }));
 
 				(async () => {
 					try {
-						const payRes = await (await getNostrClient(selectedSource.pasteField, selectedSource.keys)).PayAddress({
+						const payRes = await (await getNostrClient({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys)).PayAddress({
 							address: parsedInput.data,
 							amoutSats: amount,
 							satsPerVByte
@@ -279,26 +254,27 @@ export const sendPaymentThunk = appCreateAsyncThunk(
 								txHash: payRes.txId,
 							}
 						}
-						dispatch(updateOptimsticOperation({ sourceId: selectedSource.id, operation: updatedOptimsticOperation, oldOperationId: optimisticOperationId }));
-						dispatch(getSourceInfo(sourceId));
+						dispatch(historyActions.replaceOptimistic({ sourceId: selectedSource.sourceId, operation: updatedOptimsticOperation, oldOperationId: optimisticOperationId }));
+						dispatch(refreshSourceInfo(selectedSource));
 
 					} catch (err: any) {
-						handlePaymentError(err, dispatch, selectedSource.id, optimisticOperationId, showToast);
+						handlePaymentError(err, dispatch, selectedSource.sourceId, optimisticOperationId, showToast);
 					}
 				})();
 			}
 		}
-	});
+	}
+}
 
 const handlePaymentError = (
 	err: any,
-	dispatch: AppDispatch,
+	dispatch: AppThunkDispatch,
 	sourceId: string,
 	optimsticOpId: string,
 	showToast: ShowToast
 ) => {
 	console.error(err);
-	dispatch(removeOptimisticOperation({ sourceId, operationId: optimsticOpId }));
+	dispatch(historyActions.removeOptimistic({ sourceId, operationId: optimsticOpId }));
 	showToast({
 		message: "Payment failed",
 		color: "danger"
@@ -306,15 +282,14 @@ const handlePaymentError = (
 }
 
 const handlePaymentSuccess = (
-	dispatch: AppDispatch,
+	dispatch: AppThunkDispatch,
 	amount: Satoshi,
-	selectedSource: SpendFrom,
+	selectedSource: NprofileView,
 	optimisticOpId: string,
 	operation: SourceActualOperation,
 	showToast: ShowToast
 ) => {
-	dispatch(removeOptimisticOperation({ sourceId: selectedSource.id, operationId: optimisticOpId }));
-	dispatch(addNewOperation({ sourceId: selectedSource.id, operation }));
+	dispatch(historyActions.replaceOptimistic({ sourceId: selectedSource.sourceId, oldOperationId: optimisticOpId, operation }));
 	showToast({
 		message: `Payment of ${formatSatoshi(amount)} sats sent`,
 		color: "success",

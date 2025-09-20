@@ -30,7 +30,7 @@ export interface ParsedLnurlPayInput extends ParsedInputBase, LnurlPayServiceRes
 }
 export interface ParsedLightningAddressInput extends ParsedInputBase, LnurlPayServiceResponse {
 	type: InputClassification.LN_ADDRESS;
-	noffer?: OfferPriceType;
+	nofferPriceType?: OfferPriceType;
 }
 export interface ParsedLnurlWithdrawInput extends ParsedInputBase, LnurlWithdrawServiceResponse {
 	type: InputClassification.LNURL_WITHDRAW;

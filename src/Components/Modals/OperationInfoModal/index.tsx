@@ -28,7 +28,7 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { checkmark, closeOutline, copy, informationCircle, pencilOutline } from "ionicons/icons";
-import { selectSourceById, useDispatch, useSelector } from "@/State/store";
+import { selectSourceById, useDispatch, useSelector } from "@/State/store/store";
 import { updateOperationNote } from "@/State/history";
 import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";

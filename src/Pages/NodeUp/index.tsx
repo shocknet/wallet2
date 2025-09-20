@@ -1,6 +1,6 @@
-import { IonButton, IonCol, IonContent, IonFooter, IonGrid, IonImg, IonPage, IonRow, IonToolbar, useIonRouter } from '@ionic/react';
+import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFooter, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonToolbar, isPlatform, useIonRouter } from "@ionic/react";
 import { NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "../../constants";
-import { useDispatch, useSelector } from "../../State/store";
+import { useDispatch, useSelector } from "../../State/store/store";
 import { addPaySources } from "../../State/Slices/paySourcesSlice";
 import { addSpendSources } from "../../State/Slices/spendSourcesSlice";
 import { generateNewKeyPair } from "../../Api/helpers";
@@ -9,11 +9,14 @@ import { SourceTrustLevel } from "../../globalTypes";
 import styles from "./styles/index.module.scss";
 import logo from "@/Assets/Images/isolated logo.png";
 import shockwalletText from "@/Assets/Images/wallet_new_text.png";
-import OutlinedButton from '@/Components/Buttons/GradientButton/OutlinedButton';
-import classNames from 'classnames';
+import OutlinedButton from "@/Components/Buttons/GradientButton/OutlinedButton";
+import classNames from "classnames";
+import { cloudOutline, extensionPuzzleOutline, keyOutline } from "ionicons/icons";
 
 const NodeUp = () => {
 	const router = useIonRouter();
+	const hasNip07 = typeof (window as any).nostr !== "undefined";
+	const isNative = isPlatform("ios") || isPlatform("android");
 
 
 
@@ -86,77 +89,90 @@ const NodeUp = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonContent className={`${styles["nodeup-ioncontent"]} ion-padding`}>
-				<IonGrid
-					style={{
-						height: "100%",
-						display: "flex",
-						flexDirection: "column",
-						justifyContent: "center",
-					}}
-				>
-					<IonRow className="ion-justify-content-center ion-text-center">
-						<IonCol size="2" sizeMd="1">
-							<IonImg
-								src={logo}
-								style={{ width: "100%", height: "auto" }}
-							>
-							</IonImg>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center ion-text-center ion-margin-top">
-						<IonCol size="10" sizeMd="6" >
-							<IonImg
-								src={shockwalletText}
-								style={{ width: "auto", height: "100%" }}
-							>
-							</IonImg>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "2rem" }}>
-						<IonCol size="12">
-							<div className={styles["page-title"]}>Node Up</div>
-						</IonCol>
-					</IonRow>
+				<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+					<IonGrid
+
+						style={{
 
 
-					<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "2rem" }}>
-						<IonCol size="12">
-							<div className={styles["description-text"]}>
-								Continue to bootstrap the wallet with a trusted server, you may add a node later.
-							</div>
-						</IonCol>
-					</IonRow>
+						}}
+						className="ion-padding-top"
+					>
+						<IonRow className="ion-justify-content-center ion-text-center">
+							<IonCol size="2" sizeMd="1">
+								<IonImg
+									src={logo}
+									style={{ width: "100%", height: "auto" }}
+								>
+								</IonImg>
+							</IonCol>
+						</IonRow>
+						<IonRow className="ion-justify-content-center ion-text-center ion-margin-top">
+							<IonCol size="10" sizeMd="6" >
+								<IonImg
+									src={shockwalletText}
+									style={{ width: "auto", height: "100%" }}
+								>
+								</IonImg>
+							</IonCol>
+						</IonRow>
+						<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "2rem" }}>
+							<IonCol size="12">
+								<div className={styles["page-title"]}>Set up your identity</div>
+							</IonCol>
+						</IonRow>
+						<IonRow className="ion-justify-content-center" style={{ marginTop: "4rem" }}>
+							<IonCol size="12">
+								<IonCard color="secondary">
+									<IonCardHeader>
+										<IonCardTitle style={{ color: "var(--ion-text-color-step-150)" }}>Choose how to set up your identity</IonCardTitle>
+									</IonCardHeader>
+									<IonCardContent>
+										<IonList className="round secondary" lines="full">
+											<IonItem button detail /* onClick={() => history.push("/welcome/sanctum")} */>
+												<IonIcon slot="start" icon={cloudOutline} />
+												<IonLabel>
+													<h2 className="text-high">Sanctum remote-signer (recommended)</h2>
+													<p className="text-low">Use a trusted remote service to hold your keys and authorize actions from this app.</p>
+												</IonLabel>
+											</IonItem>
+											<IonItem button detail routerLink="/auth/keys">
+												<IonIcon slot="start" icon={keyOutline} />
+												<IonLabel>
+													<h2 className="text-high">Nostr Kepyair</h2>
+													<p className="text-low">Bring in your nostr key pair or generate a new one</p>
+												</IonLabel>
+											</IonItem>
+
+											{/* Hide NIP-07 on native if you want */}
+											{(!isNative && hasNip07) && (
+												<IonItem button detail /* onClick={() => history.push("/welcome/nip07")} */>
+													<IonIcon slot="start" icon={extensionPuzzleOutline} />
+													<IonLabel>
+														<h2 className="text-high">NIP-07 Extension</h2>
+														<p className="text-low">Use a Nostr-compatible extension to manage your identity on this browser.</p>
+													</IonLabel>
+												</IonItem>
+											)}
 
 
-					<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "2.2rem" }}>
-						<IonCol size="12">
-							<div className={styles["description-text"]}>
-								Add Connection to link a node now, or recover from backup.
-							</div>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "3.2rem" }}>
-						<IonCol size="auto">
-							<OutlinedButton onClick={toMainPage} expand="block" className={styles["main-button"]}>
-								<div className={styles["button-text"]} style={{ color: "var(--ion-text-color-step-100)" }}>Continue</div>
-							</OutlinedButton>
-						</IonCol>
-					</IonRow>
-					<IonRow className={classNames("ion-justify-content-center ion-align-items-center ion-text-center", styles["option-buttons"])}>
-						<IonCol size="auto">
-							<IonButton onClick={toSourcePage} fill="clear">
-								<div className={styles["button-text"]}>Add Connection</div>
-							</IonButton>
-						</IonCol>
-						<IonCol size="auto" className={styles["button-text"]}>|</IonCol>
-						<IonCol size="auto">
-							<IonButton onClick={toRecoverPage} fill="clear">
-								<div className={styles["button-text"]}>Recover Backup</div>
-							</IonButton>
-						</IonCol>
-					</IonRow>
+										</IonList>
+										{!hasNip07 && !isNative && (
+											<div className="ion-padding-top">
+												<small>NIP-07 not detected. Install a Nostr extension to enable that option.</small>
+											</div>
+										)}
+									</IonCardContent>
+								</IonCard>
+							</IonCol>
+						</IonRow>
+					</IonGrid>
 
-				</IonGrid>
+				</div>
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { selectNostrSpends, useDispatch, useSelector } from "@/State/store";
+import { selectNostrSpends, useDispatch, useSelector } from "@/State/store/store";
 import { addNotification } from "@/State/Slices/notificationSlice";
 import { toast } from "react-toastify";
 import { useIonRouter } from "@ionic/react";

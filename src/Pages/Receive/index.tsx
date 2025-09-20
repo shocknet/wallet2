@@ -20,7 +20,7 @@ import {
 	useIonRouter,
 	useIonViewWillEnter
 } from '@ionic/react';
-import { useSelector } from '../../State/store';
+import { useSelector } from '../../State/store/store';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
 import { toast } from "react-toastify";

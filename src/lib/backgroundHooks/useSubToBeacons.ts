@@ -1,7 +1,7 @@
 import { updateSourceState } from "@/Api/health";
 import { subToBeacons } from "@/Api/nostr";
 import { useEffect } from "react";
-import { useSelector } from "@/State/store";
+import { useSelector } from "@/State/store/store";
 
 export const useSubToBeacons = () => {
 	const spendSource = useSelector((state) => state.spendSource)

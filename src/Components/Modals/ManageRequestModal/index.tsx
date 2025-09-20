@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getNostrClient } from "@/Api/nostr";
-import { useDispatch, useSelector } from "@/State/store";
+import { useDispatch, useSelector } from "@/State/store/store";
 import { Modal } from "../Modal";
 import { NOSTR_RELAYS } from "@/constants";
 import { nip19 } from "nostr-tools";

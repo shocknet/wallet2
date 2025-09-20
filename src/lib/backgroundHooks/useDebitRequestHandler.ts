@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { getNostrClient } from "@/Api/nostr";
-import { selectNostrSpends, useDispatch, useSelector } from "@/State/store";
+import { selectNostrSpends, useDispatch, useSelector } from "@/State/store/store";
 
 import { addDebitRequest } from "@/State/Slices/modalsSlice";
 import { parseNprofile } from "../nprofile";

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from '@/State/store';
+import { useDispatch, useSelector } from '@/State/store/store';
 import { decodeNprofile } from '@/constants';
 import { getNostrClient } from '@/Api/nostr';
 import { editSpendSources } from '@/State/Slices/spendSourcesSlice';

@@ -15,13 +15,13 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import "./theme/variables.css";
 
-import { Redirect, Route } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useState } from "react";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { Redirect, Route, RouteComponentProps, RouteProps } from "react-router-dom";
+import React, { act, ComponentProps, lazy, Suspense, useEffect, useState } from "react";
+import { IonApp, IonPage, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { useDispatch } from 'react-redux';
-import store, { useSelector } from './State/store';
+import store, { persistor, useSelector } from './State/store/store';
 import { Layout } from "./Layout";
 import { StatusBar } from "@capacitor/status-bar";
 import { Provider } from 'react-redux';
@@ -37,6 +37,19 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
+import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
+import IdentitiesPage from './Pages/Identities';
+import { useAppDispatch, useAppSelector } from './State/store/hooks';
+import { switchIdentity } from './State/identitiesRegistry/thunks';
+import { PersistGate } from 'redux-persist/integration/react';
+import { identitySwitchRequested } from './State/identitiesRegistry/middleware/actions';
+import { getAllScopedPersistKeys } from './State/scoped/scopedReducer';
+import { waitForRehydrateKeys } from './State/identitiesRegistry/middleware/switcher';
+import Welcome from './Pages/Welcome';
+
+import Bootstrap from './Pages/Authh';
+import KeysIdentity from './Pages/Authh/Keys';
+import SanctumIdentity from './Pages/Authh/Sanctum';
 
 
 
@@ -76,6 +89,7 @@ document.documentElement.classList.add('dark');
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
 	useAppUrlListener();
+	const isBootstrapped = useBootstrapped();
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
@@ -132,14 +146,16 @@ const AppContent: React.FC = () => {
 
 	return (
 		<>
-			{
+			{/* {
 				loadBackgroundJobs
 				&&
 				<Suspense fallback={null}>
 					<BackgroundJobs />
 				</Suspense>
-			}
+			} */}
 			<LoadingOverlay />
+
+
 
 			{/* Modals */}
 			{
@@ -167,29 +183,56 @@ const AppContent: React.FC = () => {
 			{/* Modals */}
 
 			<NavigationMenu />
-			<IonRouterOutlet id="main-content" animated={true}
-			>
-				<Route exact path="/home" render={(props) =>
+			<IonRouterOutlet id="main-content" animated={true}>
+				<Route exact path="/bootstrap" render={() => <Bootstrap />} />
+				<Route path="/keys" render={() => <KeysIdentity />} />
+				<Route path="/sanctum" render={() => <SanctumIdentity />} />
+
+				{/* <BootstrapGate
+					exact
+					path="/identities"
+					render={(props) => <IdentitiesPage {...props} />}
+				/>
+				<BootstrapGate
+					exact
+					isNodeupPage
+					path="/nodeup"
+					render={(props) => <Suspense fallback={<FullSpinner />}>
+						<NodeUp />
+					</Suspense>}
+				/> */}
+				{/* 				<BootstrapGate
+					path="/app"
+					render={() => {
+						return <IdentityGate
+							render={(props) => <AppShell {...props} />}
+						/>
+					}}
+				/> */}
+
+
+
+
+				{/* 				<Route exact path="/home" render={(props) =>
 					<Suspense fallback={<FullSpinner />}>
 						<Home {...props} />
 					</Suspense>
 				}
-				/>
-				<Route exact path="/nodeup">
-					<Suspense fallback={<FullSpinner />}>
-						<NodeUp />
-					</Suspense>
-				</Route>
-				<Route exact path="/">
+				/> */}
+
+
+
+
+				{/* 				<Route exact path="/">
 					<Suspense fallback={<FullSpinner />}>
 						<BoostrapGuard />
 					</Suspense>
-				</Route>
-				<Route exact path="/receive">
+				</Route> */}
+				{/* 				<Route exact path="/receive">
 					<Suspense fallback={<FullSpinner />}>
 						<Receive />
 					</Suspense>
-				</Route>
+				</Route> */}
 				<Route exact path="/loader">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
@@ -197,125 +240,175 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</Route>
-				<Route exact path="/send" render={(props) =>
+				{/* <Route exact path="/send" render={(props) =>
 					<Suspense fallback={<FullSpinner />}>
 						<Send {...props} />
 					</Suspense>
 				}
-				/>
-				<Route path="/sources">
+				/> */}
+				{/* <Route path="/sources">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Sources />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/automation">
+				</Route> */}
+				{/* <Route exact path="/automation">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Automation />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/prefs">
+				</Route> */}
+				{/* <Route exact path="/prefs">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Prefs />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/contacts">
+				</Route> */}
+				{/* <Route exact path="/contacts">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Contacts />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/invitations">
+				</Route> */}
+				{/* <Route exact path="/invitations">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Invitations />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/auth">
+				</Route> */}
+				{/* <Route exact path="/auth">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Auth />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/notify">
+				</Route> */}
+				{/* <Route exact path="/notify">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Notify />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/metrics">
+				</Route> */}
+				{/* <Route exact path="/metrics">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Metrics />
 						</Layout>
 					</Suspense>
 
-				</Route>
-				<Route exact path="/metrics/earnings">
+				</Route> */}
+				{/* <Route exact path="/metrics/earnings">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Earnings />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/metrics/routing">
+				</Route> */}
+				{/* <Route exact path="/metrics/routing">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Routing />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/LApps">
+				</Route> */}
+				{/* <Route exact path="/LApps">
 
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<LinkedApp />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/management">
+				</Route> */}
+				{/* <Route exact path="/management">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Management />
 						</Layout>
 					</Suspense>
-				</Route>
-				<Route exact path="/Offers">
+				</Route> */}
+				{/* <Route exact path="/Offers">
 					<Suspense fallback={<FullSpinner />}>
 						<Offers />
 					</Suspense>
-				</Route>
-				<Route exact path="/Stats">
+				</Route> */}
+				{/* <Route exact path="/Stats">
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
 							<Stats />
 						</Layout>
 					</Suspense>
-				</Route>
-			</IonRouterOutlet>
+				</Route> */}
+			</IonRouterOutlet >
 		</>
 	);
 };
 
-const BoostrapGuard: React.FC = () => {
-	const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+export function useBootstrapped(): string | null {
+	const [state, setState] = useState<string | null>(localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY));
+
+	useEffect(() => {
+
+		// If you want cross-window sync (optional)
+		const onStorage = (e: StorageEvent) => {
+			if (e.key === NOSTR_PRIVATE_KEY_STORAGE_KEY) {
+				setState(e.newValue);
+			}
+		};
+		window.addEventListener("storage", onStorage);
+		return () => window.removeEventListener("storage", onStorage);
+	}, []);
+
+	return state;
+}
 
 
-	return hasBootstrapped ? (
-		<Redirect to="/home" />
-	) : (
-		<Redirect to="/nodeup" />
+interface BootstrapGateProps extends RouteProps {
+	isNodeupPage?: true
+}
+export function BootstrapGate({ isNodeupPage, render, ...rest }: BootstrapGateProps) {
+	const isBootstrapped = useBootstrapped();
+	return (
+		<Route
+			{...rest}
+			render={(routeProps) => {
+				if (isNodeupPage) {
+					return isBootstrapped
+						? <Redirect to={{ pathname: "/app", state: { routerDirection: "root" } }} />
+						: (render ? render(routeProps) : null);
+				}
+				return isBootstrapped
+					? (render ? render(routeProps) : null)
+					: <Redirect to={{ pathname: "/nodeup", state: { routerDirection: "root" } }} />;
+			}}
+		/>
 	);
-};
+}
+
+
+
+export function IdentityGate({ render, ...rest }: RouteProps) {
+	const active = useAppSelector(selectActiveIdentityId);
+
+	return (
+		<Route
+			{...rest}
+			render={(props) =>
+				active ? (render ? render(props) : null) : <Redirect to={{ pathname: "/identities", state: { routerDirection: "back" } }} />
+			}
+		/>
+	);
+}
+
+
+
+
+
 
 const App: React.FC = () => {
 	useEffect(() => {
@@ -326,28 +419,44 @@ const App: React.FC = () => {
 
 	return (
 		<Provider store={store}>
-			<ScannerProvider>
-				<IonApp>
-					<ErrorBoundary>
-						<IonReactRouter>
-							<AlertProvider>
-								<ToastProvider>
-									<AppContent />
-								</ToastProvider>
-							</AlertProvider>
-						</IonReactRouter>
-					</ErrorBoundary>
-					<ToastContainer
-						theme="colored"
-						position="top-center"
-						closeOnClick
-						pauseOnHover
-						autoClose={4000}
-						limit={2}
-						pauseOnFocusLoss={false}
-					/>
-				</IonApp>
-			</ScannerProvider>
+			<PersistGate
+				onBeforeLift={async () => {
+					if (localStorage.getItem("migrated_to_identities")) return;
+
+					const sub = store.getState().backupStateSlice;
+					let usingSanctum = sub.subbedToBackUp ? sub.usingSanctum : null;
+
+					if (usingSanctum !== null) {
+
+					}
+
+
+				}}
+				persistor={persistor} loading={<div>yes its PersistGAte</div>}
+			>
+				<ScannerProvider>
+					<IonApp>
+						<ErrorBoundary>
+							<IonReactRouter>
+								<AlertProvider>
+									<ToastProvider>
+										<AppContent />
+									</ToastProvider>
+								</AlertProvider>
+							</IonReactRouter>
+						</ErrorBoundary>
+						<ToastContainer
+							theme="colored"
+							position="top-center"
+							closeOnClick
+							pauseOnHover
+							autoClose={4000}
+							limit={2}
+							pauseOnFocusLoss={false}
+						/>
+					</IonApp>
+				</ScannerProvider>
+			</PersistGate>
 		</Provider>
 	);
 };

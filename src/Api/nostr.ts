@@ -78,9 +78,7 @@ export class ClientsCluster {
     }
 
     SyncClusterRelays = (relays: RelaysSettings) => {
-        return new Promise<void>(res => {
-            this.relayCluster.addRelays(relays, () => res(), (e) => this.onRelayEvent(e), (r) => logger.warn("disconnected from relay", r))
-        })
+        return this.relayCluster.addRelays(relays, (e) => this.onRelayEvent(e), (r) => logger.warn("disconnected from relay", r));
     }
 
     GetNostrClient = async (nProfile: { pubkey: string, relays?: string[] } | string, keys: NostrKeyPair, temp?: boolean): Promise<Client> => {
@@ -126,6 +124,12 @@ export class ClientsCluster {
 
     GetAllNostrClients = () => {
         return Object.values(this.clients).map(c => (c as NostrReadyClient).client)
+    }
+
+    ResetClientsCluster = async () => {
+        this.GetAllNostrClients().forEach(c => c.disconnectCalls());
+        this.clients = {};
+        await this.relayCluster.resetrelays();
     }
 }
 
@@ -275,6 +279,7 @@ export class NostrClient {
             f: (response: any) => { this.latestResponseAtMillis = Date.now(); cb(response) },
             to
         }
+        console.log("clientSubs", this.clientCbs)
     }
 
     disconnectCalls = (reason?: string) => {
@@ -305,6 +310,11 @@ export const getNostrClient = async (nProfile: { pubkey: string, relays?: string
 export const getAllNostrClients = () => {
     const cluster = getCluster()
     return cluster.GetAllNostrClients()
+}
+
+export const resetClientsCluster = async () => {
+    const cluster = getCluster()
+    return cluster.ResetClientsCluster()
 }
 
 export const subToBeacons = (cb: (beaconUpdate: BeaconUpdate) => void) => {

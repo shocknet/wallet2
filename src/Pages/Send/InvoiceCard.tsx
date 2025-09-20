@@ -17,7 +17,7 @@ import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import NoteInput from "./common";
 import InvoiceInfoDisplay from "@/Components/common/info/invoiceInfoDisplay";
-import { useSelector } from "@/State/store";
+import { useSelector } from "@/State/store/store";
 import { useEffect, useState } from "react";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";

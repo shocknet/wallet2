@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSelector, selectConnectedNostrSpends } from '../../State/store';
+import { useSelector, selectConnectedNostrSpends } from '../../State/store/store';
 import { PayTo } from "../../globalTypes";
 import {
 	IonAvatar,
