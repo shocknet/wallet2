@@ -50,7 +50,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 	const data = JSON.parse(decrypted);
 
 
-	if (data.tags) { // It's the recent sharded backups
+	if (data.dtags) { // It's the recent sharded backups
 		console.log("sharded backup found", data.tags)
 		const { dtags } = data as ShardsTagsRecord;
 		const shards: GeneralShard[] = await Promise.all(dtags.map(async tag => {
