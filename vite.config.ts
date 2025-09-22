@@ -11,6 +11,10 @@ const isNativeBuild = process.env.CAPACITOR_PLATFORM === 'android' || process.en
 
 
 export default defineConfig({
+	define: {
+		__WEB_APP_VERSION__: JSON.stringify(process.env.WEB_APP_VERSION || '0.0.0.'),
+		__WEB_APP_VERSION_CODE__: JSON.stringify(process.env.WEB_APP_VERSION_CODE || "0")
+	},
 	plugins: [
 		react(),
 		eslint({

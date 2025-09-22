@@ -54,10 +54,10 @@ export const getNostrBtcAddress = async (nprofile: GetNostrClientNprofileArgs, k
 
 export const createNofferInvoice = async (noffer: OfferPointer, keys: NostrKeyPair, amount?: number) => {
 	const { offer } = noffer
-	const res = await sendNip69(noffer, { offer, amount }, keys)
+	const res = await sendNip69(noffer, { offer, amount_sats:amount }, keys)
 	const resErr = res as NofferError
 	if (resErr.error) {
-		if (resErr.code === 5) {
+		if (resErr.code === 5 && resErr.range) {
 			throw new Error("value must be between " + resErr.range.min + " and " + resErr.range.max);
 		}
 		throw new Error(resErr.error);

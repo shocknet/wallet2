@@ -153,13 +153,13 @@ const Metrics = () => {
 		if (apps.status !== 'OK') {
 			setLoading(false);
 			dispatch(toggleLoading({ loadingMessage: "" }));
-			toast.error(<Toast title="Metrics Error" message={apps.reason} />);
+			toast.error(<Toast title="App Metrics Error" message={apps.reason} />);
 			return;
 		}
 		if (lnd.status !== 'OK') {
 			setLoading(false);
 			dispatch(toggleLoading({ loadingMessage: "" }));
-			toast.error(<Toast title="Metrics Error" message={lnd.reason} />);
+			toast.error(<Toast title="Lnd Metrics Error" message={lnd.reason} />);
 			return;
 		}
 		const nodeStats = lnd.nodes[0]

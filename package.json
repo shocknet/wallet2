@@ -1,12 +1,13 @@
 {
   "name": "shockwallet",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.20",
   "scripts": {
     "start": "vite",
     "buildionic": "rm -rf dist && ionic build --prod",
     "build:web": "rm -rf dist && ionic build --prod",
     "build:android": "rm -rf dist && CAPACITOR_PLATFORM=android ionic build --prod",
+    "build:ios": "rm -rf dist && CAPACITOR_PLATFORM=ios ionic build --prod",
     "start:22k": "vite --port 22000",
     "dev": "vite",
     "preview": "vite preview",
@@ -47,7 +48,7 @@
     "@noble/secp256k1": "^2.0.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@scure/base": "^1.1.3",
-    "@shocknet/clink-sdk": "^1.0.4",
+    "@shocknet/clink-sdk": "^1.4.0",
     "@stablelib/xchacha20": "^1.0.1",
     "antd": "^5.11.1",
     "axios": "^1.5.0",

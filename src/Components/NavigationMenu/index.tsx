@@ -11,7 +11,6 @@ import {
 	IonMenuToggle,
 	IonTitle,
 	IonToolbar,
-	isPlatform
 } from "@ionic/react"
 import {
 	calendarNumberOutline,
@@ -31,6 +30,7 @@ import { useEffect, useState } from "react"
 import { useSelector } from "../../State/store/store"
 import { App } from "@capacitor/app"
 import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
+import { Capacitor } from "@capacitor/core"
 
 
 interface AppBuildInfo {
@@ -77,7 +77,7 @@ const NavigationMenu = () => {
 		const setupAppBuildInfo = async () => {
 			try {
 
-				if (isPlatform("hybrid")) {
+				if (Capacitor.isNativePlatform()) {
 					const res = await App.getInfo();
 					setAppInfo({
 						appId: res.id,
@@ -85,7 +85,11 @@ const NavigationMenu = () => {
 						versionName: res.version
 					})
 				} else {
-					// TODO: give web build a notion of build version
+					setAppInfo({
+						appId: 'web-build',
+						versionCode: __WEB_APP_VERSION_CODE__,
+						versionName: __WEB_APP_VERSION__
+					})
 				}
 			} catch (err: any) {
 				console.error("Error getting app build info: ", err?.message || "")
