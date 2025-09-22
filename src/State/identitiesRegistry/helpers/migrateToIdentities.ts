@@ -67,7 +67,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 
 		}
 	} else { // It's the legacy backups
-		console.log("legacy backup")
+		console.log("legacy backup", data)
 		for (const key in data) {
 			if (!["payTo", "spendFrom"].includes(key)) continue;
 
