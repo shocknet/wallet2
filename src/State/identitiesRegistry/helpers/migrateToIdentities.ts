@@ -18,6 +18,7 @@ export type SourceToMigrate = SpendFrom | PayTo;
 export async function getRemoteMigratedSources(ext: IdentityNostrApi, localSources: SourceToMigrate[] = []) {
 
 	const remoteSources = await getSourcesFromLegacyRemoteBackup(ext);
+	console.log({ remoteSources })
 	localSources.push(...remoteSources);
 
 	// migration all to source docs and dedupe
