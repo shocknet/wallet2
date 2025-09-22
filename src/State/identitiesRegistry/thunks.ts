@@ -96,7 +96,9 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		* This identity does not have an identity doc index.
 		* However it may have legacy backup so we need to check that.
 		*/
-		if (!identityDoc) {
+
+		const temp = true;
+		if (temp) {
 			const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
 			console.log({ migratedSourceDocs })
 			if (migratedSourceDocs.length) {
