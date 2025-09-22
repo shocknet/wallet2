@@ -3,7 +3,7 @@ import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
-import { selectNostrSpends, useSelector } from '@/State/store';
+import { selectNostrSpends, useSelector } from '@/State/store/store';
 import { parseNprofile } from '../nprofile';
 import { getNostrClient } from '@/Api/nostr';
 import { getDeviceId } from '@/constants';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { App } from "@capacitor/app";
-import { useDispatch, useSelector } from "@/State/store";
+import { useDispatch, useSelector } from "@/State/store/store";
 import { listenforNewOperations } from "@/State/history";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "../hooks/usePreference";

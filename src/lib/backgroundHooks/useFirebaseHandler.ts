@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 import { getNostrClient } from "@/Api/nostr";
-import { selectNostrSpends, useSelector } from "@/State/store";
+import { selectNostrSpends, useSelector } from "@/State/store/store";
 import { getDeviceId } from "@/constants";
 import { SpendFrom } from "@/globalTypes";
 import { parseNprofile } from "../nprofile";

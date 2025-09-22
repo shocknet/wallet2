@@ -1,8 +1,9 @@
 
-import { IonButton, IonButtons, IonHeader, IonImg, IonMenuButton, IonToolbar, } from '@ionic/react';
+import { IonButton, IonButtons, IonHeader, IonIcon, IonImg, IonMenuButton, IonToolbar, } from '@ionic/react';
 import logo from "@/Assets/Images/isolated logo.png";
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
+import { personOutline } from 'ionicons/icons';
 
 
 
@@ -43,13 +44,16 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeader
 		<IonHeader className="ion-no-border">
 			<IonToolbar>
 				<IonButtons slot="start">
-					<IonButton shape="round" onClick={() => setLogoClickCounter(prev => prev + 1)}>
+					<IonButton shape="round" routerLink="/home" /* onClick={() => setLogoClickCounter(prev => prev + 1)} */>
 						<IonImg
 							slot="start"
 							src={logo}
 							style={{ width: "30px", height: "auto" }}
 						>
 						</IonImg>
+					</IonButton>
+					<IonButton shape="round" routerLink="/identity/overview">
+						<IonIcon color="primary" icon={personOutline} />
 					</IonButton>
 				</IonButtons>
 

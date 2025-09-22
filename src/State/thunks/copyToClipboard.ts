@@ -1,6 +1,6 @@
 import { checkmarkCircle } from "ionicons/icons";
 import { addAsset } from "../Slices/generatedAssets";
-import { AppDispatch } from "../store";
+import { AppDispatch } from "../store/store";
 import { ShowToast } from "@/lib/contexts/useToast";
 import { Clipboard } from "@capacitor/clipboard";
 

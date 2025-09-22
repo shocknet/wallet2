@@ -4,7 +4,7 @@ import { parseUserInputToSats } from "@/lib/units";
 
 import { formatFiat } from "@/lib/format";
 import { Satoshi } from "@/lib/types/units";
-import { useSelector } from "@/State/store";
+import { useSelector } from "@/State/store/store";
 import { convertSatsToFiat } from "@/lib/fiat";
 
 

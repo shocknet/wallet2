@@ -1,5 +1,4 @@
 import { useAppLifecycle } from "./useAppLifecycle";
-import { useBackupReminder } from "./useBackReminder";
 import { useDebitRequestHandler } from "./useDebitRequestHandler"
 import { useLnAddressCheck } from "./useLnAddressCheck";
 import { useManageRequestHandler } from "./useManageRequestHandler";
@@ -10,7 +9,6 @@ import { useSubscriptionsBackground } from "./useSubscriptionsBackground";
 import { useSubToBeacons } from "./useSubToBeacons";
 
 const BackgroundJobs = () => {
-	useBackupReminder();
 	useDebitRequestHandler();
 	/* usePush(); */
 	useLnAddressCheck();
