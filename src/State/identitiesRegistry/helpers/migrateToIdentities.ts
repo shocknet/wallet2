@@ -51,6 +51,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 
 
 	if (data.tags) { // It's the recent sharded backups
+		console.log("sharded backup found", data.tags)
 		const { dtags } = data as ShardsTagsRecord;
 		const shards: GeneralShard[] = await Promise.all(dtags.map(async tag => {
 			const shard = await fetchNip78Event(ext, tag);
@@ -66,6 +67,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 
 		}
 	} else { // It's the legacy backups
+		console.log("legacy backup")
 		for (const key in data) {
 			if (!["payTo", "spendFrom"].includes(key)) continue;
 
