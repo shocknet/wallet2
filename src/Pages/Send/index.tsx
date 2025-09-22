@@ -1,5 +1,4 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector, useDispatch, selectEnabledSpends } from '../../State/store';
 import {
 	IonAvatar,
 	IonButton,
@@ -38,7 +37,6 @@ import {
 	helpCircleOutline,
 	atCircleOutline,
 } from 'ionicons/icons';
-import { SpendFrom } from '@/globalTypes';
 import { CustomSelect } from '@/Components/CustomSelect';
 import { InputState } from './types';
 import { useToast } from '@/lib/contexts/useToast';
@@ -53,7 +51,11 @@ import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
 import { useQrScanner } from '@/lib/hooks/useQrScanner';
-import { sendPaymentThunk } from '@/State/history';
+import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
+import { NprofileView, selectFavoriteSourceView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
+import { SourceType } from '@/State/scoped/common';
+import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
+
 
 
 
@@ -65,23 +67,30 @@ const OnChainCard = lazy(() => import("./OnChainCard"));
 
 const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	const location = useLocation<{ input: string }>();
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 	const { showAlert } = useAlert();
 	const { showToast } = useToast();
 
-	const mempoolUrl = useSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
+	const mempoolUrl = useAppSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
+	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
+
 
 	// --- Selected Spend Source ---
-	const enabledSpendSources = useSelector(selectEnabledSpends);
-	const [selectedSource, setSelectedSource] = useState(enabledSpendSources[0]);
-	const isPubSource = !!selectedSource?.pubSource;
-	// Check whether we have at least one spend source that ALSO has enough balance (maxWithdrawable > 0)
+	const nprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const [selectedSource, setSelectedSource] = useState(() =>
+		favoriteSource.type === SourceType.NPROFILE_SOURCE && !favoriteSource.beaconStale ?
+			favoriteSource :
+			nprofileSourceViews[0]
+	);
+
+
+	// Check whether we have at least one nprofile source that ALSO has enough balance (maxWithdrawable > 0)
 	// Show alert if not
 	useIonViewWillEnter(() => {
 		amountInput.clearFixed();
 		setNote("");
 
-		if (enabledSpendSources.length === 0) {
+		if (nprofileSourceViews.length === 0) {
 			showAlert({
 				header: "No Spend Sources",
 				message: "You need to add a spend source before sending payments.",
@@ -103,8 +112,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				]
 			})
 		}
-		if (selectedSource && (Number(selectedSource.maxWithdrawable) === 0 || Number(selectedSource.balance) === 0)) {
-			const foundOneWithBalance = enabledSpendSources.find(s => Number(s.maxWithdrawable) > 0);
+		if (selectedSource && (Number(selectedSource.maxWithdrawableSats) === 0 || Number(selectedSource.balanceSats) === 0)) {
+			const foundOneWithBalance = nprofileSourceViews.find(s => Number(s.maxWithdrawableSats) > 0);
 			if (foundOneWithBalance) {
 				setSelectedSource(foundOneWithBalance)
 			} else {
@@ -126,7 +135,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 				})
 			}
 		}
-	}, [enabledSpendSources]);
+	}, [nprofileSourceViews]);
 
 
 
@@ -137,7 +146,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	// Amount input ref, used to focus the input after a valid recipient is parsed, when applicable
 	const satsInputRef = useRef<HTMLIonInputElement>(null);
 	const amountInput = useAmountInput({
-		userBalance: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats"),
+		userBalance: selectedSource.maxWithdrawableSats,
 	})
 
 	const [note, setNote] = useState("");
@@ -182,7 +191,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 	const defaultLimits = useCallback(
 		() => ({
 			min: 1 as Satoshi,
-			max: parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats") as Satoshi,
+			max: selectedSource.maxWithdrawableSats || 0 as Satoshi,
 		}),
 		[selectedSource]
 	);
@@ -200,10 +209,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
 				const classification = identifyBitcoinInput(
 					debouncedRecepient,
-					!selectedSource.pubSource ?
-						{ disallowed: [InputClassification.BITCOIN_ADDRESS, InputClassification.NOFFER] }
-						:
-						undefined
+					undefined
 				);
 				if (classification === InputClassification.UNKNOWN) {
 					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
@@ -252,7 +258,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								min: parsed.min,
 								max: Math.min(
 									parsed.max,
-									parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+									selectedSource.maxWithdrawableSats || 0 as Satoshi
 								) as Satoshi,
 							});
 
@@ -307,9 +313,9 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		if (
 			amountInput.state.mode === "fixed" &&
 			amountInput.effectiveSats !== null &&
-			amountInput.effectiveSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")
+			amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)
 		) {
-			const foundOneWithEnoughBalance = enabledSpendSources.find(s => parseUserInputToSats(s.maxWithdrawable || "0", "sats") >= amountInput.effectiveSats!);
+			const foundOneWithEnoughBalance = nprofileSourceViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
 			if (foundOneWithEnoughBalance) {
 				setSelectedSource(foundOneWithEnoughBalance)
 			}
@@ -373,9 +379,8 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 	const { scanSingleBarcode } = useQrScanner();
 	const openScan = async () => {
-		const instruction = isPubSource ?
-			"Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address" :
-			"Scan a Lightning Invoice, Lnurl, or Lightning Address";
+		const instruction = "Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address";
+
 		try {
 			const input = await scanSingleBarcode(instruction);
 			setRecipient(input);
@@ -394,7 +399,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 	// --- Handle Payment ---
 	const canPay = useMemo(() =>
-		inputState.status === "parsedOk" && amountInput.effectiveSats !== null && amountInput.effectiveSats !== 0 && parseUserInputToSats((selectedSource?.maxWithdrawable || "0"), "sats") >= amountInput.effectiveSats
+		inputState.status === "parsedOk" && amountInput.effectiveSats !== null && amountInput.effectiveSats !== 0 && (selectedSource.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats
 		, [inputState, amountInput.effectiveSats, selectedSource]);
 
 
@@ -407,19 +412,19 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 			return;
 		}
-		if (amountInput.effectiveSats > parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) {
+		if (amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)) {
 			return;
 		}
 
 		try {
 			const res = await dispatch(sendPaymentThunk({
-				sourceId: selectedSource.id,
+				sourceId: selectedSource.sourceId,
 				parsedInput: inputState.parsedData,
 				amount: amountInput.effectiveSats,
 				note,
 				satsPerVByte: feeTiers[selectedFeeTier].rate,
 				showToast
-			})).unwrap();
+			}));
 			if (
 				inputState.parsedData.type === InputClassification.NOFFER &&
 				inputState.parsedData.priceType === OfferPriceType.Spontaneous &&
@@ -427,7 +432,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			) {
 				amountInput.setLimits({
 					min: parseUserInputToSats(res.range.min.toString(), "sats"),
-					max: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), parseUserInputToSats(selectedSource.maxWithdrawable || "0", "sats")) as Satoshi
+					max: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), selectedSource.maxWithdrawableSats || 0 as Satoshi) as Satoshi
 
 				})
 
@@ -488,9 +493,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 								mode="md"
 								color="primary"
 								onIonBlur={() => setIsTouched(true)}
-								placeholder={
-									isPubSource ? "Paste invoice, Noffer string LNURL, Bitcoin address, or Lightning address" : "Paste invoice, LNURL, or Lightning address"
-								}
+								placeholder="Paste invoice, Noffer string LNURL, Bitcoin address, or Lightning address"
 								errorText={inputState.status === "error" ? inputState.error : ""}
 								value={recipient}
 								onIonInput={onRecipientChange}
@@ -595,29 +598,27 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					<IonRow className="ion-margin-top">
 						<IonCol size="6">
 							<IonText style={{ display: "block", marginBottom: "9px" }}>Spend From</IonText>
-							<CustomSelect<SpendFrom>
-								items={enabledSpendSources}
+							<CustomSelect<NprofileView>
+								items={nprofileSourceViews}
 								selectedItem={selectedSource}
 								onSelect={setSelectedSource}
-								getIndex={(source) => source.id}
-								title="Select Spend Source"
+								getIndex={(source) => source.sourceId}
+								title="Select Source"
 								subTitle="Select the source you want to spend from"
 								renderItem={(source) => {
 									return (
 										<>
 											<IonAvatar slot="start">
-												<img src={`https://robohash.org/${source.pasteField}.png?bgset=bg1`} alt='Avatar' />
+												<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
 											</IonAvatar>
 											<IonLabel style={{ width: "100%" }}>
 												<h2>{source.label}</h2>
 												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
-													{source.pubSource
-														? "Lightning.Pub Source"
-														: "LNURL Withdraw Source"}
+													Lightning.Pub Source
 												</IonNote>
 											</IonLabel>
 											<IonText slot="end" color="primary">
-												{+(source.balance).toLocaleString()} sats
+												{+(source.balanceSats || 0 as Satoshi).toLocaleString()} sats
 											</IonText>
 										</>
 									)
@@ -626,7 +627,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 									<IonText className="text-medium">
 										{source?.label || ''}
 										<IonNote className="text-low" style={{ display: 'block' }}>
-											{(+source?.balance).toLocaleString()} sats
+											{(+(source?.balanceSats || 0 as Satoshi)).toLocaleString()} sats
 										</IonNote>
 									</IonText>
 								)}
@@ -636,12 +637,12 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 						</IonCol>
 					</IonRow>
 					{
-						parseUserInputToSats(selectedSource?.maxWithdrawable || "0", "sats") > 0 && (
+						(selectedSource?.maxWithdrawableSats || 0 as Satoshi) > 0 && (
 							<IonRow className="ion-align-items-center ion-margin-top">
 								<IonCol size="auto" >
 									<IonText style={{ fontSize: "0.8rem" }} color="primary">
 										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-											Note: {(+selectedSource?.balance - +(selectedSource?.maxWithdrawable || "0")).toLocaleString()} sats of your balance is held in reserve for network fees.
+											Note: {(+(selectedSource?.balanceSats || 0 as Satoshi) - +(selectedSource?.maxWithdrawableSats || 0 as Satoshi)).toLocaleString()} sats of your balance is held in reserve for network fees.
 											<IonButton
 												fill="clear"
 												shape="round"
@@ -701,26 +702,23 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 									<IonNote>someone@somesite.com</IonNote>
 								</IonLabel>
 							</IonItem>
-							{
-								isPubSource && (
-									<>
-										<IonItem>
-											<IonIcon style={{ color: "orange" }} icon={logoBitcoin} slot="start"></IonIcon>
-											<IonLabel>
-												<strong>Bitcoin address</strong>
-												<IonNote>bc1qar0srrr7xfkvy5l643...</IonNote>
-											</IonLabel>
-										</IonItem>
-										<IonItem>
-											<IonIcon style={{ color: "orange" }} icon="nostr" slot="start"></IonIcon>
-											<IonLabel>
-												<strong>Noffer string</strong>
-												<IonNote>noffer1qvqsyqjqvgunwc3j...</IonNote>
-											</IonLabel>
-										</IonItem>
-									</>
-								)
-							}
+
+							<IonItem>
+								<IonIcon style={{ color: "orange" }} icon={logoBitcoin} slot="start"></IonIcon>
+								<IonLabel>
+									<strong>Bitcoin address</strong>
+									<IonNote>bc1qar0srrr7xfkvy5l643...</IonNote>
+								</IonLabel>
+							</IonItem>
+							<IonItem>
+								<IonIcon style={{ color: "orange" }} icon="nostr" slot="start"></IonIcon>
+								<IonLabel>
+									<strong>Noffer string</strong>
+									<IonNote>noffer1qvqsyqjqvgunwc3j...</IonNote>
+								</IonLabel>
+							</IonItem>
+
+
 						</IonList>
 					</div>
 

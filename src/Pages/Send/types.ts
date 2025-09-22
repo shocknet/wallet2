@@ -1,6 +1,6 @@
-import { SpendFrom } from "@/globalTypes";
 import { FeeTier } from "@/lib/fees";
 import { InputClassification, ParsedInput, ParsedInvoiceInput, ParsedLightningAddressInput, ParsedLnurlPayInput, ParsedNofferInput } from "@/lib/types/parse";
+import { NprofileView } from "@/State/scoped/backups/sources/selectors";
 
 interface IdleState {
 	status: "idle";
@@ -40,7 +40,7 @@ export interface CardProps {
 	selectedFeeTier: number;
 	setSelectedFeeTier: React.Dispatch<React.SetStateAction<number>>;
 	feeTiers: FeeTier[];
-	selectedSource: SpendFrom
+	selectedSource: NprofileView
 	invoiceData: ParsedInvoiceInput;
 	lnurlData: ParsedLightningAddressInput | ParsedLnurlPayInput;
 	nofferData: ParsedNofferInput;

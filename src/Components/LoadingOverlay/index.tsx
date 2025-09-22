@@ -1,10 +1,10 @@
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { useSelector } from "../../State/store";
+import { useSelector } from "../../State/store/store";
 import styles from "./index.module.scss";
 
 
 const LoadingOverlay = () => {
-	const { loadingMessage }  = useSelector(state => state.loadingOverlay);
+	const { loadingMessage } = useSelector(state => state.loadingOverlay);
 
 	if (!loadingMessage) return null;
 	return (

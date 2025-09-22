@@ -1,0 +1,85 @@
+import { App } from "@capacitor/app";
+import { getSanctumAccessToken } from "../../Api/sanctum";
+import { initialState as backupInitialState } from "../Slices/backupState";
+import { AppThunk } from "../store/store";
+import { getNostrExtensionIdentityApi, getSanctumIdentityApi } from "./helpers/identityNostrApi";
+import { SourceToMigrate } from "./helpers/migrateToIdentities";
+import { IdentityExtension, IdentityKeys, IdentitySanctum, IdentityType } from "./types";
+import { createIdentity } from "./thunks";
+import { initialState as spendSourcesInitialState } from "../Slices/spendSourcesSlice";
+import { initialState as paySourcesInitialState } from "../Slices/paySourcesSlice";
+import { utils } from "nostr-tools";
+import { generateNewKeyPair } from "@/Api/helpers";
+import { toast } from "react-toastify";
+import { Capacitor } from "@capacitor/core";
+
+
+export const OLD_BACKUP_STATE_STORAGE_KEY = "backupState";
+
+export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (dispatch) => {
+	try {
+		const subbedToBackUp = backupInitialState;
+
+		const sources: SourceToMigrate[] = Object.values(paySourcesInitialState.sources).concat(Object.values(spendSourcesInitialState.sources));
+		console.log("from source", sources)
+
+		if (subbedToBackUp.subbedToBackUp) {
+
+			if (subbedToBackUp.usingSanctum) { // sanctum
+				const accessToken = getSanctumAccessToken();
+				if (!accessToken) {
+					throw new Error("Says subbed with sanctum but no sanctum token");
+				}
+
+				const ext = await getSanctumIdentityApi({ accessToken });
+				const pubkey = await ext.getPublicKey();
+				const identity: IdentitySanctum = {
+					type: IdentityType.SANCTUM,
+					pubkey,
+					label: "My Sanctum Identity",
+					accessToken,
+					createdAt: Date.now()
+				}
+				await dispatch(createIdentity(identity, sources))
+				localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY)
+			} else if (subbedToBackUp.usingExtension) { // extension
+				const ext = await getNostrExtensionIdentityApi();
+				const pubkey = await ext.getPublicKey();
+
+
+				const relays = ext.getRelays().catch(() => null);
+
+				const identity: IdentityExtension = {
+					type: IdentityType.NIP07,
+					pubkey,
+					label: "My Nostr Extension Identity",
+					createdAt: Date.now(),
+					relays: relays ? Object.keys(relays).map(utils.normalizeURL) : ["wss://strfry.shock.network"].map(utils.normalizeURL)
+				};
+				await dispatch(createIdentity(identity, sources));
+				localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY)
+			} else {
+				throw new Error("Says subbed to backup, but not using sanctum nor nip07");
+			}
+		} else { // Not subbed to backup. Just take local sources and create a nostr key pair identity
+			const keypair = generateNewKeyPair();
+			const identity: IdentityKeys = {
+				type: IdentityType.LOCAL_KEY,
+				pubkey: keypair.publicKey,
+				privkey: keypair.privateKey,
+				label: "My Nostr pair Identity",
+				createdAt: Date.now(),
+				relays: ["wss://strfry.shock.network"].map(utils.normalizeURL)
+			};
+			console.log("here1?")
+			await dispatch(createIdentity(identity, sources));
+			localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY);
+			console.log("here?")
+		}
+	} catch (err: any) {
+		console.error(err)
+		toast.error(err?.message ?? "An error occured during migration to identities for this device");
+		if (Capacitor.isNativePlatform()) await App.exitApp()
+		else window.close()
+	}
+}

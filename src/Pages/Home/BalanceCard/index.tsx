@@ -1,4 +1,4 @@
-import { selectSpendsTotalBalance, useDispatch, useSelector } from "@/State/store";
+import { selectSpendsTotalBalance, useSelector } from "@/State/store/store";
 import { useEffect, useRef, useState } from "react";
 import styles from "./styles/index.module.scss";
 import { IonButton, IonNote, IonRippleEffect, IonText } from "@ionic/react";
@@ -6,14 +6,16 @@ import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";
-import { fetchAllSourcesHistory } from "@/State/history";
-import { resetCursors } from "@/State/history";
 import { useToast } from "@/lib/contexts/useToast";
+
+import { useAppDispatch } from "@/State/store/hooks";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 
 
 
 const BalanceCard = () => {
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
 	const { unit, setUnit } = usePreferredAmountUnit();
@@ -31,7 +33,7 @@ const BalanceCard = () => {
 				message: "Resetting history cursors and fetching history",
 				color: "tertiary"
 			})
-			dispatch(resetCursors());
+			dispatch(sourcesActions.resetAllCursors());
 			await dispatch(fetchAllSourcesHistory());
 		}, 4000);
 	};

@@ -5,7 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { formatTime, getClientKey } from "./helpers";
 import styles from "./styles/index.module.scss";
 import SANCTUM_LOGO from "./santum_huge.png"
-import { useDispatch } from "../../State/store";
+import { useDispatch } from "../../State/store/store";
 import { updateBackupData } from "../../State/Slices/backupState";
 import { AnimatePresence, motion } from "framer-motion";
 import classNames from "classnames";
@@ -45,7 +45,7 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 
 	useEffect(() => {
 		if (loggedIn) setLoginStatus("confirmed")
-			setClientKey(getClientKey());
+		setClientKey(getClientKey());
 	}, [loggedIn])
 
 
@@ -95,10 +95,10 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 	}, [])
 
 	const handleSanctumLogout = () => {
-		dispatch(updateBackupData({ subbedToBackUp: false, usingExtension: false, usingSanctum: false }));
-		removeSanctumAccessToken();
-		setLoginStatus(null);
-		toast.success(<Toast title="Logout successful" message="" />)
+		/* 		dispatch(updateBackupData({ subbedToBackUp: false, usingExtension: false, usingSanctum: false }));
+				removeSanctumAccessToken();
+				setLoginStatus(null);
+				toast.success(<Toast title="Logout successful" message="" />) */
 	}
 
 
@@ -160,7 +160,7 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 								key="client_id"
 								initial={{ scale: 1.5, x: 20, y: 20 }}
 								animate={{ scale: 1, x: 0, y: 0 }}
-								
+
 								transition={{ duration: 0.3 }}
 							>client_id-</motion.span>
 							{clientKey}
@@ -173,66 +173,66 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 					<>
 						{
 							promptConfirmLogout
-							?
-							<motion.div
-								key="logout-prompt"
-								variants={{
-									initial: { opacity: 0, width: 0, height: 0, x: -40, y: 40   },
-									animate: { opacity: 1, width: "auto", height: "auto", x: 0, y: 0 },
-								}}
-								initial="initial"
-								animate="animate"
-								exit="exit"
-								style={{ overflow: "hidden" }}
-								transition={{ duration: 0.2 }}
-								className={classNames(styles["alt-view-container"], styles["confirmed"], styles["logout-prompt"])}
+								?
+								<motion.div
+									key="logout-prompt"
+									variants={{
+										initial: { opacity: 0, width: 0, height: 0, x: -40, y: 40 },
+										animate: { opacity: 1, width: "auto", height: "auto", x: 0, y: 0 },
+									}}
+									initial="initial"
+									animate="animate"
+									exit="exit"
+									style={{ overflow: "hidden" }}
+									transition={{ duration: 0.2 }}
+									className={classNames(styles["alt-view-container"], styles["confirmed"], styles["logout-prompt"])}
 
-							>
-								<span className={styles["title"]}>Log Out?</span>
-								<div className={classNames(styles["sanctum-button-group"], styles["logout-buttons"])}>
-									<motion.button
-										className={styles["sanctum-login-button"]}
-										onClick={() => {
-											setPromptConfirmLogout(false);
-											handleSanctumLogout()
-										}}
-									>Yes</motion.button>
-									<motion.button
-										className={styles["sanctum-login-button"]}
-										onClick={() => setPromptConfirmLogout(false)}
-										initial={{ x: -40 }}
-										animate={{  x: 0 }}
-										transition={{ duration: 0.1 }}
-									>No</motion.button>
-								</div>
-							</motion.div>
-							:
-							<motion.div
-								initial={{ opacity: 0, x: "-12rem" }}
-								animate={{ opacity: 1, x: "0rem"  }}
-								className={classNames(styles["alt-view-container"], styles["confirmed"])}
-								transition={{ ease: "linear" }}
-							>
-								<div className={styles["logout-cross"]} onClick={() => setPromptConfirmLogout(!promptConfirmLogout)}>
-									<img src="/X-icon.svg" width={20} height={20} alt="X" />
-								</div>
-								<SanctumChecked />
-								<p>{`client_id-${clientKey}`}</p>
-							</motion.div>
+								>
+									<span className={styles["title"]}>Log Out?</span>
+									<div className={classNames(styles["sanctum-button-group"], styles["logout-buttons"])}>
+										<motion.button
+											className={styles["sanctum-login-button"]}
+											onClick={() => {
+												setPromptConfirmLogout(false);
+												handleSanctumLogout()
+											}}
+										>Yes</motion.button>
+										<motion.button
+											className={styles["sanctum-login-button"]}
+											onClick={() => setPromptConfirmLogout(false)}
+											initial={{ x: -40 }}
+											animate={{ x: 0 }}
+											transition={{ duration: 0.1 }}
+										>No</motion.button>
+									</div>
+								</motion.div>
+								:
+								<motion.div
+									initial={{ opacity: 0, x: "-12rem" }}
+									animate={{ opacity: 1, x: "0rem" }}
+									className={classNames(styles["alt-view-container"], styles["confirmed"])}
+									transition={{ ease: "linear" }}
+								>
+									<div className={styles["logout-cross"]} onClick={() => setPromptConfirmLogout(!promptConfirmLogout)}>
+										<img src="/X-icon.svg" width={20} height={20} alt="X" />
+									</div>
+									<SanctumChecked />
+									<p>{`client_id-${clientKey}`}</p>
+								</motion.div>
 						}
 					</>
 				}
 				{
 					loginStatus === null
 					&&
-					<div className={classNames(styles["alt-view-container"],  styles["sanctum-button-group"])}>
+					<div className={classNames(styles["alt-view-container"], styles["sanctum-button-group"])}>
 						<button className={styles["sanctum-login-button"]} onClick={() => handleSanctumRequest(false)} >Sign Up</button>
 						<button className={styles["sanctum-login-button"]} onClick={() => handleSanctumRequest(true)} >Sign In</button>
 					</div>
 				}
 			</AnimatePresence>
 			<div className={styles["sanctum-logo"]}>
-				{ (loginStatus !== "awaiting" && loginStatus !== "confirmed") && <span>Powered by</span> }
+				{(loginStatus !== "awaiting" && loginStatus !== "confirmed") && <span>Powered by</span>}
 				<div>
 					<img src={SANCTUM_LOGO} alt='Sanctum Logo' />
 				</div>

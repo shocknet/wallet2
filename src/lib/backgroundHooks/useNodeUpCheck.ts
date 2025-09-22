@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "@/State/store";
+import { useDispatch, useSelector } from "@/State/store/store";
 import { setPrivateKey } from "@/State/Slices/nostrPrivateKey";
 import { useHistory } from "react-router";
 import { fixSpendDuplicates } from "@/State/Slices/spendSourcesSlice";

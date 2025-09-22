@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { useDispatch, useSelector } from '../../State/store';
+import { useDispatch, useSelector } from '../../State/store/store';
 import Checkbox from '../../Components/Checkbox';
 import { arrangeIcon } from '../../jsxHelpers';
 import { UseModal } from '../../Hooks/UseModal';

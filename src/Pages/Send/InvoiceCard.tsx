@@ -17,7 +17,7 @@ import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import NoteInput from "./common";
 import InvoiceInfoDisplay from "@/Components/common/info/invoiceInfoDisplay";
-import { useSelector } from "@/State/store";
+import { useSelector } from "@/State/store/store";
 import { useEffect, useState } from "react";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";
@@ -45,7 +45,7 @@ const InvoiceCard = ({
 		setFiat();
 	}, [invoiceData.amount, currency, url]);
 
-	const hasEnough = parseInt(selectedSource?.maxWithdrawable || "0") > invoiceData.amount!
+	const hasEnough = (selectedSource?.maxWithdrawableSats || 0 as Satoshi) > invoiceData.amount!
 
 	return (
 		<IonCard className="ion-margin-top ion-no-padding send-card">

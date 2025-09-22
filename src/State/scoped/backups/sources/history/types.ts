@@ -3,10 +3,12 @@ import type { ParsedLightningAddressInput, ParsedLnurlPayInput, ParsedNofferInpu
 import type { Satoshi } from "@/lib/types/units";
 
 
+export type OpKey = string; // `${sourceId}/${operationId}`
 
 
 /* All app source operations are a union type with deep type definitions */
 export interface SourceOperationBase {
+	opKey: OpKey
 	sourceId: string;
 	operationId: string;
 	paidAtUnix: number;
@@ -140,15 +142,7 @@ export type SourceOperation = SourceActualOperation | SourceOptimsticOperation
 
 
 export type HistoryCursor = GetUserOperationsRequest
-export interface SourceHistory {
-	data: SourceOperation[];
-	cursor: HistoryCursor;
-}
 
 
-export interface HistoryState {
-	sources: Record<string, SourceHistory>;
-	newPaymentsCount: number;
-	status: 'idle' | 'loading' | 'error';
-	error: string | null;
-}
+
+

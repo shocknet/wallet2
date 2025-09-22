@@ -1,6 +1,6 @@
 import { AnyAction, createAction, createListenerMiddleware, isAnyOf, ListenerEffectAPI, TypedStartListening } from "@reduxjs/toolkit";
 import { addPaySources } from "./Slices/paySourcesSlice";
-import { AppDispatch, dynamicMiddleware, State } from "./store";
+import { AppDispatch, dynamicMiddleware, State } from "./store/store";
 import { PayTo } from "../globalTypes";
 import { getNostrClient } from "@/Api/nostr";
 import Bridge from "../Api/bridge";
@@ -8,6 +8,7 @@ import { Buffer } from "buffer";
 
 import { finalizeEvent, nip98, nip19 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
+import { toast } from "react-toastify";
 const { getToken } = nip98
 const { decode } = nip19
 
@@ -24,6 +25,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 
 	const userInfoRes = await nostrClient.GetUserInfo();
 	if (userInfoRes.status !== "OK") {
+		toast.error("Bridge Error: GetUserInfo failed!");
 		throw new Error(userInfoRes.reason);
 	}
 
@@ -35,7 +37,10 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 	}
 
 	const bridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
-	if (!bridgeUrl) return;
+	if (!bridgeUrl) {
+		toast.error("Bridge Error: No bridgeUrl from source or GetUserInfo response!");
+		return;
+	}
 
 
 	const payload = { k1, noffer: userInfoRes.noffer }
@@ -43,6 +48,7 @@ const enrollToBridge = async (source: PayTo, dispatchCallback: (vanityname: stri
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(payload);
 	if (bridgeRes.status !== "OK") {
+		toast.error("Bridge Error: GetOrCreateNofferName failed!");
 		throw new Error(bridgeRes.reason);
 	}
 	const domainName = extractDomainFromUrl(bridgeUrl);

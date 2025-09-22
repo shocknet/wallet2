@@ -1,0 +1,75 @@
+import {
+	IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+	useIonRouter
+} from "@ionic/react";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, SANCTUM_URL } from "../../constants";
+import { toast } from "react-toastify";
+import Toast from "../../Components/Toast";
+import SanctumBox from '../../Components/SanctumBox';
+import { useAppDispatch } from '@/State/store/hooks';
+import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { IdentitySanctum, IdentityType } from "@/State/identitiesRegistry/types";
+import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { useToast } from "@/lib/contexts/useToast";
+import { RouteComponentProps } from "react-router";
+
+
+
+const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
+	const dispatch = useAppDispatch()
+	const { showToast } = useToast();
+	const router = useIonRouter();
+
+
+	const onSubmit = async (accessToken: string) => {
+		try {
+
+			const api = await getSanctumIdentityApi({ accessToken });
+			const pubkey = await api.getPublicKey();
+
+			const identity: IdentitySanctum = {
+				type: IdentityType.SANCTUM,
+				accessToken: accessToken,
+				pubkey: pubkey,
+				label: "New Sanctum Identity",
+				createdAt: Date.now()
+			}
+			await dispatch(createIdentity(identity));
+			localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, "true");
+		} catch (err: any) {
+			showToast({
+				color: "danger",
+				message: err?.messge || "An error occured when creating identity"
+			});
+			return;
+		}
+
+		router.push("/identity/overview", "root", "replace");
+	}
+
+	return (
+
+		<IonPage className="ion-page-width">
+			<IonHeader>
+				<IonToolbar>
+					<IonTitle>Sanctum</IonTitle>
+				</IonToolbar>
+			</IonHeader>
+			<IonContent className="ion-padding">
+				<SanctumBox
+					loggedIn={false}
+					successCallback={(creds) => {
+						onSubmit(creds.accessToken)
+					}}
+					errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
+					sanctumUrl={SANCTUM_URL}
+				/>
+			</IonContent>
+		</IonPage>
+
+	)
+}
+
+export default CreateSanctumIdentityPage;
+
+

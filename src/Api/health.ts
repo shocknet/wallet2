@@ -1,4 +1,4 @@
-import store from "@/State/store";
+import store from "@/State/store/store";
 import { getAllNostrClients, NostrCallback } from "./nostr";
 import { toast } from "react-toastify";
 import { editPaySources } from "@/State/Slices/paySourcesSlice";

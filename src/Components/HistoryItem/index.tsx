@@ -2,7 +2,7 @@ import type { SourceActualOperation, SourceOperation } from "@/State/history/typ
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
-import { useSelector } from "@/State/store";
+import { useSelector } from "@/State/store/store";
 import styles from "./styles/index.module.scss";
 import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
