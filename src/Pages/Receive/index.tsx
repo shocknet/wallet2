@@ -83,7 +83,7 @@ const Receive: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => 
 				]
 			}).then(({ role }) => {
 				if (role === "cancel") {
-					router.push("/home", "back", "pop")
+					router.goBack();
 				} else if (role === "confirm") {
 					router.push("/sources", "forward", "replace")
 				}

@@ -392,7 +392,7 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 
 				showToast({ message: "Noffer range updated, please try to send again now", color: "warning" });
 			} else {
-				router.push("/home", "back", "pop")
+				router.goBack()
 			}
 		} catch (err: any) {
 			showToast({ message: err?.message || "Payment failed", color: "danger" });
