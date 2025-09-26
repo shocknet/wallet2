@@ -8,7 +8,6 @@ import { SimplePool } from 'nostr-tools';
 import { Subscription } from 'nostr-tools/lib/types/abstract-relay';
 import { getAllNostrClients } from './nostr';
 import { App } from '@capacitor/app';
-import { startHealthCheckLoop, stopHealthCheckLoop } from './health';
 import { utils } from "nostr-tools";
 import { isPlatform } from '@ionic/react';
 const { decrypt, encrypt } = nip04
@@ -82,15 +81,14 @@ export default class RelayCluster {
 
 	constructor() {
 		this.allowAddRelay = true;
-		startHealthCheckLoop();
+
 		App.addListener("appStateChange", ({ isActive }) => {
 			if (isActive) {
-				startHealthCheckLoop();
+
 				if (isPlatform("hybrid")) { // only run backgrounding logic in native mobile
 					this.foregroundReconnect();
 				}
 			} else {
-				stopHealthCheckLoop();
 				if (isPlatform("hybrid")) { // only run backgrounding logic in native mobile
 					this.backgroundGraceClose();
 				}

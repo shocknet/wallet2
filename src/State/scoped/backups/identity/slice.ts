@@ -72,7 +72,7 @@ export const identitySlice = createSlice({
 		) {
 			if (!state.draft) return;
 			const cur = state.draft.favorite_source_id;
-			if (!cur || cur.value !== a.payload.sourceId) {
+			if (cur.value !== a.payload.sourceId) {
 				state.draft.favorite_source_id = bump(cur, a.payload.sourceId, a.payload.by);
 				state.dirty = true;
 			}

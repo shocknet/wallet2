@@ -45,7 +45,8 @@ export const sendPaymentThunk = (
 		}
 
 
-		const optimisticOperationId = makeKey(selectedSource.sourceId, `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`); // Timestamp + random
+		const optimisticOperationId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; // Timestamp + random
+		const opKey = makeKey(sourceId, optimisticOperationId);
 
 
 		const payInvoice = async (parsedInvoice: ParsedInvoiceInput, optimisticOperationId: string, optimisticOperation: SourceOptimsiticInvoice) => {
@@ -75,9 +76,9 @@ export const sendPaymentThunk = (
 					optimistic: true,
 					sourceId: sourceId,
 					operationId: optimisticOperationId,
+					opKey,
 					amount: amount,
 					paidAtUnix: Date.now(),
-
 					type: "INVOICE",
 					inbound: false,
 					invoice: parsedInput.data,
@@ -132,9 +133,9 @@ export const sendPaymentThunk = (
 					optimistic: true,
 					sourceId,
 					operationId: optimisticOperationId,
+					opKey,
 					amount: amount,
 					paidAtUnix: Date.now(),
-
 					type: "INVOICE",
 					inbound: false,
 					invoice: parsedInvoice.data,
@@ -188,7 +189,7 @@ export const sendPaymentThunk = (
 					operationId: optimisticOperationId,
 					amount: amount,
 					paidAtUnix: Date.now(),
-
+					opKey,
 					type: "INVOICE",
 					inbound: false,
 					invoice: parsedInvoice.data,
@@ -212,7 +213,7 @@ export const sendPaymentThunk = (
 					operationId: optimisticOperationId,
 					amount: amount,
 					paidAtUnix: Date.now(),
-
+					opKey,
 					status: "broadcasting",
 					type: "ON-CHAIN",
 					inbound: false,

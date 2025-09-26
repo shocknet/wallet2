@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { App } from "@capacitor/app";
 import { useDispatch, useSelector } from "@/State/store/store";
-import { listenforNewOperations } from "@/State/history";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "../hooks/usePreference";
 import { isPlatform } from "@ionic/react";
@@ -11,6 +10,7 @@ import { addAsset } from "@/State/Slices/generatedAssets";
 import { useHistory } from "react-router";
 import { truncateTextMiddle } from "../format";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "@/constants";
+import { listenforNewOperations } from "@/State/scoped/backups/sources/history/thunks";
 
 const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 

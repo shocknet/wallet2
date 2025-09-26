@@ -21,7 +21,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 		const subbedToBackUp = backupInitialState;
 
 		const sources: SourceToMigrate[] = Object.values(paySourcesInitialState.sources).concat(Object.values(spendSourcesInitialState.sources));
-		console.log("from source", sources)
+
 
 		if (subbedToBackUp.subbedToBackUp) {
 
@@ -71,10 +71,10 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 				createdAt: Date.now(),
 				relays: ["wss://strfry.shock.network"].map(utils.normalizeURL)
 			};
-			console.log("here1?")
+
 			await dispatch(createIdentity(identity, sources));
 			localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY);
-			console.log("here?")
+
 		}
 	} catch (err: any) {
 		console.error(err)

@@ -33,7 +33,6 @@ export const identitiesRegistrySlice = createSlice({
 		_createNewIdentity: (state, { payload }: PayloadAction<{
 			identity: Identity
 		}>) => {
-			console.log("here now")
 			const { identity } = payload;
 			if (state.entities[identity.pubkey]) return;
 			identitiesAdapter.addOne(state, identity);

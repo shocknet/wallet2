@@ -18,13 +18,12 @@ export type SourceToMigrate = SpendFrom | PayTo;
 export async function getRemoteMigratedSources(ext: IdentityNostrApi, localSources: SourceToMigrate[] = []) {
 
 	const remoteSources = await getSourcesFromLegacyRemoteBackup(ext);
-	console.log({ remoteSources })
+
 	localSources.push(...remoteSources);
 
 	// migration all to source docs and dedupe
 	const docs = await migrateSourcesToDocs(localSources);
 
-	console.log({ docs })
 	const out = docs.reduce((acc: Record<string, SourceDocV0>, s) => {
 		if (acc[s.source_id]) return acc;
 		acc[s.source_id] = s;
@@ -67,7 +66,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 
 		}
 	} else { // It's the legacy backups
-		console.log("legacy backup", data)
+
 		for (const key in data) {
 			if (!["payTo", "spendFrom"].includes(key)) continue;
 
@@ -85,7 +84,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 				const { data: mergeResult, } = merger(serialLocal, serialRemote);
 				newItem = mergeResult;
 			}
-			console.log("here legacy backup sources", JSON.parse(newItem).sources)
+
 			sources.push(...JSON.parse(newItem).sources);
 		}
 	}
@@ -132,7 +131,7 @@ const isSpendFrom = (x: SpendFrom | PayTo): x is SpendFrom =>
 const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceDocV0[]> => {
 	const docs: SourceDocV0[] = [];
 	const deviceId = getDeviceId();
-	console.log({ sources })
+
 
 	// process pubSources
 	const items = sources.filter(s => s.pubSource || s.pasteField.startsWith("nprofile"));

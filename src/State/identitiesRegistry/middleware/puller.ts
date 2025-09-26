@@ -71,10 +71,8 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 				subCloser = null;
 
 				// open new
-				console.log({ nextDtags })
 				const filters = [{ kinds: [30078], authors: [pubkey], "#d": Array.from(nextDtags) }];
 				subCloser = await subscribeToNip78Events(identityApi, filters, (decrypted) => {
-					console.log("Got event", JSON.parse(decrypted))
 					q.push(decrypted)
 				});
 				currentDtags = nextDtags;
@@ -83,7 +81,7 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 			// initial subscribe
 			try {
 				const wanted = await computeWantedDtags(listnerApi.getState(), pubkey);
-				console.log({ wanted })
+
 				await resubscribe(wanted);
 			} catch {
 				toast.error("Initial docs subscribe failed:");
@@ -99,9 +97,6 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 						try { parsed = JSON.parse(decrypted); } catch { continue; }
 						await processRemoteDoc(parsed, listnerApi.dispatch);
 					}
-				} catch (err) {
-					console.log("STOPPED?", err)
-
 				} finally {
 					try { subCloser?.close(); } catch (err) { console.error(err) }
 
@@ -119,7 +114,6 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 					timer = setTimeout(async () => {
 						pending = false;
 						try {
-							console.log("HERE MAYBE?")
 							const wanted = await computeWantedDtags(listnerApi.getState(), pubkey);
 							await resubscribe(wanted);
 						} catch (err) {
@@ -130,10 +124,9 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 				try {
 					for (; ;) {
-						const action = await listnerApi.take((action) => {
+						await listnerApi.take((action) => {
 							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action)
 						});
-						console.log("matched actions:::::", action)
 						schedule();
 					}
 				} finally {

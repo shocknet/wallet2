@@ -56,28 +56,28 @@ export const fetchHistoryForSource = (source: NprofileView): AppThunk<void> => {
 
 
 
-/* export const listenforNewOperations = (): AppThunk<void> => {
+export const listenforNewOperations = (): AppThunk<void> => {
 	return async (dispatch, getState) => {
-		const nostrSpends = selectNprofiles(getState());
-		await Promise.all(nostrSpends.map(source => {
+		const nprofileViews = selectHealthyNprofileViews(getState());
+		await Promise.all(nprofileViews.map(source => {
 			return dispatch(listenForSourceNewOperations(source))
 		}))
 	}
-} */
+}
 
 
 
-/* const listenForSourceNewOperations = (source: SourceNprofile): AppThunk<void> => {
+const listenForSourceNewOperations = (source: NprofileView): AppThunk<void> => {
 	return async (dispatch) => {
 		const client = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys);
 		client.GetLiveUserOperations(newOp => {
 			if (newOp.status === "OK") {
-				//dispatch(getSourceInfo(sourceId));
-				dispatch(historyActions.ingestLive({ sourceId: source.id, operation: newOp.operation }));
+				dispatch(refreshSourceInfo(source));
+				dispatch(sourcesActions.ingestLive({ sourceId: source.sourceId, operation: newOp.operation }));
 			} else {
 				console.error("Get live user operation error", newOp.reason)
 			}
 		})
 	}
-} */
+}
 

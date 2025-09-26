@@ -49,7 +49,7 @@ export const addPublisherListener = (startAppListening: AppstartListening) => {
 	startAppListening({
 		actionCreator: identityLoaded,
 		effect: async (action, listenerApi) => {
-			console.log("triggered!!!!!!!");
+
 			const identity = action.payload.identity;
 			listenerApi.unsubscribe();
 
@@ -73,7 +73,6 @@ export const addPublisherListener = (startAppListening: AppstartListening) => {
 								try {
 									await saveNip78Event(identityApi, JSON.stringify(draft), dTag)
 									listenerApi.dispatch(identityActions.ackPublished({ when: Date.now() }))
-									console.log("published!!!")
 									return
 								} catch {
 									if (backoff >= MAX_BACKOFF_MS) throw new Error("Failed to publish doc update");
@@ -133,7 +132,7 @@ export const addPublisherListener = (startAppListening: AppstartListening) => {
 						(action) => isIdentityDirtying(action) || isSourceDirtying(action) || checkDirtyRequested.match(action)
 					);
 
-					console.log("got action", result)
+
 					if (isIdentityDirtying(result[0])) {
 						scheduleIdentity();
 					} else if (isSourceDirtying(result[0])) {

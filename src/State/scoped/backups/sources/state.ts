@@ -2,7 +2,7 @@ import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
-import { makeKey } from "./history/helpers";
+
 
 export interface SourceDocEntity {
 	base?: SourceDocV0;
@@ -45,7 +45,7 @@ export type HistoryState = {
 };
 
 export const opsAdapter = createEntityAdapter<SourceOperation, OpKey>({
-	selectId: (op) => makeKey(op.sourceId, op.operationId),
+	selectId: (op) => op.opKey,
 	sortComparer: (a, b) => b.paidAtUnix - a.paidAtUnix,
 });
 
@@ -67,4 +67,4 @@ export const getIntialState = (): SourcesState => ({
 	}
 });
 
-console.log("console here", getIntialState())
+

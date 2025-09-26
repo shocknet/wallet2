@@ -16,6 +16,8 @@ export const breakKey = (key: string) => {
 // Helper function to convert a UserOperation to a SourceOperation
 export const userOperationToSourceOperation = (op: UserOperation, sourceId: string, local?: SourceOperation): SourceActualOperation => {
 	const incoming = transformUserOperationToSourceOperation(op, sourceId);
+
+
 	if (local === undefined) {
 		return incoming;
 	}
@@ -25,7 +27,6 @@ export const userOperationToSourceOperation = (op: UserOperation, sourceId: stri
 	// the incoming operation (UserOperation from pub) with the local one, so we don"t lose that data.
 	const operation: SourceActualOperation = {
 		...incoming,
-		operationId: makeKey(sourceId, incoming.operationId),
 		memo: local.memo, // preserve local memo
 		...((incoming.type === "INVOICE" && local.type === "INVOICE") ? { // preserve local invoice data
 			invoiceMemo: local.invoiceMemo,

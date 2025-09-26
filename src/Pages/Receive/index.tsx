@@ -18,7 +18,7 @@ import {
 	IonToolbar,
 	useIonModal,
 	useIonRouter,
-	useIonViewWillEnter
+	useIonViewDidEnter,
 } from '@ionic/react';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
@@ -62,9 +62,10 @@ const Receive: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => 
 	const swiperRef = useRef<SwiperClass>();
 
 	const favoriteSource = useAppSelector(selectFavoriteSourceView);
+
 	const { showAlert } = useAlert();
 
-	useIonViewWillEnter(() => {
+	useIonViewDidEnter(() => {
 		if (!favoriteSource) {
 			showAlert({
 				header: "No sources",
@@ -73,17 +74,19 @@ const Receive: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => 
 					{
 						text: "Cancel",
 						role: "cancel",
-						handler: () => {
-							router.push("/", "back", "replace");
-						}
+
 					},
 					{
 						text: "Add Source",
-						handler: () => {
-							router.push("/sources", "forward", "replace");
-						}
+						role: "confirm",
 					},
 				]
+			}).then(({ role }) => {
+				if (role === "cancel") {
+					router.push("/home", "back", "pop")
+				} else if (role === "confirm") {
+					router.push("/sources", "forward", "replace")
+				}
 			})
 		}
 

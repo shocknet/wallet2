@@ -6,7 +6,7 @@ export async function fetchNip78Event(ext: IdentityNostrApi, dTag: string): Prom
 
 	const pubkey = await ext.getPublicKey()
 	const relays = await ext.getRelays()
-	console.log({ pubkey, relays })
+
 	const backupEvent = await getNip78Event(pubkey, Object.keys(relays), dTag)
 	if (!backupEvent) {
 		return "";
@@ -26,7 +26,6 @@ export async function saveNip78Event(ext: IdentityNostrApi, backup: string, dTag
 
 	const signed = await ext.signEvent(backupEvent)
 
-	console.log("Publishing", backupEvent, pubkey, relays)
 
 	await publishNostrEvent(signed, Object.keys(relays))
 	return signed.created_at

@@ -51,14 +51,14 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 									</IonCardHeader>
 									<IonCardContent>
 										<IonList className='round secondary' lines="full">
-											<IonItem detail routerLink="/createidentity/sanctum" routerDirection="forward">
+											<IonItem detail routerLink="/identity/create/sanctum" routerDirection="forward">
 												<IonIcon slot="start" icon={cloudOutline} />
 												<IonLabel>
 													<h2 className="text-high">Sanctum remote-signer (recommended)</h2>
 													<p className="text-low">Use a trusted remote service to hold your keys and authorize actions from this app.</p>
 												</IonLabel>
 											</IonItem>
-											<IonItem detail routerLink="/createidentity/keys" routerDirection="forward">
+											<IonItem detail routerLink="/identity/create/keys" routerDirection="forward">
 												<IonIcon slot="start" icon={keyOutline} />
 												<IonLabel>
 													<h2 className="text-high">Nostr Kepyair</h2>

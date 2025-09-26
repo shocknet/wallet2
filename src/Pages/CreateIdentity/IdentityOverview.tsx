@@ -29,7 +29,7 @@ import {
 } from "ionicons/icons";
 import { RouteComponentProps, useHistory, useLocation } from "react-router";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectActiveIdentity, selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import {
 	identityActions,
 	selectIdentityDraft,
@@ -62,7 +62,7 @@ const IdentityOverviewPage = (props: RouteComponentProps) => {
 	const registry = useAppSelector(selectActiveIdentity)!; // protected route
 	const idDoc = useAppSelector(selectIdentityDraft)!;
 
-	console.log({ idDoc })
+
 
 	// identity fields (local form state)
 	const [label, setLabel] = useState(idDoc.label.value ?? "");
@@ -126,7 +126,7 @@ const IdentityOverviewPage = (props: RouteComponentProps) => {
 			<HomeHeader {...props}>
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonButton color="primary" routerLink="/identities" routerDirection="root">
+						<IonButton color="primary" routerLink="/identities" routerDirection="root" >
 							Go to Identities
 						</IonButton>
 

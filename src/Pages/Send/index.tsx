@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	IonAvatar,
 	IonButton,
@@ -21,12 +21,14 @@ import {
 	IonSpinner,
 	IonText,
 	IonToolbar,
+	useIonRouter,
+	useIonViewDidEnter,
 	useIonViewWillEnter
 } from '@ionic/react';
 import { defaultMempool } from '../../constants';
 import "./styles/index.css";
 import useDebounce from '../../Hooks/useDebounce';
-import { RouteComponentProps, useLocation } from 'react-router';
+import { RouteComponentProps } from 'react-router';
 import {
 	logoBitcoin,
 	qrCodeOutline,
@@ -45,15 +47,13 @@ import { FeeTier, getFeeTiers } from '@/lib/fees';
 import { Satoshi } from '@/lib/types/units';
 import { parseUserInputToSats } from '@/lib/units';
 import { getIconFromClassification } from '@/lib/icons';
-import { useAlert } from '@/lib/contexts/useAlert';
 import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
 import { useQrScanner } from '@/lib/hooks/useQrScanner';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
-import { NprofileView, selectFavoriteSourceView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
-import { SourceType } from '@/State/scoped/common';
+import { NprofileView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
 
 
@@ -65,77 +65,42 @@ const NofferCard = lazy(() => import("./NofferCard"));
 const OnChainCard = lazy(() => import("./OnChainCard"));
 
 
-const Send: React.FC<RouteComponentProps> = ({ history }) => {
-	const location = useLocation<{ input: string }>();
+interface SendPageProps extends RouteComponentProps {
+	initialSource: NprofileView;
+}
+
+
+const Send = ({ history, initialSource }: SendPageProps) => {
+	const router = useIonRouter();
+
 	const dispatch = useAppDispatch();
-	const { showAlert } = useAlert();
 	const { showToast } = useToast();
 
 	const mempoolUrl = useAppSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
-	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
 
-
-	// --- Selected Spend Source ---
 	const nprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
-	const [selectedSource, setSelectedSource] = useState(() =>
-		favoriteSource.type === SourceType.NPROFILE_SOURCE && !favoriteSource.beaconStale ?
-			favoriteSource :
-			nprofileSourceViews[0]
-	);
 
+	const [selectedSource, setSelectedSource] = useState(initialSource);
 
-	// Check whether we have at least one nprofile source that ALSO has enough balance (maxWithdrawable > 0)
-	// Show alert if not
 	useIonViewWillEnter(() => {
 		amountInput.clearFixed();
 		setNote("");
+	})
 
-		if (nprofileSourceViews.length === 0) {
-			showAlert({
-				header: "No Spend Sources",
-				message: "You need to add a spend source before sending payments.",
-				buttons: [
-					{
-						text: "Cancel",
-						role: "cancel",
-						handler: () => {
-							history.replace("/");
-						}
-					},
-					{
-						text: "Add Source",
-						handler: () => {
-							history.replace("/sources");
-						}
-					},
 
-				]
-			})
-		}
-		if (selectedSource && (Number(selectedSource.maxWithdrawableSats) === 0 || Number(selectedSource.balanceSats) === 0)) {
-			const foundOneWithBalance = nprofileSourceViews.find(s => Number(s.maxWithdrawableSats) > 0);
-			if (foundOneWithBalance) {
-				setSelectedSource(foundOneWithBalance)
-			} else {
-				showAlert({
-					header: "No Spend Source With Enough Balance",
-					message: "You need to receive enough sats to send payments.",
-					buttons: [
-						{
-							text: "Cancel",
-							role: "cancel",
-						},
-						{
-							text: "Receive",
-							handler: () => {
-								history.replace("/receive");
-							}
-						}
-					]
-				})
-			}
-		}
-	}, [nprofileSourceViews]);
+	// Recipient might be passed in location.state
+	useIonViewDidEnter(() => {
+
+		const { input: clip } = history.location.state as { input?: string } || {};
+		if (!clip) return;
+		clearRecipientError();
+
+		setRecipient(clip);
+
+		// replace the current history entry with identical URL but no state.
+		// this is because Ionic will not remove the state when navigating again to this page
+		history.replace(history.location.pathname + history.location.search);
+	}, [history.location.key]);
 
 
 
@@ -323,18 +288,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [amountInput])
 
-	// Recipient might be passed in location.state
-	useEffect(() => {
-		const clip = location.state?.input;
-		if (!clip) return;
-		clearRecipientError();
 
-		setRecipient(clip);
-
-		// replace the current history entry with identical URL but no state.
-		// this is because Ionic will not remove the state when navigating again to this page
-		history.replace({ pathname: location.pathname, search: location.search, state: null });
-	}, [location.state?.input, history, location.pathname, location.search]);
 
 	const clearRecipientError = () => {
 		if (inputRef.current) {
@@ -428,7 +382,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 			if (
 				inputState.parsedData.type === InputClassification.NOFFER &&
 				inputState.parsedData.priceType === OfferPriceType.Spontaneous &&
-				res?.error
+				res?.error && res.range
 			) {
 				amountInput.setLimits({
 					min: parseUserInputToSats(res.range.min.toString(), "sats"),
@@ -438,13 +392,13 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 
 				showToast({ message: "Noffer range updated, please try to send again now", color: "warning" });
 			} else {
-				history.replace("/home");
+				router.push("/home", "back", "pop")
 			}
 		} catch (err: any) {
 			showToast({ message: err?.message || "Payment failed", color: "danger" });
 		}
 
-	}, [amountInput, inputState, selectedSource, dispatch, history, showToast, feeTiers, selectedFeeTier, note]);
+	}, [amountInput, inputState, selectedSource, dispatch, router, showToast, feeTiers, selectedFeeTier, note]);
 
 
 	return (
@@ -729,7 +683,7 @@ const Send: React.FC<RouteComponentProps> = ({ history }) => {
 					<IonGrid className="ion-no-padding">
 						<IonRow className="ion-justify-content-center ion-align-items-center" style={{ gap: "1rem" }}>
 							<IonCol size="5" >
-								<IonButton color="light" fill="default" expand="block" onClick={() => history.replace("/")}>
+								<IonButton color="light" fill="default" expand="block" onClick={() => router.push("/home", "back", "pop")}>
 									Cancel
 								</IonButton>
 							</IonCol>

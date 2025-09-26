@@ -8,7 +8,7 @@ export type OpKey = string; // `${sourceId}/${operationId}`
 
 /* All app source operations are a union type with deep type definitions */
 export interface SourceOperationBase {
-	opKey: OpKey
+	opKey: OpKey;
 	sourceId: string;
 	operationId: string;
 	paidAtUnix: number;
@@ -20,6 +20,7 @@ export interface SourceOperationBase {
 export interface OptimisticOperationBase {
 	sourceId: string;
 	operationId: string;
+	opKey: OpKey;
 	paidAtUnix: number;
 	amount: Satoshi;
 	inbound: false; // Optimistic operations are always outbound

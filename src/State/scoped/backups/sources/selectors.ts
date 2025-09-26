@@ -22,6 +22,23 @@ export const selectLiveSourceEntities = createSelector(
 	(entities) => entities.filter(e => !isDeleted(e.draft))
 );
 
+
+export const selectSourceMetadata = createSelector(
+	[docsSelectors.selectEntities, metadataSelectors.selectEntities],
+	(sourceEntities, metaEntities): SourceView[] => {
+		const out: SourceView[] = [];
+		for (const id in sourceEntities) {
+			const e = sourceEntities[id];
+			if (!e) continue;
+			const d = e.draft;
+			if (isDeleted(d)) continue;
+			out.push(createSourceView(d, metaEntities[id]));
+		}
+		return out;
+	}
+);
+
+
 export type SourceViewBase = {
 	sourceId: string;
 	type: SourceType;
@@ -125,6 +142,16 @@ export const selectNprofileViews = createSelector(
 	(views) => views.filter(v => v.type === SourceType.NPROFILE_SOURCE)
 );
 
+export const selectNprofileViewsByLpk = createSelector(
+	[
+		selectNprofileViews,
+		(_state: RootState, lpk: string) => lpk
+	],
+	(views, lpk) => views.filter(v => v.lpk === lpk)
+);
+
+
+
 export const selectHealthyNprofileViews = createSelector(
 	[selectNprofileViews],
 	(views) => views.filter(v => v.type === SourceType.NPROFILE_SOURCE)
@@ -151,7 +178,7 @@ export const selectTotalBalance = createSelector(
 			if (!liveIds.includes(meta.id)) continue; // ensure source is actually live
 			if (meta.balance) total += meta.balance.amount;
 		}
-		return total;
+		return total as Satoshi;
 	}
 );
 

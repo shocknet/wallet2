@@ -8,7 +8,8 @@ import {
 	IonRefresher,
 	IonRefresherContent,
 	RefresherEventDetail,
-	useIonViewWillEnter
+	useIonRouter,
+	useIonViewDidEnter,
 } from "@ionic/react";
 import {
 	downloadOutline,
@@ -33,6 +34,7 @@ import { historySelectors, sourcesActions } from "@/State/scoped/backups/sources
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
+import { useAlert } from "@/lib/contexts/useAlert";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
@@ -40,14 +42,17 @@ const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal
 
 const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 	const { history } = props;
+
+	const router = useIonRouter();
 	const dispatch = useAppDispatch();
 
+	const { showAlert } = useAlert();
 	const { showToast } = useToast();
 
 	const operations = useAppSelector(historySelectors.selectAll);
 
 
-	useIonViewWillEnter(() => {
+	useIonViewDidEnter(() => {
 		dispatch(fetchAllSourcesHistory());
 
 		let cleanupListener: (() => void) | undefined;
@@ -75,10 +80,40 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 			}
 		});
 
+
+
 		return () => {
 			cleanupListener?.();
 		}
 	})
+
+
+	useIonViewDidEnter(() => {
+		const { reason } = history.location.state as { reason?: string } || {}
+
+		if (reason === "noSources") {
+			history.replace(history.location.pathname + history.location.search);
+			showAlert({
+				header: "No sources",
+				message: "You need to add an nprofile source before sending payments",
+				buttons: [
+					{
+						text: "Cancel",
+						role: "cancel",
+
+					},
+					{
+						text: "Add Source",
+						role: "confirm",
+					},
+				]
+			}).then(({ role }) => {
+				if (role === "confirm") {
+					router.push("/sources", "forward", "push");
+				}
+			})
+		}
+	}, [history.location.key]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);

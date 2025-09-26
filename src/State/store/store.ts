@@ -3,28 +3,20 @@
 import { Action, combineSlices, configureStore, createAction, createListenerMiddleware, createSelector, createSlice, ThunkAction, ThunkDispatch, TypedStartListening } from '@reduxjs/toolkit';
 import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from '../Slices/paySourcesSlice';
 import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from '../Slices/spendSourcesSlice';
-
 import prefsSlice, { storageKey as prefsStorageKey, mergeLogic as prefsMergeLogic } from '../Slices/prefsSlice';
 import addressbookSlice, { storageKey as addressbookStorageKey, mergeLogic as addressbookMergeLogic } from '../Slices/addressbookSlice';
 import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from '../Slices/notificationSlice';
-
 import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic, Subscriptions } from '../Slices/subscriptionsSlice';
-
 import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
-
 import { createDynamicMiddleware } from "@reduxjs/toolkit/react";
 import type { BackupAction } from '../types';
-
 import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import { parseUserInputToSats } from '@/lib/units';
 import type { Satoshi } from '@/lib/types/units';
 import type { PayTo, SpendFrom } from '@/globalTypes';
 import { staticReducers } from './staticReducers';
 import { listenerMiddleware } from './listenerMiddleware';
-
-import { injectLastActive } from '../scoped/scopedReducer';
-import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from '../identitiesRegistry/thunks';
-import { identityLoaded } from '../identitiesRegistry/middleware/actions';
+import { appApi } from '../api/api';
 
 
 
@@ -41,7 +33,7 @@ const store = configureStore({
 			serializableCheck: {
 				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER],
 			},
-		}).prepend(dynamicMiddleware.middleware).prepend(listenerMiddleware.middleware)
+		}).prepend(dynamicMiddleware.middleware).concat(listenerMiddleware.middleware).concat(appApi.middleware)
 });
 
 

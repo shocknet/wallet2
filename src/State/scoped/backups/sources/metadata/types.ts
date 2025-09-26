@@ -3,7 +3,6 @@ import { SourceType } from "@/State/scoped/common";
 
 
 export type BeaconMeta = {
-	lpk: string;         // pub that emitted the beacon
 	name: string;
 	lastSeenAtMs: number;
 	stale: boolean;

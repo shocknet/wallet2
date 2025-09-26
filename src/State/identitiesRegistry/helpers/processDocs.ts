@@ -61,6 +61,7 @@ async function processRemoteIdentityDoc(doc: DocBase, dispatch: AppThunkDispatch
 }
 
 async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch): Promise<SourceDocV0 | null> {
+
 	let migrationResult;
 
 	try {
@@ -68,6 +69,7 @@ async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch):
 	} catch {
 		return null;
 	}
+
 
 	if (migrationResult === "AHEAD") {
 		/* TODO: Mark the app as outdated */

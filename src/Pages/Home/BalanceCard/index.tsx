@@ -1,4 +1,3 @@
-import { selectSpendsTotalBalance, useSelector } from "@/State/store/store";
 import { useEffect, useRef, useState } from "react";
 import styles from "./styles/index.module.scss";
 import { IonButton, IonNote, IonRippleEffect, IonText } from "@ionic/react";
@@ -7,10 +6,10 @@ import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";
 import { useToast } from "@/lib/contexts/useToast";
-
-import { useAppDispatch } from "@/State/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
+import { selectTotalBalance } from "@/State/scoped/backups/sources/selectors";
 
 
 
@@ -21,8 +20,8 @@ const BalanceCard = () => {
 	const { unit, setUnit } = usePreferredAmountUnit();
 
 
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit);
-	const balance = useSelector(selectSpendsTotalBalance);
+	const { url, currency } = useAppSelector(state => state.prefs.FiatUnit);
+	const balance = useAppSelector(selectTotalBalance);
 	const [money, setMoney] = useState("");
 	const displayBalance = unit === "sats" ? formatSatoshi(balance) : formatBitcoin(satsToBtc(balance))
 

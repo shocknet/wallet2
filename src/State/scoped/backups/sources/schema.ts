@@ -27,7 +27,7 @@ export const SourceDocV0Schema = z.discriminatedUnion("type", [
 		source_id: HexDashHexSchema,
 		lpk: HexKeySchema,
 		keys: NostrKeyPairSchema,
-		relays: z.record(z.url({ protocol: /^wss$/ }), LwwFlagSchema),
+		relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
 		is_ndebit_discoverable: LwwSchema(z.boolean()),
 		admin_token: LwwSchema(z.string().nullable()),
 

@@ -3,7 +3,8 @@ import {
 	IonList, IonItem, IonLabel, IonButton,
 	IonFab,
 	IonFabButton,
-	IonIcon
+	IonIcon,
+	useIonRouter
 } from "@ionic/react";
 
 import { identitiesSelectors, identitiesRegistryActions, selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
@@ -16,8 +17,10 @@ import { toast } from "react-toastify";
 import { add } from "ionicons/icons";
 
 
-const IdentitiesPage: React.FC<RouteComponentProps> = ({ history }: RouteComponentProps) => {
+const IdentitiesPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
 	const dispatch = useAppDispatch();
+	const router = useIonRouter();
+
 	const all = useAppSelector(identitiesSelectors.selectAll);
 	const active = useAppSelector(selectActiveIdentityId);
 
@@ -27,8 +30,7 @@ const IdentitiesPage: React.FC<RouteComponentProps> = ({ history }: RouteCompone
 		} catch (err: any) {
 			toast.error(err?.message || "Error switching to identity")
 		}
-
-		history.push("/identity/overview", { routerDirection: "root" });
+		router.push("/identity/overview/", "root", "replace");
 
 	}
 
@@ -77,7 +79,7 @@ const IdentitiesPage: React.FC<RouteComponentProps> = ({ history }: RouteCompone
 				</IonList>
 
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">
-					<IonFabButton routerLink="/createidentity">
+					<IonFabButton routerLink="/identity/create">
 						<IonIcon icon={add}></IonIcon>
 					</IonFabButton>
 				</IonFab>

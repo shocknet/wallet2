@@ -15,14 +15,12 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import "./theme/variables.css";
 
-import { Redirect, Route, } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import { Redirect, Route, useLocation, } from "react-router-dom";
+import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
-import { useDispatch } from 'react-redux';
 import store, { persistor, useSelector } from './State/store/store';
-
 import { StatusBar } from "@capacitor/status-bar";
 import { Provider } from 'react-redux';
 import { ToastContainer } from "react-toastify";
@@ -39,18 +37,12 @@ import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
 import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
 import { useAppSelector } from './State/store/hooks';
-
-
-
-
 import { migrateDeviceToIdentities, OLD_BACKUP_STATE_STORAGE_KEY } from './State/identitiesRegistry/identitiesMigration';
-import CreateIdentityPage from './Pages/CreateIdentity';
-import CreateKeysIdentityPage from './Pages/CreateIdentity/CreateKeysIdentity';
-import CreateSanctumIdentityPage from './Pages/CreateIdentity/CreateSanctumIdentityPage';
-import IdentityOverviewPage from './Pages/CreateIdentity/IdentityOverview';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
-import IdentitiesPage from './Pages/Identities';
+import { SourceType } from './State/scoped/common';
+import { NprofileView, selectFavoriteSourceView, selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
+
 
 
 
@@ -58,6 +50,11 @@ import IdentitiesPage from './Pages/Identities';
 const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
 const Send = lazy(() => import('./Pages/Send'));
+const CreateIdentityPage = lazy(() => import("./Pages/CreateIdentity/index"));
+const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
+const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
+const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
+const IdentitiesPage = lazy(() => import("./Pages/Identities"));
 
 /* const NodeUp = lazy(() => import('./Pages/NodeUp'));
 const Loader = lazy(() => import('./Pages/Loader'));
@@ -73,10 +70,10 @@ const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
 const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
 const Routing = lazy(() => import("./Pages/Metrics/routing"));
-const Management = lazy(() => import("./Pages/Management"));
+const Management = lazy(() => import("./Pages/Management")); */
 
 
-const BackgroundJobs = lazy(() => import("@/lib/backgroundHooks")); // Background jobs */
+const BackgroundJobs = lazy(() => import("@/lib/backgroundHooks")); // Background jobs
 const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequestModal"));
 const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
 const EditDebitModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.EditDebitModal })));
@@ -87,8 +84,9 @@ addIcons({
 setupIonicReact();
 document.documentElement.classList.add('dark');
 
-const AppContent: React.FC = () => {
-	const dispatch = useDispatch();
+
+
+const AppJobs = () => {
 	useAppUrlListener();
 
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
@@ -99,10 +97,11 @@ const AppContent: React.FC = () => {
 		cleanupStaleServiceWorkers()
 	}, []);
 
+
 	/*
 	* Defer loading in the background jobs until browser decides main thread is idle
 	*/
-	const [_loadBackgroundJobs, setLoadBackgroundJobs] = useState(false);
+	const [loadBackgroundJobs, setLoadBackgroundJobs] = useState(false);
 	useEffect(() => {
 		// Prefer requestIdleCallback; fall back to a small timeout
 		const id = ('requestIdleCallback' in window)
@@ -122,43 +121,16 @@ const AppContent: React.FC = () => {
 		};
 	}, []);
 
-
-
-
-	useEffect(() => {
-		const handleUrlParams = () => {
-			const url = new URL(window.location.href);
-			const addSource = url.searchParams.get('addSource');
-			const inviteToken = url.searchParams.get('inviteToken');
-
-			if (addSource) {
-				dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
-				window.history.replaceState({}, document.title, url.pathname);
-			}
-		};
-
-		handleUrlParams();
-		window.addEventListener('popstate', handleUrlParams);
-
-		return () => {
-			window.removeEventListener('popstate', handleUrlParams);
-		};
-	}, [dispatch]);
-
-
-
 	return (
 		<>
-			{/* {
+			{
 				loadBackgroundJobs
 				&&
 				<Suspense fallback={null}>
 					<BackgroundJobs />
 				</Suspense>
-			} */}
+			}
 			<LoadingOverlay />
-
-
 
 			{/* Modals */}
 			{
@@ -183,15 +155,46 @@ const AppContent: React.FC = () => {
 				</Suspense>
 			}
 
-			{/* Modals */}
+		</>
+	)
 
+}
+
+const AppContent: React.FC = () => {
+	const activeIdentityPubkey = useAppSelector(selectActiveIdentityId);
+
+
+	return (
+		<>
 			<NavigationMenu />
-			<IonRouterOutlet id="main-content" animated={true}>
+			<IonRouterOutlet id="main-content" animated={true} key={activeIdentityPubkey || "none"}>
 				<Redirect exact from="/" to="/home" />
 
-				<Route exact path="/createIdentity" render={(props) => <CreateIdentityPage {...props} />} />
-				<Route path="/createIdentity/keys" render={(props) => <CreateKeysIdentityPage {...props} />} />
-				<Route path="/createIdentity/sanctum" render={(props) => <CreateSanctumIdentityPage {...props} />} />
+				<Route
+					exact
+					path="/identity/create"
+					render={(props) =>
+						<Suspense fallback={<FullSpinner />}>
+							<CreateIdentityPage {...props} />
+						</Suspense>
+					}
+				/>
+				<Route
+					path="/identity/create/keys"
+					render={(props) =>
+						<Suspense fallback={<FullSpinner />}>
+							<CreateKeysIdentityPage {...props} />
+						</Suspense>
+					}
+				/>
+				<Route
+					path="/identity/create/sanctum"
+					render={(props) =>
+						<Suspense fallback={<FullSpinner />}>
+							<CreateSanctumIdentityPage {...props} />
+						</Suspense>
+					}
+				/>
 				<Route
 					path="/identity/overview"
 					render={(props) =>
@@ -215,11 +218,6 @@ const AppContent: React.FC = () => {
 					}
 				/>
 
-
-
-
-
-
 				<Route
 					exact
 					path="/home"
@@ -233,10 +231,6 @@ const AppContent: React.FC = () => {
 						</NodeupGate>
 					}
 				/>
-
-
-
-
 
 				<Route
 					exact
@@ -258,9 +252,13 @@ const AppContent: React.FC = () => {
 					render={(props) =>
 						<NodeupGate>
 							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Send {...props} />
-								</Suspense>
+								<SpendSourceGate>
+									{(source) => (
+										<Suspense fallback={<FullSpinner />}>
+											<Send {...props} initialSource={source} />
+										</Suspense>
+									)}
+								</SpendSourceGate>
 							</IdentityGate>
 						</NodeupGate>
 					}
@@ -395,7 +393,7 @@ interface GateProps {
 const NodeupGate = ({ children }: GateProps) => {
 	const isBoostrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
-	if (!isBoostrapped) return <Redirect to={{ pathname: "/createidentity", state: { routerDirection: "back" } }} />
+	if (!isBoostrapped) return <Redirect to="/identity/create" />
 
 	return children;
 };
@@ -403,10 +401,57 @@ const NodeupGate = ({ children }: GateProps) => {
 const IdentityGate = ({ children }: GateProps) => {
 	const activeIdentity = useAppSelector(selectActiveIdentityId);
 
-	if (!activeIdentity) return <Redirect to={{ pathname: "/identities", state: { routerDirection: "back" } }} />
+	if (!activeIdentity) return <Redirect to="/identities" />
 
 	return children;
 };
+
+
+
+type SpendChild = (source: NprofileView) => React.ReactNode;
+const spendable = (s: NprofileView) => Number(s.maxWithdrawableSats ?? 0);
+
+const SpendSourceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
+	const loc = useLocation();
+	const favorite = useAppSelector(selectFavoriteSourceView)!;
+	const all = useAppSelector(selectHealthyNprofileViews);
+
+
+
+	const preferred = useMemo<NprofileView | null>(() => {
+		// 1) Prefer favorite if it’s an nprofile, not stale, and has spendable balance
+		if (
+			favorite &&
+			favorite.type === SourceType.NPROFILE_SOURCE &&
+			!favorite.beaconStale &&
+			spendable(favorite) > 0
+		) {
+			return favorite;
+		}
+
+		if (all.length === 0) return null;
+		// 2) Otherwise, choose the source with the highest spendable balance
+		return all.reduce((best, s) => (spendable(s) > spendable(best) ? s : best), all[0]);
+	}, [favorite, all]);
+
+
+
+	if (all.length === 0) {
+		console.log("REDIRECTING NOW")
+		return <Redirect
+			to={{
+				pathname: "/home",
+				state: { from: loc.pathname, reason: "noSources" }
+			}}
+		/>
+	}
+
+
+	return <>{children(preferred!)}</>;
+};
+
+
+
 
 
 const App: React.FC = () => {
@@ -441,13 +486,14 @@ const App: React.FC = () => {
 				<ScannerProvider>
 					<IonApp>
 						<ErrorBoundary>
-							<IonReactRouter>
-								<AlertProvider>
-									<ToastProvider>
+							<AlertProvider>
+								<ToastProvider>
+									<IonReactRouter>
 										<AppContent />
-									</ToastProvider>
-								</AlertProvider>
-							</IonReactRouter>
+									</IonReactRouter>
+									<AppJobs />
+								</ToastProvider>
+							</AlertProvider>
 						</ErrorBoundary>
 						<ToastContainer
 							theme="colored"

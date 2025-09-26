@@ -12,6 +12,7 @@ import nostrPrivateKey from '../Slices/nostrPrivateKey';
 import modalsSlice from '../Slices/modalsSlice';
 import { combineSlices } from '@reduxjs/toolkit';
 import { persistedIdentitiesRegistryReducer } from '../identitiesRegistry/slice';
+import { appApi } from '../api/api';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LazyLoadedSlices { }
@@ -29,5 +30,6 @@ export const staticReducers = combineSlices({
 	nostrPrivateKey,
 	oneTimeInviteLinkSlice,
 	modalsSlice,
-	identitiesRegistry: persistedIdentitiesRegistryReducer
+	identitiesRegistry: persistedIdentitiesRegistryReducer,
+	[appApi.reducerPath]: appApi.reducer
 }).withLazyLoadedSlices<LazyLoadedSlices>();

@@ -93,12 +93,14 @@ export const addSource = (input: string, label?: string): AppThunk<Promise<void>
 	}
 
 	dispatch(sourcesActions._createDraftDoc({ sourceId: fullDraft.source_id, draft: fullDraft }));
+
+	// Add this new source dod's dtag to the identity doc's sources list
 	const IdentityPubkey = selectActiveIdentityId(getState())!
 	const newSourceDocTag = await getSourceDocDtag(IdentityPubkey, fullDraft.source_id)
 	dispatch(identityActions.addSourceDocDTag({ sourceId: newSourceDocTag }));
-	const state = getState()
-	const favoriteSourceId = selectFavoriteSourceId(getState());
-	if (favoriteSourceId === null && docsSelectors.selectIds(state).length === 0) {
+
+	// Set this source as favorite source if no other sources exist
+	if (docsSelectors.selectIds(getState()).length === 1) {
 		dispatch(identityActions.setFavoriteSource({ sourceId: fullDraft.source_id, by: deviceId }));
 	}
 

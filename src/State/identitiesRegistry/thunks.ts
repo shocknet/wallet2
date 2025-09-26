@@ -13,17 +13,19 @@ import { getIdentityDocDtag } from "./helpers/processDocs";
 import { fetchNip78Event } from "./helpers/nostr";
 import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
+import { appApi } from "../api/api";
+
 
 
 
 export const LAST_ACTIVE_IDENTITY_PUBKEY_KEY = "__shockwallet_lai_";
 
-
-
 export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 		const state = getState();
 		const current = selectActiveIdentityId(state);
+
+
 		if (!boot && current === pubkey) {
 			return;
 		}
@@ -39,7 +41,10 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
 		await getIdentityNostrApi(existing);
 
-		if (current) {
+		if (!boot) { // When it's a dynamic switch, tear stuff down nicely
+
+			dispatch(appApi.util.resetApiState());
+
 			/*
 		* Flush redux-persist and docs publisher middleware
 		*/
@@ -49,7 +54,6 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 			// wait a bit for publisher to finish?
 
 			dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey: null }));
-			console.log("Dispatching identityUnloaded")
 			dispatch(identityUnloaded()); // Signal publisher and puller to stop
 
 			await resetClientsCluster(); // Tear down nostr layer
@@ -73,6 +77,10 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey }));
 		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
 		dispatch(identityLoaded({ identity: existing }));
+
+		dispatch(appApi.endpoints.streamBeacons.initiate());
+
+
 		setTimeout(() => {
 			dispatch(checkDirtyRequested());
 		}, 200);
@@ -96,11 +104,8 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		* This identity does not have an identity doc index.
 		* However it may have legacy backup so we need to check that.
 		*/
-
-		const temp = true;
-		if (temp) {
+		if (!identityDoc) {
 			const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
-			console.log({ migratedSourceDocs })
 			if (migratedSourceDocs.length) {
 				for (const source of migratedSourceDocs) {
 					dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
