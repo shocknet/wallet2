@@ -4,6 +4,7 @@ import logo from "@/Assets/Images/isolated logo.png";
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { personOutline } from 'ionicons/icons';
+import Switcher from '@/Components/Switcher';
 
 
 
@@ -55,9 +56,12 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeader
 					<IonButton shape="round" routerLink="/identity/overview">
 						<IonIcon color="primary" icon={personOutline} />
 					</IonButton>
+
 				</IonButtons>
 
+
 				<IonButtons slot="end">
+					<Switcher />
 					<IonMenuButton color="primary"></IonMenuButton>
 				</IonButtons>
 			</IonToolbar>

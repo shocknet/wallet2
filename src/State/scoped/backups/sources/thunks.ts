@@ -13,8 +13,59 @@ import { InputClassification } from "@/lib/types/parse"
 import { getSourceDocDtag } from "@/State/identitiesRegistry/helpers/processDocs"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 
+export type NProfileSourceToAdd = {
+	lpk: string;
+	label: string;
+	relays: string[];
+	bridgeUrl?: string;
+	adminToken?: string;
+}
 
 
+const onAddSourceDoc = (sourceDoc: SourceDocV0): AppThunk<Promise<void>> => async (dispatch, getState) => {
+	const deviceId = getDeviceId();
+	// Add this new source dod's dtag to the identity doc's sources list
+	const IdentityPubkey = selectActiveIdentityId(getState())!
+	const newSourceDocTag = await getSourceDocDtag(IdentityPubkey, sourceDoc.source_id)
+	dispatch(identityActions.addSourceDocDTag({ sourceId: newSourceDocTag }));
+
+	// Set this source as favorite source if no other sources exist
+	if (docsSelectors.selectIds(getState()).length === 1) {
+		dispatch(identityActions.setFavoriteSource({ sourceId: sourceDoc.source_id, by: deviceId }));
+	}
+}
+export const addNprofileSource = ({ lpk, label, relays, bridgeUrl, adminToken }: NProfileSourceToAdd): AppThunk<Promise<void>> => async (dispatch, getState) => {
+	const deviceId = getDeviceId();
+	const keyPair = generateNewKeyPair();
+	const id = `${lpk}-${keyPair.publicKey}`;
+
+	const relayMap: Record<string, LwwFlag> = {};
+	for (const r of relays) {
+
+		relayMap[r] = newflag(true, deviceId);
+	}
+
+	const sourceDoc: SourceDocV0 = {
+
+		doc_type: "doc/shockwallet/source",
+		schema_rev: 0,
+		label: newLww(label, deviceId),
+		deleted: newLww(false, deviceId),
+		created_at: Date.now(),
+		type: SourceType.NPROFILE_SOURCE,
+		source_id: id,
+		keys: keyPair,
+		lpk: lpk,
+		relays: relayMap,
+		is_ndebit_discoverable: newLww(false, deviceId),
+		admin_token: newLww(adminToken ?? null, deviceId),
+	};
+
+	dispatch(sourcesActions._createDraftDoc({ sourceId: sourceDoc.source_id, draft: sourceDoc }));
+
+	dispatch(onAddSourceDoc(sourceDoc));
+
+}
 export const addSource = (input: string, label?: string): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const deviceId = getDeviceId();
 	const now = Date.now();
@@ -94,15 +145,7 @@ export const addSource = (input: string, label?: string): AppThunk<Promise<void>
 
 	dispatch(sourcesActions._createDraftDoc({ sourceId: fullDraft.source_id, draft: fullDraft }));
 
-	// Add this new source dod's dtag to the identity doc's sources list
-	const IdentityPubkey = selectActiveIdentityId(getState())!
-	const newSourceDocTag = await getSourceDocDtag(IdentityPubkey, fullDraft.source_id)
-	dispatch(identityActions.addSourceDocDTag({ sourceId: newSourceDocTag }));
-
-	// Set this source as favorite source if no other sources exist
-	if (docsSelectors.selectIds(getState()).length === 1) {
-		dispatch(identityActions.setFavoriteSource({ sourceId: fullDraft.source_id, by: deviceId }));
-	}
+	dispatch(onAddSourceDoc(fullDraft));
 
 }
 

@@ -100,7 +100,6 @@ export default class RelayCluster {
 	addRelays = async (relaysSettings: RelaysSettings, eventCallback: (event: NostrEvent) => void, disconnectCallback: (disconnectedRelayUrl: string) => void) => {
 		const relayUrls = relaysSettings.relays;
 
-		console.log('2', relayUrls)
 
 
 		return Promise.any(relayUrls.map(r => {
@@ -116,7 +115,7 @@ export default class RelayCluster {
 	}
 
 	async addRelay(relayUrl: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
-		console.log("here now");
+
 		if (!this.allowAddRelay) return;
 		const relay = await this.getOrCreateRelay(
 			relayUrl,
@@ -148,7 +147,6 @@ export default class RelayCluster {
 		let connecting = this.connectingRelays.get(relayUrl);
 		if (!connecting) {
 			connecting = (async () => {
-				console.log("deep down")
 				try {
 					const relay = await Relay.connect(relayUrl);
 

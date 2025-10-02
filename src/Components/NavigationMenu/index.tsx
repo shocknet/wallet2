@@ -1,4 +1,6 @@
 import {
+	IonAvatar,
+	IonCard,
 	IonContent,
 	IonHeader,
 	IonIcon,
@@ -31,6 +33,7 @@ import { useSelector } from "../../State/store/store"
 import { App } from "@capacitor/app"
 import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 import { Capacitor } from "@capacitor/core"
+import { NavMenuHeader } from "./NavMenuHeader"
 
 
 interface AppBuildInfo {
@@ -101,13 +104,15 @@ const NavigationMenu = () => {
 
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
-			<IonHeader>
+			<NavMenuHeader />
+			{/* <IonHeader>
 				<IonToolbar color="secondary">
 					<IonTitle color="light" className="ion-text-center">Shockwallet</IonTitle>
 				</IonToolbar>
-			</IonHeader>
+			</IonHeader> */}
 			<IonContent className="ion-padding">
 				<IonList lines="none">
+
 					<IonItemGroup>
 						{
 							getMenuItems(adminSource).map((item, index) => {
@@ -116,7 +121,7 @@ const NavigationMenu = () => {
 										<IonItem routerLink={item.path} routerDirection="none">
 											{item.color && <IonIcon style={{ color: item.color }} icon={item.icon} slot="start" />}
 											{!item.color && <IonIcon color="primary" icon={item.icon} slot="start" />}
-											<IonLabel>{item.title}</IonLabel>
+											<IonLabel style={{ "--color": "var(--ion-text-color-step-150)" }}>{item.title}</IonLabel>
 										</IonItem>
 									</IonMenuToggle>
 								)

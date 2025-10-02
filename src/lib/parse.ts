@@ -7,32 +7,49 @@ import { decodeInvoice } from "./invoice";
 import type { NostrKeyPair } from "@/Api/nostrHandler";
 import type { Satoshi } from "./types/units";
 import { parseUserInputToSats } from "./units";
-import { OfferPriceType } from "@shocknet/clink-sdk";
-import { LN_INVOICE_REGEX, LNURL_REGEX, BITCOIN_ADDRESS_REGEX, LN_ADDRESS_REGEX, NOFFER_REGEX } from "./regex";
+import { nip19, OfferPriceType } from "@shocknet/clink-sdk";
+import { LN_INVOICE_REGEX, LNURL_REGEX, BITCOIN_ADDRESS_REGEX, LN_ADDRESS_REGEX, NOFFER_REGEX, NPROFILE_REGEX } from "./regex";
+import { utils } from "nostr-tools";
 
 
 
 const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
-interface InputClassificationConfig {
-	disallowed?: InputClassification[];
-}
+type InputClassificationConfig =
+	| { allowed: InputClassification[]; disallowed?: never }
+	| { disallowed: InputClassification[]; allowed?: never }
+	| undefined;
+
+type Validator = {
+	type: InputClassification;
+	test: (s: string) => boolean;
+};
+
+const VALIDATORS: Validator[] = [
+	{ type: InputClassification.LN_INVOICE, test: (s) => LN_INVOICE_REGEX.test(s) },
+	{ type: InputClassification.LNURL_PAY, test: (s) => LNURL_REGEX.test(s) },
+	{ type: InputClassification.BITCOIN_ADDRESS, test: (s) => BITCOIN_ADDRESS_REGEX.test(s) },
+	{ type: InputClassification.LN_ADDRESS, test: (s) => LN_ADDRESS_REGEX.test(s) },
+	{ type: InputClassification.NOFFER, test: (s) => NOFFER_REGEX.test(s) },
+	{ type: InputClassification.NPROFILE, test: (s) => NPROFILE_REGEX.test(s) },
+];
 
 // Function to identify input type through regex. Can disallow certain types of input using config.disallowed.
 export function identifyBitcoinInput(incomingInput: string, config?: InputClassificationConfig): InputClassification {
 	const input = incomingInput.trim();
-	let matchedType: InputClassification = InputClassification.UNKNOWN;
+	if (!input) return InputClassification.UNKNOWN;
 
-	const validators: {
-		type: InputClassification;
-		test: (input: string) => boolean;
-	}[] = [
-			{ type: InputClassification.LN_INVOICE, test: (input: string) => LN_INVOICE_REGEX.test(input) },
-			{ type: InputClassification.LNURL_PAY, test: (input: string) => LNURL_REGEX.test(input) },
-			{ type: InputClassification.BITCOIN_ADDRESS, test: (input: string) => BITCOIN_ADDRESS_REGEX.test(input) },
-			{ type: InputClassification.LN_ADDRESS, test: (input: string) => LN_ADDRESS_REGEX.test(input) },
-			{ type: InputClassification.NOFFER, test: (input: string) => NOFFER_REGEX.test(input) }
-		];
+	let validators = VALIDATORS;
+
+	if (config?.allowed) {
+		const allow = new Set(config.allowed);
+		validators = validators.filter(v => allow.has(v.type));
+	} else if (config?.disallowed) {
+		const deny = new Set(config.disallowed);
+		validators = validators.filter(v => !deny.has(v.type));
+	}
+
+
 
 	const filteredValidators = validators.filter(validator => {
 		if (config?.disallowed) return !config.disallowed.includes(validator.type);
@@ -41,12 +58,11 @@ export function identifyBitcoinInput(incomingInput: string, config?: InputClassi
 
 	for (const validator of filteredValidators) {
 		if (validator.test(input)) {
-			matchedType = validator.type;
-			break;
+			return validator.type
 		}
 	}
 
-	return matchedType;
+	return InputClassification.UNKNOWN;
 }
 
 export const parseInvoiceInput = (input: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
@@ -153,6 +169,18 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 					return base;
 				default:
 					throw new Error("Invalid price type");
+			}
+		}
+		case InputClassification.NPROFILE: {
+
+			const result = nip19.decode(input);
+			if (result.type !== "nprofile") throw new Error("Not an nprofile string");
+
+			return {
+				type: InputClassification.NPROFILE,
+				data: input,
+				relays: (result.data.relays ?? []).map(utils.normalizeURL),
+				pubkey: result.data.pubkey
 			}
 		}
 		default:

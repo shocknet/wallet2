@@ -12,7 +12,8 @@ export enum InputClassification {
 	LNURL_WITHDRAW = "LNURL Withdraw",
 	LN_ADDRESS = "Lightning address",
 	UNKNOWN = "NO_IDEA",
-	NOFFER = "Noffer"
+	NOFFER = "Noffer",
+	NPROFILE = "NProfile"
 }
 
 interface ParsedInputBase {
@@ -24,6 +25,12 @@ export interface ParsedInvoiceInput extends ParsedInputBase {
 	type: InputClassification.LN_INVOICE;
 	amount: Satoshi;
 	memo?: string;
+}
+
+export interface ParsedNprofileInput extends ParsedInputBase {
+	type: InputClassification.NPROFILE,
+	relays: string[];
+	pubkey: string;
 }
 export interface ParsedLnurlPayInput extends ParsedInputBase, LnurlPayServiceResponse {
 	type: InputClassification.LNURL_PAY;
@@ -66,7 +73,8 @@ export type ParsedInput =
 	| ParsedBitcoinAddressInput
 	| ParsedLightningAddressInput
 	| ParsedNofferInput
-	| ParsedUnknownInput;
+	| ParsedUnknownInput
+	| ParsedNprofileInput;
 
 
 

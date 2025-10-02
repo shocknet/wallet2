@@ -1,4 +1,4 @@
-import { IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonFooter, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonToolbar, isPlatform, useIonRouter } from '@ionic/react';
+import { IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonFooter, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, IonToolbar, isPlatform, useIonRouter } from '@ionic/react';
 
 import styles from "./styles/index.module.scss";
 import logo from "@/Assets/Images/isolated logo.png";
@@ -16,7 +16,80 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 	return (
 		<IonPage className="ion-page-width">
 			<IonContent className={`${styles["nodeup-ioncontent"]} ion-padding`}>
-				<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+				<IonGrid
+					className="ion-padding-top"
+
+					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
+				>
+
+					<IonRow style={{ flex: 0.5, minHeight: 0 }} />
+
+
+					<IonRow className="ion-justify-content-center ion-text-center">
+						<IonCol size="2" sizeMd="1">
+							<IonImg src={logo} style={{ width: "100%", height: "auto" }} />
+						</IonCol>
+					</IonRow>
+
+					<IonRow className="ion-justify-content-center ion-text-center ion-margin-top">
+						<IonCol size="11" sizeMd="6">
+							<IonImg src={shockwalletText} style={{ width: "auto", height: "100%" }} />
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center ion-text-center" style={{ marginTop: "1.5rem" }}>
+						<IonCol size="12">
+							<h1 className="text-medium text-lg text-weight-medium">Set up your identity</h1>
+						</IonCol>
+					</IonRow>
+
+
+
+					{/* Choice card */}
+					<IonRow className="ion-justify-content-center" style={{ marginTop: "4rem" }}>
+						<IonCol size="12">
+							<IonCard color="secondary" style={{ borderRadius: 12 }}>
+								<IonCardHeader>
+									<IonCardTitle>
+										<IonText className="ion-text-wrap text-lg text-high">
+											Select a method for device sync, backups and user settings
+										</IonText>
+
+									</IonCardTitle>
+								</IonCardHeader>
+								<IonCardContent>
+									<IonList className="round secondary" lines="none">
+										<IonItem detail routerLink="/identity/create/sanctum" routerDirection="forward">
+											<IonIcon slot="start" className="text-medium" icon={cloudOutline} size="large" />
+											<IonLabel>
+												<h2 className="text-high text-md">Log-In or Sign-Up with Email</h2>
+												<IonText className="text-low text-sm">
+													Use the Nostr network via a cloud based policy engine.
+												</IonText>
+											</IonLabel>
+										</IonItem>
+
+										<IonItem detail routerLink="/identity/create/keys" routerDirection="forward">
+											<IonIcon slot="start" className="text-medium" icon={keyOutline} size="large" />
+											<IonLabel>
+												<h2 className="text-high text-md">Nostr Keys</h2>
+												<IonText className="text-low text-sm">
+													Use your existing Nostr key or generate a new one.
+
+												</IonText>
+												<br />
+												<IonText className="text-low text-sm">
+													Includes a file based backup and NIP-07 extensions.
+												</IonText>
+											</IonLabel>
+										</IonItem>
+									</IonList>
+								</IonCardContent>
+							</IonCard>
+						</IonCol>
+					</IonRow>
+
+				</IonGrid>
+				{/* 	<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
 					<IonGrid
 						className="ion-padding-top"
 					>
@@ -67,23 +140,11 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 											</IonItem>
 
 
-											{/* {(!isNative && hasNip07) && (
-												<IonItem button detail >
-													<IonIcon slot="start" icon={extensionPuzzleOutline} />
-													<IonLabel>
-														<h2 className="text-high">NIP-07 Extension</h2>
-														<p className="text-low">Use a Nostr-compatible extension to manage your identity on this browser.</p>
-													</IonLabel>
-												</IonItem>
-											)} */}
+
 
 
 										</IonList>
-										{/* {!hasNip07 && !isNative && (
-											<div className="ion-padding-top">
-												<small>NIP-07 not detected. Install a Nostr extension to enable that option.</small>
-											</div>
-										)} */}
+
 									</IonCardContent>
 								</IonCard>
 							</IonCol>
@@ -91,7 +152,7 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 					</IonGrid>
 
 				</div>
-
+ */}
 
 
 

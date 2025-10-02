@@ -4,7 +4,7 @@ import { AppDispatch } from "../store/store";
 import { ShowToast } from "@/lib/contexts/useToast";
 import { Clipboard } from "@capacitor/clipboard";
 
-export const copyToClipboard = (text: string, showToast: ShowToast, save = true) => async (dispatch: AppDispatch) => {
+export const copyToClipboard = (text: string, showToast: ShowToast, save = true, morph = false) => async (dispatch: AppDispatch) => {
 	try {
 		await Clipboard.write({ string: text });
 	} catch (err) {
@@ -17,14 +17,16 @@ export const copyToClipboard = (text: string, showToast: ShowToast, save = true)
 		});
 		return;
 	}
+	if (!morph) {
+		showToast({
+			message: "Copied to clipboard",
+			duration: 1500,
+			position: "bottom",
+			color: "success",
+			icon: checkmarkCircle,
+		})
+	}
 
-	showToast({
-		message: "Copied to clipboard",
-		duration: 1500,
-		position: "bottom",
-		color: "success",
-		icon: checkmarkCircle,
-	})
 
 	if (save) {
 		dispatch(addAsset({ asset: text }));

@@ -55,6 +55,7 @@ import { useQrScanner } from '@/lib/hooks/useQrScanner';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { NprofileView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
+import { RecipentInputHelperText } from '@/lib/jsxHelperts';
 
 
 
@@ -702,39 +703,6 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 	)
 }
 
-// Helper component to show helper text about parsed recipient
-const RecipentInputHelperText = ({ inputState }: { inputState: InputState }) => {
-	switch (inputState.status) {
-		case "idle":
-			return <div></div>;
-		case "loading": {
-			const { icon, color } = getIconFromClassification(inputState.classification);
-			return (
-				<IonText color="primary">
-					<p style={{ fontSize: "14px", marginTop: "4px", display: "flex", alignItems: "center" }}>
-						<IonIcon icon={icon} color={color} style={{ marginRight: "8px" }} />
-						{
-							inputState.classification === InputClassification.LNURL_PAY ||
-								inputState.classification === InputClassification.LN_ADDRESS ||
-								inputState.classification === InputClassification.NOFFER
-								? `${inputState.classification} detected. Fetching info.`
-								: `${inputState.classification} detected. Parsing...`}
-					</p>
-				</IonText>
-			);
-		}
-		case "parsedOk": {
-			return (
-				<IonText color="primary">
-					<p style={{ fontSize: "14px", marginTop: "4px", display: "flex", alignItems: "center" }}>
-						{inputState.parsedData.type}
-						<IonIcon icon={checkmarkCircle} color="success" style={{ marginLeft: 8 }} />
-					</p>
 
-				</IonText>
-			);
-		}
-	}
-}
 
 export default Send;

@@ -49,6 +49,7 @@ export type NprofileView = SourceViewBase & {
 	type: SourceType.NPROFILE_SOURCE;
 	relays: string[];        // only “present: true”
 	beaconStale?: boolean;
+	beaconName?: string;
 	balanceSats?: Satoshi;
 	maxWithdrawableSats?: Satoshi;
 	lpk: string;
@@ -79,6 +80,12 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 				meta?.type === SourceType.NPROFILE_SOURCE && meta?.beacon
 					? meta.beacon.stale
 					: undefined;
+
+			const beaconName =
+				meta?.type === SourceType.NPROFILE_SOURCE && meta?.beacon
+					? meta.beacon.name
+					: undefined;
+
 			const balanceSats: Satoshi | undefined =
 				meta?.type === SourceType.NPROFILE_SOURCE && meta?.balance
 					? meta.balance.amount
@@ -98,6 +105,7 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 				relays,
 				beaconStale,
 				balanceSats,
+				beaconName
 			};
 		}
 		case SourceType.LIGHTNING_ADDRESS_SOURCE:

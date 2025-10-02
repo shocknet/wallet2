@@ -141,7 +141,15 @@ export const unlockSubscriptionPayment = async (id: string, success: boolean) =>
 }
 
 
-export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number) => {
+
+export type FetchBeaconResult = {
+    data: {
+        type: "service",
+        name: string
+    };
+    createdAt: number;
+} | null;
+export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number): Promise<FetchBeaconResult> => {
     const event = await getNip78Event(pubkey, relays, pubServiceTag)
     if (!event) {
         return null
