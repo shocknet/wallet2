@@ -2824,6 +2824,7 @@ export const NewInvoiceResponseValidate = (o?: NewInvoiceResponse, opts: NewInvo
 }
 
 export type OfferConfig = {
+    blind: boolean
     callback_url: string
     createdAtUnix: number
     default_offer: boolean
@@ -2839,6 +2840,7 @@ export type OfferConfig = {
 export const OfferConfigOptionalFields: [] = []
 export type OfferConfigOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
+    blind_CustomCheck?: (v: boolean) => boolean
     callback_url_CustomCheck?: (v: string) => boolean
     createdAtUnix_CustomCheck?: (v: number) => boolean
     default_offer_CustomCheck?: (v: boolean) => boolean
@@ -2854,6 +2856,9 @@ export type OfferConfigOptions = OptionsBaseMessage & {
 export const OfferConfigValidate = (o?: OfferConfig, opts: OfferConfigOptions = {}, path: string = 'OfferConfig::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.blind !== 'boolean') return new Error(`${path}.blind: is not a boolean`)
+    if (opts.blind_CustomCheck && !opts.blind_CustomCheck(o.blind)) return new Error(`${path}.blind: custom check failed`)
 
     if (typeof o.callback_url !== 'string') return new Error(`${path}.callback_url: is not a string`)
     if (opts.callback_url_CustomCheck && !opts.callback_url_CustomCheck(o.callback_url)) return new Error(`${path}.callback_url: custom check failed`)

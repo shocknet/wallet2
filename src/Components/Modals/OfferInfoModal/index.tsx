@@ -50,7 +50,8 @@ const emptyOffer = (): OfferConfig => {
 		token: "",
 		createdAtUnix: 0,
 		updatedAtUnix: 0,
-		rejectUnauthorized: true
+		rejectUnauthorized: true,
+		blind: false
 	};
 }
 
@@ -261,6 +262,17 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 									forceSSL={draft.rejectUnauthorized}
 									token={draft.token}
 								/>
+								<IonList className={styles["edit-list"]} lines="none">
+									<IonItem>
+										<IonCheckbox
+											checked={draft.blind}
+											onIonChange={(e) => change("blind", e.detail.checked)}
+										/>
+										<IonLabel style={{ marginLeft: "15px" }}>
+											Blinded Path
+										</IonLabel>
+									</IonItem>
+								</IonList>
 							</>
 						) : (
 							<>
@@ -340,6 +352,10 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 									<IonItem>
 										<IonLabel color="primary">Created</IonLabel>
 										<IonText className="text-medium">{moment(draft.createdAtUnix).fromNow()}</IonText>
+									</IonItem>
+									<IonItem>
+										<IonLabel color="primary">Blinded Path</IonLabel>
+										<IonText className="text-medium">{draft.blind ? "Enabled" : "Disabled"}</IonText>
 									</IonItem>
 								</IonList>
 								<IonList className={styles["edit-list"]} lines="none" style={{ minHeight: "18.7rem" }}>
