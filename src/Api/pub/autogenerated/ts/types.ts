@@ -2768,15 +2768,17 @@ export const NewAddressResponseValidate = (o?: NewAddressResponse, opts: NewAddr
 
 export type NewInvoiceRequest = {
     amountSats: number
+    blind?: boolean
     expiry?: number
     memo: string
     zap?: string
 }
-export type NewInvoiceRequestOptionalField = 'expiry' | 'zap'
-export const NewInvoiceRequestOptionalFields: NewInvoiceRequestOptionalField[] = ['expiry', 'zap']
+export type NewInvoiceRequestOptionalField = 'blind' | 'expiry' | 'zap'
+export const NewInvoiceRequestOptionalFields: NewInvoiceRequestOptionalField[] = ['blind', 'expiry', 'zap']
 export type NewInvoiceRequestOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: NewInvoiceRequestOptionalField[]
     amountSats_CustomCheck?: (v: number) => boolean
+    blind_CustomCheck?: (v?: boolean) => boolean
     expiry_CustomCheck?: (v?: number) => boolean
     memo_CustomCheck?: (v: string) => boolean
     zap_CustomCheck?: (v?: string) => boolean
@@ -2787,6 +2789,9 @@ export const NewInvoiceRequestValidate = (o?: NewInvoiceRequest, opts: NewInvoic
 
     if (typeof o.amountSats !== 'number') return new Error(`${path}.amountSats: is not a number`)
     if (opts.amountSats_CustomCheck && !opts.amountSats_CustomCheck(o.amountSats)) return new Error(`${path}.amountSats: custom check failed`)
+
+    if ((o.blind || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('blind')) && typeof o.blind !== 'boolean') return new Error(`${path}.blind: is not a boolean`)
+    if (opts.blind_CustomCheck && !opts.blind_CustomCheck(o.blind)) return new Error(`${path}.blind: custom check failed`)
 
     if ((o.expiry || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('expiry')) && typeof o.expiry !== 'number') return new Error(`${path}.expiry: is not a number`)
     if (opts.expiry_CustomCheck && !opts.expiry_CustomCheck(o.expiry)) return new Error(`${path}.expiry: custom check failed`)
