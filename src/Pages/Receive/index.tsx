@@ -222,9 +222,9 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 
 		switch (favoriteSource.type) {
 			case SourceType.NPROFILE_SOURCE: {
-				/* 			if (favoriteSource.vanityName) {
-							lnAddress = topPaySource.vanityName;
-						} */
+				if (favoriteSource.vanityName) {
+					lnAddress = favoriteSource.vanityName;
+				}
 				// get lnurl
 				const cacheKey = getCacheKey(favoriteSource.sourceId, LNURL_CACHE_KEY);
 				const cached = getCache(cacheKey);
