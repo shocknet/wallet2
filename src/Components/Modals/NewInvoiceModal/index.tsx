@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonRow, IonTitle, IonToolbar } from "@ionic/react";
+import { IonButton, IonButtons, IonCheckbox, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonLabel, IonRow, IonTitle, IonToolbar } from "@ionic/react";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import AmountInput from "@/Components/AmountInput";
 import { Satoshi } from "@/lib/types/units";
@@ -6,7 +6,7 @@ import { useAmountInput } from "@/Components/AmountInput/useAmountInput";
 
 
 interface NewInvoiceModalProps {
-	dismiss: (data: { amount: Satoshi, invoiceMemo: string } | null, role?: string) => void;
+	dismiss: (data: { amount: Satoshi, invoiceMemo: string, blind: boolean } | null, role?: string) => void;
 }
 
 const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({ dismiss }: NewInvoiceModalProps, inputRef) => {
@@ -16,12 +16,13 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 
 	const amountInput = useAmountInput({});
 	const [invoiceMemo, setInvoiceMemo] = useState("");
+	const [blind, setBlind] = useState(false);
 
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (amountInput.effectiveSats !== null) {
-			dismiss({ amount: amountInput.effectiveSats, invoiceMemo }, "confirm");
+			dismiss({ amount: amountInput.effectiveSats, invoiceMemo, blind }, "confirm");
 		}
 	};
 
@@ -85,6 +86,19 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 									placeholder="Description (optional)"
 									value={invoiceMemo}
 								></IonInput>
+							</IonCol>
+						</IonRow>
+						<IonRow>
+							<IonCol>
+								<IonItem>
+									<IonCheckbox
+										checked={blind}
+										onIonChange={(e) => setBlind(e.detail.checked)}
+									/>
+									<IonLabel style={{ marginLeft: "15px" }}>
+										Blinded Path
+									</IonLabel>
+								</IonItem>
 							</IonCol>
 						</IonRow>
 					</IonGrid>
