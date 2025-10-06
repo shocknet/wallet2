@@ -5,7 +5,7 @@ import {
 	IonBackButton,
 	IonText
 } from "@ionic/react";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY, SANCTUM_URL } from "../../constants";
+import { SANCTUM_URL } from "../../constants";
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import SanctumBox from '../../Components/SanctumBox';
@@ -16,6 +16,7 @@ import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identi
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
 import { chevronBackOutline } from "ionicons/icons";
+import { setPrivateKey } from "@/State/Slices/nostrPrivateKey";
 
 
 
@@ -39,7 +40,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 				createdAt: Date.now()
 			}
 			await dispatch(createIdentity(identity));
-			localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, "true");
+			dispatch(setPrivateKey());
 		} catch (err: any) {
 			showToast({
 				color: "danger",

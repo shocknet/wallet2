@@ -18,8 +18,7 @@ import { appApi } from '../api/api';
 export interface LazyLoadedSlices { }
 
 export const staticReducers = combineSlices({
-	paySource: paySourcesReducer,
-	spendSource: spendSourcesReducer,
+
 	usdToBTC: usdToBTCReducer,
 	prefs: prefsSlice,
 	addressbook: addressbookSlice,

@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSelector, selectConnectedNostrSpends } from '../../State/store/store';
-import { PayTo } from "../../globalTypes";
 import {
 	IonAvatar,
 	IonCol,
@@ -27,13 +25,15 @@ import OfferInfoModal from "@/Components/Modals/OfferInfoModal";
 import { addUserOffer, deleteUserOffer, getUserOffer, getUserOfferInvoices, getUserOffers, updateUserOffer } from "@/lib/noffer";
 import FullSpinner from "@/Components/common/ui/fullSpinner";
 import EmptyState from "@/Components/common/ui/emptyState";
+import { useAppSelector } from "@/State/store/hooks";
+import { NprofileView, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 
 
 const Offers = () => {
 	const [present] = useIonToast();
-	const enabledNostrPaySources = useSelector(selectConnectedNostrSpends);
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 
-	const [selectedSource, setSelectedSource] = useState<PayTo>(enabledNostrPaySources[0]);
+	const [selectedSource, setSelectedSource] = useState(healthyNprofileSourceViews[0]);
 
 	const [modalOpen, setModalOpen] = useState(false);
 
@@ -50,7 +50,7 @@ const Offers = () => {
 			setIsLoading(true);
 			setSourceOffers([]);
 			try {
-				const offers = await getUserOffers(selectedSource.pasteField, selectedSource.keys);
+				const offers = await getUserOffers({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys);
 				setSourceOffers(offers || []);
 			} catch (err: any) {
 				present({
@@ -70,12 +70,12 @@ const Offers = () => {
 	const onSave = useCallback(async (offer: OfferConfig, isNew: boolean) => {
 		try {
 			if (isNew) {
-				const newOfferId = await addUserOffer(selectedSource.pasteField, selectedSource.keys, offer);
-				const newOffer = await getUserOffer(selectedSource.pasteField, selectedSource.keys, newOfferId);
+				const newOfferId = await addUserOffer({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, offer);
+				const newOffer = await getUserOffer({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, newOfferId);
 				setSourceOffers(prevOffers => [...prevOffers, { ...newOffer }]);
 			} else {
-				await updateUserOffer(selectedSource.pasteField, selectedSource.keys, offer);
-				const refetched = await getUserOffer(selectedSource.pasteField, selectedSource.keys, offer.offer_id);
+				await updateUserOffer({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, offer);
+				const refetched = await getUserOffer({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, offer.offer_id);
 
 				setSourceOffers(prevOffers => prevOffers.map(o => o.offer_id === offer.offer_id ? refetched : o));
 			}
@@ -97,7 +97,7 @@ const Offers = () => {
 
 	const fetchOfferInvoices = useCallback(async (offerId: string): Promise<OfferInvoice[] | null> => {
 		try {
-			const offerInvoices = await getUserOfferInvoices(selectedSource.pasteField, selectedSource.keys, offerId);
+			const offerInvoices = await getUserOfferInvoices({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, offerId);
 			return offerInvoices;
 		} catch (err: any) {
 			present({
@@ -111,7 +111,7 @@ const Offers = () => {
 
 	const deleteOffer = useCallback(async (offerId: string) => {
 		try {
-			await deleteUserOffer(selectedSource.pasteField, selectedSource.keys, offerId);
+			await deleteUserOffer({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys, offerId);
 			setSourceOffers(prevOffers => prevOffers.filter(o => o.offer_id !== offerId));
 			present({
 				message: "Offer deleted successfully",
@@ -132,25 +132,23 @@ const Offers = () => {
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Offers" />
 				<IonToolbar className="ion-padding-horizontal ion-padding-bottom">
-					<CustomSelect<PayTo>
-						items={enabledNostrPaySources}
+					<CustomSelect<NprofileView>
+						items={healthyNprofileSourceViews}
 						selectedItem={selectedSource}
 						onSelect={setSelectedSource}
-						getIndex={(source) => source.id}
-						title="Select Pay Source"
-						subTitle="Select a source to see its offers"
+						getIndex={(source) => source.sourceId}
+						title="Select Source"
+						subTitle="Select the source you want to spend from"
 						renderItem={(source) => {
 							return (
 								<>
 									<IonAvatar slot="start">
-										<img src={`https://robohash.org/${source.pasteField}.png?bgset=bg1`} alt='Avatar' />
+										<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
 									</IonAvatar>
 									<IonLabel style={{ width: "100%" }}>
 										<h2>{source.label}</h2>
 										<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
-											{source.pubSource
-												? "Lightning.Pub Source"
-												: "LNURL Withdraw Source"}
+											Lightning.Pub Source
 										</IonNote>
 									</IonLabel>
 								</>
@@ -159,7 +157,7 @@ const Offers = () => {
 						renderSelected={(source) => (
 							<>
 								<IonAvatar slot="start">
-									<img src={`https://robohash.org/${source.pasteField}.png?bgset=bg1`} alt='Avatar' />
+									<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
 								</IonAvatar>
 								<IonLabel>
 									{source?.label || ''}
@@ -168,6 +166,7 @@ const Offers = () => {
 						)}
 					>
 					</CustomSelect>
+
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding" fullscreen>
@@ -183,7 +182,7 @@ const Offers = () => {
 											sourceOffers.map((offer, i) => (
 												<OfferItem
 													key={i}
-													offer={({ ...offer, sourceId: selectedSource.id })}
+													offer={({ ...offer, sourceId: selectedSource.sourceId })}
 													handleSelectOffer={openForExisting}
 													onDelete={deleteOffer}
 												/>

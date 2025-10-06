@@ -17,6 +17,7 @@ export function refreshSourceInfo(source: NprofileView): AppThunk<void> {
 		if (res.status !== "OK") throw new Error(res.reason);
 
 		dispatch(sourcesActions.setBalance({ sourceId: source.sourceId, balance: { amount: res.balance as Satoshi, maxWithdrawable: res.max_withdrawable as Satoshi } }));
+		dispatch(sourcesActions.setNdebit({ sourceId: source.sourceId, ndebit: res.ndebit }));
 
 	};
 }

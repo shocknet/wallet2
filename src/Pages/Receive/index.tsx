@@ -249,8 +249,7 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 			case SourceType.LIGHTNING_ADDRESS_SOURCE:
 				lnAddress = favoriteSource.sourceId;
 				break;
-			default:
-				receivedLnurl = favoriteSource.sourceId;
+
 		}
 
 

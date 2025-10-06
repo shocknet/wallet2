@@ -213,6 +213,12 @@ export const sourcesSlice = createSlice({
 				m.vanityName = a.payload.vanityName;
 			}
 		},
+		setNdebit(state, a: PayloadAction<{ sourceId: string; ndebit: string }>) {
+			const m = state.metadata.entities[a.payload.sourceId]
+			if (m && m.type === SourceType.NPROFILE_SOURCE) {
+				m.ndebit = a.payload.ndebit;
+			}
+		},
 		clearBeacon(state, a: PayloadAction<{ sourceId: string }>) {
 			const m = state.metadata.entities[a.payload.sourceId]
 			if (m && m.type === SourceType.NPROFILE_SOURCE) {

@@ -19,6 +19,7 @@ export type MetaForNprofile = {
 	beacon?: BeaconMeta;
 	balance?: BalanceMeta;
 	vanityName?: string;
+	ndebit?: string;
 };
 
 export type MetaForLightningAddress = {

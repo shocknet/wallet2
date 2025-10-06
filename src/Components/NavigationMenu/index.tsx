@@ -1,8 +1,5 @@
 import {
-	IonAvatar,
-	IonCard,
 	IonContent,
-	IonHeader,
 	IonIcon,
 	IonItem,
 	IonItemDivider,
@@ -11,8 +8,6 @@ import {
 	IonList,
 	IonMenu,
 	IonMenuToggle,
-	IonTitle,
-	IonToolbar,
 } from "@ionic/react"
 import {
 	calendarNumberOutline,
@@ -29,11 +24,12 @@ import {
 	personCircleOutline,
 } from "ionicons/icons"
 import { useEffect, useState } from "react"
-import { useSelector } from "../../State/store/store"
 import { App } from "@capacitor/app"
 import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 import { Capacitor } from "@capacitor/core"
-import { NavMenuHeader } from "./NavMenuHeader"
+import { useAppSelector } from "@/State/store/hooks"
+import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors"
+import { nip19 } from "nostr-tools"
 
 
 interface AppBuildInfo {
@@ -61,7 +57,7 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 
 const NavigationMenu = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
-	const spendSources = useSelector(state => state.spendSource)
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
 	useEffect(() => {
 		const adminSource = getAdminSource()
@@ -69,12 +65,12 @@ const NavigationMenu = () => {
 			setAdminSource(adminSource)
 			return
 		}
-		const adminSourceId = spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-		if (adminSourceId) {
-			console.log("admin source found", adminSourceId)
-			setAdminSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
+		const foundAdminSource = healthyNprofileSourceViews.find(p => p.adminToken !== null)
+		if (foundAdminSource) {
+			console.log("admin source found", foundAdminSource)
+			setAdminSource({ nprofile: nip19.nprofileEncode({ pubkey: foundAdminSource.lpk, relays: foundAdminSource.relays }), keys: foundAdminSource.keys })
 		}
-	}, [spendSources])
+	}, [healthyNprofileSourceViews])
 
 	useEffect(() => {
 		const setupAppBuildInfo = async () => {

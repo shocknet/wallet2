@@ -19,15 +19,13 @@ import {
 	IonRow,
 	IonText,
 	IonToolbar,
-	useIonViewWillEnter
 } from '@ionic/react';
 import styles from "./styles/index.module.scss";
 import logo from "@/Assets/Images/isolated logo.png";
 import shockwalletText from "@/Assets/Images/wallet_new_text.png";
 import { cloudOutline, keyOutline } from 'ionicons/icons';
 import { RouteComponentProps } from 'react-router';
-import { useState } from 'react';
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from '@/constants';
+
 import { useAppSelector } from '@/State/store/hooks';
 import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
 /* import { Capacitor } from '@capacitor/core'; */
@@ -36,14 +34,15 @@ import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
 const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
 	/* 	const hasNip07 = typeof (window as any).nostr !== "undefined";
 		const isNative = Capacitor.isNativePlatform(); */
+	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
 
-	const [canLeave, setCanLeave] = useState(false);
+
 	const activeIdentity = useAppSelector(selectActiveIdentityId);
 
-	useIonViewWillEnter(() => {
-		const isBoostrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
-		setCanLeave(!!isBoostrapped && !!activeIdentity);
-	})
+	const canLeave = !!isBoostrapped && !!activeIdentity;
+
+
+
 
 
 

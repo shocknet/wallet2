@@ -26,7 +26,6 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from "react-toastify";
 import LoadingOverlay from "./Components/LoadingOverlay";
 import NavigationMenu from "./Components/NavigationMenu";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
 import { AlertProvider } from "./lib/contexts/useAlert";
 import { ToastProvider } from "./lib/contexts/useToast";
 import nostrSvg from "../icons/nostr.svg"
@@ -42,6 +41,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
 import { SourceType } from './State/scoped/common';
 import { NprofileView, selectFavoriteSourceView, selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
+import { Layout } from './Layout';
 
 
 
@@ -54,12 +54,9 @@ const CreateIdentityPage = lazy(() => import("./Pages/CreateIdentity/index"));
 const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
 const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
 const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
-const IdentitiesPage = lazy(() => import("./Pages/Identities"));
 const SourcesPage = lazy(() => import("./Pages/Sources"));
 
-/* const NodeUp = lazy(() => import('./Pages/NodeUp'));
-const Loader = lazy(() => import('./Pages/Loader'));
-const Sources = lazy(() => import('./Pages/Sources'));
+
 const Automation = lazy(() => import('./Pages/Automation'));
 const Prefs = lazy(() => import('./Pages/Prefs'));
 const Contacts = lazy(() => import('./Pages/Contacts'));
@@ -71,7 +68,7 @@ const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
 const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
 const Routing = lazy(() => import("./Pages/Metrics/routing"));
-const Management = lazy(() => import("./Pages/Management")); */
+const Management = lazy(() => import("./Pages/Management"));
 
 
 const BackgroundJobs = lazy(() => import("@/lib/backgroundHooks")); // Background jobs
@@ -208,16 +205,6 @@ const AppContent: React.FC = () => {
 						</NodeupGate>
 					}
 				/>
-				<Route
-					path="/identities"
-					render={(props) =>
-						<NodeupGate>
-							<Suspense fallback={<FullSpinner />}>
-								<IdentitiesPage {...props} />
-							</Suspense>
-						</NodeupGate>
-					}
-				/>
 
 				<Route
 					exact
@@ -279,118 +266,199 @@ const AppContent: React.FC = () => {
 					}
 				/>
 
+				<Route
+					exact
+					path="/automation"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Automation />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
 
-				{/* 				<Route exact path="/loader">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Loader />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/send" render={(props) =>
-					<Suspense fallback={<FullSpinner />}>
-						<Send {...props} />
-					</Suspense>
-				}
-				/> */}
-				{/* <Route path="/sources">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Sources />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/automation">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Automation />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/prefs">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Prefs />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/contacts">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Contacts />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/invitations">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Invitations />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/auth">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Auth />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/notify">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Notify />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/metrics">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Metrics />
-						</Layout>
-					</Suspense>
+				<Route
+					exact
+					path="/prefs"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Prefs />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
 
-				</Route> */}
-				{/* <Route exact path="/metrics/earnings">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Earnings />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/metrics/routing">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Routing />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/LApps">
+				<Route
+					exact
+					path="/contacts"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Contacts />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
 
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<LinkedApp />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/management">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Management />
-						</Layout>
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/Offers">
-					<Suspense fallback={<FullSpinner />}>
-						<Offers />
-					</Suspense>
-				</Route> */}
-				{/* <Route exact path="/Stats">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Stats />
-						</Layout>
-					</Suspense>
-				</Route> */}
+
+
+				<Route
+					exact
+					path="/invitations"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Invitations />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+
+
+				<Route
+					exact
+					path="/notify"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Notify />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/metrics"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Metrics />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/metrics/earnings"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Earnings />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/metrics/routing"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Routing />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/LApps"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<LinkedApp />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/management"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Management />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/Offers"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Offers />
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/Stats"
+					render={() =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<Layout>
+										<Stats />
+									</Layout>
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
 				<Route render={() => <Redirect to="/home" />} />
 			</IonRouterOutlet >
 		</>
@@ -406,7 +474,7 @@ interface GateProps {
 }
 
 const NodeupGate = ({ children }: GateProps) => {
-	const isBoostrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
 
 	if (!isBoostrapped) return <Redirect to="/identity/create" />
 

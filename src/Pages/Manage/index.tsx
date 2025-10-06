@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
-import { useSelector } from "../../State/store/store";
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { getNostrClient } from "@/Api/nostr";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 
 const Manage = ({ done }: { done: () => void }) => {
 	//const router = useIonRouter();
@@ -17,10 +18,10 @@ const Manage = ({ done }: { done: () => void }) => {
 	const [isDefaultManage, setIsDefaultManage] = useState<boolean>(true);
 	const [isAutoService, setIsAutoService] = useState<boolean>(true);
 	const [isRecoveryKey, setIsRecoveryKey] = useState<boolean>(true);
-	const spendSources = useSelector(state => state.spendSource)
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 	const selectedSource = useMemo(() => {
-		return spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-	}, [spendSources])
+		return healthyNprofileSourceViews.find(p => !!p.adminToken)
+	}, [healthyNprofileSourceViews])
 	const seeditems: string[] = [
 		"albert",
 		"biscuit",
@@ -53,14 +54,14 @@ const Manage = ({ done }: { done: () => void }) => {
 				);
 				return;
 			}
-			const source = spendSources.sources[selectedSource];
+			const source = selectedSource;
 			if (!source || !source.adminToken) {
 				toast.error(
 					<Toast title="Metrics Error" message={`no admin access found`} />
 				);
 				return;
 			}
-			const client = await getNostrClient(source.pasteField, source.keys!);
+			const client = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys!);
 			const res = await client.GetSeed();
 			if (res.status !== "OK") {
 				toast.error(
@@ -227,7 +228,7 @@ const Manage = ({ done }: { done: () => void }) => {
 			</button>
 			<div className="Manage_footer">
 				Connected to <br />
-				{spendSources.sources[selectedSource || ""].pasteField}
+				{selectedSource?.lpk}
 			</div>
 		</div>
 	);

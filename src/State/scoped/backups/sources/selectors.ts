@@ -56,6 +56,9 @@ export type NprofileView = SourceViewBase & {
 	keys: NostrKeyPair;
 	bridgeUrl: string | null;
 	isNDebitDiscoverable: boolean;
+	adminToken: string | null;
+	vanityName?: string;
+	ndebit?: string;
 };
 
 export type LnAddrView = SourceViewBase & { type: SourceType.LIGHTNING_ADDRESS_SOURCE };
@@ -98,6 +101,15 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 					? meta.balance.maxWithdrawable
 					: undefined;
 
+			const vanityName: string | undefined =
+				meta?.type === SourceType.NPROFILE_SOURCE && meta?.vanityName
+					? meta.vanityName
+					: undefined;
+			const ndebit: string | undefined =
+				meta?.type === SourceType.NPROFILE_SOURCE && meta?.ndebit
+					? meta.ndebit
+					: undefined;
+
 			return {
 				...base,
 				type: SourceType.NPROFILE_SOURCE,
@@ -105,11 +117,14 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 				keys: d.keys,
 				maxWithdrawableSats,
 				isNDebitDiscoverable: d.is_ndebit_discoverable.value,
+				ndebit,
 				relays,
+				vanityName,
 				bridgeUrl: d.bridgeUrl.value,
 				beaconStale,
 				balanceSats,
-				beaconName
+				beaconName,
+				adminToken: d.admin_token.value
 			};
 		}
 		case SourceType.LIGHTNING_ADDRESS_SOURCE:

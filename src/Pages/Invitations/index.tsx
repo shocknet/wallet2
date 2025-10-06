@@ -1,30 +1,33 @@
 import { Clipboard } from "@capacitor/clipboard";
 import { toast } from "react-toastify";
 import { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "../../State/store/store";
+import { useDispatch } from "../../State/store/store";
 import Toast from "../../Components/Toast";
 import { getNostrClient } from "@/Api/nostr";
 import { addInvitation, setInvitationToUsed } from "../../State/Slices/oneTimeInviteLinkSlice";
 import { WALLET_URL } from "../../constants";
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { check, copyWhite } from "@/Assets/SvgIconLibrary";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { nip19 } from "nostr-tools";
 
 
 
 
 const Invitations = () => {
 	const dispatch = useDispatch();
-	const spendSources = useSelector(state => state.spendSource)
-	const invitations = useSelector(state => state.oneTimeInviteLinkSlice);
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const invitations = useAppSelector(state => state.oneTimeInviteLinkSlice);
 
 	const selectedSource = useMemo(() => {
-		const sourceId = spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-		if (!sourceId) {
+		const source = healthyNprofileSourceViews.find(p => !!p.adminToken)
+		if (!source) {
 			return null
 		}
-		return spendSources.sources[sourceId];
+		return source;
 
-	}, [spendSources])
+	}, [healthyNprofileSourceViews])
 
 	useEffect(() => {
 		setUpLinks();
@@ -42,7 +45,7 @@ const Invitations = () => {
 			return;
 		}
 
-		const client = await getNostrClient(selectedSource.pasteField, selectedSource.keys!) // TODO: write migration to remove type override;
+		const client = await getNostrClient({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys)
 		for (const inv of invitations.invitations) {
 			const res = await client.GetInviteLinkState({ invite_token: inv.inviteToken })
 			if (res.status === "OK" && res.used) {
@@ -70,7 +73,7 @@ const Invitations = () => {
 			return
 		}
 
-		const client = await getNostrClient(selectedSource.pasteField, selectedSource.keys);
+		const client = await getNostrClient({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys);
 		const res = await client.CreateOneTimeInviteLink({});
 		if (res.status !== "OK") {
 			dispatch(toggleLoading({ loadingMessage: "" }))
@@ -86,10 +89,10 @@ const Invitations = () => {
 	}
 
 
-
+	const nprofile = useMemo(() => selectedSource ? nip19.nprofileEncode({ pubkey: selectedSource.lpk, relays: selectedSource.relays }) : "", [selectedSource])
 
 	const reusableLink = selectedSource ? {
-		link: `${WALLET_URL}/sources?addSource=${selectedSource.pasteField}`,
+		link: `${WALLET_URL}/sources?addSource=${nprofile}`,
 		subNode: selectedSource.label,
 	} : null;
 
@@ -117,7 +120,7 @@ const Invitations = () => {
 			<div className="link-group">
 				{invitations.invitations &&
 					invitations.invitations.map(inv => {
-						const link = `${WALLET_URL}/sources?addSource=${selectedSource?.pasteField}&inviteToken=${inv.inviteToken}`
+						const link = `${WALLET_URL}/sources?addSource=${nprofile}&inviteToken=${inv.inviteToken}`
 						return (
 							<div key={inv.inviteToken} className="content">
 								<div className="text">

@@ -79,55 +79,9 @@ export const findReducerMerger = (storageKey: string): ((l: string, r: string) =
 	}
 }
 
-export const selectNostrSpends = createSelector(
-	(state: RootState) => state.spendSource,
-	(spendSource: SpendSourceState) =>
-		Object.values(spendSource.sources).filter((s) => s.pubSource && !s.disconnected)
-)
-
-export const selectConnectedNostrSpends = createSelector(
-	(state: RootState) => state.paySource,
-	(paySource: PaySourceState) =>
-		paySource.order.map(id => paySource.sources[id]).filter(source => source.pubSource && !source.disconnected)
-)
-
-export const selectEnabledSpends = createSelector(
-	(state: RootState) => state.spendSource,
-	(spendSource: SpendSourceState) =>
-		spendSource.order.map(id => spendSource.sources[id]).filter(source => !source.disabled)
-)
 
 export const selectActiveSubs = createSelector(
 	(state: RootState) => state.subscriptions,
 	(subscriptions: Subscriptions) =>
 		subscriptions.activeSubs.filter(s => s.enabled)
 )
-
-export const selectNostrPays = createSelector(
-	(state: RootState) => state.paySource,
-	(paySource: PaySourceState) =>
-		Object.values(paySource.sources).filter(s => s.pubSource)
-)
-
-
-export const selectSpendsTotalBalance = createSelector(
-	selectEnabledSpends,
-	(sources) => {
-		const result = sources.reduce((acc, source) => {
-			return (acc + parseUserInputToSats(source.balance, "sats")) as Satoshi
-		}, 0);
-		return result as Satoshi;
-	}
-)
-
-export const selectSourceById = createSelector(
-	[
-		(state: RootState) => state.spendSource.sources,
-		(state: RootState) => state.paySource.sources,
-		(_state: RootState, id: string) => id,
-	],
-	(spendSources, paySources, id): PayTo | SpendFrom => {
-
-		return spendSources[id] ?? paySources[id];
-	}
-);

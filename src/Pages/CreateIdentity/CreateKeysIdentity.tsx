@@ -27,12 +27,12 @@ import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "@/constants";
 import { chevronBackOutline, cloudUploadOutline } from "ionicons/icons";
 import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@/Components/Modals/DialogeModals";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
 import { getSourcesFromLegacyFileBackup, SourceToMigrate } from "@/State/identitiesRegistry/helpers/migrateToIdentities";
+import { setPrivateKey } from "@/State/Slices/nostrPrivateKey";
 
 const defaultRelay = utils.normalizeURL("wss://relay.lightning.pub");
 
@@ -130,7 +130,7 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 		dismissLoading();
 
 
-		localStorage.setItem(NOSTR_PRIVATE_KEY_STORAGE_KEY, "true");
+		dispatch(setPrivateKey());
 
 
 		router.push("/identity/overview", "root", "replace");
