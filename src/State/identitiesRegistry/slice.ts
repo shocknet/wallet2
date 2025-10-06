@@ -6,7 +6,7 @@ import {
 import { persistReducer } from "redux-persist";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 import { RootState } from "../store/store";
-import type { Identity } from "./types";
+import { IdentityType, type Identity } from "./types";
 
 
 
@@ -47,6 +47,12 @@ export const identitiesRegistrySlice = createSlice({
 			if (!e) return;
 			e.lastUsedAt = Date.now();
 			state.activePubkey = payload.pubkey;
+		},
+
+		updateIdentityRelays: (state, { payload }: PayloadAction<{ pubkey: string, relays: string[] }>) => {
+			const e = state.entities[payload.pubkey];
+			if (e.type === IdentityType.SANCTUM) return;
+			e.relays = payload.relays;
 		},
 
 

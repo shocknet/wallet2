@@ -1,20 +1,75 @@
-import { IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonFooter, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, IonToolbar, isPlatform, useIonRouter } from '@ionic/react';
-
+import {
+	IonButton,
+	IonButtons,
+	IonCard,
+	IonCardContent,
+	IonCardHeader,
+	IonCardTitle,
+	IonCol,
+	IonContent,
+	IonFooter,
+	IonGrid,
+	IonHeader,
+	IonIcon,
+	IonImg,
+	IonItem,
+	IonLabel,
+	IonList,
+	IonPage,
+	IonRow,
+	IonText,
+	IonToolbar,
+	useIonViewWillEnter
+} from '@ionic/react';
 import styles from "./styles/index.module.scss";
 import logo from "@/Assets/Images/isolated logo.png";
 import shockwalletText from "@/Assets/Images/wallet_new_text.png";
-
-import { cloudOutline, extensionPuzzleOutline, keyOutline } from 'ionicons/icons';
+import { cloudOutline, keyOutline } from 'ionicons/icons';
 import { RouteComponentProps } from 'react-router';
-import { Capacitor } from '@capacitor/core';
+import { useState } from 'react';
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from '@/constants';
+import { useAppSelector } from '@/State/store/hooks';
+import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
+/* import { Capacitor } from '@capacitor/core'; */
 
 
 const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
-	const hasNip07 = typeof (window as any).nostr !== "undefined";
-	const isNative = Capacitor.isNativePlatform();
+	/* 	const hasNip07 = typeof (window as any).nostr !== "undefined";
+		const isNative = Capacitor.isNativePlatform(); */
+
+	const [canLeave, setCanLeave] = useState(false);
+	const activeIdentity = useAppSelector(selectActiveIdentityId);
+
+	useIonViewWillEnter(() => {
+		const isBoostrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
+		setCanLeave(!!isBoostrapped && !!activeIdentity);
+	})
+
+
 
 	return (
 		<IonPage className="ion-page-width">
+			{
+				canLeave
+				&&
+				<IonHeader className="ion-no-border">
+					<IonToolbar>
+						<IonButtons slot="start">
+							<IonButton shape="round" routerLink="/home">
+								<IonImg
+									slot="start"
+									src={logo}
+									style={{ width: "30px", height: "auto" }}
+								>
+								</IonImg>
+							</IonButton>
+						</IonButtons>
+
+					</IonToolbar>
+
+				</IonHeader>
+			}
+
 			<IonContent className={`${styles["nodeup-ioncontent"]} ion-padding`}>
 				<IonGrid
 					className="ion-padding-top"
@@ -44,7 +99,6 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 
 
 
-					{/* Choice card */}
 					<IonRow className="ion-justify-content-center" style={{ marginTop: "4rem" }}>
 						<IonCol size="12">
 							<IonCard color="secondary" style={{ borderRadius: 12 }}>
@@ -154,12 +208,6 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 				</div>
  */}
 
-
-
-
-
-
-
 			</IonContent>
 			<IonFooter className="ion-no-border">
 				<IonToolbar>
@@ -173,8 +221,6 @@ const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponen
 
 						</IonRow>
 					</IonGrid>
-
-
 				</IonToolbar>
 			</IonFooter>
 		</IonPage>

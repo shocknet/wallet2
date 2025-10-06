@@ -8,13 +8,11 @@ const CURRENT_SCHEMA_REV = 0;
 
 // identity doc v0
 export const IdentityDocV0Schema = DocBaseSchema.safeExtend({
-	doc_type: z.literal("doc/shockwallet/identity"),
+	doc_type: z.literal("doc/shockwallet/identity_"),
 	schema_rev: z.literal(0),
 	identity_pubkey: z.string().nonempty(),
-	label: LwwSchema(z.string()),
 	favorite_source_id: LwwSchema(z.string().nullable()),
 	sources: z.array(z.string()),
-	bridge_url: LwwSchema(z.string().nullable())
 });
 export type IdentityDocV0 = z.infer<typeof IdentityDocV0Schema>;
 

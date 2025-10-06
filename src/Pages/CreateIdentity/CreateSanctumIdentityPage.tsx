@@ -1,6 +1,9 @@
 import {
 	IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-	useIonRouter
+	useIonRouter,
+	IonButtons,
+	IonBackButton,
+	IonText
 } from "@ionic/react";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY, SANCTUM_URL } from "../../constants";
 import { toast } from "react-toastify";
@@ -12,6 +15,7 @@ import { IdentitySanctum, IdentityType } from "@/State/identitiesRegistry/types"
 import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
+import { chevronBackOutline } from "ionicons/icons";
 
 
 
@@ -50,20 +54,30 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 	return (
 
 		<IonPage className="ion-page-width">
-			<IonHeader>
+			<IonHeader className="ion-no-border">
 				<IonToolbar>
-					<IonTitle>Sanctum</IonTitle>
+					<IonButtons slot="start">
+						<IonBackButton icon={chevronBackOutline} defaultHref="/identity/create"></IonBackButton>
+					</IonButtons>
+					<IonTitle>
+						<IonText className="wallet-title-text">
+							Sanctum
+						</IonText>
+					</IonTitle>
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding">
-				<SanctumBox
-					loggedIn={false}
-					successCallback={(creds) => {
-						onSubmit(creds.accessToken)
-					}}
-					errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
-					sanctumUrl={SANCTUM_URL}
-				/>
+				<div style={{ height: "100%", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+					<SanctumBox
+						loggedIn={false}
+						successCallback={(creds) => {
+							onSubmit(creds.accessToken)
+						}}
+						errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
+						sanctumUrl={SANCTUM_URL}
+					/>
+				</div>
+
 			</IonContent>
 		</IonPage>
 

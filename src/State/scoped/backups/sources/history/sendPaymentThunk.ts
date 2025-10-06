@@ -114,11 +114,11 @@ export const sendPaymentThunk = (
 						invoice = pr;
 					}
 					const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse");
-					const classification = identifyBitcoinInput(invoice);
+					const { classification, value } = identifyBitcoinInput(invoice);
 					if (classification !== InputClassification.LN_INVOICE) {
 						throw new Error("Invalid invoice from Lnurl/Ln address");
 					}
-					parsedInvoice = await parseBitcoinInput(invoice, classification) as ParsedInvoiceInput;
+					parsedInvoice = await parseBitcoinInput(value, classification) as ParsedInvoiceInput;
 				} catch (err) {
 					showToast({
 						message: `Could not get an invoice from ${parsedInput.type}`,
@@ -166,11 +166,11 @@ export const sendPaymentThunk = (
 							return invoice;
 						}
 						const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse");
-						const classification = identifyBitcoinInput(invoice);
+						const { classification, value } = identifyBitcoinInput(invoice);
 						if (classification !== InputClassification.LN_INVOICE) {
 							throw new Error("Invalid invoice from noffer");
 						}
-						parsedInvoice = await parseBitcoinInput(invoice, classification) as ParsedInvoiceInput;
+						parsedInvoice = await parseBitcoinInput(value, classification) as ParsedInvoiceInput;
 
 
 					} catch (err) {

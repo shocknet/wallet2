@@ -87,7 +87,7 @@ export async function processRemoteDoc(doc: unknown, dispatch: AppThunkDispatch)
 	const result = DocBaseSchema.safeParse(doc);
 	if (!result.success) return null;
 
-	if (result.data.doc_type === "doc/shockwallet/identity") {
+	if (result.data.doc_type === "doc/shockwallet/identity_") {
 		return processRemoteIdentityDoc(result.data, dispatch)
 	} else {
 		return processRemoteSourceDoc(result.data, dispatch)

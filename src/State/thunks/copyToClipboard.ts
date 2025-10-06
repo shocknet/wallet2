@@ -4,20 +4,23 @@ import { AppDispatch } from "../store/store";
 import { ShowToast } from "@/lib/contexts/useToast";
 import { Clipboard } from "@capacitor/clipboard";
 
-export const copyToClipboard = (text: string, showToast: ShowToast, save = true, morph = false) => async (dispatch: AppDispatch) => {
+export const copyToClipboard = (text: string, showToast?: ShowToast, save = true, morph = false) => async (dispatch: AppDispatch) => {
 	try {
 		await Clipboard.write({ string: text });
 	} catch (err) {
 		console.error("Error copying to clipboard", err);
-		showToast({
-			message: "Error copying to clipboard",
-			duration: 1500,
-			position: "bottom",
-			color: "danger",
-		});
+		if (showToast) {
+
+			showToast({
+				message: "Error copying to clipboard",
+				duration: 1500,
+				position: "bottom",
+				color: "danger",
+			});
+		}
 		return;
 	}
-	if (!morph) {
+	if (!morph && showToast) {
 		showToast({
 			message: "Copied to clipboard",
 			duration: 1500,

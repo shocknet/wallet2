@@ -187,11 +187,11 @@ const useWatchClipboard = () => {
 			return;
 		}
 
-		const classification = identifyBitcoinInput(text);
+		const { classification, value } = identifyBitcoinInput(text);
 
 		if (
-			!text.length ||
-			(savedAssets || []).includes(text) ||
+			!value.length ||
+			(savedAssets || []).includes(value) ||
 			clipboardAlertShown.current ||
 			classification === InputClassification.UNKNOWN
 		) {
@@ -202,9 +202,9 @@ const useWatchClipboard = () => {
 
 		const clipboardAlertHandler = async () => {
 			try {
-				const parsed = await parseBitcoinInput(text, classification);
+				const parsed = await parseBitcoinInput(value, classification);
 				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-					const legacyParsedLnurlW = await legacyParseBitcoinInput(text);
+					const legacyParsedLnurlW = await legacyParseBitcoinInput(value);
 					history.push({
 						pathname: "/sources",
 						state: legacyParsedLnurlW
@@ -233,9 +233,9 @@ const useWatchClipboard = () => {
 		showAlert({
 			header: "Clipboard Detected",
 			subHeader: "Do you want to use the content from your clipboard?",
-			message: truncateTextMiddle(text, 20),
+			message: truncateTextMiddle(value, 20),
 			onWillDismiss: () => {
-				dispatch(addAsset({ asset: text }));
+				dispatch(addAsset({ asset: value }));
 				clipboardAlertShown.current = false;
 			},
 			buttons: [

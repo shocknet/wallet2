@@ -116,6 +116,9 @@ http://ionicframework.com/docs/theming/ */
 
 	--wallet-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06),
 		0 4px 12px -2px rgba(0, 0, 0, 0.08);
+	--wallet-box-shadow-strong:
+		0 10px 20px 0 rgba(0, 0, 0, 0.16),
+		0 28px 48px -8px rgba(0, 0, 0, 0.24);
 	--ion-padding: 14px;
 	--ion-margin: 14px;
 }
@@ -328,14 +331,24 @@ ion-alert {
 }
 
 ion-modal.dialog-modal {
-	--width: fit-content;
+	--width: auto;
 	--min-width: 250px;
-	--max-width: 500px;
-	--height: fit-content;
-	--border-radius: 18px;
-	--box-shadow: 0 0 0 2px var(--ion-text-color-step-300);
+	--max-width: 280px;
+	--max-height: 90%;
+	--height: auto;
+	--min-height: auto;
+	--border-radius: 12px;
+	--box-shadow: var(--wallet-box-shadow);
+	-webkit-font-smoothing: antialiased;
+	content: contain;
 }
 
+@media screen and (min-width: 768px) {
+	ion-modal.dialog-modal {
+		--max-width: min(100vw - 96px, 560px);
+		--max-height: min(100vh - 96px, 560px);
+	}
+}
 
 ion-modal.dialog-modal .wrapper {
 	background-color: var(--ion-color-secondary);
@@ -361,7 +374,7 @@ ion-modal.dialog-modal .wrapper {
 
 
 ion-popover ion-content {
-	--background: var(--ion-color-secondary);
+	--background: var(--ion-color-tertiary);
 }
 
 ion-range::part(pin) {
@@ -520,9 +533,7 @@ ion-back-button::part(text) {
 
 
 ion-item.card-item {
-	--inner-padding-start: 8px;
-	--inner-padding-bottom: 0px;
-	--inner-padding-end: 0px;
+
 
 
 	border-radius: 12px;
@@ -537,10 +548,10 @@ ion-item.card-item {
 .code-string {
 	font-size: 0.9rem;
 	color: var(--ion-text-color-step-400);
-	white-space: 'pre-wrap';
-	word-break: 'break-all';
+	white-space: pre-wrap;
+	word-break: break-all;
 
-	font-family: 'monospace';
+	font-family: monospace;
 	padding: '8px';
 	margin: 0;
 }
@@ -548,4 +559,32 @@ ion-item.card-item {
 ion-back-button::part(icon) {
 	color: var(--ion-text-color-step-250);
 	font-size: 1.2rem;
+}
+
+
+ion-popover.hinty-popover {
+	--box-shadow: var(--wallet-box-shadow-strong);
+	--color: var(--ion-text-color-step-200);
+	--width: fit-content;
+}
+
+.ellipse-two-lines {
+
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+ion-popover.custom-dropdown-popover {
+	--width: min(100vw - 96px, 350px);
+	--border-radius: 12px;
+	--box-shadow: var(--wallet-box-shadow);
+	-webkit-font-smoothing: antialiased;
+}
+
+@media screen and (min-width: 768px) {
+	ion-popover.custom-dropdown-popover {
+		--width: min(100vw - 96px, 500px);
+	}
 }

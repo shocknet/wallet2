@@ -160,3 +160,24 @@ export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSecond
     const data = JSON.parse(event.content) as { type: 'service', name: string }
     return { createdAt: event.created_at, data }
 }
+
+
+export type BeaconDiscoveryResult = {
+    stale: boolean;
+    name: string;
+} | null
+
+export const fetchBeaconDiscovery = async (pubkey: string, relays: string[], maxAgeSeconds: number): Promise<BeaconDiscoveryResult> => {
+    const event = await getNip78Event(pubkey, relays, pubServiceTag)
+    if (!event) {
+        return null
+    }
+
+    const data = JSON.parse(event.content) as { type: 'service', name: string }
+
+    return {
+        stale: event.created_at + maxAgeSeconds < Math.floor(Date.now() / 1000),
+        name: data.name
+    }
+
+}

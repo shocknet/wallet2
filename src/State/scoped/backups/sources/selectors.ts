@@ -42,7 +42,7 @@ export const selectSourceMetadata = createSelector(
 export type SourceViewBase = {
 	sourceId: string;
 	type: SourceType;
-	label: string;
+	label: string | null;
 };
 
 export type NprofileView = SourceViewBase & {
@@ -53,13 +53,15 @@ export type NprofileView = SourceViewBase & {
 	balanceSats?: Satoshi;
 	maxWithdrawableSats?: Satoshi;
 	lpk: string;
-	keys: NostrKeyPair
+	keys: NostrKeyPair;
+	bridgeUrl: string | null;
+	isNDebitDiscoverable: boolean;
 };
 
 export type LnAddrView = SourceViewBase & { type: SourceType.LIGHTNING_ADDRESS_SOURCE };
-export type LnurlPayView = SourceViewBase & { type: SourceType.LNURL_P_SOURCE };
 
-export type SourceView = NprofileView | LnAddrView | LnurlPayView;
+
+export type SourceView = NprofileView | LnAddrView;
 
 const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 	relays ? Object.keys(relays).filter(u => relays[u]?.present) : [];
@@ -102,7 +104,9 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 				lpk: d.lpk,
 				keys: d.keys,
 				maxWithdrawableSats,
+				isNDebitDiscoverable: d.is_ndebit_discoverable.value,
 				relays,
+				bridgeUrl: d.bridgeUrl.value,
 				beaconStale,
 				balanceSats,
 				beaconName
@@ -110,8 +114,6 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 		}
 		case SourceType.LIGHTNING_ADDRESS_SOURCE:
 			return { ...base, type: SourceType.LIGHTNING_ADDRESS_SOURCE };
-		case SourceType.LNURL_P_SOURCE:
-			return { ...base, type: SourceType.LNURL_P_SOURCE };
 	}
 }
 

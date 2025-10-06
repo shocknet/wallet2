@@ -1,291 +1,284 @@
-// IdentityOverviewPage.tsx
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
-	IonAvatar, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonGrid,
-	IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonModal,
-	IonNote, IonPage, IonRow, IonSkeletonText, IonText, IonTitle, IonToolbar,
-	IonInput, useIonRouter,
+	IonAvatar,
+	IonButton,
+	IonButtons,
+	IonCol,
+	IonContent,
+	IonGrid,
+	IonHeader,
+	IonIcon,
+	IonItem,
+	IonLabel,
+	IonList,
+	IonListHeader,
+	IonModal,
+	IonPage,
+	IonRow,
+	IonSkeletonText,
+	IonText,
+	IonTitle,
+	IonToolbar,
+
 	IonCard,
 	IonCardHeader,
 	IonCardTitle,
-	IonCardContent
+	IonCardContent,
+	IonFooter
 } from "@ionic/react";
-import { checkmarkCircle, chevronForward, cloudUploadOutline, copyOutline, createOutline, globeOutline, keyOutline, linkOutline, peopleOutline, starOutline } from "ionicons/icons";
-import { useHistory, useLocation } from "react-router";
+import { chevronForward, closeOutline, keyOutline, peopleOutline, starOutline } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectActiveIdentity, selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
-import { identityActions, selectIdentityDraft, selectIsIdentityDirty } from "@/State/scoped/backups/identity/slice";
-import CardishList from "@/Components/CardishList";
-import BackToolbar from "@/Layout2/BackToolbar";
+import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import { selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 import { useGetProfileQuery } from "@/State/api/api";
 import { nip19 } from "nostr-tools";
-import { Browser } from "@capacitor/browser";
-import { selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
-import SourceCard from "@/Components/SourceCard";
-import { EditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
-import AddSourceNavModal from "@/Components/Modals/Sources/AddSourceModal";
+import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import CopyMorphButton from "@/Components/CopyMorphButton";
+import { RelayManager } from "@/Components/RelayManager";
+import { IdentityType } from "@/State/identitiesRegistry/types";
+import styles from "./styles/index.module.scss";
+import { truncateTextMiddle } from "@/lib/format";
+import HomeHeader from "@/Layout2/HomeHeader";
+import { RouteComponentProps } from "react-router-dom";
+
+const sameSet = (a: string[], b: string[]) => {
+	if (a.length === 0 && b.length === 0) return true;
+	const A = new Set(a);
+	const B = new Set(b);
+	if (A.size !== B.size) return false;
+	for (const x of A) if (!B.has(x)) return false;
+	return true;
+};
 
 
-// tiny in-file helpers to avoid extra CSS
-const Row = ({ left, right, skeletonWidth }: { left: React.ReactNode; right?: React.ReactNode; skeletonWidth?: number }) => (
-	<IonItem lines="full">
-		<div style={{ width: "100%", display: "flex", justifyContent: "space-between", gap: 12 }}>
-			<IonText className="text-medium text-weight-high">{left}</IonText>
-			{right ?? (skeletonWidth ? <IonSkeletonText animated style={{ width: skeletonWidth, height: 14 }} /> : <IonText>—</IonText>)}
-		</div>
-	</IonItem>
-);
-
-const IdentityOverviewPage: React.FC = () => {
-	const router = useIonRouter();
+const IdentityOverviewPage = (props: RouteComponentProps) => {
 	const dispatch = useAppDispatch();
-	const history = useHistory();
-	const location = useLocation<{ from?: "created" } | undefined>();
-	const sources = useAppSelector(selectSourceViews);
 
-	// protected route: these exist
 	const registry = useAppSelector(selectActiveIdentity)!;
 	const idDoc = useAppSelector(selectIdentityDraft)!;
-	const isDirty = useAppSelector(selectIsIdentityDirty);
+	const sourceViews = useAppSelector(selectSourceViews, (prev, next) => prev.length === next.length);
 
-	// reflect external changes
-	const [label, setLabel] = useState(idDoc.label.value ?? "");
-	const [bridgeUrl, setBridgeUrl] = useState(idDoc.bridge_url.value ?? "");
-	useEffect(() => setLabel(idDoc.label.value ?? ""), [idDoc.label.value]);
-	useEffect(() => setBridgeUrl(idDoc.bridge_url.value ?? ""), [idDoc.bridge_url.value]);
 
-	// nostr kind:0 (read-only)
-	const activeHex = useAppSelector(selectActiveIdentityId);
-	const { data: profile, isLoading } = useGetProfileQuery(activeHex!, { skip: !activeHex });
+	const activeHex = registry.pubkey;
+
+
+	const { data: profile, isLoading } = useGetProfileQuery({
+		pubkey: activeHex!,
+		relays: registry.type !== IdentityType.SANCTUM ? registry.relays : ["wss//:strfry.shock.network", "wss://relay.lightning.pub"]
+	},
+		{ skip: !activeHex }
+	);
 
 	const displayName = useMemo(
-		() => profile?.display_name || profile?.name || idDoc.label.value || "Anonymous",
-		[profile?.display_name, profile?.name, idDoc.label.value]
+		() => profile?.display_name || profile?.name || "Anonymous",
+		[profile]
 	);
 	const picture = profile?.picture || (activeHex ? `https://robohash.org/${activeHex}.png?bgset=bg1` : "");
 	const nip05 = profile?.nip05;
-	const npub = useMemo(() => (activeHex ? nip19.npubEncode(activeHex) : ""), [activeHex]);
-	const openFullProfile = async () => {
-		if (!npub) return;
-		const nostrUri = `nostr:${npub}`;                 // NIP-21 deep link
-		const webUrl = `https://iris.to/${npub}`;       // friendly web fallback
+	const npub = nip19.npubEncode(activeHex);
 
-		// Try deep link first; if it fails, fall back to web
-		try {
-			await Browser.open({ url: nostrUri });
-		} catch {
-			await Browser.open({ url: webUrl });
-		}
+	const _openFullProfile = async () => {
+		/* TODO: link to bxrd */
 	};
 
-	const copy = (text: string) => navigator.clipboard?.writeText(text).catch(() => { });
-
-
-	// “Continue” CTA after creation
-	const cameFromCreate = location.state?.from === "created";
-	const onContinue = () => {
-		history.replace({ pathname: "/identity/overview", state: undefined });
-		history.push("/home");
-	};
 
 	// edit modal for local doc
 	const [editOpen, setEditOpen] = useState(false);
-	const onSaveLocal = () => {
-		if (label !== idDoc.label.value) {
-			dispatch(identityActions.updateIdentityLabel({ label, by: "device" }));
-		}
-		const nextBridge = bridgeUrl.trim() || null;
-		if (nextBridge !== (idDoc.bridge_url.value ?? null)) {
-			dispatch(identityActions.setBridgeUrl({ url: nextBridge, by: "device" }));
-		}
-		setEditOpen(false);
-	};
 
-	const [selectedSource, setSelectedSource] = useState<SourceView | null>(null);
-	const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
-
-	const onAddClose = useCallback(() => {
-		setIsAddSourceOpen(false)
-	}, []);
+	const [isEditingRelays, setIsEditingRelays] = useState(false);
 
 
-	const img = profile?.picture;
+
+	const [relays, setRelays] = useState(
+		registry.type !== IdentityType.SANCTUM
+			? registry.relays
+			: []
+	);
+
+	const updateRelays = () => {
+		dispatch(identitiesRegistryActions.updateIdentityRelays({ pubkey: activeHex, relays: relays }))
+	}
+
+
+	const relaysDirty = useMemo(() => {
+		if (registry.type === IdentityType.SANCTUM) return false;
+
+		return !sameSet(registry.relays, relays)
+
+	}, [registry, relays]);
+
+
 
 	return (
 		<IonPage className="ion-page-width">
-			<IonHeader className="ion-no-border">
-				<BackToolbar title="" />
-				{/* <IonToolbar>
-					<IonTitle className="android-centered-title">User Profile</IonTitle>
-					<IonButtons slot="end">
-						<IonBadge color={isDirty ? "warning" : "success"} style={{ marginLeft: 8 }}>
-							<IonIcon icon={isDirty ? cloudUploadOutline : checkmarkCircle} className="ion-margin-end" />
-							{isDirty ? "pending publish…" : "synced"}
-						</IonBadge>
-					</IonButtons>
-				</IonToolbar> */}
-				<IonToolbar className="big-toolbar">
-					<IonTitle className="android-centered-title">User Profile</IonTitle>
-				</IonToolbar>
-			</IonHeader>
+			<HomeHeader {...props}>
+			</HomeHeader>
 
 			<IonContent className="ion-padding">
-				<IonGrid className="ion-padding">
-					<IonRow>
+				<IonGrid>
+					<IonRow className="ion-justify-content-center">
 						<IonCol size="auto">
-							<div style={{ width: 96 }}>
+							<IonAvatar aria-hidden="true" style={{ width: 96, height: 96 }}>
 								{isLoading ? (
 									<IonSkeletonText animated style={{ width: 96, height: 96, borderRadius: "50%" }} />
 								) : (
 									<img
-										src={img || `https://robohash.org/${activeHex}.png?bgset=bg1`}
-										alt={displayName}
-										style={{ width: "96px", height: "96px", display: "block", objectFit: "cover", borderRadius: "50%" }}
+										src={picture}
+										alt=""
 										referrerPolicy="no-referrer"
 										onError={(e) => {
 											const el = e.currentTarget as HTMLImageElement;
-											if (!el.dataset.fallback) {
-												el.dataset.fallback = "1";
+											if (!/robohash/.test(el.src) && activeHex) {
 												el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
 											}
 										}}
+										style={{ width: 96, height: 96, objectFit: "cover", borderRadius: "50%" }}
 									/>
 								)}
-
+							</IonAvatar>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="auto">
+							<div style={{ marginTop: 4 }}>
+								{isLoading ? (
+									<IonSkeletonText animated style={{ width: 160, height: 18 }} />
+								) : (
+									<h2 className="text-weight-high text-lg">{displayName}</h2>
+								)}
 							</div>
 						</IonCol>
-						<IonCol>
-							{isLoading ? (
-								<IonSkeletonText animated style={{ width: 160, height: 18 }} />
-							) : (
-								<h2 className="text-weight-high text-lg">{displayName}</h2>
-							)}
-						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="auto">
+							{nip05 && !isLoading && <IonText className="text-high" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nip05}</IonText>}
 
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center ion-align-items-center">
+						<IonCol size="auto">
+
+
+							<IonText className="text-medium text-weight-medium ion-text-justify code-string" >{truncateTextMiddle(npub, 14, 14)}</IonText>
+
+
+
+
+						</IonCol>
+						<IonCol size="auto">
+							<CopyMorphButton value={npub} fill="clear" />
+						</IonCol>
 					</IonRow>
 				</IonGrid>
-				{/* Profile Hero (Nostr kind:0, read-only if present) */}
-				{/* 				{(isLoading || profile) && (
-					<div className="profile-hero" style={{ display: "grid", justifyItems: "center", gap: 6, margin: "8px 0 16px", textAlign: "center" }}>
-						<IonAvatar className="hero-avatar" aria-hidden="true" style={{ width: 96, height: 96 }}>
-							{isLoading ? (
-								<IonSkeletonText animated style={{ width: 96, height: 96, borderRadius: "50%" }} />
-							) : (
-								<img
-									src={picture}
-									alt=""
-									referrerPolicy="no-referrer"
-									onError={(e) => {
-										const el = e.currentTarget as HTMLImageElement;
-										if (!/robohash/.test(el.src) && activeHex) {
-											el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
-										}
-									}}
-									style={{ width: 96, height: 96, objectFit: "cover", borderRadius: "50%" }}
-								/>
-							)}
-						</IonAvatar>
-
-						<div className="hero-name" style={{ marginTop: 4 }}>
-							{isLoading ? (
-								<IonSkeletonText animated style={{ width: 160, height: 18 }} />
-							) : (
-								<h2 className="text-weight-high text-lg">{displayName}</h2>
-							)}
-						</div>
-
-						<div className="hero-lines" style={{ display: "grid", gap: 2, maxWidth: "100%" }}>
-							{nip05 && !isLoading && <IonText className="text-medium" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nip05}</IonText>}
-							{!!npub && (
-								<div className="hero-row" style={{ display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
-									<IonText className="text-medium" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{npub}</IonText>
-									<IonButton size="small" fill="clear" onClick={() => copy(npub)} aria-label="Copy npub">
-										<IonIcon icon={copyOutline} />
-									</IonButton>
-								</div>
-							)}
-						</div>
-
-						<div className="hero-actions" style={{ display: "flex", gap: 8, marginTop: 8 }}>
-							<IonButton size="small" color="primary" onClick={() => setEditOpen(true)}>
-								<IonIcon icon={createOutline} className="ion-margin-end" />
-								Edit Local Info
-							</IonButton>
-
-							{!!npub && (
-								<IonButton size="small" color="tertiary" onClick={openFullProfile}>
-									View Full Profile
-								</IonButton>
-							)}
-						</div>
-					</div>
-				)} */}
 				<div style={{ marginTop: "2rem" }}>
-
 					<IdentityStatGrid
-
-						sourcesCount={3}
-						bridgeUrl={idDoc.bridge_url.value}
+						sourcesCount={sourceViews.length}
 						pubkeyHex={registry.pubkey}
 						favoriteSourceId={idDoc.favorite_source_id.value}
+						relaysCount={registry.type !== IdentityType.SANCTUM ? registry.relays.length : undefined}
+						onClickRelays={() => setEditOpen(true)}
 					/>
 				</div>
-				<IonList>
-					{
-						sources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSource(s)} />)
-					}
-				</IonList>
 
-				<EditSourceModal
-					source={selectedSource}
-					onClose={() => setSelectedSource(null)}
-					onDelete={() => console.log("delete here")}
-					onSave={() => console.log("onSave")}
-					open={!!selectedSource}
-				/>
-				<IonButton onClick={() => setIsAddSourceOpen(true)}>add</IonButton>
-
-				<AddSourceNavModal open={isAddSourceOpen} onClose={onAddClose} />
-
-
-
-
-
-
-
-				{/* Edit modal (local doc only) */}
-				<IonModal isOpen={editOpen} onDidDismiss={() => setEditOpen(false)}>
+				<IonModal className="wallet-modal" isOpen={editOpen} onDidDismiss={() => setEditOpen(false)}>
 					<IonHeader>
 						<IonToolbar>
-							<IonTitle>Edit Local Info</IonTitle>
+
+							<IonTitle>
+								<span className="text-medium">
+
+									Edit Identity
+								</span>
+							</IonTitle>
 							<IonButtons slot="end">
-								<IonButton onClick={() => setEditOpen(false)}>Close</IonButton>
+								<IonButton onClick={() => setEditOpen(false)}><IonIcon icon={closeOutline} /></IonButton>
 							</IonButtons>
 						</IonToolbar>
 					</IonHeader>
 					<IonContent className="ion-padding">
-						<IonList lines="full">
-							<IonListHeader><IonLabel><strong>Local fields</strong></IonLabel></IonListHeader>
-							<IonItem>
-								<IonLabel position="stacked">Label</IonLabel>
-								<IonInput value={label} onIonChange={(e) => setLabel(e.detail.value ?? "")} />
-							</IonItem>
-							<IonItem>
-								<IonLabel position="stacked">Bridge URL</IonLabel>
-								<IonInput inputmode="url" value={bridgeUrl} onIonChange={(e) => setBridgeUrl(e.detail.value ?? "")} />
-							</IonItem>
-							<IonItem lines="none" className="ion-margin-top">
-								<IonButton expand="block" onClick={onSaveLocal}>Save</IonButton>
-							</IonItem>
-						</IonList>
+
+						{
+							registry.type !== IdentityType.SANCTUM
+							&&
+							<IonList
+
+								lines="none"
+								style={{ borderRadius: "12px", marginTop: "0.5rem" }}
+
+							>
+
+								<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+									<IonLabel >Relays</IonLabel>
+									{
+										isEditingRelays
+											?
+											<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
+												<IonIcon icon={closeOutline} slot="icon-only" />
+											</IonButton>
+											:
+											<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
+												Edit
+											</IonButton>
+									}
+								</IonListHeader>
+								{
+									isEditingRelays
+										? (
+											<>
+												<RelayManager relays={relays} setRelays={setRelays} />
+											</>
+										)
+										: relays.map(r => (
+											<IonItem key={r}>
+												<IonText className="text-medium text-weight-medium" style={{ textDecoration: "underline" }}>
+													{r}
+												</IonText>
+											</IonItem>
+										))
+								}
+							</IonList>
+						}
+
 					</IonContent>
+					<IonFooter className="ion-no-border">
+						<IonToolbar color="secondary">
+							<IonButtons slot="end">
+
+								<IonButton color="primary" disabled={!relaysDirty} onClick={updateRelays}>
+									Save Changes
+								</IonButton>
+
+							</IonButtons>
+
+						</IonToolbar>
+					</IonFooter>
 				</IonModal>
 
 			</IonContent>
+			<IonFooter className="ion-no-border">
+				<IonGrid style={{ paddingBottom: "0.9rem" }}>
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="auto">
+							<IonText className="text-medium text-weight-high">
+								{getIdentityTypeText(registry.type)}
+							</IonText>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-center ion-margin-top">
+						<IonCol size="auto">
+							<IonButton color="danger">
+								<IonText className="text-high">
+									Logout
+								</IonText>
+							</IonButton>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+
+			</IonFooter>
 		</IonPage>
 	);
-};
+}
 
 export default IdentityOverviewPage;
 
@@ -294,6 +287,8 @@ type IdentityStatsProps = {
 	bridgeUrl?: string | null;
 	pubkeyHex: string;
 	favoriteSourceId?: string | null;
+	relaysCount?: number;
+	onClickRelays: () => void;
 };
 
 const tileStyle: React.CSSProperties = { height: "100%", borderRadius: 12 };
@@ -301,25 +296,22 @@ const tileStyle: React.CSSProperties = { height: "100%", borderRadius: 12 };
 
 export function IdentityStatGrid({
 	sourcesCount,
-	bridgeUrl,
 	pubkeyHex,
 	favoriteSourceId,
+	relaysCount,
+	onClickRelays
 }: IdentityStatsProps) {
-	const openUrl = async (u?: string | null) => {
-		if (!u) return;
-		const url = u.startsWith("http") ? u : `https://${u}`;
-		try { await Browser.open({ url }); } catch { }
-	};
-	const copy = (t: string) => navigator.clipboard?.writeText(t).catch(() => { });
+
+
 
 	const trunc = (t: string, n = 26) => (t.length > n ? t.slice(0, n - 3) + "…" : t);
 
 	return (
 		<IonGrid className="ion-no-padding" style={{ marginTop: 12 }}>
-			<IonRow style={{ gap: 12 }}>
-				{/* Sources */}
-				<IonCol size="auto">
-					<IonCard button routerLink="" color="secondary" style={tileStyle} className="wallet-box-shadow">
+			<IonRow className="ion-text-wrap ion-justify-content-center" style={{ gap: "0.6rem" }}>
+
+				<IonCol size="auto" className={styles["stats-grid-card"]}>
+					<IonCard button routerLink="/sources" color="secondary" style={tileStyle} className="wallet-box-shadow">
 						<IonCardHeader>
 							<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
 								<IonIcon icon={peopleOutline} />
@@ -337,33 +329,7 @@ export function IdentityStatGrid({
 					</IonCard>
 				</IonCol>
 
-				{/* Bridge URL (optional) */}
-				{bridgeUrl && (
-					<IonCol  >
-						<IonCard color="secondary" style={tileStyle} className="wallet-box-shadow secondary">
-							<IonCardHeader>
-								<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
-									<IonIcon icon={globeOutline} />
-									Bridge URL
-								</IonCardTitle>
-							</IonCardHeader>
-							<IonCardContent style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-								<IonText className="truncate" style={{ maxWidth: "70%" }}>{trunc(bridgeUrl)}</IonText>
-								<div style={{ display: "flex", gap: 4 }}>
-									<IonButton size="small" fill="clear" onClick={() => openUrl(bridgeUrl)}>
-										<IonIcon icon={linkOutline} />
-									</IonButton>
-									<IonButton size="small" fill="clear" onClick={() => copy(bridgeUrl)}>
-										<IonIcon icon={copyOutline} />
-									</IonButton>
-								</div>
-							</IonCardContent>
-						</IonCard>
-					</IonCol>
-				)}
-
-				{/* Pubkey */}
-				<IonCol  >
+				<IonCol size="auto" className={styles["stats-grid-card"]}>
 					<IonCard color="secondary" style={tileStyle} className="wallet-box-shadow secondary">
 						<IonCardHeader>
 							<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -380,10 +346,8 @@ export function IdentityStatGrid({
 						</IonCardContent>
 					</IonCard>
 				</IonCol>
-
-				{/* Favorite source (optional) */}
 				{favoriteSourceId && (
-					<IonCol size="12" sizeMd="6" sizeLg="3" >
+					<IonCol size="auto" className={styles["stats-grid-card"]}>
 						<IonCard color="secondary" style={tileStyle} className="wallet-box-shadow secondary">
 							<IonCardHeader>
 								<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -392,15 +356,49 @@ export function IdentityStatGrid({
 								</IonCardTitle>
 							</IonCardHeader>
 							<IonCardContent style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-								<IonText className="truncate" style={{ maxWidth: "75%" }}>{trunc(favoriteSourceId)}</IonText>
-								<IonButton size="small" fill="clear" onClick={() => copy(String(favoriteSourceId))}>
-									<IonIcon icon={copyOutline} />
-								</IonButton>
+								<IonText className="truncate code-string" style={{ maxWidth: "70%" }}>
+									{trunc(favoriteSourceId, 34)}
+								</IonText>
+								<CopyMorphButton fill="clear" size="small" value={pubkeyHex} />
 							</IonCardContent>
 						</IonCard>
 					</IonCol>
 				)}
+				{relaysCount !== undefined && (
+					<IonCol size="auto" className={styles["stats-grid-card"]}>
+						<IonCard button onClick={onClickRelays} color="secondary" style={tileStyle} className="wallet-box-shadow">
+							<IonCardHeader>
+								<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
+									<IonIcon icon={peopleOutline} />
+									Relays
+									<IonIcon icon={chevronForward} />
+								</IonCardTitle>
+							</IonCardHeader>
+							<IonCardContent>
+								<div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "center" }}>
+
+									<IonText className="text-weight-high text-lg">{relaysCount}</IonText>
+									<IonText className="text-medium text-low">configured</IonText>
+								</div>
+							</IonCardContent>
+						</IonCard>
+					</IonCol>
+				)}
+
+
 			</IonRow>
 		</IonGrid>
 	);
+}
+
+
+const getIdentityTypeText = (type: IdentityType) => {
+	switch (type) {
+		case IdentityType.LOCAL_KEY:
+			return "Local key"
+		case IdentityType.NIP07:
+			return "Nip07/browser extension"
+		default:
+			return "Email"
+	}
 }

@@ -13,13 +13,13 @@ export const useAppUrlListener = () => {
 	const parseDeepLink = useCallback(async (input: string) => {
 		try {
 			const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse")
-			const classification = identifyBitcoinInput(input);
+			const { classification, value } = identifyBitcoinInput(input);
 			if (classification === InputClassification.UNKNOWN) {
 				showToast({ message: "Unknown input", color: "danger" });
 				return;
 			}
 
-			const parsed = await parseBitcoinInput(input, classification);
+			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
 				const legacyParsedLnurlW = await legacyParseBitcoinInput(input);
 				history.push({

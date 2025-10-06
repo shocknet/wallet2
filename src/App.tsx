@@ -55,6 +55,7 @@ const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateK
 const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
 const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
 const IdentitiesPage = lazy(() => import("./Pages/Identities"));
+const SourcesPage = lazy(() => import("./Pages/Sources"));
 
 /* const NodeUp = lazy(() => import('./Pages/NodeUp'));
 const Loader = lazy(() => import('./Pages/Loader'));
@@ -226,6 +227,20 @@ const AppContent: React.FC = () => {
 							<IdentityGate>
 								<Suspense fallback={<FullSpinner />}>
 									<Home {...props} />
+								</Suspense>
+							</IdentityGate>
+						</NodeupGate>
+					}
+				/>
+
+				<Route
+					exact
+					path="/sources"
+					render={(props) =>
+						<NodeupGate>
+							<IdentityGate>
+								<Suspense fallback={<FullSpinner />}>
+									<SourcesPage {...props} />
 								</Suspense>
 							</IdentityGate>
 						</NodeupGate>

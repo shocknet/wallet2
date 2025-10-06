@@ -1,20 +1,52 @@
-import { IonButton, IonButtons, IonCol, IonGrid, IonHeader, IonIcon, IonInput, IonRow, IonText, IonTitle, IonToolbar } from "@ionic/react";
-
-
-import { checkmark, closeOutline, copyOutline } from "ionicons/icons";
+import {
+	IonButton,
+	IonButtons,
+	IonCol,
+	IonGrid,
+	IonHeader,
+	IonIcon,
+	IonInput,
+	IonRow,
+	IonText,
+	IonTitle,
+	IonToolbar
+} from "@ionic/react";
+import { checkmark, closeOutline, } from "ionicons/icons";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import CopyMorphButton from "@/Components/CopyMorphButton";
 
 
-export const BackupKeysDialog = ({ dismiss }: { dismiss: (data: undefined, role: "cancel" | "file" | "done") => void }) => {
+
+
+export const BackupKeysDialog = (
+	{ dismiss, privKey }:
+		{
+			dismiss: (data: undefined, role: "cancel" | "file" | "confirm") => void,
+			privKey: string
+		}
+) => {
+
+	const recoveryInputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		if (recoveryInputRef.current) {
+			recoveryInputRef.current.value = privKey;
+			const event = new Event('input', { bubbles: true });
+			recoveryInputRef.current.dispatchEvent(event);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [privKey])
+
+
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar >
+				<IonToolbar color="secondary">
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
-							Dialog header
+						<IonText className="text-high text-lg text-weight-high">
+							Backup Keys
 						</IonText>
 					</IonTitle>
 					<IonButtons slot="end">
@@ -24,33 +56,135 @@ export const BackupKeysDialog = ({ dismiss }: { dismiss: (data: undefined, role:
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-low ion-text-wrap">
+				<IonText className="text-medium ion-text-wrap">
 					Save this key to your preferred password manager, you may use it to log in and sync across devices, or recover your node connections and settings if you get logged out.
 				</IonText>
-				<IonGrid style={{ margin: 0 }} >
-					<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
-						<IonCol style={{ flex: 1 }}>
-							<IonInput
-								fill="outline"
-								className={styles["password-input"]}
-								type="password"
-							></IonInput>
-						</IonCol>
-						<IonCol style={{ flex: 0 }}>
-							<IonButton fill="clear">
-								<IonIcon icon={copyOutline} />
-							</IonButton>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
+
+
+				<IonGrid style={{ margin: 0 }}>
+					<form
+						id="backup"
+						method="post"
+						onSubmit={(e) => e.preventDefault()}
+					>
+						<label
+							htmlFor="pm-username"
+							style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}
+						>
+							Username
+						</label>
+
+
+						<input
+							id="shockwallet-pubkey-p-m"
+							name="nostr-private-key"
+							autoComplete="username"
+							type="text"
+							defaultValue="nostr-private-key"
+							style={{ display: "none" }}
+						/>
+						<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
+							<IonCol style={{ flex: 1 }}>
+								<IonInput
+									fill="solid"
+									autocomplete="new-password"
+									className={classNames(styles["password-input"], "filled-input")}
+									type="password"
+									readonly
+									value={privKey}
+								/>
+
+
+								<input
+									ref={recoveryInputRef}
+									id="shockwallet-nsec-p-m"
+									name="password"
+									autoComplete="new-password"
+									type="password"
+									defaultValue=""
+									readOnly
+									style={{ display: "none" }}
+								/>
+							</IonCol>
+							<IonCol style={{ flex: 0 }}>
+								<CopyMorphButton fill="clear" value={privKey} />
+							</IonCol>
+						</IonRow>
+						<IonRow className="ion-justify-content-end">
+							<IonCol size="auto">
+								<IonButton type="submit" color="medium">Save</IonButton>
+							</IonCol>
+						</IonRow>
+					</form>
+
+
+					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
 						<IonCol size="auto">
 							<IonButton color="dark" onClick={() => dismiss(undefined, "file")}>
 								Download as file
 							</IonButton>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton>
+							<IonButton onClick={() => dismiss(undefined, "confirm")}>
 								Done
+							</IonButton>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+
+			</div>
+		</>
+	);
+};
+
+export const DecryptFileDialog = (
+	{
+		dismiss
+	}: {
+		dismiss: (data: { passphrase: string } | null, role: "cancel" | "confirm") => void,
+	}) => {
+	const [passphrase, setPassphrase] = useState("");
+
+
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<IonToolbar color="secondary">
+					<IonTitle>
+						<IonText className="text-high text-lg text-weight-high">
+							Decrypt backup file
+						</IonText>
+					</IonTitle>
+				</IonToolbar>
+			</IonHeader>
+
+			<div className={classNames(styles["wrapper"], "ion-padding")}>
+				<IonText className="text-medium ion-text-wrap">
+					Input the passphrase for this backup file
+				</IonText>
+				<IonGrid>
+					<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
+						<IonCol style={{ flex: 1 }}>
+							<IonInput
+								fill="solid"
+								id="shockwallet-file-back-passphrase-entry"
+								className={classNames(styles["password-input"], "filled-input")}
+								type="password"
+								name="shockwallet-file-back-passphrase-entry"
+								value={passphrase}
+								onIonInput={e => setPassphrase(e.detail.value || "")}
+							/>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
+						<IonCol size="auto">
+							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+								Cancel
+							</IonButton>
+						</IonCol>
+						<IonCol size="auto">
+							<IonButton disabled={!passphrase} onClick={() => dismiss({ passphrase }, "confirm")}>
+								Confrim
 							</IonButton>
 						</IonCol>
 					</IonRow>
@@ -61,78 +195,82 @@ export const BackupKeysDialog = ({ dismiss }: { dismiss: (data: undefined, role:
 };
 
 
-
-
-export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: undefined, role: "cancel" | "done") => void }) => {
+export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passphrase: string } | null, role: "cancel" | "confirm") => void }) => {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 
 	const match = password.length && password === confirmPassword;
 
-	const handleDownloadBackup = () => {
-		/* TODO */
+	const handleConfirm = () => {
+		dismiss({ passphrase: password }, "confirm");
 	}
 
 
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar >
+				<IonToolbar color="secondary">
 					<IonTitle>
 						<IonText className="text-medium text-lg text-weight-high">
 							Encrypt File
 						</IonText>
 					</IonTitle>
-					<IonButtons slot="end">
-						<IonButton onClick={() => dismiss(undefined, "cancel")}><IonIcon icon={closeOutline} /></IonButton>
-					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-low">
+				<IonText className="text-medium">
 					Add an encryption password to your backup file so that no unauthorized software can read it.
 				</IonText>
-				<IonGrid style={{ margin: 0 }}>
-					<IonRow className="ion-margin-top ion-justify-content-center ion-align-items-center" style={{ gap: "2rem" }}>
-						<IonCol size="4">
+				<IonGrid>
+					<IonRow className="ion-margin-top ion-nowrap ion-justify-content-center ion-align-items-center" >
+						<IonCol size="5" style={{ marginRight: "0.9rem" }}>
 							<IonInput
-								fill="outline"
-								className={styles["password-input"]}
+								fill="solid"
+								className={classNames(styles["password-input"], "filled-input")}
 								type="password"
+								autocomplete="off"
 								value={password}
 								onIonInput={(e) => setPassword(e.detail.value || "")}
 
 							></IonInput>
 						</IonCol>
-						<IonCol size="4">
+						<IonCol size="5">
 							<IonInput
-								fill="outline"
-								className={styles["password-input"]}
+								fill="solid"
+								className={classNames(styles["password-input"], "filled-input")}
 								type="password"
+								autocomplete="off"
 								value={confirmPassword}
 								onIonInput={(e) => setConfirmPassword(e.detail.value || "")}
 							></IonInput>
 						</IonCol>
-						<IonCol size="auto">
-							<IonIcon icon={checkmark} color="success" size="large" />
+						<IonCol size="2">
+							<IonRow className="ion-justify-content-center">
+								<IonCol size="auto">
+									{
+										match && <IonIcon icon={checkmark} color="success" size="large" />
+									}
+
+								</IonCol>
+							</IonRow>
 						</IonCol>
 					</IonRow>
 					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
 						<IonCol size="auto">
-							<IonButton color="dark">
+							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
 								Cancel
 							</IonButton>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton disabled={!match} onClick={handleDownloadBackup}>
+							<IonButton disabled={!match} onClick={handleConfirm}>
 								Done
 							</IonButton>
 						</IonCol>
 					</IonRow>
 				</IonGrid>
-			</div >
+			</div>
 		</>
 	);
 };

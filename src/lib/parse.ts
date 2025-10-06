@@ -8,36 +8,94 @@ import type { NostrKeyPair } from "@/Api/nostrHandler";
 import type { Satoshi } from "./types/units";
 import { parseUserInputToSats } from "./units";
 import { nip19, OfferPriceType } from "@shocknet/clink-sdk";
-import { LN_INVOICE_REGEX, LNURL_REGEX, BITCOIN_ADDRESS_REGEX, LN_ADDRESS_REGEX, NOFFER_REGEX, NPROFILE_REGEX } from "./regex";
-import { utils } from "nostr-tools";
+import {
+	LN_INVOICE_REGEX,
+	LNURL_REGEX,
+	BITCOIN_ADDRESS_REGEX,
+	NOFFER_REGEX,
+	BITCOIN_ADDRESS_BASE58_REGEX,
+	NPROFILE_WITH_TOKEN_REGEX,
+	RelayUrlSchema,
+	LN_ADDRESS_REGEX
+} from "./regex";
 
 
-
-const removePrefixIfExists = (str: string, prefix: string) => str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
 type InputClassificationConfig =
 	| { allowed: InputClassification[]; disallowed?: never }
 	| { disallowed: InputClassification[]; allowed?: never }
 	| undefined;
 
-type Validator = {
-	type: InputClassification;
-	test: (s: string) => boolean;
+interface IdentifyResult {
+	classification: InputClassification;
+	value: string
+}
+
+const matchBech32 = (re: RegExp, s: string, classification: InputClassification): IdentifyResult | null => {
+	const m = s.match(re);
+	if (m) {
+		return {
+			classification,
+			value: m[1].toLowerCase()
+		}
+	} else {
+		return null
+	}
+
 };
 
+
+
+type Validator = {
+	type: InputClassification;
+	test: (s: string) => IdentifyResult | null;
+};
+
+
+
 const VALIDATORS: Validator[] = [
-	{ type: InputClassification.LN_INVOICE, test: (s) => LN_INVOICE_REGEX.test(s) },
-	{ type: InputClassification.LNURL_PAY, test: (s) => LNURL_REGEX.test(s) },
-	{ type: InputClassification.BITCOIN_ADDRESS, test: (s) => BITCOIN_ADDRESS_REGEX.test(s) },
-	{ type: InputClassification.LN_ADDRESS, test: (s) => LN_ADDRESS_REGEX.test(s) },
-	{ type: InputClassification.NOFFER, test: (s) => NOFFER_REGEX.test(s) },
-	{ type: InputClassification.NPROFILE, test: (s) => NPROFILE_REGEX.test(s) },
+	{ type: InputClassification.LN_INVOICE, test: (s) => matchBech32(LN_INVOICE_REGEX, s, InputClassification.LN_INVOICE) },
+	{ type: InputClassification.LNURL_PAY, test: (s) => matchBech32(LNURL_REGEX, s, InputClassification.LNURL_PAY) },
+	{
+		type: InputClassification.BITCOIN_ADDRESS, test: (s) => {
+
+			// Attempt segwit
+			const seg = matchBech32(BITCOIN_ADDRESS_REGEX, s, InputClassification.BITCOIN_ADDRESS);
+			if (seg) return seg;
+
+			// Then attempt base58
+			const m58 = s.match(BITCOIN_ADDRESS_BASE58_REGEX);
+			if (m58) return { classification: InputClassification.BITCOIN_ADDRESS, value: m58[1] };
+
+			return null;
+		}
+	},
+	{
+		type: InputClassification.LN_ADDRESS, test: (s) => matchBech32(LN_ADDRESS_REGEX, s, InputClassification.LN_ADDRESS),
+	},
+	{ type: InputClassification.NOFFER, test: (s) => matchBech32(NOFFER_REGEX, s, InputClassification.NOFFER) },
+	{
+		type: InputClassification.NPROFILE, test: (s) => {
+			const m = s.match(NPROFILE_WITH_TOKEN_REGEX);
+			if (m) {
+				const nprofileLower = m[1].toLowerCase();
+				const adminToken = m[2];
+				return adminToken
+					? { classification: InputClassification.NPROFILE, value: nprofileLower + ":" + adminToken }
+					: { classification: InputClassification.NPROFILE, value: nprofileLower };
+			} else {
+				return null
+			}
+		}
+	},
 ];
 
 // Function to identify input type through regex. Can disallow certain types of input using config.disallowed.
-export function identifyBitcoinInput(incomingInput: string, config?: InputClassificationConfig): InputClassification {
+export function identifyBitcoinInput(incomingInput: string, config?: InputClassificationConfig): IdentifyResult {
+
+	const empty = { classification: InputClassification.UNKNOWN, value: "" };
 	const input = incomingInput.trim();
-	if (!input) return InputClassification.UNKNOWN;
+	if (!input) return empty;
 
 	let validators = VALIDATORS;
 
@@ -57,16 +115,19 @@ export function identifyBitcoinInput(incomingInput: string, config?: InputClassi
 	})
 
 	for (const validator of filteredValidators) {
-		if (validator.test(input)) {
-			return validator.type
+		const res = validator.test(input);
+		if (res) {
+			return res
 		}
+
 	}
 
-	return InputClassification.UNKNOWN;
+	return empty;
 }
 
-export const parseInvoiceInput = (input: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
-	const invoice = removePrefixIfExists(input, "lightning:");
+
+export const parseInvoiceInput = (invoice: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
+
 	const { amount, description } = decodeInvoice(invoice, expectedAmount);
 
 	return {
@@ -85,7 +146,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			return parseInvoiceInput(input);
 		}
 		case InputClassification.LNURL_PAY: {
-			const lnurl = removePrefixIfExists(input, "lightning:");
+			const lnurl = input;
 			const lnurlResponse = await requestLnurlServiceParams(lnurl);
 			if (lnurlResponse.tag === "withdrawRequest") {
 				return {
@@ -102,7 +163,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			}
 		}
 		case InputClassification.BITCOIN_ADDRESS: {
-			const address = removePrefixIfExists(input, "bitcoin:");
+			const address = input
 			validateAddress(address); // throws
 
 			return {
@@ -111,7 +172,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			};
 		}
 		case InputClassification.LN_ADDRESS: {
-			const address = removePrefixIfExists(input, "lightning:");
+			const address = input
 			const lnurlResponse = await requestLnurlServiceParams(address, true);
 			if (lnurlResponse.tag !== "payRequest") {
 				throw new Error("Invalid response from Lightning Address service");
@@ -126,7 +187,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			if (!keyPair) {
 				throw new Error("Not a pub spend source");
 			}
-			const noffer = removePrefixIfExists(input, "lightning:");
+			const noffer = input
 			const decoded = decodeNoffer(noffer);
 			const { price, priceType } = decoded;
 			const base: ParsedNofferInput = {
@@ -150,11 +211,11 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 					if (typeof invoice !== "string") {
 						throw new Error(invoice.error);
 					}
-					const classification = identifyBitcoinInput(invoice);
+					const { classification, value } = identifyBitcoinInput(invoice);
 					if (classification !== InputClassification.LN_INVOICE) {
 						throw new Error("Invalid invoice from noffer");
 					}
-					parsedInvoice = parseInvoiceInput(invoice, parseUserInputToSats((price || 0).toString(), "sats"));
+					parsedInvoice = parseInvoiceInput(value, parseUserInputToSats((price || 0).toString(), "sats"));
 
 
 					return {
@@ -172,15 +233,29 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			}
 		}
 		case InputClassification.NPROFILE: {
-
-			const result = nip19.decode(input);
+			const splitted = input.split(":");
+			const nprofile = splitted[0];
+			const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
+			const result = nip19.decode(nprofile);
 			if (result.type !== "nprofile") throw new Error("Not an nprofile string");
+			if (!result.data.relays) throw new Error("No relays");
+
+			const parseResults = result.data.relays.map(r => RelayUrlSchema.safeParse(r));
+			const relays = parseResults.filter(res => res.success).map(res => res.data!);
+
+			if (relays.length === 0) {
+				throw new Error("Invalid or no relay URLs");
+			}
+
+
+
 
 			return {
 				type: InputClassification.NPROFILE,
-				data: input,
-				relays: (result.data.relays ?? []).map(utils.normalizeURL),
-				pubkey: result.data.pubkey
+				data: nprofile,
+				relays: relays,
+				pubkey: result.data.pubkey,
+				adminEnrollToken
 			}
 		}
 		default:

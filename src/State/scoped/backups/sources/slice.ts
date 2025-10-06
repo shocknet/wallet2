@@ -18,7 +18,7 @@ import { HistoryCursor, SourceActualOperation, SourceOperation, SourceOptimsticO
 
 
 const mergeSourceDoc = (b: SourceDocV0, r: SourceDocV0) => {
-	const base: SourceDocV0 = { ...b, label: mergeLww<string>(b.label, r.label), deleted: mergeLww<boolean>(b.deleted, r.deleted) }
+	const base: SourceDocV0 = { ...b, label: mergeLww<string | null>(b.label, r.label), deleted: mergeLww<boolean>(b.deleted, r.deleted) }
 	if (b.type === SourceType.NPROFILE_SOURCE && r.type === SourceType.NPROFILE_SOURCE) {
 		base.relays = mergeFlags(b.relays, r.relays);
 		base.admin_token = mergeLww(b.admin_token, r.admin_token);
@@ -96,6 +96,28 @@ export const sourcesSlice = createSlice({
 			const d = e.draft;
 			if (a.payload.label !== undefined && d.label.value !== a.payload.label) {
 				d.label = bump(d.label, a.payload.label, a.payload.by);
+			}
+			e.dirty = true;
+		},
+
+		updateBridgeUrl(state, a: PayloadAction<{ sourceId: string; bridgeUrl: string | null; now: number, by: string }>) {
+			const e = state.docs.entities[a.payload.sourceId];
+			if (!e) return;
+			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
+			const d = e.draft;
+			if (a.payload.bridgeUrl !== undefined && d.bridgeUrl.value !== a.payload.bridgeUrl) {
+				d.bridgeUrl = bump(d.bridgeUrl, a.payload.bridgeUrl, a.payload.by);
+			}
+			e.dirty = true;
+		},
+
+		updateisNDebitDiscoverable(state, a: PayloadAction<{ sourceId: string; isNdebitDiscoverable: boolean; now: number, by: string }>) {
+			const e = state.docs.entities[a.payload.sourceId];
+			if (!e) return;
+			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
+			const d = e.draft;
+			if (a.payload.isNdebitDiscoverable !== d.is_ndebit_discoverable.value) {
+				d.is_ndebit_discoverable = bump(d.is_ndebit_discoverable, a.payload.isNdebitDiscoverable, a.payload.by);
 			}
 			e.dirty = true;
 		},
@@ -183,6 +205,12 @@ export const sourcesSlice = createSlice({
 			const m = state.metadata.entities[a.payload.sourceId]
 			if (m && m.type === SourceType.NPROFILE_SOURCE) {
 				m.beacon = a.payload.beacon
+			}
+		},
+		setVanityName(state, a: PayloadAction<{ sourceId: string; vanityName: string }>) {
+			const m = state.metadata.entities[a.payload.sourceId]
+			if (m && m.type === SourceType.NPROFILE_SOURCE) {
+				m.vanityName = a.payload.vanityName;
 			}
 		},
 		clearBeacon(state, a: PayloadAction<{ sourceId: string }>) {

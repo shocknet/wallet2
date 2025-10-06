@@ -1,9 +1,28 @@
-import { LnAddrView, LnurlPayView, NprofileView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
-import { IonModal, IonNav, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonInput, IonNote, IonText, IonGrid, IonRow, IonCol, IonAccordionGroup, IonAccordion, IonBadge, IonNavLink, IonBackButton, IonSpinner } from "@ionic/react";
-import { closeOutline, arrowForwardOutline, addOutline, radioOutline, atCircleOutline, flashOutline, cashOutline, informationCircleOutline, caretDownOutline } from "ionicons/icons";
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import styles from "./styles/index.module.scss";
+import {
+	IonModal,
+	IonNav,
+	IonHeader,
+	IonToolbar,
+	IonTitle,
+	IonButtons,
+	IonButton,
+	IonIcon,
+	IonContent,
+	IonList,
+	IonItem,
+	IonLabel,
+	IonInput,
+	IonNote,
+	IonText,
+	IonAccordionGroup,
+	IonAccordion,
+	IonNavLink,
+	IonBackButton,
+	IonListHeader,
+} from "@ionic/react";
+import { closeOutline, addOutline } from "ionicons/icons";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import useDebounce from "@/Hooks/useDebounce";
 import { InputClassification, ParsedLightningAddressInput, ParsedNprofileInput } from "@/lib/types/parse";
@@ -13,7 +32,10 @@ import { RecipentInputHelperText } from "@/lib/jsxHelperts";
 import { RelayManager } from "@/Components/RelayManager";
 import CardishList from "@/Components/CardishList";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
-import { fetchBeacon, FetchBeaconResult } from "@/helpers/remoteBackups";
+import { useAppDispatch } from "@/State/store/hooks";
+import { addLightningAddressSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
+import { PubSourceStatus } from "../helpers";
+
 
 const AddSourceNavModal = memo(({
 	open,
@@ -25,7 +47,6 @@ const AddSourceNavModal = memo(({
 	return (
 		<IonModal className="wallet-modal" isOpen={open} onDidDismiss={onClose}>
 			<IonNav
-
 				root={() =>
 					<AddSourceStart
 						onClose={onClose}
@@ -45,7 +66,7 @@ const AddSourceStart = ({
 }: {
 	onClose: () => void;
 }) => {
-	const [input, setInput] = React.useState("");
+	const [input, setInput] = useState("");
 
 	const [isTouched, setIsTouched] = useState(false);
 
@@ -59,6 +80,8 @@ const AddSourceStart = ({
 	const { showToast } = useToast();
 
 
+
+
 	useEffect(() => {
 		if (!debouncedInput.trim()) {
 			setInputState({ status: "idle", inputValue: "" });
@@ -66,34 +89,34 @@ const AddSourceStart = ({
 		}
 		import("@/lib/parse")
 			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const classification = identifyBitcoinInput(
+				const { classification, value: normalizedInput } = identifyBitcoinInput(
 					debouncedInput,
 					{
 						allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
 					}
 				);
 				if (classification === InputClassification.UNKNOWN) {
-					setInputState({ status: "error", inputValue: debouncedInput, classification, error: "Unidentified input" });
+					setInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
 					return;
 				}
 				setInputState({
 					status: "loading",
-					inputValue: debouncedInput,
+					inputValue: normalizedInput,
 					classification
 				});
 
-				parseBitcoinInput(debouncedInput, classification)
+				parseBitcoinInput(normalizedInput, classification)
 					.then(parsed => {
 						setInputState({
 							status: "parsedOk",
-							inputValue: debouncedInput,
+							inputValue: normalizedInput,
 							parsedData: parsed
 						});
 					})
 					.catch((err: any) => {
 						setInputState({
 							status: "error",
-							inputValue: debouncedInput,
+							inputValue: normalizedInput,
 							error: err.message,
 							classification
 						});
@@ -118,7 +141,7 @@ const AddSourceStart = ({
 		clearRecipientError();
 	}
 
-	const [withdrawInput, setWithdrawInput] = useState("");
+
 
 	const parsedNprofile = useMemo(() => (inputState.status === "parsedOk" && inputState.parsedData.type === InputClassification.NPROFILE)
 		? inputState.parsedData
@@ -129,6 +152,9 @@ const AddSourceStart = ({
 		? inputState.parsedData
 		: null,
 		[inputState]);
+
+
+
 
 	return (
 		<>
@@ -174,12 +200,10 @@ const AddSourceStart = ({
 				<div style={{ display: "flex", alignItems: "center", marginTop: 10, gap: 10 }}>
 					<RecipentInputHelperText inputState={inputState} />
 				</div>
-				<div style={{ display: parsedNprofile || parsedLnAddress ? "none" : "block", marginTop: "3rem" }}>
 
-					<IonButton expand="block" color="primary" disabled>
-						Continue
-					</IonButton>
-				</div>
+
+
+
 				<div style={{ display: parsedNprofile ? "block" : "none", marginTop: "3rem" }}>
 					<IonNavLink
 						routerDirection="forward"
@@ -206,48 +230,6 @@ const AddSourceStart = ({
 					</IonNavLink>
 				</div>
 
-				<IonAccordionGroup style={{ marginTop: "4rem" }}>
-					<IonAccordion value="sweep">
-						<IonItem slot="header" color="secondary">
-							<IonLabel>
-
-								<IonText className="text-low text-md">Sweep an LNURL-withdraw instead</IonText>
-
-							</IonLabel>
-						</IonItem>
-
-						<div slot="content" className="ion-padding" style={{ backgroundColor: "var(--ion-color-secondary)" }}>
-							<IonList lines="none" className={classNames(styles["edit-list"], "secondary")}>
-
-								<IonItem className={styles["edit-item-input"]}>
-
-									<IonInput
-										color="primary"
-										labelPlacement="stacked"
-										value={withdrawInput}
-										onIonChange={(e) => setWithdrawInput(e.detail.value ?? "")}
-										label="Label"
-										mode="md"
-										fill="outline"
-										style={{ "--padding-end": "50px" }}
-										className="ion-margin-top"
-
-									/>
-
-								</IonItem>
-								<IonItem>
-
-									<IonButton slot="end">Sweep</IonButton>
-								</IonItem>
-
-							</IonList>
-
-
-
-						</div>
-					</IonAccordion>
-				</IonAccordionGroup>
-
 			</IonContent >
 		</>
 	);
@@ -263,26 +245,35 @@ const AddNprofileScreen = ({
 	onClose: () => void;
 
 }) => {
-	const [label, setLabel] = React.useState("");
-	const [bridgeUrl, setBridgeUrl] = React.useState("");
-	const [relays, setRelays] = React.useState<string[]>(parsedNprofileData.relays);
-	const [beaconData, setBeaconData] = useState<FetchBeaconResult | undefined>(undefined);
+	const dispatch = useAppDispatch();
+	const { showToast } = useToast();
 
+	const [label, setLabel] = useState("");
+	const [bridgeUrl, setBridgeUrl] = useState("");
+	const [relays, setRelays] = useState<string[]>(parsedNprofileData.relays);
 
-
-	useEffect(() => {
-		fetchBeacon(parsedNprofileData.pubkey, relays, 2 * 60).then(result => setBeaconData(result))
-	}, [relays])
-
-
-
+	const [isEditingRelays, setIsEditingRelays] = useState(false);
 
 
 	const canAdd = relays.length !== 0;
 
 	const handleAddNProfileSource = useCallback(() => {
+		try {
 
-	}, [])
+			dispatch(addNprofileSource({
+				lpk: parsedNprofileData.pubkey,
+				relays,
+				adminToken: null,
+				bridgeUrl: bridgeUrl || null,
+				label: label || null
+			}))
+			onClose();
+		} catch (err: any) {
+			showToast({
+				message: err?.message || "Failed to add lightning address source"
+			});
+		}
+	}, [showToast, dispatch, parsedNprofileData, relays, bridgeUrl, label, onClose]);
 
 	return (
 		<>
@@ -312,6 +303,8 @@ const AddNprofileScreen = ({
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding wallet-box-shadow">
+				<PubSourceStatus pubkey={parsedNprofileData.pubkey} relays={parsedNprofileData.relays} />
+
 				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
 
 					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
@@ -330,7 +323,6 @@ const AddNprofileScreen = ({
 
 						/>
 					</IonItem>
-
 					<IonItem>
 						<IonInput
 							color="primary"
@@ -353,85 +345,51 @@ const AddNprofileScreen = ({
 					</IonText>
 				</IonNote>
 				<div style={{ marginTop: "2rem" }}>
-					<RelayManager relays={relays} setRelays={setRelays} />
-				</div>
+					<IonList
 
+						lines="none"
+						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 
-				<IonAccordionGroup style={{ marginTop: "60px" }}>
-					<IonAccordion value="lnurl-info">
-						<IonItem slot="header" lines="none">
-							<IonLabel>
-								<IonText className="text-low">
-									Lightning.Pub info
-								</IonText></IonLabel>
-						</IonItem>
-						<div slot="content">
-							<IonList inset>
-								<IonItem className="ion-margin-top">
-									<IonLabel>
-										<IonText className="text-medium">
-											Pubkey
+					>
+						<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+							<IonLabel >Relays</IonLabel>
+							{
+								isEditingRelays
+									?
+									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
+										<IonIcon icon={closeOutline} slot="icon-only" />
+									</IonButton>
+									:
+									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
+										Edit
+									</IonButton>
+							}
+						</IonListHeader>
+						{
+							isEditingRelays
+								? (
+									<>
+										<IonItem>
+											<IonLabel color="warning">
+												<IonText>
+													Your node should be listening on relays you add here
+												</IonText>
+											</IonLabel>
+										</IonItem>
+										<RelayManager relays={relays} setRelays={setRelays} />
+									</>
+								)
+								: relays.map(r => (
+									<IonItem key={r}>
+										<IonText>
+											{r}
 										</IonText>
-										<IonNote className="text-low code-string ion-text-wrap ion-margin-top" style={{ display: "block" }}>
-
-											{parsedNprofileData.pubkey}
-
-										</IonNote>
-
-									</IonLabel>
-
-								</IonItem>
-								<IonItem>
-									<IonLabel>
-										<IonText className="text-medium">
-											Availability
-										</IonText>
-									</IonLabel>
-									{
-										beaconData === undefined
-										&&
-										<IonText className="text-low"><IonSpinner /></IonText>
-									}
-									{
-										beaconData === null &&
-										<IonText className="text-low">Unreachable</IonText>
-									}
-									{
-										beaconData &&
-										<IonText className="text-low" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-											<span
-												style={{
-													backgroundColor: "var(--ion-color-primary)",
-													width: "20px",
-													height: "20px",
-													borderRadius: "50%",
-
-												}}
-											/>
-											Online
-										</IonText>
-									}
-
-								</IonItem>
-								{
-									beaconData &&
-
-									<IonItem>
-										<IonLabel>
-											<IonText className="text-medium">
-												Pub App Name
-											</IonText>
-										</IonLabel>
-										<IonText className="text-low">{beaconData.data.name}</IonText>
 									</IonItem>
-
-								}
-
-							</IonList>
-						</div>
-					</IonAccordion>
-				</IonAccordionGroup>
-			</IonContent>
+								))
+						}
+					</IonList>
+				</div>
+			</IonContent >
 		</>
 	);
 }
@@ -446,13 +404,24 @@ const AddLnAddress = ({
 	parsedLnAddress: ParsedLightningAddressInput;
 	onClose: () => void;
 }) => {
-	const [label, setLabel] = React.useState("");
+	const [label, setLabel] = useState("");
+	const dispatch = useAppDispatch();
+	const { showToast } = useToast()
 
 	const addSource = useCallback(() => {
+		try {
 
-	}, [label, parsedLnAddress]);
-
-
+			dispatch(addLightningAddressSource({
+				lightningAddress: parsedLnAddress.data,
+				label: label || null
+			}))
+			onClose();
+		} catch (err: any) {
+			showToast({
+				message: err?.message || "Failed to add lightning address source"
+			});
+		}
+	}, [label, parsedLnAddress, onClose, dispatch, showToast]);
 
 
 	return (
@@ -485,7 +454,6 @@ const AddLnAddress = ({
 			<IonContent className="ion-padding">
 				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
 					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
-
 						<IonInput
 							placeholder="My savings source"
 							color="primary"
@@ -501,10 +469,6 @@ const AddLnAddress = ({
 						/>
 					</IonItem>
 				</CardishList>
-
-
-
-
 				<IonAccordionGroup style={{ marginTop: "60px" }}>
 					<IonAccordion value="lnurl-info">
 						<IonItem slot="header" lines="none">
@@ -522,3 +486,5 @@ const AddLnAddress = ({
 		</>
 	);
 }
+
+

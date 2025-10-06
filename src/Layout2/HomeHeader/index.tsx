@@ -1,10 +1,9 @@
 
-import { IonButton, IonButtons, IonHeader, IonIcon, IonImg, IonMenuButton, IonToolbar, } from '@ionic/react';
+import { IonButton, IonButtons, IonHeader, IonImg, IonMenuButton, IonToolbar, useIonRouter, } from '@ionic/react';
 import logo from "@/Assets/Images/isolated logo.png";
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { personOutline } from 'ionicons/icons';
-import Switcher from '@/Components/Switcher';
+import IdentitiesDropdown from '../IdentitiesDropdown';
 
 
 
@@ -12,7 +11,8 @@ type HomeHeaderProps = RouteComponentProps & {
 	children?: React.ReactNode;
 }
 
-const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeaderProps) => {
+const HomeHeader: React.FC<HomeHeaderProps> = ({ children, ...props }: HomeHeaderProps) => {
+	const router = useIonRouter()
 
 	const [logoClickCounter, setLogoClickCounter] = useState(0);
 	useEffect(() => {
@@ -20,12 +20,12 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeader
 		let tripeClickTimer: NodeJS.Timeout;
 		if (logoClickCounter === 1) {
 			singleClickTimer = setTimeout(() => {
-				history.push("/");
+				router.push("/home");
 				setLogoClickCounter(0);
 			}, 500);
 		} else {
 			if (logoClickCounter === 3) {
-				history.push("/metrics");
+				router.push("/metrics");
 			}
 			tripeClickTimer = setTimeout(() => {
 				setLogoClickCounter(0);
@@ -35,9 +35,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeader
 			clearTimeout(singleClickTimer)
 			clearTimeout(tripeClickTimer);
 		};
-	}, [logoClickCounter, history]);
-
-
+	}, [logoClickCounter, router]);
 
 
 
@@ -45,23 +43,17 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ children, history }: HomeHeader
 		<IonHeader className="ion-no-border">
 			<IonToolbar>
 				<IonButtons slot="start">
-					<IonButton shape="round" routerLink="/home" /* onClick={() => setLogoClickCounter(prev => prev + 1)} */>
+					<IonButton shape="round" routerLink="/home" onClick={() => setLogoClickCounter(prev => prev + 1)}>
 						<IonImg
 							slot="start"
 							src={logo}
-							style={{ width: "30px", height: "auto" }}
+							style={{ width: "25px", height: "auto" }}
 						>
 						</IonImg>
 					</IonButton>
-					<IonButton shape="round" routerLink="/identity/overview">
-						<IonIcon color="primary" icon={personOutline} />
-					</IonButton>
-
 				</IonButtons>
-
-
 				<IonButtons slot="end">
-					<Switcher />
+					<IdentitiesDropdown {...props} />
 					<IonMenuButton color="primary"></IonMenuButton>
 				</IonButtons>
 			</IonToolbar>

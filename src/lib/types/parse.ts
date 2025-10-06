@@ -29,6 +29,7 @@ export interface ParsedInvoiceInput extends ParsedInputBase {
 
 export interface ParsedNprofileInput extends ParsedInputBase {
 	type: InputClassification.NPROFILE,
+	adminEnrollToken?: string;
 	relays: string[];
 	pubkey: string;
 }

@@ -26,9 +26,7 @@ export const equalSet = (a: Set<string>, b: Set<string>) => {
 function equalIdentityDoc(a?: IdentityDocV0, b?: IdentityDocV0): boolean {
 	if (!a || !b) return false;
 
-	if (!eqLww(a.label, b.label)) return false;
 	if (!eqLww(a.favorite_source_id, b.favorite_source_id)) return false;
-	if (!eqLww(a.bridge_url, b.bridge_url)) return false;
 	if (!equalSet(new Set(a.sources), new Set(b.sources))) return false;
 
 	return true;
@@ -45,7 +43,7 @@ export const identitySlice = createSlice({
 			if (state.draft) return;
 			const { identity_pubkey, by } = a.payload;
 			state.draft = {
-				doc_type: "doc/shockwallet/identity",
+				doc_type: "doc/shockwallet/identity_",
 				schema_rev: 0,
 				identity_pubkey,
 				label: bump(undefined, "", by),                 // required by schema
@@ -55,15 +53,6 @@ export const identitySlice = createSlice({
 				bridge_url: bump(undefined, null, by),
 			};
 			state.dirty = true;
-		},
-
-		updateIdentityLabel(state, a: PayloadAction<{ label?: string; by: string }>) {
-			if (!state.draft) return;
-			const cur = state.draft.label;
-			if (a.payload.label !== undefined && cur.value !== a.payload.label) {
-				state.draft.label = bump(cur, a.payload.label, a.payload.by);
-				state.dirty = true;
-			}
 		},
 
 		setFavoriteSource(
@@ -77,19 +66,6 @@ export const identitySlice = createSlice({
 				state.dirty = true;
 			}
 		},
-
-		setBridgeUrl(
-			state,
-			a: PayloadAction<{ url: string | null; by: string }>
-		) {
-			if (!state.draft) return;
-			const cur = state.draft.bridge_url;
-			if (!cur || cur.value !== a.payload.url) {
-				state.draft.bridge_url = bump(cur, a.payload.url, a.payload.by);
-				state.dirty = true;
-			}
-		},
-
 		addSourceDocDTag(state, a: PayloadAction<{ sourceId: string }>) {
 			if (!state.draft) return;
 			const next = dedupe([...state.draft.sources, a.payload.sourceId]);
@@ -128,9 +104,7 @@ export const identitySlice = createSlice({
 				const d = state.draft;
 				const basePrime: IdentityDocV0 = {
 					...r,
-					label: mergeLww(r.label, d.label),
 					favorite_source_id: mergeLww(r.favorite_source_id, d.favorite_source_id),
-					bridge_url: mergeLww(r.bridge_url, d.bridge_url),
 					sources: [...new Set([...r.sources, ...d.sources])],
 				};
 				state.base = basePrime;
@@ -148,18 +122,14 @@ export const identitySlice = createSlice({
 				const basePrime: IdentityDocV0 = {
 					...b,
 					identity_pubkey: b.identity_pubkey,
-					label: mergeLww(b.label, r.label),
 					favorite_source_id: mergeLww(b.favorite_source_id, r.favorite_source_id),
-					bridge_url: mergeLww(b.bridge_url, r.bridge_url),
 					sources: [...new Set([...b.sources, ...r.sources])],
 				};
 
 				// 2) rebase local -> draft
 				const draftPrime: IdentityDocV0 = {
 					...basePrime,
-					label: mergeLww(basePrime.label, d.label),
 					favorite_source_id: mergeLww(basePrime.favorite_source_id, d.favorite_source_id),
-					bridge_url: mergeLww(basePrime.bridge_url, d.bridge_url),
 					sources: [...new Set([...basePrime.sources, ...d.sources])],
 				};
 
@@ -208,7 +178,6 @@ export const selectIsIdentityDirty = (s: RootState) => !!selectIdentityState(s).
 export const selectFavoriteSourceId = (s: RootState) =>
 	selectIdentityState(s).draft?.favorite_source_id.value ?? null;
 
-export const selectBridgeUrl = (s: RootState) =>
-	selectIdentityState(s).draft?.bridge_url.value ?? null;
+
 
 

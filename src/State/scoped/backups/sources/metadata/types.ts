@@ -18,6 +18,7 @@ export type MetaForNprofile = {
 	type: SourceType.NPROFILE_SOURCE;
 	beacon?: BeaconMeta;
 	balance?: BalanceMeta;
+	vanityName?: string;
 };
 
 export type MetaForLightningAddress = {
@@ -25,12 +26,8 @@ export type MetaForLightningAddress = {
 	type: SourceType.LIGHTNING_ADDRESS_SOURCE;
 };
 
-export type MetaForLnurlPay = {
-	id: string;
-	type: SourceType.LNURL_P_SOURCE;
-};
+
 
 export type SourceMetadata =
 	| MetaForNprofile
-	| MetaForLightningAddress
-	| MetaForLnurlPay;
+	| MetaForLightningAddress;

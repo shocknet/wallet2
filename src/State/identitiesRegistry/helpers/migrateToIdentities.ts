@@ -1,7 +1,7 @@
 import { appTag, NostrKeyPair } from "@/Api/nostrHandler";
 import { decodeNprofile, getDeviceId } from "@/constants";
 import { PayTo, SourceTrustLevel, SpendFrom } from "@/globalTypes";
-import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
+import { identifyBitcoinInput } from "@/lib/parse";
 import { InputClassification } from "@/lib/types/parse";
 import { IdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { fetchNip78Event } from "@/State/identitiesRegistry/helpers/nostr";
@@ -15,9 +15,9 @@ import { utils } from "nostr-tools";
 
 
 export type SourceToMigrate = SpendFrom | PayTo;
-export async function getRemoteMigratedSources(ext: IdentityNostrApi, localSources: SourceToMigrate[] = []) {
+export async function getRemoteMigratedSources(ext?: IdentityNostrApi, localSources: SourceToMigrate[] = []) {
 
-	const remoteSources = await getSourcesFromLegacyRemoteBackup(ext);
+	const remoteSources = ext ? await getSourcesFromLegacyRemoteBackup(ext) : [];
 
 	localSources.push(...remoteSources);
 
@@ -41,7 +41,7 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 
 
 	const decrypted = await fetchNip78Event(ext, appTag);
-	if (!decrypted) { // note remote backup
+	if (!decrypted) { // no remote backup
 		return sources;
 	}
 
@@ -85,9 +85,43 @@ export async function getSourcesFromLegacyRemoteBackup(ext: IdentityNostrApi): P
 				newItem = mergeResult;
 			}
 
-			sources.push(...JSON.parse(newItem).sources);
+			sources.push(...Object.values(JSON.parse(newItem).data.sources) as SourceToMigrate[]);
 		}
 	}
+
+	return sources;
+}
+
+
+export function getSourcesFromLegacyFileBackup(data: Record<string, any>): SourceToMigrate[] {
+
+	const sources: SourceToMigrate[] = []; // we accumulate sources here
+
+
+
+	for (const key in data) {
+		if (!["payTo", "spendFrom"].includes(key)) continue;
+
+		const merger = findReducerMerger(key)
+		if (!merger) {
+			continue
+		}
+
+		const serialRemote = data[key] as string
+		const serialLocal = localStorage.getItem(key)
+		let newItem = "";
+		if (!serialLocal) {
+			newItem = serialRemote
+		} else {
+			const { data: mergeResult, } = merger(serialLocal, serialRemote);
+			newItem = mergeResult;
+		}
+		console.log({ newItem })
+
+
+		sources.push(...Object.values(JSON.parse(newItem).data.sources) as SourceToMigrate[]);
+	}
+
 
 	return sources;
 }
@@ -187,7 +221,7 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceD
 			relaysFlags[utils.normalizeURL(r)] = { clock: { v: 0, by: deviceId }, present: true }
 		})
 		const doc: SourceDocV0 = {
-			doc_type: "doc/shockwallet/source",
+			doc_type: "doc/shockwallet/source_",
 			schema_rev: 0,
 			source_id: s.id,
 			label: { clock: { v: 0, by: deviceId }, value: s.label },
@@ -199,6 +233,7 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceD
 			is_ndebit_discoverable: { clock: { v: 0, by: deviceId }, value: !!s.isNdebitDiscoverable },
 			admin_token: { clock: { v: 0, by: deviceId }, value: s.adminToken || null },
 			relays: relaysFlags,
+			bridgeUrl: { clock: { v: 0, by: deviceId }, value: s.bridgeUrl || null }
 		}
 
 		return doc;
@@ -210,33 +245,20 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceD
 	// Process other sources (ln and lnurp; lnurlw are dropped)
 	const otherSources = sources.filter(s => !s.pubSource && !s.pasteField.startsWith("nprofile"));
 	for (const s of otherSources) {
-		const inputClassification = identifyBitcoinInput(s.pasteField);
-		switch (inputClassification) {
+		const { classification, value: normalized } = identifyBitcoinInput(s.pasteField);
+		switch (classification) {
 			case InputClassification.LN_ADDRESS:
 				docs.push({
-					doc_type: "doc/shockwallet/source",
+					doc_type: "doc/shockwallet/source_",
 					schema_rev: 0,
-					source_id: s.id,
+					source_id: normalized,
 					label: { clock: { v: 0, by: deviceId }, value: s.label },
 					deleted: { clock: { v: 0, by: deviceId }, value: false },
 					created_at: Date.now(),
 					type: SourceType.LIGHTNING_ADDRESS_SOURCE,
 				});
 				break;
-			case InputClassification.LNURL_PAY: {
-				const parsed = await parseBitcoinInput(s.pasteField, inputClassification).catch(() => null);
-				if (!parsed || parsed.type !== InputClassification.LNURL_PAY) continue;
-				docs.push({
-					doc_type: "doc/shockwallet/source",
-					schema_rev: 0,
-					source_id: s.id,
-					label: { clock: { v: 0, by: deviceId }, value: s.label },
-					deleted: { clock: { v: 0, by: deviceId }, value: false },
-					created_at: Date.now(),
-					type: SourceType.LNURL_P_SOURCE,
-				})
-				break;
-			}
+
 			default:
 				continue;
 		}

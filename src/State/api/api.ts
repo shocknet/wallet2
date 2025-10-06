@@ -111,27 +111,18 @@ export const appApi = createApi({
 		}),
 
 
-		getProfile: b.query<NostrProfile | null, string>({
-			// argument is hex pubkey (or npub you normalize to hex inside)
-			queryFn: async (pubkey) => {
+		getProfile: b.query<NostrProfile | null, { pubkey: string, relays: string[] }>({
+			queryFn: async ({ pubkey, relays }) => {
 				try {
-					const meta = await fetchNostrUserMetadataEvent(pubkey, [
-						"strfry.shock.network",
-						"vault.iris.to",
-						"relay.damus.io",
-						"relay.nostr.band",
-						"relay.snort.social",
-						"temp.iris.to"
-					]);
+					const meta = await fetchNostrUserMetadataEvent(pubkey, relays);
 					console.log({ meta, pubkey })
 					return { data: JSON.parse(meta!.content!) ?? null };
 				} catch (e: any) {
 					return { error: { status: 'CUSTOM_ERROR', error: e?.message ?? 'failed' } as any };
 				}
 			},
-			// cache per pubkey
+
 			keepUnusedDataFor: 300, // 5 min
-			// optional: provide tags if you later want to invalidate on updates
 		}),
 
 

@@ -14,6 +14,7 @@ import { fetchNip78Event } from "./helpers/nostr";
 import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
 import { appApi } from "../api/api";
+import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
 
 
 
@@ -41,7 +42,7 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
 		await getIdentityNostrApi(existing);
 
-		if (!boot) { // When it's a dynamic switch, tear stuff down nicely
+		if (!boot) { // When it's a dynamic switch, tear down stuff nicely
 
 			dispatch(appApi.util.resetApiState());
 
@@ -89,7 +90,11 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 
 export const createIdentity = (identity: Identity, localSources?: SourceToMigrate[]): AppThunk<Promise<void>> => {
-	return async (dispatch) => {
+	return async (dispatch, getState) => {
+
+		if (getState().identitiesRegistry.entities[identity.pubkey]) {
+			throw new Error("This identity already exists.");
+		}
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
 		const identityApi = await getIdentityNostrApi(identity);
 
@@ -109,8 +114,11 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 			if (migratedSourceDocs.length) {
 				for (const source of migratedSourceDocs) {
 					dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
+					await dispatch(onAddSourceDoc(source));
 				}
+
 			}
+
 		}
 	}
 }

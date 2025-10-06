@@ -35,7 +35,6 @@ import {
 	flash,
 	informationCircle,
 	globeOutline,
-	checkmarkCircle,
 	helpCircleOutline,
 	atCircleOutline,
 } from 'ionicons/icons';
@@ -46,7 +45,6 @@ import { InputClassification } from '@/lib/types/parse';
 import { FeeTier, getFeeTiers } from '@/lib/fees';
 import { Satoshi } from '@/lib/types/units';
 import { parseUserInputToSats } from '@/lib/units';
-import { getIconFromClassification } from '@/lib/icons';
 import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
@@ -173,7 +171,7 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 
 		import("@/lib/parse")
 			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const classification = identifyBitcoinInput(
+				const { classification, value } = identifyBitcoinInput(
 					debouncedRecepient,
 					undefined
 				);
@@ -183,17 +181,17 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 				}
 				inputStateChange({
 					status: "loading",
-					inputValue: debouncedRecepient,
+					inputValue: value,
 					classification
 				});
 
-				parseBitcoinInput(debouncedRecepient, classification, selectedSource.keys)
+				parseBitcoinInput(value, classification, selectedSource.keys)
 					.then(parsed => {
 						if (parsed.type === InputClassification.LNURL_WITHDRAW) {
 							inputStateChange({
 								error: "Lnurl cannot be a lnurl-withdraw",
 								status: "error",
-								inputValue: debouncedRecepient,
+								inputValue: value,
 								classification: parsed.type
 							});
 							return;
@@ -204,7 +202,7 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 								inputStateChange({
 									error: "Zero value invoices are not supported",
 									status: "error",
-									inputValue: debouncedRecepient,
+									inputValue: value,
 									classification: parsed.type
 								});
 								return;
@@ -248,14 +246,14 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 						}
 						inputStateChange({
 							status: "parsedOk",
-							inputValue: debouncedRecepient,
+							inputValue: value,
 							parsedData: parsed
 						});
 					})
 					.catch((err: any) => {
 						inputStateChange({
 							status: "error",
-							inputValue: debouncedRecepient,
+							inputValue: value,
 							error: err.message,
 							classification
 						});

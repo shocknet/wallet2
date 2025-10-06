@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LwwFlagSchema, LwwSchema } from "../lww";
-import { HexDashHexSchema, HexKeySchema, LnurlSchema, NostrKeyPairSchema } from "@/lib/regex";
+import { HexDashHexSchema, HexKeySchema, NostrKeyPairSchema } from "@/lib/regex";
 import { DocBase, DocBaseSchema, SourceType } from "../../common";
 
 
@@ -14,10 +14,10 @@ const CURRENT_SCHEMA_REV = 0;
 
 // Version 0
 const SourceDocBaseV0Schema = DocBaseSchema.safeExtend({
-	doc_type: z.literal("doc/shockwallet/source"),
+	doc_type: z.literal("doc/shockwallet/source_"),
 	schema_rev: z.literal(0),
 	source_id: z.string().nonempty(),
-	label: LwwSchema(z.string()),
+	label: LwwSchema(z.string().nullable()),
 	type: SourceTypeEnum,
 	deleted: LwwSchema(z.boolean())
 })
@@ -30,15 +30,12 @@ export const SourceDocV0Schema = z.discriminatedUnion("type", [
 		relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
 		is_ndebit_discoverable: LwwSchema(z.boolean()),
 		admin_token: LwwSchema(z.string().nullable()),
+		bridgeUrl: LwwSchema(z.httpUrl().nullable())
 
 	}),
 	SourceDocBaseV0Schema.safeExtend({
 		type: z.literal(SourceTypeEnum.enum.LIGHTNING_ADDRESS_SOURCE),
 		source_id: z.email()
-	}),
-	SourceDocBaseV0Schema.safeExtend({
-		type: z.literal(SourceTypeEnum.enum.LNURL_P_SOURCE),
-		source_id: LnurlSchema
 	}),
 ]);
 

@@ -148,14 +148,14 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 			showToast({ message: "Failed to lazy-load '@/lib/parse'", color: "danger" });
 			return;
 		}
-		const classification = identifyBitcoinInput(input);
+		const { classification, value } = identifyBitcoinInput(input);
 
 		if (classification === InputClassification.UNKNOWN) {
 			showToast({ message: "Unknown Recipient", color: "danger" });
 			return;
 		}
 		try {
-			const parsed = await parseBitcoinInput(input, classification);
+			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
 				const legacyParsedLnurlW = await legacyParseBitcoinInput(input);
 				history.push({

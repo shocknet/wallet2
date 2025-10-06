@@ -1,23 +1,37 @@
 // Components/nav/NavMenuHeader.tsx
 import React, { useMemo } from 'react';
 import {
-	IonHeader, IonToolbar, IonTitle, IonAvatar, IonLabel, IonItem,
-	IonSkeletonText, IonNote, IonBadge, IonButtons, IonButton, IonIcon,
+	IonHeader,
+	IonToolbar,
+	IonAvatar,
+	IonLabel,
+	IonItem,
+	IonSkeletonText,
+	IonNote,
+	IonBadge,
+	IonIcon,
 	IonItemDivider
 } from '@ionic/react';
-import { checkmarkCircle, alertCircle } from 'ionicons/icons';
+import { checkmarkCircle, } from 'ionicons/icons';
 import { useAppSelector } from '@/State/store/hooks';
-import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
+import { selectActiveIdentity } from '@/State/identitiesRegistry/slice';
 import { useGetProfileQuery } from '@/State/api/api';
 import { nip19 } from 'nostr-tools';
+import { IdentityType } from '@/State/identitiesRegistry/types';
 
 
 const truncate = (s: string, head = 8, tail = 6) =>
 	!s ? '' : s.length <= head + tail ? s : `${s.slice(0, head)}…${s.slice(-tail)}`;
 
 export const NavMenuHeader: React.FC = () => {
-	const activeHex = useAppSelector(selectActiveIdentityId);
-	const { data: profile, isLoading } = useGetProfileQuery(activeHex!, { skip: !activeHex });
+	const activeIdentity = useAppSelector(selectActiveIdentity)!;
+	const activeHex = activeIdentity.pubkey;
+	const { data: profile, isLoading } = useGetProfileQuery({
+		pubkey: activeHex!,
+		relays: activeIdentity.type !== IdentityType.SANCTUM ? activeIdentity.relays : ["wss//:strfry.shock.network", "wss://relay.lightning.pub"]
+	},
+		{ skip: !activeHex }
+	);
 
 	const displayName = profile?.display_name || profile?.name || 'Anonymous';
 	const npub = useMemo(() => (activeHex ? nip19.npubEncode(activeHex) : ''), [activeHex]);

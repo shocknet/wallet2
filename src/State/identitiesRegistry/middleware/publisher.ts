@@ -21,9 +21,7 @@ function nextBackoff(ms: number) {
 
 
 const isIdentityDirtying = isAnyOf(
-	identityActions.updateIdentityLabel,
 	identityActions.setFavoriteSource,
-	identityActions.setBridgeUrl,
 	identityActions.addSourceDocDTag,
 	identityActions.removeSourceId,
 	identityActions.applyRemoteIdentity,
