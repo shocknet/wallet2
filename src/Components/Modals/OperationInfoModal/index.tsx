@@ -28,11 +28,11 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { checkmark, closeOutline, copy, informationCircle, pencilOutline } from "ionicons/icons";
-import { selectSourceById, useDispatch, useSelector } from "@/State/store/store";
 import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { useAppDispatch } from "@/State/store/hooks";
 
 interface Props {
 	isOpen: boolean;
@@ -212,7 +212,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 
 
 			</IonList>
-			<SourceSection sourceId={operation.sourceId} />
+
 		</>
 	)
 }
@@ -339,7 +339,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				)
 			}
 
-			<SourceSection sourceId={operation.sourceId} />
+
 
 		</>
 	)
@@ -378,13 +378,12 @@ const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperati
 				}
 				<NoteField note={operation.memo} sourceId={operation.sourceId} operationId={operation.operationId} />
 			</IonList>
-			<SourceSection sourceId={operation.sourceId} />
 		</>
 	)
 }
 
-const SourceSection = ({ sourceId }: { sourceId: string }) => {
-	const operationSource = useSelector(state => selectSourceById(state, sourceId));
+/* const SourceSection = ({ sourceId }: { sourceId: string }) => {
+
 
 	if (!operationSource) return null;
 
@@ -416,7 +415,7 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 			</IonList>
 		</>
 	)
-}
+} */
 
 
 
@@ -424,7 +423,7 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 
 
 const NoteField = ({ note: initialNote, sourceId, operationId }: { note?: string, sourceId: string, operationId: string }) => {
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 
 	const [note, setNote] = useState<string | undefined>(initialNote);
 	const [isEditing, setIsEditing] = useState(false);

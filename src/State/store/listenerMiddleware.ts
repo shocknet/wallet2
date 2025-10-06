@@ -3,6 +3,7 @@ import type { RootState, AppDispatch } from './store'
 import { addPublisherListener } from '../identitiesRegistry/middleware/publisher';
 import { addDocsPullerListener } from '../identitiesRegistry/middleware/puller';
 import { addHydrationListener } from '../identitiesRegistry/middleware/switcher';
+import { addBridgeListener } from '../identitiesRegistry/middleware/bridgeListener';
 
 
 
@@ -19,3 +20,4 @@ export type AppstartListening = typeof startAppListening;
 addPublisherListener(startAppListening);
 addDocsPullerListener(startAppListening);
 addHydrationListener(startAppListening);
+addBridgeListener(startAppListening);
