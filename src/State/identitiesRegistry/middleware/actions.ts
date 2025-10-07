@@ -8,3 +8,5 @@ export const identityUnloaded = createAction("identity/unloaded");
 export const publisherFlushRequested = createAction("publisher/flush");
 
 export const checkDirtyRequested = createAction("publisher/checkDirty");
+
+export const upgradeSourcesToNofferBridge = createAction("upgradeSourcesToNofferBridge");

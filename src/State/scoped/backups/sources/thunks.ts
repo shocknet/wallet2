@@ -8,14 +8,21 @@ import { SourceType } from "../../common"
 import { generateNewKeyPair } from "@/Api/helpers"
 import { getSourceDocDtag } from "@/State/identitiesRegistry/helpers/processDocs"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
+import { selectNprofileViewsByLpk } from "./selectors"
+import { getNostrClient } from "@/Api/nostr"
 
 
 export type NProfileSourceToAdd = {
 	lpk: string;
-	label: string | null;
+	label?: string;
 	relays: string[];
 	bridgeUrl: string | null;
-	adminToken: string | null;
+	adminEnrollToken?: string;
+	inviteToken?: string;
+	integrationData?: {
+		token: string
+		lnAddress: string
+	}
 }
 
 export type LightningAddressSourceToAdd = {
@@ -36,10 +43,83 @@ export const onAddSourceDoc = (sourceDoc: SourceDocV0): AppThunk<Promise<void>> 
 		dispatch(identityActions.setFavoriteSource({ sourceId: sourceDoc.source_id, by: deviceId }));
 	}
 }
-export const addNprofileSource = ({ lpk, label, relays, bridgeUrl, adminToken }: NProfileSourceToAdd): AppThunk<Promise<void>> => async (dispatch) => {
+export const addNprofileSource = ({
+	lpk,
+	label,
+	relays,
+	bridgeUrl,
+	adminEnrollToken,
+	integrationData,
+	inviteToken
+}: NProfileSourceToAdd): AppThunk<Promise<string>> => async (dispatch, getState) => {
 	const deviceId = getDeviceId();
+
+
+	if (adminEnrollToken) {
+		const existingSourcesForLpk = selectNprofileViewsByLpk(getState(), lpk);
+
+		if (existingSourcesForLpk.length > 0) {
+			const existingSource = existingSourcesForLpk[0];
+
+			if (existingSource.adminToken !== adminEnrollToken) {
+				console.log("resetting admin access to existing source")
+				const client = await getNostrClient({ pubkey: lpk, relays: relays }, existingSource.keys);
+				const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+				if (res.status !== "OK") {
+					throw new Error("Error enrolling admin token " + res.reason);
+				}
+				dispatch(sourcesActions.updateAdminToken({ sourceId: existingSource.sourceId, adminToken: adminEnrollToken, by: deviceId }));
+
+				return `successufly linked admin access to ${lpk}`;
+			}
+
+
+		}
+	}
+
+
 	const keyPair = generateNewKeyPair();
 	const id = `${lpk}-${keyPair.publicKey}`;
+
+
+	let vanityName: string | undefined = undefined;
+	console.log("checking for integration data")
+	// integration to an existing pub account
+	if (integrationData) {
+		console.log("linking to existing account")
+		const res = await (await getNostrClient({ pubkey: lpk, relays: relays }, keyPair))
+			.LinkNPubThroughToken({
+				token: integrationData.token,
+			});
+
+		if (res.status !== "OK") {
+			throw new Error("Error using integration token  " + res.reason);
+		}
+		vanityName = integrationData.lnAddress;
+	}
+
+	console.log("checking for invite token")
+	if (inviteToken) {
+		console.log("using invite token")
+		const res = await (await getNostrClient({ pubkey: lpk, relays: relays }, keyPair))
+			.UseInviteLink({ invite_token: inviteToken })
+		if (res.status !== "OK") {
+			throw new Error("Error using invitation token " + res.reason);
+		}
+	}
+
+	console.log("checking for admin token")
+	if (adminEnrollToken) {
+		console.log("enrolling admin token")
+		const client = await getNostrClient({ pubkey: lpk, relays: relays }, keyPair);
+		const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
+		if (res.status !== "OK") {
+			throw new Error("Error enrolling admin token " + res.reason);
+		}
+	}
+
+
+
 
 	const relayMap: Record<string, LwwFlag> = {};
 	for (const r of relays) {
@@ -51,7 +131,7 @@ export const addNprofileSource = ({ lpk, label, relays, bridgeUrl, adminToken }:
 
 		doc_type: "doc/shockwallet/source_",
 		schema_rev: 0,
-		label: newLww(label, deviceId),
+		label: newLww(label || null, deviceId),
 		deleted: newLww(false, deviceId),
 		created_at: Date.now(),
 		type: SourceType.NPROFILE_SOURCE,
@@ -60,13 +140,19 @@ export const addNprofileSource = ({ lpk, label, relays, bridgeUrl, adminToken }:
 		lpk: lpk,
 		relays: relayMap,
 		is_ndebit_discoverable: newLww(false, deviceId),
-		admin_token: newLww(adminToken ?? null, deviceId),
+		admin_token: newLww(adminEnrollToken ?? null, deviceId),
 		bridgeUrl: newLww(bridgeUrl ?? null, deviceId)
 	};
 
 	dispatch(sourcesActions._createDraftDoc({ sourceId: sourceDoc.source_id, draft: sourceDoc }));
 
 	dispatch(onAddSourceDoc(sourceDoc));
+
+	if (vanityName) {
+		dispatch(sourcesActions.setVanityName({ sourceId: sourceDoc.source_id, vanityName: vanityName }))
+	}
+
+	return "Successfuly added pub source";
 }
 
 

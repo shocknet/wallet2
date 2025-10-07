@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from '@/State/store/store';
-import { decodeNprofile } from '@/constants';
+import { useDispatch, } from '@/State/store/store';
+import { decodeNprofile, getDeviceId } from '@/constants';
 import { getNostrClient } from '@/Api/nostr';
-import { editSpendSources } from '@/State/Slices/spendSourcesSlice';
 import { generateNewKeyPair } from '@/Api/helpers';
 import { toast } from 'react-toastify';
 import { toggleLoading } from '@/State/Slices/loadingOverlay';
 import { getAdminSource, setAdminSource, type AdminSource } from './helpers';
+import { useAppSelector } from '@/State/store/hooks';
+import { selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
+import { nip19 } from 'nostr-tools';
+import { sourcesActions } from '@/State/scoped/backups/sources/slice';
 
 
 export const AdminGuard = ({ updateSource }: { updateSource: (adminSource: AdminSource) => void }) => {
 	//const [loading, setLoading] = useState(false)
 	const [adminConnect, setAdminConnect] = useState('')
-	const spendSources = useSelector(state => state.spendSource)
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 	const dispatch = useDispatch();
 	useEffect(() => {
 		const adminSource = getAdminSource()
@@ -20,13 +23,14 @@ export const AdminGuard = ({ updateSource }: { updateSource: (adminSource: Admin
 			updateSource(adminSource)
 			return
 		}
-		const adminSourceId = spendSources.order.find(p => !!spendSources.sources[p].adminToken)
+		const adminSourceId = healthyNprofileSourceViews.find(p => !!p.adminToken)
 		if (adminSourceId) {
 			console.log("admin source found", adminSourceId)
-			updateSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
+			updateSource({ nprofile: nip19.nprofileEncode({ pubkey: adminSourceId.lpk, relays: adminSourceId.relays }), keys: adminSourceId.keys })
 		}
-	}, [spendSources])
+	}, [healthyNprofileSourceViews])
 	const submitAdminConnect = useCallback(async () => {
+		const deviceId = getDeviceId();
 		const splitted = adminConnect.split(":")
 		const inputSource = splitted[0]
 		const adminEnrollToken = splitted.length > 1 ? splitted[1] : undefined;
@@ -38,9 +42,9 @@ export const AdminGuard = ({ updateSource }: { updateSource: (adminSource: Admin
 		try {
 			const data = decodeNprofile(inputSource);
 			const pub = data.pubkey
-			const existingSpendSourceId = spendSources.order.find(id => id.startsWith(pub));
+			const existingSpendSourceId = healthyNprofileSourceViews.find(id => id.lpk === pub);
 			if (existingSpendSourceId) {
-				const spendSource = spendSources.sources[existingSpendSourceId];
+				const spendSource = existingSpendSourceId;
 				if (spendSource && spendSource.adminToken !== adminEnrollToken) {
 					const client = await getNostrClient(inputSource, spendSource.keys!); // TODO: write migration to remove type override
 					const res = await client.EnrollAdminToken({ admin_token: adminEnrollToken });
@@ -49,7 +53,7 @@ export const AdminGuard = ({ updateSource }: { updateSource: (adminSource: Admin
 						dispatch(toggleLoading({ loadingMessage: "" }))
 						return
 					}
-					dispatch(editSpendSources({ ...spendSource, adminToken: adminEnrollToken }));
+					dispatch(sourcesActions.updateAdminToken({ sourceId: spendSource.sourceId, adminToken: adminEnrollToken, by: deviceId }));
 				}
 				dispatch(toggleLoading({ loadingMessage: "" }))
 				return

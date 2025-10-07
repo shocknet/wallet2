@@ -32,6 +32,10 @@ export const RecipentInputHelperText = ({ inputState }: { inputState: InputState
 						{inputState.parsedData.type}
 						<IonIcon icon={checkmarkCircle} color="success" style={{ marginLeft: 8 }} />
 					</p>
+					<p>{
+						(inputState.parsedData.type === InputClassification.NPROFILE && inputState.parsedData.adminEnrollToken) &&
+						"with admin enroll token"
+					}</p>
 
 				</IonText>
 			);

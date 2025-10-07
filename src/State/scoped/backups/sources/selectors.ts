@@ -134,15 +134,14 @@ const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => 
 
 
 export const selectSourceViews = createSelector(
-	[docsSelectors.selectEntities, metadataSelectors.selectEntities],
+	[docsSelectors.selectAll, metadataSelectors.selectEntities],
 	(sourceEntities, metaEntities): SourceView[] => {
 		const out: SourceView[] = [];
-		for (const id in sourceEntities) {
-			const e = sourceEntities[id];
-			if (!e) continue;
-			const d = e.draft;
+		for (const source of sourceEntities) {
+
+			const d = source.draft;
 			if (isDeleted(d)) continue;
-			out.push(createSourceView(d, metaEntities[id]));
+			out.push(createSourceView(d, metaEntities[d.source_id]));
 		}
 		return out;
 	}

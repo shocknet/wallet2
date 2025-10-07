@@ -532,18 +532,7 @@ ion-back-button::part(text) {
 }
 
 
-ion-item.card-item {
 
-
-
-	border-radius: 12px;
-
-
-	margin-bottom: 0.9rem;
-
-	--background: var(--ion-color-secondary);
-	box-shadow: var(--wallet-box-shadow);
-}
 
 .code-string {
 	font-size: 0.9rem;

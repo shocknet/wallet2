@@ -1,8 +1,7 @@
 import AddSourceNavModal from "@/Components/Modals/Sources/AddSourceModal";
 import { EditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
 import SourceCard from "@/Components/SourceCard";
-import BackToolbar from "@/Layout2/BackToolbar";
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import {
 	IonButton,
@@ -12,16 +11,42 @@ import {
 	IonList,
 	IonPage,
 	IonTitle,
-	IonToolbar
+	IonToolbar,
+	useIonModal,
+	useIonViewDidEnter
 } from "@ionic/react";
 import { addOutline } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
 import { RouteComponentProps } from "react-router-dom";
+import { InputState } from "../Send/types";
+import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
+import { useToast } from "@/lib/contexts/useToast";
+import { SweepLnurlwDialog } from "@/Components/Modals/DialogeModals";
+import { Satoshi } from "@/lib/types/units";
+import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
+import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
+import { SourceType } from "@/State/scoped/common";
+import { createNostrInvoice } from "@/Api/helpers";
+import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
+import HomeHeader from "@/Layout2/HomeHeader";
 
-const SourcesPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
+const SourcesPage: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
+	const { history } = props;
 	const sources = useAppSelector(selectSourceViews);
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+
+
+	const { showToast } = useToast();
+	const [lnurwAmount, setLnurlwAmount] = useState<Satoshi>(0 as Satoshi);
+
+	const [presentSweepLnurlw, dismissLnurlw] = useIonModal(
+		<SweepLnurlwDialog lnurlwAmount={lnurwAmount} dismiss={(data: { selectedSource: SourceView } | null, role: "cancel" | "confirm") => dismissLnurlw(data, role)} />
+	);
+
+
+
+
 
 	const selectedSource = useMemo(() => {
 		return sources.find(s => s.sourceId === selectedSourceId) ?? null
@@ -34,20 +59,144 @@ const SourcesPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps)
 		setIsAddSourceOpen(false)
 	}, []);
 
+	const [integrationData, setIntegrationData] = useState({
+		token: "",
+		lnAddress: ""
+	});
+	const [inviteToken, setInviteToken] = useState("true");
+
+
+	const [receivedInputState, setReceivedInputState] = useState<InputState>({
+		status: "idle",
+		inputValue: ""
+	});
+
+	const handleSearchParams = useCallback((search: URLSearchParams) => {
+		const addressSearch = new URLSearchParams(search);
+		const sourceString = addressSearch.get("addSource");
+		if (!sourceString) {
+			return;
+		}
+		const token = addressSearch.get("token");
+		const lnAddress = addressSearch.get("lnAddress");
+		const invToken = addressSearch.get("inviteToken");
+		if (invToken) {
+			setInviteToken(invToken)
+		}
+		if (token && lnAddress) {
+			setIntegrationData({ token, lnAddress })
+		}
+		import("@/lib/parse")
+			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
+				const { classification, value: normalizedInput } = identifyBitcoinInput(
+					sourceString,
+					{
+						allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
+					}
+				);
+				if (classification === InputClassification.UNKNOWN) {
+					setReceivedInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
+					return;
+				}
+				setReceivedInputState({
+					status: "loading",
+					inputValue: normalizedInput,
+					classification
+				});
+
+				parseBitcoinInput(normalizedInput, classification)
+					.then(parsed => {
+						setReceivedInputState({
+							status: "parsedOk",
+							inputValue: normalizedInput,
+							parsedData: parsed
+						});
+						setIsAddSourceOpen(true)
+					})
+					.catch((err: any) => {
+						setReceivedInputState({
+							status: "error",
+							inputValue: normalizedInput,
+							error: err.message,
+							classification
+						});
+					})
+			})
+			.catch(() => {
+				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
+			})
+	}, [showToast]);
+
+	const handleLnurlWithdraw = useCallback(async (parsedLnurlW: ParsedLnurlWithdrawInput) => {
+		if (sources.length === 0) return;
+		if (parsedLnurlW.max <= 0) return;
+		const amount = parsedLnurlW.max
+		setLnurlwAmount(amount);
+
+		presentSweepLnurlw({
+			onDidDismiss: async (event: CustomEvent<OverlayEventDetail>) => {
+				if (event.detail.role === "cancel") return;
+				if (event.detail.role === "confirm") {
+
+					const selectedSource = event.detail.data.selectedSource as SourceView
+					let invoice = ""
+					try {
+						if (selectedSource.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
+
+							const { pr } = await getInvoiceForLnurlPay({
+								lnUrlOrAddress: selectedSource.sourceId,
+								amountSats: amount,
+							});
+							invoice = pr;
+						} else {
+							invoice = await createNostrInvoice({
+								pubkey: selectedSource.lpk,
+								relays: selectedSource.relays
+							},
+								selectedSource.keys,
+								amount,
+							);
+						}
+						await requestLnurlWithdraw({
+							lnurl: parsedLnurlW.data,
+							invoice,
+							amountSats: amount,
+
+						})
+					} catch (err: any) {
+						showToast({
+							message: err?.message || "An error occured while sweeping lnurl-w",
+							color: "danger"
+						});
+					}
+
+				}
+			}
+		})
+
+	}, [sources, presentSweepLnurlw, showToast]);
+
+
+
+
+	useIonViewDidEnter(() => {
+		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {}
+		if (parsedLnurlW) {
+			handleLnurlWithdraw(parsedLnurlW)
+		} else {
+			const searchParams = new URLSearchParams(history.location.search);
+			handleSearchParams(searchParams);
+		}
+
+
+		history.replace(history.location.pathname);
+	}, [history.location.key]);
+
 
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="" />
-				{/* <IonToolbar>
-						<IonTitle className="android-centered-title">User Profile</IonTitle>
-						<IonButtons slot="end">
-							<IonBadge color={isDirty ? "warning" : "success"} style={{ marginLeft: 8 }}>
-								<IonIcon icon={isDirty ? cloudUploadOutline : checkmarkCircle} className="ion-margin-end" />
-								{isDirty ? "pending publish…" : "synced"}
-							</IonBadge>
-						</IonButtons>
-					</IonToolbar> */}
+				<HomeHeader {...props} />
 				<IonToolbar className="big-toolbar">
 					<IonTitle className="android-centered-title">Attached Nodes</IonTitle>
 				</IonToolbar>
@@ -60,7 +209,13 @@ const SourcesPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps)
 					onSave={() => console.log("onSave")}
 					open={!!selectedSource}
 				/>
-				<AddSourceNavModal open={isAddSourceOpen} onClose={onAddClose} />
+				<AddSourceNavModal
+					receivedInputState={receivedInputState}
+					open={isAddSourceOpen}
+					onClose={onAddClose}
+					integrationData={integrationData}
+					invitationToken={inviteToken}
+				/>
 				<IonList lines="none">
 					{
 						sources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)

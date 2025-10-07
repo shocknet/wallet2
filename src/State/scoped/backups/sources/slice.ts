@@ -122,6 +122,17 @@ export const sourcesSlice = createSlice({
 			e.dirty = true;
 		},
 
+		updateAdminToken(state, a: PayloadAction<{ sourceId: string; adminToken: string | null; by: string }>) {
+			const e = state.docs.entities[a.payload.sourceId];
+			if (!e) return;
+			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
+			const d = e.draft;
+			if (a.payload.adminToken !== d.admin_token.value) {
+				d.admin_token = bump(d.admin_token, a.payload.adminToken, a.payload.by);
+			}
+			e.dirty = true;
+		},
+
 
 		setRelayPresence(state, a: PayloadAction<{ sourceId: string; relayUrl: string; present: boolean; by: string; now: number }>) {
 			const e = state.docs.entities[a.payload.sourceId];

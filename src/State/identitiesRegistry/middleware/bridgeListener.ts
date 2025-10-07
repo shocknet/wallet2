@@ -1,4 +1,3 @@
-import { createAction, } from "@reduxjs/toolkit";
 import { getNostrClient } from "@/Api/nostr";
 import Bridge from "@/Api/bridge";
 import { Buffer } from "buffer";
@@ -6,14 +5,14 @@ import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
 import { toast } from "react-toastify";
 import { AppstartListening } from "@/State/store/listenerMiddleware";
-import { identityLoaded, identityUnloaded } from "./actions";
+import { identityLoaded, identityUnloaded, upgradeSourcesToNofferBridge } from "./actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { NprofileView, selectNprofileViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { SourceType } from "@/State/scoped/common";
 const { getToken } = nip98
 
 
-export const upgradeSourcesToNofferBridge = createAction("upgradeSourcesToNofferBridge");
+
 
 const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanityname: string) => void) => {
 

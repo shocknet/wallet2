@@ -30,6 +30,7 @@ import { Capacitor } from "@capacitor/core"
 import { useAppSelector } from "@/State/store/hooks"
 import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors"
 import { nip19 } from "nostr-tools"
+import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 
 
 interface AppBuildInfo {
@@ -56,6 +57,13 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 }
 
 const NavigationMenu = () => {
+	const activeIdentityId = useAppSelector(selectActiveIdentityId);
+	console.log({ activeIdentityId })
+	if (!activeIdentityId) return null;
+	return <Inner />
+}
+
+const Inner = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
 	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)

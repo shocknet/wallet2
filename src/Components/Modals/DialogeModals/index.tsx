@@ -1,4 +1,5 @@
 import {
+	IonAvatar,
 	IonButton,
 	IonButtons,
 	IonCol,
@@ -6,6 +7,8 @@ import {
 	IonHeader,
 	IonIcon,
 	IonInput,
+	IonLabel,
+	IonNote,
 	IonRow,
 	IonText,
 	IonTitle,
@@ -16,16 +19,23 @@ import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { useEffect, useRef, useState } from "react";
 import CopyMorphButton from "@/Components/CopyMorphButton";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectFavoriteSourceView, selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
+import { SourceType } from "@/State/scoped/common";
+import { CustomSelect } from "@/Components/CustomSelect";
+import { Satoshi } from "@/lib/types/units";
+import { formatSatoshi } from "@/lib/units";
 
 
 
 
 export const BackupKeysDialog = (
-	{ dismiss, privKey }:
-		{
-			dismiss: (data: undefined, role: "cancel" | "file" | "confirm") => void,
-			privKey: string
-		}
+	{
+		dismiss, privKey
+	}: {
+		dismiss: (data: undefined, role: "cancel" | "file" | "confirm") => void,
+		privKey: string
+	}
 ) => {
 
 	const recoveryInputRef = useRef<HTMLInputElement>(null);
@@ -275,3 +285,99 @@ export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passph
 	);
 };
 
+
+
+export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: { selectedSource: SourceView } | null, role: "cancel" | "confirm") => void, lnurlwAmount: Satoshi }) => {
+
+
+	const sourceViews = useAppSelector(selectSourceViews);
+	const favoriteSourceView = useAppSelector(selectFavoriteSourceView)!;
+
+
+	const [selectedSource, setSelectedSource] = useState(favoriteSourceView);
+
+
+
+
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<IonToolbar color="secondary">
+					<IonTitle>
+						<IonText className="text-medium text-lg text-weight-high">
+							Sweep LNURL-W to one of your sources
+						</IonText>
+					</IonTitle>
+				</IonToolbar>
+			</IonHeader>
+
+			<div className={classNames(styles["wrapper"], "ion-padding")}>
+				<IonText className="text-medium">
+					Choose a source to sweep {formatSatoshi(lnurlwAmount)} sats to.
+				</IonText>
+				<IonGrid>
+					<IonRow className="ion-margin-top ion-nowrap ion-justify-content-center ion-align-items-center">
+						<IonCol>
+							<CustomSelect<SourceView>
+								items={sourceViews}
+								selectedItem={selectedSource}
+								onSelect={setSelectedSource}
+								getIndex={(source) => source.sourceId}
+								title="Select Source"
+								subTitle="Select the source you want to spend from"
+								renderItem={(source) => {
+									return (
+										<>
+											<IonAvatar slot="start">
+												<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
+											</IonAvatar>
+											<IonLabel style={{ width: "100%" }}>
+												<h2>{source.label}</h2>
+												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
+													{source.type === SourceType.NPROFILE_SOURCE ? "Lightning.Pub Source" : "Lightning Address Source"}
+												</IonNote>
+											</IonLabel>
+											<IonText slot="end" color="primary">
+												{
+													source.type === SourceType.NPROFILE_SOURCE
+													&&
+													`${+(source.balanceSats || 0 as Satoshi).toLocaleString()} sats`
+												}
+
+											</IonText>
+										</>
+									)
+								}}
+								renderSelected={(source) => (
+									<IonText className="text-medium">
+										{source?.label || ''}
+										<IonNote className="text-low" style={{ display: 'block' }}>
+											{
+												source.type === SourceType.NPROFILE_SOURCE
+												&&
+												`${+(source.balanceSats || 0 as Satoshi).toLocaleString()} sats`
+											}
+										</IonNote>
+									</IonText>
+								)}
+							>
+							</CustomSelect>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
+						<IonCol size="auto">
+							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+								Cancel
+							</IonButton>
+						</IonCol>
+						<IonCol size="auto">
+							<IonButton disabled={!selectedSource} onClick={() => dismiss({ selectedSource }, "confirm")}>
+								Sweep
+							</IonButton>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+			</div>
+		</>
+	);
+};

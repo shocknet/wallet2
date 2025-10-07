@@ -90,6 +90,7 @@ const AppJobs = () => {
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
+	const activeIdentityId = useSelector(selectActiveIdentityId);
 
 	useEffect(() => {
 		cleanupStaleServiceWorkers()
@@ -122,7 +123,11 @@ const AppJobs = () => {
 	return (
 		<>
 			{
-				loadBackgroundJobs
+				(
+					loadBackgroundJobs
+					&&
+					activeIdentityId
+				)
 				&&
 				<Suspense fallback={null}>
 					<BackgroundJobs />
@@ -254,13 +259,13 @@ const AppContent: React.FC = () => {
 					render={(props) =>
 						<NodeupGate>
 							<IdentityGate>
-								<SpendSourceGate>
+								<HealthyNprofileSourceWithBalanceGate>
 									{(source) => (
 										<Suspense fallback={<FullSpinner />}>
 											<Send {...props} initialSource={source} />
 										</Suspense>
 									)}
-								</SpendSourceGate>
+								</HealthyNprofileSourceWithBalanceGate>
 							</IdentityGate>
 						</NodeupGate>
 					}
@@ -494,7 +499,7 @@ const IdentityGate = ({ children }: GateProps) => {
 type SpendChild = (source: NprofileView) => React.ReactNode;
 const spendable = (s: NprofileView) => Number(s.maxWithdrawableSats ?? 0);
 
-const SpendSourceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
+const HealthyNprofileSourceWithBalanceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
 	const loc = useLocation();
 	const favorite = useAppSelector(selectFavoriteSourceView)!;
 	const all = useAppSelector(selectHealthyNprofileViews);
@@ -521,6 +526,43 @@ const SpendSourceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
 
 	if (all.length === 0) {
 		console.log("REDIRECTING NOW")
+		return <Redirect
+			to={{
+				pathname: "/home",
+				state: { from: loc.pathname, reason: "noSources" }
+			}}
+		/>
+	}
+
+
+	return <>{children(preferred!)}</>;
+};
+
+const _HealthyNprofileSourceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
+	const loc = useLocation();
+	const favorite = useAppSelector(selectFavoriteSourceView)!;
+	const all = useAppSelector(selectHealthyNprofileViews);
+
+
+
+	const preferred = useMemo<NprofileView | null>(() => {
+		// 1) Prefer favorite if it’s an nprofile, not stale
+		if (
+			favorite &&
+			favorite.type === SourceType.NPROFILE_SOURCE &&
+			!favorite.beaconStale
+		) {
+			return favorite;
+		}
+
+		if (all.length === 0) return null;
+		// 2) Otherwise, choose the source with the highest spendable balance
+		return all[0];
+	}, [favorite, all]);
+
+
+
+	if (all.length === 0) {
 		return <Redirect
 			to={{
 				pathname: "/home",

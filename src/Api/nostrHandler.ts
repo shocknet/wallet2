@@ -329,7 +329,10 @@ export default class RelayCluster {
 			this.connectingRelays.clear();
 		}
 		this.relays.values().forEach(relay => {
-			relay.relay.close();
+			if (relay.relay.connected) {
+				relay.relay.close();
+			}
+
 		})
 		this.relays.clear();
 		this.beaconListeners = {};

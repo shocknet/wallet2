@@ -2,68 +2,104 @@ import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { SourceType } from "@/State/scoped/common";
 import { useAppSelector } from "@/State/store/hooks";
-import { IonAvatar, IonBadge, IonButton, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
-import { chevronForward, star, cloudOfflineOutline, copyOutline, flashOutline, globeOutline, linkOutline, radioOutline, starOutline, trash, walletOutline } from "ionicons/icons";
+import { IonButton, IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
+import { star, walletOutline, personCircleOutline, ellipsisVerticalOutline } from "ionicons/icons";
+import "./styles/index.css";
+import { formatSatoshi } from "@/lib/units";
+import { Satoshi } from "@/lib/types/units";
+
 interface Props {
 	source: SourceView;
 	onClick: (s: SourceView) => void;
 }
-const SourceCard = ({ source, onClick }: Props) => {
-	return <Inner source={source} onClick={onClick} />
-
-}
-
-
-const fmtSats = (n: number | undefined) =>
-	(+(n ?? 0)).toLocaleString() + " sats";
-
-const truncate = (s: string, n = 24) =>
-	s.length > n ? s.slice(0, n - 3) + "…" : s;
-
-export const Inner = ({ source, onClick }: Props) => {
+const SourceCard = ({ source, onClick: onPick }: Props) => {
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
-
-	const leftIcon =
-		source.type === SourceType.NPROFILE_SOURCE
-			? radioOutline
-			: source.type === SourceType.LIGHTNING_ADDRESS_SOURCE
-				? flashOutline
-				: globeOutline;
-
 
 	const label = source.type === SourceType.NPROFILE_SOURCE
 		? source.beaconName || source.label || "Unnamed source"
 		: source.sourceId;
 
-	const subtitle =
-		source.type === SourceType.NPROFILE_SOURCE
-			? `${source.beaconName
-				? source.label
-					? `${source.label}`
-					: ""
-				: ""
-			} • ${source.relays.length} relays`
-			: ""
-
-
 
 	return (
 		<IonItem
-			className="card-item"
+			className="source-card-item"
 			button
 			detail={false}
-			onClick={onClick}
+
 
 			aria-label={`Open source ${source.label} `}
 		>
 
-			<IonAvatar slot="start" aria-hidden="true" style={{ width: 36, height: 36, marginLeft: "0.8rem" }}>
-				<IonIcon icon={leftIcon} style={{ fontSize: 28 }} />
-			</IonAvatar>
+
+			<IonIcon slot="start" icon={personCircleOutline} className="source-card-icon" />
 
 			<IonLabel>
+				<IonGrid>
+					<IonRow className="ion-nowrap ion-align-items-center">
+						<IonCol className="ion-text-start" style={{ flex: "1 1 0", minWidth: 0, paddingTop: "1.2rem" }}>
+
+							<IonText className="source-card-item-title text-high">
+								{label}
+							</IonText>
+
+
+						</IonCol>
+						<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto", marginRight: "0.8rem" }} >
+
+							{
+								favoriteSourceId === source.sourceId
+								&&
+
+
+								<IonIcon color="primary" className="text-md" icon={star} />
+
+
+							}
+
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-nowrap ion-align-items-center ion-margin-top">
+						<IonCol className="ion-text-start" style={{ flex: "1 1 0", minWidth: 0 }}>
+							{
+								isNprofile
+								&&
+								<IonText className="text-medium balance-row">
+									<IonIcon icon={walletOutline} />
+									{formatSatoshi(source.balanceSats ?? 0 as Satoshi)} sats
+								</IonText>
+
+							}
+						</IonCol>
+
+						<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto" }}>
+							<IonButton onClick={() => onPick(source)} color="light" fill="clear" shape="round" style={{ margin: 0, padding: 0 }} >
+								<IonIcon slot="icon-only" icon={ellipsisVerticalOutline} />
+							</IonButton>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+
+
+			</IonLabel>
+
+			{/* <div slot="end">
+
+				<IonGrid slot="end">
+					<IonRow className="ion-align-items-start">
+						<IonCol size="7">
+
+						</IonCol>
+						<IonCol size="7">
+							<IonIcon icon={starOutline} />
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+			</div> */}
+			{/* 			<IonIcon slot="end" icon={starOutline} /> */}
+
+			{/* <IonLabel>
 				<IonGrid>
 					<IonRow className="ion-nowrap ion-align-items-center">
 						<IonCol size="8" sizeXs="6" className="ion-text-start">
@@ -127,7 +163,7 @@ export const Inner = ({ source, onClick }: Props) => {
 						</IonCol>
 					</IonRow>
 
-					{/* Details row (nprofile only) */}
+
 					{isNprofile && (
 						<IonRow className="ion-nowrap ion-margin-top ion-align-items-center" style={{ gap: 12 }}>
 							<IonCol size="auto" className="ion-no-padding">
@@ -145,7 +181,7 @@ export const Inner = ({ source, onClick }: Props) => {
 						</IonRow>
 					)}
 				</IonGrid>
-			</IonLabel>
+			</IonLabel> */}
 		</IonItem>
 	);
 };

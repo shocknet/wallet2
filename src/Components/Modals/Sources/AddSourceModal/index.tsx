@@ -19,6 +19,7 @@ import {
 	IonNavLink,
 	IonBackButton,
 	IonListHeader,
+	useIonLoading,
 } from "@ionic/react";
 import { closeOutline, addOutline } from "ionicons/icons";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,19 +38,37 @@ import { addLightningAddressSource, addNprofileSource } from "@/State/scoped/bac
 import { PubSourceStatus } from "../helpers";
 
 
+interface AddSourceNavModalProps {
+	open: boolean;
+	onClose: () => void;
+	integrationData?: {
+		token: string
+		lnAddress: string
+	}
+	invitationToken?: string;
+	receivedInputState: InputState;
+
+}
+
 const AddSourceNavModal = memo(({
 	open,
 	onClose,
-}: {
-	open: boolean;
-	onClose: () => void;
-}) => {
+	integrationData,
+	invitationToken,
+	receivedInputState
+}: AddSourceNavModalProps) => {
+
+
+
 	return (
 		<IonModal className="wallet-modal" isOpen={open} onDidDismiss={onClose}>
 			<IonNav
 				root={() =>
 					<AddSourceStart
 						onClose={onClose}
+						integrationData={integrationData}
+						invitationToken={invitationToken}
+						receivedInputState={receivedInputState}
 					/>
 				}
 			/>
@@ -61,20 +80,20 @@ AddSourceNavModal.displayName = "AddSourceNavModal";
 export default AddSourceNavModal;
 
 
+type AddSourceStartProps = Omit<AddSourceNavModalProps, "open">
 const AddSourceStart = ({
 	onClose,
-}: {
-	onClose: () => void;
-}) => {
-	const [input, setInput] = useState("");
+	integrationData,
+	invitationToken,
+	receivedInputState,
+
+}: AddSourceStartProps) => {
+	const [input, setInput] = useState(receivedInputState.inputValue || "");
 
 	const [isTouched, setIsTouched] = useState(false);
 
 	const inputRef = useRef<HTMLIonInputElement>(null);
-	const [inputState, setInputState] = useState<InputState>({
-		status: "idle",
-		inputValue: ""
-	});
+	const [inputState, setInputState] = useState<InputState>(receivedInputState);
 
 	const debouncedInput = useDebounce(input, 800);
 	const { showToast } = useToast();
@@ -155,7 +174,6 @@ const AddSourceStart = ({
 
 
 
-
 	return (
 		<>
 			<IonHeader>
@@ -204,10 +222,20 @@ const AddSourceStart = ({
 
 
 
+
 				<div style={{ display: parsedNprofile ? "block" : "none", marginTop: "3rem" }}>
+
+
 					<IonNavLink
 						routerDirection="forward"
-						component={() => <AddNprofileScreen onClose={onClose} parsedNprofileData={parsedNprofile as ParsedNprofileInput} />
+						component={() =>
+							<AddNprofileScreen
+								onClose={onClose}
+								parsedNprofileData={parsedNprofile as ParsedNprofileInput}
+								integrationData={integrationData}
+								invitationToken={invitationToken}
+
+							/>
 						}
 					>
 						<IonButton expand="block" color="primary" disabled={inputState.status !== "parsedOk"}>
@@ -235,16 +263,14 @@ const AddSourceStart = ({
 	);
 }
 
-// ------------- Screen 2a: nprofile -------------
+type AddNprofileScreenProps = Omit<AddSourceNavModalProps, "open" | "receivedInputState"> & { parsedNprofileData: ParsedNprofileInput }
 const AddNprofileScreen = ({
 	parsedNprofileData,
 	onClose,
+	integrationData,
+	invitationToken,
 
-}: {
-	parsedNprofileData: ParsedNprofileInput
-	onClose: () => void;
-
-}) => {
+}: AddNprofileScreenProps) => {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
@@ -253,27 +279,58 @@ const AddNprofileScreen = ({
 	const [relays, setRelays] = useState<string[]>(parsedNprofileData.relays);
 
 	const [isEditingRelays, setIsEditingRelays] = useState(false);
+	const [presentLoading, dismissLoading] = useIonLoading();
+
+
+	useEffect(() => {
+
+	}, [])
 
 
 	const canAdd = relays.length !== 0;
 
-	const handleAddNProfileSource = useCallback(() => {
-		try {
+	const handleAddNProfileSource = useCallback(async () => {
+		presentLoading({ message: "Processing Source..." });
 
-			dispatch(addNprofileSource({
+		try {
+			const resultMessage = await dispatch(addNprofileSource({
 				lpk: parsedNprofileData.pubkey,
 				relays,
-				adminToken: null,
+				adminEnrollToken: parsedNprofileData.adminEnrollToken,
 				bridgeUrl: bridgeUrl || null,
-				label: label || null
-			}))
+				label: label,
+				integrationData,
+				inviteToken: invitationToken
+			}));
+
+			showToast({
+				color: "success",
+				message: resultMessage
+			});
 			onClose();
 		} catch (err: any) {
 			showToast({
-				message: err?.message || "Failed to add lightning address source"
+				color: "danger",
+				message: err?.message || "Failed to add pub source"
 			});
+		} finally {
+			dismissLoading();
+			onClose();
 		}
-	}, [showToast, dispatch, parsedNprofileData, relays, bridgeUrl, label, onClose]);
+
+	}, [
+		showToast,
+		dispatch,
+		parsedNprofileData,
+		relays,
+		bridgeUrl,
+		label,
+		onClose,
+		presentLoading,
+		dismissLoading,
+		integrationData,
+		invitationToken
+	]);
 
 	return (
 		<>
