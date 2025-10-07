@@ -3,7 +3,6 @@ import { useBackupReminder } from "./useBackReminder";
 import { useDebitRequestHandler } from "./useDebitRequestHandler"
 import { useLnAddressCheck } from "./useLnAddressCheck";
 import { useManageRequestHandler } from "./useManageRequestHandler";
-import { useNodeUpCheck } from "./useNodeUpCheck";
 /* import { usePush } from "./usePush"; */
 import { useRemoteBackup } from "./useRemoteBackup";
 import { useSubscriptionsBackground } from "./useSubscriptionsBackground";
@@ -15,7 +14,6 @@ const BackgroundJobs = () => {
 	/* usePush(); */
 	useLnAddressCheck();
 	useManageRequestHandler();
-	useNodeUpCheck();
 	useRemoteBackup();
 	useSubscriptionsBackground();
 	useSubToBeacons();
