@@ -37,6 +37,7 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
+import { useNodeUpCheck } from './lib/backgroundHooks/useNodeUpCheck';
 
 
 
@@ -76,6 +77,7 @@ document.documentElement.classList.add('dark');
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
 	useAppUrlListener();
+	useNodeUpCheck();
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
