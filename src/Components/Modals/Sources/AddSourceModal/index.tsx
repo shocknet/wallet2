@@ -193,13 +193,13 @@ const AddSourceStart = ({
 			<IonContent className="ion-padding">
 				<div className="ion-margin-top" style={{ marginBottom: 8 }}>
 					<IonText className="text-low">
-						Paste an <strong className="text-medium">nprofile</strong> or a <strong className="text-medium">Lightning Address</strong>. We’ll do the rest.
+						Paste an <strong className="text-medium">nprofile</strong>. We’ll do the rest.
 					</IonText>
 				</div>
 
 				<IonInput
 					color="primary"
-					placeholder="nprofile1...  •  name@domain.com"
+					placeholder="nprofile1..."
 					value={input}
 					onIonInput={onInputChange}
 					fill="solid"
@@ -282,15 +282,12 @@ const AddNprofileScreen = ({
 	const [presentLoading, dismissLoading] = useIonLoading();
 
 
-	useEffect(() => {
-
-	}, [])
 
 
 	const canAdd = relays.length !== 0;
 
 	const handleAddNProfileSource = useCallback(async () => {
-		presentLoading({ message: "Processing Source..." });
+		await presentLoading({ message: "Processing Source..." });
 
 		try {
 			const resultMessage = await dispatch(addNprofileSource({
@@ -307,15 +304,16 @@ const AddNprofileScreen = ({
 				color: "success",
 				message: resultMessage
 			});
-			onClose();
+			await dismissLoading()
+			onClose()
+
 		} catch (err: any) {
 			showToast({
 				color: "danger",
 				message: err?.message || "Failed to add pub source"
 			});
-		} finally {
-			dismissLoading();
-			onClose();
+			await dismissLoading();
+			onClose()
 		}
 
 	}, [

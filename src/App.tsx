@@ -15,8 +15,8 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import "./theme/variables.css";
 
-import { Redirect, Route, useLocation, } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { Redirect, Route, RouteProps, useLocation } from "react-router-dom";
+import React, { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
@@ -39,9 +39,11 @@ import { useAppSelector } from './State/store/hooks';
 import { migrateDeviceToIdentities, OLD_BACKUP_STATE_STORAGE_KEY } from './State/identitiesRegistry/identitiesMigration';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
-import { SourceType } from './State/scoped/common';
-import { NprofileView, selectFavoriteSourceView, selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
+import { selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
 import { Layout } from './Layout';
+
+import CreateIdentityPage from './Pages/CreateIdentity';
+
 
 
 
@@ -50,11 +52,12 @@ import { Layout } from './Layout';
 const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
 const Send = lazy(() => import('./Pages/Send'));
-const CreateIdentityPage = lazy(() => import("./Pages/CreateIdentity/index"));
+
 const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
 const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
 const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
 const SourcesPage = lazy(() => import("./Pages/Sources"));
+const IdentitiesPage = lazy(() => import("./Pages/CreateIdentity/Identities"));
 
 
 const Automation = lazy(() => import('./Pages/Automation'));
@@ -164,25 +167,37 @@ const AppJobs = () => {
 }
 
 const AppContent: React.FC = () => {
-	const activeIdentityPubkey = useAppSelector(selectActiveIdentityId);
+
+
+
 
 
 	return (
-		<>
+		<IonReactRouter>
+			<AppJobs />
 			<NavigationMenu />
-			<IonRouterOutlet id="main-content" animated={true} key={activeIdentityPubkey || "none"}>
-				<Redirect exact from="/" to="/home" />
+			<IonRouterOutlet id="main-content" >
+				<Route
+					exact
+					path="/identities"
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<IdentitiesPage />
+					</Suspense>
+				</Route>
+
+
 
 				<Route
 					exact
 					path="/identity/create"
-					render={(props) =>
-						<Suspense fallback={<FullSpinner />}>
-							<CreateIdentityPage {...props} />
-						</Suspense>
-					}
-				/>
+				>
+					<CreateIdentityPage />
+				</Route>
+
+
 				<Route
+					exact
 					path="/identity/create/keys"
 					render={(props) =>
 						<Suspense fallback={<FullSpinner />}>
@@ -191,6 +206,7 @@ const AppContent: React.FC = () => {
 					}
 				/>
 				<Route
+					exact
 					path="/identity/create/sanctum"
 					render={(props) =>
 						<Suspense fallback={<FullSpinner />}>
@@ -198,383 +214,253 @@ const AppContent: React.FC = () => {
 						</Suspense>
 					}
 				/>
-				<Route
-					path="/identity/overview"
-					render={(props) =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<IdentityOverviewPage {...props} />
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
 
-				<Route
+
+
+
+				<IdentityRouteGate
+					exact
+					path="/identity/overview"
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<IdentityOverviewPage />
+					</Suspense>
+				</IdentityRouteGate>
+
+				<IdentityRouteGate
 					exact
 					path="/home"
-					render={(props) =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Home {...props} />
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Home />
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+
+
+
+
+				<IdentityRouteGate
 					exact
 					path="/sources"
-					render={(props) =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<SourcesPage {...props} />
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<SourcesPage />
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/receive"
-					render={(props) =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Receive {...props} />
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
 
-				<Route
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Receive />
+					</Suspense>
+				</IdentityRouteGate>
+
+				<IdentityRouteGate
 					exact
 					path="/send"
-					render={(props) =>
-						<NodeupGate>
-							<IdentityGate>
-								<HealthyNprofileSourceWithBalanceGate>
-									{(source) => (
-										<Suspense fallback={<FullSpinner />}>
-											<Send {...props} initialSource={source} />
-										</Suspense>
-									)}
-								</HealthyNprofileSourceWithBalanceGate>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<AtLeastOneHealthyNprofileSourceRouteGate>
+						<Suspense fallback={<FullSpinner />}>
+							<Send />
+						</Suspense>
+					</AtLeastOneHealthyNprofileSourceRouteGate>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/automation"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Automation />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
 
-				<Route
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Automation />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
+
+
+				<IdentityRouteGate
 					exact
 					path="/prefs"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Prefs />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
 
-				<Route
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Prefs />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
+
+				<IdentityRouteGate
 					exact
 					path="/contacts"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Contacts />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Contacts />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
 
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/invitations"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Invitations />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Invitations />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
 
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/notify"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Notify />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Notify />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/metrics"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Metrics />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Metrics />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/metrics/earnings"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Earnings />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Earnings />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/metrics/routing"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Routing />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Routing />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/LApps"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<LinkedApp />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<LinkedApp />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/management"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Management />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Management />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/Offers"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Offers />
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
+				>
+					<AtLeastOneHealthyNprofileSourceRouteGate>
+						<Suspense fallback={<FullSpinner />}>
+							<Offers />
+						</Suspense>
+					</AtLeastOneHealthyNprofileSourceRouteGate>
+				</IdentityRouteGate>
 
-				<Route
+				<IdentityRouteGate
 					exact
 					path="/Stats"
-					render={() =>
-						<NodeupGate>
-							<IdentityGate>
-								<Suspense fallback={<FullSpinner />}>
-									<Layout>
-										<Stats />
-									</Layout>
-								</Suspense>
-							</IdentityGate>
-						</NodeupGate>
-					}
-				/>
-				<Route render={() => <Redirect to="/home" />} />
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<Layout>
+							<Stats />
+						</Layout>
+					</Suspense>
+				</IdentityRouteGate>
+
 			</IonRouterOutlet >
-		</>
+		</IonReactRouter>
 	);
 };
 
 
 
-
-
-interface GateProps {
-	children: React.ReactNode;
+const IdentityRouteGate = ({ children, ...rest }: RouteProps & { children: ReactNode }) => {
+	return (
+		<Route
+			{...rest}
+			render={() => <InnerGate pathname={rest.path as string}>{children}</InnerGate>}
+		/>
+	);
 }
 
-const NodeupGate = ({ children }: GateProps) => {
+const InnerGate = ({ children, pathname }: { children: ReactNode, pathname?: string }) => {
 	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
-
-	if (!isBoostrapped) return <Redirect to="/identity/create" />
-
-	return children;
-};
-
-const IdentityGate = ({ children }: GateProps) => {
-	const activeIdentity = useAppSelector(selectActiveIdentityId);
-
-	if (!activeIdentity) return <Redirect to="/identities" />
-
-	return children;
-};
+	const activeIdentity = useAppSelector(selectActiveIdentityId, (prev, next) => prev === next);
+	const ready = isBoostrapped && activeIdentity;
+	const location = useLocation()
 
 
-
-type SpendChild = (source: NprofileView) => React.ReactNode;
-const spendable = (s: NprofileView) => Number(s.maxWithdrawableSats ?? 0);
-
-const HealthyNprofileSourceWithBalanceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
-	const loc = useLocation();
-	const favorite = useAppSelector(selectFavoriteSourceView)!;
-	const all = useAppSelector(selectHealthyNprofileViews);
-
-
-
-	const preferred = useMemo<NprofileView | null>(() => {
-		// 1) Prefer favorite if it’s an nprofile, not stale, and has spendable balance
-		if (
-			favorite &&
-			favorite.type === SourceType.NPROFILE_SOURCE &&
-			!favorite.beaconStale &&
-			spendable(favorite) > 0
-		) {
-			return favorite;
-		}
-
-		if (all.length === 0) return null;
-		// 2) Otherwise, choose the source with the highest spendable balance
-		return all.reduce((best, s) => (spendable(s) > spendable(best) ? s : best), all[0]);
-	}, [favorite, all]);
+	if (ready) {
+		return children;
+	}
+	return (
+		<Redirect
+			to={{
+				pathname: "/identity/create",
+				state: { from: location }
+			}}
+		/>
+	);
+}
 
 
+const AtLeastOneHealthyNprofileSourceRouteGate = ({ children }: { children: ReactNode }) => {
+	const location = useLocation();
+	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews, (prev, next) => prev.length === next.length);
 
-	if (all.length === 0) {
-		console.log("REDIRECTING NOW")
+	if (healthyNprofileViews.length === 0) {
 		return <Redirect
 			to={{
 				pathname: "/home",
-				state: { from: loc.pathname, reason: "noSources" }
+				state: { from: location.pathname, reason: "noSources" }
 			}}
 		/>
 	}
-
-
-	return <>{children(preferred!)}</>;
-};
-
-const _HealthyNprofileSourceGate: React.FC<{ children: SpendChild }> = ({ children }) => {
-	const loc = useLocation();
-	const favorite = useAppSelector(selectFavoriteSourceView)!;
-	const all = useAppSelector(selectHealthyNprofileViews);
-
-
-
-	const preferred = useMemo<NprofileView | null>(() => {
-		// 1) Prefer favorite if it’s an nprofile, not stale
-		if (
-			favorite &&
-			favorite.type === SourceType.NPROFILE_SOURCE &&
-			!favorite.beaconStale
-		) {
-			return favorite;
-		}
-
-		if (all.length === 0) return null;
-		// 2) Otherwise, choose the source with the highest spendable balance
-		return all[0];
-	}, [favorite, all]);
-
-
-
-	if (all.length === 0) {
-		return <Redirect
-			to={{
-				pathname: "/home",
-				state: { from: loc.pathname, reason: "noSources" }
-			}}
-		/>
-	}
-
-
-	return <>{children(preferred!)}</>;
-};
-
+	return children;
+}
 
 
 
@@ -587,52 +473,55 @@ const App: React.FC = () => {
 
 
 	return (
-		<Provider store={store}>
-			<PersistGate
-				onBeforeLift={async () => {
-					const exists = localStorage.getItem(OLD_BACKUP_STATE_STORAGE_KEY);
-					console.log({ exists })
-					if (exists) {
-						await store.dispatch(migrateDeviceToIdentities());
-						return;
-					}
+		<ErrorBoundary>
+			<Provider store={store}>
+				<PersistGate
+					onBeforeLift={async () => {
+						const exists = localStorage.getItem(OLD_BACKUP_STATE_STORAGE_KEY);
+						console.log({ exists })
+						if (exists) {
+							await store.dispatch(migrateDeviceToIdentities());
+							return;
+						}
 
-					const pubkey = localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+						const pubkey = localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
 
 
-					if (pubkey) {
-
-						await store.dispatch(switchIdentity(pubkey, true));
-					}
-				}}
-				persistor={persistor}
-				loading={<FullSpinner />}
-			>
-				<ScannerProvider>
+						if (pubkey) {
+							try {
+								await store.dispatch(switchIdentity(pubkey, true))
+							} catch {
+								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+								window.location.reload();
+								await new Promise(() => {/*  */ })
+							}
+						}
+					}}
+					persistor={persistor}
+					loading={<FullSpinner />}
+				>
 					<IonApp>
-						<ErrorBoundary>
+						<ScannerProvider>
 							<AlertProvider>
 								<ToastProvider>
-									<IonReactRouter>
-										<AppContent />
-									</IonReactRouter>
-									<AppJobs />
+									<AppContent />
+
 								</ToastProvider>
 							</AlertProvider>
-						</ErrorBoundary>
-						<ToastContainer
-							theme="colored"
-							position="top-center"
-							closeOnClick
-							pauseOnHover
-							autoClose={4000}
-							limit={2}
-							pauseOnFocusLoss={false}
-						/>
+						</ScannerProvider>
 					</IonApp>
-				</ScannerProvider>
-			</PersistGate>
-		</Provider>
+				</PersistGate>
+			</Provider>
+			<ToastContainer
+				theme="colored"
+				position="top-center"
+				closeOnClick
+				pauseOnHover
+				autoClose={4000}
+				limit={2}
+				pauseOnFocusLoss={false}
+			/>
+		</ErrorBoundary>
 	);
 };
 

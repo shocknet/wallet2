@@ -6,6 +6,8 @@ import { useAppSelector } from "@/State/store/hooks";
 import {
 	IonButton,
 	IonContent,
+	IonFab,
+	IonFabButton,
 	IonHeader,
 	IonIcon,
 	IonList,
@@ -15,9 +17,9 @@ import {
 	useIonModal,
 	useIonViewDidEnter
 } from "@ionic/react";
-import { addOutline } from "ionicons/icons";
+import { add, addOutline } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { InputState } from "../Send/types";
 import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
@@ -30,8 +32,8 @@ import { createNostrInvoice } from "@/Api/helpers";
 import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
 import HomeHeader from "@/Layout2/HomeHeader";
 
-const SourcesPage: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
-	const { history } = props;
+const SourcesPage = () => {
+	const history = useHistory();
 	const sources = useAppSelector(selectSourceViews);
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -59,11 +61,11 @@ const SourcesPage: React.FC<RouteComponentProps> = (props: RouteComponentProps) 
 		setIsAddSourceOpen(false)
 	}, []);
 
-	const [integrationData, setIntegrationData] = useState({
-		token: "",
-		lnAddress: ""
-	});
-	const [inviteToken, setInviteToken] = useState("true");
+	const [integrationData, setIntegrationData] = useState<{
+		token: string,
+		lnAddress: string
+	} | undefined>(undefined);
+	const [inviteToken, setInviteToken] = useState<string | undefined>(undefined);
 
 
 	const [receivedInputState, setReceivedInputState] = useState<InputState>({
@@ -196,7 +198,7 @@ const SourcesPage: React.FC<RouteComponentProps> = (props: RouteComponentProps) 
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<HomeHeader {...props} />
+				<HomeHeader />
 				<IonToolbar className="big-toolbar">
 					<IonTitle className="android-centered-title">Attached Nodes</IonTitle>
 				</IonToolbar>
@@ -221,10 +223,12 @@ const SourcesPage: React.FC<RouteComponentProps> = (props: RouteComponentProps) 
 						sources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
 					}
 				</IonList>
-				<IonButton onClick={() => setIsAddSourceOpen(true)}>
-					<IonIcon slot="start" icon={addOutline} />
-					Add a new source
-				</IonButton>
+
+				<IonFab slot="fixed" vertical="bottom" horizontal="end">
+					<IonFabButton color="light" onClick={() => setIsAddSourceOpen(true)}>
+						<IonIcon icon={add}></IonIcon>
+					</IonFabButton>
+				</IonFab>
 			</IonContent>
 		</IonPage>
 	)

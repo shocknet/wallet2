@@ -27,13 +27,30 @@ import FullSpinner from "@/Components/common/ui/fullSpinner";
 import EmptyState from "@/Components/common/ui/emptyState";
 import { useAppSelector } from "@/State/store/hooks";
 import { NprofileView, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import HomeHeader from "@/Layout2/HomeHeader";
 
 
 const Offers = () => {
 	const [present] = useIonToast();
 	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+	const [selectedSource, setSelectedSource] = useState<NprofileView>(() => {
+		const favIsNprofile = healthyNprofileSourceViews.find(s => s.sourceId === favoriteSourceId);
+		if (favIsNprofile) {
+			return favIsNprofile
+		}
 
-	const [selectedSource, setSelectedSource] = useState(healthyNprofileSourceViews[0]);
+		const withBalance = healthyNprofileSourceViews.find(s => s.maxWithdrawableSats || 0 > 0);
+		if (withBalance) return withBalance;
+
+		if (healthyNprofileSourceViews.length === 0) {
+			throw new Error("No healthyNprofileViews available");
+		}
+		return healthyNprofileSourceViews[0];
+	});
+
+
 
 	const [modalOpen, setModalOpen] = useState(false);
 
@@ -130,7 +147,7 @@ const Offers = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="Offers" />
+				<HomeHeader />
 				<IonToolbar className="ion-padding-horizontal ion-padding-bottom">
 					<CustomSelect<NprofileView>
 						items={healthyNprofileSourceViews}

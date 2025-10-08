@@ -16,7 +16,7 @@ import {
 	paperPlaneOutline,
 	qrCodeOutline
 } from "ionicons/icons";
-import { RouteComponentProps } from "react-router";
+import { useHistory } from "react-router";
 import BalanceCard from "./BalanceCard";
 import HomeHeader from "@/Layout2/HomeHeader";
 import styles from "./styles/index.module.scss";
@@ -40,8 +40,8 @@ const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal
 
 
 
-const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
-	const { history } = props;
+const Home = () => {
+	const history = useHistory();
 
 	const router = useIonRouter();
 	const dispatch = useAppDispatch();
@@ -193,7 +193,7 @@ const Home: React.FC<RouteComponentProps> = (props: RouteComponentProps) => {
 
 	return (
 		<IonPage className="ion-page-width">
-			<HomeHeader {...props}>
+			<HomeHeader>
 				<BalanceCard />
 			</HomeHeader>
 			<IonContent scrollY={false}>

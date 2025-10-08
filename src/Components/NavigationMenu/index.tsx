@@ -122,7 +122,7 @@ const Inner = () => {
 							getMenuItems(adminSource).map((item, index) => {
 								return (
 									<IonMenuToggle key={index} autoHide={false}>
-										<IonItem routerLink={item.path} routerDirection="none">
+										<IonItem routerLink={item.path} routerDirection="root" routerOptions={{ unmount: true }}>
 											{item.color && <IonIcon style={{ color: item.color }} icon={item.icon} slot="start" />}
 											{!item.color && <IonIcon color="primary" icon={item.icon} slot="start" />}
 											<IonLabel style={{ "--color": "var(--ion-text-color-step-150)" }}>{item.title}</IonLabel>

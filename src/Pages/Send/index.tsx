@@ -28,7 +28,7 @@ import {
 import { defaultMempool } from '../../constants';
 import "./styles/index.css";
 import useDebounce from '../../Hooks/useDebounce';
-import { RouteComponentProps } from 'react-router';
+import { useHistory } from 'react-router';
 import {
 	logoBitcoin,
 	qrCodeOutline,
@@ -54,6 +54,7 @@ import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { NprofileView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
 import { RecipentInputHelperText } from '@/lib/jsxHelperts';
+import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
 
 
 
@@ -64,22 +65,36 @@ const NofferCard = lazy(() => import("./NofferCard"));
 const OnChainCard = lazy(() => import("./OnChainCard"));
 
 
-interface SendPageProps extends RouteComponentProps {
-	initialSource: NprofileView;
-}
 
-
-const Send = ({ history, initialSource }: SendPageProps) => {
+const Send = () => {
 	const router = useIonRouter();
+	const history = useHistory();
 
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
 	const mempoolUrl = useAppSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
 
-	const nprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews);
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
-	const [selectedSource, setSelectedSource] = useState(initialSource);
+
+	// Send page is only accessible if healthyNprofileViews.length > 0
+	// so we can safely assume healthyNprofileViews is not empty here
+	const [selectedSource, setSelectedSource] = useState<NprofileView>(() => {
+		const favIsNprofile = healthyNprofileViews.find(s => s.sourceId === favoriteSourceId);
+		if (favIsNprofile) {
+			if (favIsNprofile.maxWithdrawableSats || 0 > 0) return favIsNprofile
+		}
+
+		const withBalance = healthyNprofileViews.find(s => s.maxWithdrawableSats || 0 > 0);
+		if (withBalance) return withBalance;
+
+		if (healthyNprofileViews.length === 0) {
+			throw new Error("No healthyNprofileViews available");
+		}
+		return healthyNprofileViews[0];
+	});
 
 	useIonViewWillEnter(() => {
 		amountInput.clearFixed();
@@ -279,7 +294,7 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 			amountInput.effectiveSats !== null &&
 			amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)
 		) {
-			const foundOneWithEnoughBalance = nprofileSourceViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
+			const foundOneWithEnoughBalance = healthyNprofileViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
 			if (foundOneWithEnoughBalance) {
 				setSelectedSource(foundOneWithEnoughBalance)
 			}
@@ -552,7 +567,7 @@ const Send = ({ history, initialSource }: SendPageProps) => {
 						<IonCol size="6">
 							<IonText style={{ display: "block", marginBottom: "9px" }}>Spend From</IonText>
 							<CustomSelect<NprofileView>
-								items={nprofileSourceViews}
+								items={healthyNprofileViews}
 								selectedItem={selectedSource}
 								onSelect={setSelectedSource}
 								getIndex={(source) => source.sourceId}

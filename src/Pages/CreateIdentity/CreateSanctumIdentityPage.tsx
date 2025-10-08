@@ -49,7 +49,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 			return;
 		}
 
-		router.push("/identity/overview", "root", "replace");
+		router.push("/sources", "root", "replace");
 	}
 
 	return (

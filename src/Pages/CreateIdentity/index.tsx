@@ -31,7 +31,7 @@ import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
 /* import { Capacitor } from '@capacitor/core'; */
 
 
-const CreateIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
+const CreateIdentityPage = () => {
 	/* 	const hasNip07 = typeof (window as any).nostr !== "undefined";
 		const isNative = Capacitor.isNativePlatform(); */
 	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);

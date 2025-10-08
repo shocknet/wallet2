@@ -113,27 +113,27 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			createdAt: Date.now()
 		}
 
-		presentLoading({
+		await presentLoading({
 			message: "Creating identity...",
 		});
 
 		try {
 			await dispatch(createIdentity(identity, sources));
 		} catch (err: any) {
-			dismissLoading();
+			await dismissLoading();
 			showToast({
 				message: err?.message || "An error occured when creating the identity"
 			})
 			return;
 		}
 
-		dismissLoading();
+		await dismissLoading();
 
 
 		dispatch(setPrivateKey());
 
 
-		router.push("/identity/overview", "root", "replace");
+		router.push("/sources", "root", "replace");
 	}, [dispatch, router, showToast, presentLoading, dismissLoading]);
 
 

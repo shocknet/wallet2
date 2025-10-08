@@ -24,7 +24,7 @@ import {
 	IonCardHeader,
 	IonCardTitle,
 	IonCardContent,
-	IonFooter
+	IonFooter,
 } from "@ionic/react";
 import { chevronForward, closeOutline, keyOutline, peopleOutline, starOutline } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
@@ -39,7 +39,6 @@ import { IdentityType } from "@/State/identitiesRegistry/types";
 import styles from "./styles/index.module.scss";
 import { truncateTextMiddle } from "@/lib/format";
 import HomeHeader from "@/Layout2/HomeHeader";
-import { RouteComponentProps } from "react-router-dom";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -51,7 +50,7 @@ const sameSet = (a: string[], b: string[]) => {
 };
 
 
-const IdentityOverviewPage = (props: RouteComponentProps) => {
+const IdentityOverviewPage = () => {
 	const dispatch = useAppDispatch();
 
 	const registry = useAppSelector(selectActiveIdentity)!;
@@ -111,7 +110,7 @@ const IdentityOverviewPage = (props: RouteComponentProps) => {
 
 	return (
 		<IonPage className="ion-page-width">
-			<HomeHeader {...props}>
+			<HomeHeader>
 			</HomeHeader>
 
 			<IonContent className="ion-padding">

@@ -40,7 +40,6 @@ import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
 import { useAppSelector } from '@/State/store/hooks';
 import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
-import { RouteComponentProps } from 'react-router';
 import { SourceType } from '@/State/scoped/common';
 
 
@@ -57,7 +56,7 @@ type Slide = {
 }
 
 
-const Receive: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
+const Receive = () => {
 	const router = useIonRouter();
 	const swiperRef = useRef<SwiperClass>();
 
