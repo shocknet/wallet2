@@ -273,7 +273,6 @@ const AppContent: React.FC = () => {
 				<IdentityRouteGate
 					exact
 					path="/automation"
-
 				>
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
@@ -281,12 +280,9 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</IdentityRouteGate>
-
-
 				<IdentityRouteGate
 					exact
 					path="/prefs"
-
 				>
 					<Suspense fallback={<FullSpinner />}>
 						<Layout>
@@ -305,9 +301,6 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</IdentityRouteGate>
-
-
-
 				<IdentityRouteGate
 					exact
 					path="/invitations"
@@ -319,9 +312,6 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</IdentityRouteGate>
-
-
-
 				<IdentityRouteGate
 					exact
 					path="/notify"
@@ -409,7 +399,9 @@ const AppContent: React.FC = () => {
 						</Layout>
 					</Suspense>
 				</IdentityRouteGate>
-
+				<Route exact path="/" >
+					<Redirect to="/home" />
+				</Route>
 			</IonRouterOutlet >
 		</IonReactRouter>
 	);
