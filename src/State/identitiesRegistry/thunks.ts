@@ -114,8 +114,10 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 			const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
 			if (migratedSourceDocs.length) {
 				for (const source of migratedSourceDocs) {
+
 					dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
 					await dispatch(onAddSourceDoc(source));
+					await new Promise<void>(res => setTimeout(() => res(), 50)); // throttle source additions so publisher can pick them up
 				}
 
 			}
