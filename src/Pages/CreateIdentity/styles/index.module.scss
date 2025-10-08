@@ -109,3 +109,13 @@
 
 
 }
+
+.overview-name-box {
+	border: 2px solid var(--ion-text-color-step-350);
+	border-radius: 15px;
+	min-height: 4rem;
+	display: flex;
+	justify-content: start;
+	align-items: center;
+	padding-left: 0.9rem;
+}

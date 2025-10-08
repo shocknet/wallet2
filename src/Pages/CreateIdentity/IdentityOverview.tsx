@@ -115,39 +115,56 @@ const IdentityOverviewPage = () => {
 
 			<IonContent className="ion-padding">
 				<IonGrid>
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="auto">
-							<IonAvatar aria-hidden="true" style={{ width: 96, height: 96 }}>
-								{isLoading ? (
-									<IonSkeletonText animated style={{ width: 96, height: 96, borderRadius: "50%" }} />
-								) : (
-									<img
-										src={picture}
-										alt=""
-										referrerPolicy="no-referrer"
-										onError={(e) => {
-											const el = e.currentTarget as HTMLImageElement;
-											if (!/robohash/.test(el.src) && activeHex) {
-												el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
-											}
-										}}
-										style={{ width: 96, height: 96, objectFit: "cover", borderRadius: "50%" }}
-									/>
-								)}
-							</IonAvatar>
+					<IonRow style={{ gap: "0.9rem" }} className="ion-align-items-center ion-justify-content-center">
+						<IonCol size="auto" className="ion-text-end">
+							<IonRow className="ion-justify-content-end">
+								<IonCol size="auto">
+									<IonAvatar aria-hidden="true" style={{ width: 96, height: 96 }}>
+										{isLoading ? (
+											<IonSkeletonText animated style={{ width: 96, height: 96, borderRadius: "50%" }} />
+										) : (
+											<img
+												src={picture}
+												alt=""
+												referrerPolicy="no-referrer"
+												onError={(e) => {
+													const el = e.currentTarget as HTMLImageElement;
+													if (!/robohash/.test(el.src) && activeHex) {
+														el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
+													}
+												}}
+												style={{ width: 96, height: 96, objectFit: "cover", borderRadius: "50%" }}
+											/>
+										)}
+									</IonAvatar>
+								</IonCol>
+							</IonRow>
+
 						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="auto">
-							<div style={{ marginTop: 4 }}>
-								{isLoading ? (
-									<IonSkeletonText animated style={{ width: 160, height: 18 }} />
-								) : (
-									<h2 className="text-weight-high text-lg">{displayName}</h2>
-								)}
+						<IonCol size="7">
+							<div className={styles["overview-name-box"]}>
+
+								<IonText>{displayName}</IonText>
 							</div>
+
+
 						</IonCol>
 					</IonRow>
+
+					{/* <IonRow>
+						<IonCol>
+							<IonText>
+								Backup/Sync Relays:
+							</IonText>
+						</IonCol>
+						<IonCol>
+							<IonText>
+								{registry}
+							</IonText>
+						</IonCol>
+					</IonRow> */}
+
+
 					<IonRow className="ion-justify-content-center">
 						<IonCol size="auto">
 							{nip05 && !isLoading && <IonText className="text-high" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nip05}</IonText>}

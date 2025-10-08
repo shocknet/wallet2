@@ -4,7 +4,6 @@ import SourceCard from "@/Components/SourceCard";
 import { selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import {
-	IonButton,
 	IonContent,
 	IonFab,
 	IonFabButton,
@@ -17,7 +16,7 @@ import {
 	useIonModal,
 	useIonViewDidEnter
 } from "@ionic/react";
-import { add, addOutline } from "ionicons/icons";
+import { add } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { InputState } from "../Send/types";

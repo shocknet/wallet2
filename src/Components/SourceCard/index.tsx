@@ -2,8 +2,8 @@ import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { SourceType } from "@/State/scoped/common";
 import { useAppSelector } from "@/State/store/hooks";
-import { IonButton, IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
-import { star, walletOutline, personCircleOutline, ellipsisVerticalOutline } from "ionicons/icons";
+import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
+import { star, walletOutline, personCircleOutline } from "ionicons/icons";
 import "./styles/index.css";
 import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
@@ -21,20 +21,16 @@ const SourceCard = ({ source, onClick: onPick }: Props) => {
 		? source.beaconName || source.label || "Unnamed source"
 		: source.sourceId;
 
-
 	return (
 		<IonItem
 			className="source-card-item"
 			button
 			detail={false}
-
+			onClick={() => onPick(source)}
 
 			aria-label={`Open source ${source.label} `}
 		>
-
-
 			<IonIcon slot="start" icon={personCircleOutline} className="source-card-icon" />
-
 			<IonLabel>
 				<IonGrid>
 					<IonRow className="ion-nowrap ion-align-items-center">
@@ -73,11 +69,7 @@ const SourceCard = ({ source, onClick: onPick }: Props) => {
 							}
 						</IonCol>
 
-						<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto" }}>
-							<IonButton onClick={() => onPick(source)} color="light" fill="clear" shape="round" style={{ margin: 0, padding: 0 }} >
-								<IonIcon slot="icon-only" icon={ellipsisVerticalOutline} />
-							</IonButton>
-						</IonCol>
+
 					</IonRow>
 				</IonGrid>
 
