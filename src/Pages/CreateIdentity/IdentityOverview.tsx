@@ -32,7 +32,7 @@ import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identit
 import { selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 import { useGetProfileQuery } from "@/State/api/api";
 import { nip19 } from "nostr-tools";
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
 import { IdentityType } from "@/State/identitiesRegistry/types";
@@ -59,6 +59,9 @@ const IdentityOverviewPage = () => {
 
 
 	const activeHex = registry.pubkey;
+
+	const nprofileSources = useAppSelector(selectNprofileViews);
+	const adminSource = nprofileSources[0]/* .find(s => s.adminToken) */;
 
 
 	const { data: profile, isLoading } = useGetProfileQuery({
@@ -120,82 +123,141 @@ const IdentityOverviewPage = () => {
 
 			<IonContent className="ion-padding">
 
-				<IonGrid
-					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
-				>
+				<IonGrid style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
 					<IonRow style={{ flex: 0.2, minHeight: 0 }} />
-					<IonRow style={{ gap: "0.9rem" }} className="ion-align-items-center ion-justify-content-center">
-						<IonCol size="auto" className="ion-text-end">
-							<IonRow className="ion-justify-content-end">
-								<IonCol size="auto">
-									<IonAvatar aria-hidden="true" style={{ width: 96, height: 96 }}>
-										{isLoading ? (
-											<IonSkeletonText animated style={{ width: 96, height: 96, borderRadius: "50%" }} />
-										) : (
-											<img
-												src={picture}
-												alt=""
-												referrerPolicy="no-referrer"
-												onError={(e) => {
-													const el = e.currentTarget as HTMLImageElement;
-													if (!/robohash/.test(el.src) && activeHex) {
-														el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
-													}
-												}}
-												style={{ width: 96, height: 96, objectFit: "cover", borderRadius: "50%" }}
-											/>
-										)}
-									</IonAvatar>
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="12" sizeMd="10">
+							<IonRow className="ion-justify-content-center ion-align-items-center" style={{ gap: "16px" }}>
+								<IonCol size="2" sizeXs="3" sizeSm="2" sizeMd="2" className="ion-text-end">
+
+									<div style={{ width: "100%", aspectRatio: "1" }}>
+										<IonAvatar aria-hidden="true" style={{ width: "100%", height: "100%" }}>
+											{isLoading ? (
+												<IonSkeletonText animated style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+											) : (
+												<img
+													src={picture}
+													alt=""
+													referrerPolicy="no-referrer"
+													onError={(e) => {
+														const el = e.currentTarget as HTMLImageElement;
+														if (!/robohash/.test(el.src) && activeHex) {
+															el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
+														}
+													}}
+												/>
+											)}
+										</IonAvatar>
+									</div>
+
+
+
+								</IonCol>
+								<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto", }} >
+									<IonRow>
+										<IonCol size="auto">
+											<div className="text-xl text-high text-weight-high">
+												{displayName}
+											</div>
+										</IonCol>
+									</IonRow>
+									<IonRow className="ion-justify-content-start ion-align-items-center">
+										<IonCol size="auto">
+
+
+											<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string" >{truncateTextMiddle(npub, 6, 6)}</IonText>
+
+
+
+
+										</IonCol>
+										<IonCol size="auto">
+											<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
+										</IonCol>
+									</IonRow>
+
+
 								</IonCol>
 							</IonRow>
-
 						</IonCol>
-						<IonCol size="7">
-							<div className={styles["overview-name-box"]}>
 
-								<IonText>{displayName}</IonText>
-							</div>
+					</IonRow>
+					<IonRow style={{ flex: 0.1, minHeight: 0 }} />
+					<IonRow className="ion-margin-top ion-justify-content-center">
+						<IonCol size="12" sizeMd="10">
+							<IonRow className="ion-justify-content-center">
+								{
+									relays.length !== 0
+									&&
+									<>
+
+										<IonCol size="6" sizeMd="5" >
+											<div className="text-lg text-high">
+												Backup/Sync Relays:
+											</div>
+
+										</IonCol>
+										<IonCol size="6" sizeMd="5">
+											{
+												relays.map(r => (
+													<IonRow key={r}>
+														<IonCol>
+															<div className="text-md text-x-low">
+																{r}
+															</div>
+														</IonCol>
+													</IonRow>
+												))
+											}
+										</IonCol>
+									</>
 
 
+
+
+								}
+							</IonRow>
+						</IonCol>
+
+
+					</IonRow>
+
+					<IonRow className="ion-margin-top ion-justify-content-center">
+						<IonCol size="12" sizeMd="10">
+							<IonRow className="ion-justify-content-center">
+
+								{
+									adminSource
+									&&
+									<>
+
+										<IonCol size="6" sizeMd="4">
+											<div className="text-lg text-high">
+												Administer of:
+											</div>
+
+										</IonCol>
+
+										<IonCol size="6" sizeMd="4">
+											<div className="text-md text-x-low">
+												{truncateTextMiddle(nip19.nprofileEncode({ pubkey: adminSource.lpk, relays: adminSource.relays }))}
+											</div>
+
+										</IonCol>
+									</>
+								}
+							</IonRow>
 						</IonCol>
 					</IonRow>
 
-					{/* <IonRow>
-						<IonCol>
-							<IonText>
-								Backup/Sync Relays:
-							</IonText>
-						</IonCol>
-						<IonCol>
-							<IonText>
-								{registry}
-							</IonText>
-						</IonCol>
-					</IonRow> */}
-
-
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="auto">
-							{nip05 && !isLoading && <IonText className="text-high" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nip05}</IonText>}
-
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center ion-align-items-center">
-						<IonCol size="auto">
-
-
-							<IonText className="text-medium text-weight-medium ion-text-justify code-string" >{truncateTextMiddle(npub, 14, 14)}</IonText>
 
 
 
 
-						</IonCol>
-						<IonCol size="auto">
-							<CopyMorphButton value={npub} fill="clear" />
-						</IonCol>
-					</IonRow>
+
 
 				</IonGrid>
+
 
 
 
@@ -275,7 +337,7 @@ const IdentityOverviewPage = () => {
 
 			</IonContent>
 			<IonFooter className="ion-no-border">
-				<IonGrid style={{ paddingBottom: "0.9rem" }}>
+				<IonGrid style={{ paddingBottom: "2rem" }}>
 					<IonRow className="ion-justify-content-center">
 						<IonCol size="auto">
 							<IonText className="text-medium text-weight-high">
