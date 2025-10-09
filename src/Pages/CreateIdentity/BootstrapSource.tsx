@@ -1,15 +1,16 @@
 import {
-	IonPage,
-	IonContent,
-	IonInput,
-	IonButton,
-	useIonRouter,
-	IonText,
-	IonGrid,
-	IonRow,
-	IonCol,
-	IonToolbar,
-	IonTitle,
+    IonPage,
+    IonContent,
+    IonInput,
+    IonButton,
+    useIonRouter,
+    IonText,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonToolbar,
+    IonTitle,
+    IonIcon,
 } from "@ionic/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -20,6 +21,7 @@ import { InputClassification } from "@/lib/types/parse";
 import { addBootstrapSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
 import classNames from "classnames";
 import HomeHeader from "@/Layout2/HomeHeader";
+import { flashOutline } from "ionicons/icons";
 
 
 
@@ -159,9 +161,15 @@ const BootstrapSource = () => {
 					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
 				>
 
+                    <IonRow className="ion-justify-content-center">
+                        <IonCol size="auto">
+                            <IonIcon icon={flashOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
+                        </IonCol>
+                    </IonRow>
+
 					<IonRow className="ion-justify-content-center" style={{ marginTop: "5rem" }}>
 						<IonCol size="auto">
-							<div className="text-xl text-medium text-weight-high">
+                            <div className="text-xl text-medium text-weight-high" style={{ fontSize: "1.6rem" }}>
 								Node Up
 							</div>
 
