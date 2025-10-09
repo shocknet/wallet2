@@ -9,34 +9,32 @@ import {
 	IonButton,
 	IonIcon,
 	IonContent,
-	IonBadge,
-	IonText,
 	IonFooter
 } from "@ionic/react";
-import { closeOutline, trashOutline, cloudUploadOutline, checkmarkCircle, pencilOutline } from "ionicons/icons";
+import { closeOutline, trashOutline, pencilOutline, starOutline, star } from "ionicons/icons";
 import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectIsSourceDocDirty, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { useCallback, useMemo, useState } from "react";
 import { getDeviceId } from "@/constants";
 import { BasicSourceInfoEdit, PubSourceStatus } from "../helpers";
+import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 
 interface EditSourceModalProps {
 	open: boolean;
 	source: SourceView | null;
 	onClose: () => void;
-	onSave: (next: Partial<NprofileView | LnAddrView>) => void;
 	onDelete: (id: string) => void;
 }
-export function EditSourceModal({ open, onClose, source, onSave, onDelete }: EditSourceModalProps) {
+export function EditSourceModal({ open, onClose, source, onDelete }: EditSourceModalProps) {
 
 
 
 	return (
 		<IonModal className="wallet-modal" isOpen={open} onDidDismiss={onClose}>
 			{source ? (
-				<Inner source={source} onClose={onClose} onSave={onSave} onDelete={onDelete} />
+				<Inner source={source} onClose={onClose} onDelete={onDelete} />
 			) : null}
 		</IonModal>
 	);
@@ -45,15 +43,15 @@ export function EditSourceModal({ open, onClose, source, onSave, onDelete }: Edi
 const Inner = ({
 	source,
 	onClose,
+	onDelete
 }: {
 	source: SourceView;
 	onClose: () => void;
-	onSave: (next: Partial<NprofileView | LnAddrView>) => void;
 	onDelete: (id: string) => void;
 }) => {
 	const dispatch = useAppDispatch();
 
-	const isDirty = useAppSelector((state) => selectIsSourceDocDirty(state, source.sourceId));
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
 	const original = useMemo<SourceView>(() => structuredClone(source), [source]);
 
@@ -136,6 +134,19 @@ const Inner = ({
 		}
 	}, [original, dispatch, draft])
 
+	const isFavorite = source.sourceId === favoriteSourceId;
+
+	const makeFavorite = useCallback(() => {
+		if (favoriteSourceId === source.sourceId) return;
+		const deviceId = getDeviceId();
+		dispatch(identityActions.setFavoriteSource({ sourceId: source.sourceId, by: deviceId }));
+	}, [source.sourceId, favoriteSourceId, dispatch]);
+
+	const handleDelete = useCallback(() => {
+		onClose()
+		onDelete(source.sourceId);
+	}, [onDelete, onClose, source.sourceId]);
+
 	return (
 		<>
 			<IonHeader>
@@ -147,10 +158,9 @@ const Inner = ({
 						</span>
 					</IonTitle>
 					<IonButtons slot="end">
-						<IonBadge color={isDirty ? "warning" : "success"} style={{ marginLeft: 8 }}>
-							<IonIcon icon={isDirty ? cloudUploadOutline : checkmarkCircle} className="ion-margin-end" />
-							<IonText>{isDirty ? "pending sync…" : "synced"}</IonText>
-						</IonBadge>
+						<IonButton color="light" fill="clear" shape="round" onClick={makeFavorite}>
+							<IonIcon slot="icon-only" icon={isFavorite ? star : starOutline} />
+						</IonButton>
 						<IonButton onClick={onClose}><IonIcon icon={closeOutline} /></IonButton>
 					</IonButtons>
 
@@ -197,7 +207,7 @@ const Inner = ({
 
 					</IonButtons>
 					<IonButtons slot="start">
-						<IonButton color="danger">
+						<IonButton color="danger" onClick={handleDelete}>
 							<IonIcon icon={trashOutline} />
 							Delete
 						</IonButton>

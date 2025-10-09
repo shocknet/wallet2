@@ -1,6 +1,5 @@
 import {
 	IonModal,
-	IonNav,
 	IonHeader,
 	IonToolbar,
 	IonTitle,
@@ -16,12 +15,11 @@ import {
 	IonText,
 	IonAccordionGroup,
 	IonAccordion,
-	IonNavLink,
 	IonBackButton,
 	IonListHeader,
 	useIonLoading,
 } from "@ionic/react";
-import { closeOutline, addOutline } from "ionicons/icons";
+import { closeOutline, addOutline, qrCodeOutline } from "ionicons/icons";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "../styles/index.module.scss";
 import classNames from "classnames";
@@ -36,6 +34,7 @@ import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { useAppDispatch } from "@/State/store/hooks";
 import { addLightningAddressSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
 import { PubSourceStatus } from "../helpers";
+import { useQrScanner } from "@/lib/hooks/useQrScanner";
 
 
 interface AddSourceNavModalProps {
@@ -62,15 +61,11 @@ const AddSourceNavModal = memo(({
 
 	return (
 		<IonModal className="wallet-modal" isOpen={open} onDidDismiss={onClose}>
-			<IonNav
-				root={() =>
-					<AddSourceStart
-						onClose={onClose}
-						integrationData={integrationData}
-						invitationToken={invitationToken}
-						receivedInputState={receivedInputState}
-					/>
-				}
+			<AddSourceStart
+				onClose={onClose}
+				integrationData={integrationData}
+				invitationToken={invitationToken}
+				receivedInputState={receivedInputState}
 			/>
 		</IonModal>
 	);
@@ -94,9 +89,23 @@ const AddSourceStart = ({
 
 	const inputRef = useRef<HTMLIonInputElement>(null);
 	const [inputState, setInputState] = useState<InputState>(receivedInputState);
+	const dispatch = useAppDispatch();
 
 	const debouncedInput = useDebounce(input, 800);
 	const { showToast } = useToast();
+
+
+	const { scanSingleBarcode } = useQrScanner();
+	const openScan = async () => {
+		const instruction = "Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address";
+
+		try {
+			const scanned = await scanSingleBarcode(instruction);
+			setInput(scanned);
+		} catch {
+			/*  */
+		}
+	}
 
 
 
@@ -172,6 +181,84 @@ const AddSourceStart = ({
 		: null,
 		[inputState]);
 
+	const [presentLoading, dismissLoading] = useIonLoading();
+
+
+	const handleAddNProfileSource = useCallback(async () => {
+
+		if (!parsedNprofile) return;
+
+
+
+		try {
+
+			if (parsedNprofile.relays.length === 0) {
+				throw new Error("This nprofile has no relays");
+			}
+			await presentLoading({ message: "Processing Source..." });
+			const resultMessage = await dispatch(addNprofileSource({
+				lpk: parsedNprofile.pubkey,
+				relays: parsedNprofile.relays,
+				adminEnrollToken: parsedNprofile.adminEnrollToken,
+				bridgeUrl: null,
+				label: undefined,
+				integrationData,
+				inviteToken: invitationToken
+			}));
+
+			showToast({
+				color: "success",
+				message: resultMessage
+			});
+			await dismissLoading()
+			onClose()
+
+		} catch (err: any) {
+			showToast({
+				color: "danger",
+				message: err?.message || "Failed to add pub source"
+			});
+			await dismissLoading();
+			onClose()
+		}
+
+	}, [
+		showToast,
+		dispatch,
+		parsedNprofile,
+		onClose,
+		presentLoading,
+		dismissLoading,
+		integrationData,
+		invitationToken
+	]);
+
+
+	const addLnAddressSource = useCallback(() => {
+		if (!parsedLnAddress) return;
+
+		try {
+			dispatch(addLightningAddressSource({
+				lightningAddress: parsedLnAddress.data,
+				label: null
+			}))
+			onClose();
+		} catch (err: any) {
+			showToast({
+				color: "danger",
+				message: err?.message || "Failed to add lightning address source"
+			});
+			onClose();
+		}
+	}, [parsedLnAddress, onClose, dispatch, showToast]);
+
+	const addSource = useCallback(async () => {
+		if (parsedNprofile) {
+			await handleAddNProfileSource();
+		} else if (parsedLnAddress) {
+			addLnAddressSource();
+		}
+	}, [addLnAddressSource, handleAddNProfileSource, parsedNprofile, parsedLnAddress]);
 
 
 	return (
@@ -214,7 +301,11 @@ const AddSourceStart = ({
 					})}
 					onIonBlur={() => setIsTouched(true)}
 					errorText={inputState.status === "error" ? inputState.error : ""}
-				/>
+				>
+					<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScan}>
+						<IonIcon slot="icon-only" icon={qrCodeOutline} />
+					</IonButton>
+				</IonInput>
 				<div style={{ display: "flex", alignItems: "center", marginTop: 10, gap: 10 }}>
 					<RecipentInputHelperText inputState={inputState} />
 				</div>
@@ -223,40 +314,16 @@ const AddSourceStart = ({
 
 
 
-				<div style={{ display: parsedNprofile ? "block" : "none", marginTop: "3rem" }}>
+				<div style={{ display: (parsedNprofile || parsedLnAddress) ? "block" : "none", marginTop: "3rem" }}>
+					<IonButton expand="block" color="primary" onClick={addSource}>
+						Save
+					</IonButton>
 
 
-					<IonNavLink
-						routerDirection="forward"
-						component={() =>
-							<AddNprofileScreen
-								onClose={onClose}
-								parsedNprofileData={parsedNprofile as ParsedNprofileInput}
-								integrationData={integrationData}
-								invitationToken={invitationToken}
 
-							/>
-						}
-					>
-						<IonButton expand="block" color="primary" disabled={inputState.status !== "parsedOk"}>
-
-							Continue
-						</IonButton>
-					</IonNavLink>
 				</div>
 
-				<div style={{ display: parsedLnAddress ? "block" : "none", marginTop: "3rem" }}>
-					<IonNavLink
-						routerDirection="forward"
-						component={() => <AddLnAddress onClose={onClose} parsedLnAddress={parsedLnAddress as ParsedLightningAddressInput} />
-						}
-					>
-						<IonButton expand="block" color="primary" disabled={inputState.status !== "parsedOk"}>
 
-							Continue
-						</IonButton>
-					</IonNavLink>
-				</div>
 
 			</IonContent >
 		</>
@@ -264,7 +331,7 @@ const AddSourceStart = ({
 }
 
 type AddNprofileScreenProps = Omit<AddSourceNavModalProps, "open" | "receivedInputState"> & { parsedNprofileData: ParsedNprofileInput }
-const AddNprofileScreen = ({
+const _AddNprofileScreen = ({
 	parsedNprofileData,
 	onClose,
 	integrationData,
@@ -450,7 +517,7 @@ const AddNprofileScreen = ({
 }
 
 
-const AddLnAddress = ({
+const _AddLnAddress = ({
 
 	parsedLnAddress,
 	onClose,

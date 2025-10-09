@@ -85,19 +85,11 @@ export const BackupKeysDialog = (
 						</label>
 
 
-						<input
-							id="shockwallet-pubkey-p-m"
-							name="nostr-private-key"
-							autoComplete="username"
-							type="text"
-							defaultValue="nostr-private-key"
-							style={{ display: "none" }}
-						/>
+
 						<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
 							<IonCol style={{ flex: 1 }}>
 								<IonInput
 									fill="solid"
-									autocomplete="new-password"
 									className={classNames(styles["password-input"], "filled-input")}
 									type="password"
 									readonly
@@ -108,7 +100,6 @@ export const BackupKeysDialog = (
 								<input
 									ref={recoveryInputRef}
 									id="shockwallet-nsec-p-m"
-									name="password"
 									autoComplete="new-password"
 									type="password"
 									defaultValue=""

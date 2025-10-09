@@ -122,6 +122,7 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 		} catch (err: any) {
 			await dismissLoading();
 			showToast({
+				color: "warning",
 				message: err?.message || "An error occured when creating the identity"
 			})
 			return;
@@ -267,6 +268,9 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 										placeholder="Input a Nostr nsec or backup file"
 										fill="solid"
 										className="filled-input"
+										autocomplete="current-password"
+										id="shockwallet-nsec-p-m"
+										type="password"
 										label="Nostr secret"
 										labelPlacement="stacked"
 										value={_privkey}

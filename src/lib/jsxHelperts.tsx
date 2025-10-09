@@ -30,13 +30,12 @@ export const RecipentInputHelperText = ({ inputState }: { inputState: InputState
 				<IonText color="primary">
 					<p style={{ fontSize: "14px", marginTop: "4px", display: "flex", alignItems: "center" }}>
 						{inputState.parsedData.type}
+						{
+							(inputState.parsedData.type === InputClassification.NPROFILE && inputState.parsedData.adminEnrollToken) &&
+							"with admin enroll token"
+						}
 						<IonIcon icon={checkmarkCircle} color="success" style={{ marginLeft: 8 }} />
 					</p>
-					<p>{
-						(inputState.parsedData.type === InputClassification.NPROFILE && inputState.parsedData.adminEnrollToken) &&
-						"with admin enroll token"
-					}</p>
-
 				</IonText>
 			);
 		}

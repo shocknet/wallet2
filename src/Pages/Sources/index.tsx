@@ -2,7 +2,7 @@ import AddSourceNavModal from "@/Components/Modals/Sources/AddSourceModal";
 import { EditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
 import SourceCard from "@/Components/SourceCard";
 import { selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { useAppSelector } from "@/State/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
 	IonContent,
 	IonFab,
@@ -30,9 +30,11 @@ import { SourceType } from "@/State/scoped/common";
 import { createNostrInvoice } from "@/Api/helpers";
 import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
 import HomeHeader from "@/Layout2/HomeHeader";
+import { removeSource } from "@/State/scoped/backups/sources/thunks";
 
 const SourcesPage = () => {
 	const history = useHistory();
+	const dispatch = useAppDispatch();
 	const sources = useAppSelector(selectSourceViews);
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -182,17 +184,32 @@ const SourcesPage = () => {
 
 	useIonViewDidEnter(() => {
 		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {}
+		const searchParams = new URLSearchParams(history.location.search);
 		if (parsedLnurlW) {
 			handleLnurlWithdraw(parsedLnurlW)
-		} else {
+		} else if (searchParams.size > 0) {
 			const searchParams = new URLSearchParams(history.location.search);
 			handleSearchParams(searchParams);
+		} else {
+			// auto open the add source modal if no sources
+			if (sources.length === 0) {
+				setIsAddSourceOpen(true);
+			}
 		}
+
+
 
 
 		history.replace(history.location.pathname);
 	}, [history.location.key]);
 
+	const handleDelete = useCallback((sourceId: string) => {
+		dispatch(removeSource(sourceId));
+	}, [dispatch])
+
+	const handleClose = useCallback(() => {
+		setSelectedSourceId(null)
+	}, [])
 
 	return (
 		<IonPage className="ion-page-width">
@@ -205,9 +222,8 @@ const SourcesPage = () => {
 			<IonContent className="ion-padding">
 				<EditSourceModal
 					source={selectedSource}
-					onClose={() => setSelectedSourceId(null)}
-					onDelete={() => console.log("delete here")}
-					onSave={() => console.log("onSave")}
+					onClose={handleClose}
+					onDelete={handleDelete}
 					open={!!selectedSource}
 				/>
 				<AddSourceNavModal
