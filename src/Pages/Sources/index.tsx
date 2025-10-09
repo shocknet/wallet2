@@ -31,11 +31,13 @@ import { createNostrInvoice } from "@/Api/helpers";
 import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
 import HomeHeader from "@/Layout2/HomeHeader";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
+import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 
 const SourcesPage = () => {
 	const history = useHistory();
 	const dispatch = useAppDispatch();
 	const sources = useAppSelector(selectSourceViews);
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
 
@@ -211,6 +213,18 @@ const SourcesPage = () => {
 		setSelectedSourceId(null)
 	}, [])
 
+	const favoriteFirstSortedSources = useMemo(() => {
+		if (favoriteSourceId == null) return sources.slice();
+
+		const i = sources.findIndex(s => s.sourceId === favoriteSourceId);
+		if (i <= 0) return sources.slice();
+
+		const copy = sources.slice();
+		const [fav] = copy.splice(i, 1);
+		copy.unshift(fav);
+		return copy;
+	}, [sources, favoriteSourceId])
+
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
@@ -235,7 +249,7 @@ const SourcesPage = () => {
 				/>
 				<IonList lines="none">
 					{
-						sources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
+						favoriteFirstSortedSources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
 					}
 				</IonList>
 
