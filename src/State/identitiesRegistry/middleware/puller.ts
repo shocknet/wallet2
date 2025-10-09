@@ -125,11 +125,15 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 				try {
 					for (; ;) {
-						const result = await listnerApi.take((action) => {
+						await listnerApi.take((action, currentState, prevState) => {
 
-							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action) || identityActions.applyRemoteIdentity.match(action)
+							return sourcesActions._createDraftDoc.match(action) ||
+								identityActions.addSourceDocDTag.match(action) ||
+								(
+									identityActions.applyRemoteIdentity.match(action) &&
+									(currentState.scoped!.identity.draft!.sources.length !== prevState.scoped!.identity.draft!.sources.length)
+								)
 						});
-						console.log({ result })
 						schedule();
 					}
 				} finally {
