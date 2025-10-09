@@ -1,5 +1,5 @@
 import type { AppstartListening } from "@/State/store/listenerMiddleware";
-import { checkDirtyRequested, identityLoaded, identityUnloaded } from "./actions";
+import { identityLoaded, identityUnloaded } from "./actions";
 import { equalSet, identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 
 import { docsSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
@@ -52,6 +52,7 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 			listnerApi.unsubscribe();
 			const identity = action.payload.identity;
 			const pubkey = identity.pubkey;
+
 
 
 			const identityApi = await getIdentityNostrApi(identity);
@@ -124,9 +125,11 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 				try {
 					for (; ;) {
-						await listnerApi.take((action) => {
-							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action) || checkDirtyRequested.match(action)
+						const result = await listnerApi.take((action) => {
+
+							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action) || identityActions.applyRemoteIdentity.match(action)
 						});
+						console.log({ result })
 						schedule();
 					}
 				} finally {
