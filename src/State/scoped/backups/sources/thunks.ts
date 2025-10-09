@@ -3,13 +3,14 @@ import { docsSelectors, sourcesActions } from "./slice"
 import { identityActions, selectFavoriteSourceId } from "../identity/slice"
 import { SourceDocV0 } from "./schema"
 import { LwwFlag, newflag, newLww } from "../lww"
-import { getDeviceId } from "@/constants"
+import { getDeviceId, NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "@/constants"
 import { SourceType } from "../../common"
 import { generateNewKeyPair } from "@/Api/helpers"
 import { getSourceDocDtag } from "@/State/identitiesRegistry/helpers/processDocs"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 import { selectNprofileViewsByLpk } from "./selectors"
 import { getNostrClient } from "@/Api/nostr"
+import { utils } from "nostr-tools"
 
 
 export type NProfileSourceToAdd = {
@@ -31,6 +32,34 @@ export type LightningAddressSourceToAdd = {
 }
 
 
+
+export const addBootstrapSource = (): AppThunk<Promise<void>> => async (dispatch) => {
+	const deviceId = getDeviceId();
+	const keyPair = generateNewKeyPair()
+	const id = `${NOSTR_PUB_DESTINATION}-${keyPair.publicKey}`;
+	const relaysFlags: Record<string, LwwFlag> = {};
+	NOSTR_RELAYS.forEach(r => {
+		relaysFlags[utils.normalizeURL(r)] = { clock: { v: 0, by: deviceId }, present: true }
+	})
+	const bootstrapSource: SourceDocV0 = {
+		type: SourceType.NPROFILE_SOURCE,
+		doc_type: "doc/shockwallet/source_",
+		source_id: id,
+		schema_rev: 0,
+		created_at: Date.now(),
+		lpk: NOSTR_PUB_DESTINATION,
+		label: newLww("Bootstrap Node", deviceId),
+		relays: relaysFlags,
+		deleted: newLww(false, deviceId),
+		keys: keyPair,
+		admin_token: newLww(null, deviceId),
+		is_ndebit_discoverable: newLww(false, deviceId),
+		bridgeUrl: newLww(null, deviceId)
+	}
+
+	dispatch(sourcesActions._createDraftDoc({ sourceId: bootstrapSource.source_id, draft: bootstrapSource }));
+	await dispatch(onAddSourceDoc(bootstrapSource));
+}
 export const onAddSourceDoc = (sourceDoc: SourceDocV0): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const deviceId = getDeviceId();
 	// Add this new source dod's dtag to the identity doc's sources list

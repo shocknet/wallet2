@@ -39,8 +39,14 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 				label: "New Sanctum Identity",
 				createdAt: Date.now()
 			}
-			await dispatch(createIdentity(identity));
+			const { foundBackup } = await dispatch(createIdentity(identity));
 			dispatch(setPrivateKey());
+
+			if (foundBackup) {
+				router.push("/sources", "root", "replace");
+			} else {
+				router.push("/identity/bootstrap", "root", "replace");
+			}
 		} catch (err: any) {
 			showToast({
 				color: "danger",
@@ -49,7 +55,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 			return;
 		}
 
-		router.push("/sources", "root", "replace");
+
 	}
 
 	return (

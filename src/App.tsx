@@ -55,6 +55,7 @@ const Send = lazy(() => import('./Pages/Send'));
 
 const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
 const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
+const BootstrapSourcePage = lazy(() => import("./Pages/CreateIdentity/BootstrapSource"));
 const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
 const SourcesPage = lazy(() => import("./Pages/Sources"));
 const IdentitiesPage = lazy(() => import("./Pages/CreateIdentity/Identities"));
@@ -215,7 +216,14 @@ const AppContent: React.FC = () => {
 					}
 				/>
 
-
+				<IdentityRouteGate
+					exact
+					path="/identity/bootstrap"
+				>
+					<Suspense fallback={<FullSpinner />}>
+						<BootstrapSourcePage />
+					</Suspense>
+				</IdentityRouteGate>
 
 
 				<IdentityRouteGate

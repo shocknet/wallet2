@@ -111,10 +111,19 @@ const IdentityOverviewPage = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<HomeHeader>
+				<IonToolbar>
+					<IonTitle className="android-centered-title">
+						Profile
+					</IonTitle>
+				</IonToolbar>
 			</HomeHeader>
 
 			<IonContent className="ion-padding">
-				<IonGrid>
+
+				<IonGrid
+					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
+				>
+					<IonRow style={{ flex: 0.2, minHeight: 0 }} />
 					<IonRow style={{ gap: "0.9rem" }} className="ion-align-items-center ion-justify-content-center">
 						<IonCol size="auto" className="ion-text-end">
 							<IonRow className="ion-justify-content-end">
@@ -185,16 +194,10 @@ const IdentityOverviewPage = () => {
 							<CopyMorphButton value={npub} fill="clear" />
 						</IonCol>
 					</IonRow>
+
 				</IonGrid>
-				<div style={{ marginTop: "2rem" }}>
-					<IdentityStatGrid
-						sourcesCount={sourceViews.length}
-						pubkeyHex={registry.pubkey}
-						favoriteSourceId={idDoc.favorite_source_id.value}
-						relaysCount={registry.type !== IdentityType.SANCTUM ? registry.relays.length : undefined}
-						onClickRelays={() => setEditOpen(true)}
-					/>
-				</div>
+
+
 
 				<IonModal className="wallet-modal" isOpen={editOpen} onDidDismiss={() => setEditOpen(false)}>
 					<IonHeader>
@@ -280,7 +283,7 @@ const IdentityOverviewPage = () => {
 							</IonText>
 						</IonCol>
 					</IonRow>
-					<IonRow className="ion-justify-content-center ion-margin-top">
+					{/* <IonRow className="ion-justify-content-center ion-margin-top">
 						<IonCol size="auto">
 							<IonButton color="danger">
 								<IonText className="text-high">
@@ -288,7 +291,7 @@ const IdentityOverviewPage = () => {
 								</IonText>
 							</IonButton>
 						</IonCol>
-					</IonRow>
+					</IonRow> */}
 				</IonGrid>
 
 			</IonFooter>

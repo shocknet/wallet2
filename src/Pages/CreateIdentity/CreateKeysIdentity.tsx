@@ -118,7 +118,17 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 		});
 
 		try {
-			await dispatch(createIdentity(identity, sources));
+			const { foundBackup } = await dispatch(createIdentity(identity, sources));
+			await dismissLoading();
+
+
+			dispatch(setPrivateKey());
+			if (foundBackup) {
+				router.push("/sources", "root", "replace");
+
+			} else {
+				router.push("/identity/bootstrap", "root", "replace");
+			}
 		} catch (err: any) {
 			await dismissLoading();
 			showToast({
@@ -128,13 +138,10 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			return;
 		}
 
-		await dismissLoading();
 
 
-		dispatch(setPrivateKey());
 
 
-		router.push("/sources", "root", "replace");
 	}, [dispatch, router, showToast, presentLoading, dismissLoading]);
 
 
@@ -326,9 +333,9 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 						style={{ marginTop: "3rem" }}
 					>
 						<IonCol size="auto" >
-							<IonText className="ion-text-wrap ion-text-center text-md text-low ">
+							<div className="ion-text-wrap ion-text-center text-lg text-x-low">
 								You will be prompted to save your key to your password manager, or download a file backup.
-							</IonText>
+							</div>
 						</IonCol>
 					</IonRow>
 

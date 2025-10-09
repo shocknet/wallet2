@@ -143,6 +143,10 @@ http://ionicframework.com/docs/theming/ */
 	color: var(--ion-text-color-step-350);
 }
 
+.text-x-low {
+	color: var(--ion-text-color-step-400);
+}
+
 .text-quiet {
 	color: var(--ion-text-color-step-450);
 }

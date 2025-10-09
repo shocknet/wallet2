@@ -24,7 +24,7 @@ import styles from "./styles/index.module.scss";
 import logo from "@/Assets/Images/isolated logo.png";
 import shockwalletText from "@/Assets/Images/wallet_new_text.png";
 import { cloudOutline, keyOutline } from 'ionicons/icons';
-import { RouteComponentProps } from 'react-router';
+
 
 import { useAppSelector } from '@/State/store/hooks';
 import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
