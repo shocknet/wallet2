@@ -17,11 +17,9 @@ import {
 	settingsOutline,
 	flashOutline,
 	personAddOutline,
-	keyOutline,
 	helpCircleOutline,
 	logoBitcoin,
 	analyticsOutline,
-	personCircleOutline,
 } from "ionicons/icons"
 import { useEffect, useState } from "react"
 import { App } from "@capacitor/app"
@@ -47,8 +45,6 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 		{ title: "Preferences", icon: settingsOutline, path: "/prefs" },
 		{ title: "Manage Sources", icon: flashOutline, path: "/sources" },
 		{ title: "Node Invitations", icon: personAddOutline, path: "/invitations" },
-		{ title: "Backup and Sync", icon: keyOutline, path: "/auth" },
-		{ title: "Identities", icon: personCircleOutline, path: "/identities" },
 	]
 	if (adminSource) {
 		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics", color: '#c740c7' })
