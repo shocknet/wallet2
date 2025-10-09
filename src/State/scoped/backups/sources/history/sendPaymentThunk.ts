@@ -2,15 +2,13 @@
 
 import { makeKey, payInvoiceReponseToSourceOperation, } from './helpers';
 import { getNostrClient } from '@/Api/nostr';
-import type { SourceActualOperation, SourceOptimsiticInvoice, SourceOptimsiticOnChain } from './types';
+import type { SourceActualOperation, SourceOptimsiticInvoice } from './types';
 import { ShowToast } from '@/lib/contexts/useToast';
 import type { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
 import { InputClassification, ParsedInput, ParsedInvoiceInput } from '@/lib/types/parse';
 import { NofferError, OfferPriceType } from '@shocknet/clink-sdk';
 import { fetchHistoryForSource } from './thunks';
-
-import { refreshSourceInfo } from '../metadata/thunks';
 import { AppThunk, AppThunkDispatch } from '@/State/store/store';
 import { NprofileView, selectSourceViewById } from '../selectors';
 import { SourceType } from '@/State/scoped/common';
@@ -27,14 +25,12 @@ export const sendPaymentThunk = (
 		parsedInput,
 		amount,
 		note,
-		satsPerVByte,
 		showToast
 	}: {
 		sourceId: string,
 		parsedInput: ParsedInput,
 		amount: Satoshi,
 		note?: string,
-		satsPerVByte: number,
 		showToast: ShowToast
 	}
 ): AppThunk<Promise<undefined | NofferError>> => {
@@ -202,67 +198,6 @@ export const sendPaymentThunk = (
 
 				payInvoice(parsedInvoice, optimisticOperationId, optimsticOperation);
 				return;
-			}
-			case InputClassification.BITCOIN_ADDRESS: {
-
-
-
-				const optimisticOperation: SourceOptimsiticOnChain = {
-					optimistic: true,
-					sourceId,
-					operationId: optimisticOperationId,
-					amount: amount,
-					paidAtUnix: Date.now(),
-					opKey,
-					status: "broadcasting",
-					type: "ON-CHAIN",
-					inbound: false,
-					address: parsedInput.data,
-					memo: note,
-				};
-
-				dispatch(sourcesActions.addOptimistic({ sourceId: selectedSource.sourceId, operation: optimisticOperation }));
-
-				(async () => {
-					try {
-						const payRes = await (await getNostrClient({ pubkey: selectedSource.lpk, relays: selectedSource.relays }, selectedSource.keys)).PayAddress({
-							address: parsedInput.data,
-							amoutSats: amount,
-							satsPerVByte
-						})
-
-						if (payRes.status !== "OK") {
-							throw new Error(payRes.reason);
-						}
-
-						const isInternal = payRes.network_fee === 0;
-						let updatedOptimsticOperation: SourceOptimsiticOnChain;
-						if (isInternal) {
-							updatedOptimsticOperation = {
-								...optimisticOperation,
-								operationId: payRes.operation_id,
-								internal: true,
-								status: "success",
-								serviceFee: payRes.service_fee,
-							}
-						} else {
-							updatedOptimsticOperation = {
-								...optimisticOperation,
-								operationId: payRes.operation_id,
-								internal: false,
-								status: "confirming",
-								networkFee: payRes.network_fee,
-								serviceFee: payRes.service_fee,
-								txHash: payRes.txId,
-							}
-						}
-						dispatch(sourcesActions.replaceOptimistic({ sourceId: selectedSource.sourceId, operation: updatedOptimsticOperation, oldOperationId: optimisticOperationId }));
-						dispatch(refreshSourceInfo(selectedSource));
-
-					} catch (err: any) {
-						handlePaymentError(err, dispatch, selectedSource.sourceId, optimisticOperationId, showToast);
-					}
-				})();
 			}
 		}
 	}

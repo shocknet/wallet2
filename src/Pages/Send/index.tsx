@@ -25,7 +25,6 @@ import {
 	useIonViewDidEnter,
 	useIonViewWillEnter
 } from '@ionic/react';
-import { defaultMempool } from '../../constants';
 import "./styles/index.css";
 import useDebounce from '../../Hooks/useDebounce';
 import { useHistory } from 'react-router';
@@ -42,7 +41,6 @@ import { CustomSelect } from '@/Components/CustomSelect';
 import { InputState } from './types';
 import { useToast } from '@/lib/contexts/useToast';
 import { InputClassification } from '@/lib/types/parse';
-import { FeeTier, getFeeTiers } from '@/lib/fees';
 import { Satoshi } from '@/lib/types/units';
 import { parseUserInputToSats } from '@/lib/units';
 import BackToolbar from '@/Layout2/BackToolbar';
@@ -62,7 +60,6 @@ import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
 const LnurlCard = lazy(() => import("./LnurlCard"));
 const InvoiceCard = lazy(() => import("./InvoiceCard"));
 const NofferCard = lazy(() => import("./NofferCard"));
-const OnChainCard = lazy(() => import("./OnChainCard"));
 
 
 
@@ -73,7 +70,6 @@ const Send = () => {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
-	const mempoolUrl = useAppSelector(({ prefs }) => prefs.mempoolUrl) || defaultMempool;
 
 	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
@@ -188,7 +184,9 @@ const Send = () => {
 			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
 				const { classification, value } = identifyBitcoinInput(
 					debouncedRecepient,
-					undefined
+					{
+						disallowed: [InputClassification.BITCOIN_ADDRESS, InputClassification.NPROFILE]
+					}
 				);
 				if (classification === InputClassification.UNKNOWN) {
 					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
@@ -318,31 +316,6 @@ const Send = () => {
 
 
 
-	// --- On chain fee tiers ---
-	const [feeTiers, setFeeTiers] = useState<FeeTier[]>([]);
-	const [selectedFeeTier, setSelectedFeeTier] = useState(1);  // Default to avergae fee rate
-
-	useEffect(() => {
-		const fetchFeeTiers = async () => {
-			try {
-				const tiers = await getFeeTiers(mempoolUrl);
-
-				setFeeTiers(tiers);
-			} catch (err) {
-				console.error("Failed to fetch fees", mempoolUrl, err);
-			}
-		};
-
-		fetchFeeTiers();
-
-		const interval = setInterval(fetchFeeTiers, 120000); // Refresh every 2 minutes
-		return () => clearInterval(interval);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-
-
-
 
 
 	const { scanSingleBarcode } = useQrScanner();
@@ -390,7 +363,6 @@ const Send = () => {
 				parsedInput: inputState.parsedData,
 				amount: amountInput.effectiveSats,
 				note,
-				satsPerVByte: feeTiers[selectedFeeTier].rate,
 				showToast
 			}));
 			if (
@@ -412,7 +384,7 @@ const Send = () => {
 			showToast({ message: err?.message || "Payment failed", color: "danger" });
 		}
 
-	}, [amountInput, inputState, selectedSource, dispatch, router, showToast, feeTiers, selectedFeeTier, note]);
+	}, [amountInput, inputState, selectedSource, dispatch, router, showToast, note]);
 
 
 	return (
@@ -484,22 +456,6 @@ const Send = () => {
 
 
 					{/* Different input types cards */}
-					{
-						inputState.status === "parsedOk" && inputState.parsedData.type === InputClassification.BITCOIN_ADDRESS && (
-							<IonRow>
-								<IonCol size="12">
-									<Suspense fallback={<IonSpinner />}>
-										<OnChainCard
-											selectedFeeTier={selectedFeeTier}
-											setSelectedFeeTier={setSelectedFeeTier}
-											feeTiers={feeTiers}
-											selectedSource={selectedSource}
-										/>
-									</Suspense>
-								</IonCol>
-							</IonRow>
-						)
-					}
 					{
 						inputState.status === "parsedOk" && inputState.parsedData.type === InputClassification.LN_INVOICE && (
 							<IonRow>
