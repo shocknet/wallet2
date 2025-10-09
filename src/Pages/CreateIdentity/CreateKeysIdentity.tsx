@@ -27,7 +27,7 @@ import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
-import { chevronBackOutline, cloudUploadOutline } from "ionicons/icons";
+import { chevronBackOutline, cloudUploadOutline, keyOutline } from "ionicons/icons";
 import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@/Components/Modals/DialogeModals";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
@@ -266,8 +266,14 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 				<IonGrid
 					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
 				>
-					<IonRow style={{ flex: 0.5, minHeight: 0 }} />
-					<IonRow className="ion-align-items-center ion-justify-content-center">
+					<IonRow style={{ flex: 0.3, minHeight: 0 }} />
+					<IonRow className="ion-justify-content-center">
+						<IonCol size="auto">
+							<IonIcon icon={keyOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
+						</IonCol>
+
+					</IonRow>
+					<IonRow className="ion-align-items-center ion-justify-content-center" style={{ marginTop: "4rem" }}>
 						<IonCol size="12">
 							<IonRow style={{ gap: "8px" }}>
 								<IonCol size="8" offset="2">

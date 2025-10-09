@@ -192,11 +192,6 @@ const SourcesPage = () => {
 		} else if (searchParams.size > 0) {
 			const searchParams = new URLSearchParams(history.location.search);
 			handleSearchParams(searchParams);
-		} else {
-			// auto open the add source modal if no sources
-			if (sources.length === 0) {
-				setIsAddSourceOpen(true);
-			}
 		}
 
 

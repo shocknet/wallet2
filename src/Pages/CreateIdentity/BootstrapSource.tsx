@@ -152,18 +152,22 @@ const BootstrapSource = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<HomeHeader>
-				<IonToolbar>
-					<IonTitle className="android-centered-title">
-						Node Up
-					</IonTitle>
-				</IonToolbar>
+
 			</HomeHeader>
 			<IonContent className="ion-padding">
 				<IonGrid
 					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
 				>
-					<IonRow style={{ flex: 0.5, minHeight: 0 }} />
-					<IonRow className="ion-align-items-center ion-justify-content-center">
+
+					<IonRow className="ion-justify-content-center" style={{ marginTop: "5rem" }}>
+						<IonCol size="auto">
+							<div className="text-xl text-medium text-weight-high">
+								Node Up
+							</div>
+
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-align-items-center ion-justify-content-center" style={{ marginTop: "4rem" }}>
 						<IonCol size="12">
 							<IonRow style={{ gap: "8px" }}>
 								<IonCol size="8" offset="2">

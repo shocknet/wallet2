@@ -67,13 +67,13 @@ export default function IdentitiesPage() {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonButton routerLink="/home" routerDirection="back">
+						<IonButton routerLink="/home" routerDirection="back" routerOptions={{ unmount: true }}>
 							<IonIcon icon={chevronBackOutline} />
 						</IonButton>
 					</IonButtons>
 					<IonTitle>Identities</IonTitle>
 					<IonButtons slot="end">
-						<IonButton routerLink="/identity/create">
+						<IonButton routerLink="/identity/create" routerOptions={{ unmount: true }}>
 							<IonIcon icon={addOutline} />
 						</IonButton>
 					</IonButtons>

@@ -1,5 +1,5 @@
 import type { AppstartListening } from "@/State/store/listenerMiddleware";
-import { identityLoaded, identityUnloaded } from "./actions";
+import { checkDirtyRequested, identityLoaded, identityUnloaded } from "./actions";
 import { equalSet, identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 
 import { docsSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
@@ -125,7 +125,7 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 				try {
 					for (; ;) {
 						await listnerApi.take((action) => {
-							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action)
+							return sourcesActions._createDraftDoc.match(action) || identityActions.addSourceDocDTag.match(action) || checkDirtyRequested.match(action)
 						});
 						schedule();
 					}

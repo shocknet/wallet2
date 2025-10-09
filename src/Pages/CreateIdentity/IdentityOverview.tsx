@@ -408,7 +408,7 @@ export function IdentityStatGrid({
 			<IonRow className="ion-text-wrap ion-justify-content-center" style={{ gap: "0.6rem" }}>
 
 				<IonCol size="auto" className={styles["stats-grid-card"]}>
-					<IonCard button routerLink="/sources" color="secondary" style={tileStyle} className="wallet-box-shadow">
+					<IonCard button routerOptions={{ unmount: true }} routerLink="/sources" color="secondary" style={tileStyle} className="wallet-box-shadow">
 						<IonCardHeader>
 							<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
 								<IonIcon icon={peopleOutline} />
