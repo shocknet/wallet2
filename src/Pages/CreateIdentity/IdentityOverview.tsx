@@ -25,13 +25,14 @@ import {
 	IonCardTitle,
 	IonCardContent,
 	IonFooter,
+	useIonViewDidEnter,
 } from "@ionic/react";
 import { chevronForward, closeOutline, keyOutline, peopleOutline, starOutline } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 import { useGetProfileQuery } from "@/State/api/api";
-import { nip19 } from "nostr-tools";
+import { nip19, utils } from "nostr-tools";
 import { selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
@@ -39,6 +40,7 @@ import { IdentityType } from "@/State/identitiesRegistry/types";
 import styles from "./styles/index.module.scss";
 import { truncateTextMiddle } from "@/lib/format";
 import HomeHeader from "@/Layout2/HomeHeader";
+import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -61,7 +63,7 @@ const IdentityOverviewPage = () => {
 	const activeHex = registry.pubkey;
 
 	const nprofileSources = useAppSelector(selectNprofileViews);
-	const adminSource = nprofileSources[0]/* .find(s => s.adminToken) */;
+	const adminSource = nprofileSources.find(s => s.adminToken);
 
 
 	const { data: profile, isLoading } = useGetProfileQuery({
@@ -97,6 +99,20 @@ const IdentityOverviewPage = () => {
 			: []
 	);
 
+	useIonViewDidEnter(() => {
+		if (registry.type === IdentityType.SANCTUM) {
+			getIdentityNostrApi(registry)
+				.then((api) => {
+					api.getRelays()
+						.then((r) => {
+							const sanctumRelays = Object.keys(r);
+							setRelays(sanctumRelays.map(utils.normalizeURL))
+						})
+						.catch(() => console.error("Error getting sanctum relays"))
+				})
+				.catch(() => console.error("Error getting sanctum api"))
+		}
+	})
 	const updateRelays = () => {
 		dispatch(identitiesRegistryActions.updateIdentityRelays({ pubkey: activeHex, relays: relays }))
 	}
