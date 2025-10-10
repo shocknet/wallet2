@@ -48,6 +48,7 @@ import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { NavigationBar } from "@capgo/capacitor-navigation-bar";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
+import { initialState as backupInitialState } from "@/State/Slices/backupState";
 
 async function setEnvColors() {
 	await NavigationBar.setNavigationBarColor({ color: '#16191c' });
@@ -483,11 +484,37 @@ const App: React.FC = () => {
 				<PersistGate
 					onBeforeLift={async () => {
 						const exists = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-						console.log({ exists })
-						if (exists) {
-							await store.dispatch(migrateDeviceToIdentities());
-							return;
+
+						try {
+							if (exists) {
+								await store.dispatch(migrateDeviceToIdentities());
+								return;
+							}
+						} catch (err: any) {
+							const subbedToBackUp = backupInitialState;
+							if (subbedToBackUp.subbedToBackUp) {
+								if (subbedToBackUp.usingSanctum) {
+									alert(
+										`An error occured with Sanctum: \n\n ${err?.message || ""}`
+									);
+								} else if (subbedToBackUp.usingExtension) {
+									alert(
+										`An error occured with NIP07 extension: \n\n ${err?.message || ""}`
+									);
+								} else {
+									alert(
+										`An un known error occured: \n\n ${err?.message || ""}`
+									);
+								}
+							} else {
+								alert(
+									`An un known error occured: \n\n ${err?.message || ""}`
+								);
+							}
+							await new Promise(() => {/*  */ })
+
 						}
+
 
 						const pubkey = localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
 

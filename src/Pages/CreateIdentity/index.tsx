@@ -27,7 +27,7 @@ import { cloudOutline, keyOutline } from 'ionicons/icons';
 
 
 import { useAppSelector } from '@/State/store/hooks';
-import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
+import { identitiesSelectors, selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
 /* import { Capacitor } from '@capacitor/core'; */
 
 
@@ -37,19 +37,22 @@ const CreateIdentityPage = () => {
 	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
 
 	const activeIdentity = useAppSelector(selectActiveIdentityId);
+	const identitiesCount = useAppSelector(identitiesSelectors.selectTotal)
 
 	const canLeave = !!isBoostrapped && !!activeIdentity;
+
+	const canGoToIdentities = identitiesCount > 0
 
 
 
 
 	return (
 		<IonPage className="ion-page-width">
-			{
-				canLeave
-				&&
-				<IonHeader className="ion-no-border">
-					<IonToolbar>
+			<IonHeader className="ion-no-border">
+				<IonToolbar>
+					{
+						canLeave
+						&&
 						<IonButtons slot="start">
 							<IonButton shape="round" routerLink="/home">
 								<IonImg
@@ -61,10 +64,23 @@ const CreateIdentityPage = () => {
 							</IonButton>
 						</IonButtons>
 
-					</IonToolbar>
 
-				</IonHeader>
-			}
+					}
+					{
+						canGoToIdentities
+						&&
+						<IonButtons slot="end">
+							<IonButton fill="clear" color="primary" routerLink="/identities">
+								My identities
+							</IonButton>
+						</IonButtons>
+					}
+
+
+				</IonToolbar>
+
+			</IonHeader>
+
 
 			<IonContent className={`${styles["nodeup-ioncontent"]} ion-padding`}>
 				<IonGrid

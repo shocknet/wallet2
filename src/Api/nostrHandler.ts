@@ -330,7 +330,10 @@ export default class RelayCluster {
 		}
 		this.relays.values().forEach(relay => {
 			if (relay.relay.connected) {
-				relay.relay.close();
+				try {
+					relay.relay.close();
+				} catch {/*  */ }
+
 			}
 
 		})
