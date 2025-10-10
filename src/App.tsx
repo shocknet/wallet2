@@ -35,7 +35,7 @@ import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
 import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
 import { useAppSelector } from './State/store/hooks';
-import { migrateDeviceToIdentities, OLD_BACKUP_STATE_STORAGE_KEY } from './State/identitiesRegistry/identitiesMigration';
+import { migrateDeviceToIdentities } from './State/identitiesRegistry/identitiesMigration';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
 import { selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
@@ -47,6 +47,7 @@ import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 import { NavigationBar } from "@capgo/capacitor-navigation-bar";
 import { StatusBar, Style } from "@capacitor/status-bar";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
 
 async function setEnvColors() {
 	await NavigationBar.setNavigationBarColor({ color: '#16191c' });
@@ -481,7 +482,7 @@ const App: React.FC = () => {
 			<Provider store={store}>
 				<PersistGate
 					onBeforeLift={async () => {
-						const exists = localStorage.getItem(OLD_BACKUP_STATE_STORAGE_KEY);
+						const exists = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 						console.log({ exists })
 						if (exists) {
 							await store.dispatch(migrateDeviceToIdentities());

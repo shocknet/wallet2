@@ -9,7 +9,7 @@ import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selec
 export const useManageRequestHandler = () => {
 
 	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
-	const nodedUp = useSelector(state => state.nostrPrivateKey);
+	const nodedUp = useSelector(state => state.appState.bootstrapped);
 	const dispatch = useDispatch();
 
 	useEffect(() => {

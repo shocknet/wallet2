@@ -16,7 +16,7 @@ import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identi
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
 import { chevronBackOutline } from "ionicons/icons";
-import { setPrivateKey } from "@/State/Slices/nostrPrivateKey";
+import { appStateActions } from "@/State/appState/slice";
 
 
 
@@ -40,7 +40,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 				createdAt: Date.now()
 			}
 			const { foundBackup } = await dispatch(createIdentity(identity));
-			dispatch(setPrivateKey());
+			dispatch(appStateActions.setAppBootstrapped());
 
 			if (foundBackup) {
 				router.push("/sources", "root", "replace");

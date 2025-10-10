@@ -14,7 +14,7 @@ import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selec
 export const useDebitRequestHandler = () => {
 
 	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
-	const nodedUp = useAppSelector(state => state.nostrPrivateKey);
+	const nodedUp = useAppSelector(state => state.appState.bootstrapped);
 	const dispatch = useDispatch();
 
 	useEffect(() => {

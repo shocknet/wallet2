@@ -12,9 +12,10 @@ import { utils } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { toast } from "react-toastify";
 import { Capacitor } from "@capacitor/core";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "@/constants";
 
 
-export const OLD_BACKUP_STATE_STORAGE_KEY = "backupState";
+
 
 export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (dispatch) => {
 	try {
@@ -41,7 +42,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 					createdAt: Date.now()
 				}
 				await dispatch(createIdentity(identity, sources))
-				localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY)
+				localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
 			} else if (subbedToBackUp.usingExtension) { // extension
 				const ext = await getNostrExtensionIdentityApi();
 				const pubkey = await ext.getPublicKey();
@@ -57,7 +58,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 					relays: relays ? Object.keys(relays).map(utils.normalizeURL) : ["wss://strfry.shock.network"].map(utils.normalizeURL)
 				};
 				await dispatch(createIdentity(identity, sources));
-				localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY)
+				localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
 			} else {
 				throw new Error("Says subbed to backup, but not using sanctum nor nip07");
 			}
@@ -73,7 +74,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 			};
 
 			await dispatch(createIdentity(identity, sources));
-			localStorage.removeItem(OLD_BACKUP_STATE_STORAGE_KEY);
+			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 
 		}
 	} catch (err: any) {

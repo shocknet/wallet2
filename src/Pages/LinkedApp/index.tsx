@@ -32,7 +32,7 @@ const LinkedApp = () => {
 		debitAuths: [],
 		debitAuthsBanned: []
 	})
-	const nodedUp = useSelector(state => state.nostrPrivateKey);
+	const nodedUp = useSelector(state => state.appState.bootstrapped);
 	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
 
 

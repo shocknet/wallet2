@@ -41,7 +41,7 @@ const enrollToken = async (nostrSpends: SpendFrom[]) => {
 
 export const useFirebaseHandler = () => {
 	const nostrSpends = useSelector(selectNostrSpends);
-	const nodedUp = !!useSelector(state => state.nostrPrivateKey);
+	const nodedUp = !!useSelector(state => state.appState.bootstrapped);
 
 	useEffect(() => {
 		if (!nodedUp) {

@@ -18,7 +18,7 @@ const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 export const useAppLifecycle = () => {
 	const dispatch = useDispatch();
 
-	const nodedUp = useSelector(state => state.nostrPrivateKey);
+	const nodedUp = useSelector(state => state.appState.bootstrapped);
 
 	const { cachedValue, setValue, isLoaded } = usePreference<boolean>(DENIED_NOTIFICATIONS_PERMISSIONS, false);
 
@@ -148,7 +148,7 @@ const useWatchClipboard = () => {
 
 	const history = useHistory();
 
-	const nodedup = useSelector(state => state.nostrPrivateKey)
+	const nodedup = useSelector(state => state.appState.bootstrapped)
 	const savedAssets = useSelector(state => state.generatedAssets.assets);
 
 	const clipboardAlertShown = useRef(false);

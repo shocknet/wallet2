@@ -126,7 +126,7 @@ async function initPush(handlers: Handlers = {}) {
 
 export const usePush = () => {
 	const nostrSpends = useSelector(selectNostrSpends);
-	const nodedUp = !!useSelector(state => state.nostrPrivateKey);
+	const nodedUp = !!useSelector(state => state.appState.bootstrapped);
 	const { showToast } = useToast();
 
 
