@@ -4,7 +4,7 @@ import styles from "./styles/index.module.scss";
 import { IonButton, IonIcon } from '@ionic/react';
 import { memo, useCallback } from 'react';
 import { copyOutline } from 'ionicons/icons';
-import { useDispatch } from '@/State/store';
+import { useDispatch } from '@/State/store/store';
 import { copyToClipboard } from '@/State/thunks/copyToClipboard';
 import { useToast } from '@/lib/contexts/useToast';
 import { BITCOIN_ADDRESS_BASE58_REGEX } from '@/lib/regex';

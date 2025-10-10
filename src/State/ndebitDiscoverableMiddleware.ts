@@ -1,6 +1,6 @@
 import { addListener, createListenerMiddleware, ListenerEffectAPI, PayloadAction, TypedStartListening } from "@reduxjs/toolkit";
 import { flipSourceNdebitDiscoverable } from "./Slices/paySourcesSlice";
-import { AppDispatch, dynamicMiddleware, State } from "./store";
+import { AppDispatch, dynamicMiddleware, State } from "./store/store";
 import { PayTo } from "../globalTypes";
 import Bridge from "../Api/bridge";
 import { Buffer } from "buffer";

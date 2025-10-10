@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { App } from "@capacitor/app";
-import { useDispatch, useSelector } from "@/State/store";
-import { listenforNewOperations } from "@/State/history";
+import { useDispatch, useSelector } from "@/State/store/store";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "../hooks/usePreference";
 import { isPlatform } from "@ionic/react";
@@ -11,6 +10,7 @@ import { addAsset } from "@/State/Slices/generatedAssets";
 import { useHistory } from "react-router";
 import { truncateTextMiddle } from "../format";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "@/constants";
+import { listenforNewOperations } from "@/State/scoped/backups/sources/history/thunks";
 
 const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
@@ -18,7 +18,7 @@ const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 export const useAppLifecycle = () => {
 	const dispatch = useDispatch();
 
-	const nodedUp = useSelector(state => state.nostrPrivateKey);
+	const nodedUp = useSelector(state => state.appState.bootstrapped);
 
 	const { cachedValue, setValue, isLoaded } = usePreference<boolean>(DENIED_NOTIFICATIONS_PERMISSIONS, false);
 
@@ -148,7 +148,7 @@ const useWatchClipboard = () => {
 
 	const history = useHistory();
 
-	const nodedup = useSelector(state => state.nostrPrivateKey)
+	const nodedup = useSelector(state => state.appState.bootstrapped)
 	const savedAssets = useSelector(state => state.generatedAssets.assets);
 
 	const clipboardAlertShown = useRef(false);
@@ -187,11 +187,11 @@ const useWatchClipboard = () => {
 			return;
 		}
 
-		const classification = identifyBitcoinInput(text);
+		const { classification, value } = identifyBitcoinInput(text);
 
 		if (
-			!text.length ||
-			(savedAssets || []).includes(text) ||
+			!value.length ||
+			(savedAssets || []).includes(value) ||
 			clipboardAlertShown.current ||
 			classification === InputClassification.UNKNOWN
 		) {
@@ -202,9 +202,9 @@ const useWatchClipboard = () => {
 
 		const clipboardAlertHandler = async () => {
 			try {
-				const parsed = await parseBitcoinInput(text, classification);
+				const parsed = await parseBitcoinInput(value, classification);
 				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-					const legacyParsedLnurlW = await legacyParseBitcoinInput(text);
+					const legacyParsedLnurlW = await legacyParseBitcoinInput(value);
 					history.push({
 						pathname: "/sources",
 						state: legacyParsedLnurlW
@@ -233,9 +233,9 @@ const useWatchClipboard = () => {
 		showAlert({
 			header: "Clipboard Detected",
 			subHeader: "Do you want to use the content from your clipboard?",
-			message: truncateTextMiddle(text, 20),
+			message: truncateTextMiddle(value, 20),
 			onWillDismiss: () => {
-				dispatch(addAsset({ asset: text }));
+				dispatch(addAsset({ asset: value }));
 				clipboardAlertShown.current = false;
 			},
 			buttons: [

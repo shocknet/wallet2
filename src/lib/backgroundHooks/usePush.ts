@@ -3,7 +3,7 @@ import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
-import { selectNostrSpends, useSelector } from '@/State/store';
+import { selectNostrSpends, useSelector } from '@/State/store/store';
 import { parseNprofile } from '../nprofile';
 import { getNostrClient } from '@/Api/nostr';
 import { getDeviceId } from '@/constants';
@@ -126,7 +126,7 @@ async function initPush(handlers: Handlers = {}) {
 
 export const usePush = () => {
 	const nostrSpends = useSelector(selectNostrSpends);
-	const nodedUp = !!useSelector(state => state.nostrPrivateKey);
+	const nodedUp = !!useSelector(state => state.appState.bootstrapped);
 	const { showToast } = useToast();
 
 

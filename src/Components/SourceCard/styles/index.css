@@ -1,0 +1,41 @@
+.source-card-item {
+
+
+
+	border-radius: 18px;
+
+
+	margin-bottom: 0.9rem;
+
+	--background: var(--ion-color-secondary);
+
+	box-shadow: var(--wallet-box-shadow);
+	--padding-start: 1.5rem;
+	--padding-bottom: 1.5rem;
+
+
+
+
+}
+
+.source-card-item ion-label {
+	margin: 0;
+
+
+}
+
+.source-card-item .balance-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.source-card-item .source-card-icon {
+	font-size: 4rem;
+	color: var(--ion-text-color-step-200);
+	padding-top: 1.8rem;
+}
+
+.source-card-item .source-card-item-title {
+	font-size: 1.5rem;
+}

@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-
 import { getNostrClient } from "@/Api/nostr";
-import { selectNostrSpends, useDispatch, useSelector } from "@/State/store";
-
+import { useDispatch } from "@/State/store/store";
 import { addDebitRequest } from "@/State/Slices/modalsSlice";
-import { parseNprofile } from "../nprofile";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 
 
 
@@ -14,26 +13,26 @@ import { parseNprofile } from "../nprofile";
 
 export const useDebitRequestHandler = () => {
 
-	const nostrSpends = useSelector(selectNostrSpends);
-	const nodedUp = useSelector(state => state.nostrPrivateKey);
+	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const nodedUp = useAppSelector(state => state.appState.bootstrapped);
 	const dispatch = useDispatch();
 
 	useEffect(() => {
 		if (!nodedUp) {
 			return;
 		}
-		nostrSpends.forEach(source => {
-			const { pubkey, relays } = parseNprofile(source.pasteField)
-			getNostrClient({ pubkey, relays }, source.keys).then(c => {
+		healthyNprofileSourceViews.forEach(source => {
+
+			getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys).then(c => {
 				c.GetLiveDebitRequests(debitReq => {
 					console.log("got request")
 					if (debitReq.status === "OK") {
 
-						dispatch(addDebitRequest({ request: debitReq, sourceId: source.id }))
+						dispatch(addDebitRequest({ request: debitReq, sourceId: source.sourceId }))
 					}
 				})
 			})
 		});
 
-	}, [nostrSpends, nodedUp, dispatch])
+	}, [healthyNprofileSourceViews, nodedUp, dispatch])
 }

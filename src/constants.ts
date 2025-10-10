@@ -227,13 +227,20 @@ export const stringToColor = (str: string) => {
 	return color;
 }
 
+
+let cachedDeviceId: string | null = null;
+
 export const getDeviceId = () => {
+	if (cachedDeviceId) return cachedDeviceId;
+
 	const stored = localStorage.getItem(DEVICE_ID_STORAGE_KEY)
 	if (stored) {
+		cachedDeviceId = stored;
 		return stored
 	}
 	const newId = Buffer.from(randomBytes(32)).toString('hex')
 	localStorage.setItem(DEVICE_ID_STORAGE_KEY, newId)
+	cachedDeviceId = newId;
 	return newId
 
 }

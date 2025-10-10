@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDispatch } from "@/State/store";
+import { useDispatch } from "@/State/store/store";
 
 import { upgradeSourcesToNofferBridge } from "@/State/bridgeMiddleware";
 import { addNdebitDiscoverableListener, ndebitDiscoverableListener, useNdebitDiscoverableDipstach } from "@/State/ndebitDiscoverableMiddleware";

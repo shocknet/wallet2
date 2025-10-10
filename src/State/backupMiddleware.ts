@@ -2,7 +2,7 @@ import { addListener, AnyAction, createAction, createListenerMiddleware, Listene
 import { addPaySources, deletePaySources, editPaySources, flipSourceNdebitDiscoverable, PaySourceRecord, setPaySources } from "./Slices/paySourcesSlice";
 import { addSpendSources, deleteSpendSources, editSpendSources, setSpendSources, SpendSourceRecord } from "./Slices/spendSourcesSlice";
 import { fetchRemoteBackup, saveChangelog, saveRemoteBackup, subscribeToRemoteChangelogs } from "../helpers/remoteBackups";
-import { AppDispatch, dynamicMiddleware, findReducerMerger, reducer, State } from "./store";
+import { AppDispatch, dynamicMiddleware, findReducerMerger, reducer, State } from "./store/store";
 import { CHANGELOG_TIMESTAMP, getDeviceId, STATE_HASH } from "../constants";
 import { BackupAction, Changelog, GeneralShard, PREFS_DTAG, ShardsTagsRecord } from "./types";
 import { sha256 } from "@noble/hashes/sha256";

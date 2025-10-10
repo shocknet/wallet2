@@ -1,5 +1,5 @@
-import { nip19 } from "nostr-tools";
 import { Satoshi } from "./units";
+import { OfferPointer } from "@shocknet/clink-sdk";
 
 export interface LightningAddress {
 	username: string
@@ -17,7 +17,7 @@ export interface LnurlPayServiceResponse {
 	description: string;
 	image: string;
 	commentAllowed: number;
-	noffer?: nip19.OfferPointer;
+	noffer?: OfferPointer;
 }
 export interface LnurlWithdrawServiceResponse {
 	tag: "withdrawRequest";
