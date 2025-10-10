@@ -1,3 +1,4 @@
+/// <reference types="@capawesome/capacitor-android-edge-to-edge-support" />
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -6,6 +7,9 @@ const config: CapacitorConfig = {
 	webDir: 'dist',
 	server: {
 		androidScheme: 'https',
+	},
+	android: {
+		adjustMarginsForEdgeToEdge: 'force',
 	},
 	plugins: {
 		App: {
@@ -34,6 +38,9 @@ const config: CapacitorConfig = {
 		},
 		CapacitorHttp: {
 			enabled: true
+		},
+		"EdgeToEdge": {
+			"backgroundColor": "#16191c"
 		}
 	}
 };

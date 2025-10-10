@@ -16,12 +16,11 @@ import '@ionic/react/css/display.css';
 import "./theme/variables.css";
 
 import { Redirect, Route, RouteProps, useLocation } from "react-router-dom";
-import React, { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
+import React, { lazy, ReactNode, Suspense, useEffect, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import store, { persistor, useSelector } from './State/store/store';
-import { StatusBar } from "@capacitor/status-bar";
 import { Provider } from 'react-redux';
 import { ToastContainer } from "react-toastify";
 import LoadingOverlay from "./Components/LoadingOverlay";
@@ -43,11 +42,20 @@ import { selectHealthyNprofileViews } from './State/scoped/backups/sources/selec
 import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 
+import { NavigationBar } from "@capgo/capacitor-navigation-bar";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
-
-
+async function setEnvColors() {
+	await NavigationBar.setNavigationBarColor({ color: '#16191c' });
+	await StatusBar.setOverlaysWebView({ overlay: false });
+	await StatusBar.setStyle({ style: Style.Dark });
+	await StatusBar.setBackgroundColor({ color: "#16191c" });
+	await EdgeToEdge.setBackgroundColor({ color: "#16191c" });
+}
+setEnvColors();
 
 const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
@@ -421,12 +429,12 @@ const IdentityRouteGate = ({ children, ...rest }: RouteProps & { children: React
 	return (
 		<Route
 			{...rest}
-			render={() => <InnerGate pathname={rest.path as string}>{children}</InnerGate>}
+			render={() => <InnerGate>{children}</InnerGate>}
 		/>
 	);
 }
 
-const InnerGate = ({ children, pathname }: { children: ReactNode, pathname?: string }) => {
+const InnerGate = ({ children }: { children: ReactNode }) => {
 	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
 	const activeIdentity = useAppSelector(selectActiveIdentityId, (prev, next) => prev === next);
 	const ready = isBoostrapped && activeIdentity;
@@ -466,10 +474,6 @@ const AtLeastOneHealthyNprofileSourceRouteGate = ({ children }: { children: Reac
 
 
 const App: React.FC = () => {
-	useEffect(() => {
-		StatusBar.setOverlaysWebView({ overlay: false });
-		StatusBar.setBackgroundColor({ color: "#16191c" })
-	}, []);
 
 
 	return (

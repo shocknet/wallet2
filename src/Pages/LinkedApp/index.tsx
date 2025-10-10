@@ -192,7 +192,7 @@ const LinkedApp = () => {
 						onSelect={setSelectedSource}
 						getIndex={(source) => source.sourceId}
 						title="Select Source"
-						subTitle="Select the source you want to spend from"
+						subTitle="Select a source to view its nbedit rules"
 						renderItem={(source) => {
 							return (
 								<>
