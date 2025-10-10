@@ -13,6 +13,7 @@ import { generateNewKeyPair } from "@/Api/helpers";
 import { toast } from "react-toastify";
 import { Capacitor } from "@capacitor/core";
 import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "@/constants";
+import { appStateActions } from "../appState/slice";
 
 
 
@@ -43,6 +44,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 				}
 				await dispatch(createIdentity(identity, sources))
 				localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
+				dispatch(appStateActions.setAppBootstrapped());
 			} else if (subbedToBackUp.usingExtension) { // extension
 				const ext = await getNostrExtensionIdentityApi();
 				const pubkey = await ext.getPublicKey();
@@ -58,7 +60,8 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 					relays: relays ? Object.keys(relays).map(utils.normalizeURL) : ["wss://strfry.shock.network"].map(utils.normalizeURL)
 				};
 				await dispatch(createIdentity(identity, sources));
-				localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
+				localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+				dispatch(appStateActions.setAppBootstrapped());
 			} else {
 				throw new Error("Says subbed to backup, but not using sanctum nor nip07");
 			}
@@ -75,6 +78,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 
 			await dispatch(createIdentity(identity, sources));
 			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+			dispatch(appStateActions.setAppBootstrapped());
 
 		}
 	} catch (err: any) {
