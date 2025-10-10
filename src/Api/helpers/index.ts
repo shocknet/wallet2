@@ -18,11 +18,14 @@ import type { NofferError, NofferSuccess, OfferPointer } from "@shocknet/clink-s
 	Error handling is done by throwing errors
 */
 
+
 export const createNostrInvoice = async (nprofile: GetNostrClientNprofileArgs, keys: NostrKeyPair, amount: number, memo?: string) => {
 
 	const res = await (await getNostrClient(nprofile, keys)).NewInvoice({
+
 		amountSats: +amount,
-		memo: memo || ""
+		memo: memo || "",
+		blind
 	})
 	console.log({ res })
 

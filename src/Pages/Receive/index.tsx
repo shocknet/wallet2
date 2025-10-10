@@ -380,7 +380,7 @@ const InvoiceTab = memo(() => {
 
 	const [present, dismiss] = useIonModal(
 		<NewInvoiceModal
-			dismiss={(data: { amount: Satoshi, invoiceMemo: string } | null, role?: string) => dismiss(data, role)}
+			dismiss={(data: { amount: Satoshi, invoiceMemo: string, blind: boolean } | null, role?: string) => dismiss(data, role)}
 			ref={satsInputRef}
 		/>
 	);
@@ -401,7 +401,7 @@ const InvoiceTab = memo(() => {
 
 
 
-	const configInvoice = useCallback(async (amountToRecive: Satoshi, memo: string) => {
+	const configInvoice = useCallback(async (amountToRecive: Satoshi, memo: string, blind: boolean) => {
 		setIsloading(true);
 		let invoice = "";
 		setAmount(formatSatoshi(amountToRecive));
@@ -417,6 +417,7 @@ const InvoiceTab = memo(() => {
 					parsedAmount,
 					memo
 				);
+
 			} else {
 				const parsedPaySource = await parseBitcoinInput(favoriteSource.sourceId);
 				invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
@@ -443,9 +444,9 @@ const InvoiceTab = memo(() => {
 			onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
 
 				if (event.detail.role === "confirm") {
-					const data = event.detail.data as { amount: Satoshi, invoiceMemo: string };
+					const data = event.detail.data as { amount: Satoshi, invoiceMemo: string, blind: boolean };
 					if (data) {
-						configInvoice(data.amount, data.invoiceMemo);
+						configInvoice(data.amount, data.invoiceMemo, data.blind);
 					}
 				}
 				modalOpenedRef.current = false;
