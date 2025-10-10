@@ -436,7 +436,7 @@ const IdentityRouteGate = ({ children, ...rest }: RouteProps & { children: React
 }
 
 const InnerGate = ({ children }: { children: ReactNode }) => {
-	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
+	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
 	const activeIdentity = useAppSelector(selectActiveIdentityId, (prev, next) => prev === next);
 	const ready = isBoostrapped && activeIdentity;
 	const location = useLocation()

@@ -34,14 +34,11 @@ import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
 const CreateIdentityPage = () => {
 	/* 	const hasNip07 = typeof (window as any).nostr !== "undefined";
 		const isNative = Capacitor.isNativePlatform(); */
-	const isBoostrapped = useAppSelector(state => state.nostrPrivateKey);
-
+	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
 
 	const activeIdentity = useAppSelector(selectActiveIdentityId);
 
 	const canLeave = !!isBoostrapped && !!activeIdentity;
-
-
 
 
 
