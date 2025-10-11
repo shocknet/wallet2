@@ -22,7 +22,7 @@ async function sha256Base64Url(input: string): Promise<string> {
 }
 
 
-const SOURCE_NS = "shockwallet:source_";
+const SOURCE_NS = "-shockwallet:source_";
 
 export async function getSourceDocDtag(pubkey: string, sourceId: string) {
 	const material = `${pubkey}|${SOURCE_NS}|${sourceId}`;
@@ -32,7 +32,7 @@ export async function getSourceDocDtag(pubkey: string, sourceId: string) {
 
 
 export const getIdentityDocDtag = (pubkey: string) => {
-	return `identity@${pubkey}_`;
+	return `-identity@${pubkey}_`;
 }
 
 

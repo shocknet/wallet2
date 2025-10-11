@@ -9,7 +9,7 @@ import { initialState as spendSourcesInitialState } from "../Slices/spendSources
 import { initialState as paySourcesInitialState } from "../Slices/paySourcesSlice";
 import { utils } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "@/constants";
+import { NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_RELAYS } from "@/constants";
 import { appStateActions } from "../appState/slice";
 
 
@@ -54,7 +54,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 				pubkey,
 				label: "My Nostr Extension Identity",
 				createdAt: Date.now(),
-				relays: relays ? Object.keys(relays).map(utils.normalizeURL) : ["wss://strfry.shock.network"].map(utils.normalizeURL)
+				relays: relays ? Object.keys(relays).map(utils.normalizeURL) : NOSTR_RELAYS.map(utils.normalizeURL)
 			};
 			await dispatch(createIdentity(identity, sources));
 			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
@@ -70,7 +70,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 			privkey: keypair.privateKey,
 			label: "My Nostr pair Identity",
 			createdAt: Date.now(),
-			relays: ["wss://strfry.shock.network"].map(utils.normalizeURL)
+			relays: NOSTR_RELAYS.map(utils.normalizeURL)
 		};
 
 		await dispatch(createIdentity(identity, sources));
