@@ -39,18 +39,6 @@ export const removeScoped = (dispatch: AppThunkDispatch) => {
 }
 
 
-export function injectLastActive(identityPubkey: string) {
-	const scopedReducer = buildScopedReducer(identityPubkey);
-
-	console.log("swapping");
-
-	staticReducers.inject({
-		reducerPath: "scoped",
-		reducer: makeNullable(scopedReducer)
-	}, { overrideExisting: true });
-
-
-}
 export function injectNewScopedReducer(identityPubkey: string, dispatch: AppThunkDispatch) {
 	const scopedReducer = buildScopedReducer(identityPubkey);
 

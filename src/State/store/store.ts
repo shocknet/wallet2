@@ -11,9 +11,6 @@ import { useDispatch as originalUseDispatch, useSelector as originalUseSelector 
 import { createDynamicMiddleware } from "@reduxjs/toolkit/react";
 import type { BackupAction } from '../types';
 import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
-import { parseUserInputToSats } from '@/lib/units';
-import type { Satoshi } from '@/lib/types/units';
-import type { PayTo, SpendFrom } from '@/globalTypes';
 import { staticReducers } from './staticReducers';
 import { listenerMiddleware } from './listenerMiddleware';
 import { appApi } from '../api/api';

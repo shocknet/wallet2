@@ -414,6 +414,17 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
 		pubkey
 	}
 }
+
+export const newKind79Event = (data: string, pubkey: string, dTag = appTag) => {
+	return {
+		content: data,
+		created_at: Math.floor(Date.now() / 1000),
+		kind: 30079,
+		tags: [["d", dTag]],
+		pubkey
+	}
+}
+
 export const publishNostrEvent = async (data: Event, relays: string[]) => {
 
 	return Promise.any(pool.publish(relays, data))

@@ -1,4 +1,4 @@
-import { getNip78Event, newNip78Event, publishNostrEvent, subToNip78DocEvents } from "@/Api/nostrHandler"
+import { getNip78Event, newKind79Event, newNip78Event, publishNostrEvent, subToNip78DocEvents } from "@/Api/nostrHandler"
 import { IdentityNostrApi } from "./identityNostrApi"
 import { Filter } from "nostr-tools"
 
@@ -23,6 +23,23 @@ export async function saveNip78Event(ext: IdentityNostrApi, backup: string, dTag
 	const encrypted = await ext.encrypt(pubkey, backup)
 
 	const backupEvent = newNip78Event(encrypted, pubkey, dTag)
+
+	const signed = await ext.signEvent(backupEvent)
+
+	await publishNostrEvent(signed, Object.keys(relays))
+	return signed.created_at
+}
+
+
+
+
+export async function saveKind79Event(ext: IdentityNostrApi, backup: string, dTag: string): Promise<number> {
+
+	const pubkey = await ext.getPublicKey()
+	const relays = await ext.getRelays()
+	const encrypted = await ext.encrypt(pubkey, backup)
+
+	const backupEvent = newKind79Event(encrypted, pubkey, dTag)
 
 	const signed = await ext.signEvent(backupEvent)
 

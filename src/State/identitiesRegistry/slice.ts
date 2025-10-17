@@ -74,7 +74,7 @@ export const identitiesRegistryActions = identitiesRegistrySlice.actions;
 
 export const persistedIdentitiesRegistryReducer = persistReducer(
 	{
-		key: "identities-registry",
+		key: "_identities-registry",
 		storage: IonicStorageAdapter,
 		blacklist: ["activePubkey"],
 		version: 0

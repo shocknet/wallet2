@@ -47,8 +47,9 @@ import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 import { NavigationBar } from "@capgo/capacitor-navigation-bar";
 import { StatusBar, Style } from "@capacitor/status-bar";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
+import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
 import { initialState as backupInitialState } from "@/State/Slices/backupState";
+import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
 
 async function setEnvColors() {
 	await NavigationBar.setNavigationBarColor({ color: '#16191c' });
@@ -484,11 +485,13 @@ const App: React.FC = () => {
 				<PersistGate
 					onBeforeLift={async () => {
 						const exists = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+						const hasRanMigration = await IonicStorageAdapter.getItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY)
 
 						try {
-							if (exists) {
+							if (exists || !hasRanMigration) {
+								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
 								await store.dispatch(migrateDeviceToIdentities());
-								return;
+								return
 							}
 						} catch (err: any) {
 							const subbedToBackUp = backupInitialState;
