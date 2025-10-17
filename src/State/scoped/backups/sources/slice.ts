@@ -463,7 +463,7 @@ export const sourcesSlice = createSlice({
 export function getScopedSourcesReducer(identityPubkey: string) {
 	return makeScopedPersistedReducer(
 		sourcesSlice.reducer,
-		"sources",
+		"_sources",
 		identityPubkey,
 		{
 			version: 0,

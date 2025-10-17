@@ -106,7 +106,7 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		await dispatch(switchIdentity(identity.pubkey));
 
 
-		const identityDoc = await fetchNip78Event(identityApi, getIdentityDocDtag(identity.pubkey));
+		const identityDoc = await fetchNip78Event(identityApi, getIdentityDocDtag());
 
 		/*
 		* This identity does not have an identity doc index.

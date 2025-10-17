@@ -12,7 +12,6 @@ export const IdentityDocV0Schema = DocBaseSchema.safeExtend({
 	schema_rev: z.literal(0),
 	identity_pubkey: z.string().nonempty(),
 	favorite_source_id: LwwSchema(z.string().nullable()),
-	sources: z.array(z.string()),
 });
 export type IdentityDocV0 = z.infer<typeof IdentityDocV0Schema>;
 

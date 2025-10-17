@@ -1,12 +1,8 @@
 import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import { identityLoaded, identityUnloaded } from "./actions";
-import { equalSet, identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
-
-import { docsSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { subscribeToNip78Events } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
-import { getIdentityDocDtag, getSourceDocDtag, processRemoteDoc } from "../helpers/processDocs";
-import { RootState } from "@/State/store/store";
+import { getIdentityDocDtag, processRemoteDoc } from "../helpers/processDocs";
 import { toast } from "react-toastify";
 
 
@@ -29,18 +25,6 @@ function createEventQueue<T>() {
 	};
 }
 
-async function computeWantedDtags(state: RootState, pubkey: string) {
-	const idDoc = selectIdentityDraft(state)!;
-	const identityD = getIdentityDocDtag(pubkey);
-
-	const localIds = docsSelectors.selectIds(state);
-	const localDtags = await Promise.all(localIds.map(id => getSourceDocDtag(pubkey, id)));
-
-	const remoteDtags = idDoc.sources;
-
-
-	return new Set<string>([identityD, ...localDtags, ...remoteDtags]);
-}
 
 
 
@@ -54,38 +38,28 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 			const pubkey = identity.pubkey;
 
 
-
 			const identityApi = await getIdentityNostrApi(identity);
 
-			// Current subscription state
-			let currentDtags = new Set<string>();
 			let subCloser: SubCloser | null = null;
 
 			const q = createEventQueue<string>();
 
-			async function resubscribe(nextDtags: Set<string>) {
-				// no-op if unchanged
-				if (equalSet(currentDtags, nextDtags)) return;
 
-				// close previous
-				try { subCloser?.close(); } catch (err) { toast.error(`${err}`) }
-				subCloser = null;
 
-				// open new
-				const filters = [{ kinds: [30078], authors: [pubkey], "#d": Array.from(nextDtags) }];
+			const filters = [
+				{ kinds: [30078], authors: [pubkey], "#d": [getIdentityDocDtag()] },
+
+				// 30079: source docs
+				{ kinds: [30079], authors: [pubkey] },
+			];
+
+			try {
+
 				subCloser = await subscribeToNip78Events(identityApi, filters, (decrypted) => {
 					q.push(decrypted)
 				});
-				currentDtags = nextDtags;
-			}
-
-			// initial subscribe
-			try {
-				const wanted = await computeWantedDtags(listnerApi.getState(), pubkey);
-
-				await resubscribe(wanted);
 			} catch {
-				toast.error("Initial docs subscribe failed:");
+				toast.error("Puller: docs subscribe failed");
 				listnerApi.subscribe();
 				return;
 			}
@@ -105,47 +79,11 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 				}
 			});
 
-			const watchTask = listnerApi.fork(async () => {
-				let timer: ReturnType<typeof setTimeout> | null = null;
-				let pending = false;
-
-				const schedule = () => {
-					if (pending) return;
-					pending = true;
-					timer = setTimeout(async () => {
-						pending = false;
-						try {
-							const wanted = await computeWantedDtags(listnerApi.getState(), pubkey);
-							await resubscribe(wanted);
-						} catch (err) {
-							console.error(err);
-						}
-					}, 150);
-				};
-
-				try {
-					for (; ;) {
-						await listnerApi.take((action, currentState, prevState) => {
-
-							return sourcesActions._createDraftDoc.match(action) ||
-								identityActions.addSourceDocDTag.match(action) ||
-								(
-									identityActions.applyRemoteIdentity.match(action) &&
-									(currentState.scoped!.identity.draft!.sources.length !== prevState.scoped!.identity.draft!.sources.length)
-								)
-						});
-						schedule();
-					}
-				} finally {
-					if (timer) clearTimeout(timer);
-				}
-			});
 
 
 			// Tear down on identity unload
 			await listnerApi.condition(identityUnloaded.match);
 			applyTask.cancel();
-			watchTask.cancel();
 			listnerApi.subscribe();
 		}
 	});

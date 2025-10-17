@@ -7,8 +7,6 @@ import type { RootState } from "@/State/store/store";
 import { selectScopedStrict } from "../../stricScopedSelector";
 
 
-const dedupe = (arr: string[]) => Array.from(new Set(arr));
-
 type IdentityState = {
 	base?: IdentityDocV0;
 	draft?: IdentityDocV0;
@@ -27,7 +25,6 @@ function equalIdentityDoc(a?: IdentityDocV0, b?: IdentityDocV0): boolean {
 	if (!a || !b) return false;
 
 	if (!eqLww(a.favorite_source_id, b.favorite_source_id)) return false;
-	if (!equalSet(new Set(a.sources), new Set(b.sources))) return false;
 
 	return true;
 }
@@ -66,23 +63,7 @@ export const identitySlice = createSlice({
 				state.dirty = true;
 			}
 		},
-		addSourceDocDTag(state, a: PayloadAction<{ sourceId: string }>) {
-			if (!state.draft) return;
-			const next = dedupe([...state.draft.sources, a.payload.sourceId]);
-			if (next.length !== state.draft.sources.length) {
-				state.draft.sources = next;
-				state.dirty = true;
-			}
-		},
 
-		removeSourceId(state, a: PayloadAction<{ sourceId: string }>) {
-			if (!state.draft) return;
-			const next = state.draft.sources.filter(id => id !== a.payload.sourceId);
-			if (next.length !== state.draft.sources.length) {
-				state.draft.sources = next;
-				state.dirty = true;
-			}
-		},
 
 		applyRemoteIdentity(state, a: PayloadAction<{ remote: IdentityDocV0 }>) {
 			const r = a.payload.remote;
@@ -105,7 +86,6 @@ export const identitySlice = createSlice({
 				const basePrime: IdentityDocV0 = {
 					...r,
 					favorite_source_id: mergeLww(r.favorite_source_id, d.favorite_source_id),
-					sources: [...new Set([...r.sources, ...d.sources])],
 				};
 				state.base = basePrime;
 				state.draft = basePrime;
@@ -123,14 +103,12 @@ export const identitySlice = createSlice({
 					...b,
 					identity_pubkey: b.identity_pubkey,
 					favorite_source_id: mergeLww(b.favorite_source_id, r.favorite_source_id),
-					sources: [...new Set([...b.sources, ...r.sources])],
 				};
 
 				// 2) rebase local -> draft
 				const draftPrime: IdentityDocV0 = {
 					...basePrime,
 					favorite_source_id: mergeLww(basePrime.favorite_source_id, d.favorite_source_id),
-					sources: [...new Set([...basePrime.sources, ...d.sources])],
 				};
 
 				state.base = basePrime;
@@ -154,7 +132,7 @@ export const identityActions = identitySlice.actions;
 export function getScopedIdentityReducer(identityPubkey: string) {
 	return makeScopedPersistedReducer(
 		identitySlice.reducer,
-		"identity",
+		"_identity",
 		identityPubkey,
 		{
 			version: 0,

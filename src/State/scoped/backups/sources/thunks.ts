@@ -6,8 +6,6 @@ import { LwwFlag, newflag, newLww } from "../lww"
 import { getDeviceId, NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "@/constants"
 import { SourceType } from "../../common"
 import { generateNewKeyPair } from "@/Api/helpers"
-import { getSourceDocDtag } from "@/State/identitiesRegistry/helpers/processDocs"
-import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 import { selectNprofileViewsByLpk } from "./selectors"
 import { getNostrClient } from "@/Api/nostr"
 import { utils } from "nostr-tools"
@@ -62,10 +60,7 @@ export const addBootstrapSource = (): AppThunk<Promise<void>> => async (dispatch
 }
 export const onAddSourceDoc = (sourceDoc: SourceDocV0): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const deviceId = getDeviceId();
-	// Add this new source dod's dtag to the identity doc's sources list
-	const IdentityPubkey = selectActiveIdentityId(getState())!
-	const newSourceDocTag = await getSourceDocDtag(IdentityPubkey, sourceDoc.source_id)
-	dispatch(identityActions.addSourceDocDTag({ sourceId: newSourceDocTag }));
+
 
 	// Set this source as favorite source if no other sources exist
 	if (docsSelectors.selectIds(getState()).length === 1) {

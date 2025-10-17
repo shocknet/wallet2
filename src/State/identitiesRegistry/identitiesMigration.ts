@@ -9,9 +9,9 @@ import { initialState as spendSourcesInitialState } from "../Slices/spendSources
 import { initialState as paySourcesInitialState } from "../Slices/paySourcesSlice";
 import { utils } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "@/constants";
+import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_RELAYS } from "@/constants";
 import { appStateActions } from "../appState/slice";
-
+import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 
 
 
@@ -21,60 +21,73 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 
 	const sources: SourceToMigrate[] = Object.values(paySourcesInitialState.sources).concat(Object.values(spendSourcesInitialState.sources));
 
+	if (!subbedToBackUp.subbedToBackUp) {
 
-	if (subbedToBackUp.subbedToBackUp) {
-
-		if (subbedToBackUp.usingSanctum) { // sanctum
-			const accessToken = getSanctumAccessToken();
-			if (!accessToken) {
-				throw new Error("Says subbed with sanctum but no sanctum token");
-			}
-
-			const ext = await getSanctumIdentityApi({ accessToken });
-			const pubkey = await ext.getPublicKey();
-			const identity: IdentitySanctum = {
-				type: IdentityType.SANCTUM,
-				pubkey,
-				label: "My Sanctum Identity",
-				accessToken,
-				createdAt: Date.now()
-			}
-			await dispatch(createIdentity(identity, sources))
-			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
-			dispatch(appStateActions.setAppBootstrapped());
-		} else if (subbedToBackUp.usingExtension) { // extension
-			const ext = await getNostrExtensionIdentityApi();
-			const pubkey = await ext.getPublicKey();
-
-
-			const relays = ext.getRelays().catch(() => null);
-
-			const identity: IdentityExtension = {
-				type: IdentityType.NIP07,
-				pubkey,
-				label: "My Nostr Extension Identity",
+		if (sources.length !== 0) {
+			const keypair = generateNewKeyPair();
+			const identity: IdentityKeys = {
+				type: IdentityType.LOCAL_KEY,
+				pubkey: keypair.publicKey,
+				privkey: keypair.privateKey,
+				label: "My Nostr pair Identity",
 				createdAt: Date.now(),
-				relays: relays ? Object.keys(relays).map(utils.normalizeURL) : ["wss://strfry.shock.network"].map(utils.normalizeURL)
+				relays: NOSTR_RELAYS.map(utils.normalizeURL)
 			};
-			await dispatch(createIdentity(identity, sources));
-			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-			dispatch(appStateActions.setAppBootstrapped());
-		} else {
-			throw new Error("Says subbed to backup, but not using sanctum nor nip07");
-		}
-	} else { // Not subbed to backup. Just take local sources and create a nostr key pair identity
-		const keypair = generateNewKeyPair();
-		const identity: IdentityKeys = {
-			type: IdentityType.LOCAL_KEY,
-			pubkey: keypair.publicKey,
-			privkey: keypair.privateKey,
-			label: "My Nostr pair Identity",
-			createdAt: Date.now(),
-			relays: ["wss://strfry.shock.network"].map(utils.normalizeURL)
-		};
 
-		await dispatch(createIdentity(identity, sources));
-		localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-		dispatch(appStateActions.setAppBootstrapped());
+			await dispatch(createIdentity(identity, sources));
+
+			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+			await IonicStorageAdapter.setItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, "true");
+			dispatch(appStateActions.setAppBootstrapped()); // set bootstrapped
+			return;
+		} else {
+			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+			await IonicStorageAdapter.setItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, "true");
+			return;
+		}
 	}
+
+
+
+
+	if (subbedToBackUp.usingSanctum) { // sanctum
+		const accessToken = getSanctumAccessToken();
+		if (!accessToken) {
+			throw new Error("Says subbed with sanctum but no sanctum token");
+		}
+
+		const ext = await getSanctumIdentityApi({ accessToken });
+		const pubkey = await ext.getPublicKey();
+		const identity: IdentitySanctum = {
+			type: IdentityType.SANCTUM,
+			pubkey,
+			label: "My Sanctum Identity",
+			accessToken,
+			createdAt: Date.now()
+		}
+		await dispatch(createIdentity(identity, sources));
+	} else if (subbedToBackUp.usingExtension) { // extension
+		const ext = await getNostrExtensionIdentityApi();
+		const pubkey = await ext.getPublicKey();
+
+
+		const relays = ext.getRelays().catch(() => null);
+
+		const identity: IdentityExtension = {
+			type: IdentityType.NIP07,
+			pubkey,
+			label: "My Nostr Extension Identity",
+			createdAt: Date.now(),
+			relays: relays ? Object.keys(relays).map(utils.normalizeURL) : NOSTR_RELAYS.map(utils.normalizeURL)
+		};
+		await dispatch(createIdentity(identity, sources));
+	} else {
+		throw new Error("Says subbed to backup, but not using sanctum nor nip07");
+	}
+
+	localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
+	await IonicStorageAdapter.setItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, "true");
+	dispatch(appStateActions.setAppBootstrapped()); // set bootstrapped
+
+
 }
