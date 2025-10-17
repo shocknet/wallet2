@@ -415,7 +415,7 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
 	}
 }
 
-export const newKind79Event = (data: string, pubkey: string, dTag = appTag) => {
+export const newSourceDocEvent = (data: string, pubkey: string, dTag = appTag) => {
 	return {
 		content: data,
 		created_at: Math.floor(Date.now() / 1000),

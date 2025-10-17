@@ -4,7 +4,7 @@ import { identityActions, selectIdentityDraft, selectIsIdentityDirty } from "@/S
 import { docsSelectors, selectIsSourceDocDirty, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { checkDirtyRequested, identityLoaded, identityUnloaded, publisherFlushRequested } from "./actions";
 
-import { saveKind79Event, saveNip78Event } from "../helpers/nostr";
+import { saveSourceDocEvent, saveNip78Event } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
 import { getIdentityDocDtag, getSourceDocDtag } from "../helpers/processDocs";
 
@@ -103,7 +103,7 @@ export const addPublisherListener = (startAppListening: AppstartListening) => {
 							let backoff = 1000
 							for (; ;) {
 								try {
-									await saveKind79Event(identityApi, JSON.stringify(draft), dTag)
+									await saveSourceDocEvent(identityApi, JSON.stringify(draft), dTag)
 									listenerApi.dispatch(sourcesActions.ackPublished({ sourceId, when: Date.now() }))
 									return
 								} catch {
