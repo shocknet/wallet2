@@ -459,11 +459,11 @@ export const sourcesSlice = createSlice({
 });
 
 
-
+const persistKey = "_sources";
 export function getScopedSourcesReducer(identityPubkey: string) {
 	return makeScopedPersistedReducer(
 		sourcesSlice.reducer,
-		"_sources",
+		persistKey,
 		identityPubkey,
 		{
 			version: 0,
@@ -474,7 +474,7 @@ export function getScopedSourcesReducer(identityPubkey: string) {
 }
 
 export function getScopedSourcesPersistKey(identityPubkey: string) {
-	return getPersistConfigKey("sources", identityPubkey);
+	return getPersistConfigKey(persistKey, identityPubkey);
 }
 
 
