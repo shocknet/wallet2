@@ -24,7 +24,7 @@ export async function getRemoteMigratedSources(ext?: IdentityNostrApi, localSour
 	// migration all to source docs and dedupe
 	const docs = await migrateSourcesToDocs(localSources);
 
-	const out = docs.reduce((acc: Record<string, SourceDocV0>, s) => {
+	const out = docs.reduce((acc: Record<string, (SourceDocV0 & { vanity_name?: string })>, s) => {
 		if (acc[s.source_id]) return acc;
 		acc[s.source_id] = s;
 		return acc;
@@ -162,7 +162,7 @@ const isSpendFrom = (x: SpendFrom | PayTo): x is SpendFrom =>
 	(x as SpendFrom).balance !== undefined || (x as SpendFrom).maxWithdrawable !== undefined;
 
 
-const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceDocV0[]> => {
+const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<(SourceDocV0 & { vanity_name?: string })[]> => {
 	const docs: SourceDocV0[] = [];
 	const deviceId = getDeviceId();
 
@@ -220,7 +220,7 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceD
 		relays.forEach(r => {
 			relaysFlags[utils.normalizeURL(r)] = { clock: { v: 0, by: deviceId }, present: true }
 		})
-		const doc: SourceDocV0 = {
+		const doc: (SourceDocV0 & { vanity_name?: string }) = {
 			doc_type: "doc/shockwallet/source_",
 			schema_rev: 0,
 			source_id: s.id,
@@ -233,7 +233,8 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<SourceD
 			is_ndebit_discoverable: { clock: { v: 0, by: deviceId }, value: !!s.isNdebitDiscoverable },
 			admin_token: { clock: { v: 0, by: deviceId }, value: s.adminToken || null },
 			relays: relaysFlags,
-			bridgeUrl: { clock: { v: 0, by: deviceId }, value: s.bridgeUrl || null }
+			bridgeUrl: { clock: { v: 0, by: deviceId }, value: s.bridgeUrl || null },
+			vanity_name: s.vanityName
 		}
 
 		return doc;

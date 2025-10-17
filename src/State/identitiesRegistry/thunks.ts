@@ -15,6 +15,7 @@ import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
 import { appApi } from "../api/api";
 import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
+import { SourceType } from "../scoped/common";
 
 
 
@@ -117,10 +118,16 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 
 		const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
 		if (migratedSourceDocs.length) {
-			for (const source of migratedSourceDocs) {
+			for (const sourceDoc of migratedSourceDocs) {
+				const { vanity_name, ...source } = sourceDoc
 
-				dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
+
 				await dispatch(onAddSourceDoc(source));
+				dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
+
+				if (vanity_name && source.type === SourceType.NPROFILE_SOURCE) {
+					dispatch(sourcesActions.setVanityName({ sourceId: source.source_id, vanityName: vanity_name }));
+				}
 				await new Promise<void>(res => setTimeout(() => res(), 50)); // throttle source additions so publisher can pick them up
 			}
 
