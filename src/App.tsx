@@ -45,14 +45,12 @@ import CreateIdentityPage from './Pages/CreateIdentity';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 
-import { NavigationBar } from "@capgo/capacitor-navigation-bar";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
 import { initialState as backupInitialState } from "@/State/Slices/backupState";
 import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
 
 async function setEnvColors() {
-	await NavigationBar.setNavigationBarColor({ color: '#16191c' });
 	await StatusBar.setOverlaysWebView({ overlay: false });
 	await StatusBar.setStyle({ style: Style.Dark });
 	await StatusBar.setBackgroundColor({ color: "#16191c" });
