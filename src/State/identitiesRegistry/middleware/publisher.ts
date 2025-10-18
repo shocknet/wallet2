@@ -6,7 +6,7 @@ import { checkDirtyRequested, identityLoaded, identityUnloaded, publisherFlushRe
 
 import { saveSourceDocEvent, saveNip78Event } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
-import { getIdentityDocDtag, getSourceDocDtag } from "../helpers/processDocs";
+import { getSourceDocDtag, identityDocDtag } from "../helpers/processDocs";
 
 
 
@@ -62,7 +62,7 @@ export const addPublisherListener = (startAppListening: AppstartListening) => {
 							if (!selectIsIdentityDirty(s)) return
 
 							const draft = selectIdentityDraft(s);
-							const dTag = getIdentityDocDtag()
+							const dTag = identityDocDtag
 
 							let backoff = 1000
 							for (; ;) {

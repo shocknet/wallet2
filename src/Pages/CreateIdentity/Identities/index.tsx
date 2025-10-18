@@ -108,7 +108,7 @@ const IdentityRow
 		const pubkeyHex = identity.pubkey;
 		const { data: profile, isLoading } = useGetProfileQuery({
 			pubkey: activeHex!,
-			relays: identity.type !== IdentityType.SANCTUM ? identity.relays : ["wss//:strfry.shock.network", "wss://relay.lightning.pub"]
+			relays: identity.type !== IdentityType.SANCTUM ? identity.relays : ["wss://strfry.shock.network", "wss://relay.lightning.pub"]
 		},
 			{ skip: !activeHex }
 		);

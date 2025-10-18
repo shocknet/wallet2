@@ -442,7 +442,7 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
 }
 
 
-export const subToNip78DocEvents = (pubkey: string, relays: string[], filter: Filter[], onEvent: (e: Event) => Promise<void>) => {
+export const subToNip78DocEvents = (relays: string[], filter: Filter[], onEvent: (e: Event) => Promise<void>) => {
 	return pool.subscribeMany(
 		relays,
 		filter,

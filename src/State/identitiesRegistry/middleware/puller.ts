@@ -2,8 +2,9 @@ import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import { identityLoaded, identityUnloaded } from "./actions";
 import { subscribeToNip78Events } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
-import { getIdentityDocDtag, processRemoteDoc } from "../helpers/processDocs";
+import { identityDocDtag, processRemoteDoc } from "../helpers/processDocs";
 import { toast } from "react-toastify";
+import { Filter } from "nostr-tools";
 
 
 type SubCloser = { close: () => void };
@@ -46,8 +47,8 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 
 
-			const filters = [
-				{ kinds: [30078], authors: [pubkey], "#d": [getIdentityDocDtag()] },
+			const filters: Filter[] = [
+				{ kinds: [30078], authors: [pubkey], "#d": [identityDocDtag] },
 
 				// 30079: source docs
 				{ kinds: [30079], authors: [pubkey] },

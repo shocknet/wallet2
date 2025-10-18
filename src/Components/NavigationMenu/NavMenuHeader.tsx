@@ -28,7 +28,7 @@ export const NavMenuHeader: React.FC = () => {
 	const activeHex = activeIdentity.pubkey;
 	const { data: profile, isLoading } = useGetProfileQuery({
 		pubkey: activeHex!,
-		relays: activeIdentity.type !== IdentityType.SANCTUM ? activeIdentity.relays : ["wss//:strfry.shock.network", "wss://relay.lightning.pub"]
+		relays: activeIdentity.type !== IdentityType.SANCTUM ? activeIdentity.relays : ["wss://strfry.shock.network", "wss://relay.lightning.pub"]
 	},
 		{ skip: !activeHex }
 	);
