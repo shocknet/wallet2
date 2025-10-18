@@ -16,6 +16,8 @@ const { getToken } = nip98
 
 const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanityname: string) => void) => {
 
+	if (source.vanityName?.includes("lightning.video")) return;
+
 
 	const nostrClient = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys);
 
