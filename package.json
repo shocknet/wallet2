@@ -94,7 +94,7 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.0.0",
-    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/crypto-js": "^4.1.3",
