@@ -59,12 +59,11 @@ export async function subscribeToNip78Events(
 
 
 	const subCloser = subToNip78DocEvents(
-		pubkey,
 		Object.keys(relays),
 		filters,
 		async event => {
 			const decrypted = await ext.decrypt(pubkey, event.content);
-			await eventCallback(decrypted);
+			eventCallback(decrypted);
 		}
 	);
 
