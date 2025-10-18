@@ -30,10 +30,8 @@ export async function getSourceDocDtag(pubkey: string, sourceId: string) {
 	return `source@${digest}`;
 }
 
+export const identityDocDtag = "sw_identity";
 
-export const getIdentityDocDtag = () => {
-	return "sw_identity";
-}
 
 
 

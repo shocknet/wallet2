@@ -68,7 +68,7 @@ const IdentityOverviewPage = () => {
 
 	const { data: profile, isLoading } = useGetProfileQuery({
 		pubkey: activeHex!,
-		relays: registry.type !== IdentityType.SANCTUM ? registry.relays : ["wss//:strfry.shock.network", "wss://relay.lightning.pub"]
+		relays: registry.type !== IdentityType.SANCTUM ? registry.relays : ["wss://strfry.shock.network", "wss://relay.lightning.pub"]
 	},
 		{ skip: !activeHex }
 	);

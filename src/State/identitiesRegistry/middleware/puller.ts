@@ -2,13 +2,15 @@ import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import { identityLoaded, identityUnloaded } from "./actions";
 import { subscribeToNip78Events } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
-import { getIdentityDocDtag, processRemoteDoc } from "../helpers/processDocs";
+import { identityDocDtag, processRemoteDoc } from "../helpers/processDocs";
 import { toast } from "react-toastify";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { AppDispatch, RootState } from "@/State/store/store";
 import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { getDeviceId } from "@/constants";
+import { Filter } from "nostr-tools";
+
 
 
 type SubCloser = { close: () => void };
@@ -51,8 +53,8 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 
 
-			const filters = [
-				{ kinds: [30078], authors: [pubkey], "#d": [getIdentityDocDtag()] },
+			const filters: Filter[] = [
+				{ kinds: [30078], authors: [pubkey], "#d": [identityDocDtag] },
 
 				// 30079: source docs
 				{ kinds: [30079], authors: [pubkey] },

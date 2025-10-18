@@ -9,7 +9,7 @@ import { waitForRehydrateKeys } from "./middleware/switcher";
 import { identityActions, selectIdentityDraft } from "../scoped/backups/identity/slice";
 import { getDeviceId } from "@/constants";
 import { Identity } from "./types";
-import { getIdentityDocDtag } from "./helpers/processDocs";
+import { identityDocDtag } from "./helpers/processDocs";
 import { fetchNip78Event } from "./helpers/nostr";
 import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
@@ -107,7 +107,7 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		await dispatch(switchIdentity(identity.pubkey));
 
 
-		const identityDoc = await fetchNip78Event(identityApi, getIdentityDocDtag());
+		const identityDoc = await fetchNip78Event(identityApi, identityDocDtag);
 
 		/*
 		* This identity does not have an identity doc index.
