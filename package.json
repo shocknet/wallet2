@@ -38,7 +38,6 @@
     "@capacitor/splash-screen": "^7.0.0",
     "@capacitor/status-bar": "^7.0.0",
     "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3",
-    "@capgo/capacitor-navigation-bar": "^7.1.33",
     "@gandlaf21/bolt11-decode": "^3.0.6",
     "@ionic-native/camera": "^5.36.0",
     "@ionic/pwa-elements": "^3.2.2",
@@ -131,6 +130,9 @@
     "vitest": "^3.1.4",
     "workbox-core": "^7.3.0",
     "yargs": "^18.0.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.41.0"
   },
   "description": "Nostr native lightning wallet"
 }

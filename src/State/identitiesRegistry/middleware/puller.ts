@@ -2,8 +2,15 @@ import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import { identityLoaded, identityUnloaded } from "./actions";
 import { subscribeToNip78Events } from "../helpers/nostr";
 import getIdentityNostrApi from "../helpers/identityNostrApi";
-import { getIdentityDocDtag, processRemoteDoc } from "../helpers/processDocs";
+import { identityDocDtag, processRemoteDoc } from "../helpers/processDocs";
 import { toast } from "react-toastify";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
+import { AppDispatch, RootState } from "@/State/store/store";
+import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import { getDeviceId } from "@/constants";
+import { Filter } from "nostr-tools";
+
 
 
 type SubCloser = { close: () => void };
@@ -46,8 +53,8 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 
 
-			const filters = [
-				{ kinds: [30078], authors: [pubkey], "#d": [getIdentityDocDtag()] },
+			const filters: Filter[] = [
+				{ kinds: [30078], authors: [pubkey], "#d": [identityDocDtag] },
 
 				// 30079: source docs
 				{ kinds: [30079], authors: [pubkey] },
@@ -81,10 +88,44 @@ export const addDocsPullerListener = (startAppListening: AppstartListening) => {
 
 
 
+			const favoriteSourceIdInvariantTask = listnerApi.fork(async () => {
+				try {
+					for (; ;) {
+						await listnerApi.condition((action) =>
+							sourcesActions._createDraftDoc.match(action) ||
+							sourcesActions.markDeleted.match(action) ||
+							sourcesActions.applyRemoteSource.match(action)
+						)
+
+						ensureFavorite(listnerApi.dispatch, listnerApi.getState);
+					}
+				} catch {/*  */ }
+			})
+
+
+
 			// Tear down on identity unload
 			await listnerApi.condition(identityUnloaded.match);
 			applyTask.cancel();
+			favoriteSourceIdInvariantTask.cancel();
 			listnerApi.subscribe();
 		}
 	});
+}
+
+function ensureFavorite(dispatch: AppDispatch, getState: () => RootState) {
+	const deviceId = getDeviceId();
+	const state = getState();
+	const ids = selectLiveSourceIds(state);
+	const fav = selectFavoriteSourceId(state);
+
+	if (ids.length === 0) {
+		if (fav !== null) dispatch(identityActions.setFavoriteSource({ sourceId: null, by: deviceId }));
+		return;
+	}
+
+
+	if (!fav || !ids.includes(fav)) {
+		dispatch(identityActions.setFavoriteSource({ sourceId: ids[0], by: deviceId }));
+	}
 }

@@ -16,6 +16,8 @@ const { getToken } = nip98
 
 const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanityname: string) => void) => {
 
+	if (source.vanityName?.includes("lightning.video")) return;
+
 
 	const nostrClient = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys);
 
@@ -65,7 +67,9 @@ export const addBridgeListener = (startAppListening: AppstartListening) => {
 			const task = listenerApi.fork(async () => {
 				for (; ;) {
 					const result = await listenerApi.take(
-						(action) => upgradeSourcesToNofferBridge.match(action) || sourcesActions._createDraftDoc.match(action)
+						(action) => upgradeSourcesToNofferBridge.match(action) ||
+							sourcesActions._createDraftDoc.match(action) ||
+							sourcesActions.applyRemoteSource.match(action)
 					);
 
 
@@ -79,7 +83,7 @@ export const addBridgeListener = (startAppListening: AppstartListening) => {
 							}
 						)))
 						return;
-					} else if (sourcesActions._createDraftDoc.match(result[0])) {
+					} else if (sourcesActions._createDraftDoc.match(result[0]) || sourcesActions.applyRemoteSource.match(result[0])) {
 						const source = selectSourceViewById(listenerApi.getState(), result[0].payload.sourceId)
 						if (!source || source.type !== SourceType.NPROFILE_SOURCE) return;
 						await enrollToBridge(

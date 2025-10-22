@@ -128,11 +128,11 @@ export const identitySlice = createSlice({
 
 export const identityActions = identitySlice.actions;
 
-
+const persistKey = "_identity";
 export function getScopedIdentityReducer(identityPubkey: string) {
 	return makeScopedPersistedReducer(
 		identitySlice.reducer,
-		"_identity",
+		persistKey,
 		identityPubkey,
 		{
 			version: 0,
@@ -142,7 +142,7 @@ export function getScopedIdentityReducer(identityPubkey: string) {
 }
 
 export function getScopedIdentityPersistKey(identityPubkey: string) {
-	return getPersistConfigKey("identity", identityPubkey);
+	return getPersistConfigKey(persistKey, identityPubkey);
 }
 
 

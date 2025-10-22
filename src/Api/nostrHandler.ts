@@ -415,7 +415,7 @@ export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
 	}
 }
 
-export const newKind79Event = (data: string, pubkey: string, dTag = appTag) => {
+export const newSourceDocEvent = (data: string, pubkey: string, dTag = appTag) => {
 	return {
 		content: data,
 		created_at: Math.floor(Date.now() / 1000),
@@ -442,7 +442,7 @@ export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
 }
 
 
-export const subToNip78DocEvents = (pubkey: string, relays: string[], filter: Filter[], onEvent: (e: Event) => Promise<void>) => {
+export const subToNip78DocEvents = (relays: string[], filter: Filter[], onEvent: (e: Event) => Promise<void>) => {
 	return pool.subscribeMany(
 		relays,
 		filter,
