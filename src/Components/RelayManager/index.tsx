@@ -5,8 +5,7 @@ import { addOutline, closeOutline } from "ionicons/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import deepEqual from "fast-deep-equal";
-import { RelayUrlSchema } from "@/lib/regex";
-import { utils } from "nostr-tools";
+import { canonicalRelayBase } from "@/lib/url";
 
 type RelayManagerProps = {
 	relays: string[];
@@ -21,14 +20,11 @@ type Row = { id: string; raw: string };
 const normalizeRelay = (s: string): string | null => {
 	const trimmed = s.trim();
 	if (!trimmed) return null;
-	try {
-		const n = utils.normalizeURL(trimmed);
+	const res = canonicalRelayBase(trimmed)
+	if (!res.ok) return null;
+	return res.value;
 
-		const ok = RelayUrlSchema.safeParse(n);
-		return ok.success ? ok.data || null : null;
-	} catch {
-		return null;
-	}
+
 };
 
 

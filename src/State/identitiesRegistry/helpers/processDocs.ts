@@ -59,6 +59,7 @@ async function processRemoteIdentityDoc(doc: DocBase, dispatch: AppThunkDispatch
 }
 
 async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch): Promise<SourceDocV0 | null> {
+	console.log("here???")
 
 	let migrationResult;
 
@@ -74,6 +75,7 @@ async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch):
 		return null;
 	} else {
 		const docParseResult = await SourceDocV0Schema.safeParseAsync(migrationResult);
+		console.log("source", { docParseResult }, { migrationResult })
 		if (!docParseResult.success) {
 			return null;
 		}
@@ -84,6 +86,7 @@ async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch):
 export async function processRemoteDoc(doc: unknown, dispatch: AppThunkDispatch): Promise<IdentityDocV0 | SourceDocV0 | null> {
 	const result = DocBaseSchema.safeParse(doc);
 	if (!result.success) return null;
+	console.log("processRemoteDoc here", result.data)
 
 	if (result.data.doc_type === "doc/shockwallet/identity_") {
 		return processRemoteIdentityDoc(result.data, dispatch)

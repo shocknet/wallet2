@@ -15,9 +15,9 @@ import {
 	NOFFER_REGEX,
 	BITCOIN_ADDRESS_BASE58_REGEX,
 	NPROFILE_WITH_TOKEN_REGEX,
-	RelayUrlSchema,
 	LN_ADDRESS_REGEX
 } from "./regex";
+import { RelayBaseSchema } from "./urlZod";
 
 
 
@@ -240,7 +240,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			if (result.type !== "nprofile") throw new Error("Not an nprofile string");
 			if (!result.data.relays) throw new Error("No relays");
 
-			const parseResults = result.data.relays.map(r => RelayUrlSchema.safeParse(r));
+			const parseResults = result.data.relays.map(r => RelayBaseSchema.safeParse(r));
 			const relays = parseResults.filter(res => res.success).map(res => res.data!);
 
 			if (relays.length === 0) {
