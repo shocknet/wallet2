@@ -138,6 +138,88 @@ const IdentityOverviewPage = () => {
 			</HomeHeader>
 
 			<IonContent className="ion-padding">
+				<div className="page-outer">
+					<div className="page-body">
+
+						<section className="hero-block flex-row gap-4">
+							<div className="flex items-center flex-grow  justify-center max-w-[80px] lg:max-w-[100px]">
+								<IonAvatar aria-hidden="true" style={{ width: "100%", height: "100%" }}>
+									{isLoading ? (
+										<IonSkeletonText
+											animated
+											className="w-full aspect-square"
+										/>
+									) : (
+										<img
+											src={picture}
+											alt=""
+											referrerPolicy="no-referrer"
+											onError={(e) => {
+												const el = e.currentTarget as HTMLImageElement;
+												if (!/robohash/.test(el.src) && activeHex) {
+													el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
+												}
+											}}
+										/>
+									)}
+								</IonAvatar>
+							</div>
+
+							<div className="flex flex-col items-start">
+								<div className="text-high text-left font-semibold text-xl">
+									{displayName}
+								</div>
+
+								<div className="flex flex-row flex-wrap items-center justify-center gap-2 mt-1">
+									<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string">
+										{truncateTextMiddle(npub, 6, 6)}
+									</IonText>
+									<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
+								</div>
+							</div>
+						</section>
+						<section className="main-block mt-2">
+							<div className="flex flex-col gap-6">
+								{relays.length !== 0 && (
+									<div className="flex flex-col justify-center items-center">
+										<div className="text-high text-lg text-center sm:text-right sm:min-w-[10rem]">
+											Backup/Sync Relays:
+										</div>
+
+										<div className="">
+											{relays.map(r => (
+												<div key={r} className="text-md text-x-low leading-snug">
+													{r}
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+
+								{adminSource && (
+									<div className="flex flex-col md:flex-row sm:justify-center sm:gap-8">
+										<div className="text-high text-lg text-center sm:text-right sm:min-w-[10rem]">
+											Administer of:
+										</div>
+
+										<div className="text-left sm:text-left mt-2 sm:mt-0">
+											<div className="text-md text-x-low leading-snug break-all">
+												{truncateTextMiddle(
+													nip19.nprofileEncode({
+														pubkey: adminSource.lpk,
+														relays: adminSource.relays,
+													})
+												)}
+											</div>
+										</div>
+									</div>
+								)}
+							</div>
+						</section>
+					</div>
+				</div>
+
+
 
 				<IonGrid style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
 					<IonRow style={{ flex: 0.2, minHeight: 0 }} />

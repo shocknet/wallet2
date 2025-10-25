@@ -1,5 +1,6 @@
 
-const enableLog = false;
+const enableLog = import.meta.env.MODE === "development";
+
 
 const log = (...args: any[]) => {
 	if (enableLog) {

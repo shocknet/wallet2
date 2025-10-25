@@ -4,6 +4,8 @@ import { addPublisherListener } from '../identitiesRegistry/middleware/publisher
 import { addDocsPullerListener } from '../identitiesRegistry/middleware/puller';
 import { addHydrationListener } from '../identitiesRegistry/middleware/switcher';
 import { addBridgeListener } from '../identitiesRegistry/middleware/bridgeListener';
+import { addLiveRequestsListener } from '../identitiesRegistry/middleware/liveRequestsListener';
+
 
 
 
@@ -21,3 +23,4 @@ addPublisherListener(startAppListening);
 addDocsPullerListener(startAppListening);
 addHydrationListener(startAppListening);
 addBridgeListener(startAppListening);
+addLiveRequestsListener(startAppListening);

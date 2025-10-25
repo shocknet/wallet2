@@ -262,6 +262,7 @@ export class NostrClient {
 			throw new Error("invalid sub")
 		}
 		if (this.clientCbs[reqId]) {
+			console.log("ran again and again")
 			this.clientCbs[reqId] = {
 				startedAtMillis: Date.now(),
 				type: 'stream',

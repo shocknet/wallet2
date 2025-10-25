@@ -29,6 +29,8 @@ export function fetchAllSourcesHistory(): AppThunk<Promise<void>> {
 export const fetchHistoryForSource = (source: NprofileView): AppThunk<void> => {
 	return async (dispatch, getState) => {
 
+		dispatch(refreshSourceInfo(source));
+
 		const client = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys);
 		const newOps: UserOperation[] = [];
 
@@ -46,9 +48,6 @@ export const fetchHistoryForSource = (source: NprofileView): AppThunk<void> => {
 		}
 
 		dispatch(sourcesActions.mergePage({ sourceId: source.sourceId, operations: newOps, newCursor: populatedCursor }))
-
-		dispatch(refreshSourceInfo(source));
-
 	};
 };
 
