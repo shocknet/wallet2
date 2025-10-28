@@ -157,27 +157,136 @@ http://ionicframework.com/docs/theming/ */
 }
 
 
-/* typography font sizes */
+/* base font-size utilities */
 .text-xs {
 	font-size: 0.75rem;
+	/* 12px */
 }
 
 .text-sm {
 	font-size: 0.875rem;
+	/* 14px */
 }
 
 .text-md {
 	font-size: 1rem;
+	/* 16px */
 }
 
-.text-lg {
-	font-size: 1.125rem;
-}
+
 
 .text-xl {
 	font-size: 1.25rem;
+	/* 20px */
 }
 
+/* responsive variants: sm:...  (>=640px) */
+@media (min-width: 640px) {
+	.sm\:text-xs {
+		font-size: 0.75rem;
+	}
+
+	.sm\:text-sm {
+		font-size: 0.875rem;
+	}
+
+	.sm\:text-md {
+		font-size: 1rem;
+	}
+
+	.sm\:text-lg {
+		font-size: 1.125rem;
+	}
+
+	.sm\:text-xl {
+		font-size: 1.25rem;
+	}
+}
+
+/* responsive variants: md:...  (>=768px) */
+@media (min-width: 768px) {
+	.md\:text-xs {
+		font-size: 0.75rem;
+	}
+
+	.md\:text-sm {
+		font-size: 0.875rem;
+	}
+
+	.md\:text-md {
+		font-size: 1rem;
+	}
+
+	.md\:text-lg {
+		font-size: 1.125rem;
+	}
+
+	.md\:text-xl {
+		font-size: 1.25rem;
+	}
+}
+
+/* responsive variants: lg:...  (>=1024px) */
+@media (min-width: 1024px) {
+	.lg\:text-xs {
+		font-size: 0.75rem;
+	}
+
+	.lg\:text-sm {
+		font-size: 0.875rem;
+	}
+
+	.lg\:text-md {
+		font-size: 1rem;
+	}
+
+	.lg\:text-lg {
+		font-size: 1.125rem;
+	}
+
+	.lg\:text-xl {
+		font-size: 1.25rem;
+	}
+}
+
+/* responsive variants: xl:...  (>=1280px) */
+@media (min-width: 1280px) {
+	.xl\:text-xs {
+		font-size: 0.75rem;
+	}
+
+	.xl\:text-sm {
+		font-size: 0.875rem;
+	}
+
+	.xl\:text-md {
+		font-size: 1rem;
+	}
+
+	.xl\:text-lg {
+		font-size: 1.125rem;
+	}
+
+	.xl\:text-xl {
+		font-size: 1.25rem;
+	}
+}
+
+.font-normal {
+	font-weight: 400;
+}
+
+.font-medium {
+	font-weight: 500;
+}
+
+.font-semibold {
+	font-weight: 600;
+}
+
+.font-bold {
+	font-weight: 700;
+}
 
 .text-weight-high {
 	font-weight: 600;
@@ -337,7 +446,7 @@ ion-alert {
 ion-modal.dialog-modal {
 	--width: auto;
 	--min-width: 250px;
-	--max-width: 280px;
+	--max-width: 90%;
 	--max-height: 90%;
 	--height: auto;
 	--min-height: auto;
@@ -349,7 +458,7 @@ ion-modal.dialog-modal {
 
 @media screen and (min-width: 768px) {
 	ion-modal.dialog-modal {
-		--max-width: min(100vw - 96px, 560px);
+		--max-width: min(100vw - 96px, 480px);
 		--max-height: min(100vh - 96px, 560px);
 	}
 }
@@ -580,4 +689,13 @@ ion-popover.custom-dropdown-popover {
 	ion-popover.custom-dropdown-popover {
 		--width: min(100vw - 96px, 500px);
 	}
+}
+
+
+.ion-content-no-header::part(scroll) {
+	padding-top: var(--ion-safe-area-top, 0);
+}
+
+.ion-content-no-footer::part(scroll) {
+	padding-bottom: var(--ion-safe-area-bottom, 0);
 }

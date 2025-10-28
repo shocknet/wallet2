@@ -1,16 +1,14 @@
 import {
-    IonPage,
-    IonContent,
-    IonInput,
-    IonButton,
-    useIonRouter,
-    IonText,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonToolbar,
-    IonTitle,
-    IonIcon,
+	IonPage,
+	IonContent,
+	IonInput,
+	IonButton,
+	useIonRouter,
+	IonText,
+	IonGrid,
+	IonRow,
+	IonCol,
+	IonIcon,
 } from "@ionic/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -163,17 +161,17 @@ const BootstrapSource = () => {
 
 					<IonRow className="ion-justify-content-center" style={{ marginTop: "5rem" }}>
 						<IonCol size="auto">
-                            <div className="text-xl text-medium text-weight-high" style={{ fontSize: "1.6rem" }}>
+							<div className="text-xl text-medium text-weight-high" style={{ fontSize: "1.6rem" }}>
 								Node Up
 							</div>
 
 						</IonCol>
 					</IonRow>
-                    <IonRow className="ion-justify-content-center" style={{ marginTop: "1.5rem" }}>
-                        <IonCol size="auto">
-                            <IonIcon icon={flashOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
-                        </IonCol>
-                    </IonRow>
+					<IonRow className="ion-justify-content-center" style={{ marginTop: "1.5rem" }}>
+						<IonCol size="auto">
+							<IonIcon icon={flashOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
+						</IonCol>
+					</IonRow>
 					<IonRow className="ion-align-items-center ion-justify-content-center" style={{ marginTop: "4rem" }}>
 						<IonCol size="12">
 							<IonRow style={{ gap: "8px" }}>

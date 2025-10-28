@@ -1,8 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { InputClassification, ParsedLnurlWithdrawInput } from '@/lib/types/parse';
 import { useHistory } from 'react-router';
 import { useToast } from '@/lib/contexts/useToast';
+import { useEventCallback } from '@/lib/hooks/useEventCallbck/useEventCallback';
 
 export type SourcesPageLocationState = {
 	sourceToAdd?: string
@@ -19,7 +20,7 @@ export const useAppUrlListener = () => {
 	const { showToast } = useToast();
 
 
-	const parseDeepLink = useCallback(async (input: string) => {
+	const parseDeepLink = useEventCallback(async (input: string) => {
 		try {
 			const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse")
 			const { classification, value } = identifyBitcoinInput(input);
@@ -52,7 +53,7 @@ export const useAppUrlListener = () => {
 			});
 		}
 
-	}, [history, showToast]);
+	});
 
 	useEffect(() => {
 
@@ -68,8 +69,8 @@ export const useAppUrlListener = () => {
 		return () => {
 			listener.then((r) => r.remove());
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+
+	}, [parseDeepLink, history]);
 };
 
 

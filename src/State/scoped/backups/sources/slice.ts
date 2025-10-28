@@ -90,11 +90,11 @@ export const sourcesSlice = createSlice({
 			}
 		},
 
-		updateSourceLabel(state, a: PayloadAction<{ sourceId: string; label?: string; now: number, by: string }>) {
+		updateSourceLabel(state, a: PayloadAction<{ sourceId: string; label: string | null; now: number, by: string }>) {
 			const e = state.docs.entities[a.payload.sourceId];
 			if (!e) return;
 			const d = e.draft;
-			if (a.payload.label !== undefined && d.label.value !== a.payload.label) {
+			if (d.label.value !== a.payload.label) {
 				d.label = bump(d.label, a.payload.label, a.payload.by);
 			}
 			e.dirty = true;
@@ -105,7 +105,7 @@ export const sourcesSlice = createSlice({
 			if (!e) return;
 			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
 			const d = e.draft;
-			if (a.payload.bridgeUrl !== undefined && d.bridgeUrl.value !== a.payload.bridgeUrl) {
+			if (d.bridgeUrl.value !== a.payload.bridgeUrl) {
 				d.bridgeUrl = bump(d.bridgeUrl, a.payload.bridgeUrl, a.payload.by);
 			}
 			e.dirty = true;

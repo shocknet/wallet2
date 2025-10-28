@@ -5,9 +5,9 @@ import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
 import { toast } from "react-toastify";
 import { AppstartListening } from "@/State/store/listenerMiddleware";
-import { identityLoaded, identityUnloaded, upgradeSourcesToNofferBridge } from "./actions";
+import { identityLoaded, identityUnloaded } from "./actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { NprofileView, selectNprofileViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { NprofileView, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { SourceType } from "@/State/scoped/common";
 const { getToken } = nip98
 
@@ -23,8 +23,11 @@ const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanitynam
 
 	const userInfoRes = await nostrClient.GetUserInfo();
 	if (userInfoRes.status !== "OK") {
-		toast.error("Bridge Error: GetUserInfo failed!");
-		throw new Error(userInfoRes.reason);
+		if (userInfoRes.reason !== "identity-switch") {
+
+			throw new Error(userInfoRes.reason);
+		}
+		return
 	}
 
 	// we still get and send the k1 so that legacy mappings in bridge are moved to nofferMapping
@@ -56,50 +59,99 @@ const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanitynam
 }
 
 
-
-
 export const addBridgeListener = (startAppListening: AppstartListening) => {
 	startAppListening({
 		actionCreator: identityLoaded,
-		effect: async (action, listenerApi) => {
+		effect: async (_action, listenerApi) => {
+
 			listenerApi.unsubscribe();
 
-			const task = listenerApi.fork(async () => {
-				for (; ;) {
-					const result = await listenerApi.take(
-						(action) => upgradeSourcesToNofferBridge.match(action) ||
-							sourcesActions._createDraftDoc.match(action) ||
-							sourcesActions.applyRemoteSource.match(action)
-					);
+
+			const task = listenerApi.fork(async forkApi => {
+
+				try {
+					for (; ;) {
+
+						const result = await forkApi.pause(listenerApi.take(
+							(action) =>
+								sourcesActions._createDraftDoc.match(action) ||
+								sourcesActions.applyRemoteSource.match(action)
+						));
+
+						const sourceId = result[0].payload.sourceId
+
+						const source = selectSourceViewById(
+							listenerApi.getState(),
+							sourceId
+						);
+
+						if (
+							!source ||
+							source.type !== SourceType.NPROFILE_SOURCE
+						) {
+							continue;
+						}
 
 
-					if (upgradeSourcesToNofferBridge.match(result[0])) {
-						const sourceviews = selectNprofileViews(listenerApi.getState());
-						await Promise.all(sourceviews.map(async source => enrollToBridge(
-							source,
-							(vanityName) => {
-								listenerApi.dispatch(sourcesActions.setVanityName({ sourceId: source.sourceId, vanityName }));
+						listenerApi.fork(async () => {
+							let alive = true;
+							const abortHandler = () => {
+								alive = false;
+							};
+							forkApi.signal.addEventListener(
+								"abort",
+								abortHandler
+							);
 
+							try {
+								await enrollToBridge(
+									source,
+									(vanityName) => {
+										// Don't dispatch if identity already unloaded
+										if (!alive) return;
+
+										listenerApi.dispatch(
+											sourcesActions.setVanityName({
+												sourceId: source.sourceId,
+												vanityName,
+											})
+										);
+									}
+								);
+							} catch (err) {
+								if (alive) {
+									console.error(
+										"Bridge Error: enrollToBridge failed",
+										err
+									);
+									toast.error(
+										"Bridge Error: enrollment failed!"
+									);
+								}
+							} finally {
+								forkApi.signal.removeEventListener(
+									"abort",
+									abortHandler
+								);
 							}
-						)))
-						return;
-					} else if (sourcesActions._createDraftDoc.match(result[0]) || sourcesActions.applyRemoteSource.match(result[0])) {
-						const source = selectSourceViewById(listenerApi.getState(), result[0].payload.sourceId)
-						if (!source || source.type !== SourceType.NPROFILE_SOURCE) return;
-						await enrollToBridge(
-							source,
-							(vanityName) => {
-								listenerApi.dispatch(sourcesActions.setVanityName({ sourceId: source.sourceId, vanityName }));
+						});
+					}
+				} catch (err: any) {
 
-							}
-						)
+					if (err.name !== "TaskAbortError") {
+						console.error("bridge listener loop crashed", err);
 					}
 				}
 			});
 
+
 			await listenerApi.condition(identityUnloaded.match);
+
+
 			task.cancel();
+
+
 			listenerApi.subscribe();
 		},
-	})
-}
+	});
+};

@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+	.page-outer {
+		@apply flex flex-col min-h-full;
+	}
+
+	.page-body {
+		@apply flex flex-col flex-grow;
+	}
+
+	.hero-block {
+		@apply flex flex-col flex-grow items-center justify-center text-center max-h-[40vh] min-h-[160px];
+	}
+
+	.main-block {
+		@apply flex-shrink-0 mt-4;
+	}
+
+	.disclaimer-block {
+		@apply flex-shrink-0 mt-8 sm:mt-auto text-center text-xs leading-snug px-4;
+	}
+}

@@ -78,7 +78,7 @@ export const appApi = createApi({
 							clients
 								.filter(c => newlyStaleLpks.includes(c.pubDestination))
 								.forEach(c => {
-									try { c.disconnectCalls(); } catch { /* noop */ }
+									try { c.disconnectCalls("Stale beacon from pub"); } catch { /* noop */ }
 								});
 						}
 

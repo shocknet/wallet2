@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LwwFlagSchema, LwwSchema } from "../lww";
 import { HexDashHexSchema, HexKeySchema, NostrKeyPairSchema } from "@/lib/regex";
 import { DocBase, DocBaseSchema, SourceType } from "../../common";
+import { HttpBaseSchema } from "@/lib/urlZod";
 
 
 
@@ -30,7 +31,7 @@ export const SourceDocV0Schema = z.discriminatedUnion("type", [
 		relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
 		is_ndebit_discoverable: LwwSchema(z.boolean()),
 		admin_token: LwwSchema(z.string().nullable()),
-		bridgeUrl: LwwSchema(z.httpUrl().nullable())
+		bridgeUrl: LwwSchema(HttpBaseSchema.nullable().or(z.string("")))
 
 	}),
 	SourceDocBaseV0Schema.safeExtend({

@@ -129,7 +129,7 @@ export class ClientsCluster {
 	}
 
 	ResetClientsCluster = async () => {
-		this.GetAllNostrClients().forEach(c => c.disconnectCalls());
+		this.GetAllNostrClients().forEach(c => c.disconnectCalls("identity-switch"));
 		this.clients = {};
 		await this.relayCluster.resetrelays();
 	}

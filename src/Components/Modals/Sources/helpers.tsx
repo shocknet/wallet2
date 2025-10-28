@@ -1,11 +1,7 @@
-import { RelayManager } from "@/Components/RelayManager";
 import { BeaconDiscoveryResult, fetchBeaconDiscovery } from "@/helpers/remoteBackups";
 import { truncateTextMiddle } from "@/lib/format";
 import {
-	IonButton,
 	IonContent,
-	IonIcon,
-	IonInput,
 	IonItem,
 	IonLabel,
 	IonList,
@@ -13,13 +9,8 @@ import {
 	IonPopover,
 	IonSkeletonText,
 	IonText,
-	IonToggle
 } from "@ionic/react";
-import classNames from "classnames";
-import { closeOutline } from "ionicons/icons";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import styles from "./styles/index.module.scss";
-import CardishList from "@/Components/CardishList";
+import { useEffect, useState } from "react";
 
 export const PubSourceStatus = ({ pubkey, relays }: { pubkey: string, relays: string[] }) => {
 	const [beaconData, setBeaconData] = useState<BeaconDiscoveryResult | undefined>(null);
@@ -180,128 +171,5 @@ export const PubSourceStatus = ({ pubkey, relays }: { pubkey: string, relays: st
 			}
 
 		</IonList>
-	)
-}
-
-interface BasicSourceInfoEditProps {
-	label: string;
-	setLabel: Dispatch<SetStateAction<string>>;
-	relays?: string[];
-	setRelays?: Dispatch<SetStateAction<string[]>>;
-	bridgeUrl?: string;
-	setBridgeUrl?: Dispatch<SetStateAction<string>>;
-	isNDebitDiscoverable?: boolean;
-	setIsNDebitDiscoverable?: Dispatch<SetStateAction<boolean>>
-}
-export const BasicSourceInfoEdit = ({
-	label,
-	setLabel,
-	relays,
-	setRelays,
-	bridgeUrl,
-	setBridgeUrl,
-	isNDebitDiscoverable,
-	setIsNDebitDiscoverable
-}: BasicSourceInfoEditProps) => {
-	const [isEditingRelays, setIsEditingRelays] = useState(false);
-	return (
-		<>
-			<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
-				<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
-
-					<IonInput
-						placeholder="My savings source"
-						color="primary"
-						labelPlacement="stacked"
-						label="Label"
-						value={label}
-						onIonInput={(e) => setLabel(e.detail.value ?? "")}
-						mode="md"
-						fill="outline"
-						style={{ "--padding-end": "50px" }}
-						className="ion-margin-top"
-
-					/>
-				</IonItem>
-				{
-					(bridgeUrl && setBridgeUrl)
-					&&
-					<IonItem>
-						<IonInput
-							color="primary"
-							label="Bridge URL"
-							labelPlacement="stacked"
-							inputmode="url"
-							placeholder="https://…"
-							value={bridgeUrl}
-							onIonInput={(e) => setBridgeUrl(e.detail.value ?? "")}
-							mode="md"
-							fill="outline"
-							className="ion-margin-top"
-							style={{ "--padding-end": "50px" }}
-						/>
-					</IonItem>
-				}
-				{
-					(isNDebitDiscoverable !== undefined && setIsNDebitDiscoverable)
-					&&
-					<IonItem lines="none" className="ion-margin-top">
-						<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
-							<IonText className="text-medium">ndebit discoverable</IonText>
-						</IonToggle>
-					</IonItem>
-				}
-
-			</CardishList>
-			{
-				(relays && setRelays)
-				&&
-				<div>
-					<IonList
-
-						lines="none"
-						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
-
-					>
-						<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
-							<IonLabel >Relays</IonLabel>
-							{
-								isEditingRelays
-									?
-									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
-										<IonIcon icon={closeOutline} slot="icon-only" />
-									</IonButton>
-									:
-									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
-										Edit
-									</IonButton>
-							}
-						</IonListHeader>
-						{
-							isEditingRelays
-								? (
-									<>
-										<IonItem>
-											<IonLabel color="warning">
-												<IonText>
-													Your node should be listening on relays you add here
-												</IonText>
-											</IonLabel>
-										</IonItem>
-										<RelayManager relays={relays} setRelays={setRelays} />
-									</>
-								)
-								: relays.map(r => (
-									<IonItem key={r}>
-										<IonText className="text-medium text-weight-medium" style={{ textDecoration: "underline" }}>
-											{r}
-										</IonText>
-									</IonItem>
-								))
-						}
-					</IonList>
-				</div>
-			}
-		</>
 	)
 }
