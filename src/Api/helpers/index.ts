@@ -19,13 +19,13 @@ import type { NofferError, NofferSuccess, OfferPointer } from "@shocknet/clink-s
 */
 
 
-export const createNostrInvoice = async (nprofile: GetNostrClientNprofileArgs, keys: NostrKeyPair, amount: number, memo?: string) => {
+export const createNostrInvoice = async (nprofile: GetNostrClientNprofileArgs, keys: NostrKeyPair, amount: number, memo?: string, blind = false) => {
 
 	const res = await (await getNostrClient(nprofile, keys)).NewInvoice({
 
 		amountSats: +amount,
 		memo: memo || "",
-		blind
+		...(blind && { blind })
 	})
 	console.log({ res })
 

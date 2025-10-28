@@ -415,7 +415,8 @@ const InvoiceTab = memo(() => {
 				},
 					favoriteSource.keys,
 					parsedAmount,
-					memo
+					memo,
+					blind
 				);
 
 			} else {
