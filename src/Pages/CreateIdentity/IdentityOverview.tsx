@@ -1,11 +1,9 @@
-import React, { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	IonAvatar,
 	IonButton,
 	IonButtons,
-	IonCol,
 	IonContent,
-	IonGrid,
 	IonHeader,
 	IonIcon,
 	IonItem,
@@ -14,33 +12,30 @@ import {
 	IonListHeader,
 	IonModal,
 	IonPage,
-	IonRow,
 	IonSkeletonText,
 	IonText,
 	IonTitle,
 	IonToolbar,
-
-	IonCard,
-	IonCardHeader,
-	IonCardTitle,
-	IonCardContent,
 	IonFooter,
 	useIonViewDidEnter,
+	useIonModal,
 } from "@ionic/react";
-import { chevronForward, closeOutline, keyOutline, peopleOutline, starOutline } from "ionicons/icons";
+import { closeOutline, key, pencil } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
-import { selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 import { useGetProfileQuery } from "@/State/api/api";
 import { nip19, utils } from "nostr-tools";
-import { selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import styles from "./styles/index.module.scss";
 import { truncateTextMiddle } from "@/lib/format";
 import HomeHeader from "@/Layout2/HomeHeader";
 import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { BackupKeysDialog, DownloadFileBackupDialog } from "@/Components/Modals/DialogeModals";
+import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
+import { downloadNsecBackup } from "@/lib/file-backup";
+import { useToast } from "@/lib/contexts/useToast";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -54,12 +49,9 @@ const sameSet = (a: string[], b: string[]) => {
 
 const IdentityOverviewPage = () => {
 	const dispatch = useAppDispatch();
+	const { showToast } = useToast();
 
 	const registry = useAppSelector(selectActiveIdentity)!;
-	const idDoc = useAppSelector(selectIdentityDraft)!;
-	const sourceViews = useAppSelector(selectSourceViews, (prev, next) => prev.length === next.length);
-
-
 	const activeHex = registry.pubkey;
 
 	const nprofileSources = useAppSelector(selectNprofileViews);
@@ -78,7 +70,6 @@ const IdentityOverviewPage = () => {
 		[profile]
 	);
 	const picture = profile?.picture || (activeHex ? `https://robohash.org/${activeHex}.png?bgset=bg1` : "");
-	const nip05 = profile?.nip05;
 	const npub = nip19.npubEncode(activeHex);
 
 	const _openFullProfile = async () => {
@@ -97,7 +88,56 @@ const IdentityOverviewPage = () => {
 		registry.type !== IdentityType.SANCTUM
 			? registry.relays
 			: []
+
 	);
+
+	const [presentKeysBackup, dismissKeysBackup] = useIonModal(
+		<BackupKeysDialog dismiss={(data: undefined, role: "cancel" | "file" | "confirm") => dismissKeysBackup(data, role)} privKey={registry.type === IdentityType.LOCAL_KEY ? registry.privkey : ""} />
+	);
+	const [presentFileBackup, dismissFileBackup] = useIonModal(
+		<DownloadFileBackupDialog
+			dismiss={(data: { passphrase: string } | null, role: "cancel" | "confirm") => dismissFileBackup(data, role)}
+		/>
+	);
+
+	const handleBackupFileDownload = useCallback(async (passphrase: string, privateKey: string) => {
+		try {
+			await downloadNsecBackup(privateKey, passphrase);
+		} catch {
+			showToast({
+				color: "danger",
+				message: "File backup download failed"
+			});
+			return;
+		}
+
+	}, [showToast]);
+
+	const handleBackup = useCallback(async () => {
+
+		presentKeysBackup({
+			onDidDismiss: (event: CustomEvent<OverlayEventDetail>) => {
+				if (event.detail.role === "cancel") return;
+				if (event.detail.role === "file") {
+					presentFileBackup({
+						onDidDismiss: (event: CustomEvent<OverlayEventDetail>) => {
+							if (event.detail.role === "cancel") return;
+							if (event.detail.role === "confirm") {
+								handleBackupFileDownload(event.detail.data.passphrase, registry.pubkey);
+
+							}
+						},
+						cssClass: "dialog-modal wallet-modal"
+					})
+					return;
+				}
+
+
+
+			},
+			cssClass: "dialog-modal wallet-modal"
+		});
+	}, [handleBackupFileDownload, presentFileBackup, registry.pubkey, presentKeysBackup])
 
 	useIonViewDidEnter(() => {
 		if (registry.type === IdentityType.SANCTUM) {
@@ -138,141 +178,111 @@ const IdentityOverviewPage = () => {
 			</HomeHeader>
 
 			<IonContent className="ion-padding">
+				<div className="page-outer">
+					<div className="page-body">
 
-				<IonGrid style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-					<IonRow style={{ flex: 0.2, minHeight: 0 }} />
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="12" sizeMd="10">
-							<IonRow className="ion-justify-content-center ion-align-items-center" style={{ gap: "16px" }}>
-								<IonCol size="2" sizeXs="3" sizeSm="2" sizeMd="2" className="ion-text-end">
+						<section className="hero-block flex-row gap-4">
+							<div className="flex items-center flex-grow  justify-center max-w-[80px] lg:max-w-[100px]">
+								<IonAvatar aria-hidden="true" style={{ width: "100%", height: "100%" }}>
+									{isLoading ? (
+										<IonSkeletonText
+											animated
+											className="w-full aspect-square"
+										/>
+									) : (
+										<img
+											src={picture}
+											alt=""
+											referrerPolicy="no-referrer"
+											onError={(e) => {
+												const el = e.currentTarget as HTMLImageElement;
+												if (!/robohash/.test(el.src) && activeHex) {
+													el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
+												}
+											}}
+										/>
+									)}
+								</IonAvatar>
+							</div>
 
-									<div style={{ width: "100%", aspectRatio: "1" }}>
-										<IonAvatar aria-hidden="true" style={{ width: "100%", height: "100%" }}>
-											{isLoading ? (
-												<IonSkeletonText animated style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
-											) : (
-												<img
-													src={picture}
-													alt=""
-													referrerPolicy="no-referrer"
-													onError={(e) => {
-														const el = e.currentTarget as HTMLImageElement;
-														if (!/robohash/.test(el.src) && activeHex) {
-															el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
-														}
-													}}
-												/>
+							<div className="flex flex-col items-start">
+								<div className="text-high text-left font-semibold text-xl">
+									{displayName}
+								</div>
+
+								<div className="flex flex-row flex-wrap items-center justify-center gap-2 mt-1">
+									<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string">
+										{truncateTextMiddle(npub, 6, 6)}
+									</IonText>
+									<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
+								</div>
+							</div>
+
+
+						</section>
+
+
+						<section className="main-block flex justify-center items-center mt-2">
+							<dl className="w-full max-w-[400px] grid grid-cols-1 gap-y-6 sm:grid-cols-[auto,1fr] sm:gap-x-2">
+								{/* RELAYS */}
+								{relays.length !== 0 && (
+									<>
+										<dt className="text-high text-lg text-center sm:text-left sm:pr-2">
+											Backup/Sync Relays:
+										</dt>
+
+										<dd className="text-md pt-1 text-low  leading-snug break-all text-center sm:text-left">
+											{relays.map(r => (
+												<div key={r}>{r}</div>
+											))}
+										</dd>
+									</>
+								)}
+
+								{/* ADMIN */}
+								{adminSource && (
+									<>
+										<dt className="text-high text-lg text-center sm:text-left  sm:pr-2">
+											Administrator of:
+										</dt>
+
+										<dd className="text-low pt-1  leading-snug break-all text-center sm:text-left">
+											{truncateTextMiddle(
+												nip19.nprofileEncode({
+													pubkey: adminSource.lpk,
+													relays: adminSource.relays,
+												})
 											)}
-										</IonAvatar>
-									</div>
-
-
-
-								</IonCol>
-								<IonCol size="auto" className="ion-text-end" style={{ flex: "0 0 auto", }} >
-									<IonRow>
-										<IonCol size="auto">
-											<div className="text-xl text-high text-weight-high">
-												{displayName}
-											</div>
-										</IonCol>
-									</IonRow>
-									<IonRow className="ion-justify-content-start ion-align-items-center">
-										<IonCol size="auto">
-
-
-											<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string" >{truncateTextMiddle(npub, 6, 6)}</IonText>
-
-
-
-
-										</IonCol>
-										<IonCol size="auto">
-											<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
-										</IonCol>
-									</IonRow>
-
-
-								</IonCol>
-							</IonRow>
-						</IonCol>
-
-					</IonRow>
-					<IonRow style={{ flex: 0.1, minHeight: 0 }} />
-					<IonRow className="ion-margin-top ion-justify-content-center">
-						<IonCol size="12" sizeMd="10">
-							<IonRow className="ion-justify-content-center">
-								{
-									relays.length !== 0
-									&&
-									<>
-
-										<IonCol size="6" sizeMd="5" >
-											<div className="text-lg text-high">
-												Backup/Sync Relays:
-											</div>
-
-										</IonCol>
-										<IonCol size="6" sizeMd="5">
-											{
-												relays.map(r => (
-													<IonRow key={r}>
-														<IonCol>
-															<div className="text-md text-x-low">
-																{r}
-															</div>
-														</IonCol>
-													</IonRow>
-												))
-											}
-										</IonCol>
+										</dd>
 									</>
+								)}
+							</dl>
+						</section>
+						{
+							registry.type !== IdentityType.SANCTUM
+							&&
+							<section className="main-block flex justify-center mt-20">
+								<IonButton color="light" onClick={() => setEditOpen(true)}>
+									<IonIcon slot="start" icon={pencil} />
+									Edit Identity
+								</IonButton>
+							</section>
+						}
+						{
+							registry.type === IdentityType.LOCAL_KEY
+							&&
+							<section className="main-block flex justify-center mt-20">
+								<IonButton color="light" onClick={handleBackup}>
+									<IonIcon slot="start" icon={key} />
+									Backup secret key
+								</IonButton>
+							</section>
+						}
+
+					</div>
+				</div>
 
 
-
-
-								}
-							</IonRow>
-						</IonCol>
-
-
-					</IonRow>
-
-					<IonRow className="ion-margin-top ion-justify-content-center">
-						<IonCol size="12" sizeMd="10">
-							<IonRow className="ion-justify-content-center">
-
-								{
-									adminSource
-									&&
-									<>
-
-										<IonCol size="6" sizeMd="4">
-											<div className="text-lg text-high">
-												Administer of:
-											</div>
-
-										</IonCol>
-
-										<IonCol size="6" sizeMd="4">
-											<div className="text-md text-x-low">
-												{truncateTextMiddle(nip19.nprofileEncode({ pubkey: adminSource.lpk, relays: adminSource.relays }))}
-											</div>
-
-										</IonCol>
-									</>
-								}
-							</IonRow>
-						</IonCol>
-					</IonRow>
-
-
-
-
-
-
-
-				</IonGrid>
 
 
 
@@ -353,24 +363,12 @@ const IdentityOverviewPage = () => {
 
 			</IonContent>
 			<IonFooter className="ion-no-border">
-				<IonGrid style={{ paddingBottom: "2rem" }}>
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="auto">
-							<IonText className="text-medium text-weight-high">
-								{getIdentityTypeText(registry.type)}
-							</IonText>
-						</IonCol>
-					</IonRow>
-					{/* <IonRow className="ion-justify-content-center ion-margin-top">
-						<IonCol size="auto">
-							<IonButton color="danger">
-								<IonText className="text-high">
-									Logout
-								</IonText>
-							</IonButton>
-						</IonCol>
-					</IonRow> */}
-				</IonGrid>
+				<div className="flex justify-center pb-3">
+					<div className="text-medium font-semibold text-lg">
+						{getIdentityTypeText(registry.type)}
+					</div>
+				</div>
+
 
 			</IonFooter>
 		</IonPage>
@@ -379,7 +377,7 @@ const IdentityOverviewPage = () => {
 
 export default IdentityOverviewPage;
 
-type IdentityStatsProps = {
+/* type IdentityStatsProps = {
 	sourcesCount: number;
 	bridgeUrl?: string | null;
 	pubkeyHex: string;
@@ -408,7 +406,7 @@ export function IdentityStatGrid({
 			<IonRow className="ion-text-wrap ion-justify-content-center" style={{ gap: "0.6rem" }}>
 
 				<IonCol size="auto" className={styles["stats-grid-card"]}>
-					<IonCard button routerOptions={{ unmount: true }} routerLink="/sources" color="secondary" style={tileStyle} className="wallet-box-shadow">
+					<IonCard button routerLink="/sources" color="secondary" style={tileStyle} className="wallet-box-shadow">
 						<IonCardHeader>
 							<IonCardTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
 								<IonIcon icon={peopleOutline} />
@@ -486,7 +484,7 @@ export function IdentityStatGrid({
 			</IonRow>
 		</IonGrid>
 	);
-}
+} */
 
 
 const getIdentityTypeText = (type: IdentityType) => {

@@ -201,7 +201,7 @@ interface TabProps {
 }
 const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 
-	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
+	const favoriteSource = useAppSelector(selectFavoriteSourceView)!;
 	const { showAlert } = useAlert();
 
 	const [lnurl, setLnurl] = useState("");

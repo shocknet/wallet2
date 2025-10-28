@@ -21,7 +21,7 @@ import {
 	logoBitcoin,
 	analyticsOutline,
 } from "ionicons/icons"
-import { useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { App } from "@capacitor/app"
 import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 import { Capacitor } from "@capacitor/core"
@@ -52,12 +52,13 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 	return items
 }
 
-const NavigationMenu = () => {
+const NavigationMenu = memo(() => {
 	const activeIdentityId = useAppSelector(selectActiveIdentityId);
 	console.log({ activeIdentityId })
 	if (!activeIdentityId) return null;
 	return <Inner />
-}
+})
+NavigationMenu.displayName = "NavigationMenu";
 
 const Inner = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)

@@ -1,7 +1,7 @@
 
 import { resetClientsCluster } from "@/Api/nostr";
 import getIdentityNostrApi from "./helpers/identityNostrApi";
-import { checkDirtyRequested, identityLoaded, identityUnloaded, publisherFlushRequested, upgradeSourcesToNofferBridge } from "./middleware/actions";
+import { checkDirtyRequested, identityLoaded, identityUnloaded, publisherFlushRequested } from "./middleware/actions";
 import { identitiesRegistryActions, selectActiveIdentityId } from "./slice";
 import { persistor, type AppThunk } from "@/State/store/store";
 import { getAllScopedPersistKeys, injectNewScopedReducer, removeScoped } from "../scoped/scopedReducer";
@@ -86,7 +86,6 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 		setTimeout(() => {
 			dispatch(checkDirtyRequested());
-			dispatch(upgradeSourcesToNofferBridge());
 		}, 200);
 	}
 }
