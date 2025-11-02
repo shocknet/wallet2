@@ -9,6 +9,7 @@ import { identityLoaded, identityUnloaded } from "./actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { NprofileView, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { SourceType } from "@/State/scoped/common";
+import { canonicalHttpBase } from "@/lib/url";
 const { getToken } = nip98
 
 
@@ -17,7 +18,11 @@ const { getToken } = nip98
 const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanityname: string) => void) => {
 
 	if (source.vanityName?.includes("lightning.video")) return;
-
+	if (source.vanityName && source.bridgeUrl) {
+		const domainFromVanity = extractDomainFromUrl("https://" + source.vanityName);
+		const domainFromBridgeUrl = extractDomainFromUrl(source.bridgeUrl)
+		if (domainFromBridgeUrl && domainFromBridgeUrl && domainFromVanity === domainFromBridgeUrl) return;
+	}
 
 	const nostrClient = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys);
 
@@ -37,20 +42,24 @@ const enrollToBridge = async (source: NprofileView, dispatchCallback: (vanitynam
 		k1 = lnurlPayLinkRes.k1
 	}
 
-	const bridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
-	if (!bridgeUrl) {
-		toast.error("Bridge Error: No bridgeUrl from source or GetUserInfo response!");
-		return;
+	const initialBridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
+	if (!initialBridgeUrl) {
+		throw new Error("No bridgeUrl from source or GetUserInfo response!");
+
 	}
 
+	const res = canonicalHttpBase(initialBridgeUrl);
+	if (!res.ok) {
+		throw new Error("Invalid bridge url");
+	}
+	const { value: bridgeUrl } = res;
 
 	const payload = { k1, noffer: userInfoRes.noffer }
 	const nostrHeader = await getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finalizeEvent(e, Buffer.from(source.keys.privateKey, 'hex')), true, payload)
 	const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 	const bridgeRes = await bridgeHandler.GetOrCreateNofferName(payload);
 	if (bridgeRes.status !== "OK") {
-		toast.error("Bridge Error: GetOrCreateNofferName failed!");
-		throw new Error(bridgeRes.reason);
+		throw new Error("GetOrCreateNofferName failed!");
 	}
 	const domainName = extractDomainFromUrl(bridgeUrl);
 
@@ -72,11 +81,11 @@ export const addBridgeListener = (startAppListening: AppstartListening) => {
 				try {
 					for (; ;) {
 
-						const result = await forkApi.pause(listenerApi.take(
+						const result = await listenerApi.take(
 							(action) =>
 								sourcesActions._createDraftDoc.match(action) ||
 								sourcesActions.applyRemoteSource.match(action)
-						));
+						);
 
 						const sourceId = result[0].payload.sourceId
 
@@ -118,15 +127,14 @@ export const addBridgeListener = (startAppListening: AppstartListening) => {
 										);
 									}
 								);
-							} catch (err) {
+							} catch (err: any) {
 								if (alive) {
 									console.error(
 										"Bridge Error: enrollToBridge failed",
 										err
 									);
 									toast.error(
-										"Bridge Error: enrollment failed!"
-									);
+										`Bridge Error: enrollment failed: ${err?.message || "Unknown error occured"}`);
 								}
 							} finally {
 								forkApi.signal.removeEventListener(

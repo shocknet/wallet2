@@ -7,7 +7,6 @@ interface Props extends ComponentProps<typeof IonList> {
 
 const CardishList = ({
 	listHeader,
-
 	className,
 	children,
 	...listProps
@@ -18,7 +17,7 @@ const CardishList = ({
 		style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 		{...listProps}
 	>
-		<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+		<IonListHeader className="text-medium font-semibold text-base" lines="full">
 			<IonLabel >{listHeader}</IonLabel>
 		</IonListHeader>
 		{children}

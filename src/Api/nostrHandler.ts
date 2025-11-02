@@ -9,7 +9,7 @@ import { Subscription } from 'nostr-tools/lib/types/abstract-relay';
 import { getAllNostrClients } from './nostr';
 import { App } from '@capacitor/app';
 import { utils } from "nostr-tools";
-import { isPlatform } from '@ionic/react';
+import { Capacitor } from '@capacitor/core';
 const { decrypt, encrypt } = nip04
 export const pubServiceTag = "Lightning.Pub"
 export const appTag = "shockwallet"
@@ -46,6 +46,7 @@ export type NostrEvent = {
 
 export type RelaysSettings = {
 	relays: string[];
+	lpk: string;
 	keys: NostrKeyPair
 }
 
@@ -58,6 +59,7 @@ type RelayArgs = {
 type RelayData = {
 	relay: Relay;
 	subscription?: Subscription;
+	lpks: Set<string>;
 	subbedPairs: Map<string, string>;
 	eventCallback: (event: NostrEvent) => void
 	beaconCallback: (beaconUpdate: BeaconUpdate) => void
@@ -81,19 +83,15 @@ export default class RelayCluster {
 
 	constructor() {
 		this.allowAddRelay = true;
-
-		App.addListener("appStateChange", ({ isActive }) => {
-			if (isActive) {
-
-				if (isPlatform("hybrid")) { // only run backgrounding logic in native mobile
+		if (Capacitor.isNativePlatform()) {
+			App.addListener("appStateChange", ({ isActive }) => {
+				if (isActive) {
 					this.foregroundReconnect();
-				}
-			} else {
-				if (isPlatform("hybrid")) { // only run backgrounding logic in native mobile
+				} else {
 					this.backgroundGraceClose();
 				}
-			}
-		})
+			})
+		}
 	}
 
 
@@ -103,7 +101,7 @@ export default class RelayCluster {
 
 
 		return Promise.any(relayUrls.map(r => {
-			this.addRelay(r, relaysSettings.keys, eventCallback, () => disconnectCallback(r))
+			this.addRelay(r, relaysSettings.lpk, relaysSettings.keys, eventCallback, () => disconnectCallback(r))
 		}))
 	}
 	addBeaconListener = (callback: (beaconUpdate: BeaconUpdate) => void) => {
@@ -114,11 +112,12 @@ export default class RelayCluster {
 		}
 	}
 
-	async addRelay(relayUrl: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
+	async addRelay(relayUrl: string, lpk: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
 
 		if (!this.allowAddRelay) return;
 		const relay = await this.getOrCreateRelay(
 			relayUrl,
+			[lpk],
 			[keys],
 			{
 				eventCallback,
@@ -131,11 +130,12 @@ export default class RelayCluster {
 
 
 		await relay.ready; // Make sure to await eose event from relay before allowing any client to send requests
-		this.updateFilters(relay, keys);
+		this.updateFilters(relay, lpk, keys);
 	}
 
 
-	private async getOrCreateRelay(relay: string, keys: NostrKeyPair[], relayArgs: RelayArgs) {
+	private async getOrCreateRelay(relay: string, lpks: string[], keys: NostrKeyPair[], relayArgs: RelayArgs) {
+
 		const relayUrl = utils.normalizeURL(relay)
 		const existing = this.relays.get(relayUrl);
 		if (existing?.relay.connected) {
@@ -161,20 +161,22 @@ export default class RelayCluster {
 						subbedPairs.set(key.publicKey, key.privateKey);
 					})
 
-					let resolveReady: () => void;
+					const registeredLpks = new Set(lpks)
+
+					const deferredProm = deferred<void>();
 					const relayData: RelayData = {
 						relay,
+						lpks: registeredLpks,
 						subbedPairs,
 						...relayArgs,
 						closed: false,
-						ready: new Promise<void>(r => resolveReady = r),
-						_resolveReady: () => resolveReady(),
+						ready: deferredProm.promise,
+						_resolveReady: () => deferredProm.resolve,
 					};
 
 					const sub = this.createSubscription(relayData);
 					relayData.subscription = sub;
 
-					this.subToBeacon(relayData);
 
 					relay.onclose = () => this.relays.delete(relayUrl); // onclose is not closed when we manually close the connection
 					this.relays.set(relayUrl, relayData);
@@ -190,12 +192,8 @@ export default class RelayCluster {
 	}
 
 	private createSubscription(relay: RelayData): Subscription {
-		const filter: Filter = {
-			since: Math.floor(Date.now() / 1000),
-			kinds: allowedKinds,
-			'#p': Array.from(relay.subbedPairs.keys()),
-		};
-		return relay.relay.subscribe([filter], {
+		const filters = this.createFilters(relay);
+		return relay.relay.subscribe(filters, {
 			onevent: (event) => this.handleEvent(event, relay),
 			oneose: () => {
 				relay._resolveReady?.();
@@ -203,9 +201,25 @@ export default class RelayCluster {
 		});
 	}
 
-	private updateFilters(relay: RelayData, keyPair: NostrKeyPair) {
+	private createFilters(relay: RelayData): Filter[] {
+		return [
+			{
+				since: Math.floor(Date.now() / 1000),
+				kinds: allowedKinds,
+				'#p': Array.from(relay.subbedPairs.keys()),
+			},
+			{
+				kinds: [30078],
+				'#d': [pubServiceTag],
+				authors: [...relay.lpks]
+			}
+		];
+	}
+
+	private updateFilters(relay: RelayData, lpk: string, keyPair: NostrKeyPair) {
 		if (!relay.subscription || relay.subscription?.closed) {
 			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
+			relay.lpks.add(lpk);
 			const sub = this.createSubscription(relay);
 			relay.subscription = sub;
 		} else {
@@ -213,15 +227,12 @@ export default class RelayCluster {
 				return;
 			}
 			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
+			relay.lpks.add(lpk);
 
 
-			const filter: Filter = {
-				since: Math.floor(Date.now() / 1000),
-				kinds: allowedKinds,
-				'#p': Array.from(relay.subbedPairs.keys()),
-			};
+			const filters = this.createFilters(relay);
 
-			relay.subscription.filters = [filter];
+			relay.subscription.filters = filters;
 			relay.subscription.fire();
 		}
 
@@ -229,6 +240,13 @@ export default class RelayCluster {
 
 	private async handleEvent(e: Event, relay: RelayData) {
 		logger.log({ nostrEvent: e })
+
+		if (e.kind === 30078) {
+			const b = JSON.parse(e.content)
+			console.log(b, e)
+			relay.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
+			return;
+		}
 
 		if (!e.pubkey || !allowedKinds.includes(e.kind)) {
 			return
@@ -262,17 +280,7 @@ export default class RelayCluster {
 		relay.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind, to: targetPubkey })
 	}
 
-	private async subToBeacon(relay: RelayData) {
-		relay.relay.subscribe([
-			{ kinds: [30078], '#d': [pubServiceTag] }
-		], {
-			oneose: () => { console.log("subbed to beacon") },
-			onevent: (e) => {
-				const b = JSON.parse(e.content)
-				relay.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
-			}
-		})
-	}
+
 
 	SendNip46 = async (relays: string[], pubKey: string, message: string, keys: NostrKeyPair) => {
 		const nip04Encrypted = await encrypt(keys.privateKey, pubKey, message)
@@ -378,7 +386,8 @@ export default class RelayCluster {
 		await Promise.allSettled(this.relays.values().map(async relay => {
 			await this.getOrCreateRelay( // Recreate the relay connection, using the existing args
 				relay.relay.url,
-				Array.from(relay.subbedPairs.entries().map(([pubkey, privkey]) => ({ publicKey: pubkey, privateKey: privkey }))),
+				[...relay.lpks],
+				[...relay.subbedPairs.entries()].map(([pubkey, privkey]) => ({ publicKey: pubkey, privateKey: privkey })),
 				{
 					eventCallback: relay.eventCallback,
 					disconnectCallback: relay.disconnectCallback,
@@ -400,7 +409,7 @@ export default class RelayCluster {
 	}
 }
 
-export const getNip78Event = (pubkey: string, relays: string[], dTag = appTag) => {
+export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag) => {
 	if (relays.length === 0) return null;
 
 	return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
@@ -478,3 +487,13 @@ export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: stri
 	return pool.get(relayUrl, { kinds: [0], authors: [pubKey] })
 }
 
+
+const deferred = <T>() => {
+	let resolve!: (v: T) => void;
+	let reject!: (e: any) => void;
+	const promise = new Promise<T>((res, rej) => {
+		resolve = res;
+		reject = rej;
+	});
+	return { promise, resolve, reject };
+}
