@@ -235,7 +235,15 @@ const Inner = ({
 				{
 					original.type === SourceType.NPROFILE_SOURCE
 					&&
-					<PubSourceStatus pubkey={original.lpk} relays={original.relays} />
+					<PubSourceStatus
+						pubkey={original.lpk}
+						relays={original.relays}
+						passedBeacon={
+							original.beaconLastSeenAtMs !== 0
+								? { beaconLastSeenAtMs: original.beaconLastSeenAtMs, name: original.beaconName ?? "" }
+								: undefined
+						}
+					/>
 				}
 				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
 					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>

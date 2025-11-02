@@ -110,8 +110,7 @@ export const addLiveRequestsListener = (startAppListening: AppstartListening) =>
 							(action) =>
 								sourcesActions._createDraftDoc.match(action) ||
 								sourcesActions.applyRemoteSource.match(action) ||
-								sourcesActions.markDeleted.match(action) ||
-								sourcesActions.setBeacon.match(action)
+								sourcesActions.markDeleted.match(action)
 						);
 
 						await reconcileAll();

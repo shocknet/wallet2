@@ -93,6 +93,7 @@ export class ClientsCluster {
 
 		const relaysSettings: RelaysSettings = {
 			relays: relays.filter((item, index, self) => self.indexOf(item) === index),
+			lpk: pubkey,
 			keys
 		};
 		return new Promise((res, rej) => {
@@ -106,9 +107,9 @@ export class ClientsCluster {
 						res(nostrClient.Get())
 						return;
 					}
-					console.log("1")
+
 					await this.SyncClusterRelays(relaysSettings)
-					console.log("2")
+
 					const nostrClient = await NostrClient.create(pubkey, keys, relays ? relays : [], (relays, to, message, keys) => this.relayCluster.Send(relays, to, message, keys))
 					if (temp) {
 						this.tempClients[key] = { client: nostrClient }

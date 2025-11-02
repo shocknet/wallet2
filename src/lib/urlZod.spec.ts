@@ -7,7 +7,7 @@ describe("HttpBaseSchema", () => {
 		const r = HttpBaseSchema.safeParse("Example.com/foo?bar");
 		expect(r.success).toBe(true);
 		if (r.success) {
-			expect(r.data).toBe("https://example.com/");
+			expect(r.data).toBe("https://example.com");
 		}
 	});
 
@@ -15,7 +15,7 @@ describe("HttpBaseSchema", () => {
 		const r = HttpBaseSchema.safeParse("http://EXAMPLE.com:80/path?q=1#frag");
 		expect(r.success).toBe(true);
 		if (r.success) {
-			expect(r.data).toBe("http://example.com/");
+			expect(r.data).toBe("http://example.com");
 		}
 	});
 
@@ -40,7 +40,7 @@ describe("RelayBaseSchema", () => {
 		const r = RelayBaseSchema.safeParse("Relay.Example.com////foo");
 		expect(r.success).toBe(true);
 		if (r.success) {
-			expect(r.data).toBe("wss://relay.example.com/");
+			expect(r.data).toBe("wss://relay.example.com");
 		}
 	});
 
@@ -48,7 +48,7 @@ describe("RelayBaseSchema", () => {
 		const r = RelayBaseSchema.safeParse("wss://relay.example.com:7443/////");
 		expect(r.success).toBe(true);
 		if (r.success) {
-			expect(r.data).toBe("wss://relay.example.com:7443/");
+			expect(r.data).toBe("wss://relay.example.com:7443");
 		}
 	});
 

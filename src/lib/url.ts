@@ -35,7 +35,7 @@ function canonicalBase(u: URL): string {
 	u.hostname = u.hostname.toLowerCase();
 	stripDefaultPort(u);
 	// Return just scheme + host(+non-default port)
-	return `${u.protocol}//${u.host}/`;
+	return `${u.protocol}//${u.host}`;
 }
 
 /** Canonical base for HTTP(S). Defaults to https when omitted. */

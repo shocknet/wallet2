@@ -87,7 +87,31 @@ const Receive = () => {
 					router.push("/sources", "forward", "replace")
 				}
 			})
+		} else if (favoriteSource.type === SourceType.NPROFILE_SOURCE && favoriteSource.beaconStale) {
+			showAlert({
+				header: "Stale source",
+				message: "Your favorite source's pub seems to be down or unavailable",
+				buttons: [
+					{
+						text: "Cancel",
+						role: "cancel",
+
+					},
+					{
+						text: "Go to sources",
+						role: "confirm",
+					},
+				]
+			}).then(({ role }) => {
+				if (role === "cancel") {
+					router.goBack();
+				} else if (role === "confirm") {
+					router.push("/sources", "forward", "replace")
+				}
+			})
 		}
+
+
 
 	}, [])
 

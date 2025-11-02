@@ -81,8 +81,6 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
 		dispatch(identityLoaded({ identity: existing }));
 
-		dispatch(appApi.endpoints.streamBeacons.initiate());
-
 
 		setTimeout(() => {
 			dispatch(checkDirtyRequested());

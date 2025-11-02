@@ -7,7 +7,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("example.com");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://example.com/",
+			value: "https://example.com",
 		});
 	});
 
@@ -15,7 +15,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("http://EXAMPLE.com:80/path?q=1#frag");
 		expect(r).toEqual({
 			ok: true,
-			value: "http://example.com/",
+			value: "http://example.com",
 		});
 	});
 
@@ -23,7 +23,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("https://example.com:443/foo");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://example.com/",
+			value: "https://example.com",
 		});
 	});
 
@@ -31,7 +31,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("https://example.com:8443/foo/bar?x=1");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://example.com:8443/",
+			value: "https://example.com:8443",
 		});
 	});
 
@@ -39,7 +39,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("HTTPS://MiXeD.CaSe.DomAin.Com");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://mixed.case.domain.com/",
+			value: "https://mixed.case.domain.com",
 		});
 	});
 
@@ -103,7 +103,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("https://user:pass@example.com/some/path");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://example.com/",
+			value: "https://example.com",
 		});
 	});
 
@@ -111,7 +111,7 @@ describe("canonicalHttpBase", () => {
 		const r = canonicalHttpBase("https://EXAMPLE.com////foo////bar?b=2&a=1#zzz");
 		expect(r).toEqual({
 			ok: true,
-			value: "https://example.com/",
+			value: "https://example.com",
 		});
 	});
 });
@@ -121,7 +121,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("Relay.Example.com");
 		expect(r).toEqual({
 			ok: true,
-			value: "wss://relay.example.com/",
+			value: "wss://relay.example.com",
 		});
 	});
 
@@ -129,7 +129,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("ws://relay.example.com:80/some/path");
 		expect(r).toEqual({
 			ok: true,
-			value: "ws://relay.example.com/",
+			value: "ws://relay.example.com",
 		});
 	});
 
@@ -137,7 +137,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("wss://relay.example.com:443/////");
 		expect(r).toEqual({
 			ok: true,
-			value: "wss://relay.example.com/",
+			value: "wss://relay.example.com",
 		});
 	});
 
@@ -145,7 +145,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("wss://relay.example.com:7443/");
 		expect(r).toEqual({
 			ok: true,
-			value: "wss://relay.example.com:7443/",
+			value: "wss://relay.example.com:7443",
 		});
 	});
 
@@ -186,7 +186,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("wss://user:pass@relay.example.com:443");
 		expect(r).toEqual({
 			ok: true,
-			value: "wss://relay.example.com/",
+			value: "wss://relay.example.com",
 		});
 	});
 
@@ -194,7 +194,7 @@ describe("canonicalRelayBase", () => {
 		const r = canonicalRelayBase("wss://RELAY.example.com////foo/bar?b=2&a=1#zzz");
 		expect(r).toEqual({
 			ok: true,
-			value: "wss://relay.example.com/",
+			value: "wss://relay.example.com",
 		});
 	});
 });

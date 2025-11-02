@@ -3,7 +3,7 @@ import { docsSelectors, metadataSelectors } from "./slice";
 import { SourceType } from "../../common";
 import { NostrKeyPair } from "@/lib/regex";
 import { Satoshi } from "@/lib/types/units";
-import { SourceDocV0 } from "./schema";
+import { LightningAddressSourceDocV0, NprofileSourceDocV0, SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { selectFavoriteSourceId } from "../identity/slice";
 import { RootState } from "@/State/store/store";
@@ -47,11 +47,12 @@ export type SourceViewBase = {
 
 export type NprofileView = SourceViewBase & {
 	type: SourceType.NPROFILE_SOURCE;
-	relays: string[];        // only “present: true”
-	beaconStale?: boolean;
+	relays: string[];
+	beaconStale: boolean;
+	beaconLastSeenAtMs: number
 	beaconName?: string;
-	balanceSats?: Satoshi;
-	maxWithdrawableSats?: Satoshi;
+	balanceSats: Satoshi;
+	maxWithdrawableSats: Satoshi;
 	lpk: string;
 	keys: NostrKeyPair;
 	bridgeUrl: string | null;
@@ -60,6 +61,47 @@ export type NprofileView = SourceViewBase & {
 	vanityName?: string;
 	ndebit?: string;
 };
+
+
+const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata): NprofileView => {
+	if (!m) {
+		throw new Error("No metadata for nprofile source. Something went wrong");
+	}
+	const base: SourceViewBase = {
+		sourceId: d.source_id,
+		type: d.type,
+		label: d.label.value,
+	};
+
+	const relays = presentRelayUrls(d.relays);
+
+
+	return {
+		...base,
+		type: SourceType.NPROFILE_SOURCE,
+		lpk: d.lpk,
+		keys: d.keys,
+		relays,
+		balanceSats: m.balance,
+		maxWithdrawableSats: m.maxWithdrable,
+		isNDebitDiscoverable: d.is_ndebit_discoverable.value,
+		ndebit: m.ndebit,
+		vanityName: m.vanityName,
+		bridgeUrl: d.bridgeUrl.value,
+		beaconStale: m.stale,
+		beaconLastSeenAtMs: m.lastSeenAtMs,
+		beaconName: m.beaconName,
+		adminToken: d.admin_token.value
+	};
+}
+
+const createLightningAddressView = (d: LightningAddressSourceDocV0): LnAddrView => {
+	return {
+		sourceId: d.source_id,
+		type: d.type,
+		label: d.label.value,
+	};
+}
 
 export type LnAddrView = SourceViewBase & { type: SourceType.LIGHTNING_ADDRESS_SOURCE };
 
@@ -71,64 +113,11 @@ const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 
 const isDeleted = (d: SourceDocV0) => Boolean(d.deleted?.value);
 
-const createSourceView = (d: SourceDocV0, meta?: SourceMetadata): SourceView => {
-	const base: SourceViewBase = {
-		sourceId: d.source_id,
-		type: d.type,
-		label: d.label.value,
-	};
-
-	switch (d.type) {
-		case SourceType.NPROFILE_SOURCE: {
-			const relays = presentRelayUrls(d.relays);
-			const beaconStale =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.beacon
-					? meta.beacon.stale
-					: undefined;
-
-			const beaconName =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.beacon
-					? meta.beacon.name
-					: undefined;
-
-			const balanceSats: Satoshi | undefined =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.balance
-					? meta.balance.amount
-					: undefined;
-
-			const maxWithdrawableSats: Satoshi | undefined =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.balance
-					? meta.balance.maxWithdrawable
-					: undefined;
-
-			const vanityName: string | undefined =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.vanityName
-					? meta.vanityName
-					: undefined;
-			const ndebit: string | undefined =
-				meta?.type === SourceType.NPROFILE_SOURCE && meta?.ndebit
-					? meta.ndebit
-					: undefined;
-
-			return {
-				...base,
-				type: SourceType.NPROFILE_SOURCE,
-				lpk: d.lpk,
-				keys: d.keys,
-				maxWithdrawableSats,
-				isNDebitDiscoverable: d.is_ndebit_discoverable.value,
-				ndebit,
-				relays,
-				vanityName,
-				bridgeUrl: d.bridgeUrl.value,
-				beaconStale,
-				balanceSats,
-				beaconName,
-				adminToken: d.admin_token.value
-			};
-		}
-		case SourceType.LIGHTNING_ADDRESS_SOURCE:
-			return { ...base, type: SourceType.LIGHTNING_ADDRESS_SOURCE };
+const createSourceView = (d: SourceDocV0, m: SourceMetadata): SourceView => {
+	if (d.type === SourceType.NPROFILE_SOURCE) {
+		return createNprofileView(d, m)
+	} else {
+		return createLightningAddressView(d);
 	}
 }
 
@@ -141,7 +130,9 @@ export const selectSourceViews = createSelector(
 
 			const d = source.draft;
 			if (isDeleted(d)) continue;
-			out.push(createSourceView(d, metaEntities[d.source_id]));
+
+			const view = createSourceView(d, metaEntities[d.source_id])
+			out.push(view);
 		}
 		return out;
 	}
@@ -178,7 +169,7 @@ export const selectNprofileViewsByLpk = createSelector(
 
 export const selectHealthyNprofileViews = createSelector(
 	[selectNprofileViews],
-	(views) => views.filter(v => v.type === SourceType.NPROFILE_SOURCE)
+	(views) => views.filter(v => !v.beaconStale)
 );
 
 
@@ -198,9 +189,9 @@ export const selectTotalBalance = createSelector(
 	(allMeta, liveIds) => {
 		let total = 0;
 		for (const meta of allMeta) {
-			if (meta.type !== SourceType.NPROFILE_SOURCE) continue;
-			if (!liveIds.includes(meta.id)) continue; // ensure source is actually live
-			if (meta.balance) total += meta.balance.amount;
+
+			if (!liveIds.includes(meta.id)) continue; // ensure source is actually live (i.e. not marked deleted and awaiting publisher to actually delete)
+			total += meta.balance;
 		}
 		return total as Satoshi;
 	}

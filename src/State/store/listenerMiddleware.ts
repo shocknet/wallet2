@@ -5,6 +5,7 @@ import { addDocsPullerListener } from '../identitiesRegistry/middleware/puller';
 import { addHydrationListener } from '../identitiesRegistry/middleware/switcher';
 import { addBridgeListener } from '../identitiesRegistry/middleware/bridgeListener';
 import { addLiveRequestsListener } from '../identitiesRegistry/middleware/liveRequestsListener';
+import { addBeaconWatcherListener } from '../identitiesRegistry/middleware/beaconWatcher';
 
 
 
@@ -24,3 +25,4 @@ addDocsPullerListener(startAppListening);
 addHydrationListener(startAppListening);
 addBridgeListener(startAppListening);
 addLiveRequestsListener(startAppListening);
+addBeaconWatcherListener(startAppListening)

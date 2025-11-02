@@ -15,6 +15,7 @@ export const HttpBaseSchema = z
 				message: "Not a valid http URL",
 				input: val
 			})
+			return z.NEVER
 		} else {
 			return r.value;
 		}
