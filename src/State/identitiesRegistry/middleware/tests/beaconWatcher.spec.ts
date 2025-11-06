@@ -5,24 +5,12 @@ import { sourcesSlice } from "@/State/scoped/backups/sources/slice";
 import { addBeaconWatcherListener } from "../beaconWatcher";
 import { identityLoaded } from "../actions";
 import { Identity, IdentityType } from "../../types";
-import { SourcesState } from "@/State/scoped/backups/sources/state";
-import { newLww } from "@/State/scoped/backups/lww";
-import { SourceType } from "@/State/scoped/common";
-import { SourceDocV0 } from "@/State/scoped/backups/sources/schema";
-import { Satoshi } from "@/lib/types/units";
-import { SourceMetadata } from "@/State/scoped/backups/sources/metadata/types";
 import { BeaconUpdate } from "@/Api/nostrHandler";
+import { getPreloadedSourcesState } from "./testsHelpers";
 
 
 
 
-const lpk1 = "lpk-abc";
-const lpk2 = "lpk-def";
-const source1Id = "source1";
-const source2Id = "source2";
-
-const artificalNowMs = 1_000_000;
-const beaconStaleMs = 150_000;
 
 
 
@@ -55,70 +43,32 @@ const identity: Identity = {
 
 
 
-const createTestSourceDoc = (sourceLpk: string, sourceId: string): SourceDocV0 => ({
-	doc_type: "doc/shockwallet/source_",
-	source_id: sourceId,
-	schema_rev: 0,
-	label: newLww(null, "me"),
-	relays: {},
-	bridgeUrl: newLww(null, "me"),
-	admin_token: newLww(null, "me"),
-	is_ndebit_discoverable: newLww(false, "me"),
-	deleted: newLww(false, "me"),
-	type: SourceType.NPROFILE_SOURCE,
-	lpk: sourceLpk,
-	keys: {
-		publicKey: "hexhex",
-		privateKey: "hexhex"
-	},
-	created_at: Date.now()
 
-})
+const lpk1 = "lpk-abc";
+const lpk2 = "lpk-def";
+const source1Id = "source1";
+const source2Id = "source2";
 
-const createTestSourceMetadata = (sourceLpk: string, sourceId: string): SourceMetadata => ({
-	stale: false,
-	lastSeenAtMs: 500_000,
-	balance: 0 as Satoshi,
-	maxWithdrable: 0 as Satoshi,
-	id: sourceId,
-	lpk: sourceLpk
+const beaconStaleMs = 150_000;
+const artificalNowMs = 1_000_000;
 
-
-})
-
-
-const preloadedSourcesState: SourcesState = {
-	docs: {
-		entities: {
-			[source1Id]: {
-				draft: createTestSourceDoc(lpk1, source1Id),
-				dirty: false,
-			},
-			[source2Id]: {
-				draft: createTestSourceDoc(lpk2, source2Id),
-				dirty: false,
-			}
-		},
-		ids: [source1Id, source2Id]
-	},
-	metadata: {
-		entities: {
-			[source1Id]: createTestSourceMetadata(lpk1, source1Id),
-			[source2Id]: createTestSourceMetadata(lpk2, source2Id)
-		},
-		ids: [source1Id, source2Id],
-		beaconStaleMs
-	},
-	history: {
-		ops: {
-			entities: {/* empty */ },
-			ids: []
-		},
-		bySource: {/* empty */ },
-		newPaymentsCount: 0
-	}
-}
 const makeStore = () => {
+	const preloadedState = getPreloadedSourcesState(
+		[
+			{
+				lpk: lpk1,
+				id: source1Id,
+
+			},
+			{
+				lpk: lpk2,
+				id: source2Id
+			}
+		],
+		{
+			beaconStaleMs
+		}
+	)
 	const listener = createListenerMiddleware();
 	const store = configureStore({
 		reducer: {
@@ -129,7 +79,7 @@ const makeStore = () => {
 		},
 		preloadedState: {
 			scoped: {
-				sources: preloadedSourcesState
+				sources: preloadedState
 			}
 		},
 		middleware: (gDM) => gDM().prepend(listener.middleware),
@@ -146,7 +96,6 @@ const makeStore = () => {
 
 	// @ts-expect-error nevermind not the full store, just sources slice
 	addBeaconWatcherListener(startAppListening);
-
 
 
 	return store;

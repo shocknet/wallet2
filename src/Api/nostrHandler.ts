@@ -10,6 +10,7 @@ import { getAllNostrClients } from './nostr';
 import { App } from '@capacitor/app';
 import { utils } from "nostr-tools";
 import { Capacitor } from '@capacitor/core';
+import { createDeferred } from '@/lib/deferred';
 const { decrypt, encrypt } = nip04
 export const pubServiceTag = "Lightning.Pub"
 export const appTag = "shockwallet"
@@ -114,6 +115,7 @@ export default class RelayCluster {
 
 	async addRelay(relayUrl: string, lpk: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
 
+
 		if (!this.allowAddRelay) return;
 		const relay = await this.getOrCreateRelay(
 			relayUrl,
@@ -163,15 +165,15 @@ export default class RelayCluster {
 
 					const registeredLpks = new Set(lpks)
 
-					const deferredProm = deferred<void>();
+					const deferredProm = createDeferred<void>();
 					const relayData: RelayData = {
 						relay,
 						lpks: registeredLpks,
 						subbedPairs,
 						...relayArgs,
 						closed: false,
-						ready: deferredProm.promise,
-						_resolveReady: () => deferredProm.resolve,
+						ready: deferredProm,
+						_resolveReady: () => deferredProm.resolve(),
 					};
 
 					const sub = this.createSubscription(relayData);
@@ -488,12 +490,3 @@ export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: stri
 }
 
 
-const deferred = <T>() => {
-	let resolve!: (v: T) => void;
-	let reject!: (e: any) => void;
-	const promise = new Promise<T>((res, rej) => {
-		resolve = res;
-		reject = rej;
-	});
-	return { promise, resolve, reject };
-}

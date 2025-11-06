@@ -8,8 +8,9 @@ import { formatFiat } from "@/lib/format";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 import { selectTotalBalance } from "@/State/scoped/backups/sources/selectors";
+import { historyFetchAllRequested } from "@/State/identitiesRegistry/middleware/actions";
+import { createDeferred } from "@/lib/deferred";
 
 
 
@@ -33,7 +34,9 @@ const BalanceCard = () => {
 				color: "tertiary"
 			})
 			dispatch(sourcesActions.resetAllCursors());
-			await dispatch(fetchAllSourcesHistory());
+			const deferred = createDeferred<void>()
+			dispatch(historyFetchAllRequested({ deferred }));
+			await deferred;
 		}, 4000);
 	};
 	const clearHoldTimer = () => {

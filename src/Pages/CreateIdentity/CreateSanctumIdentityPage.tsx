@@ -3,7 +3,9 @@ import {
 	useIonRouter,
 	IonButtons,
 	IonBackButton,
-	IonText
+	IonText,
+
+	useIonLoading
 } from "@ionic/react";
 import { SANCTUM_URL } from "../../constants";
 import { toast } from "react-toastify";
@@ -24,11 +26,12 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 	const dispatch = useAppDispatch()
 	const { showToast } = useToast();
 	const router = useIonRouter();
+	const [presentLoading, dismissLoading] = useIonLoading();
 
 
 	const onSubmit = async (accessToken: string) => {
 		try {
-
+			await presentLoading({ message: "Loading identity" });
 			const api = await getSanctumIdentityApi({ accessToken });
 			const pubkey = await api.getPublicKey();
 
@@ -41,6 +44,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 			}
 			const { foundBackup } = await dispatch(createIdentity(identity));
 			dispatch(appStateActions.setAppBootstrapped());
+			await dismissLoading()
 
 			if (foundBackup) {
 				router.push("/sources", "root", "replace");

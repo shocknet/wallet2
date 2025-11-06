@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SandClock, SanctumSetting, SanctumChecked } from "./icons";
+import { SandClock, SanctumSetting } from "./icons";
 import newSocket, { Creds } from "./socket";
 import { Browser } from '@capacitor/browser';
 import { formatTime, getClientKey } from "./helpers";
 import styles from "./styles/index.module.scss";
 import SANCTUM_LOGO from "./santum_huge.png"
-import { useDispatch } from "../../State/store/store";
-import { updateBackupData } from "../../State/Slices/backupState";
+
 import { AnimatePresence, motion } from "framer-motion";
 import classNames from "classnames";
-import { removeSanctumAccessToken } from "../../Api/sanctum";
-import { toast } from "react-toastify";
-import Toast from "../Toast";
+
 
 
 
@@ -30,7 +27,7 @@ interface Props {
 
 
 const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Props) => {
-	const dispatch = useDispatch();
+
 
 	const [loginStatus, setLoginStatus] = useState<LoginStatus>(null);
 	const [reOpenSocket, setReopenSocket] = useState(false);
@@ -39,7 +36,7 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 	const timeout: NodeJS.Timeout = setTimeout(() => null, 500);
 	const timeoutRef = useRef<NodeJS.Timeout>(timeout);
 	const [isLogin, setIsLogin] = useState(false);
-	const [promptConfirmLogout, setPromptConfirmLogout] = useState(false);
+
 
 
 
@@ -94,12 +91,6 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 		});
 	}, [])
 
-	const handleSanctumLogout = () => {
-		/* 		dispatch(updateBackupData({ subbedToBackUp: false, usingExtension: false, usingSanctum: false }));
-				removeSanctumAccessToken();
-				setLoginStatus(null);
-				toast.success(<Toast title="Logout successful" message="" />) */
-	}
 
 
 	useEffect(() => {
@@ -166,61 +157,6 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 							{clientKey}
 						</p>
 					</motion.div>
-				}
-				{
-					loginStatus === "confirmed"
-					&&
-					<>
-						{
-							promptConfirmLogout
-								?
-								<motion.div
-									key="logout-prompt"
-									variants={{
-										initial: { opacity: 0, width: 0, height: 0, x: -40, y: 40 },
-										animate: { opacity: 1, width: "auto", height: "auto", x: 0, y: 0 },
-									}}
-									initial="initial"
-									animate="animate"
-									exit="exit"
-									style={{ overflow: "hidden" }}
-									transition={{ duration: 0.2 }}
-									className={classNames(styles["alt-view-container"], styles["confirmed"], styles["logout-prompt"])}
-
-								>
-									<span className={styles["title"]}>Log Out?</span>
-									<div className={classNames(styles["sanctum-button-group"], styles["logout-buttons"])}>
-										<motion.button
-											className={styles["sanctum-login-button"]}
-											onClick={() => {
-												setPromptConfirmLogout(false);
-												handleSanctumLogout()
-											}}
-										>Yes</motion.button>
-										<motion.button
-											className={styles["sanctum-login-button"]}
-											onClick={() => setPromptConfirmLogout(false)}
-											initial={{ x: -40 }}
-											animate={{ x: 0 }}
-											transition={{ duration: 0.1 }}
-										>No</motion.button>
-									</div>
-								</motion.div>
-								:
-								<motion.div
-									initial={{ opacity: 0, x: "-12rem" }}
-									animate={{ opacity: 1, x: "0rem" }}
-									className={classNames(styles["alt-view-container"], styles["confirmed"])}
-									transition={{ ease: "linear" }}
-								>
-									<div className={styles["logout-cross"]} onClick={() => setPromptConfirmLogout(!promptConfirmLogout)}>
-										<img src="/X-icon.svg" width={20} height={20} alt="X" />
-									</div>
-									<SanctumChecked />
-									<p>{`client_id-${clientKey}`}</p>
-								</motion.div>
-						}
-					</>
 				}
 				{
 					loginStatus === null

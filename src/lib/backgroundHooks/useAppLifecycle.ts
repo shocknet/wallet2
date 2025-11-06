@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "@/State/store/store";
 import { useAlert } from "../contexts/useAlert";
 import { usePreference } from "../hooks/usePreference";
 import { isPlatform } from "@ionic/react";
-import { listenforNewOperations } from "@/State/scoped/backups/sources/history/thunks";
+
 
 const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
@@ -25,7 +25,7 @@ export const useAppLifecycle = () => {
 		console.log("App started: Running initial setup...");
 
 		const tasks = () => {
-			dispatch(listenforNewOperations());
+
 		}
 
 		// App start

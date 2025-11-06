@@ -16,6 +16,7 @@ import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToId
 import { appApi } from "../api/api";
 import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
 import { SourceType } from "../scoped/common";
+import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
 
 
 
@@ -80,6 +81,8 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey }));
 		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
 		dispatch(identityLoaded({ identity: existing }));
+
+		dispatch(fetchAllSourcesHistory());
 
 
 		setTimeout(() => {
