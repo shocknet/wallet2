@@ -48,7 +48,6 @@ export const addBeaconWatcherListener = (startAppListening: AppstartListening) =
 
 
 				if (newlyStaleLpks.length) {
-					console.log("getting it")
 					const clients = getAllNostrClients();
 					clients
 						.filter(c => newlyStaleLpks.includes(c.pubDestination))
@@ -73,7 +72,6 @@ export const addBeaconWatcherListener = (startAppListening: AppstartListening) =
 				runHealthTick();
 
 				intervalId = setInterval(() => {
-					console.log("interval hit")
 					runHealthTick();
 				}, STALE_TICK_MS);
 			};
@@ -109,7 +107,6 @@ export const addBeaconWatcherListener = (startAppListening: AppstartListening) =
 					);
 				}
 
-				console.log("from beacon sub")
 				runHealthTick();
 
 				logger.info("[beaconWatcher] beacon from", beacon.createdByPub);
@@ -123,7 +120,6 @@ export const addBeaconWatcherListener = (startAppListening: AppstartListening) =
 
 			if (Capacitor.isNativePlatform()) {
 				appListenerPromise = App.addListener("appStateChange", ({ isActive }) => {
-					console.log("no in web brotherman")
 					if (isActive) {
 						logger.info("[beaconWatcher] foreground -> startInterval");
 						startInterval();

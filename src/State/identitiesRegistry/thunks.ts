@@ -82,11 +82,11 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
 		dispatch(identityLoaded({ identity: existing }));
 
-		dispatch(fetchAllSourcesHistory());
 
 
 		setTimeout(() => {
 			dispatch(checkDirtyRequested());
+			dispatch(fetchAllSourcesHistory());
 		}, 200);
 	}
 }
