@@ -11,9 +11,7 @@ const BackToolbar: React.FC<BackHeaderProps> = ({ title }: BackHeaderProps) => {
 
 		<IonToolbar>
 			<IonButtons slot="start">
-				<IonButtons slot="start">
-					<IonBackButton defaultHref="/home" text="Back" icon={chevronBack}></IonBackButton>
-				</IonButtons>
+				<IonBackButton defaultHref="/home" text="Back" icon={chevronBack}></IonBackButton>
 			</IonButtons>
 			{title && <IonTitle className="android-centered-title">{title}</IonTitle>}
 			<IonButtons slot="end">

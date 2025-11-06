@@ -8,11 +8,13 @@ import type { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
 import { InputClassification, ParsedInput, ParsedInvoiceInput } from '@/lib/types/parse';
 import { NofferError, OfferPriceType } from '@shocknet/clink-sdk';
-import { fetchHistoryForSource } from './thunks';
 import { AppThunk, AppThunkDispatch } from '@/State/store/store';
 import { NprofileView, selectSourceViewById } from '../selectors';
 import { SourceType } from '@/State/scoped/common';
 import { sourcesActions } from '../slice';
+import { createDeferred } from '@/lib/deferred';
+import { historyFetchSourceRequested } from '@/State/identitiesRegistry/middleware/actions';
+import { TaskResult } from '@reduxjs/toolkit';
 
 
 
@@ -58,8 +60,8 @@ export const sendPaymentThunk = (
 
 				handlePaymentSuccess(dispatch, amount, selectedSource, optimisticOperationId, payInvoiceReponseToSourceOperation(res, optimisticOperation), showToast);
 
-
-				dispatch(fetchHistoryForSource(selectedSource));
+				const deferred = createDeferred<TaskResult<void>>();
+				dispatch(historyFetchSourceRequested({ sourceId: selectedSource.sourceId, deferred }));
 
 			} catch (err) {
 				handlePaymentError(err, dispatch, selectedSource.sourceId, optimisticOperationId, showToast);

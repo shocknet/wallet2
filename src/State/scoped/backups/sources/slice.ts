@@ -282,6 +282,7 @@ export const sourcesSlice = createSlice({
 
 			for (const id of state.metadata.ids) {
 				const m = state.metadata.entities[id];
+				if (m.lastSeenAtMs === 0) continue; // If a source hasn't recorded a beacon ever, don't mark it stale yet
 
 				m.stale = nowMs - m.lastSeenAtMs > state.metadata.beaconStaleMs
 			}

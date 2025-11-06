@@ -16,6 +16,7 @@ import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToId
 import { appApi } from "../api/api";
 import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
 import { SourceType } from "../scoped/common";
+import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
 
 
 
@@ -82,8 +83,10 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		dispatch(identityLoaded({ identity: existing }));
 
 
+
 		setTimeout(() => {
 			dispatch(checkDirtyRequested());
+			dispatch(fetchAllSourcesHistory());
 		}, 200);
 	}
 }
