@@ -52,7 +52,7 @@ export const addBootstrapSource = (): AppThunk<Promise<void>> => async (dispatch
 		keys: keyPair,
 		admin_token: newLww(null, deviceId),
 		is_ndebit_discoverable: newLww(false, deviceId),
-		bridgeUrl: newLww("https://shockwallet.app", deviceId)
+		bridgeUrl: newLww(null, deviceId)
 	}
 
 	dispatch(sourcesActions._createDraftDoc({ sourceId: bootstrapSource.source_id, draft: bootstrapSource }));
