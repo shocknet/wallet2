@@ -54,7 +54,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 		} catch (err: any) {
 			showToast({
 				color: "danger",
-				message: err?.messge || "An error occured when creating identity"
+				message: err?.message || "An error occured when creating identity"
 			});
 			return;
 		}
