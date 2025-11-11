@@ -13,8 +13,9 @@ import { useBeaconState } from "@/lib/hooks/useBeaconState";
 interface Props {
 	source: SourceView;
 	onClick: (s: SourceView) => void;
+	button?: boolean
 }
-const SourceCard = ({ source, onClick: onPick }: Props) => {
+const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
@@ -29,7 +30,7 @@ const SourceCard = ({ source, onClick: onPick }: Props) => {
 	return (
 		<IonItem
 			className="source-card-item"
-			button
+			button={button}
 			detail={false}
 			onClick={() => onPick(source)}
 
