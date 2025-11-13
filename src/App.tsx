@@ -16,8 +16,8 @@ import '@ionic/react/css/display.css';
 import "./theme/tailwind.css";
 import "./theme/variables.css";
 
-import { Redirect, Route, RouteProps, useLocation } from "react-router-dom";
-import React, { lazy, ReactNode, Suspense, useEffect, useState } from "react";
+import { Redirect, Route } from "react-router-dom";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
@@ -39,7 +39,6 @@ import { useAppSelector } from './State/store/hooks';
 import { migrateDeviceToIdentities } from './State/identitiesRegistry/identitiesMigration';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
-import { selectHealthyNprofileViews } from './State/scoped/backups/sources/selectors';
 import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
@@ -50,6 +49,9 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
 import { initialState as backupInitialState } from "@/State/Slices/backupState";
 import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
+import { GuardedRoute } from './routing/GaurdedRoute';
+import { atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, loadedIdentityGuard } from './routing/guards';
+
 
 async function setEnvColors() {
 	await StatusBar.setOverlaysWebView({ overlay: false });
@@ -80,8 +82,6 @@ const Metrics = lazy(() => import('./Pages/Metrics'));
 const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
 const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
-const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
-const Routing = lazy(() => import("./Pages/Metrics/routing"));
 const Management = lazy(() => import("./Pages/Management"));
 
 
@@ -181,298 +181,198 @@ const AppContent: React.FC = () => {
 
 
 
+	const identityKey = useAppSelector(selectActiveIdentityId);
 
 
 	return (
 		<IonReactRouter>
 			<AppJobs />
 			<NavigationMenu />
-			<IonRouterOutlet id="main-content" >
-				<Route
+			<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
+				<GuardedRoute
 					exact
 					path="/identities"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<IdentitiesPage />
-					</Suspense>
-				</Route>
+					component={IdentitiesPage}
+				/>
 
-
-
-				<Route
+				<GuardedRoute
 					exact
 					path="/identity/create"
-				>
-					<CreateIdentityPage />
-				</Route>
+					component={CreateIdentityPage}
+				/>
 
-
-				<Route
+				<GuardedRoute
 					exact
 					path="/identity/create/keys"
-					render={(props) =>
-						<Suspense fallback={<FullSpinner />}>
-							<CreateKeysIdentityPage {...props} />
-						</Suspense>
-					}
+					component={CreateKeysIdentityPage}
+
 				/>
-				<Route
+				<GuardedRoute
 					exact
 					path="/identity/create/sanctum"
-					render={(props) =>
-						<Suspense fallback={<FullSpinner />}>
-							<CreateSanctumIdentityPage {...props} />
-						</Suspense>
-					}
+					component={CreateSanctumIdentityPage}
+
 				/>
 
-				<IdentityRouteGate
+				<GuardedRoute
 					exact
 					path="/identity/bootstrap"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<BootstrapSourcePage />
-					</Suspense>
-				</IdentityRouteGate>
+					component={BootstrapSourcePage}
+
+					guards={[loadedIdentityGuard]}
+				/>
 
 
-				<IdentityRouteGate
+
+				<GuardedRoute
 					exact
 					path="/identity/overview"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<IdentityOverviewPage />
-					</Suspense>
-				</IdentityRouteGate>
+					component={IdentityOverviewPage}
 
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+
+				<GuardedRoute
+
 					exact
 					path="/home"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Home />
-					</Suspense>
-				</IdentityRouteGate>
+					component={Home}
 
+					guards={[loadedIdentityGuard]}
+				/>
 
+				<GuardedRoute
 
-
-
-				<IdentityRouteGate
-					exact
-					path="/sources"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<SourcesPage />
-					</Suspense>
-				</IdentityRouteGate>
-
-				<IdentityRouteGate
-					exact
-					path="/receive"
-
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Receive />
-					</Suspense>
-				</IdentityRouteGate>
-
-				<IdentityRouteGate
 					exact
 					path="/send"
-				>
-					<AtLeastOneHealthyNprofileSourceRouteGate>
-						<Suspense fallback={<FullSpinner />}>
-							<Send />
-						</Suspense>
-					</AtLeastOneHealthyNprofileSourceRouteGate>
-				</IdentityRouteGate>
+					component={Send}
 
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+				/>
+
+				<GuardedRoute
+
+					exact
+					path="/Receive"
+					component={Receive}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/sources"
+					component={SourcesPage}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+				<GuardedRoute
 					exact
 					path="/automation"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Automation />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
-				<IdentityRouteGate
+					component={Automation}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
 					exact
 					path="/prefs"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Prefs />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
+					component={Prefs}
 
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+
+				<GuardedRoute
 					exact
 					path="/contacts"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Contacts />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
-				<IdentityRouteGate
+					component={Contacts}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
 					exact
 					path="/invitations"
+					component={Invitations}
 
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Invitations />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
 					exact
 					path="/notify"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Notify />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
+					component={Notify}
 
-				<IdentityRouteGate
-					exact
-					path="/metrics"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Metrics />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
 
-				<IdentityRouteGate
-					exact
-					path="/metrics/earnings"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Earnings />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
 
-				<IdentityRouteGate
-					exact
-					path="/metrics/routing"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Routing />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
-
-				<IdentityRouteGate
-					exact
-					path="/LApps"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<LinkedApp />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
-
-				<IdentityRouteGate
+				<GuardedRoute
 					exact
 					path="/management"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Management />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
+					component={Management}
 
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
+					path="/metrics"
+					component={Metrics}
+
+					guards={[loadedIdentityGuard, atLeastOneHealthyAdminNprofileSourceGuard]}
+
+				/>
+
+
+
+
+				<GuardedRoute
 					exact
-					path="/Offers"
-				>
-					<AtLeastOneHealthyNprofileSourceRouteGate>
-						<Suspense fallback={<FullSpinner />}>
-							<Offers />
-						</Suspense>
-					</AtLeastOneHealthyNprofileSourceRouteGate>
-				</IdentityRouteGate>
+					path="/offers"
+					component={Offers}
 
-				<IdentityRouteGate
+					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+				/>
+
+
+				<GuardedRoute
 					exact
 					path="/Stats"
-				>
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Stats />
-						</Layout>
-					</Suspense>
-				</IdentityRouteGate>
+					component={Stats}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/LApps"
+					component={LinkedApp}
+					layout={Layout}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+
 				<Route exact path="/" >
 					<Redirect to="/home" />
 				</Route>
 			</IonRouterOutlet >
-		</IonReactRouter>
+		</IonReactRouter >
 	);
 };
-
-
-
-const IdentityRouteGate = ({ children, ...rest }: RouteProps & { children: ReactNode }) => {
-	return (
-		<Route
-			{...rest}
-			render={() => <InnerGate>{children}</InnerGate>}
-		/>
-	);
-}
-
-const InnerGate = ({ children }: { children: ReactNode }) => {
-	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
-	const activeIdentity = useAppSelector(selectActiveIdentityId, (prev, next) => prev === next);
-	const ready = isBoostrapped && activeIdentity;
-	const location = useLocation()
-
-
-	if (ready) {
-		return children;
-	}
-	return (
-		<Redirect
-			to={{
-				pathname: "/identity/create",
-				state: { from: location }
-			}}
-		/>
-	);
-}
-
-
-const AtLeastOneHealthyNprofileSourceRouteGate = ({ children }: { children: ReactNode }) => {
-	const location = useLocation();
-	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews, (prev, next) => prev.length === next.length);
-
-	if (healthyNprofileViews.length === 0) {
-		return <Redirect
-			to={{
-				pathname: "/home",
-				state: { from: location.pathname, reason: "noSources" }
-			}}
-		/>
-	}
-	return children;
-}
-
-
 
 
 const App: React.FC = () => {
