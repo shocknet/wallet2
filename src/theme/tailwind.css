@@ -4,11 +4,11 @@
 
 @layer components {
 	.page-outer {
-		@apply flex flex-col min-h-full;
+		@apply flex flex-col min-h-full w-full;
 	}
 
 	.page-body {
-		@apply flex flex-col flex-grow;
+		@apply flex flex-col flex-grow w-full;
 	}
 
 	.hero-block {

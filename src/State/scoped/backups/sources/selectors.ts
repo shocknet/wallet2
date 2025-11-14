@@ -172,6 +172,11 @@ export const selectHealthyNprofileViews = createSelector(
 	(views) => views.filter(v => !v.beaconStale)
 );
 
+export const selectHealthyAdminNprofileViews = createSelector(
+	[selectHealthyNprofileViews],
+	(views) => views.filter(v => !!v.adminToken)
+);
+
 
 export const selectFavoriteSourceView = createSelector(
 	[selectFavoriteSourceId, docsSelectors.selectEntities, metadataSelectors.selectEntities],

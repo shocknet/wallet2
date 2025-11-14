@@ -245,7 +245,6 @@ export default class RelayCluster {
 
 		if (e.kind === 30078) {
 			const b = JSON.parse(e.content)
-			console.log(b, e)
 			relay.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
 			return;
 		}
