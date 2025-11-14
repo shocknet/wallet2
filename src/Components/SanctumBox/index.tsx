@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SandClock, SanctumSetting } from "./icons";
-import newSocket, { Creds } from "./socket";
+import { Creds } from "./socket";
 import { Browser } from '@capacitor/browser';
 import { formatTime, getClientKey } from "./helpers";
 import styles from "./styles/index.module.scss";
@@ -8,6 +8,9 @@ import SANCTUM_LOGO from "./santum_huge.png"
 
 import { AnimatePresence, motion } from "framer-motion";
 import classNames from "classnames";
+import { useEventCallback } from "@/lib/hooks/useEventCallbck/useEventCallback";
+import { SanctumSession } from "./socket2";
+import { toast } from "react-toastify";
 
 
 
@@ -30,13 +33,13 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 
 
 	const [loginStatus, setLoginStatus] = useState<LoginStatus>(null);
-	const [reOpenSocket, setReopenSocket] = useState(false);
 	const [seconds, setSeconds] = useState(0);
 	const [clientKey, setClientKey] = useState("");
 	const timeout: NodeJS.Timeout = setTimeout(() => null, 500);
 	const timeoutRef = useRef<NodeJS.Timeout>(timeout);
-	const [isLogin, setIsLogin] = useState(false);
 
+
+	const sessionRef = useRef<SanctumSession | null>(null);
 
 
 
@@ -66,39 +69,65 @@ const SanctumBox = ({ loggedIn, successCallback, errorCallback, sanctumUrl }: Pr
 	}, [loginStatus])
 
 
-	const handleSanctumRequest = useCallback((login: boolean) => {
-		setLoginStatus("loading");
-		setIsLogin(login);
+	const handleSanctumRequest = useEventCallback((login: boolean) => {
 
-		newSocket({
+		if (sessionRef.current) {
+			sessionRef.current.stop();
+			sessionRef.current = null;
+		}
+
+		setLoginStatus("loading");
+
+		const session = new SanctumSession({
+			sanctumUrl,
 			sendOnOpen: {},
-			onError: (reason) => {
-				errorCallback(reason)
-				setLoginStatus(null);
-			},
-			onSuccess: (data) => {
-				successCallback(data)
-				setLoginStatus("confirmed");
-			},
-			onToStartSanctum: async (receivedRequestToken) => {
-				await Browser.open({ url: `${sanctumUrl}/authenticate?requestToken=${receivedRequestToken}&authType=${login ? "Log In" : "Sign Up"}` });
+
+			onRequestToken: async (receivedRequestToken, _clientKey) => {
+
+				await Browser.open({
+					url: `${sanctumUrl}/authenticate?requestToken=${receivedRequestToken}&authType=${login ? "Log In" : "Sign Up"
+						}`
+				});
 				setLoginStatus("awaiting");
 			},
-			onUnexpectedClosure: () => {
-				setReopenSocket(true);
+
+			onSuccess: (data) => {
+				successCallback(data);
+				setLoginStatus("confirmed");
+				sessionRef.current = null;
 			},
-			sanctumUrl
+
+			onError: (reason) => {
+				errorCallback(reason);
+				setLoginStatus(null);
+				sessionRef.current = null;
+			},
+
+			maxRetries: 5,
+			baseRetryDelayMs: 500,
+			onRetryScheduled: (_, delayMs) => {
+				toast.warn(`Websocket connection dropped unexpectedly. Retrying in ${delayMs} ms`, { autoClose: 500 });
+
+			}
 		});
-	}, [])
+
+		sessionRef.current = session;
+		session.start();
+	});
 
 
 
 	useEffect(() => {
-		if (reOpenSocket) {
-			setReopenSocket(false);
-			handleSanctumRequest(isLogin);
-		}
-	}, [reOpenSocket, handleSanctumRequest, isLogin]);
+		return () => {
+			if (sessionRef.current) {
+				sessionRef.current.stop();
+				sessionRef.current = null;
+			}
+			if (timeoutRef.current) {
+				clearInterval(timeoutRef.current);
+			}
+		};
+	}, []);
 
 
 	return (
