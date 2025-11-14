@@ -11,6 +11,7 @@ import {
 	IonSkeletonText,
 	IonText,
 } from "@ionic/react";
+import moment from "moment";
 import { useEffect, useState } from "react";
 
 interface PubSourceStatusProps {
@@ -211,6 +212,20 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 							</IonPopover>
 						</IonLabel>
 					</IonItem>
+					<IonItem className="ion-margin-top">
+						<IonLabel>
+
+							<IonText
+								id="pub-source-lpk"
+								className="text-low code-string ion-text-wrap ion-margin"
+								style={{ display: "block", width: "fit-content", marginTop: "0.7rem" }}
+							>
+								Last beacon: {moment(beaconData.beaconLastSeenAtMs).fromNow()}
+							</IonText>
+
+						</IonLabel>
+					</IonItem>
+
 				</>
 			}
 
