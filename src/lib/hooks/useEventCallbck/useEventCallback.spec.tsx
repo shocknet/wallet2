@@ -1,5 +1,5 @@
 import { fireEvent, render, renderHook, screen } from '@testing-library/react'
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 
 import { useEventCallback } from './useEventCallback'
 import React from 'react'

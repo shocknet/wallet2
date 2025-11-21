@@ -1,4 +1,3 @@
-// pay.ts
 import { LnurlServiceResponse } from "../types/lnurl";
 import { Satoshi } from "../types/units";
 import { getJson, requestLnurlServiceParams } from "./get";

@@ -1,3 +1,4 @@
+import { getDeviceId } from "@/constants";
 import { z } from "zod";
 
 const ClockSchema = z.strictObject({
@@ -10,7 +11,7 @@ export const LwwSchema = <T extends z.ZodType>(value: T) =>
 	z.strictObject({ clock: ClockSchema, value });
 export type Lww<T> = { clock: Clock, value: T };
 
-export const newLww = <T extends string | number | boolean | null>(value: T, by: string): Lww<T> => ({ clock: { v: 0, by }, value });
+export const newLww = <T extends string | number | boolean | null>(value: T, by = getDeviceId()): Lww<T> => ({ clock: { v: 0, by }, value });
 
 
 export const LwwFlagSchema = z.strictObject({ clock: ClockSchema, present: z.boolean() });

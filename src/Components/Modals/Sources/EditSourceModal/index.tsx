@@ -154,18 +154,17 @@ const Inner = ({
 			return;
 		}
 
-		const now = Date.now();
 		const by = getDeviceId();
 
 
 		for (const op of ops) {
 			switch (op.kind) {
 				case "label":
-					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, now, by }));
+					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, by }));
 					break;
 				case "bridgeUrl":
 					if (original.type === SourceType.NPROFILE_SOURCE) {
-						dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, now, by }));
+						dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, by }));
 					}
 					break;
 				case "relaySet":
@@ -175,7 +174,6 @@ const Inner = ({
 							relayUrl: op.relayUrl,
 							present: op.present,
 							by,
-							now
 						}));
 					}
 					break;
@@ -185,7 +183,6 @@ const Inner = ({
 							sourceId: original.sourceId,
 							isNdebitDiscoverable: op.discoverable,
 							by,
-							now
 						}));
 					}
 			}

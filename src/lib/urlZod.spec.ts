@@ -1,4 +1,3 @@
-// urlSchemas.test.ts
 import { describe, it, expect } from "vitest";
 import { HttpBaseSchema, RelayBaseSchema } from "./urlZod";
 

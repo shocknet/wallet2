@@ -1,9 +1,6 @@
 import { IdentityDocV0, IdentityDocV0Schema, migrateIdentityDocToCurrent } from "@/State/scoped/backups/identity/schema";
-import { identityActions } from "@/State/scoped/backups/identity/slice";
 import { migrateSourceDocToCurrent, SourceDocV0, SourceDocV0Schema } from "@/State/scoped/backups/sources/schema";
-import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { DocBase, DocBaseSchema } from "@/State/scoped/common";
-import { AppThunkDispatch } from "@/State/store/store";
 
 async function sha256Base64Url(input: string): Promise<string> {
 	const encoder = new TextEncoder();
@@ -36,8 +33,9 @@ export const identityDocDtag = "sw_identity";
 
 
 
-async function processRemoteIdentityDoc(doc: DocBase, dispatch: AppThunkDispatch): Promise<IdentityDocV0 | null> {
+async function processRemoteIdentityDoc(doc: DocBase): Promise<IdentityDocV0 | null> {
 	let migrationResult;
+	console.log({ doc })
 
 	try {
 		migrationResult = migrateIdentityDocToCurrent(doc);
@@ -53,12 +51,11 @@ async function processRemoteIdentityDoc(doc: DocBase, dispatch: AppThunkDispatch
 		if (!docParseResult.success) {
 			return null;
 		}
-		dispatch(identityActions.applyRemoteIdentity({ remote: docParseResult.data }));
 		return docParseResult.data
 	}
 }
 
-async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch): Promise<SourceDocV0 | null> {
+async function processRemoteSourceDoc(doc: DocBase): Promise<SourceDocV0 | null> {
 
 	let migrationResult;
 
@@ -77,17 +74,16 @@ async function processRemoteSourceDoc(doc: DocBase, dispatch: AppThunkDispatch):
 		if (!docParseResult.success) {
 			return null;
 		}
-		dispatch(sourcesActions.applyRemoteSource({ sourceId: docParseResult.data.source_id, remote: docParseResult.data }));
 		return docParseResult.data
 	}
 }
-export async function processRemoteDoc(doc: unknown, dispatch: AppThunkDispatch): Promise<IdentityDocV0 | SourceDocV0 | null> {
+export async function processRemoteDoc(doc: unknown): Promise<IdentityDocV0 | SourceDocV0 | null> {
 	const result = DocBaseSchema.safeParse(doc);
 	if (!result.success) return null;
 
 	if (result.data.doc_type === "doc/shockwallet/identity_") {
-		return processRemoteIdentityDoc(result.data, dispatch)
+		return processRemoteIdentityDoc(result.data)
 	} else {
-		return processRemoteSourceDoc(result.data, dispatch)
+		return processRemoteSourceDoc(result.data)
 	}
 }

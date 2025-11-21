@@ -1,7 +1,6 @@
 
 import { resetClientsCluster } from "@/Api/nostr";
 import getIdentityNostrApi from "./helpers/identityNostrApi";
-import { checkDirtyRequested, identityLoaded, identityUnloaded, publisherFlushRequested } from "./middleware/actions";
 import { identitiesRegistryActions, selectActiveIdentityId } from "./slice";
 import { persistor, type AppThunk } from "@/State/store/store";
 import { getAllScopedPersistKeys, injectNewScopedReducer, removeScoped } from "../scoped/scopedReducer";
@@ -17,6 +16,8 @@ import { appApi } from "../api/api";
 import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
 import { SourceType } from "../scoped/common";
 import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
+import { identityLoaded, identityUnloaded } from "../listeners/actions";
+import { createDeferred } from "@/lib/deferred";
 
 
 
@@ -45,20 +46,19 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
 		await getIdentityNostrApi(existing);
 
-		if (!boot) { // When it's a dynamic switch, tear down stuff nicely
+		if (!boot && current !== null) { // When it's a dynamic switch, tear down stuff nicely
 
 			dispatch(appApi.util.resetApiState());
 
-			/*
-		* Flush redux-persist and docs publisher middleware
-		*/
-			await persistor.flush().catch(() => { });
-			dispatch(publisherFlushRequested());
 
-			// wait a bit for publisher to finish?
+			await persistor.flush().catch(() => { });
+
 
 			dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey: null }));
-			dispatch(identityUnloaded()); // Signal publisher and puller to stop
+
+			const deferred = createDeferred<void>();
+			dispatch(identityUnloaded({ deferred }));
+			await deferred;
 
 			await resetClientsCluster(); // Tear down nostr layer
 
@@ -85,7 +85,6 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 
 		setTimeout(() => {
-			dispatch(checkDirtyRequested());
 			dispatch(fetchAllSourcesHistory());
 		}, 200);
 	}

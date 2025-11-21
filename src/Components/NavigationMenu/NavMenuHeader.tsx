@@ -1,4 +1,3 @@
-// Components/nav/NavMenuHeader.tsx
 import React, { useMemo } from 'react';
 import {
 	IonHeader,
