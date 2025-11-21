@@ -134,7 +134,6 @@ export default defineConfig({
 	test: {
 		environment: "jsdom",
 		setupFiles: "./testSetup.ts",
-		globals: true,
 	},
 	server: {
 		host: true,
@@ -147,6 +146,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": resolve(__dirname, "src"),
+			'@tests': resolve(__dirname, 'tests'),
 		},
 		dedupe: ['react', 'react-dom', 'react-is', 'scheduler', 'use-sync-external-store']
 	},

@@ -14,7 +14,7 @@ import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 
 import { staticReducers } from './staticReducers';
 import { listenerMiddleware } from './listenerMiddleware';
 import { appApi } from '../api/api';
-import { historyFetchAllRequested, historyFetchSourceRequested } from '../identitiesRegistry/middleware/actions';
+import { historyFetchAllRequested, historyFetchSourceRequested, identityUnloaded } from '../listeners/actions';
 
 
 
@@ -29,7 +29,7 @@ const store = configureStore({
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({
 			serializableCheck: {
-				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER, historyFetchAllRequested.type, historyFetchSourceRequested.type],
+				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER, historyFetchAllRequested.type, historyFetchSourceRequested.type, identityUnloaded.type],
 			},
 		}).prepend(listenerMiddleware.middleware).concat(appApi.middleware)
 });

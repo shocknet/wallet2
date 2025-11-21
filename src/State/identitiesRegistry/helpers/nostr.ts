@@ -49,7 +49,7 @@ export async function saveSourceDocEvent(ext: IdentityNostrApi, backup: string, 
 }
 
 
-export async function subscribeToNip78Events(
+export async function subscribeToNostrEvents(
 	ext: IdentityNostrApi,
 	filters: Filter[],
 	eventCallback: (decrypted: string) => void

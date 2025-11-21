@@ -7,7 +7,7 @@ import type { RootState } from "@/State/store/store";
 import { selectScopedStrict } from "../../stricScopedSelector";
 
 
-type IdentityState = {
+export type IdentityState = {
 	base?: IdentityDocV0;
 	draft?: IdentityDocV0;
 	lastPublishedAt?: number;

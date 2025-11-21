@@ -66,7 +66,6 @@ function getIntialMetadataEntry(sourceId: string, lpk: string): SourceMetadata {
 		lpk,
 		balance: 0 as Satoshi,
 		maxWithdrable: 0 as Satoshi,
-		stale: false,
 		lastSeenAtMs: 0
 	};
 }
@@ -79,6 +78,7 @@ export const sourcesSlice = createSlice({
 	reducers: {
 		/** --------- DOCS --------- */
 		_createDraftDoc(state, a: PayloadAction<{ sourceId: string, draft: SourceDocV0 }>) {
+			console.log("here?")
 			const d = a.payload.draft;
 			if (state.docs.entities[d.source_id]) return;
 			docsAdapter.addOne(state.docs, {
@@ -106,7 +106,7 @@ export const sourcesSlice = createSlice({
 			}
 		},
 
-		updateSourceLabel(state, a: PayloadAction<{ sourceId: string; label: string | null; now: number, by: string }>) {
+		updateSourceLabel(state, a: PayloadAction<{ sourceId: string; label: string | null; by: string }>) {
 			const e = state.docs.entities[a.payload.sourceId];
 			if (!e) return;
 			const d = e.draft;
@@ -116,7 +116,7 @@ export const sourcesSlice = createSlice({
 			e.dirty = true;
 		},
 
-		updateBridgeUrl(state, a: PayloadAction<{ sourceId: string; bridgeUrl: string | null; now: number, by: string }>) {
+		updateBridgeUrl(state, a: PayloadAction<{ sourceId: string; bridgeUrl: string | null; by: string }>) {
 			const e = state.docs.entities[a.payload.sourceId];
 			if (!e) return;
 			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
@@ -127,7 +127,7 @@ export const sourcesSlice = createSlice({
 			e.dirty = true;
 		},
 
-		updateisNDebitDiscoverable(state, a: PayloadAction<{ sourceId: string; isNdebitDiscoverable: boolean; now: number, by: string }>) {
+		updateisNDebitDiscoverable(state, a: PayloadAction<{ sourceId: string; isNdebitDiscoverable: boolean; by: string }>) {
 			const e = state.docs.entities[a.payload.sourceId];
 			if (!e) return;
 			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
@@ -150,7 +150,7 @@ export const sourcesSlice = createSlice({
 		},
 
 
-		setRelayPresence(state, a: PayloadAction<{ sourceId: string; relayUrl: string; present: boolean; by: string; now: number }>) {
+		setRelayPresence(state, a: PayloadAction<{ sourceId: string; relayUrl: string; present: boolean; by: string; }>) {
 			const e = state.docs.entities[a.payload.sourceId];
 			if (!e) return;
 			if (e.draft.type !== SourceType.NPROFILE_SOURCE) return;
@@ -232,19 +232,22 @@ export const sourcesSlice = createSlice({
 
 		/** --------- METADATA --------- */
 		setVanityName(state, a: PayloadAction<{ sourceId: string; vanityName: string }>) {
-			const m = state.metadata.entities[a.payload.sourceId]
+			const m = state.metadata.entities[a.payload.sourceId];
+			if (!m) return;
 
 			m.vanityName = a.payload.vanityName;
 
 		},
 		setNdebit(state, a: PayloadAction<{ sourceId: string; ndebit: string }>) {
-			const m = state.metadata.entities[a.payload.sourceId]
+			const m = state.metadata.entities[a.payload.sourceId];
+			if (!m) return;
 
 			m.ndebit = a.payload.ndebit;
 
 		},
 		setBalance(state, a: PayloadAction<{ sourceId: string; balance: { balance: Satoshi, maxWithdrawable: Satoshi } }>) {
 			const m = state.metadata.entities[a.payload.sourceId]
+			if (!m) return;
 
 			m.balance = a.payload.balance.balance;
 			m.maxWithdrable = a.payload.balance.maxWithdrawable
@@ -276,19 +279,6 @@ export const sourcesSlice = createSlice({
 			}
 
 		},
-
-		recomputeStale(state, a: PayloadAction<{ nowMs: number }>) {
-			const { nowMs } = a.payload;
-
-			for (const id of state.metadata.ids) {
-				const m = state.metadata.entities[id];
-				if (m.lastSeenAtMs === 0) continue; // If a source hasn't recorded a beacon ever, don't mark it stale yet
-
-				m.stale = nowMs - m.lastSeenAtMs > state.metadata.beaconStaleMs
-			}
-		},
-
-
 
 		/** --------- OPERATIONS HISTORY --------- */
 		mergePage(

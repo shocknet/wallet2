@@ -173,7 +173,12 @@ export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Pr
         return null
     }
 
-    const data = JSON.parse(event.content) as { type: 'service', name: string }
+    let data;
+    try {
+        data = JSON.parse(event.content) as { type: 'service', name: string };
+    } catch {
+        return null;
+    }
 
     return {
         beaconLastSeenAtMs: event.created_at,

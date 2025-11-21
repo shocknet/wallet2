@@ -7,6 +7,7 @@ import { LightningAddressSourceDocV0, NprofileSourceDocV0, SourceDocV0 } from ".
 import { SourceMetadata } from "./metadata/types";
 import { selectFavoriteSourceId } from "../identity/slice";
 import { RootState } from "@/State/store/store";
+import { BEACON_STALE_OLDER_THAN } from "./state";
 
 export const selectLiveSourceIds = createSelector(
 	[docsSelectors.selectAll],
@@ -88,7 +89,7 @@ const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata): Nprofile
 		ndebit: m.ndebit,
 		vanityName: m.vanityName,
 		bridgeUrl: d.bridgeUrl.value,
-		beaconStale: m.stale,
+		beaconStale: Date.now() - m.lastSeenAtMs > BEACON_STALE_OLDER_THAN,
 		beaconLastSeenAtMs: m.lastSeenAtMs,
 		beaconName: m.beaconName,
 		adminToken: d.admin_token.value
@@ -164,6 +165,17 @@ export const selectNprofileViewsByLpk = createSelector(
 	],
 	(views, lpk) => views.filter(v => v.lpk === lpk)
 );
+
+export const makeSelectNprofileViewsByLpk = () => {
+	const selectNprofileViewsByLpk = createSelector(
+		[
+			selectNprofileViews,
+			(_state: RootState, lpk: string) => lpk
+		],
+		(views, lpk) => views.filter(v => v.lpk === lpk)
+	);
+	return selectNprofileViewsByLpk
+}
 
 
 
