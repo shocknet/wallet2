@@ -49,7 +49,7 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
 import { initialState as backupInitialState } from "@/State/Slices/backupState";
 import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
-import { GuardedRoute } from './routing/GaurdedRoute';
+import { GuardedRoute } from './routing/GuardedRoute';
 import { atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, loadedIdentityGuard } from './routing/guards';
 
 

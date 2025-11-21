@@ -13,7 +13,7 @@ import { NprofileView, selectSourceViewById } from '../selectors';
 import { SourceType } from '@/State/scoped/common';
 import { sourcesActions } from '../slice';
 import { createDeferred } from '@/lib/deferred';
-import { historyFetchSourceRequested } from '@/State/identitiesRegistry/middleware/actions';
+import { historyFetchSourceRequested } from '@/State/listeners/actions';
 import { TaskResult } from '@reduxjs/toolkit';
 
 

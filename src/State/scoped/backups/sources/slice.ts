@@ -77,9 +77,8 @@ export const sourcesSlice = createSlice({
 	initialState: getIntialState(),
 	reducers: {
 		/** --------- DOCS --------- */
-		_createDraftDoc(state, a: PayloadAction<{ sourceId: string, draft: SourceDocV0 }>) {
-			console.log("here?")
-			const d = a.payload.draft;
+	_createDraftDoc(state, a: PayloadAction<{ sourceId: string, draft: SourceDocV0 }>) {
+		const d = a.payload.draft;
 			if (state.docs.entities[d.source_id]) return;
 			docsAdapter.addOne(state.docs, {
 				draft: d,

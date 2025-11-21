@@ -1,6 +1,6 @@
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
 import { selectHealthyAdminNprofileViews, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
-import type { Guard } from "./GaurdedRoute";
+import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
 
 export const loadedIdentityGuard: Guard = () => {

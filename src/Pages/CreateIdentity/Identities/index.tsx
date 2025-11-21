@@ -41,7 +41,6 @@ export default function IdentitiesPage() {
 
 	const onSwitch = async (pubkey: string) => {
 		if (activeHex === pubkey) {
-			console.log("here")
 			return router.push("/identity/overview", "forward", "push")
 
 		}

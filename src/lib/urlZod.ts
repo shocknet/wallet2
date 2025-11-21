@@ -9,7 +9,6 @@ export const HttpBaseSchema = z
 	.transform((val, ctx) => {
 		const r = canonicalHttpBase(val);
 		if (!r.ok) {
-			console.log("here?", val)
 			ctx.issues.push({
 				code: "custom",
 				message: "Not a valid http URL",
