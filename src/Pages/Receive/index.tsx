@@ -611,14 +611,21 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 			setQrCodeValue(address);
 			setBitcoinAddText(truncateTextMiddle(address, 10, 10));
 			setCache(cacheKey, address);
-		} catch {
+		} catch (err) {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
-			showAlert({
-				header: "Chain error",
-				message: "Error getting chain address",
-			})
+			if (err instanceof Error) {
+				showAlert({
+					header: "Chain error",
+					message: err.message,
+				});
+			} else {
+				showAlert({
+					header: "Chain error",
+					message: "Error getting chain address",
+				});
+			}
 		}
 		setIsloading(false);
 	}, [qrCodeValue, favoriteSource, onInvalidate, showAlert])
