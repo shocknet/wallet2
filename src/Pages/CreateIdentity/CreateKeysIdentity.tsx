@@ -29,7 +29,7 @@ import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
 import { getSourcesFromLegacyFileBackup, SourceToMigrate } from "@/State/identitiesRegistry/helpers/migrateToIdentities";
-import { appStateActions } from "@/State/appState/slice";
+
 
 const defaultRelay = utils.normalizeURL("wss://relay.lightning.pub");
 
@@ -119,7 +119,6 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			await dismissLoading();
 
 
-			dispatch(appStateActions.setAppBootstrapped());
 			if (foundBackup) {
 				router.push("/sources", "root", "replace");
 
