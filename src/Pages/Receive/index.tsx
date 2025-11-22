@@ -129,9 +129,9 @@ const Receive = () => {
 		handleInvalidate("address");
 	}, [handleInvalidate]);
 
-	const handleInvalidateChain = useCallback(() => {
-		handleInvalidate("bitcoin");
-	}, [handleInvalidate]);
+	/* 	const handleInvalidateChain = useCallback(() => {
+			handleInvalidate("bitcoin");
+		}, [handleInvalidate]); */
 
 	const [validSlides, setValidSlides] = useState<Slide[]>([
 		{
@@ -144,11 +144,11 @@ const Receive = () => {
 			name: 'Invoice',
 			component: <InvoiceTab />,
 		},
-		{
-			id: 'bitcoin',
-			name: 'Chain',
-			component: <OnChainTab onInvalidate={handleInvalidateChain} />,
-		},
+		/* 		{
+					id: 'bitcoin',
+					name: 'Chain',
+					component: <OnChainTab onInvalidate={handleInvalidateChain} />,
+				}, */
 	]);
 
 
