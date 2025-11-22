@@ -27,7 +27,7 @@ import classNames from "classnames";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getDeviceId } from "@/constants";
+import { DEFAULT_BRIDGE_URL, getDeviceId } from "@/constants";
 import { PubSourceStatus } from "../helpers";
 import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import CardishList from "@/Components/CardishList";
@@ -269,7 +269,7 @@ const Inner = ({
 									label="Bridge URL"
 									labelPlacement="stacked"
 									inputmode="url"
-									placeholder="https://shockwallet.app"
+									placeholder={DEFAULT_BRIDGE_URL}
 									value={bridgeUrl}
 									ref={bridgeInputRef}
 
