@@ -18,6 +18,7 @@ import { SourceType } from "../scoped/common";
 import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
 import { identityLoaded, identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
+import { appStateActions } from "../appState/slice";
 
 
 
@@ -102,6 +103,7 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		const identityApi = await getIdentityNostrApi(identity);
 
 		dispatch(identitiesRegistryActions._createNewIdentity({ identity }));
+		dispatch(appStateActions.setAppBootstrapped());
 
 		await dispatch(switchIdentity(identity.pubkey));
 
