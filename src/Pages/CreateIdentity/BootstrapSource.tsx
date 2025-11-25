@@ -1,109 +1,40 @@
 import {
 	IonPage,
 	IonContent,
-	IonInput,
 	IonButton,
 	useIonRouter,
-	IonText,
-	IonGrid,
-	IonRow,
-	IonCol,
 	IonIcon,
+	useIonModal,
+	IonImg,
 } from "@ionic/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
-import useDebounce from "@/Hooks/useDebounce";
-import { InputState } from "../Send/types";
-import { InputClassification } from "@/lib/types/parse";
+import { ParsedNprofileInput } from "@/lib/types/parse";
 import { addBootstrapSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
-import classNames from "classnames";
 import HomeHeader from "@/Layout2/HomeHeader";
 import { flashOutline } from "ionicons/icons";
+import cn from "clsx";
+import { AddConnectionDialog } from "@/Components/Modals/DialogeModals";
+import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 
-
+type SelectedOption = "bootstrap" | "connection" | null;
 
 const BootstrapSource = () => {
 	const router = useIonRouter();
 	const { showToast } = useToast();
-	const [input, setInput] = useState("");
-	const [isTouched, setIsTouched] = useState(false);
 
-	const inputRef = useRef<HTMLIonInputElement>(null);
-	const [inputState, setInputState] = useState<InputState>({
-		status: "idle",
-		inputValue: ""
-	});
+	const [selectedOption, setSelectedOption] = useState<SelectedOption>(null);
+
+	const [presentAdd, dismissAdd] = useIonModal(
+		<AddConnectionDialog dismiss={(data: { parsedNprofile: ParsedNprofileInput } | null, role: "cancel" | "confirm") => dismissAdd(data, role)} />
+	);
+
+
 	const dispatch = useAppDispatch();
 
-	const debouncedInput = useDebounce(input, 800);
 
-	useEffect(() => {
-		if (!debouncedInput.trim()) {
-			setInputState({ status: "idle", inputValue: "" });
-			return;
-		}
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value: normalizedInput } = identifyBitcoinInput(
-					debouncedInput,
-					{
-						allowed: [InputClassification.NPROFILE]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					setInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
-					return;
-				}
-				setInputState({
-					status: "loading",
-					inputValue: normalizedInput,
-					classification
-				});
-
-				parseBitcoinInput(normalizedInput, classification)
-					.then(parsed => {
-						setInputState({
-							status: "parsedOk",
-							inputValue: normalizedInput,
-							parsedData: parsed
-						});
-					})
-					.catch((err: any) => {
-						setInputState({
-							status: "error",
-							inputValue: normalizedInput,
-							error: err.message,
-							classification
-						});
-					})
-			})
-			.catch(() => {
-				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [debouncedInput]);
-
-	const clearRecipientError = () => {
-		if (inputRef.current) {
-			inputRef.current.classList.remove("ion-invalid")
-		}
-	}
-
-	const onInputChange = (e: CustomEvent) => {
-		setInput(e.detail.value || "");
-		setInputState({ status: "idle", inputValue: "" });
-		clearRecipientError();
-	}
-
-
-	const parsedNprofile = useMemo(() => (inputState.status === "parsedOk" && inputState.parsedData.type === InputClassification.NPROFILE)
-		? inputState.parsedData
-		: null,
-		[inputState]);
-
-	const handleAddNProfileSource = useCallback(async () => {
+	const handleAddNProfileSource = useCallback(async (parsedNprofile: ParsedNprofileInput) => {
 
 		if (!parsedNprofile) return;
 
@@ -139,15 +70,39 @@ const BootstrapSource = () => {
 	}, [
 		showToast,
 		dispatch,
-		parsedNprofile,
 		router
 	]);
 
-	const handleAddBootstrapSource = useCallback(async () => {
-		await dispatch(addBootstrapSource());
-		router.push("/sources");
-	}, [dispatch, router]);
 
+
+	const handleSelectOption = (option: SelectedOption) => () => {
+		setSelectedOption(option);
+	}
+
+	const handleConnect = useCallback(async () => {
+		if (selectedOption === null) return;
+
+		if (selectedOption === "connection") {
+			presentAdd({
+				onDidDismiss: (event: CustomEvent<OverlayEventDetail>) => {
+					if (event.detail.role === "cancel") return;
+					if (event.detail.role === "confirm") {
+						handleAddNProfileSource(event.detail.data.parsedNprofile as ParsedNprofileInput)
+					}
+				},
+				cssClass: "dialog-modal wallet-modal"
+			});
+		} else {
+			await dispatch(addBootstrapSource());
+			router.push("/sources");
+		}
+	}, [
+		presentAdd,
+		selectedOption,
+		handleAddNProfileSource,
+		dispatch,
+		router
+	]);
 
 	return (
 		<IonPage className="ion-page-width">
@@ -155,91 +110,81 @@ const BootstrapSource = () => {
 
 			</HomeHeader>
 			<IonContent className="ion-padding">
-				<IonGrid
-					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
-				>
-
-					<IonRow className="ion-justify-content-center" style={{ marginTop: "5rem" }}>
-						<IonCol size="auto">
-							<div className="text-xl text-medium text-weight-high" style={{ fontSize: "1.6rem" }}>
-								Node Up
+				<div className="page-outer">
+					<div className="page-body">
+						<section className="hero-block flex-row gap-4 max-h-[30vh]">
+							<div className="flex flex-col items-center gap-3">
+								<div className="text-medium font-bold text-2xl">Node Up</div>
+								<IonIcon icon={flashOutline} className="text-6xl text-medium" />
 							</div>
+						</section>
+						<section className="main-block flex flex-col justify-center w-full">
+							<div className="flex justify-center gap-3 md:gap-8">
+								<div
+									className={cn(
+										"choice-card",
+										selectedOption === "bootstrap" && "bg-[#154162]"
+									)}
+									onClick={handleSelectOption("bootstrap")}
+								>
+									<div className="choice-card-title text-medium">
+										Bootstrap
+									</div>
+									<IonImg className="w-12 h-auto text-high" src="/icons/handshake.png" />
+									<div className="text-center text-base text-medium">
+										Build a service credit with the default liquidity provider and upgrade later.*
+									</div>
+								</div>
+								<div
 
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-center" style={{ marginTop: "1.5rem" }}>
-						<IonCol size="auto">
-							<IonIcon icon={flashOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-align-items-center ion-justify-content-center" style={{ marginTop: "4rem" }}>
-						<IonCol size="12">
-							<IonRow style={{ gap: "8px" }}>
-								<IonCol size="8" offset="2">
-									<IonInput
-										color="primary"
-										placeholder="Input a node nprofile to connect"
-										fill="solid"
-										mode="md"
-										value={input}
-										onIonInput={onInputChange}
-										ref={inputRef}
-										className={classNames({
-											["ion-invalid"]: inputState.status === "error",
-											["ion-touched"]: isTouched,
-											["ion-margin-top"]: true,
-											["filled-input"]: true
-										})}
-										onIonBlur={() => setIsTouched(true)}
-										errorText={inputState.status === "error" ? inputState.error : ""}
-									></IonInput>
-								</IonCol>
-							</IonRow>
-						</IonCol>
-					</IonRow>
-					<IonRow
-						className="ion-justify-content-center ion-margin-top"
-					>
-						<IonCol size="auto">
-							<IonButton onClick={handleAddNProfileSource} disabled={!parsedNprofile}>Add</IonButton>
-						</IonCol>
-					</IonRow>
-					<IonRow
-						className="ion-justify-content-center"
-						style={{ marginTop: "4rem", marginBottom: "5rem" }}>
-						<IonCol size="auto" >
-							<IonText className="text-low text-lg text-weight-high">
-								or
-							</IonText>
-						</IonCol>
-					</IonRow>
-					<IonRow
-					>
-						<IonCol size="8" offset="2">
-							<IonButton
-								className="pill-button"
-								expand="full"
-								size="large"
-								shape="round"
-								onClick={handleAddBootstrapSource}
+									onClick={handleSelectOption("connection")}
+									className={cn(
+										"choice-card",
+										selectedOption === "connection" && "bg-[#154162]"
+									)}
+								>
+									<div className="choice-card-title text-medium">
+										Node Connection
+									</div>
+									<IonImg className="w-12 h-auto text-high" src="/icons/plug.png" />
+									<div className="text-center text-base text-medium">
+										Enter a connection string (nprofile) to connect to a remote node over nostr.
+									</div>
+								</div>
+							</div>
+						</section>
+
+						<section className="main-block mt-20">
+							<div className="mx-auto w-[60%]">
+								<IonButton
+									className="pill-button"
+									expand="full"
+									size="large"
+									shape="round"
+									disabled={!selectedOption}
+									onClick={handleConnect}
+								>
+									Connect
+								</IonButton>
+							</div>
+						</section>
+
+						<section className="disclaimer-block text-low pb-2">
+							By proceeding you acknowledge that this is bleeding-edge software,
+							and agree to the providers{" "}
+							<a
+								href="https://docs.shock.network/terms/"
+								target="_blank"
+								rel="noreferrer"
+								className="underline text-high"
 							>
-								Bootstrap
-							</IonButton>
-						</IonCol>
-					</IonRow>
-					<IonRow
-						className="ion-justify-content-center"
-						style={{ marginTop: "3rem" }}
-					>
-						<IonCol size="auto" >
-							<div className="ion-text-wrap ion-text-center text-lg text-x-low  ">
-								Build a service credit with a provider and and upgrade to a self-custodial node later.
-							</div>
-						</IonCol>
-					</IonRow>
+								terms
+							</a>{" "}
+							regarding any services herein.
+						</section>
+					</div>
+				</div>
 
-				</IonGrid>
-				<IonRow style={{ flex: 0.5, minHeight: 0 }} />
 			</IonContent>
 		</IonPage>
 	);
