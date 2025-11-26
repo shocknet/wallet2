@@ -209,12 +209,12 @@ const SourcesPage = () => {
 	}, [])
 
 	const favoriteFirstSortedSources = useMemo(() => {
-		if (favoriteSourceId == null) return sources.slice();
+		if (favoriteSourceId == null) return sources;
 
 		const i = sources.findIndex(s => s.sourceId === favoriteSourceId);
-		if (i <= 0) return sources.slice();
+		if (i <= 0) return sources;
 
-		const copy = sources.slice();
+		const copy = [...sources];
 		const [fav] = copy.splice(i, 1);
 		copy.unshift(fav);
 		return copy;

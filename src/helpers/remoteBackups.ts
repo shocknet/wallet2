@@ -181,7 +181,7 @@ export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Pr
     }
 
     return {
-        beaconLastSeenAtMs: event.created_at,
+        beaconLastSeenAtMs: event.created_at * 1000,
         name: data.name
     }
 
