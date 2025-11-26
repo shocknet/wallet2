@@ -71,8 +71,8 @@ export const useWatchClipboard = () => {
 		if (!text) return;
 
 
-		let identifyBitcoinInput: any;
-		let parseBitcoinInput: any;
+		let identifyBitcoinInput;
+		let parseBitcoinInput;
 		try {
 			({ identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse"));
 		} catch (err) {
@@ -119,6 +119,13 @@ export const useWatchClipboard = () => {
 					return;
 				}
 
+				if (parsed.type === InputClassification.NPROFILE) {
+					history.push({
+						pathname: "/sources",
+						state: { parsedNprofile: parsed }
+					});
+					return;
+				}
 
 				history.push({
 					pathname: "/send",

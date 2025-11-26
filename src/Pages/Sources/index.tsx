@@ -20,7 +20,7 @@ import { add } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { InputState } from "../Send/types";
-import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
+import { InputClassification, ParsedLnurlWithdrawInput, ParsedNprofileInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
 import { SweepLnurlwDialog } from "@/Components/Modals/DialogeModals";
 import { Satoshi } from "@/lib/types/units";
@@ -185,16 +185,22 @@ const SourcesPage = () => {
 
 
 	useIonViewDidEnter(() => {
-		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {}
+		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {};
+		const { parsedNprofile } = history.location.state as { parsedNprofile?: ParsedNprofileInput } || {};
 		const searchParams = new URLSearchParams(history.location.search);
 		if (parsedLnurlW) {
 			handleLnurlWithdraw(parsedLnurlW)
+		} else if (parsedNprofile) {
+			setReceivedInputState({
+				status: "parsedOk",
+				parsedData: parsedNprofile,
+				inputValue: parsedNprofile.data
+			});
+			setIsAddSourceOpen(true);
 		} else if (searchParams.size > 0) {
 			const searchParams = new URLSearchParams(history.location.search);
 			handleSearchParams(searchParams);
 		}
-
-
 
 
 		history.replace(history.location.pathname);
