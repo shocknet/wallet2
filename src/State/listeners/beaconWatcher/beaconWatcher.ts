@@ -6,9 +6,9 @@ import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { isAnyOf, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
-import { SourceType } from "@/State/scoped/common";
 import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
+import { isNprofileSource, isSourceDeleted } from "@/State/utils";
 
 
 const STALE_TICK_MS = 1.5 * 60 * 1000; // 1.5 minutes
@@ -27,8 +27,8 @@ export const beaconWatcherSpec: ListenerSpec = {
 					if (!isBeaconTrigger(action)) return false;
 
 					const { sourceId } = action.payload;
-					const source = state.scoped!.sources.docs.entities[sourceId];
-					if (!source || source.draft.type !== SourceType.NPROFILE_SOURCE || source.draft.deleted.value)
+					const source = state.scoped!.sources.docs.entities[sourceId]?.draft;
+					if (!isNprofileSource(source) || isSourceDeleted(source))
 						return false;
 
 					return true;
