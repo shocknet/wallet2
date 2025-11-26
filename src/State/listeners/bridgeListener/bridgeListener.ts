@@ -3,14 +3,13 @@ import Bridge from "@/Api/bridge";
 import { Buffer } from "buffer";
 import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
-import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { NprofileView, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
 import { isAnyOf, TaskAbortError, UnknownAction } from "@reduxjs/toolkit";
-
 import logger from "@/Api/helpers/logger";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { RootState } from "@/State/store/store";
+import { isNprofileSource } from "@/State/utils";
 const { getToken } = nip98
 
 const isBridgeRelated = isAnyOf(
@@ -25,24 +24,24 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 	if (!isBridgeRelated(action)) return false;
 
 	const { sourceId } = action.payload;
-	const prevSource = prev.scoped!.sources.docs.entities[sourceId];
-	const currSource = curr.scoped!.sources.docs.entities[sourceId];
+	const prevSource = docsSelectors.selectById(prev, sourceId)?.draft;
+	const currSource = docsSelectors.selectById(curr, sourceId)?.draft;
 
 	// If it doesn't exist now, nothing to do
 	if (!currSource) return false;
 
-	const currDraft = currSource.draft;
-	const prevDraft = prevSource?.draft;
+	if (!isNprofileSource(prevSource) || !isNprofileSource(currSource)) return false;
 
-	if (currDraft.type !== SourceType.NPROFILE_SOURCE) return false;
+
 
 	const justCreated = !prevSource;
 
-	const bridgeChanged =
-		prevDraft?.type === SourceType.NPROFILE_SOURCE &&
-		prevDraft.bridgeUrl.value !== currDraft.bridgeUrl.value;
+	const hasNoVanityYet = !metadataSelectors.selectById(curr, sourceId).vanityName;
 
-	return justCreated || bridgeChanged;
+	const bridgeChanged =
+		prevSource.bridgeUrl.value !== currSource.bridgeUrl.value;
+
+	return justCreated || hasNoVanityYet || bridgeChanged;
 }
 
 export const bridgeListenerSpec: ListenerSpec = {
@@ -73,13 +72,6 @@ export const bridgeListenerSpec: ListenerSpec = {
 								throw new Error(`GetUserInfo failed: ${userInfoRes.reason}`);
 							}
 
-							const lnurlPayLinkRes = await forkApi.pause(nostrClient.GetLnurlPayLink());
-							if (lnurlPayLinkRes.status !== "OK") {
-								throw new Error(`GetUserInfo failed: ${lnurlPayLinkRes.reason}`);
-							}
-
-
-
 							const bridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
 
 							if (!bridgeUrl) {
@@ -87,7 +79,7 @@ export const bridgeListenerSpec: ListenerSpec = {
 							}
 
 
-							const payload = { k1: lnurlPayLinkRes.k1, noffer: userInfoRes.noffer };
+							const payload = { noffer: userInfoRes.noffer };
 							const nostrHeader = await forkApi.pause(getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finalizeEvent(e, Buffer.from(source.keys.privateKey, 'hex')), true, payload))
 							const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 							const bridgeRes = await forkApi.pause(bridgeHandler.GetOrCreateNofferName(payload));
