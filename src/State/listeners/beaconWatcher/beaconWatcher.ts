@@ -1,5 +1,5 @@
 import { listenerKick } from "@/State/listeners/actions";
-import { makeSelectNprofileViewsByLpk, selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { getAllNostrClients, getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
@@ -11,13 +11,14 @@ import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 import { isNprofileSource, isSourceDeleted } from "@/State/utils";
 
 
-const STALE_TICK_MS = 1.5 * 60 * 1000; // 1.5 minutes
+const STALE_TICK_MS = 0.7 * 60 * 1000;
 
 
 const isBeaconTrigger = isAnyOf(
 	sourcesActions._createDraftDoc,
 	sourcesActions.applyRemoteSource
-)
+);
+
 export const beaconWatcherSpec: ListenerSpec = {
 	name: "beaconWatcher",
 	listeners: [
@@ -43,7 +44,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 						if (beaconRes === null) return;
 
 						if (!forkApi.signal.aborted) {
-							listenerApi.dispatch(sourcesActions.recordBeaconForSource({ sourceId, name: beaconRes.name, seenAtMs: beaconRes.beaconLastSeenAtMs, lpk: d.lpk }));
+							listenerApi.dispatch(sourcesActions.recordBeaconForSourcesOfLpk({ name: beaconRes.name, seenAtMs: beaconRes.beaconLastSeenAtMs, lpk: d.lpk }));
 						}
 					});
 
@@ -54,7 +55,6 @@ export const beaconWatcherSpec: ListenerSpec = {
 			add({
 				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
-					const selector = makeSelectNprofileViewsByLpk();
 					const lpkToUnixMap = new Map<string, number>();
 
 					const nprofiles = selectNprofileViews(listenerApi.getState());
@@ -63,7 +63,6 @@ export const beaconWatcherSpec: ListenerSpec = {
 						subToBeacons lives on the clientsCluster layer, however since some sources might be stale they may never
 						get to have a nostrClient, in which case we won't be able to listen for their beacons. So make sure all sources have a nostrClient.
 					*/
-					// TODO: make a better solution
 					await Promise.allSettled(nprofiles.map(s => getNostrClient({ pubkey: s.lpk, relays: s.relays }, s.keys)));
 
 					subToBeacons(b => {
@@ -76,11 +75,9 @@ export const beaconWatcherSpec: ListenerSpec = {
 							return;
 						lpkToUnixMap.set(lpk, updatedAtUnix);
 
-						const sources = selector(listenerApi.getState(), lpk);
 
-						for (const source of sources) {
-							listenerApi.dispatch(sourcesActions.recordBeaconForSource({
-								sourceId: source.sourceId,
+						if (!listenerApi.signal.aborted) {
+							listenerApi.dispatch(sourcesActions.recordBeaconForSourcesOfLpk({
 								name,
 								seenAtMs: updatedAtUnix * 1_000,
 								lpk
@@ -130,6 +127,12 @@ export const beaconWatcherSpec: ListenerSpec = {
 												/* noop */
 											}
 										});
+
+									if (!forkApi.signal.aborted) {
+										listenerApi.dispatch(sourcesActions.triggerStaleRecompute({
+											lpk: newlyStaleLpks[0],
+										}));
+									}
 								}
 
 								prevStaleLpks = currentStaleLpks;
