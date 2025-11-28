@@ -434,16 +434,16 @@ const App: React.FC = () => {
 					persistor={persistor}
 					loading={<FullSpinner />}
 				>
-					<IonApp>
+					<ToastProvider>
 						<ScannerProvider>
-							<AlertProvider>
-								<ToastProvider>
+							<IonApp>
+								<AlertProvider>
 									<AppContent />
 
-								</ToastProvider>
-							</AlertProvider>
+								</AlertProvider>
+							</IonApp>
 						</ScannerProvider>
-					</IonApp>
+					</ToastProvider>
 				</PersistGate>
 			</Provider>
 			<ToastContainer

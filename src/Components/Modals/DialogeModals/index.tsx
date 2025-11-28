@@ -14,7 +14,7 @@ import {
 	IonTitle,
 	IonToolbar
 } from "@ionic/react";
-import { checkmark, closeOutline, } from "ionicons/icons";
+import { checkmark, closeOutline, qrCodeOutline, } from "ionicons/icons";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +29,7 @@ import { InputState } from "@/Pages/Send/types";
 import useDebounce from "@/Hooks/useDebounce";
 import { InputClassification, ParsedNprofileInput } from "@/lib/types/parse";
 import cn from "clsx";
+import { useQrScanner } from "@/lib/hooks/useQrScanner";
 
 
 
@@ -462,6 +463,19 @@ export const AddConnectionDialog = (
 		: null,
 		[inputState]);
 
+
+	const { scanSingleBarcode } = useQrScanner();
+	const openScan = async () => {
+		const instruction = "Scan an nprofile string";
+
+		try {
+			const input = await scanSingleBarcode(instruction);
+			setInput(input);
+		} catch {
+			/*  */
+		}
+	}
+
 	return (
 		<>
 			<IonHeader className="ion-no-border">
@@ -495,7 +509,11 @@ export const AddConnectionDialog = (
 							)}
 							onIonBlur={() => setIsTouched(true)}
 							errorText={inputState.status === "error" ? inputState.error : ""}
-						></IonInput>
+						>
+							<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScan}>
+								<IonIcon slot="icon-only" icon={qrCodeOutline} />
+							</IonButton>
+						</IonInput>
 					</div>
 					<div className="flex justify-end gap-2 mt-12">
 						<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
