@@ -60,11 +60,16 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScanne
 		}
 	};
 
+	const handleDismiss = () => {
+		stopScanner();
+		onCancel();
+	}
+
 
 	return (
 		<IonModal
 			isOpen
-			onDidDismiss={onCancel}
+			onDidDismiss={handleDismiss}
 			onDidPresent={handleDidPresent}
 			onWillDismiss={stopScanner}
 			className="wallet-modal"
