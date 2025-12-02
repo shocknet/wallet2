@@ -21,6 +21,8 @@ export async function cleanupStaleServiceWorkers() {
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
 		const filename = url.split('/').pop() || '';
 
+		console.log({ filename })
+
 		if (isNative) {
 			toRemove.push(reg);
 			continue;
