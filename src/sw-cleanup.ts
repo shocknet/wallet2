@@ -17,11 +17,10 @@ export async function cleanupStaleServiceWorkers() {
 
 
 	for (const reg of regs) {
-		console.log(reg)
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
 		const filename = url.split('/').pop() || '';
 
-		console.log({ filename }, reg.installing)
+		if (!filename) continue;
 
 		if (isNative) {
 			toRemove.push(reg);
@@ -38,7 +37,6 @@ export async function cleanupStaleServiceWorkers() {
 
 	for (const reg of toKeep) {
 
-		console.log("updating", reg)
 		try {
 			await reg.update();
 		} catch (err) {
@@ -49,7 +47,6 @@ export async function cleanupStaleServiceWorkers() {
 	let removedSomething = false;
 
 	for (const reg of toRemove) {
-		console.log("removing", reg)
 		try {
 			await reg.unregister();
 			removedSomething = true;
@@ -71,6 +68,6 @@ export async function cleanupStaleServiceWorkers() {
 
 	// Only reload if we actually removed something, and only on web
 	if (!isNative && removedSomething) {
-		//location.reload();
+		location.reload();
 	}
 }
