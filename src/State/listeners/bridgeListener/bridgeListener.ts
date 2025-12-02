@@ -28,11 +28,9 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 	const currSource = docsSelectors.selectById(curr, sourceId)?.draft;
 
 	// If it doesn't exist now, nothing to do
-	if (!currSource) return false;
+	if (!isNprofileSource(currSource)) return false;
 
-	if (!isNprofileSource(prevSource) || !isNprofileSource(currSource)) return false;
-
-
+	if (prevSource && !isNprofileSource(prevSource)) return false;
 
 	const justCreated = !prevSource;
 

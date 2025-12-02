@@ -19,7 +19,7 @@ export const favInvariantpec: ListenerSpec = {
 
 					// debounce
 					listenerApi.cancelActiveListeners();
-					await listenerApi.delay(15);
+					await listenerApi.delay(2 * 1000);
 
 					const deviceId = getDeviceId();
 					const state = listenerApi.getState();
