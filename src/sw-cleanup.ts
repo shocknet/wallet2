@@ -35,6 +35,8 @@ export async function cleanupStaleServiceWorkers() {
 
 
 	for (const reg of toKeep) {
+
+		console.log("updating", reg)
 		try {
 			await reg.update();
 		} catch (err) {
@@ -45,6 +47,7 @@ export async function cleanupStaleServiceWorkers() {
 	let removedSomething = false;
 
 	for (const reg of toRemove) {
+		console.log("removing", reg)
 		try {
 			await reg.unregister();
 			removedSomething = true;
@@ -66,6 +69,6 @@ export async function cleanupStaleServiceWorkers() {
 
 	// Only reload if we actually removed something, and only on web
 	if (!isNative && removedSomething) {
-		location.reload();
+		//location.reload();
 	}
 }
