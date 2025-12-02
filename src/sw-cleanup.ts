@@ -14,6 +14,8 @@ export async function cleanupStaleServiceWorkers() {
 	const toRemove: ServiceWorkerRegistration[] = [];
 	const toKeep: ServiceWorkerRegistration[] = [];
 
+	let i = 0;
+
 	for (const reg of regs) {
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
 		const filename = url.split('/').pop() || '';
@@ -26,6 +28,7 @@ export async function cleanupStaleServiceWorkers() {
 		if (filename === KEEP_FILENAME) {
 			toKeep.push(reg);
 		} else {
+			alert(++i)
 			toRemove.push(reg);
 		}
 	}
