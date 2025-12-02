@@ -37,7 +37,7 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 	const hasNoVanityYet = !metadataSelectors.selectById(curr, sourceId).vanityName;
 
 	const bridgeChanged =
-		prevSource.bridgeUrl.value !== currSource.bridgeUrl.value;
+		prevSource && prevSource.bridgeUrl.value !== currSource.bridgeUrl.value;
 
 	return justCreated || hasNoVanityYet || bridgeChanged;
 }
