@@ -10,11 +10,12 @@ export async function cleanupStaleServiceWorkers() {
 	const isNative = Capacitor.isNativePlatform();
 	const regs = await navigator.serviceWorker.getRegistrations();
 
+	console.log({ regs })
+
 
 	const toRemove: ServiceWorkerRegistration[] = [];
 	const toKeep: ServiceWorkerRegistration[] = [];
 
-	let i = 0;
 
 	for (const reg of regs) {
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
@@ -28,8 +29,6 @@ export async function cleanupStaleServiceWorkers() {
 		if (filename === KEEP_FILENAME) {
 			toKeep.push(reg);
 		} else {
-			alert(++i)
-			alert(filename)
 			toRemove.push(reg);
 		}
 	}
