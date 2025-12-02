@@ -29,6 +29,7 @@ export async function cleanupStaleServiceWorkers() {
 			toKeep.push(reg);
 		} else {
 			alert(++i)
+			alert(filename)
 			toRemove.push(reg);
 		}
 	}
