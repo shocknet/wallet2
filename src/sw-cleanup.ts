@@ -10,7 +10,6 @@ export async function cleanupStaleServiceWorkers() {
 	const isNative = Capacitor.isNativePlatform();
 	const regs = await navigator.serviceWorker.getRegistrations();
 
-	console.log({ regs })
 
 
 	const toRemove: ServiceWorkerRegistration[] = [];
@@ -18,6 +17,7 @@ export async function cleanupStaleServiceWorkers() {
 
 
 	for (const reg of regs) {
+		console.log(reg)
 		const url = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
 		const filename = url.split('/').pop() || '';
 
