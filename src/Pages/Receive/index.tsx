@@ -18,9 +18,8 @@ import {
 	IonToolbar,
 	useIonModal,
 	useIonRouter,
-	useIonViewWillEnter
+	useIonViewDidEnter,
 } from '@ionic/react';
-import { useSelector } from '../../State/store';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
 import { toast } from "react-toastify";
@@ -39,6 +38,9 @@ import BackToolbar from '@/Layout2/BackToolbar';
 import { convertSatsToFiat } from '@/lib/fiat';
 import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
+import { useAppSelector } from '@/State/store/hooks';
+import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
+import { SourceType } from '@/State/scoped/common';
 
 
 
@@ -58,11 +60,12 @@ const Receive = () => {
 	const router = useIonRouter();
 	const swiperRef = useRef<SwiperClass>();
 
-	const topPaysource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (prev, next) => next?.id === prev?.id);
+	const favoriteSource = useAppSelector(selectFavoriteSourceView);
+
 	const { showAlert } = useAlert();
 
-	useIonViewWillEnter(() => {
-		if (!topPaysource) {
+	useIonViewDidEnter(() => {
+		if (!favoriteSource) {
 			showAlert({
 				header: "No sources",
 				message: "You need to add a pay source before receiving payments.",
@@ -70,19 +73,45 @@ const Receive = () => {
 					{
 						text: "Cancel",
 						role: "cancel",
-						handler: () => {
-							router.push("/", "back", "replace");
-						}
+
 					},
 					{
 						text: "Add Source",
-						handler: () => {
-							router.push("/sources", "forward", "replace");
-						}
+						role: "confirm",
 					},
 				]
+			}).then(({ role }) => {
+				if (role === "cancel") {
+					router.goBack();
+				} else if (role === "confirm") {
+					router.push("/sources", "forward", "replace")
+				}
+			})
+		} else if (favoriteSource.type === SourceType.NPROFILE_SOURCE && favoriteSource.beaconStale) {
+			showAlert({
+				header: "Stale source",
+				message: "Your favorite source's pub seems to be down or unavailable",
+				buttons: [
+					{
+						text: "Cancel",
+						role: "cancel",
+
+					},
+					{
+						text: "Go to sources",
+						role: "confirm",
+					},
+				]
+			}).then(({ role }) => {
+				if (role === "cancel") {
+					router.goBack();
+				} else if (role === "confirm") {
+					router.push("/sources", "forward", "replace")
+				}
 			})
 		}
+
+
 
 	}, [])
 
@@ -96,9 +125,6 @@ const Receive = () => {
 	}, []);
 
 
-	const handleInvalidateLnurl = useCallback(() => {
-		handleInvalidate("address");
-	}, [handleInvalidate]);
 
 	const handleInvalidateChain = useCallback(() => {
 		handleInvalidate("bitcoin");
@@ -108,7 +134,7 @@ const Receive = () => {
 		{
 			id: 'address',
 			name: 'Address',
-			component: <LnurlTab onInvalidate={handleInvalidateLnurl} />,
+			component: <LnurlTab />,
 		},
 		{
 			id: 'invoice',
@@ -194,10 +220,9 @@ const Receive = () => {
 interface TabProps {
 	onInvalidate: () => void;
 }
-const LnurlTab = memo(({ onInvalidate }: TabProps) => {
+const LnurlTab = memo(() => {
 
-	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (prev, next) => prev?.id === next?.id);
-	const { showAlert } = useAlert();
+	const favoriteSource = useAppSelector(selectFavoriteSourceView)!;
 
 	const [lnurl, setLnurl] = useState("");
 	const [lightningAddress, setLightningAddress] = useState("");
@@ -205,61 +230,49 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 	const [loading, setLoading] = useState(true);
 
 
-	const invalidated = useRef(false);
 
 
 	const configure = useCallback(async () => {
-		if (invalidated.current) return;
+		if (favoriteSource.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
+			setLightningAddress(favoriteSource.sourceId);
+			setLoading(false);
+			return;
+		} else {
+			const lnAddress = favoriteSource.vanityName || "";
+			setLightningAddress(lnAddress);
 
-		let lnAddress = "";
-		let receivedLnurl = "";
-
-		if (topPaySource.pubSource) {
-			if (topPaySource.vanityName) {
-				lnAddress = topPaySource.vanityName;
-			}
 			// get lnurl
-			const cacheKey = getCacheKey(topPaySource.id, LNURL_CACHE_KEY);
+			let receivedLnurl = "";
+			const cacheKey = getCacheKey(favoriteSource.sourceId, LNURL_CACHE_KEY);
 			const cached = getCache(cacheKey);
 			if (cached) {
 				receivedLnurl = cached;
 			} else {
 				try {
-					const lnurlRes = await createNostrPayLink(topPaySource.pasteField, topPaySource.keys);
+					const lnurlRes = await createNostrPayLink({
+						pubkey: favoriteSource.lpk,
+						relays: favoriteSource.relays
+					},
+						favoriteSource.keys
+					);
 					setCache(cacheKey, lnurlRes);
 					receivedLnurl = lnurlRes;
 				} catch {
 					// no lnurl
 				}
 			}
-		} else if (topPaySource.pasteField.includes("@")) {
-			// Lightning address source\
-			lnAddress = topPaySource.pasteField;
-		} else {
-			// lnurl source
-			receivedLnurl = topPaySource.pasteField;
+
+			setLnurl(receivedLnurl);
+
+			if (receivedLnurl && !lnAddress) {
+				setShowLnurl(true);
+			}
+
+			if (receivedLnurl || lnAddress) {
+				setLoading(false);
+			}
 		}
-
-		if (!lnAddress && !receivedLnurl) {
-			if (invalidated.current) return;
-			invalidated.current = true;
-			onInvalidate();
-			showAlert({
-				header: "No LNURL or Lightning Address",
-				message: "This source cannot receive LNURL or Lightning Address payments",
-			})
-			return;
-		}
-
-		if (receivedLnurl && !lnAddress) {
-			setShowLnurl(true);
-		}
-		setLnurl(receivedLnurl);
-		setLightningAddress(lnAddress);
-
-		setLoading(false);
-
-	}, [topPaySource, showAlert, onInvalidate]);
+	}, [favoriteSource]);
 
 
 	useEffect(() => {
@@ -353,8 +366,9 @@ LnurlTab.displayName = "LnurlTab";
 const InvoiceTab = memo(() => {
 	const satsInputRef = useRef<HTMLIonInputElement>(null);
 	const { isActive } = useSwiperSlide();
-	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (next, prev) => next?.id === prev?.id);
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit)
+	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
+
+	const { url, currency } = useAppSelector(state => state.prefs.FiatUnit)
 
 
 	const [money, setMoney] = useState("");
@@ -395,15 +409,26 @@ const InvoiceTab = memo(() => {
 		const parsedAmount = amountToRecive;
 		setAmountNum(amountToRecive);
 		try {
-			if (topPaySource.pubSource) {
-				invoice = await createNostrInvoice(topPaySource.pasteField, topPaySource.keys, parsedAmount, memo, blind);
+			if (favoriteSource.type === SourceType.NPROFILE_SOURCE) {
+				invoice = await createNostrInvoice({
+					pubkey: favoriteSource.lpk,
+					relays: favoriteSource.relays
+				},
+					favoriteSource.keys,
+					parsedAmount,
+					memo,
+					blind
+				);
+
 			} else {
-				const parsedPaySource = await parseBitcoinInput(topPaySource.pasteField)
+				const parsedPaySource = await parseBitcoinInput(favoriteSource.sourceId);
 				invoice = await createLnurlInvoice(+amountToRecive, parsedPaySource);
 			}
 			setQrCodeValue(invoice);
 		} catch (err: any) {
+			console.log({ err })
 			if (isAxiosError(err) && err.response) {
+
 				toast.error(<Toast title="Source Error" message={err.response.data.reason} />)
 			} else if (err instanceof Error) {
 				toast.error(<Toast title="Source Error" message={err.message} />)
@@ -412,7 +437,7 @@ const InvoiceTab = memo(() => {
 			}
 		}
 		setIsloading(false);
-	}, [topPaySource]);
+	}, [favoriteSource]);
 
 
 
@@ -520,7 +545,7 @@ InvoiceTab.displayName = "InvoiceTab";
 
 
 const OnChainTab = memo(({ onInvalidate }: TabProps) => {
-	const topPaySource = useSelector(state => state.paySource.sources[state.paySource.order[0]], (prev, next) => prev?.id === next?.id);
+	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
 	const { showAlert } = useAlert();
 
 	const [qrCodeValue, setQrCodeValue] = useState("");
@@ -533,7 +558,7 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 	const configure = useCallback(async () => {
 		if (invalidated.current) return;
 		if (qrCodeValue !== "") return;
-		if (!topPaySource.pubSource) {
+		if (favoriteSource.type !== SourceType.NPROFILE_SOURCE) {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
@@ -545,7 +570,7 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 		}
 
 		try {
-			const cacheKey = getCacheKey(topPaySource.id, CHAIN_CACHE_KEY);
+			const cacheKey = getCacheKey(favoriteSource.sourceId, CHAIN_CACHE_KEY);
 			const cached = getCache(cacheKey);
 			if (cached) {
 				setQrCodeValue(cached);
@@ -554,21 +579,33 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 				return;
 			}
 
-			const address = await getNostrBtcAddress(topPaySource.pasteField, topPaySource.keys);
+			const address = await getNostrBtcAddress({
+				pubkey: favoriteSource.lpk,
+				relays: favoriteSource.relays
+			},
+				favoriteSource.keys
+			);
 			setQrCodeValue(address);
 			setBitcoinAddText(truncateTextMiddle(address, 10, 10));
 			setCache(cacheKey, address);
-		} catch {
+		} catch (err) {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
-			showAlert({
-				header: "Chain error",
-				message: "Error getting chain address",
-			})
+			if (err instanceof Error) {
+				showAlert({
+					header: "Chain error",
+					message: err.message,
+				});
+			} else {
+				showAlert({
+					header: "Chain error",
+					message: "Error getting chain address",
+				});
+			}
 		}
 		setIsloading(false);
-	}, [qrCodeValue, topPaySource, onInvalidate, showAlert])
+	}, [qrCodeValue, favoriteSource, onInvalidate, showAlert])
 
 	useEffect(() => {
 		configure();

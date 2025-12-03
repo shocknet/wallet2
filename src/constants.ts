@@ -32,8 +32,9 @@ export const HTTP_ADMIN_TOKEN_STORAGE_KEY = "HTTP_ADMIN_TOKEN"
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
 export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
 export const SANCTUM_ACCESS_TOKEN_STORAGE_KEY = "SANCTUM_ACCESS_TOKEN"
+export const HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY = "HAS_MIGRATED_TO_IDENTITIES__";
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
-export const NOSTR_RELAYS = ["wss://relay.lightning.pub"]
+export const NOSTR_RELAYS = import.meta.env.VITE_NOSTR_RELAYS ? [import.meta.env.VITE_NOSTR_RELAYS] : ["wss://relay.lightning.pub"]
 export const OLD_NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
 export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION || "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
@@ -70,7 +71,7 @@ export function getFormattedTime(timestamp: number) {
 }
 
 
-const BITCOIN_ADDRESS_REGEX = /^(bitcoin:)?([13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{39,59})$/;
+
 const LN_INVOICE_REGEX = /^(lightning:)?(lnbc|lntb)[0-9a-zA-Z]+$/;
 const LNURL_REGEX = /^(lightning:)?[Ll][Nn][Uu][Rr][Ll][0-9a-zA-Z]+$/;
 const NOFFER_REGEX = /^(lightning:)?[Nn][Oo][Ff][Ff][Ee][Rr][0-9a-zA-Z]+$/;
@@ -227,13 +228,20 @@ export const stringToColor = (str: string) => {
 	return color;
 }
 
+
+let cachedDeviceId: string | null = null;
+
 export const getDeviceId = () => {
+	if (cachedDeviceId) return cachedDeviceId;
+
 	const stored = localStorage.getItem(DEVICE_ID_STORAGE_KEY)
 	if (stored) {
+		cachedDeviceId = stored;
 		return stored
 	}
 	const newId = Buffer.from(randomBytes(32)).toString('hex')
 	localStorage.setItem(DEVICE_ID_STORAGE_KEY, newId)
+	cachedDeviceId = newId;
 	return newId
 
 }

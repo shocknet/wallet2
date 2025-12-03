@@ -1,4 +1,3 @@
-import { selectSpendsTotalBalance, useDispatch, useSelector } from "@/State/store";
 import { useEffect, useRef, useState } from "react";
 import styles from "./styles/index.module.scss";
 import { IonButton, IonNote, IonRippleEffect, IonText } from "@ionic/react";
@@ -6,21 +5,23 @@ import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { convertSatsToFiat } from "@/lib/fiat";
 import { formatFiat } from "@/lib/format";
-import { fetchAllSourcesHistory } from "@/State/history";
-import { resetCursors } from "@/State/history";
 import { useToast } from "@/lib/contexts/useToast";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { selectTotalBalance } from "@/State/scoped/backups/sources/selectors";
+import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 
 
 
 const BalanceCard = () => {
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
 	const { unit, setUnit } = usePreferredAmountUnit();
 
 
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit);
-	const balance = useSelector(selectSpendsTotalBalance);
+	const { url, currency } = useAppSelector(state => state.prefs.FiatUnit);
+	const balance = useAppSelector(selectTotalBalance);
 	const [money, setMoney] = useState("");
 	const displayBalance = unit === "sats" ? formatSatoshi(balance) : formatBitcoin(satsToBtc(balance))
 
@@ -31,7 +32,7 @@ const BalanceCard = () => {
 				message: "Resetting history cursors and fetching history",
 				color: "tertiary"
 			})
-			dispatch(resetCursors());
+			dispatch(sourcesActions.resetAllCursors());
 			await dispatch(fetchAllSourcesHistory());
 		}, 4000);
 	};

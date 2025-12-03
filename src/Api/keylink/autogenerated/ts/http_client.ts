@@ -4,190 +4,190 @@ import * as Types from './types.js'
 export type ResultError = { status: 'ERROR', reason: string }
 
 export type ClientParams = {
-    baseUrl: string
-    retrieveGuestAuth: () => Promise<string | null>
-    retrieveAccessTokenAuth: () => Promise<string | null>
-    retrieveUserAuth: () => Promise<string | null>
-    encryptCallback: (plain: any) => Promise<any>
-    decryptCallback: (encrypted: any) => Promise<any>
-    deviceId: string
-    checkResult?: true
+	baseUrl: string
+	retrieveGuestAuth: () => Promise<string | null>
+	retrieveAccessTokenAuth: () => Promise<string | null>
+	retrieveUserAuth: () => Promise<string | null>
+	encryptCallback: (plain: any) => Promise<any>
+	decryptCallback: (encrypted: any) => Promise<any>
+	deviceId: string
+	checkResult?: true
 }
 export default (params: ClientParams) => ({
-    Health: async (): Promise<ResultError | ({ status: 'OK' })> => {
-        const auth = await params.retrieveGuestAuth()
-        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/health'
-        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            return data
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetNostrPubKey: async (): Promise<ResultError | ({ status: 'OK' }& Types.UserNostrPubKey)> => {
-        const auth = await params.retrieveAccessTokenAuth()
-        if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-        let finalRoute = '/api/user/pubkey'
-        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.UserNostrPubKeyValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' }& Types.NostrRelays)> => {
-        const auth = await params.retrieveAccessTokenAuth()
-        if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-        let finalRoute = '/api/user/relays'
-        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.NostrRelaysValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    SignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' }& Types.NostrSignResponse)> => {
-        const auth = await params.retrieveAccessTokenAuth()
-        if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-        let finalRoute = '/api/user/sign'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.NostrSignResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    Nip44Decrypt: async (request: Types.Nip44DecryptRequest): Promise<ResultError | ({ status: 'OK' }& Types.Nip44DecryptResponse)> => {
-        const auth = await params.retrieveAccessTokenAuth()
-        if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-        let finalRoute = '/api/user/decrypt'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.Nip44DecryptResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    Nip44Encrypt: async (request: Types.Nip44EncryptRequest): Promise<ResultError | ({ status: 'OK' }& Types.Nip44EncryptResponse)> => {
-        const auth = await params.retrieveAccessTokenAuth()
-        if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-        let finalRoute = '/api/user/encrypt'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.Nip44EncryptResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    RequestCallback: async (request: Types.AuthCompleteRequest): Promise<ResultError | ({ status: 'OK' }& Types.AuthCompleteResponse)> => {
-        const auth = await params.retrieveGuestAuth()
-        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/guest/user/request/callback'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.AuthCompleteResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    AuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
-        const auth = await params.retrieveUserAuth()
-        if (auth === null) throw new Error('retrieveUserAuth() returned null')
-        let finalRoute = '/api/guest/user/request/authorize'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            return data
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    SignUpWithEmail: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' }& Types.AuthResponse)> => {
-        const auth = await params.retrieveGuestAuth()
-        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/guest/user/request/signup'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.AuthResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    Login: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' }& Types.AuthResponse)> => {
-        const auth = await params.retrieveGuestAuth()
-        if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-        let finalRoute = '/api/guest/user/request/login'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.AuthResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetAccessTokenRecords: async (request: Types.GetAccessTokenRecordsRequest): Promise<ResultError | ({ status: 'OK' }& Types.GetAccessTokenRecordsResponse)> => {
-        const auth = await params.retrieveUserAuth()
-        if (auth === null) throw new Error('retrieveUserAuth() returned null')
-        let finalRoute = '/api/user/records'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.GetAccessTokenRecordsResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' }& Types.GetUserInfoResponse)> => {
-        const auth = await params.retrieveUserAuth()
-        if (auth === null) throw new Error('retrieveUserAuth() returned null')
-        let finalRoute = '/api/user/info'
-        const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.GetUserInfoResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
-    GetRequestTokenData: async (request: Types.GetRequestTokenDataRequest): Promise<ResultError | ({ status: 'OK' }& Types.GetRequestTokenDataResponse)> => {
-        const auth = await params.retrieveUserAuth()
-        if (auth === null) throw new Error('retrieveUserAuth() returned null')
-        let finalRoute = '/api/user/requestToken'
-        const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-        if (data.status === 'OK') { 
-            const result = data
-            if(!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.GetRequestTokenDataResponseValidate(result)
-            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-        }
-        return { status: 'ERROR', reason: 'invalid response' }
-    },
+	Health: async (): Promise<ResultError | ({ status: 'OK' })> => {
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		let finalRoute = '/api/health'
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			return data
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetNostrPubKey: async (): Promise<ResultError | ({ status: 'OK' } & Types.UserNostrPubKey)> => {
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
+		let finalRoute = '/api/user/pubkey'
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.UserNostrPubKeyValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' } & Types.NostrRelays)> => {
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
+		let finalRoute = '/api/user/relays'
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.NostrRelaysValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	SignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' } & Types.NostrSignResponse)> => {
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
+		let finalRoute = '/api/user/sign'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.NostrSignResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	Nip44Decrypt: async (request: Types.Nip44DecryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.Nip44DecryptResponse)> => {
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
+		let finalRoute = '/api/user/decrypt'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.Nip44DecryptResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	Nip44Encrypt: async (request: Types.Nip44EncryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.Nip44EncryptResponse)> => {
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
+		let finalRoute = '/api/user/encrypt'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.Nip44EncryptResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	RequestCallback: async (request: Types.AuthCompleteRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthCompleteResponse)> => {
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		let finalRoute = '/api/guest/user/request/callback'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.AuthCompleteResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	AuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		let finalRoute = '/api/guest/user/request/authorize'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			return data
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	SignUpWithEmail: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthResponse)> => {
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		let finalRoute = '/api/guest/user/request/signup'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.AuthResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	Login: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthResponse)> => {
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		let finalRoute = '/api/guest/user/request/login'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.AuthResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetAccessTokenRecords: async (request: Types.GetAccessTokenRecordsRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetAccessTokenRecordsResponse)> => {
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		let finalRoute = '/api/user/records'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetAccessTokenRecordsResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' } & Types.GetUserInfoResponse)> => {
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		let finalRoute = '/api/user/info'
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetUserInfoResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetRequestTokenData: async (request: Types.GetRequestTokenDataRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetRequestTokenDataResponse)> => {
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		let finalRoute = '/api/user/requestToken'
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetRequestTokenDataResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
 })

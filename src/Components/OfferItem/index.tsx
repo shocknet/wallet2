@@ -1,5 +1,5 @@
 import { IonButton, IonChip, IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
-import { useDispatch } from "@/State/store";
+import { useDispatch } from "@/State/store/store";
 import styles from "./styles/index.module.scss";
 import { formatSatoshi } from "@/lib/units";
 import { truncateTextMiddle } from "@/lib/format";

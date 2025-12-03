@@ -53,9 +53,9 @@ jobs:
       - name: Set up environment
         run: |
           if [[ ${{ github.event_name }} == 'release' ]]; then
-            cp .env.production.example .env
+            cp env.production.example .env
           else
-            cp .env.development.example .env
+            cp env.development.example .env
           fi
           source .env
           echo "VITE_ANDROID_APPLICATION_ID=$VITE_ANDROID_APPLICATION_ID" >> $GITHUB_ENV

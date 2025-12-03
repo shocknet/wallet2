@@ -141,7 +141,15 @@ export const unlockSubscriptionPayment = async (id: string, success: boolean) =>
 }
 
 
-export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number) => {
+
+export type FetchBeaconResult = {
+    data: {
+        type: "service",
+        name: string
+    };
+    createdAt: number;
+} | null;
+export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSeconds: number): Promise<FetchBeaconResult> => {
     const event = await getNip78Event(pubkey, relays, pubServiceTag)
     if (!event) {
         return null
@@ -151,4 +159,30 @@ export const fetchBeacon = async (pubkey: string, relays: string[], maxAgeSecond
     }
     const data = JSON.parse(event.content) as { type: 'service', name: string }
     return { createdAt: event.created_at, data }
+}
+
+
+export type BeaconDiscoveryResult = {
+    beaconLastSeenAtMs: number;
+    name: string;
+} | null
+
+export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Promise<BeaconDiscoveryResult> => {
+    const event = await getNip78Event(pubkey, relays, pubServiceTag)
+    if (!event) {
+        return null
+    }
+
+    let data;
+    try {
+        data = JSON.parse(event.content) as { type: 'service', name: string };
+    } catch {
+        return null;
+    }
+
+    return {
+        beaconLastSeenAtMs: event.created_at * 1000,
+        name: data.name
+    }
+
 }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getNostrClient } from "@/Api/nostr";
-import { useDispatch, useSelector } from "@/State/store";
 import { Modal } from "../Modal";
 import { NOSTR_RELAYS } from "@/constants";
 import { nip19 } from "nostr-tools";
@@ -11,13 +10,14 @@ import { refetchManageRequests, removeManageRequest } from "@/State/Slices/modal
 import { toast } from "react-toastify";
 import Toast from "../../Toast";
 import { getDebitAppNameAndAvatarUrl } from "../DebitRequestModal/helpers";
-import { parseNprofile } from "@/lib/nprofile";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 
 const ManageRequestModal = () => {
-	const spendSources = useSelector(state => state.spendSource);
-	const dispatch = useDispatch();
+	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews);
+	const dispatch = useAppDispatch();
 
-	const manageRequests = useSelector(state => state.modalsSlice.manageRequests || null)
+	const manageRequests = useAppSelector(state => state.modalsSlice.manageRequests || null)
 
 	// Display requestor name and avatar
 	const [requestorDomain, setRequestorDomain] = useState("");
@@ -29,16 +29,15 @@ const ManageRequestModal = () => {
 
 
 	const currentRequest = useMemo(() => {
-		console.log("manageRequests", manageRequests)
 		setIsBanPrompt(false);
 		if (!manageRequests) return null;
 		if (manageRequests.length > 0) {
 			const req = manageRequests[0]; // take first request in the array; new requests are pushed to the end of the array. FIFO
-
-			if (!spendSources.sources[req.sourceId]) return null; // If the spend source was deleted ignore the request
-			return { request: req.request, source: spendSources.sources[req.sourceId] }
+			const view = healthyNprofileViews.find(v => v.sourceId === req.sourceId);
+			if (!view) return null; // If the spend source was deleted ignore the request
+			return { request: req.request, source: view }
 		}
-	}, [manageRequests, spendSources])
+	}, [manageRequests, healthyNprofileViews])
 
 
 
@@ -51,7 +50,7 @@ const ManageRequestModal = () => {
 			// TODO: Have the request include a relay to fetch metadata from.
 			// For now the code just uses the relay of the source receiving the nip68 request.
 			// Note: SMART is supposed to handle this later
-			const { requestorDomain: rd, avatarUrl } = await getDebitAppNameAndAvatarUrl(currentRequest.request.npub, parseNprofile(currentRequest.source.pasteField).relays || NOSTR_RELAYS)
+			const { requestorDomain: rd, avatarUrl } = await getDebitAppNameAndAvatarUrl(currentRequest.request.npub, currentRequest.source.relays || NOSTR_RELAYS)
 			setRequestorDomain(rd)
 			setRequestorAvatarUrl(avatarUrl)
 		};
@@ -63,8 +62,8 @@ const ManageRequestModal = () => {
 
 	const authroizeRequest = useCallback(async () => {
 		if (!currentRequest) return;
-
-		const res = await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).AuthorizeManage({
+		const { source } = currentRequest;
+		const res = await (await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys)).AuthorizeManage({
 			authorize_npub: currentRequest.request.npub,
 			request_id: currentRequest.request.request_id,
 			ban: false,
@@ -73,7 +72,7 @@ const ManageRequestModal = () => {
 			toast.error(<Toast title="Add linked app error" message={res.reason} />)
 			return;
 		}
-		dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
+		dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: source.sourceId }))
 		dispatch(refetchManageRequests())
 		toast.success("Linked app added successfuly")
 	}, [dispatch, currentRequest]);
@@ -81,7 +80,7 @@ const ManageRequestModal = () => {
 
 	const removeCurrentRequest = useCallback(() => {
 		if (!currentRequest) return;
-		dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }))
+		dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.sourceId }))
 		dispatch(refetchManageRequests())
 	}, [dispatch, currentRequest])
 
@@ -98,12 +97,13 @@ const ManageRequestModal = () => {
 
 	const banRequest = useCallback(async () => {
 		if (currentRequest) {
-			await (await getNostrClient(currentRequest.source.pasteField, currentRequest.source.keys)).AuthorizeManage({
-				authorize_npub: currentRequest.request.npub,
-				request_id: currentRequest.request.request_id,
+			const { source, request } = currentRequest;
+			await (await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys)).AuthorizeManage({
+				authorize_npub: request.npub,
+				request_id: request.request_id,
 				ban: true
 			});
-			dispatch(removeManageRequest({ requestorNpub: currentRequest.request.npub, sourceId: currentRequest.source.id }));
+			dispatch(removeManageRequest({ requestorNpub: request.npub, sourceId: source.sourceId }));
 		}
 	}, [currentRequest, dispatch])
 

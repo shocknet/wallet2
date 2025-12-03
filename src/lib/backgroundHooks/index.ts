@@ -1,24 +1,22 @@
 import { useAppLifecycle } from "./useAppLifecycle";
-import { useBackupReminder } from "./useBackReminder";
-import { useDebitRequestHandler } from "./useDebitRequestHandler"
-import { useLnAddressCheck } from "./useLnAddressCheck";
-import { useManageRequestHandler } from "./useManageRequestHandler";
-import { useNodeUpCheck } from "./useNodeUpCheck";
+
+
+
+
+import { useWatchClipboard } from "./useWatchClipboard";
 /* import { usePush } from "./usePush"; */
-import { useRemoteBackup } from "./useRemoteBackup";
-import { useSubscriptionsBackground } from "./useSubscriptionsBackground";
-import { useSubToBeacons } from "./useSubToBeacons";
+
+
+/* import { useSubscriptionsBackground } from "./useSubscriptionsBackground"; */
+
+
 
 const BackgroundJobs = () => {
-	useBackupReminder();
-	useDebitRequestHandler();
 	/* usePush(); */
-	useLnAddressCheck();
-	useManageRequestHandler();
-	useNodeUpCheck();
-	useRemoteBackup();
-	useSubscriptionsBackground();
-	useSubToBeacons();
+
+	useWatchClipboard();
+
+	/* useSubscriptionsBackground(); */
 	useAppLifecycle();
 
 	return null;

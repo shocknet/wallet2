@@ -1,6 +1,9 @@
 import { IonSpinner } from "@ionic/react"
 
-const FullSpinner = () => {
+interface Props {
+	message?: string;
+}
+const FullSpinner = ({ message }: Props) => {
 	return (
 		<div style={{
 			display: 'flex',
@@ -10,6 +13,11 @@ const FullSpinner = () => {
 			width: '100%',
 		}}>
 			<IonSpinner name="crescent" />
+			{
+				message &&
+				<h2 className="text-high" style={{ marginTop: "4rem" }}>{message}</h2>
+			}
+
 		</div>
 	);
 }

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import legacy from "@vitejs/plugin-legacy"
 import { resolve } from 'path';
@@ -130,6 +131,10 @@ export default defineConfig({
 			},
 		},
 	},
+	test: {
+		environment: "jsdom",
+		setupFiles: "./testSetup.ts",
+	},
 	server: {
 		host: true,
 		port: 8100,
@@ -141,6 +146,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": resolve(__dirname, "src"),
+			'@tests': resolve(__dirname, 'tests'),
 		},
 		dedupe: ['react', 'react-dom', 'react-is', 'scheduler', 'use-sync-external-store']
 	},

@@ -3,11 +3,12 @@ import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
-import { selectNostrSpends, useSelector } from '@/State/store';
-import { parseNprofile } from '../nprofile';
+import { useSelector } from '@/State/store/store';
 import { getNostrClient } from '@/Api/nostr';
 import { getDeviceId } from '@/constants';
 import { useToast } from '../contexts/useToast';
+import { useAppSelector } from '@/State/store/hooks';
+import { selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
 
 type Handlers = {
 	onForegroundMessage?: (payload: any) => void;
@@ -125,18 +126,16 @@ async function initPush(handlers: Handlers = {}) {
 
 
 export const usePush = () => {
-	const nostrSpends = useSelector(selectNostrSpends);
-	const nodedUp = !!useSelector(state => state.nostrPrivateKey);
+	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews);
+	const nodedUp = !!useSelector(state => state.appState.bootstrapped);
 	const { showToast } = useToast();
 
 
 	useEffect(() => {
 		if (!nodedUp) return;
 		const enrollToken = async (token: string) => {
-			for (const source of nostrSpends) {
-				if (!source.keys || !source.pubSource) continue;
-				const { pubkey, relays } = parseNprofile(source.pasteField)
-				const c = await getNostrClient({ pubkey, relays }, source.keys)
+			for (const source of healthyNprofileViews) {
+				const c = await getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys)
 				const res = await c.EnrollMessagingToken({ device_id: getDeviceId(), firebase_messaging_token: token })
 				if (res.status === "OK") {
 					console.log("enrolled token for", source.label)
@@ -151,11 +150,11 @@ export const usePush = () => {
 			cleanup = await initPush({
 				onToken: enrollToken,
 				onForegroundMessage: (msg) => {
-					alert("forground message");
+
 					console.log({ msg })
 				},
 				onNotificationTap: (data) => {
-					alert("notification tap");
+
 					console.log({ data })
 				},
 				onError: (e) => {
@@ -170,6 +169,6 @@ export const usePush = () => {
 
 		return () => cleanup && cleanup();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [nodedUp, nostrSpends]);
+	}, [nodedUp, healthyNprofileViews]);
 
 }

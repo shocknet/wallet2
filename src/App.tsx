@@ -13,22 +13,19 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
+import "./theme/tailwind.css";
 import "./theme/variables.css";
 
 import { Redirect, Route } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
-import { useDispatch } from 'react-redux';
-import store, { useSelector } from './State/store';
-import { Layout } from "./Layout";
-import { StatusBar } from "@capacitor/status-bar";
+import store, { persistor, useSelector } from './State/store/store';
 import { Provider } from 'react-redux';
 import { ToastContainer } from "react-toastify";
 import LoadingOverlay from "./Components/LoadingOverlay";
 import NavigationMenu from "./Components/NavigationMenu";
-import { NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
 import { AlertProvider } from "./lib/contexts/useAlert";
 import { ToastProvider } from "./lib/contexts/useToast";
 import nostrSvg from "../icons/nostr.svg"
@@ -38,31 +35,57 @@ import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
 import Swaps from './Pages/Swaps';
+import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
+import { useAppSelector } from './State/store/hooks';
+import { migrateDeviceToIdentities } from './State/identitiesRegistry/identitiesMigration';
+import { PersistGate } from 'redux-persist/integration/react';
+import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
+import { Layout } from './Layout';
+
+import CreateIdentityPage from './Pages/CreateIdentity';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
+import { initialState as backupInitialState } from "@/State/Slices/backupState";
+import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
+import { GuardedRoute } from './routing/GuardedRoute';
+import { atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, loadedIdentityGuard } from './routing/guards';
 
-/* Lazily loaded pages */
-const NodeUp = lazy(() => import('./Pages/NodeUp'));
-const Loader = lazy(() => import('./Pages/Loader'));
+
+async function setEnvColors() {
+	await StatusBar.setOverlaysWebView({ overlay: false });
+	await StatusBar.setStyle({ style: Style.Dark });
+	await StatusBar.setBackgroundColor({ color: "#16191c" });
+	await EdgeToEdge.setBackgroundColor({ color: "#16191c" });
+}
+setEnvColors();
+
+const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
 const Send = lazy(() => import('./Pages/Send'));
-const Sources = lazy(() => import('./Pages/Sources'));
+
+const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
+const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
+const BootstrapSourcePage = lazy(() => import("./Pages/CreateIdentity/BootstrapSource"));
+const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
+const SourcesPage = lazy(() => import("./Pages/Sources"));
+const IdentitiesPage = lazy(() => import("./Pages/CreateIdentity/Identities"));
+
+
 const Automation = lazy(() => import('./Pages/Automation'));
 const Prefs = lazy(() => import('./Pages/Prefs'));
 const Contacts = lazy(() => import('./Pages/Contacts'));
 const Invitations = lazy(() => import('./Pages/Invitations'));
-const Auth = lazy(() => import('./Pages/Auth'));
 const Notify = lazy(() => import('./Pages/Notify'));
 const Metrics = lazy(() => import('./Pages/Metrics'));
-const Home = lazy(() => import('./Pages/Home'));
 const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
 const Offers = lazy(() => import('./Pages/Offers'));
 const Stats = lazy(() => import("./Pages/Stats"));
-const Earnings = lazy(() => import("./Pages/Metrics/earnings"));
-const Routing = lazy(() => import("./Pages/Metrics/routing"));
 const Management = lazy(() => import("./Pages/Management"));
 
-/* Lazily loaded components */
+
 const BackgroundJobs = lazy(() => import("@/lib/backgroundHooks")); // Background jobs
 const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequestModal"));
 const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
@@ -74,16 +97,20 @@ addIcons({
 setupIonicReact();
 document.documentElement.classList.add('dark');
 
-const AppContent: React.FC = () => {
-	const dispatch = useDispatch();
+
+
+const AppJobs = () => {
 	useAppUrlListener();
+
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
+	const activeIdentityId = useSelector(selectActiveIdentityId);
 
 	useEffect(() => {
 		cleanupStaleServiceWorkers()
 	}, []);
+
 
 	/*
 	* Defer loading in the background jobs until browser decides main thread is idle
@@ -108,33 +135,14 @@ const AppContent: React.FC = () => {
 		};
 	}, []);
 
-
-
-
-	useEffect(() => {
-		const handleUrlParams = () => {
-			const url = new URL(window.location.href);
-			const addSource = url.searchParams.get('addSource');
-			const inviteToken = url.searchParams.get('inviteToken');
-
-			if (addSource) {
-				dispatch({ type: 'SHOW_ADD_SOURCE_CONFIRMATION', payload: { addSource, inviteToken } });
-				window.history.replaceState({}, document.title, url.pathname);
-			}
-		};
-
-		handleUrlParams();
-		window.addEventListener('popstate', handleUrlParams);
-
-		return () => {
-			window.removeEventListener('popstate', handleUrlParams);
-		};
-	}, [dispatch]);
-
 	return (
 		<>
 			{
-				loadBackgroundJobs
+				(
+					loadBackgroundJobs
+					&&
+					activeIdentityId
+				)
 				&&
 				<Suspense fallback={null}>
 					<BackgroundJobs />
@@ -165,196 +173,297 @@ const AppContent: React.FC = () => {
 				</Suspense>
 			}
 
-			{/* Modals */}
-
-			<NavigationMenu />
-			<IonRouterOutlet id="main-content" animated={true}
-			>
-				<Route exact path="/home" render={(props) =>
-					<Suspense fallback={<FullSpinner />}>
-						<Home {...props} />
-					</Suspense>
-				}
-				/>
-				<Route exact path="/nodeup">
-					<Suspense fallback={<FullSpinner />}>
-						<NodeUp />
-					</Suspense>
-				</Route>
-				<Route exact path="/">
-					<Suspense fallback={<FullSpinner />}>
-						<BoostrapGuard />
-					</Suspense>
-				</Route>
-				<Route exact path="/receive">
-					<Suspense fallback={<FullSpinner />}>
-						<Receive />
-					</Suspense>
-				</Route>
-				<Route exact path="/loader">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Loader />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/send" render={(props) =>
-					<Suspense fallback={<FullSpinner />}>
-						<Send {...props} />
-					</Suspense>
-				}
-				/>
-				<Route path="/sources">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Sources />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/automation">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Automation />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/prefs">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Prefs />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/contacts">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Contacts />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/invitations">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Invitations />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/auth">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Auth />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/notify">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Notify />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/metrics">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Metrics />
-						</Layout>
-					</Suspense>
-
-				</Route>
-				<Route exact path="/metrics/earnings">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Earnings />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/metrics/routing">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Routing />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/LApps">
-
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<LinkedApp />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/management">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Management />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/Offers">
-					<Suspense fallback={<FullSpinner />}>
-						<Offers />
-					</Suspense>
-				</Route>
-				<Route exact path="/Stats">
-					<Suspense fallback={<FullSpinner />}>
-						<Layout>
-							<Stats />
-						</Layout>
-					</Suspense>
-				</Route>
-				<Route exact path="/swaps">
-					<Suspense fallback={<FullSpinner />}>
-						<Swaps />
-					</Suspense>
-				</Route>
-			</IonRouterOutlet>
 		</>
-	);
-};
+	)
 
-const BoostrapGuard: React.FC = () => {
-	const hasBootstrapped = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+}
+
+const AppContent: React.FC = () => {
 
 
-	return hasBootstrapped ? (
-		<Redirect to="/home" />
-	) : (
-		<Redirect to="/nodeup" />
-	);
-};
 
-const App: React.FC = () => {
-	useEffect(() => {
-		StatusBar.setOverlaysWebView({ overlay: false });
-		StatusBar.setBackgroundColor({ color: "#16191c" })
-	}, []);
+	const identityKey = useAppSelector(selectActiveIdentityId);
 
 
 	return (
-		<Provider store={store}>
-			<ScannerProvider>
-				<IonApp>
-					<ErrorBoundary>
-						<IonReactRouter>
-							<AlertProvider>
-								<ToastProvider>
+		<IonReactRouter>
+			<AppJobs />
+			<NavigationMenu />
+			<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
+				<GuardedRoute
+					exact
+					path="/identities"
+					component={IdentitiesPage}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/identity/create"
+					component={CreateIdentityPage}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/identity/create/keys"
+					component={CreateKeysIdentityPage}
+
+				/>
+				<GuardedRoute
+					exact
+					path="/identity/create/sanctum"
+					component={CreateSanctumIdentityPage}
+
+				/>
+
+				<GuardedRoute
+					exact
+					path="/identity/bootstrap"
+					component={BootstrapSourcePage}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+
+				<GuardedRoute
+					exact
+					path="/identity/overview"
+					component={IdentityOverviewPage}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+
+				<GuardedRoute
+
+					exact
+					path="/home"
+					component={Home}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+				<GuardedRoute
+
+					exact
+					path="/send"
+					component={Send}
+
+					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+				/>
+
+				<GuardedRoute
+
+					exact
+					path="/Receive"
+					component={Receive}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/sources"
+					component={SourcesPage}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/automation"
+					component={Automation}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/prefs"
+					component={Prefs}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/contacts"
+					component={Contacts}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/invitations"
+					component={Invitations}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/notify"
+					component={Notify}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/management"
+					component={Management}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+				<GuardedRoute
+					path="/metrics"
+					component={Metrics}
+
+					guards={[loadedIdentityGuard, atLeastOneHealthyAdminNprofileSourceGuard]}
+
+				/>
+
+
+
+
+				<GuardedRoute
+					exact
+					path="/offers"
+					component={Offers}
+
+					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/Stats"
+					component={Stats}
+
+					guards={[loadedIdentityGuard]}
+					layout={Layout}
+				/>
+
+
+				<GuardedRoute
+					exact
+					path="/LApps"
+					component={LinkedApp}
+					layout={Layout}
+
+					guards={[loadedIdentityGuard]}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/swaps"
+					component={Swaps}
+					guards={[loadedIdentityGuard]}
+				/>
+
+
+				<Route exact path="/" >
+					<Redirect to="/home" />
+				</Route>
+			</IonRouterOutlet >
+		</IonReactRouter >
+	);
+};
+
+
+const App: React.FC = () => {
+
+
+	return (
+		<ErrorBoundary>
+			<Provider store={store}>
+				<PersistGate
+					onBeforeLift={async () => {
+						const exists = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
+						const hasRanMigration = await IonicStorageAdapter.getItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY)
+
+						try {
+							if (exists || !hasRanMigration) {
+								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+								await store.dispatch(migrateDeviceToIdentities());
+								return
+							}
+						} catch (err: any) {
+							const subbedToBackUp = backupInitialState;
+							if (subbedToBackUp.subbedToBackUp) {
+								if (subbedToBackUp.usingSanctum) {
+									alert(
+										`An error occured with Sanctum: \n\n ${err?.message || ""}`
+									);
+								} else if (subbedToBackUp.usingExtension) {
+									alert(
+										`An error occured with NIP07 extension: \n\n ${err?.message || ""}`
+									);
+								} else {
+									alert(
+										`An un known error occured: \n\n ${err?.message || ""}`
+									);
+								}
+							} else {
+								alert(
+									`An un known error occured: \n\n ${err?.message || ""}`
+								);
+							}
+							await new Promise(() => {/*  */ })
+
+						}
+
+
+						const pubkey = localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+
+
+						if (pubkey) {
+							try {
+								await store.dispatch(switchIdentity(pubkey, true))
+							} catch {
+								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+								window.location.reload();
+								await new Promise(() => {/*  */ })
+							}
+						}
+					}}
+					persistor={persistor}
+					loading={<FullSpinner />}
+				>
+					<ToastProvider>
+						<ScannerProvider>
+							<IonApp>
+								<AlertProvider>
 									<AppContent />
-								</ToastProvider>
-							</AlertProvider>
-						</IonReactRouter>
-					</ErrorBoundary>
-					<ToastContainer
-						theme="colored"
-						position="top-center"
-						closeOnClick
-						pauseOnHover
-						autoClose={4000}
-						limit={2}
-						pauseOnFocusLoss={false}
-					/>
-				</IonApp>
-			</ScannerProvider>
-		</Provider>
+
+								</AlertProvider>
+							</IonApp>
+						</ScannerProvider>
+					</ToastProvider>
+				</PersistGate>
+			</Provider>
+			<ToastContainer
+				theme="colored"
+				position="top-center"
+				closeOnClick
+				pauseOnHover
+				autoClose={4000}
+				limit={2}
+				pauseOnFocusLoss={false}
+			/>
+		</ErrorBoundary>
 	);
 };
 

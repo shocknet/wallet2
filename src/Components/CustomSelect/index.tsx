@@ -49,7 +49,7 @@ export function CustomSelect<T>({
 	};
 
 	return (
-		<>
+		<div className="w-full">
 
 			{/* Select looking input to show the selected value and also trigger the select modal */}
 			<IonItem
@@ -104,15 +104,15 @@ export function CustomSelect<T>({
 							</IonItem>
 						))}
 					</IonList>
-					<IonFooter className="ion-no-border" >
-						<IonToolbar color="secondary">
-							<IonButtons slot="end">
-								<IonButton color="primary" onClick={() => setIsOpen(false)}>Cancel</IonButton>
-							</IonButtons>
-						</IonToolbar>
-					</IonFooter>
 				</div>
+				<IonFooter className="ion-no-border" >
+					<IonToolbar color="secondary">
+						<IonButtons slot="end">
+							<IonButton color="primary" onClick={() => setIsOpen(false)}>Cancel</IonButton>
+						</IonButtons>
+					</IonToolbar>
+				</IonFooter>
 			</IonModal >
-		</>
+		</div>
 	);
 }

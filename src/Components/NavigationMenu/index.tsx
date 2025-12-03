@@ -1,6 +1,5 @@
 import {
 	IonContent,
-	IonHeader,
 	IonIcon,
 	IonItem,
 	IonItemDivider,
@@ -9,8 +8,6 @@ import {
 	IonList,
 	IonMenu,
 	IonMenuToggle,
-	IonTitle,
-	IonToolbar,
 } from "@ionic/react"
 import {
 	calendarNumberOutline,
@@ -20,16 +17,16 @@ import {
 	settingsOutline,
 	flashOutline,
 	personAddOutline,
-	keyOutline,
 	helpCircleOutline,
 	logoBitcoin,
 	analyticsOutline,
 } from "ionicons/icons"
-import { useEffect, useState } from "react"
-import { useSelector } from "../../State/store"
+import { memo, useEffect, useState } from "react"
 import { App } from "@capacitor/app"
-import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 import { Capacitor } from "@capacitor/core"
+import { useAppSelector } from "@/State/store/hooks"
+import { selectHealthyAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
+import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 
 
 interface AppBuildInfo {
@@ -37,7 +34,7 @@ interface AppBuildInfo {
 	versionCode: string;
 	versionName: string;
 }
-const getMenuItems = (adminSource: AdminSource | undefined) => {
+const getMenuItems = (hasAdminSoures: boolean) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
 		{ title: "Contacts", icon: peopleOutline, path: "/contacts" },
@@ -46,30 +43,29 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 		{ title: "Preferences", icon: settingsOutline, path: "/prefs" },
 		{ title: "Manage Sources", icon: flashOutline, path: "/sources" },
 		{ title: "Node Invitations", icon: personAddOutline, path: "/invitations" },
-		{ title: "Backup and Sync", icon: keyOutline, path: "/auth" },
 	]
-	if (adminSource) {
+	if (hasAdminSoures) {
 		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics", color: '#c740c7' })
 	}
 	return items
 }
 
-const NavigationMenu = () => {
+const NavigationMenu = memo(() => {
+	const activeIdentityId = useAppSelector(selectActiveIdentityId);
+
+	if (!activeIdentityId) return null;
+	return <Inner />
+})
+NavigationMenu.displayName = "NavigationMenu";
+
+const Inner = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
-	const spendSources = useSelector(state => state.spendSource)
-	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
-	useEffect(() => {
-		const adminSource = getAdminSource()
-		if (adminSource) {
-			setAdminSource(adminSource)
-			return
-		}
-		const adminSourceId = spendSources.order.find(p => !!spendSources.sources[p].adminToken)
-		if (adminSourceId) {
-			console.log("admin source found", adminSourceId)
-			setAdminSource({ nprofile: spendSources.sources[adminSourceId].pasteField, keys: spendSources.sources[adminSourceId].keys })
-		}
-	}, [spendSources])
+	const healthyAdminSources = useAppSelector(selectHealthyAdminNprofileViews);
+
+	const hasAdminSources = healthyAdminSources.length > 0;
+
+
+
 
 	useEffect(() => {
 		const setupAppBuildInfo = async () => {
@@ -99,22 +95,24 @@ const NavigationMenu = () => {
 
 	return (
 		<IonMenu type="overlay" contentId="main-content" side="end">
-			<IonHeader>
+			{/* <NavMenuHeader /> */}
+			{/* <IonHeader>
 				<IonToolbar color="secondary">
 					<IonTitle color="light" className="ion-text-center">Shockwallet</IonTitle>
 				</IonToolbar>
-			</IonHeader>
+			</IonHeader> */}
 			<IonContent className="ion-padding">
 				<IonList lines="none">
+
 					<IonItemGroup>
 						{
-							getMenuItems(adminSource).map((item, index) => {
+							getMenuItems(hasAdminSources).map((item, index) => {
 								return (
 									<IonMenuToggle key={index} autoHide={false}>
-										<IonItem routerLink={item.path} routerDirection="none">
+										<IonItem routerLink={item.path} routerDirection="forward">
 											{item.color && <IonIcon style={{ color: item.color }} icon={item.icon} slot="start" />}
 											{!item.color && <IonIcon color="primary" icon={item.icon} slot="start" />}
-											<IonLabel>{item.title}</IonLabel>
+											<IonLabel style={{ "--color": "var(--ion-text-color-step-150)" }}>{item.title}</IonLabel>
 										</IonItem>
 									</IonMenuToggle>
 								)

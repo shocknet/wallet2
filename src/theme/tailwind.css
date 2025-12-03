@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+	.page-outer {
+		@apply flex flex-col min-h-full w-full;
+	}
+
+	.page-body {
+		@apply flex flex-col flex-grow w-full;
+	}
+
+	.hero-block {
+		@apply flex flex-col flex-grow items-center justify-center text-center max-h-[40vh] min-h-[160px];
+	}
+
+	.main-block {
+		@apply flex-shrink-0 mt-4;
+	}
+
+	.disclaimer-block {
+		@apply flex-shrink-0 mt-8 sm:mt-auto text-center text-xs leading-snug px-4;
+	}
+
+	.choice-card {
+		@apply flex flex-col items-center border-2 border-slate-300 rounded-lg py-2 px-3 gap-3 max-w-52 cursor-pointer;
+	}
+
+
+
+	.choice-card-title {
+		@apply text-lg font-semibold;
+	}
+}

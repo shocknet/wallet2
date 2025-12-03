@@ -1,0 +1,19 @@
+.edit-item-input {
+	--padding-bottom: 0.7rem;
+}
+
+.edit-list {
+	border-radius: 12px;
+	padding-bottom: 1rem;
+}
+
+.source-input {
+	--placeholder-font-weight: 500;
+	--placeholder-color: var(--ion-text-color-step-150);
+}
+
+.modal-header {
+	display: inline-flex;
+	align-items: center;
+	gap: 12;
+}

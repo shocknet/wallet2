@@ -1,30 +1,39 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { InputClassification } from '@/lib/types/parse';
+import { InputClassification, ParsedLnurlWithdrawInput } from '@/lib/types/parse';
 import { useHistory } from 'react-router';
-import { parseBitcoinInput as legacyParseBitcoinInput } from '@/constants';
 import { useToast } from '@/lib/contexts/useToast';
+import { useEventCallback } from '@/lib/hooks/useEventCallbck/useEventCallback';
+
+export type SourcesPageLocationState = {
+	sourceToAdd?: string
+	integrationData?: {
+		token: string;
+		lnAddress: string;
+	}
+	inviteToken?: string;
+	lnurlWParsedData?: ParsedLnurlWithdrawInput;
+}
 
 export const useAppUrlListener = () => {
 	const history = useHistory();
 	const { showToast } = useToast();
 
 
-	const parseDeepLink = useCallback(async (input: string) => {
+	const parseDeepLink = useEventCallback(async (input: string) => {
 		try {
 			const { identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse")
-			const classification = identifyBitcoinInput(input);
+			const { classification, value } = identifyBitcoinInput(input);
 			if (classification === InputClassification.UNKNOWN) {
 				showToast({ message: "Unknown input", color: "danger" });
 				return;
 			}
 
-			const parsed = await parseBitcoinInput(input, classification);
+			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				const legacyParsedLnurlW = await legacyParseBitcoinInput(input);
 				history.push({
 					pathname: "/sources",
-					state: legacyParsedLnurlW
+					state: { parsedLnurlW: parsed }
 				})
 			} else {
 				history.push({
@@ -44,35 +53,24 @@ export const useAppUrlListener = () => {
 			});
 		}
 
-	}, [history, showToast]);
+	});
 
 	useEffect(() => {
-		App.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
-			try {
-				const url = new URL(event.url);
-				if (
-					url.pathname === "/sources" &&
-					(
-						url.searchParams.get("addSource") ||
-						url.searchParams.get("lnAddress") ||
-						url.searchParams.get("token") ||
-						url.searchParams.get("inviteToken")
-					)
-				) {
-					history.push(url.pathname + url.search);
-				} else {
-					showToast({
-						message: "Usupported deeplink",
-						color: "danger"
-					});
-				}
-			} catch { // Not a url
-				parseDeepLink(event.url);
-			}
 
+		const listener = App.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
+			const slug = event.url.split(".app").pop();
+			if (slug) {
+				history.push(slug);
+			} else {
+				parseDeepLink(event.url); // Not a url
+			}
 		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+
+		return () => {
+			listener.then((r) => r.remove());
+		};
+
+	}, [parseDeepLink, history]);
 };
 
 

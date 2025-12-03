@@ -24,7 +24,7 @@ export const migrations: Record<number, MigrationFunction<BackupState>> = {
 };
 
 
-const initialState: BackupState = loadInitialState(
+export const initialState: BackupState = loadInitialState(
 	storageKey,
 	JSON.stringify({ subbedToBackUp: false, usingSanctum: false, usingExtension: false }),
 	migrations,
