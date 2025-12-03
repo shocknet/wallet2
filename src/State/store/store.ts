@@ -14,6 +14,7 @@ import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 
 import { staticReducers } from './staticReducers';
 import { listenerMiddleware } from './listenerMiddleware';
 import { appApi } from '../api/api';
+import { historyFetchAllRequested, historyFetchSourceRequested, identityUnloaded } from '../listeners/actions';
 
 
 
@@ -22,15 +23,15 @@ import { appApi } from '../api/api';
 
 
 
-export const dynamicMiddleware = createDynamicMiddleware();
+
 const store = configureStore({
 	reducer: staticReducers,
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({
 			serializableCheck: {
-				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER],
+				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER, historyFetchAllRequested.type, historyFetchSourceRequested.type, identityUnloaded.type],
 			},
-		}).prepend(dynamicMiddleware.middleware).concat(listenerMiddleware.middleware).concat(appApi.middleware)
+		}).prepend(listenerMiddleware.middleware).concat(appApi.middleware)
 });
 
 

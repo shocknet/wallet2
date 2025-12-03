@@ -10,7 +10,6 @@ import { initialState as paySourcesInitialState } from "../Slices/paySourcesSlic
 import { utils } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_RELAYS } from "@/constants";
-import { appStateActions } from "../appState/slice";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 
 
@@ -38,7 +37,6 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 
 			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
 			await IonicStorageAdapter.setItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, "true");
-			dispatch(appStateActions.setAppBootstrapped()); // set bootstrapped
 			return;
 		} else {
 			localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
@@ -87,7 +85,4 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 
 	localStorage.removeItem(NOSTR_PRIVATE_KEY_STORAGE_KEY)
 	await IonicStorageAdapter.setItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, "true");
-	dispatch(appStateActions.setAppBootstrapped()); // set bootstrapped
-
-
 }

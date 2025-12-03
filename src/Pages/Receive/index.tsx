@@ -87,7 +87,31 @@ const Receive = () => {
 					router.push("/sources", "forward", "replace")
 				}
 			})
+		} else if (favoriteSource.type === SourceType.NPROFILE_SOURCE && favoriteSource.beaconStale) {
+			showAlert({
+				header: "Stale source",
+				message: "Your favorite source's pub seems to be down or unavailable",
+				buttons: [
+					{
+						text: "Cancel",
+						role: "cancel",
+
+					},
+					{
+						text: "Go to sources",
+						role: "confirm",
+					},
+				]
+			}).then(({ role }) => {
+				if (role === "cancel") {
+					router.goBack();
+				} else if (role === "confirm") {
+					router.push("/sources", "forward", "replace")
+				}
+			})
 		}
+
+
 
 	}, [])
 
@@ -101,9 +125,6 @@ const Receive = () => {
 	}, []);
 
 
-	const handleInvalidateLnurl = useCallback(() => {
-		handleInvalidate("address");
-	}, [handleInvalidate]);
 
 	const handleInvalidateChain = useCallback(() => {
 		handleInvalidate("bitcoin");
@@ -113,7 +134,7 @@ const Receive = () => {
 		{
 			id: 'address',
 			name: 'Address',
-			component: <LnurlTab onInvalidate={handleInvalidateLnurl} />,
+			component: <LnurlTab />,
 		},
 		{
 			id: 'invoice',
@@ -199,10 +220,9 @@ const Receive = () => {
 interface TabProps {
 	onInvalidate: () => void;
 }
-const LnurlTab = memo(({ onInvalidate }: TabProps) => {
+const LnurlTab = memo(() => {
 
-	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
-	const { showAlert } = useAlert();
+	const favoriteSource = useAppSelector(selectFavoriteSourceView)!;
 
 	const [lnurl, setLnurl] = useState("");
 	const [lightningAddress, setLightningAddress] = useState("");
@@ -210,68 +230,49 @@ const LnurlTab = memo(({ onInvalidate }: TabProps) => {
 	const [loading, setLoading] = useState(true);
 
 
-	const invalidated = useRef(false);
 
 
 	const configure = useCallback(async () => {
-		if (invalidated.current) return;
-
-		let lnAddress = "";
-		let receivedLnurl = "";
-
-		switch (favoriteSource.type) {
-			case SourceType.NPROFILE_SOURCE: {
-				if (favoriteSource.vanityName) {
-					lnAddress = favoriteSource.vanityName;
-				}
-				// get lnurl
-				const cacheKey = getCacheKey(favoriteSource.sourceId, LNURL_CACHE_KEY);
-				const cached = getCache(cacheKey);
-				if (cached) {
-					receivedLnurl = cached;
-				} else {
-					try {
-						const lnurlRes = await createNostrPayLink({
-							pubkey: favoriteSource.lpk,
-							relays: favoriteSource.relays
-						},
-							favoriteSource.keys
-						);
-						setCache(cacheKey, lnurlRes);
-						receivedLnurl = lnurlRes;
-					} catch {
-						// no lnurl
-					}
-				}
-				break;
-			}
-			case SourceType.LIGHTNING_ADDRESS_SOURCE:
-				lnAddress = favoriteSource.sourceId;
-				break;
-
-		}
-
-
-		if (!lnAddress && !receivedLnurl) {
-			if (invalidated.current) return;
-			invalidated.current = true;
-			onInvalidate();
-			showAlert({
-				header: "No LNURL or Lightning Address",
-				message: "This source cannot receive LNURL or Lightning Address payments",
-			})
+		if (favoriteSource.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
+			setLightningAddress(favoriteSource.sourceId);
+			setLoading(false);
 			return;
+		} else {
+			const lnAddress = favoriteSource.vanityName || "";
+			setLightningAddress(lnAddress);
+
+			// get lnurl
+			let receivedLnurl = "";
+			const cacheKey = getCacheKey(favoriteSource.sourceId, LNURL_CACHE_KEY);
+			const cached = getCache(cacheKey);
+			if (cached) {
+				receivedLnurl = cached;
+			} else {
+				try {
+					const lnurlRes = await createNostrPayLink({
+						pubkey: favoriteSource.lpk,
+						relays: favoriteSource.relays
+					},
+						favoriteSource.keys
+					);
+					setCache(cacheKey, lnurlRes);
+					receivedLnurl = lnurlRes;
+				} catch {
+					// no lnurl
+				}
+			}
+
+			setLnurl(receivedLnurl);
+
+			if (receivedLnurl && !lnAddress) {
+				setShowLnurl(true);
+			}
+
+			if (receivedLnurl || lnAddress) {
+				setLoading(false);
+			}
 		}
-
-		if (receivedLnurl && !lnAddress) {
-			setShowLnurl(true);
-		}
-		setLnurl(receivedLnurl);
-		setLightningAddress(lnAddress);
-
-		setLoading(false);
-
-	}, [favoriteSource, showAlert, onInvalidate]);
+	}, [favoriteSource]);
 
 
 	useEffect(() => {
@@ -587,14 +588,21 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 			setQrCodeValue(address);
 			setBitcoinAddText(truncateTextMiddle(address, 10, 10));
 			setCache(cacheKey, address);
-		} catch {
+		} catch (err) {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
-			showAlert({
-				header: "Chain error",
-				message: "Error getting chain address",
-			})
+			if (err instanceof Error) {
+				showAlert({
+					header: "Chain error",
+					message: err.message,
+				});
+			} else {
+				showAlert({
+					header: "Chain error",
+					message: "Error getting chain address",
+				});
+			}
 		}
 		setIsloading(false);
 	}, [qrCodeValue, favoriteSource, onInvalidate, showAlert])

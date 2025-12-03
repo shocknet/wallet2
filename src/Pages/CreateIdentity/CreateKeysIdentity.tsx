@@ -10,9 +10,6 @@ import {
 	IonButtons,
 	IonBackButton,
 	IonText,
-	IonGrid,
-	IonRow,
-	IonCol,
 	useIonModal,
 	IonIcon,
 	useIonLoading,
@@ -32,7 +29,7 @@ import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
 import { getSourcesFromLegacyFileBackup, SourceToMigrate } from "@/State/identitiesRegistry/helpers/migrateToIdentities";
-import { appStateActions } from "@/State/appState/slice";
+
 
 const defaultRelay = utils.normalizeURL("wss://relay.lightning.pub");
 
@@ -122,7 +119,6 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			await dismissLoading();
 
 
-			dispatch(appStateActions.setAppBootstrapped());
 			if (foundBackup) {
 				router.push("/sources", "root", "replace");
 
@@ -262,21 +258,22 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 					</IonTitle>
 				</IonToolbar>
 			</IonHeader>
-			<IonContent className="ion-padding">
-				<IonGrid
-					style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}
-				>
-					<IonRow style={{ flex: 0.3, minHeight: 0 }} />
-					<IonRow className="ion-justify-content-center">
-						<IonCol size="auto">
-							<IonIcon icon={keyOutline} style={{ fontSize: "6rem", color: "var(--ion-text-color-step-200)" }} />
-						</IonCol>
+			<IonContent className="ion-padding ion-content-no-footer">
+				<div className="page-outer">
+					<div className="page-body">
 
-					</IonRow>
-					<IonRow className="ion-align-items-center ion-justify-content-center" style={{ marginTop: "4rem" }}>
-						<IonCol size="12">
-							<IonRow style={{ gap: "8px" }}>
-								<IonCol size="8" offset="2">
+						<section className="hero-block flex-row gap-4 max-h-[30vh]">
+							<div className="flex items-center flex-grow  justify-center max-w-[80px] lg:max-w-[100px]">
+								<IonIcon icon={keyOutline} className="text-8xl" style={{ color: "var(--ion-text-color-step-200)" }} />
+							</div>
+						</section>
+						<section className="main-block flex flex-col justify-center w-full max-w-[500px] self-center">
+							<div className="flex w-full justify-center items-center gap-1">
+								<div className="w-3 flex-shrink-0">
+
+								</div>
+								<div className="flex-grow">
+
 									<IonInput
 										placeholder="Input a Nostr nsec or backup file"
 										fill="solid"
@@ -289,64 +286,55 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 										value={_privkey}
 										onIonInput={(e) => setPrivkey(e.detail.value || "")}
 									></IonInput>
-								</IonCol>
-								<IonCol size="auto">
+								</div>
+								<div className="flex-initial">
 									<input type='file' ref={fileInputRef} onChange={(e) => { getDatafromBackup(e) }} style={{ display: "none" }} />
 									<IonButton onClick={() => fileInputRef.current?.click()} fill="clear" size="large" className="ion-float-right">
 										<IonIcon icon={cloudUploadOutline} slot="icon-only" />
 									</IonButton>
-								</IonCol>
-							</IonRow>
+								</div>
 
-						</IonCol>
+							</div>
+							<div className="text-center mt-3">
+								<IonButton onClick={handleImportedNsec} disabled={!parsedPriv}>Continue</IonButton>
+							</div>
 
 
-					</IonRow>
-					<IonRow
-						className="ion-justify-content-center ion-margin-top"
-					>
-						<IonCol size="auto">
-							<IonButton onClick={handleImportedNsec} disabled={!parsedPriv}>Continue</IonButton>
-						</IonCol>
-					</IonRow>
-					<IonRow
-						className="ion-justify-content-center"
-						style={{ marginTop: "4rem", marginBottom: "5rem" }}>
-						<IonCol size="auto" >
-							<IonText className="text-low text-lg text-weight-high">
+						</section>
+						<section className="main-block self-center">
+							<div className="text-low text-lg font-semibold my-9">
 								or
-							</IonText>
-						</IonCol>
-					</IonRow>
-					<IonRow
+							</div>
+						</section>
+						<section className="main-block w-full max-w-[500px] self-center">
+							<div className="flex w-full justify-center items-center gap-1">
+								<div className=" flex-shrink-0">
 
-					>
-						<IonCol size="8" offset="2">
-							<IonButton
-								className="pill-button"
-								expand="full"
-								size="large"
-								shape="round"
-								onClick={handleGenerateKeys}
-							>
-								Generate Keys
-							</IonButton>
-						</IonCol>
-					</IonRow>
+								</div>
+								<div className="flex-grow">
 
-					<IonRow
-						className="ion-justify-content-center"
-						style={{ marginTop: "3rem" }}
-					>
-						<IonCol size="auto" >
-							<div className="ion-text-wrap ion-text-center text-lg text-x-low">
+									<IonButton
+										className="pill-button"
+										expand="full"
+										size="large"
+										shape="round"
+										onClick={handleGenerateKeys}
+									>
+										Generate Keys
+									</IonButton>
+								</div>
+
+
+							</div>
+							<div className="ion-text-wrap ion-text-center text-lg text-low pt-4 pb-4">
 								You will be prompted to save your key to your password manager, or download a file backup.
 							</div>
-						</IonCol>
-					</IonRow>
+						</section>
+					</div>
+				</div>
 
-				</IonGrid>
-				<IonRow style={{ flex: 0.5, minHeight: 0 }} />
+
+
 			</IonContent>
 		</IonPage>
 	);

@@ -40,7 +40,7 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 			}, 500);
 		} else {
 			if (logoClickCounter === 3) {
-				router.push("/metrics");
+				router.push("/metrics", "forward");
 			}
 			tripeClickTimer = setTimeout(() => {
 				setLogoClickCounter(0);
@@ -50,7 +50,9 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 			clearTimeout(singleClickTimer)
 			clearTimeout(tripeClickTimer);
 		};
-	}, [logoClickCounter, router]);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [logoClickCounter]);
 
 
 
@@ -68,7 +70,7 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 					</IonButton>
 				</IonButtons>
 				<IonButtons slot="end">
-					<IonButton shape="round" fill="clear" routerLink="/identities" routerDirection="root" routerOptions={{ unmount: true }} >
+					<IonButton shape="round" fill="clear" routerLink="/identities" routerDirection="root">
 						<IonAvatar aria-hidden="true" slot="start" style={{ height: 40, width: 40 }}>
 							{isLoading ? (
 								<IonSkeletonText animated style={{ height: 40, width: 40, borderRadius: '50%' }} />

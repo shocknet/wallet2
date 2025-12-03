@@ -9,17 +9,32 @@ import {
 	IonButton,
 	IonIcon,
 	IonContent,
-	IonFooter
+	IonFooter,
+	IonItem,
+	IonInput,
+	IonToggle,
+	IonText,
+	IonList,
+	IonListHeader,
+	IonLabel,
+	IonGrid,
+	IonRow,
+	IonCol
 } from "@ionic/react";
 import { closeOutline, trashOutline, pencilOutline, starOutline, star } from "ionicons/icons";
 import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { useCallback, useMemo, useState } from "react";
-import { getDeviceId } from "@/constants";
-import { BasicSourceInfoEdit, PubSourceStatus } from "../helpers";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_BRIDGE_URL, getDeviceId } from "@/constants";
+import { PubSourceStatus } from "../helpers";
 import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import CardishList from "@/Components/CardishList";
+import { RelayManager } from "@/Components/RelayManager";
+import useDebounce from "@/Hooks/useDebounce";
+import { canonicalHttpBase } from "@/lib/url";
+import { useConfirmDialog } from "@/lib/hooks/useConfirmDialog";
 
 interface EditSourceModalProps {
 	open: boolean;
@@ -51,6 +66,12 @@ const Inner = ({
 }) => {
 	const dispatch = useAppDispatch();
 
+	const showConfirm = useConfirmDialog({
+		header: "Delete source",
+		message: "Are you sure you wish to delete this source from your identity?",
+		confirmText: "Delete"
+	});
+
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
 	const original = useMemo<SourceView>(() => structuredClone(source), [source]);
@@ -58,6 +79,43 @@ const Inner = ({
 	const [label, setLabel] = useState<string>(source.label || "");
 	const [bridgeUrl, setBridgeUrl] =
 		useState<string>(source.type === SourceType.NPROFILE_SOURCE ? source.bridgeUrl || "" : "");
+	const [finalBridgeUrl, setFinalBridgeUrl] = useState<string | null>(null);
+	const [isEditingRelays, setIsEditingRelays] = useState(false);
+	const [bridgeInputTouched, setBridgeInputTouched] = useState(false);
+	const bridgeInputRef = useRef<HTMLIonInputElement>(null);
+	const [bridgeInputError, setBridgeInputError] = useState(false);
+
+	const debouncedBridgeUrl = useDebounce(bridgeUrl, 500);
+
+	const onBridgeInputChange = (e: CustomEvent) => {
+		setBridgeUrl(e.detail.value || "");
+		setBridgeInputError(false);
+		bridgeInputRef.current?.classList.remove("ion-invalid");
+	}
+
+	const onBridgeBlur = () => {
+		setBridgeInputTouched(true);
+
+		// If we already computed a canonical good one, snap the field to it
+		if (!bridgeInputError && finalBridgeUrl) {
+			setBridgeUrl(finalBridgeUrl);
+		}
+	};
+
+	useEffect(() => {
+		if (bridgeInputTouched) {
+			const res = canonicalHttpBase(debouncedBridgeUrl);
+
+
+			if (!res.ok) {
+				setBridgeInputError(true);
+				setFinalBridgeUrl(null);
+			} else {
+				setFinalBridgeUrl(res.value);
+			}
+		}
+	}, [debouncedBridgeUrl, bridgeInputTouched])
+
 	const [relays, setRelays] = useState<string[]>(
 		source.type === SourceType.NPROFILE_SOURCE ? source.relays : []
 	);
@@ -71,7 +129,7 @@ const Inner = ({
 			return {
 				...original,
 				label,
-				bridgeUrl,
+				bridgeUrl: finalBridgeUrl,
 				relays: relays,
 				isNDebitDiscoverable
 			} as NprofileView;
@@ -81,7 +139,7 @@ const Inner = ({
 				label,
 			} as LnAddrView;
 		}
-	}, [original, label, bridgeUrl, relays, isNDebitDiscoverable]);
+	}, [original, label, finalBridgeUrl, relays, isNDebitDiscoverable]);
 
 
 	const locallyDirty = useMemo(() => {
@@ -96,18 +154,17 @@ const Inner = ({
 			return;
 		}
 
-		const now = Date.now();
 		const by = getDeviceId();
 
 
 		for (const op of ops) {
 			switch (op.kind) {
 				case "label":
-					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, now, by }));
+					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, by }));
 					break;
 				case "bridgeUrl":
 					if (original.type === SourceType.NPROFILE_SOURCE) {
-						dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, now, by }));
+						dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, by }));
 					}
 					break;
 				case "relaySet":
@@ -117,7 +174,6 @@ const Inner = ({
 							relayUrl: op.relayUrl,
 							present: op.present,
 							by,
-							now
 						}));
 					}
 					break;
@@ -127,7 +183,6 @@ const Inner = ({
 							sourceId: original.sourceId,
 							isNdebitDiscoverable: op.discoverable,
 							by,
-							now
 						}));
 					}
 			}
@@ -143,9 +198,16 @@ const Inner = ({
 	}, [source.sourceId, favoriteSourceId, dispatch]);
 
 	const handleDelete = useCallback(() => {
-		onClose()
-		onDelete(source.sourceId);
-	}, [onDelete, onClose, source.sourceId]);
+		showConfirm().then(({ role }) => {
+			if (role === "confirm") {
+				onClose()
+				onDelete(source.sourceId);
+			}
+		})
+
+	}, [onDelete, onClose, source.sourceId, showConfirm]);
+
+	const canSave = locallyDirty && !bridgeInputError;
 
 	return (
 		<>
@@ -170,49 +232,148 @@ const Inner = ({
 				{
 					original.type === SourceType.NPROFILE_SOURCE
 					&&
-					<PubSourceStatus pubkey={original.lpk} relays={original.relays} />
+					<PubSourceStatus
+						pubkey={original.lpk}
+						relays={original.relays}
+						passedBeacon={
+							original.beaconLastSeenAtMs !== 0
+								? { beaconLastSeenAtMs: original.beaconLastSeenAtMs, name: original.beaconName ?? "" }
+								: undefined
+						}
+					/>
 				}
+				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
+					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
+
+						<IonInput
+							placeholder="My savings source"
+							color="primary"
+							labelPlacement="stacked"
+							label="Label"
+							value={label}
+							onIonInput={(e) => setLabel(e.detail.value ?? "")}
+							mode="md"
+							fill="outline"
+							style={{ "--padding-end": "50px" }}
+							className="ion-margin-top"
+
+						/>
+					</IonItem>
+					{
+						original.type === SourceType.NPROFILE_SOURCE
+						&&
+						<>
+							<IonItem>
+								<IonInput
+									color="primary"
+									label="Bridge URL"
+									labelPlacement="stacked"
+									inputmode="url"
+									placeholder={DEFAULT_BRIDGE_URL}
+									value={bridgeUrl}
+									ref={bridgeInputRef}
+
+									mode="md"
+									fill="outline"
+									className={classNames({
+										["ion-invalid"]: bridgeInputError,
+										["ion-touched"]: bridgeInputTouched,
+										["ion-margin-top"]: true,
+
+									})}
+									style={{ "--padding-end": "50px" }}
+									errorText="Invalid URL"
+									onIonInput={onBridgeInputChange}
+									onIonBlur={onBridgeBlur}
+									helperText="Enter a valid http URL"
+								/>
+							</IonItem>
+							<IonItem lines="none" className="ion-margin-top">
+								<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
+									<IonText className="text-medium">ndebit discoverable</IonText>
+								</IonToggle>
+							</IonItem>
+						</>
+					}
+
+
+				</CardishList>
+
 				{
 					original.type === SourceType.NPROFILE_SOURCE
 					&&
-					<BasicSourceInfoEdit
-						label={label}
-						setLabel={setLabel}
-						relays={relays}
-						setRelays={setRelays}
-						bridgeUrl={bridgeUrl}
-						setBridgeUrl={setBridgeUrl}
-						isNDebitDiscoverable={isNDebitDiscoverable}
-						setIsNDebitDiscoverable={setIsNDebitDiscoverable}
-					/>
+					<div>
+						<IonList
 
-				}
-				{
-					original.type === SourceType.LIGHTNING_ADDRESS_SOURCE
-					&&
-					<BasicSourceInfoEdit
-						label={label}
-						setLabel={setLabel}
-					/>
+							lines="none"
+							style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 
+						>
+							<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+								<IonLabel >Relays</IonLabel>
+								{
+									isEditingRelays
+										?
+										<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
+											<IonIcon icon={closeOutline} slot="icon-only" />
+										</IonButton>
+										:
+										<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
+											Edit
+										</IonButton>
+								}
+							</IonListHeader>
+							{
+								isEditingRelays
+									? (
+										<>
+											<IonItem>
+												<IonLabel color="warning">
+													<IonText>
+														Your node should be listening on relays you add here
+													</IonText>
+												</IonLabel>
+											</IonItem>
+											<RelayManager relays={relays} setRelays={setRelays} />
+										</>
+									)
+									: relays.map(r => (
+										<IonItem key={r}>
+											<IonText className="text-medium text-weight-medium" style={{ textDecoration: "underline" }}>
+												{r}
+											</IonText>
+										</IonItem>
+									))
+							}
+						</IonList>
+					</div>
 				}
+
+
 			</IonContent>
-			<IonFooter className="ion-no-border">
-				<IonToolbar>
-					<IonButtons slot="end">
+			<IonFooter>
+				<IonToolbar className="ion-border">
 
-						<IonButton color="primary" disabled={!locallyDirty} onClick={handleSave}>
-							Save Changes
-						</IonButton>
-
-					</IonButtons>
-					<IonButtons slot="start">
-						<IonButton color="danger" onClick={handleDelete}>
-							<IonIcon icon={trashOutline} />
-							Delete
-						</IonButton>
-					</IonButtons>
+					<IonGrid>
+						<IonRow className="ion-align-items-center ion-justify-content-end">
+							<IonCol
+								size="auto"
+								style={{ marginRight: "0.5rem" }}
+							>
+								<IonButton color="danger" onClick={handleDelete}>
+									<IonIcon icon={trashOutline} />
+									Delete
+								</IonButton>
+							</IonCol>
+							<IonCol size="auto">
+								<IonButton color="primary" disabled={!canSave} onClick={handleSave}>
+									Save Changes
+								</IonButton>
+							</IonCol>
+						</IonRow>
+					</IonGrid>
 				</IonToolbar>
+
 			</IonFooter>
 		</>
 	)
@@ -230,7 +391,7 @@ const diffSets = (a: string[], b: string[]) => {
 }
 
 const changedStr = (a: string | null | undefined, b: string | null | undefined) => {
-	return (a ?? null) !== (b ?? null);
+	return (a || null) !== (b || null);
 }
 
 
@@ -239,7 +400,7 @@ const buildSourceChanges = (
 	original: SourceView,
 	draft: SourceView
 ): (
-	| { kind: "label"; value: string | undefined }
+	| { kind: "label"; value: string | null }
 	| { kind: "bridgeUrl"; value: string | null }
 	| { kind: "relaySet"; relayUrl: string; present: boolean }
 	| { kind: "isNDebitDiscoverable"; discoverable: boolean }
@@ -247,13 +408,13 @@ const buildSourceChanges = (
 	const ops: ReturnType<typeof buildSourceChanges> = [];
 
 	if (changedStr(original.label, draft.label)) {
-		ops.push({ kind: "label", value: draft.label ?? undefined });
+		ops.push({ kind: "label", value: draft.label || null });
 	}
 
 	if (original.type === SourceType.NPROFILE_SOURCE && draft.type === SourceType.NPROFILE_SOURCE) {
 		// bridgeUrl
-		if (changedStr(original.bridgeUrl ?? null, draft.bridgeUrl ?? null)) {
-			ops.push({ kind: "bridgeUrl", value: draft.bridgeUrl ?? null });
+		if (changedStr(original.bridgeUrl, draft.bridgeUrl)) {
+			ops.push({ kind: "bridgeUrl", value: draft.bridgeUrl || null });
 		}
 
 		if (original.isNDebitDiscoverable !== draft.isNDebitDiscoverable) {

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LwwFlagSchema, LwwSchema } from "../lww";
 import { HexDashHexSchema, HexKeySchema, NostrKeyPairSchema } from "@/lib/regex";
 import { DocBase, DocBaseSchema, SourceType } from "../../common";
+import { HttpBaseSchema } from "@/lib/urlZod";
 
 
 
@@ -9,7 +10,11 @@ const SourceTypeEnum = z.enum(SourceType)
 
 const CURRENT_SCHEMA_REV = 0;
 
-
+const BridgeUrlSchema = z.union([
+	HttpBaseSchema,
+	z.literal(""),
+	z.null(),
+]);
 
 
 // Version 0
@@ -30,7 +35,7 @@ export const SourceDocV0Schema = z.discriminatedUnion("type", [
 		relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
 		is_ndebit_discoverable: LwwSchema(z.boolean()),
 		admin_token: LwwSchema(z.string().nullable()),
-		bridgeUrl: LwwSchema(z.httpUrl().nullable())
+		bridgeUrl: LwwSchema(BridgeUrlSchema)
 
 	}),
 	SourceDocBaseV0Schema.safeExtend({
@@ -41,6 +46,14 @@ export const SourceDocV0Schema = z.discriminatedUnion("type", [
 
 export type SourceDocV0 = z.infer<typeof SourceDocV0Schema>;
 
+type ExtractSourceDocByType<TType extends SourceDocV0["type"]> =
+	Extract<SourceDocV0, { type: TType }>;
+
+export type NprofileSourceDocV0 =
+	ExtractSourceDocByType<SourceType.NPROFILE_SOURCE>;
+
+export type LightningAddressSourceDocV0 =
+	ExtractSourceDocByType<SourceType.LIGHTNING_ADDRESS_SOURCE>;
 
 
 

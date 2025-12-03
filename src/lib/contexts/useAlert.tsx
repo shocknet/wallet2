@@ -1,8 +1,8 @@
 import { IonAlert } from '@ionic/react';
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 
-type AlertOptions = React.ComponentProps<typeof IonAlert>
-type AlertResult = { role?: string; data?: any };
+export type AlertOptions = React.ComponentProps<typeof IonAlert>;
+export type AlertResult = { role?: string; data?: any };
 
 
 

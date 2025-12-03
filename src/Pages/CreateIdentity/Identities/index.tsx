@@ -41,7 +41,6 @@ export default function IdentitiesPage() {
 
 	const onSwitch = async (pubkey: string) => {
 		if (activeHex === pubkey) {
-			console.log("here")
 			return router.push("/identity/overview", "forward", "push")
 
 		}
@@ -67,13 +66,13 @@ export default function IdentitiesPage() {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonButton routerLink="/home" routerDirection="back" routerOptions={{ unmount: true }}>
+						<IonButton routerLink="/home" routerDirection="back">
 							<IonIcon icon={chevronBackOutline} />
 						</IonButton>
 					</IonButtons>
 					<IonTitle>Identities</IonTitle>
 					<IonButtons slot="end">
-						<IonButton routerLink="/identity/create" routerOptions={{ unmount: true }}>
+						<IonButton routerLink="/identity/create">
 							<IonIcon icon={addOutline} />
 						</IonButton>
 					</IonButtons>

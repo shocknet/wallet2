@@ -49,7 +49,7 @@ export function CustomSelect<T>({
 	};
 
 	return (
-		<>
+		<div className="w-full">
 
 			{/* Select looking input to show the selected value and also trigger the select modal */}
 			<IonItem
@@ -113,6 +113,6 @@ export function CustomSelect<T>({
 					</IonToolbar>
 				</IonFooter>
 			</IonModal >
-		</>
+		</div>
 	);
 }
