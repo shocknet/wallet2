@@ -32,7 +32,11 @@ import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { useAppDispatch } from "@/State/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import SourceCard from "@/Components/SourceCard";
+
+
 
 interface Props {
 	isOpen: boolean;
@@ -74,6 +78,11 @@ const OperationModal = ({ isOpen, onClose, operation }: Props) => {
 					) : (operation.type === "USER_TO_USER") ? (
 						<UserToUserOperation operation={operation} />
 					) : null
+				}
+				{
+					operation
+					&&
+					<SourceSection sourceId={operation.sourceId} />
 				}
 			</IonContent>
 		</IonModal>
@@ -382,40 +391,24 @@ const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperati
 	)
 }
 
-/* const SourceSection = ({ sourceId }: { sourceId: string }) => {
+const SourceSection = ({ sourceId }: { sourceId: string }) => {
 
 
-	if (!operationSource) return null;
+	const source = useAppSelector(state => selectSourceViewById(state, sourceId))
+
+	if (!source) return null
 
 	return (
 		<>
 			<SectionDivider title="Source" />
-			<IonList lines="none" style={{ borderRadius: "12px" }}>
-				<IonItem>
-					<IonLabel color="primary">Source Label</IonLabel>
-					<IonText>{operationSource.label}</IonText>
-				</IonItem>
-				<IonItem>
-					<IonLabel color="primary">Source Type</IonLabel>
-					<IonText>{"balance" in operationSource ? "Spend From" : "Pay To"}</IonText>
-				</IonItem>
 
-				{"balance" in operationSource && (
-					<IonItem>
-						<IonLabel color="primary">Balance</IonLabel>
-						<IonText color="primary">{parseInt(operationSource.balance)?.toLocaleString()}	<IonText color="light">sats</IonText></IonText>
-					</IonItem>
-				)}
-				<IonItem>
-					<IonLabel color="primary">
-						Paste Field
-						<IonNote style={{ display: "block", fontSize: "0.8rem" }} className="ion-text-wrap text-low">{operationSource.pasteField}</IonNote>
-					</IonLabel>
-				</IonItem>
+			<IonList className="secondary" lines="none">
+				<SourceCard source={source} button={false} onClick={() => { }} />
+
 			</IonList>
 		</>
 	)
-} */
+}
 
 
 

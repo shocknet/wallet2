@@ -55,7 +55,7 @@ Clone the repo and install
 git clone https://github.com/shocknet/wallet2
 cd wallet2 && npm i
 npm install -g @ionic/cli native-run cordova-res
-cp .env.production.example .env
+cp env.production.example .env
 ```
 * `nano .env` to customize
 

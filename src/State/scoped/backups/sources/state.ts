@@ -3,6 +3,9 @@ import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
 
+export const BEACON_STALE_OLDER_THAN = 1.5 * 60 * 1000;
+export const BEACON_SEMI_STALE_OLDER_THAN = 1 * 60 * 1000;
+
 
 export interface SourceDocEntity {
 	base?: SourceDocV0;
@@ -26,7 +29,7 @@ export const metadataAdapter = createEntityAdapter<SourceMetadata, string>({
 	selectId: (m) => m.id,
 });
 
-interface SourcesMetadataState extends EntityState<SourceMetadata, string> {
+export interface SourcesMetadataState extends EntityState<SourceMetadata, string> {
 	beaconStaleMs: number;
 }
 
@@ -57,8 +60,10 @@ export interface SourcesState {
 
 export const getIntialState = (): SourcesState => ({
 	docs: docsAdapter.getInitialState(),
+
+	// metadata and history are only for nprofile sources, as lightning address sources have no use for either
 	metadata: metadataAdapter.getInitialState({
-		beaconStaleMs: 150_000,
+		beaconStaleMs: BEACON_STALE_OLDER_THAN,
 	}),
 	history: {
 		ops: opsAdapter.getInitialState(),

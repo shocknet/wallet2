@@ -1,5 +1,5 @@
 import { hexToBytes } from "@noble/hashes/utils";
-import { getPublicKey, utils } from "nostr-tools";
+import { getPublicKey } from "nostr-tools";
 import { z } from "zod";
 
 
@@ -44,17 +44,7 @@ export const NPROFILE_WITH_TOKEN_REGEX = new RegExp(
 	"i"
 );
 
-export const RelayUrlSchema = z.url({ protocol: /^wss?$/ }).transform((val, ctx) => {
-	try {
-		return utils.normalizeURL(val)
-	} catch {
-		ctx.issues.push({
-			code: "custom",
-			message: "Not a valid relay url",
-			input: val
-		})
-	}
-})
+
 
 
 export const LN_ADDRESS_REGEX = new RegExp(

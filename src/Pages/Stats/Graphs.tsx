@@ -10,7 +10,7 @@ import { newWebRtcConnection } from "./webRTC";
 import { BundleDataPoint, fetchBundleStats, fetchErrors, fetchUsageStats, MetricsData } from "./statsApi";
 import { BundleGraph } from "./BundleGraph";
 import { ErrorsView } from "./ErrorsView";
-import { AdminSource } from "../../Components/AdminGuard";
+import { NprofileView } from "@/State/scoped/backups/sources/selectors";
 //import { MetricsData } from "./StatsGraph";
 type OfferItemType = {
     title: string;
@@ -22,13 +22,13 @@ type OfferItemType = {
 
 type PagedData = Record<string, Record<string, Record<number, Types.UsageMetric[]>>>
 /* type SelectedMetrics = {
-  auth_in_nano?: boolean
-  handle_in_nano?: boolean
-  parsed_in_nano?: boolean
-  validate_in_nano?: boolean
+    auth_in_nano?: boolean
+    handle_in_nano?: boolean
+    parsed_in_nano?: boolean
+    validate_in_nano?: boolean
 } */
 
-export const Graphs = ({ adminSource }: { adminSource: AdminSource }) => {
+export const Graphs = ({ adminSource }: { adminSource: NprofileView }) => {
     const [apps, setApps] = useState<string[]>([])
     const [bundleData, setBundleData] = useState<MetricsData<BundleDataPoint>>()
     const [usageData, setUsageData] = useState<MetricsData<Types.UsageMetric>>()
@@ -43,7 +43,7 @@ export const Graphs = ({ adminSource }: { adminSource: AdminSource }) => {
     const [failure, setFailure] = useState(true)
     const [http, setHttp] = useState(true)
     /*     const [successFilter, setSuccessFilter] = useState<'yes' | 'no' | ''>("")
-        const [nostrFilter, setNostrFilter] = useState<'yes' | 'no' | ''>("") */
+            const [nostrFilter, setNostrFilter] = useState<'yes' | 'no' | ''>("") */
     const [errorStats, setErrorStats] = useState<Types.ErrorStats>()
 
     const [tab, setTab] = useState<'usage' | 'bundle'>('usage')

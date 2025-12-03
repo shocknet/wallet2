@@ -91,11 +91,11 @@ const Home = () => {
 	useIonViewDidEnter(() => {
 		const { reason } = history.location.state as { reason?: string } || {}
 
-		if (reason === "noSources") {
+		if (reason) {
 			history.replace(history.location.pathname + history.location.search);
 			showAlert({
 				header: "No sources",
-				message: "You need to add an nprofile source before sending payments",
+				message: reason,
 				buttons: [
 					{
 						text: "Cancel",
@@ -109,7 +109,7 @@ const Home = () => {
 				]
 			}).then(({ role }) => {
 				if (role === "confirm") {
-					router.push("/sources", "forward", "push");
+					router.push("/sources", "forward");
 				}
 			})
 		}
@@ -224,13 +224,13 @@ const Home = () => {
 			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
 				<div className={styles["toolbar"]}>
 					<div className={styles["button-container"]}>
-						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerOptions={{ unmount: true }} routerLink="/receive" routerDirection="forward">
+						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
 							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
 							Receive
 						</IonButton>
 					</div>
 					<div className={styles["button-container"]}>
-						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerOptions={{ unmount: true }} routerLink="/send" routerDirection="forward">
+						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
 							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
 							Send
 						</IonButton>

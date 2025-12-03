@@ -21,13 +21,11 @@ import {
 	logoBitcoin,
 	analyticsOutline,
 } from "ionicons/icons"
-import { useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { App } from "@capacitor/app"
-import { type AdminSource, getAdminSource } from "../AdminGuard/helpers"
 import { Capacitor } from "@capacitor/core"
 import { useAppSelector } from "@/State/store/hooks"
-import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors"
-import { nip19 } from "nostr-tools"
+import { selectHealthyAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 
 
@@ -36,7 +34,7 @@ interface AppBuildInfo {
 	versionCode: string;
 	versionName: string;
 }
-const getMenuItems = (adminSource: AdminSource | undefined) => {
+const getMenuItems = (hasAdminSoures: boolean) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
 		{ title: "Contacts", icon: peopleOutline, path: "/contacts" },
@@ -46,35 +44,28 @@ const getMenuItems = (adminSource: AdminSource | undefined) => {
 		{ title: "Manage Sources", icon: flashOutline, path: "/sources" },
 		{ title: "Node Invitations", icon: personAddOutline, path: "/invitations" },
 	]
-	if (adminSource) {
+	if (hasAdminSoures) {
 		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics", color: '#c740c7' })
 	}
 	return items
 }
 
-const NavigationMenu = () => {
+const NavigationMenu = memo(() => {
 	const activeIdentityId = useAppSelector(selectActiveIdentityId);
-	console.log({ activeIdentityId })
+
 	if (!activeIdentityId) return null;
 	return <Inner />
-}
+})
+NavigationMenu.displayName = "NavigationMenu";
 
 const Inner = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
-	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
-	const [adminSource, setAdminSource] = useState<AdminSource | undefined>(undefined)
-	useEffect(() => {
-		const adminSource = getAdminSource()
-		if (adminSource) {
-			setAdminSource(adminSource)
-			return
-		}
-		const foundAdminSource = healthyNprofileSourceViews.find(p => p.adminToken !== null)
-		if (foundAdminSource) {
-			console.log("admin source found", foundAdminSource)
-			setAdminSource({ nprofile: nip19.nprofileEncode({ pubkey: foundAdminSource.lpk, relays: foundAdminSource.relays }), keys: foundAdminSource.keys })
-		}
-	}, [healthyNprofileSourceViews])
+	const healthyAdminSources = useAppSelector(selectHealthyAdminNprofileViews);
+
+	const hasAdminSources = healthyAdminSources.length > 0;
+
+
+
 
 	useEffect(() => {
 		const setupAppBuildInfo = async () => {
@@ -115,10 +106,10 @@ const Inner = () => {
 
 					<IonItemGroup>
 						{
-							getMenuItems(adminSource).map((item, index) => {
+							getMenuItems(hasAdminSources).map((item, index) => {
 								return (
 									<IonMenuToggle key={index} autoHide={false}>
-										<IonItem routerLink={item.path} routerDirection="root" routerOptions={{ unmount: true }}>
+										<IonItem routerLink={item.path} routerDirection="forward">
 											{item.color && <IonIcon style={{ color: item.color }} icon={item.icon} slot="start" />}
 											{!item.color && <IonIcon color="primary" icon={item.icon} slot="start" />}
 											<IonLabel style={{ "--color": "var(--ion-text-color-step-150)" }}>{item.title}</IonLabel>

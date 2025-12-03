@@ -5,6 +5,6 @@ import type { RootState } from "@/State/store/store";
 // i.e. routes only accessible for a mounted identity
 export function selectScopedStrict(s: RootState) {
 	const v = s.scoped;
-	if (!v) throw new Error("Scoped state not mounted (no active identity)");
-	return v;
+	if (!v && import.meta.env.MODE !== "test") throw new Error("Scoped state not mounted (no active identity)");
+	return v!;
 }

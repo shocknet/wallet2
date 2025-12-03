@@ -3,7 +3,9 @@ import {
 	useIonRouter,
 	IonButtons,
 	IonBackButton,
-	IonText
+	IonText,
+
+	useIonLoading
 } from "@ionic/react";
 import { SANCTUM_URL } from "../../constants";
 import { toast } from "react-toastify";
@@ -16,7 +18,6 @@ import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identi
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
 import { chevronBackOutline } from "ionicons/icons";
-import { appStateActions } from "@/State/appState/slice";
 
 
 
@@ -24,11 +25,12 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 	const dispatch = useAppDispatch()
 	const { showToast } = useToast();
 	const router = useIonRouter();
+	const [presentLoading, dismissLoading] = useIonLoading();
 
 
 	const onSubmit = async (accessToken: string) => {
 		try {
-
+			await presentLoading({ message: "Loading identity" });
 			const api = await getSanctumIdentityApi({ accessToken });
 			const pubkey = await api.getPublicKey();
 
@@ -40,7 +42,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 				createdAt: Date.now()
 			}
 			const { foundBackup } = await dispatch(createIdentity(identity));
-			dispatch(appStateActions.setAppBootstrapped());
+			await dismissLoading()
 
 			if (foundBackup) {
 				router.push("/sources", "root", "replace");
@@ -50,7 +52,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 		} catch (err: any) {
 			showToast({
 				color: "danger",
-				message: err?.messge || "An error occured when creating identity"
+				message: err?.message || "An error occured when creating identity"
 			});
 			return;
 		}
