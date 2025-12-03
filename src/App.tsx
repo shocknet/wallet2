@@ -34,6 +34,7 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
+import Swaps from './Pages/Swaps';
 import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
 import { useAppSelector } from './State/store/hooks';
 import { migrateDeviceToIdentities } from './State/identitiesRegistry/identitiesMigration';
@@ -362,6 +363,13 @@ const AppContent: React.FC = () => {
 					component={LinkedApp}
 					layout={Layout}
 
+					guards={[loadedIdentityGuard]}
+				/>
+
+				<GuardedRoute
+					exact
+					path="/swaps"
+					component={Swaps}
 					guards={[loadedIdentityGuard]}
 				/>
 

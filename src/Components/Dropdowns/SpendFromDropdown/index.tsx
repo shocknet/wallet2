@@ -2,11 +2,12 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
+import { NprofileView } from '@/State/scoped/backups/sources/selectors';
 
 type DropDownProps = {
-  values: SpendFrom[];
-  value: SpendFrom;
-  callback: Dispatch<SetStateAction<SpendFrom>>;
+  values: NprofileView[];
+  value: NprofileView;
+  callback: Dispatch<SetStateAction<NprofileView>>;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
@@ -21,7 +22,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
 
   useEffect(() => {
     setShowDropDown(showDropDown);
-    const box = allValue.filter((e) => e.id !== value.id);
+    const box = allValue.filter((e) => e.sourceId !== value.sourceId);
     setAllValue(box);
   }, [showDropDown]);
 
@@ -67,8 +68,8 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   }
 
   const selectOption = (id?: string) => {
-    const selected = values.filter((e) => e.id === id);
-    const remainValues = values.filter((e) => e.id !== id);
+    const selected = values.filter((e) => e.sourceId === id);
+    const remainValues = values.filter((e) => e.sourceId !== id);
     setAllValue(remainValues);
     dropdown();
     callback(selected[0])
@@ -79,14 +80,14 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
       <div className={showDropDown ? 'spend_from' : 'spend_from active'}>
         {
           value ?
-            (<div className="spend_from_item" key={value.id}>
+            (<div className="spend_from_item" key={value.sourceId}>
               <div className="spend_from_item_left">
-                <div className="spend_from_item_icon">{arrangeIcon(value.icon, value.pubSource ? value.id.split("-")[0] : undefined)}</div>
+                <div className="spend_from_item_icon">{arrangeIcon(value.sourceId.split("-")[0])}</div>
                 <div className="spend_from_item_input">
                   <div style={{ width: "130px" }}>{value.label}</div>
                 </div>
               </div>
-              <div className="spend_from_item_balance">{value.balance}</div>
+              <div className="spend_from_item_balance">{value.balanceSats}</div>
             </div>)
             :
             <div>
@@ -94,17 +95,17 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
         }
         <div className="spend_from_dropdown" style={{ opacity: display, transition: "0.3s", overflow: "hidden" }}>
           {display === 1 && allValue.map(
-            (item: SpendFrom) => {
-              const [sourcePub] = item.id.split("-");
+            (item: NprofileView) => {
+              const [sourcePub] = item.sourceId.split("-");
               return (
-                <div onClick={() => { selectOption(item.id) }} className="spend_from_item" key={item.id}>
+                <div onClick={() => { selectOption(item.sourceId) }} className="spend_from_item" key={item.sourceId}>
                   <div className="spend_from_item_left">
-                    <div className="spend_from_item_icon">{arrangeIcon(item.icon, item.pubSource ? sourcePub : undefined)}</div>
+                    <div className="spend_from_item_icon">{arrangeIcon(sourcePub)}</div>
                     <div className="spend_from_item_input">
                       <div>{item.label}</div>
                     </div>
                   </div>
-                  <div className="spend_from_item_balance">{item.balance}</div>
+                  <div className="spend_from_item_balance">{item.balanceSats}</div>
                 </div>
               );
             }
