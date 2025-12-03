@@ -37,6 +37,7 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
+import Swaps from './Pages/Swaps';
 
 
 
@@ -299,6 +300,11 @@ const AppContent: React.FC = () => {
 						<Layout>
 							<Stats />
 						</Layout>
+					</Suspense>
+				</Route>
+				<Route exact path="/swaps">
+					<Suspense fallback={<FullSpinner />}>
+						<Swaps />
 					</Suspense>
 				</Route>
 			</IonRouterOutlet>
