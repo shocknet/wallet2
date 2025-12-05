@@ -2,7 +2,7 @@ import { listenerKick } from "@/State/listeners/actions";
 import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { getAllNostrClients, getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
-import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { isAnyOf, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
@@ -44,7 +44,11 @@ export const beaconWatcherSpec: ListenerSpec = {
 						if (beaconRes === null) return;
 
 						if (!forkApi.signal.aborted) {
-							listenerApi.dispatch(sourcesActions.recordBeaconForSourcesOfLpk({ name: beaconRes.name, seenAtMs: beaconRes.beaconLastSeenAtMs, lpk: d.lpk }));
+							listenerApi.dispatch(sourcesActions.recordBeaconForSource({
+								sourceId: d.source_id,
+								name: beaconRes.name,
+								seenAtMs: beaconRes.beaconLastSeenAtMs
+							}));
 						}
 					});
 
@@ -58,7 +62,6 @@ export const beaconWatcherSpec: ListenerSpec = {
 					const lpkToUnixMap = new Map<string, number>();
 
 					const nprofiles = selectNprofileViews(listenerApi.getState());
-
 					/*
 						subToBeacons lives on the clientsCluster layer, however since some sources might be stale they may never
 						get to have a nostrClient, in which case we won't be able to listen for their beacons. So make sure all sources have a nostrClient.
@@ -77,11 +80,14 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 
 						if (!listenerApi.signal.aborted) {
-							listenerApi.dispatch(sourcesActions.recordBeaconForSourcesOfLpk({
-								name,
-								seenAtMs: updatedAtUnix * 1_000,
-								lpk
-							}));
+							const metadata = metadataSelectors.selectAll(listenerApi.getState());
+							metadata.filter(m => m.lpk === lpk).forEach(m => {
+								listenerApi.dispatch(sourcesActions.recordBeaconForSource({
+									sourceId: m.id,
+									name,
+									seenAtMs: updatedAtUnix * 1_000,
+								}))
+							});
 						}
 					});
 
