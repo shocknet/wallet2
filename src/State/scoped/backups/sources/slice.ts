@@ -255,20 +255,17 @@ export const sourcesSlice = createSlice({
 		setBeaconStaleMs(state, a: PayloadAction<number>) {
 			state.metadata.beaconStaleMs = a.payload
 		},
-		recordBeaconForSourcesOfLpk(
+		recordBeaconForSource(
 			state,
 			action: PayloadAction<{
+				sourceId: string;
 				name: string;
 				seenAtMs: number;
-				lpk: string
 			}>
 		) {
-			const { name, seenAtMs, lpk } = action.payload;
-			const updates: Update<MetaForNprofile, string>[] = Object.values(state.metadata.entities)
-				.filter(m => m.lpk === lpk)
-				.map(m => ({ id: m.id, changes: { beaconName: name, lastSeenAtMs: seenAtMs } }));
+			const { name, seenAtMs, sourceId } = action.payload;
 
-			metadataAdapter.updateMany(state.metadata, updates);
+			metadataAdapter.updateOne(state.metadata, { id: sourceId, changes: { beaconName: name, lastSeenAtMs: seenAtMs } })
 		},
 
 		triggerStaleRecompute(

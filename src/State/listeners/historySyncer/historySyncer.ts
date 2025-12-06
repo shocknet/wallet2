@@ -148,6 +148,29 @@ export const historySyncerSpec: ListenerSpec = {
 					const deferred = createDeferred<TaskResult<void>>();
 					listenerApi.dispatch(historyFetchSourceRequested({ sourceId, deferred }));
 				},
+			}),
+		(add) =>
+			add({
+				predicate: (action, curr, prev) => {
+					if (!sourcesActions.recordBeaconForSource.match(action)) return false;
+
+					const { sourceId } = action.payload;
+
+					const source = docsSelectors.selectById(curr, sourceId)?.draft;
+
+					if (!isNprofileSource(source) || isSourceDeleted(source)) {
+						return false;
+					}
+
+					// was stale and just became non stale
+					return isSourceStale(metadataSelectors.selectById(prev, sourceId)) && !isSourceStale(metadataSelectors.selectById(curr, sourceId))
+				},
+				effect: (action, listenerApi) => {
+					const { sourceId } = action.payload as { sourceId: string };
+
+					const deferred = createDeferred<TaskResult<void>>();
+					listenerApi.dispatch(historyFetchSourceRequested({ sourceId, deferred }));
+				},
 			})
 	],
 }
