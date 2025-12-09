@@ -8,6 +8,7 @@ import { historyFetchAllRequested, historyFetchSourceRequested, identityLoaded, 
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { historySyncerSpec } from "./historySyncer";
 import { getNostrClient } from "@/Api/nostr";
+import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 
 
 
@@ -25,7 +26,7 @@ function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const makeStore = (initialSource?: GenSource) => {
+const makeStore = (initialSources?: GenSource[], loadIdentity = true) => {
 
 
 
@@ -37,10 +38,10 @@ const makeStore = (initialSource?: GenSource) => {
 				sources: sourcesSlice.reducer,
 			}),
 		},
-		preloadedState: initialSource ?
+		preloadedState: initialSources ?
 			{
 				scoped: {
-					sources: getPreloadedSourcesState([initialSource])
+					sources: getPreloadedSourcesState(initialSources)
 				}
 			} : undefined
 		,
@@ -61,8 +62,8 @@ const makeStore = (initialSource?: GenSource) => {
 
 	// @ts-expect-error nevermind not the full store, just sources slice
 	addIdentityLifecycle(startAppListening, [historySyncerSpec]);
-
-	store.dispatch(identityLoaded({ identity }));
+	if (loadIdentity)
+		store.dispatch(identityLoaded({ identity }));
 
 	return store;
 
@@ -78,7 +79,6 @@ const identity: Identity = {
 }
 
 
-let store = makeStore();
 describe("historySyncer", () => {
 
 	beforeEach(() => {
@@ -93,7 +93,7 @@ describe("historySyncer", () => {
 
 	it("fetches GetUserInfo and commits balance + ndebit for one healthy source", async () => {
 		const [source] = generateSources(1);
-		store = makeStore(source);
+		const store = makeStore([source]);
 
 		const fakeClient = {
 			GetUserInfo: vi.fn().mockResolvedValue({
@@ -111,7 +111,9 @@ describe("historySyncer", () => {
 
 		store.dispatch(historyFetchSourceRequested({ sourceId: source.id, deferred }));
 
-		await vi.runAllTimersAsync();
+		await vi.waitFor(() => {
+			if (getNostrClientMock.mock.calls.length === 0) throw new Error
+		})
 
 		expect(getNostrClientMock).toHaveBeenCalledTimes(2);
 
@@ -126,7 +128,7 @@ describe("historySyncer", () => {
 
 	it("rejects when listener gets cancelled by lifefycle", async () => {
 		const [source] = generateSources(1);
-		store = makeStore(source);
+		const store = makeStore([source]);
 
 
 		const fakeClient = {
@@ -166,7 +168,7 @@ describe("historySyncer", () => {
 
 	it("fetches userOperations and commits history. Handles pagination", async () => {
 		const [source] = generateSources(1);
-		store = makeStore(source);
+		const store = makeStore([source]);
 
 		const fakeClient = {
 			GetUserInfo: vi.fn().mockResolvedValue({
@@ -203,7 +205,7 @@ describe("historySyncer", () => {
 
 	it("dedups per source sync requests", async () => {
 		const [source] = generateSources(1);
-		store = makeStore(source);
+		const store = makeStore([source]);
 
 		const fakeClient = {
 			GetUserInfo: vi.fn().mockResolvedValue({
@@ -249,10 +251,10 @@ describe("historySyncer", () => {
 	});
 
 	it("requests history for all sources", async () => {
-		store = makeStore();
+		const store = makeStore();
 		const sources = generateSources(3);
 
-		vi.setSystemTime(0);
+		vi.setSystemTime(0); // because _createDraftDoc sets beacon lastSeenAtMs to 0
 
 		for (const source of sources) {
 			store.dispatch(sourcesActions._createDraftDoc({ sourceId: source.id, draft: createTestSourceDoc(source.lpk, source.id) }));
@@ -291,7 +293,7 @@ describe("historySyncer", () => {
 	});
 
 	it("fires a sync request for a source when some related action is captured for that source", async () => {
-		store = makeStore();
+		const store = makeStore();
 		vi.setSystemTime(0);
 
 
@@ -320,6 +322,70 @@ describe("historySyncer", () => {
 		expect(getNostrClientMock).toHaveBeenCalledTimes(2);
 
 		expect(fakeClient.GetUserOperations).toHaveBeenCalledTimes(1);
+
+		const ids = store.getState().scoped!.sources.history.ops.ids;
+
+		expect(ids).toHaveLength(10);
+
+	})
+
+	it("fires a sync request when a source has just become non stale", async () => {
+		const artificalNowMs = 1_000_000;
+		vi.setSystemTime(artificalNowMs);
+
+		const fakeClient = {
+			GetUserInfo: vi.fn().mockResolvedValue({
+				status: "OK",
+				ndebit: "ndebit-string",
+				balance: 40,
+				max_withdrawable: 30
+			}),
+			GetUserOperations: vi.fn().mockResolvedValue(makeOpsPage({ inInv: 5, outInv: 5 }))
+		};
+		getNostrClientMock.mockResolvedValue(fakeClient as any);
+
+		const sources = generateSources(2);
+		const store = makeStore(sources, false);
+
+
+		// make first source non stale before loading identity
+		store.dispatch(sourcesActions.recordBeaconForSource({
+			sourceId: sources[0].id,
+			name: "source1-beacon",
+			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 3000
+		}));
+
+
+		store.dispatch(identityLoaded({ identity }));
+
+		// non stale => non stale
+		store.dispatch(sourcesActions.recordBeaconForSource({
+			sourceId: sources[0].id,
+			name: "source1-beacon",
+			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 4000
+		}));
+
+
+		// stale => non stale
+		store.dispatch(sourcesActions.recordBeaconForSource({
+			sourceId: sources[1].id,
+			name: "source2-beacon",
+			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 4000
+		}));
+
+
+
+		await vi.waitFor(() => {
+			if (getNostrClientMock.mock.calls.length === 0) throw new Error
+		})
+
+
+
+		expect(getNostrClientMock).toHaveBeenCalledTimes(2);
+
+		expect(fakeClient.GetUserOperations).toHaveBeenCalledTimes(1);
+
+
 
 		const ids = store.getState().scoped!.sources.history.ops.ids;
 
