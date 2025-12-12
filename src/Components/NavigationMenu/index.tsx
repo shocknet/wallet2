@@ -20,6 +20,7 @@ import {
 	helpCircleOutline,
 	logoBitcoin,
 	analyticsOutline,
+	bugOutline,
 } from "ionicons/icons"
 import { memo, useEffect, useState } from "react"
 import { App } from "@capacitor/app"
@@ -27,6 +28,7 @@ import { Capacitor } from "@capacitor/core"
 import { useAppSelector } from "@/State/store/hooks"
 import { selectHealthyAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
+import { exportDebugReport } from "@/lib/debugReportExport"
 
 
 interface AppBuildInfo {
@@ -128,6 +130,15 @@ const Inner = () => {
 						<IonItem href="https://docs.shock.network/" target="_blank" button>
 							<IonIcon color="success" icon={helpCircleOutline} slot="start" />
 							<IonLabel>Help/About</IonLabel>
+						</IonItem>
+						<IonItem button onClick={exportDebugReport}>
+							<IonIcon slot="start" icon={bugOutline} />
+							<IonLabel>Export debug log</IonLabel>
+						</IonItem>
+
+
+						<IonItem>
+
 						</IonItem>
 
 					</IonItemGroup>
