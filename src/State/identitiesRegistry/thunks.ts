@@ -13,12 +13,12 @@ import { fetchNip78Event } from "./helpers/nostr";
 import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
 import { appApi } from "../api/api";
-import { onAddSourceDoc } from "../scoped/backups/sources/thunks";
 import { SourceType } from "../scoped/common";
 import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
 import { identityLoaded, identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
 import { appStateActions } from "../appState/slice";
+import dLogger from "@/Api/helpers/debugLog";
 
 
 
@@ -28,16 +28,26 @@ export const LAST_ACTIVE_IDENTITY_PUBKEY_KEY = "__shockwallet_lai_";
 
 export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
+
+		const log = dLogger.withContext({
+			procedure: "switch-identity",
+			data: { pubkey, boot }
+		});
+
+		log.info("started");
+
 		const state = getState();
 		const current = selectActiveIdentityId(state);
 
 
 		if (!boot && current === pubkey) {
+			log.debug("aborted-same-pubkey");
 			return;
 		}
 
 		const existing = state.identitiesRegistry.entities[pubkey]
 		if (!existing) {
+			log.error("switch-to-nonexisting-identity");
 			throw new Error("Identity does not exist");
 		}
 
@@ -48,6 +58,7 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		await getIdentityNostrApi(existing);
 
 		if (!boot && current !== null) { // When it's a dynamic switch, tear down stuff nicely
+			log.info("tear-down-old-identity-started");
 
 			dispatch(appApi.util.resetApiState());
 
@@ -56,6 +67,7 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 
 			dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey: null }));
+			dLogger.removeIdentityContext();
 
 			const deferred = createDeferred<void>();
 			dispatch(identityUnloaded({ deferred }));
@@ -76,6 +88,7 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 		// If no identity doc yet, init it. If a remote version comes they will converge naturally
 		if (draft === undefined) {
+			log.debug("init-identity-doc");
 			dispatch(identityActions.initIdentityDoc({ identity_pubkey: pubkey, by: deviceId }));
 		}
 
@@ -83,6 +96,7 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
 		dispatch(identityLoaded({ identity: existing }));
 
+		dLogger.setIdentityContext({ identityPubkey: pubkey, identityType: existing.type });
 
 
 		setTimeout(() => {
@@ -94,9 +108,13 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 export const createIdentity = (identity: Identity, localSources?: SourceToMigrate[]): AppThunk<Promise<{ foundBackup: boolean }>> => {
 	return async (dispatch, getState) => {
-
+		const log = dLogger.withContext({
+			procedure: "create-identity",
+			data: { pubkey: identity.pubkey, identityType: identity.type, sourcesToMigrate: localSources ? localSources.length : null }
+		});
 
 		if (getState().identitiesRegistry.entities[identity.pubkey]) {
+			log.error("identity-already-exists");
 			throw new Error("This identity already exists.");
 		}
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
@@ -115,25 +133,25 @@ export const createIdentity = (identity: Identity, localSources?: SourceToMigrat
 		* However it may have legacy backup so we need to check that.
 		*/
 
-		if (identityDoc) return { foundBackup: true };
+		if (identityDoc) {
+			log.info("found-remote-identity-doc");
+			return { foundBackup: true };
+		}
 
 		const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
 		if (migratedSourceDocs.length) {
+			log.info("didn't find remote identity doc, but found legacy sources backups");
 			for (const sourceDoc of migratedSourceDocs) {
 				const { vanity_name, ...source } = sourceDoc
 
 
-				await dispatch(onAddSourceDoc(source));
 				dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
 
 				if (vanity_name && source.type === SourceType.NPROFILE_SOURCE) {
 					dispatch(sourcesActions.setVanityName({ sourceId: source.source_id, vanityName: vanity_name }));
 				}
-				await new Promise<void>(res => setTimeout(() => res(), 50)); // throttle source additions so publisher can pick them up
 			}
-
 			return { foundBackup: true };
-
 		} else {
 			return { foundBackup: false };
 		}
