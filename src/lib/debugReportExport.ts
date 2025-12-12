@@ -24,8 +24,9 @@ async function exportNative(json: string, filename: string) {
 	const { uri } = await Filesystem.writeFile({
 		path: `debug/${filename}`,
 		data: json,
-		directory: Directory.Cache,
+		directory: Directory.Documents,
 		encoding: Encoding.UTF8,
+		recursive: true
 	});
 
 
