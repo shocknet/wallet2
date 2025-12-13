@@ -11,6 +11,7 @@ import { App } from '@capacitor/app';
 import { utils } from "nostr-tools";
 import { Capacitor } from '@capacitor/core';
 import { createDeferred } from '@/lib/deferred';
+import dLogger from './helpers/debugLog';
 const { decrypt, encrypt } = nip04
 export const pubServiceTag = "Lightning.Pub"
 export const appTag = "shockwallet"
@@ -81,6 +82,9 @@ export default class RelayCluster {
 	beaconListeners: Record<number, (beaconUpdate: BeaconUpdate) => void> = {}
 	private bgTimer: ReturnType<typeof setTimeout> | null = null;
 	private allowAddRelay: boolean;
+	private log = dLogger.withContext({
+		component: "nostr-handler"
+	});
 
 	constructor() {
 		this.allowAddRelay = true;
@@ -100,7 +104,6 @@ export default class RelayCluster {
 		const relayUrls = relaysSettings.relays;
 
 
-
 		return Promise.any(relayUrls.map(r => {
 			this.addRelay(r, relaysSettings.lpk, relaysSettings.keys, eventCallback, () => disconnectCallback(r))
 		}))
@@ -114,7 +117,9 @@ export default class RelayCluster {
 	}
 
 	async addRelay(relayUrl: string, lpk: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
-
+		this.log.info("addRelay", {
+			data: { relayUrl, lpk, allowedAddRelay: this.allowAddRelay }
+		});
 
 		if (!this.allowAddRelay) return;
 		const relay = await this.getOrCreateRelay(
@@ -141,6 +146,11 @@ export default class RelayCluster {
 		const relayUrl = utils.normalizeURL(relay)
 		const existing = this.relays.get(relayUrl);
 		if (existing?.relay.connected) {
+			this.log.info("getOrCreateRelay", {
+				message: "found existing connected relay",
+				data: { relay, lpks }
+			});
+
 			return existing;
 		}
 
@@ -154,6 +164,10 @@ export default class RelayCluster {
 
 					const existingAfterConnect = this.relays.get(relayUrl);
 					if (existingAfterConnect && !existingAfterConnect.closed) {
+						this.log.info("getOrCreateRelay", {
+							message: "found existing after connect",
+							data: { relay, lpks }
+						});
 						relay.close();
 						return existingAfterConnect;
 					}
@@ -198,13 +212,14 @@ export default class RelayCluster {
 		return relay.relay.subscribe(filters, {
 			onevent: (event) => this.handleEvent(event, relay),
 			oneose: () => {
+				this.log.info("got-eose", { data: { relayUrl: relay.relay.url } });
 				relay._resolveReady?.();
 			}
 		});
 	}
 
 	private createFilters(relay: RelayData): Filter[] {
-		return [
+		const filters = [
 			{
 				since: Math.floor(Date.now() / 1000),
 				kinds: allowedKinds,
@@ -216,16 +231,36 @@ export default class RelayCluster {
 				authors: [...relay.lpks]
 			}
 		];
+
+		this.log.info("createFilters", {
+			data: { filters }
+		});
+
+		return filters;
 	}
 
 	private updateFilters(relay: RelayData, lpk: string, keyPair: NostrKeyPair) {
 		if (!relay.subscription || relay.subscription?.closed) {
+			this.log.info("updateFilters", {
+				message: "recreating subscription",
+				data: { relayUrl: relay.relay.url }
+			});
+
 			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
 			relay.lpks.add(lpk);
 			const sub = this.createSubscription(relay);
 			relay.subscription = sub;
 		} else {
+			this.log.info("updateFilters", {
+				message: "attempting to update filters",
+				data: { relayUrl: relay.relay.url }
+			});
 			if (relay.subbedPairs.has(keyPair.publicKey)) {
+				this.log.info("updateFilters", {
+					message: "skipping update filters",
+					data: { relayUrl: relay.relay.url }
+				});
+
 				return;
 			}
 			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
@@ -241,9 +276,11 @@ export default class RelayCluster {
 	}
 
 	private async handleEvent(e: Event, relay: RelayData) {
-		logger.log({ nostrEvent: e })
-
 		if (e.kind === 30078) {
+			this.log.info("got-30078-event", {
+				data: { event: e }
+			});
+
 			const b = JSON.parse(e.content)
 			relay.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
 			return;
@@ -353,6 +390,7 @@ export default class RelayCluster {
 	backgroundGraceClose = () => {
 		if (this.bgTimer) return;
 		this.bgTimer = setTimeout(() => {
+			this.log.info("backgroundGraceClose", { message: "started" });
 			getAllNostrClients().forEach(c => {
 				Object.entries(c.clientCbs).forEach(([id, cb]) => {
 					if (cb.type !== "single") return;
@@ -371,6 +409,11 @@ export default class RelayCluster {
 				relay.relay.close();
 				relay.closed = true;
 				relay.subscription = undefined;
+
+				this.log.info("backgroundGraceClose", {
+					message: "closing relay",
+					data: { relayUrl: relay.relay.url, lpks: relay.lpks }
+				});
 			})
 			this.bgTimer = null;
 		}, 5_000);
@@ -384,7 +427,13 @@ export default class RelayCluster {
 			return;
 		}
 
+		this.log.info("foregroundReconnect", { message: "started" });
+
 		await Promise.allSettled(this.relays.values().map(async relay => {
+			this.log.info("foregroundReconnect", {
+				message: "recreating relay state",
+				data: { relayUrl: relay.relay.url, lpks: relay.lpks }
+			})
 			await this.getOrCreateRelay( // Recreate the relay connection, using the existing args
 				relay.relay.url,
 				[...relay.lpks],
