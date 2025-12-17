@@ -102,6 +102,7 @@ export class ClientsCluster {
 					const c = this.clients[key]
 					if (c && !temp) {
 						const nostrClient = c.client
+						await this.SyncClusterRelays(relaysSettings) // Even when we have the client, we need to sync the relays as we could be coming from the background
 						logger.info("got client for", nostrClient.getPubDst(), ":", nostrClient.getId())
 						res(nostrClient.Get())
 						return;

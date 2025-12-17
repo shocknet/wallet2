@@ -81,6 +81,7 @@ export default class RelayCluster {
 	private connectingRelays = new Map<string, Promise<RelayData>>();
 	beaconListeners: Record<number, (beaconUpdate: BeaconUpdate) => void> = {}
 	private bgTimer: ReturnType<typeof setTimeout> | null = null;
+	private lifecycleEpoch = 0;
 	private allowAddRelay: boolean;
 	private log = dLogger.withContext({
 		component: "nostr-handler"
@@ -194,7 +195,7 @@ export default class RelayCluster {
 					relayData.subscription = sub;
 
 
-					relay.onclose = () => this.relays.delete(relayUrl); // onclose is not closed when we manually close the connection
+					relay.onclose = () => this.relays.delete(relayUrl); // onclose is not called when we manually close the connection
 					this.relays.set(relayUrl, relayData);
 					return relayData;
 				} finally {
@@ -388,9 +389,18 @@ export default class RelayCluster {
 		this.allowAddRelay = true;
 	}
 	backgroundGraceClose = () => {
-		if (this.bgTimer) return;
+		this.log.info("backgroundGraceClose", { message: "scheduling" });
+
+		const epoch = ++this.lifecycleEpoch;
+		if (this.bgTimer) {
+			this.log.info("backgroundGraceClose", { message: "already scheduled, returning" });
+			return;
+		}
 		this.bgTimer = setTimeout(() => {
-			this.log.info("backgroundGraceClose", { message: "started" });
+			this.log.info("backgroundGraceClose", { message: "started callback" });
+			if (epoch !== this.lifecycleEpoch) {// we resumed; abort
+				this.log.info("backgroundGraceClose", { message: "epoch mismatch, aborting" });
+			}
 			getAllNostrClients().forEach(c => {
 				Object.entries(c.clientCbs).forEach(([id, cb]) => {
 					if (cb.type !== "single") return;
@@ -421,7 +431,10 @@ export default class RelayCluster {
 
 
 	foregroundReconnect = async () => {
+		++this.lifecycleEpoch;
+
 		if (this.bgTimer) {
+			this.log.info("foregroundReconnect", { message: "canceling btTimer" });
 			clearTimeout(this.bgTimer);
 			this.bgTimer = null;
 			return;
@@ -430,11 +443,18 @@ export default class RelayCluster {
 		this.log.info("foregroundReconnect", { message: "started" });
 
 		await Promise.allSettled(this.relays.values().map(async relay => {
+			if (!relay.closed) {
+				this.log.info("foregroundReconnect", {
+					message: "relay not closed; skipping",
+					data: { relayUrl: relay.relay.url, lpks: relay.lpks }
+				})
+				return;
+			}
 			this.log.info("foregroundReconnect", {
 				message: "recreating relay state",
 				data: { relayUrl: relay.relay.url, lpks: relay.lpks }
 			})
-			await this.getOrCreateRelay( // Recreate the relay connection, using the existing args
+			const newRelay = await this.getOrCreateRelay( // Recreate the relay connection, using the existing args
 				relay.relay.url,
 				[...relay.lpks],
 				[...relay.subbedPairs.entries()].map(([pubkey, privkey]) => ({ publicKey: pubkey, privateKey: privkey })),
@@ -444,7 +464,7 @@ export default class RelayCluster {
 					beaconCallback: relay.beaconCallback
 				}
 			)
-			await relay.ready;
+			await newRelay.ready;
 		}))
 
 		getAllNostrClients().forEach(c => {
