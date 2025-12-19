@@ -592,17 +592,7 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
-			if (err instanceof Error) {
-				showAlert({
-					header: "Chain error",
-					message: err.message,
-				});
-			} else {
-				showAlert({
-					header: "Chain error",
-					message: "Error getting chain address",
-				});
-			}
+			console.log("error", err);
 		}
 		setIsloading(false);
 	}, [qrCodeValue, favoriteSource, onInvalidate, showAlert])
