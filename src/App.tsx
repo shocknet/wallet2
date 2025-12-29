@@ -47,7 +47,7 @@ import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { StatusBar, Style } from "@capacitor/status-bar";
 
 import { GuardedRoute } from './routing/GuardedRoute';
-import { atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, loadedIdentityGuard } from './routing/guards';
+import { atLeastOneAdminNprofileSourceGuard, atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, atLeastOneNprofileSource, loadedIdentityGuard } from './routing/guards';
 import onBeforeLift from './onBeforeLift';
 
 
@@ -247,7 +247,7 @@ const AppContent: React.FC = () => {
 					path="/send"
 					component={Send}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
 				/>
 
 				<GuardedRoute
@@ -328,19 +328,16 @@ const AppContent: React.FC = () => {
 					path="/metrics"
 					component={Metrics}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyAdminNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneAdminNprofileSourceGuard]}
 
 				/>
-
-
-
 
 				<GuardedRoute
 					exact
 					path="/offers"
 					component={Offers}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
 				/>
 
 

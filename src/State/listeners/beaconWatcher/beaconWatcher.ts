@@ -2,34 +2,120 @@ import { listenerKick } from "@/State/listeners/actions";
 import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { getAllNostrClients, getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
-import { metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
-import { isAnyOf, TaskAbortError } from "@reduxjs/toolkit";
+import { isAnyOf, ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
 import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
-import { isNprofileSource, isSourceDeleted } from "@/State/utils";
+import { isNewSourceAddition, isNprofileSource, } from "@/State/utils";
+import { runtimeActions } from "@/State/runtime/slice";
+import { AppDispatch, RootState } from "@/State/store/store";
 
 
 const STALE_TICK_MS = 0.7 * 60 * 1000;
 
 
-const isBeaconTrigger = isAnyOf(
-	sourcesActions._createDraftDoc,
-	sourcesActions.applyRemoteSource
-);
+const probeBeacon = (
+	toProbe: { sourceId: string; lpk: string; relays: string[] }[],
+	listenerApi: ListenerEffectAPI<RootState, AppDispatch>,
+) => {
+
+
+	const epoch = Date.now();
+
+	// Mark all sources to probe as warming up.
+	// i.e. not stale nor fresh
+	listenerApi.dispatch(
+		sourcesActions.startBeaconProbeForSources({
+			sourceIds: toProbe.map(x => x.sourceId),
+			epoch,
+		}),
+	);
+
+
+	// Probe in parallel with a small concurrency cap.
+	// This is because relays cap subscriptions from a single connection
+
+	const CONCURRENCY = 3;
+	let i = 0;
+
+	const task = listenerApi.fork(async forkApi => {
+		await Promise.allSettled(
+			new Array(CONCURRENCY).fill(0).map(async () => {
+				while (i < toProbe.length && !listenerApi.signal.aborted) {
+					const item = toProbe[i++];
+
+					try {
+
+						const res = await forkApi.pause(fetchBeaconDiscovery(item.lpk, item.relays));
+
+
+
+						if (res) {
+							listenerApi.dispatch(
+								sourcesActions.recordBeaconForSource({
+									sourceId: item.sourceId,
+									name: res.name,
+									seenAtMs: res.beaconLastSeenAtMs,
+								}),
+							);
+
+							listenerApi.dispatch(
+								sourcesActions.finishBeaconProbeForSource({
+									sourceId: item.sourceId,
+									epoch,
+								}),
+							);
+						} else {
+							listenerApi.dispatch(
+								sourcesActions.finishBeaconProbeForSource({
+									sourceId: item.sourceId,
+									epoch,
+								}),
+							);
+						}
+					} catch (err) {
+						if (err instanceof TaskAbortError) return;
+
+						if (listenerApi.signal.aborted) return;
+						listenerApi.dispatch(
+							sourcesActions.finishBeaconProbeForSource({
+								sourceId: item.sourceId,
+								epoch,
+							}),
+						);
+					}
+
+				}
+			})
+		)
+	});
+	return task;
+}
+
 
 export const beaconWatcherSpec: ListenerSpec = {
 	name: "beaconWatcher",
 	listeners: [
+		// New Source additions
 		(add) =>
 			add({
-				predicate: (action, state) => {
-					if (!isBeaconTrigger(action)) return false;
+				predicate: (action, curr, prev) => {
+					if (
+						!(isAnyOf(
+							sourcesActions._createDraftDoc,
+							sourcesActions.applyRemoteSource
+						)(action))
+					) return false;
 
 					const { sourceId } = action.payload;
-					const source = state.scoped!.sources.docs.entities[sourceId]?.draft;
-					if (!isNprofileSource(source) || isSourceDeleted(source))
+					const isSourceAddition = isNewSourceAddition(curr, prev, sourceId);
+
+					if (!isSourceAddition) return false;
+
+					const source = docsSelectors.selectById(curr, sourceId)?.draft;
+					if (!isNprofileSource(source))
 						return false;
 
 					return true;
@@ -37,29 +123,62 @@ export const beaconWatcherSpec: ListenerSpec = {
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
-					const d = listenerApi.getState().scoped!.sources.docs.entities[sourceId].draft as NprofileSourceDocV0;
 
-					const task = listenerApi.fork(async forkApi => {
-						const beaconRes = await forkApi.pause(fetchBeaconDiscovery(d.lpk, Object.keys(d.relays).filter(u => d.relays[u]?.present)));
-						if (beaconRes === null) return;
+					const d = docsSelectors.selectById(listenerApi.getState(), sourceId)?.draft as NprofileSourceDocV0;
 
-						if (!forkApi.signal.aborted) {
-							listenerApi.dispatch(sourcesActions.recordBeaconForSource({
-								sourceId: d.source_id,
-								name: beaconRes.name,
-								seenAtMs: beaconRes.beaconLastSeenAtMs
-							}));
+					const toProbe = [
+						{
+							sourceId,
+							lpk: d.lpk,
+							relays: Object.keys(d.relays).filter(u => d.relays[u]?.present)
 						}
-					});
+					];
+
+					const task = probeBeacon(toProbe, listenerApi)
 
 					await task.result;
 				}
+			}),
+
+		// On app boot and app resume
+		(add) =>
+			add({
+				predicate: (action) => {
+					return listenerKick.match(action) || (runtimeActions.setAppActiveStatus.match(action) && action.payload.active)
+				},
+				effect: async (_, listenerApi) => {
+
+					listenerApi.cancelActiveListeners()
+
+					await listenerApi.delay(15);
+
+
+					const state = listenerApi.getState();
+					const nowMs = Date.now();
+
+					const views = selectNprofileViews(state);
+
+
+					const toProbe: { sourceId: string; lpk: string; relays: string[] }[] = [];
+
+					for (const view of views) {
+						if (!view.relays.length) continue;
+						if (nowMs - view.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN) { // Only take sources that are stale
+							toProbe.push({ sourceId: view.sourceId, lpk: view.lpk, relays: view.relays });
+						}
+					}
+
+					if (!toProbe.length) return;
+
+					const task = probeBeacon(toProbe, listenerApi);
+					await task.result;
+				},
 			}),
 		(add) =>
 			add({
 				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
-					const lpkToUnixMap = new Map<string, number>();
+
 
 					const nprofiles = selectNprofileViews(listenerApi.getState());
 					/*
@@ -68,30 +187,43 @@ export const beaconWatcherSpec: ListenerSpec = {
 					*/
 					await Promise.allSettled(nprofiles.map(s => getNostrClient({ pubkey: s.lpk, relays: s.relays }, s.keys)));
 
-					subToBeacons(b => {
-						const { createdByPub: lpk, name, updatedAtUnix } = b;
-						/* Some pubs may operate on multiple relays, and so we might
-							receive the same beacon on multiple relays unnecessarily.
-							So a small optimization here to ignore values we have already recorded
-						*/
-						if (lpkToUnixMap.has(lpk) && lpkToUnixMap.get(lpk) === updatedAtUnix)
-							return;
-						lpkToUnixMap.set(lpk, updatedAtUnix);
+					const unsub = subToBeacons(b => {
+						if (listenerApi.signal.aborted) return;
+
+						const { relayUrl, createdByPub: lpk, name, updatedAtUnix } = b;
+						const seenAtMs = updatedAtUnix * 1_000;
+
+						const s = listenerApi.getState();
+						const metadata = metadataSelectors.selectAll(s);
 
 
-						if (!listenerApi.signal.aborted) {
-							const metadata = metadataSelectors.selectAll(listenerApi.getState());
-							metadata.filter(m => m.lpk === lpk).forEach(m => {
-								listenerApi.dispatch(sourcesActions.recordBeaconForSource({
+						for (const m of metadata) {
+							if (m.lpk !== lpk) continue;
+
+
+							const source = s.scoped!.sources.docs.entities[m.id]?.draft as NprofileSourceDocV0 | undefined;
+							if (!source) continue;
+
+							// Update only sources whose relay set includes the relay we heard this on
+							const relays = Object.keys(source.relays).filter(u => source.relays[u]?.present);
+							if (!relays.includes(relayUrl)) continue;
+
+							listenerApi.dispatch(
+								sourcesActions.recordBeaconForSource({
 									sourceId: m.id,
 									name,
-									seenAtMs: updatedAtUnix * 1_000,
-								}))
-							});
+									seenAtMs,
+								})
+							);
+
 						}
 					});
 
-					await listenerApi.take(() => false); // block. take reacts to cancel from lifecycle
+					try {
+						await listenerApi.take(() => false);
+					} finally {
+						try { unsub(); } catch { /* no-op */ }
+					}
 				}
 			}),
 		(add) =>
@@ -107,11 +239,11 @@ export const beaconWatcherSpec: ListenerSpec = {
 								const state = listenerApi.getState();
 								const views = selectNprofileViews(state);
 
-								const now = Date.now();
+								const nowMs = Date.now();
 
 								const currentStaleLpks = new Set(
 									views
-										.filter(v => now - v.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN)
+										.filter(v => nowMs - v.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN)
 										.map(v => v.lpk)
 								);
 
@@ -125,7 +257,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 								if (newlyStaleLpks.length) {
 									const clients = getAllNostrClients();
 									clients
-										.filter(c => newlyStaleLpks.includes(c.pubDestination))
+										.filter(c => newlyStaleLpks.includes(c.getLpk()))
 										.forEach(c => {
 											try {
 												c.disconnectCalls("Stale beacon from pub");
@@ -135,8 +267,8 @@ export const beaconWatcherSpec: ListenerSpec = {
 										});
 
 									if (!forkApi.signal.aborted) {
-										listenerApi.dispatch(sourcesActions.triggerStaleRecompute({
-											lpk: newlyStaleLpks[0],
+										listenerApi.dispatch(runtimeActions.clockTick({
+											nowMs
 										}));
 									}
 								}

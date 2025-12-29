@@ -55,10 +55,14 @@ export function CustomSelect<T>({
 			<IonItem
 				lines="none"
 				button
-				detail
-				detailIcon={caretDownSharp}
+				detail={false}
 				onClick={() => setIsOpen(true)}
-				className="item-select input-box-shadow"
+				className="[--background:var(--ion-color-secondary)]
+					[--border-color:var(--ion-background-color-step-500, gray)]
+					border-b
+					border-b-[var(--ion-background-color-step-500)]
+					min-h-14
+				"
 			>
 				{label && <IonLabel position="floating">{label}</IonLabel>}
 
@@ -71,39 +75,42 @@ export function CustomSelect<T>({
 				) : (
 					<IonLabel color="medium">{placeholder}</IonLabel>
 				)}
+				<IonIcon className="text-base" icon={caretDownSharp} color="light" slot="end" />
 
 			</IonItem>
 
 
 			<IonModal isOpen={isOpen} onDidDismiss={() => setIsOpen(false)} id="alert-select-modal">
-				<div className="wrapper">
-					<div className="title">
-						<h2>{title || "Select"}</h2>
+				<div className="bg-[var(--ion-color-secondary)]">
+					<div className="px-5 pb-4 pt-5">
+						<h2 className="m-0 font-medium text-medium text-xl">{title || "Select"}</h2>
 						{subTitle && (
-							<h3>{subTitle}</h3>
+							<h3 className="m-0 font-normal text-low text-base">{subTitle}</h3>
 						)}
 					</div>
-					<IonList>
-						{items.map(item => (
-							<IonItem
-								key={getIndex(item)}
-								button
-								onClick={() => handleSelect(item)}
-								className="alert-select-item"
+					<div className="max-h-[min(25vh,240px)] overflow-y-auto overscroll-contain">
+						<IonList lines="none">
+							{items.map(item => (
+								<IonItem
+									key={getIndex(item)}
+									button
+									onClick={() => handleSelect(item)}
+									className="[--background: var(--ion-color-secondary)]"
 
-							>
-								{renderItem(item)}
-								{selectedItem && getIndex(selectedItem) === getIndex(item) && (
-									<IonIcon
-										slot="end"
-										icon={checkmarkCircleOutline}
-										color="primary"
-										size="default"
-									/>
-								)}
-							</IonItem>
-						))}
-					</IonList>
+								>
+									{renderItem(item)}
+									{selectedItem && getIndex(selectedItem) === getIndex(item) && (
+										<IonIcon
+											slot="end"
+											icon={checkmarkCircleOutline}
+											color="primary"
+											size="default"
+										/>
+									)}
+								</IonItem>
+							))}
+						</IonList>
+					</div>
 				</div>
 				<IonFooter className="ion-no-border" >
 					<IonToolbar color="secondary">

@@ -1,22 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-	IonAvatar,
 	IonButton,
 	IonContent,
 	IonHeader,
-	IonLabel,
-	IonNote,
 	IonPage,
 	IonRouterOutlet,
-	IonText,
 	useIonViewDidLeave,
 	useIonViewWillEnter,
 } from "@ionic/react";
 import BackToolbar from '@/Layout2/BackToolbar';
 import { useAppSelector } from '@/State/store/hooks';
-import { NprofileView, selectHealthyAdminNprofileViews } from '@/State/scoped/backups/sources/selectors';
+import { NprofileView, selectAdminNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { CustomSelect } from '@/Components/CustomSelect';
-import { Satoshi } from '@/lib/types/units';
 import { Route, RouteComponentProps } from 'react-router-dom';
 import Dashboard from './metricsMain';
 import Earnings from './earnings';
@@ -25,36 +20,40 @@ import { SelectedAdminSourceProvider, } from './selectedAdminSourceContext';
 import Manage from '../Manage';
 import Channels from '../Channels';
 import { selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
+import { SelectedSource, SourceSelectOption } from '@/Components/CustomSelect/commonSelects';
 
 
 const Metrics = ({ match }: RouteComponentProps) => {
 	const identityKey = useAppSelector(selectActiveIdentityId);
-	const healthy = useAppSelector(selectHealthyAdminNprofileViews, (a, b) => a.length === b.length);
-	const [chosen, setChosen] = useState<NprofileView | undefined>(undefined);
-	const [innerChosen, setInnerChosen] = useState<NprofileView | undefined>(undefined);
+	const nprofileAdmins = useAppSelector(selectAdminNprofileViews);
 
+	const [chosenId, setChosenId] = useState("");
+	const [innerChosenId, setInnerChosenId] = useState("");
 
 
 	useIonViewWillEnter(() => {
-		if (healthy.length === 0) {
+		if (nprofileAdmins.length === 0) {
 			throw new Error("Shouldn't be able to get here");
 		}
 
-		if (healthy.length === 1) {
-			setChosen(healthy[0]);
+		if (nprofileAdmins.length === 1) {
+			setChosenId(nprofileAdmins[0].sourceId);
 		}
 	});
 
 	useIonViewDidLeave(() => {
-		setChosen(undefined);
-		setInnerChosen(undefined);
+		setChosenId("");
+		setInnerChosenId("");
 	})
+
+	const chosen = useMemo(() => nprofileAdmins.find(a => a.sourceId === chosenId), [nprofileAdmins, chosenId]);
+	const innerChosen = useMemo(() => nprofileAdmins.find(a => a.sourceId === chosenId), [nprofileAdmins, chosenId]);
 
 
 
 	if (!chosen) {
 		return (
-			<IonPage>
+			<IonPage className="ion-page-width">
 				<IonHeader className="ion-no-border">
 					<BackToolbar title="Metrics" />
 				</IonHeader>
@@ -62,46 +61,31 @@ const Metrics = ({ match }: RouteComponentProps) => {
 					<div className="page-outer">
 						<div className="page-body">
 							<section className="hero-block flex-row gap-4 max-h-[20vh]">
-								<div className="text-2xl text-high font-bold">Source Selection</div>
+								<div className="text-2xl text-medium font-bold">Source Selection</div>
 							</section>
 
 							<section className="main-block flex flex-col justify-center w-full self-center">
 								<div className="flex w-full sm:w-2/3 flex-col mx-auto justify-center items-stretch gap-4">
 									<CustomSelect<NprofileView>
-										items={healthy}
+										items={nprofileAdmins}
 										selectedItem={innerChosen}
-										onSelect={(v) => setInnerChosen(v)}
+										onSelect={(v) => setInnerChosenId(v.sourceId)}
 										getIndex={(s) => s.sourceId}
 										title="Select Source"
 										subTitle="Pick the admin source for the dashboard"
 										placeholder="Choose your admin source"
 										renderItem={(s) => (
-											<>
-												<IonAvatar slot="start">
-													<img src={`https://robohash.org/${s.sourceId}.png?bgset=bg1`} alt="Avatar" />
-												</IonAvatar>
-												<IonLabel style={{ width: "100%" }}>
-													<h2>{s.label}</h2>
-												</IonLabel>
-												<IonText slot="end" color="primary">
-													{`${Number((s.balanceSats || 0) as Satoshi).toLocaleString()} sats`}
-												</IonText>
-											</>
+											<SourceSelectOption source={s} />
 										)}
 										renderSelected={(s) => (
-											<IonText className="text-medium">
-												{s?.label ?? ""}
-												<IonNote className="text-low" style={{ display: "block" }}>
-													{`${Number((s?.balanceSats || 0) as Satoshi).toLocaleString()} sats`}
-												</IonNote>
-											</IonText>
+											<SelectedSource source={s} />
 										)}
 									/>
 									<IonButton
 										expand="block"
 										disabled={!innerChosen}
 										onClick={() => {
-											setChosen(innerChosen);
+											setChosenId(innerChosenId);
 										}}
 									>
 										Access dashboard
@@ -114,10 +98,6 @@ const Metrics = ({ match }: RouteComponentProps) => {
 			</IonPage>
 		);
 	}
-
-
-
-
 
 
 	return (

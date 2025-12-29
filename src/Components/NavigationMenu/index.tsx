@@ -26,7 +26,7 @@ import { memo, useEffect, useState } from "react"
 import { App } from "@capacitor/app"
 import { Capacitor } from "@capacitor/core"
 import { useAppSelector } from "@/State/store/hooks"
-import { selectHealthyAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
+import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
 import { exportDebugReport } from "@/lib/debugReportExport"
 
@@ -62,7 +62,7 @@ NavigationMenu.displayName = "NavigationMenu";
 
 const Inner = () => {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null)
-	const healthyAdminSources = useAppSelector(selectHealthyAdminNprofileViews);
+	const healthyAdminSources = useAppSelector(selectAdminNprofileViews);
 
 	const hasAdminSources = healthyAdminSources.length > 0;
 

@@ -8,7 +8,7 @@ import "./styles/index.css";
 import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import cn from "clsx";
-import { useBeaconState } from "@/lib/hooks/useBeaconState";
+
 
 interface Props {
 	source: SourceView;
@@ -20,7 +20,9 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
 
-	const beaconState = useBeaconState(source.type === SourceType.NPROFILE_SOURCE ? source.beaconLastSeenAtMs : 0);
+
+
+
 
 	const label = source.type === SourceType.NPROFILE_SOURCE
 		? source.beaconName || source.label || "Unnamed source"
@@ -39,14 +41,19 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 			<div slot="start" className="relative">
 
 				<IonIcon icon={personCircleOutline} className="text-6xl  block" />
-				<div
-					className={cn(
-						"absolute w-3 h-3 rounded-full bottom-2 right-2",
-						beaconState === "stale" && "bg-red-600",
-						beaconState === "semi-stale" && "bg-orange-300",
-						beaconState === "healthy" && "bg-green-500"
-					)}
-				/>
+				{
+					isNprofile
+					&&
+					<div
+						className={cn(
+							"absolute w-3 h-3 rounded-full bottom-2 right-2",
+							source.beaconStale === "stale" && "bg-red-600",
+							source.beaconStale === "warmingUp" && "bg-orange-300",
+							source.beaconStale === "fresh" && "bg-green-500"
+						)}
+					/>
+				}
+
 			</div>
 			<IonLabel>
 				<IonGrid>

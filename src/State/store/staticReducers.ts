@@ -11,6 +11,8 @@ import { combineSlices } from '@reduxjs/toolkit';
 import { persistedIdentitiesRegistryReducer } from '../identitiesRegistry/slice';
 import { appApi } from '../api/api';
 import { persistedAppStateReducer } from '../appState/slice';
+import { runTimeReducer } from '../runtime/slice';
+
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LazyLoadedSlices { }
@@ -28,5 +30,6 @@ export const staticReducers = combineSlices({
 	modalsSlice,
 	identitiesRegistry: persistedIdentitiesRegistryReducer,
 	appState: persistedAppStateReducer,
+	runtime: runTimeReducer,
 	[appApi.reducerPath]: appApi.reducer
 }).withLazyLoadedSlices<LazyLoadedSlices>();
