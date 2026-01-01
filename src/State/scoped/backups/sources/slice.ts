@@ -22,6 +22,7 @@ const mergeSourceDoc = (b: SourceDocV0, r: SourceDocV0) => {
 	const base: SourceDocV0 = { ...b, label: mergeLww<string | null>(b.label, r.label), deleted: mergeLww<boolean>(b.deleted, r.deleted) }
 	if (b.type === SourceType.NPROFILE_SOURCE && r.type === SourceType.NPROFILE_SOURCE) {
 		base.relays = mergeFlags(b.relays, r.relays);
+		base.bridgeUrl = mergeLww(b.bridgeUrl, r.bridgeUrl);
 		base.admin_token = mergeLww(b.admin_token, r.admin_token);
 		base.is_ndebit_discoverable = mergeLww(b.is_ndebit_discoverable, r.is_ndebit_discoverable);
 	}
@@ -36,6 +37,7 @@ function equalSourceDoc(a?: SourceDocV0, b?: SourceDocV0): boolean {
 	if (a.type === SourceType.NPROFILE_SOURCE && b.type === SourceType.NPROFILE_SOURCE) {
 		if (!eqFlags(a.relays, b.relays)) return false;
 		if (!eqLww(a.admin_token, b.admin_token)) return false;
+		if (!eqLww(a.bridgeUrl, b.bridgeUrl)) return false;
 		if (!eqLww(a.is_ndebit_discoverable, b.is_ndebit_discoverable)) return false;
 	}
 
@@ -122,8 +124,8 @@ export const sourcesSlice = createSlice({
 			const d = e.draft;
 			if (d.bridgeUrl.value !== a.payload.bridgeUrl) {
 				d.bridgeUrl = bump(d.bridgeUrl, a.payload.bridgeUrl, a.payload.by);
+				e.dirty = true;
 			}
-			e.dirty = true;
 		},
 
 		updateisNDebitDiscoverable(state, a: PayloadAction<{ sourceId: string; isNdebitDiscoverable: boolean; by: string }>) {

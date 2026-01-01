@@ -123,7 +123,8 @@ const IdentityOverviewPage = () => {
 						onDidDismiss: (event: CustomEvent<OverlayEventDetail>) => {
 							if (event.detail.role === "cancel") return;
 							if (event.detail.role === "confirm") {
-								handleBackupFileDownload(event.detail.data.passphrase, registry.pubkey);
+								if (registry.type === IdentityType.LOCAL_KEY)
+									handleBackupFileDownload(event.detail.data.passphrase, registry.privkey);
 
 							}
 						},
@@ -137,7 +138,7 @@ const IdentityOverviewPage = () => {
 			},
 			cssClass: "dialog-modal wallet-modal"
 		});
-	}, [handleBackupFileDownload, presentFileBackup, registry.pubkey, presentKeysBackup])
+	}, [handleBackupFileDownload, presentFileBackup, registry, presentKeysBackup])
 
 	useIonViewDidEnter(() => {
 		if (registry.type === IdentityType.SANCTUM) {
