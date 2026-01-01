@@ -1,10 +1,11 @@
 import type { NprofileView, SourceView } from "@/State/scoped/backups/sources/selectors"
 import { IonAvatar, IonIcon, IonLabel, IonSkeletonText } from "@ionic/react"
-import { alertCircleOutline, personCircle } from "ionicons/icons";
+import { personCircle } from "ionicons/icons";
 import { useState } from "react";
 import cn from "clsx";
 import { SourceType } from "@/State/scoped/common";
 import { formatSatoshi } from "@/lib/units";
+import { BeaconStatusLine } from "../BeaconStatusLine";
 
 
 interface SelectSourceProps {
@@ -37,17 +38,14 @@ const SelectedNprofile = ({ source }: { source: NprofileView }) => {
 				<span className="text-quiet">•</span>
 				<span className="text-base text-low">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
 			</span>
-			{
-				source.beaconStale
-				&&
-				<span className="flex items-center justify-start gap-1">
-					<IonIcon icon={alertCircleOutline} color="warning" />
-					<span className="text-sm text-[var(--ion-color-warning)]">stale source</span>
-				</span>
-			}
+
+			<BeaconStatusLine
+				state={source.beaconStale}
+				showWhenFresh={false}
+			/>
 		</IonLabel>
 	);
-}
+};
 
 
 
@@ -77,18 +75,10 @@ const NprofileSelectOption = ({ source }: { source: NprofileView }) => {
 
 			<div className="text-base text-low ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
 
-			{
-				source.beaconStale
-				&&
-				<span className="flex items-center justify-start gap-1">
-					<IonIcon icon={alertCircleOutline} color="warning" />
-					<span className="text-sm text-[var(--ion-color-warning)]">stale source</span>
-				</span>
-			}
-
+			<BeaconStatusLine state={source.beaconStale} />
 		</IonLabel>
 	);
-}
+};
 
 
 

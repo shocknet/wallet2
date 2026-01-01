@@ -1,4 +1,4 @@
-import { Event, Filter, finalizeEvent, nip04, Relay, SimplePool, UnsignedEvent, utils } from "nostr-tools";
+import { Event, Filter, finalizeEvent, nip04, Relay, SimplePool, UnsignedEvent } from "nostr-tools";
 import { Subscription, SubscriptionParams } from "nostr-tools/lib/types/abstract-relay";
 export const pubServiceTag = "Lightning.Pub"
 import { Buffer } from 'buffer';
@@ -9,6 +9,7 @@ import { TypedEmitter } from "@/State/utils";
 import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-pool";
 import { makeId } from "@/constants";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
+import { normalizeWsUrl } from "@/lib/url";
 const allowedKinds = [21000, 24133]
 type HubEvents = RelaySessionEvents;
 export type NostrKeyPair = {
@@ -54,7 +55,10 @@ export class TransportPool {
 
 
 	private ensureRelaySession(urlRaw: string): RelaySession {
-		const url = utils.normalizeURL(urlRaw);
+		const { ok, value: url } = normalizeWsUrl(urlRaw);
+		if (!ok) {
+			throw new Error(`Invalid URL: ${urlRaw}`);
+		}
 
 		let sess = this.sessions.get(url);
 		if (!sess) {
@@ -73,9 +77,7 @@ export class TransportPool {
 	 * Waits until ANY relay reaches readyOnce (EOSE once)
 	 */
 	async syncRelays(settings: RelaysSettings) {
-		const relays = settings.relays.map(utils.normalizeURL);
-		const { keys, lpk } = settings;
-
+		const { relays, keys, lpk } = settings;
 
 		const sessions = relays.map(r => this.ensureRelaySession(r));
 
@@ -114,7 +116,11 @@ export class TransportPool {
 	subscribe(relays: string[], filter: Filter, params: SubscribeManyParams): SubCloser {
 		const request: { url: string; filter: Filter }[] = []
 		for (let i = 0; i < relays.length; i++) {
-			const url = utils.normalizeURL(relays[i])
+			const { ok, value: url } = normalizeWsUrl(relays[i]);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${relays[i]}`);
+			}
+
 			if (!request.find(r => r.url === url)) {
 				request.push({ url, filter: filter })
 			}
@@ -128,7 +134,10 @@ export class TransportPool {
 
 		const request: { url: string; filter: Filter }[] = [];
 		for (let i = 0; i < relays.length; i++) {
-			const url = utils.normalizeURL(relays[i]);
+			const { ok, value: url } = normalizeWsUrl(relays[i]);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${relays[i]}`);
+			}
 
 			for (let f = 0; f < filters.length; f++) {
 				request.push({ url, filter: filters[f] });
@@ -321,8 +330,15 @@ export class TransportPool {
 		relays: string[],
 		event: Event,
 	) {
+		const normalize = (r: string) => {
+			const { ok, value: url } = normalizeWsUrl(r);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${r}`);
+			}
+			return url;
+		}
 		return Promise.any(
-			relays.map(utils.normalizeURL).map(async (url, i, arr) => {
+			relays.map(normalize).map(async (url, i, arr) => {
 				if (arr.indexOf(url) !== i) {
 					// duplicate
 					return Promise.reject('duplicate url')
@@ -397,8 +413,8 @@ export class RelaySession {
 
 	private log = dLogger.withContext({ component: "relay-session" });
 
-	constructor(urlRaw: string, relay: Relay, emitter: TypedEmitter<RelaySessionEvents>, handledEvents: Set<string>) {
-		this.url = utils.normalizeURL(urlRaw);
+	constructor(url: string, relay: Relay, emitter: TypedEmitter<RelaySessionEvents>, handledEvents: Set<string>) {
+		this.url = url;
 		this.relay = relay;
 		this.emitter = emitter;
 		this.handledEvents = handledEvents;
@@ -416,7 +432,7 @@ export class RelaySession {
 		try {
 			this.relay.close()
 		} catch (err) {
-			console.log(err);
+			console.error(err);
 		}
 	}
 
@@ -464,7 +480,6 @@ export class RelaySession {
 
 	private applyInterests() {
 		this.pending = true;
-		console.log(!!this.running)
 		if (this.running) return this.running;
 
 		this.running = this.runActorLoop()
@@ -705,7 +720,7 @@ export class RelaySession {
 		}
 
 		// RPC kinds only
-		if (!e.pubkey || !allowedKinds.includes(e.kind as any)) return;
+		if (!e.pubkey || !allowedKinds.includes(e.kind)) return;
 
 		const targetPubkey = e.tags.find((t) => t[0] === "p")?.[1];
 		if (!targetPubkey) return;
