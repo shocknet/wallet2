@@ -1,42 +1,26 @@
-import { Event, UnsignedEvent, Relay, finalizeEvent, nip04, Filter } from 'nostr-tools'
-import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk"
-import { Buffer } from 'buffer';
-//import { Event, UnsignedEvent, finishEvent, relayInit, Relay } from './tools'
-import { encryptData, decryptData, getSharedSecret, decodePayload, encodePayload } from './nip44v1'
-import logger from './helpers/logger';
-import { SimplePool } from 'nostr-tools';
-import { Subscription } from 'nostr-tools/lib/types/abstract-relay';
-import { getAllNostrClients } from './nostr';
-import { App } from '@capacitor/app';
-import { utils } from "nostr-tools";
-import { Capacitor } from '@capacitor/core';
-import { createDeferred } from '@/lib/deferred';
-import dLogger from './helpers/debugLog';
-const { decrypt, encrypt } = nip04
+import { Event, Filter, finalizeEvent, nip04, Relay, SimplePool, UnsignedEvent } from "nostr-tools";
+import { Subscription, SubscriptionParams } from "nostr-tools/lib/types/abstract-relay";
 export const pubServiceTag = "Lightning.Pub"
-export const appTag = "shockwallet"
-const changelogsTag = "shockwallet:changelog";
-const EVENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const CLEANUP_INTERVAL_SECONDS = 60
-const handledEvents: { eventId: string, addedAtUnix: number }[] = []
-const removeExpiredEvents = () => {
-	const now = Date.now();
-	for (let i = handledEvents.length - 1; i >= 0; i--) {
-		if (now - handledEvents[i].addedAtUnix > EVENT_TTL_MS) {
-			handledEvents.splice(i, 1);
-		}
-	}
+import { Buffer } from 'buffer';
+import dLogger from "./helpers/debugLog";
+import { decodePayload, decryptData, encodePayload, encryptData, getSharedSecret } from "./nip44v1";
+import logger from "./helpers/logger";
+import { TypedEmitter } from "@/State/utils";
+import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-pool";
+import { makeId } from "@/constants";
+import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
+import { normalizeWsUrl } from "@/lib/url";
+const allowedKinds = [21000, 24133]
+type HubEvents = RelaySessionEvents;
+export type NostrKeyPair = {
+	privateKey: string
+	publicKey: string
 }
-const pool = new SimplePool()
-setInterval(removeExpiredEvents, CLEANUP_INTERVAL_SECONDS * 1000);
 export type BeaconUpdate = {
 	updatedAtUnix: number
 	createdByPub: string
 	name: string
-}
-export type NostrKeyPair = {
-	privateKey: string
-	publicKey: string
+	relayUrl: string;
 }
 export type NostrEvent = {
 	id: string
@@ -46,443 +30,743 @@ export type NostrEvent = {
 	to: string // addressed pubkey
 }
 
+
+export class TransportPool {
+	private sessions = new Map<string, RelaySession>();
+
+	readonly events = new TypedEmitter<HubEvents>();
+
+	private handledEvents = new Set<string>();
+
+	private log = dLogger.withContext({ component: "nostr-pool" });
+
+	constructor() { }
+
+	reset() {
+		this.sessions.values().forEach(sess => {
+			sess.close();
+		});
+
+		this.sessions.clear();
+		this.events.removeAll();
+		this.handledEvents.clear();
+
+	}
+
+
+	private ensureRelaySession(urlRaw: string): RelaySession {
+		const { ok, value: url } = normalizeWsUrl(urlRaw);
+		if (!ok) {
+			throw new Error(`Invalid URL: ${urlRaw}`);
+		}
+
+		let sess = this.sessions.get(url);
+		if (!sess) {
+			const relay = new Relay(url);
+			sess = new RelaySession(url, relay, this.events, this.handledEvents);
+			this.sessions.set(url, sess);
+		}
+
+		return sess;
+	}
+
+
+	/**
+	 * Purely registers interests (idempotent)
+	 * Calls sess.applyInerests() to schedule side effects (connect + subs)
+	 * Waits until ANY relay reaches readyOnce (EOSE once)
+	 */
+	async syncRelays(settings: RelaysSettings) {
+		const { relays, keys, lpk } = settings;
+
+		const sessions = relays.map(r => this.ensureRelaySession(r));
+
+		const waits = sessions.map(sess => sess.ensureRpcReadyForRecipient(keys, lpk));
+
+		try {
+			await Promise.any(waits);
+		} catch {
+			throw new Error("All relays of this node are down");
+		}
+	}
+
+	pause() {
+		this.sessions.values().forEach((sess) => {
+			sess.pause();
+		});
+	}
+
+	resume() {
+		this.sessions.values().forEach(sess => {
+			sess.resume();
+		});
+	}
+
+	listConnectionStatus(): Map<string, boolean> {
+		const map = new Map<string, boolean>();
+		for (const [url, sess] of this.sessions) map.set(url, sess.isConnected());
+		return map;
+	}
+
+	getActiveRelays(): string[] {
+		return [...this.sessions.values()].filter((s) => s.isConnected()).map((s) => s.url);
+	}
+
+
+	subscribe(relays: string[], filter: Filter, params: SubscribeManyParams): SubCloser {
+		const request: { url: string; filter: Filter }[] = []
+		for (let i = 0; i < relays.length; i++) {
+			const { ok, value: url } = normalizeWsUrl(relays[i]);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${relays[i]}`);
+			}
+
+			if (!request.find(r => r.url === url)) {
+				request.push({ url, filter: filter })
+			}
+		}
+
+		return this.subscribeMap(request, params)
+	}
+
+
+	subscribeMany(relays: string[], filters: Filter[], params: SubscribeManyParams): SubCloser {
+
+		const request: { url: string; filter: Filter }[] = [];
+		for (let i = 0; i < relays.length; i++) {
+			const { ok, value: url } = normalizeWsUrl(relays[i]);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${relays[i]}`);
+			}
+
+			for (let f = 0; f < filters.length; f++) {
+				request.push({ url, filter: filters[f] });
+			}
+
+		}
+
+		return this.subscribeMap(request, params)
+	}
+
+
+	private subscribeMap(requests: { url: string; filter: Filter }[], params: SubscribeManyParams): SubCloser {
+		const grouped = new Map<string, Filter[]>()
+		for (const req of requests) {
+			const { url, filter } = req
+			if (!grouped.has(url)) grouped.set(url, [])
+			grouped.get(url)!.push(filter)
+		}
+		const groupedRequests = Array.from(grouped.entries()).map(([url, filters]) => ({ url, filters }))
+
+
+		const _knownIds = new Set<string>()
+		const subs: { sess: RelaySession; subId: string }[] = [];
+
+		// batch all EOSEs into a single
+		const eosesReceived: boolean[] = []
+		let handleEose = (i: number) => {
+			if (eosesReceived[i]) return // do not act twice for the same relay
+			eosesReceived[i] = true
+			if (eosesReceived.filter(a => a).length === groupedRequests.length) {
+				params.oneose?.()
+				handleEose = () => { }
+			}
+		}
+		// batch all closes into a single
+		const closesReceived: string[] = []
+		let handleClose = (i: number, reason: string) => {
+			if (closesReceived[i]) return // do not act twice for the same relay
+			handleEose(i)
+			closesReceived[i] = reason
+			if (closesReceived.filter(a => a).length === groupedRequests.length) {
+				params.onclose?.(closesReceived)
+				handleClose = () => { }
+			}
+		}
+
+		const localAlreadyHaveEventHandler = (id: string) => {
+			if (params.alreadyHaveEvent?.(id)) {
+				return true
+			}
+			const have = _knownIds.has(id)
+			_knownIds.add(id)
+			return have
+		}
+
+		// open a subscription in all given relays
+		const allOpened = Promise.all(
+			groupedRequests.map(async ({ url, filters }, i) => {
+				let sess: RelaySession;
+				try {
+					sess = this.ensureRelaySession(url);
+					await sess.ensureConnection();
+				} catch (err) {
+					handleClose(i, (err as any)?.message || String(err));
+					return;
+				}
+
+				const { sub } = sess.trackSubscription(filters, {
+					...params,
+					oneose: () => handleEose(i),
+					onclose: reason => {
+						handleClose(i, reason)
+					},
+					alreadyHaveEvent: localAlreadyHaveEventHandler,
+					eoseTimeout: params.maxWait,
+				});
+
+				sub.fire();
+
+				subs.push({ sess, subId: sub.id })
+			}),
+		)
+
+		return {
+			async close(reason?: string) {
+				await allOpened;
+				for (const s of subs) s.sess.closeTracked(s.subId, reason);
+			},
+		};
+	}
+
+
+
+
+
+	async sendNip46(relays: string[], pubKey: string, message: string, keys: NostrKeyPair) {
+		const { encrypt } = nip04;
+		const nip04Encrypted = encrypt(keys.privateKey, pubKey, message);
+		return this.sendRaw(relays, {
+			pubkey: keys.publicKey,
+			kind: 24133,
+			tags: [["p", pubKey]],
+			created_at: Math.floor(Date.now() / 1000),
+			content: nip04Encrypted,
+		}, keys.privateKey);
+	}
+
+
+
+	async send(relays: string[], pubKey: string, message: string, keys: NostrKeyPair) {
+		const decoded = await encryptData(message, getSharedSecret(keys.privateKey, pubKey));
+		const content = encodePayload(decoded);
+		return this.sendRaw(relays, {
+			content,
+			created_at: Math.floor(Date.now() / 1000),
+			kind: 21000,
+			pubkey: keys.publicKey,
+			tags: [["p", pubKey]],
+		}, keys.privateKey);
+	}
+
+	async sendNip69(relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<NofferResponse> {
+		return SendNofferRequest(this as any as SimplePool, new Uint8Array(Buffer.from(keys.privateKey, "hex")), relays, pubKey, data);
+	}
+
+	async sendRaw(relays: string[], event: UnsignedEvent, privateKeyHex: string) {
+		const signed = finalizeEvent(event, new Uint8Array(Buffer.from(privateKeyHex, "hex")));
+		return this.publish(relays, signed);
+	}
+
+	subscribeEose(
+		relays: string[],
+		filter: Filter,
+		params: Pick<SubscribeManyParams, 'label' | 'id' | 'onevent' | 'onclose' | 'maxWait' | 'onauth'>,
+	): SubCloser {
+		const subcloser = this.subscribe(relays, filter, {
+			...params,
+			oneose() {
+				subcloser.close('closed automatically on eose')
+			},
+		})
+		return subcloser
+	}
+
+	subscribeManyEose(
+		relays: string[],
+		filters: Filter[],
+		params: Pick<SubscribeManyParams, 'label' | 'id' | 'onevent' | 'onclose' | 'maxWait' | 'onauth'>,
+	): SubCloser {
+		const subcloser = this.subscribeMany(relays, filters, {
+			...params,
+			oneose() {
+				subcloser.close('closed automatically on eose')
+			},
+		})
+		return subcloser
+	}
+
+	async querySync(
+		relays: string[],
+		filter: Filter,
+		params?: Pick<SubscribeManyParams, 'label' | 'id' | 'maxWait'>,
+	): Promise<Event[]> {
+		return new Promise(resolve => {
+			const events: Event[] = []
+			this.subscribeEose(relays, filter, {
+				...params,
+				onevent(event: Event) {
+					events.push(event)
+				},
+				onclose(_: string[]) {
+					resolve(events)
+				},
+			})
+		})
+	}
+
+	async get(
+		relays: string[],
+		filter: Filter,
+		params?: Pick<SubscribeManyParams, 'label' | 'id' | 'maxWait'>,
+	): Promise<Event | null> {
+		filter.limit = 1
+		const events = await this.querySync(relays, filter, params)
+		events.sort((a, b) => b.created_at - a.created_at)
+		return events[0] || null
+	}
+
+	publish(
+		relays: string[],
+		event: Event,
+	) {
+		const normalize = (r: string) => {
+			const { ok, value: url } = normalizeWsUrl(r);
+			if (!ok) {
+				throw new Error(`Invalid URL: ${r}`);
+			}
+			return url;
+		}
+		return Promise.any(
+			relays.map(normalize).map(async (url, i, arr) => {
+				if (arr.indexOf(url) !== i) {
+					// duplicate
+					return Promise.reject('duplicate url')
+				}
+
+				const sess = this.ensureRelaySession(url);
+				await sess.ensureConnection();
+				return sess.publish(event);
+			})
+		);
+	}
+}
+
+type Waiter = { version: number; resolve: () => void; reject: (err: unknown) => void };
+
+type StoredSub = {
+	subId: string; // the id passed to nostr-tools
+	filters: Filter[];
+	params: Partial<SubscriptionParams> & { label?: string; id?: string };
+	sub?: Subscription;
+	lastEmitted?: number;
+};
+
+function cloneFilters(fs: Filter[]) {
+	return fs.map(f => ({ ...f }));
+}
+
+function bumpSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
+	if (lastEmitted === undefined) return;
+	const next = lastEmitted + 1;
+	for (const f of filters) {
+		if (f.since !== undefined && f.since < next) f.since = next;
+	}
+}
 export type RelaysSettings = {
 	relays: string[];
 	lpk: string;
 	keys: NostrKeyPair
 }
+type RelaySessionEvents = {
+	relayStatus: { url: string; connected: boolean; reason?: string; atMillis: number };
+	nostrEvent: NostrEvent;
+	beacon: BeaconUpdate;
+};
 
-type RelayArgs = {
-	eventCallback: (event: NostrEvent) => void
-	beaconCallback: (beaconUpdate: BeaconUpdate) => void
-	disconnectCallback: () => void
-}
+export const CLIENTS_RPC_SUBID = "__internal:rpc_sub";
+export const BEACONS_SUBID = "__internal:beacons_sub";
+export class RelaySession {
+	readonly url: string;
+	private relay: Relay;
+	private emitter: TypedEmitter<RelaySessionEvents>;
 
-type RelayData = {
-	relay: Relay;
-	subscription?: Subscription;
-	lpks: Set<string>;
-	subbedPairs: Map<string, string>;
-	eventCallback: (event: NostrEvent) => void
-	beaconCallback: (beaconUpdate: BeaconUpdate) => void
-	disconnectCallback: () => void
-	closed: boolean;
+	private handledEvents: Set<string>;
 
-	ready: Promise<void>;
-	_resolveReady?: () => void;
+	private recipients = new Map<string, string>();
+	private lpks = new Set<string>();
+	private rpcFilterVersion = 0;
+	private beaconFilterVersion = 0;
+	private rpcAppliedVersion = -1;
+	private beaconAppliedVersion = -1;
+	private rpcWaiters: Waiter[] = [];
+	private running?: Promise<void>;
+	private pending = false;
 
-} & RelayArgs
-const allowedKinds = [21000, 24133]
 
-const RETRY_UNSAFE = new Set(["PayAddress", "PayInvoice"])
-export default class RelayCluster {
-	pool: SimplePool = new SimplePool()
-	private relays = new Map<string, RelayData>();
-	private connectingRelays = new Map<string, Promise<RelayData>>();
-	beaconListeners: Record<number, (beaconUpdate: BeaconUpdate) => void> = {}
-	private bgTimer: ReturnType<typeof setTimeout> | null = null;
-	private lifecycleEpoch = 0;
-	private allowAddRelay: boolean;
-	private log = dLogger.withContext({
-		component: "nostr-handler"
-	});
+	private subs = new Map<string, StoredSub>();
 
-	constructor() {
-		this.allowAddRelay = true;
-		if (Capacitor.isNativePlatform()) {
-			App.addListener("appStateChange", ({ isActive }) => {
-				if (isActive) {
-					this.foregroundReconnect();
-				} else {
-					this.backgroundGraceClose();
-				}
+
+	private paused = false;
+
+	private epoch = 0; // bumps on pause/resume to invalidate in-flight actor work
+
+	private log = dLogger.withContext({ component: "relay-session" });
+
+	constructor(url: string, relay: Relay, emitter: TypedEmitter<RelaySessionEvents>, handledEvents: Set<string>) {
+		this.url = url;
+		this.relay = relay;
+		this.emitter = emitter;
+		this.handledEvents = handledEvents;
+	}
+
+	isConnected() {
+		return this.relay.connected;
+	}
+
+	async ensureConnection() {
+		return this.relay.connect();
+	}
+
+	close() {
+		try {
+			this.relay.close()
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	/**
+	 * For a nostr client, this function ensures that the relay and its underlying
+	 * rpc subscription are ready to receive responses of rpc calls.
+	 */
+	async ensureRpcReadyForRecipient(keys: NostrKeyPair, lpk: string) {
+		this.addLpk(lpk);
+		const v = this.addRecipient(keys.publicKey, keys.privateKey);
+		this.applyInterests();
+		await this.waitForRpcApplied(v);
+	}
+
+	private addRecipient(pubkey: string, privkeyHex: string): number {
+		if (this.recipients.has(pubkey)) return this.rpcFilterVersion;
+		this.recipients.set(pubkey, privkeyHex);
+		this.rpcFilterVersion++;
+		this.pending = true;
+		return this.rpcFilterVersion;
+	}
+
+	private addLpk(lpk: string) {
+		if (this.lpks.has(lpk)) return;
+		this.lpks.add(lpk);
+		this.beaconFilterVersion++;
+		this.pending = true;
+	}
+
+
+	private flushRpcWaiters() {
+		const v = this.rpcAppliedVersion;
+		if (v < 0 || !this.isConnected() || this.paused) return;
+
+		const ready = this.rpcWaiters.filter((w) => w.version <= v);
+		this.rpcWaiters = this.rpcWaiters.filter((w) => w.version > v);
+		for (const w of ready) w.resolve();
+	}
+
+	private rejectAllRpcWaiters(err: unknown) {
+		const ws = this.rpcWaiters;
+		this.rpcWaiters = [];
+		for (const w of ws) w.reject(err);
+	}
+
+	private applyInterests() {
+		this.pending = true;
+		if (this.running) return this.running;
+
+		this.running = this.runActorLoop()
+			.catch((err) => {
+				this.rejectAllRpcWaiters(err);
+				throw err;
 			})
-		}
-	}
+			.finally(() => {
+				this.running = undefined;
 
-
-	addRelays = async (relaysSettings: RelaysSettings, eventCallback: (event: NostrEvent) => void, disconnectCallback: (disconnectedRelayUrl: string) => void) => {
-		const relayUrls = relaysSettings.relays;
-
-
-		return Promise.any(relayUrls.map(r => {
-			this.addRelay(r, relaysSettings.lpk, relaysSettings.keys, eventCallback, () => disconnectCallback(r))
-		}))
-	}
-	addBeaconListener = (callback: (beaconUpdate: BeaconUpdate) => void) => {
-		const subId = Math.floor(Math.random() * 1000000)
-		this.beaconListeners[subId] = callback
-		return () => {
-			delete this.beaconListeners[subId]
-		}
-	}
-
-	async addRelay(relayUrl: string, lpk: string, keys: NostrKeyPair, eventCallback: (event: NostrEvent) => void, disconnectCallback: () => void) {
-		this.log.info("addRelay", {
-			data: { relayUrl, lpk, allowedAddRelay: this.allowAddRelay }
-		});
-
-		if (!this.allowAddRelay) return;
-		const relay = await this.getOrCreateRelay(
-			relayUrl,
-			[lpk],
-			[keys],
-			{
-				eventCallback,
-				disconnectCallback,
-				beaconCallback: (beaconUpdate: BeaconUpdate) => {
-					Object.values(this.beaconListeners).forEach(cb => cb(beaconUpdate))
+				if (this.pending && !this.paused) {
+					console.log("was it this?")
+					this.applyInterests();
 				}
-			}
-		);
-
-
-		await relay.ready; // Make sure to await eose event from relay before allowing any client to send requests
-		this.updateFilters(relay, lpk, keys);
-	}
-
-
-	private async getOrCreateRelay(relay: string, lpks: string[], keys: NostrKeyPair[], relayArgs: RelayArgs) {
-
-		const relayUrl = utils.normalizeURL(relay)
-		const existing = this.relays.get(relayUrl);
-		if (existing?.relay.connected) {
-			this.log.info("getOrCreateRelay", {
-				message: "found existing connected relay",
-				data: { relay, lpks }
 			});
 
-			return existing;
-		}
-
-		// race here can only happen between one nostr client (since GetNostrClient is queued)
-		// and the foreground handler in mobile app
-		let connecting = this.connectingRelays.get(relayUrl);
-		if (!connecting) {
-			connecting = (async () => {
-				try {
-					const relay = await Relay.connect(relayUrl);
-
-					const existingAfterConnect = this.relays.get(relayUrl);
-					if (existingAfterConnect && !existingAfterConnect.closed) {
-						this.log.info("getOrCreateRelay", {
-							message: "found existing after connect",
-							data: { relay, lpks }
-						});
-						relay.close();
-						return existingAfterConnect;
-					}
-
-					const subbedPairs = new Map<string, string>();
-					keys.forEach(key => {
-						subbedPairs.set(key.publicKey, key.privateKey);
-					})
-
-					const registeredLpks = new Set(lpks)
-
-					const deferredProm = createDeferred<void>();
-					const relayData: RelayData = {
-						relay,
-						lpks: registeredLpks,
-						subbedPairs,
-						...relayArgs,
-						closed: false,
-						ready: deferredProm,
-						_resolveReady: () => deferredProm.resolve(),
-					};
-
-					const sub = this.createSubscription(relayData);
-					relayData.subscription = sub;
-
-
-					relay.onclose = () => this.relays.delete(relayUrl); // onclose is not called when we manually close the connection
-					this.relays.set(relayUrl, relayData);
-					return relayData;
-				} finally {
-					this.connectingRelays.delete(relayUrl)
-				}
-			})();
-			this.connectingRelays.set(relayUrl, connecting);
-		}
-
-		return connecting;
+		return this.running;
 	}
 
-	private createSubscription(relay: RelayData): Subscription {
-		const filters = this.createFilters(relay);
-		return relay.relay.subscribe(filters, {
-			onevent: (event) => this.handleEvent(event, relay),
-			oneose: () => {
-				this.log.info("got-eose", { data: { relayUrl: relay.relay.url } });
-				relay._resolveReady?.();
-			}
+	private async runActorLoop() {
+		while (this.pending) {
+			this.pending = false;
+			if (this.paused) return;
+
+			const myEpoch = this.epoch;
+
+			await this.relay.connect();
+			if (this.paused || myEpoch !== this.epoch) return; // if lifecycle moved during our connect wait then stop
+
+			this.ensureClientsInterests();
+			if (this.paused || myEpoch !== this.epoch) return;
+
+		}
+	}
+
+	pause() {
+		if (this.paused) return;
+
+		this.paused = true;
+		this.epoch++;
+
+		this.rpcAppliedVersion = -1;
+		this.beaconAppliedVersion = -1;
+
+		// snapshot lastEmitted and drop live handles
+		for (const s of this.subs.values()) {
+			s.lastEmitted = s.sub?.lastEmitted ?? s.lastEmitted;
+			s.sub = undefined;
+		}
+
+
+		try {
+			this.relay.close();
+		} catch (err) {
+			this.log.warn("pause-close-failed", { data: { err } });
+		}
+
+	}
+
+	resume() {
+		if (!this.paused) return;
+
+		this.paused = false;
+		this.epoch++;
+
+		this.relay.connect(); // Don't await connect promise. sub.fire() internally awaits the connect promise
+
+		const stored = [...this.subs.values()];
+		for (const s of stored) {
+			const newFilters = cloneFilters(s.filters);
+			bumpSinceFromLastEmitted(newFilters, s.lastEmitted);
+
+			const sub = this.relay.prepareSubscription(newFilters, s.params);
+			s.sub = sub;
+			s.lastEmitted = sub.lastEmitted;
+
+			sub.fire();
+		}
+
+
+		// Drive internal interests too
+		this.pending = true;
+		this.applyInterests();
+	}
+
+
+
+
+	private waitForRpcApplied(version: number): Promise<void> {
+		if (this.isConnected() && this.rpcAppliedVersion >= version) return Promise.resolve();
+
+		return new Promise((resolve, reject) => {
+			this.rpcWaiters.push({ version, resolve, reject });
 		});
 	}
 
-	private createFilters(relay: RelayData): Filter[] {
-		const filters = [
-			{
+
+
+	private ensureOrRefireSub(
+		subId: string,
+		makeFilters: () => Filter[],
+		makeParams: () => Partial<SubscriptionParams> & { id: string }
+	) {
+		const stored = this.subs.get(subId);
+		const filters = makeFilters();
+
+		// If we have a live, open subscription: just refire with updated filters.
+		if (stored?.sub && !stored.sub.closed) {
+			if (stored.sub.lastEmitted) {
+				for (const f of filters) {
+					if (f.since !== undefined) f.since = Math.max(f.since, stored.sub.lastEmitted + 1);
+				}
+			}
+			stored.sub.filters = filters;
+			stored.sub.fire();
+			stored.filters = filters;
+			stored.lastEmitted = stored.sub.lastEmitted;
+			return stored.sub;
+		}
+
+		// Otherwise (first time, or after pause close): recreate.
+		const params = makeParams();
+		params.id = subId;
+		const sub = this.relay.prepareSubscription(filters, params);
+		this.subs.set(subId, {
+			subId: params.id,
+			filters,
+			params,
+			sub,
+			lastEmitted: sub.lastEmitted,
+		});
+
+		sub.fire();
+		return sub;
+	}
+
+	private ensureClientsInterests() {
+		// RPC
+		this.ensureOrRefireSub(
+			CLIENTS_RPC_SUBID,
+			() => [{
 				since: Math.floor(Date.now() / 1000),
-				kinds: allowedKinds,
-				'#p': Array.from(relay.subbedPairs.keys()),
-			},
-			{
+				kinds: [...allowedKinds],
+				"#p": [...this.recipients.keys()],
+			}],
+			() => ({
+				id: CLIENTS_RPC_SUBID,
+				onevent: (e) => void this.onIncomingEvent(e),
+				receivedEvent: (_, id) => this.handledEvents.add(id),
+				alreadyHaveEvent: (id) => this.handledEvents.has(id),
+			})
+		);
+		this.rpcAppliedVersion = this.rpcFilterVersion;
+		this.flushRpcWaiters();
+
+		// Beacons
+		this.ensureOrRefireSub(
+			BEACONS_SUBID,
+			() => [{
 				kinds: [30078],
-				'#d': [pubServiceTag],
-				authors: [...relay.lpks]
-			}
-		];
-
-		this.log.info("createFilters", {
-			data: { filters }
-		});
-
-		return filters;
+				authors: [...this.lpks],
+				"#d": [pubServiceTag],
+			}],
+			() => ({
+				id: BEACONS_SUBID,
+				onevent: (e) => void this.onIncomingEvent(e),
+				receivedEvent: (_, id) => this.handledEvents.add(id),
+				alreadyHaveEvent: (id) => this.handledEvents.has(id),
+			})
+		);
+		this.beaconAppliedVersion = this.beaconFilterVersion;
 	}
 
-	private updateFilters(relay: RelayData, lpk: string, keyPair: NostrKeyPair) {
-		if (!relay.subscription || relay.subscription?.closed) {
-			this.log.info("updateFilters", {
-				message: "recreating subscription",
-				data: { relayUrl: relay.relay.url }
-			});
+	trackSubscription(
+		filters: Filter[],
+		params: Partial<SubscriptionParams> & { label?: string; id?: string },
+	) {
+		const subId = params.id || makeId(16);
 
-			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
-			relay.lpks.add(lpk);
-			const sub = this.createSubscription(relay);
-			relay.subscription = sub;
-		} else {
-			this.log.info("updateFilters", {
-				message: "attempting to update filters",
-				data: { relayUrl: relay.relay.url }
-			});
-			if (relay.subbedPairs.has(keyPair.publicKey)) {
-				this.log.info("updateFilters", {
-					message: "skipping update filters",
-					data: { relayUrl: relay.relay.url }
-				});
+		const wrappedParams = {
+			...params,
+			id: subId,
+			onclose: (reason: string) => {
+				if (this.paused) return;
+				params.onclose?.(reason);
+			},
+		};
 
-				return;
-			}
-			relay.subbedPairs.set(keyPair.publicKey, keyPair.privateKey);
-			relay.lpks.add(lpk);
+		const stored: StoredSub = {
+			subId,
+			filters: cloneFilters(filters),
+			params: wrappedParams,
+		};
 
 
-			const filters = this.createFilters(relay);
+		const sub = this.relay.prepareSubscription(cloneFilters(stored.filters), stored.params);
+		stored.sub = sub;
+		stored.lastEmitted = sub.lastEmitted;
 
-			relay.subscription.filters = filters;
-			relay.subscription.fire();
+		this.subs.set(subId, stored);
+
+		return {
+			sub,
+			remove: () => this.subs.delete(subId),
+		};
+	}
+
+	closeTracked(subId: string, reason?: string) {
+		const s = this.subs.get(subId);
+		if (!s) return;
+		try {
+			s.sub?.close(reason);
+		} finally {
+			this.subs.delete(subId);
 		}
-
 	}
 
-	private async handleEvent(e: Event, relay: RelayData) {
+
+
+	async publish(event: Event): Promise<string> {
+		return this.relay.publish(event);
+	}
+
+
+	private async onIncomingEvent(e: Event) {
+		// Beacon
 		if (e.kind === 30078) {
-			this.log.info("got-30078-event", {
-				data: { event: e }
-			});
-
-			const b = JSON.parse(e.content)
-			relay.beaconCallback({ updatedAtUnix: e.created_at, createdByPub: e.pubkey, name: b.name })
-			return;
-		}
-
-		if (!e.pubkey || !allowedKinds.includes(e.kind)) {
-			return
-		}
-		const eventId = e.id
-		if (handledEvents.find(e => e.eventId === eventId)) {
-			logger.info("event already handled")
-			return
-		}
-		handledEvents.push({ eventId, addedAtUnix: Date.now() });
-
-		const targetPubkey = e.tags.find(tag => tag[0] === 'p')?.[1];
-		if (!targetPubkey) {
-			logger.warn("no 'p' tag found in event");
-			return;
-		}
-
-		const privKey = relay.subbedPairs.get(targetPubkey);
-		if (!privKey) {
-			logger.warn(`no keypair found for pubkey: ${targetPubkey}`);
-			return;
-		}
-
-		if (e.kind === 24133) {
-			const decryptedNip46 = await decrypt(privKey, e.pubkey, e.content)
-			logger.log({ decryptedNip46 })
-			relay.eventCallback({ id: eventId, content: decryptedNip46, pub: e.pubkey, kind: e.kind, to: targetPubkey })
-		}
-		const decoded = decodePayload(e.content)
-		const content = await decryptData(decoded, getSharedSecret(privKey, e.pubkey))
-		relay.eventCallback({ id: eventId, content, pub: e.pubkey, kind: e.kind, to: targetPubkey })
-	}
-
-
-
-	SendNip46 = async (relays: string[], pubKey: string, message: string, keys: NostrKeyPair) => {
-		const nip04Encrypted = await encrypt(keys.privateKey, pubKey, message)
-		this.sendRaw(
-			relays,
-			{
-				pubkey: keys.publicKey,
-				kind: 24133,
-				tags: [["p", pubKey]],
-				created_at: Math.floor(Date.now() / 1000),
-				content: nip04Encrypted,
-			},
-			keys.privateKey
-		)
-	}
-
-	Send = async (relays: string[], pubKey: string, message: string, keys: NostrKeyPair) => {
-		const decoded = await encryptData(message, getSharedSecret(keys.privateKey, pubKey))
-		const content = encodePayload(decoded)
-		this.sendRaw(
-			relays,
-			{
-				content,
-				created_at: Math.floor(Date.now() / 1000),
-				kind: 21000,
-				pubkey: keys.publicKey,
-				tags: [['p', pubKey]]
-			},
-			keys.privateKey
-		)
-	}
-
-	SendNip69 = async (relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<NofferResponse> => {
-		return SendNofferRequest(this.pool, new Uint8Array(Buffer.from(keys.privateKey, 'hex')), relays, pubKey, data)
-	}
-
-	sendRaw = async (relays: string[], event: UnsignedEvent, privateKey: string) => {
-		const signed = finalizeEvent(event, new Uint8Array(Buffer.from(privateKey, 'hex')))
-		this.pool.publish(relays, signed).forEach(p => {
-			p.then(() => logger.info("sent ok"))
-			p.catch(() => logger.error("failed to send"))
-		})
-		return signed
-	}
-
-	getActiveRelays = () => {
-		return Array.from(this.relays.entries()).filter(([_, relay]) => relay.relay?.connected).map(([url, _]) => url)
-	}
-
-	resetrelays = async () => {
-		this.allowAddRelay = false;
-		if (this.connectingRelays.size !== 0) {
-			await Promise.allSettled(this.connectingRelays.values());
-			this.connectingRelays.clear();
-		}
-		this.relays.values().forEach(relay => {
-			if (relay.relay.connected) {
-				try {
-					relay.relay.close();
-				} catch {/*  */ }
-
-			}
-
-		})
-		this.relays.clear();
-		this.beaconListeners = {};
-		this.allowAddRelay = true;
-	}
-	backgroundGraceClose = () => {
-		this.log.info("backgroundGraceClose", { message: "scheduling" });
-
-		const epoch = ++this.lifecycleEpoch;
-		if (this.bgTimer) {
-			this.log.info("backgroundGraceClose", { message: "already scheduled, returning" });
-			return;
-		}
-		this.bgTimer = setTimeout(() => {
-			this.log.info("backgroundGraceClose", { message: "started callback" });
-			if (epoch !== this.lifecycleEpoch) {// we resumed; abort
-				this.log.info("backgroundGraceClose", { message: "epoch mismatch, aborting" });
-			}
-			getAllNostrClients().forEach(c => {
-				Object.entries(c.clientCbs).forEach(([id, cb]) => {
-					if (cb.type !== "single") return;
-					const rpcName = cb.message.rpcName || "";
-					const safe = !RETRY_UNSAFE.has(rpcName);
-
-					if (safe) {
-						cb.paused = true;
-					} else {
-						cb.f({ status: "ERROR", reason: "backgrounded" });
-						delete c.clientCbs[id];
-					}
-				})
-			})
-			this.relays.values().forEach(relay => {
-				relay.relay.close();
-				relay.closed = true;
-				relay.subscription = undefined;
-
-				this.log.info("backgroundGraceClose", {
-					message: "closing relay",
-					data: { relayUrl: relay.relay.url, lpks: relay.lpks }
+			try {
+				const b = JSON.parse(e.content);
+				this.emitter.emit("beacon", {
+					updatedAtUnix: e.created_at,
+					createdByPub: e.pubkey,
+					name: b.name,
+					relayUrl: this.url,
 				});
-			})
-			this.bgTimer = null;
-		}, 5_000);
-	}
-
-
-	foregroundReconnect = async () => {
-		++this.lifecycleEpoch;
-
-		if (this.bgTimer) {
-			this.log.info("foregroundReconnect", { message: "canceling btTimer" });
-			clearTimeout(this.bgTimer);
-			this.bgTimer = null;
+			} catch { /* noop */ }
 			return;
 		}
 
-		this.log.info("foregroundReconnect", { message: "started" });
+		// RPC kinds only
+		if (!e.pubkey || !allowedKinds.includes(e.kind)) return;
 
-		await Promise.allSettled(this.relays.values().map(async relay => {
-			if (!relay.closed) {
-				this.log.info("foregroundReconnect", {
-					message: "relay not closed; skipping",
-					data: { relayUrl: relay.relay.url, lpks: relay.lpks }
-				})
-				return;
+		const targetPubkey = e.tags.find((t) => t[0] === "p")?.[1];
+		if (!targetPubkey) return;
+
+		const privKey = this.recipients.get(targetPubkey);
+		if (!privKey) return;
+
+		try {
+			let plaintext: string;
+
+			if (e.kind === 24133) {
+				const { decrypt } = nip04;
+				plaintext = decrypt(privKey, e.pubkey, e.content);
+			} else {
+				const decoded = decodePayload(e.content);
+				plaintext = decryptData(decoded, getSharedSecret(privKey, e.pubkey));
 			}
-			this.log.info("foregroundReconnect", {
-				message: "recreating relay state",
-				data: { relayUrl: relay.relay.url, lpks: relay.lpks }
-			})
-			const newRelay = await this.getOrCreateRelay( // Recreate the relay connection, using the existing args
-				relay.relay.url,
-				[...relay.lpks],
-				[...relay.subbedPairs.entries()].map(([pubkey, privkey]) => ({ publicKey: pubkey, privateKey: privkey })),
-				{
-					eventCallback: relay.eventCallback,
-					disconnectCallback: relay.disconnectCallback,
-					beaconCallback: relay.beaconCallback
-				}
-			)
-			await newRelay.ready;
-		}))
 
-		getAllNostrClients().forEach(c => {
-			Object.values(c.clientCbs).forEach(cb => {
-				if (cb.paused) {
-					cb.startedAtMillis = Date.now(); // makes healthCheck happy
-					cb.paused = undefined;
-					c.send(c.relays, cb.to, JSON.stringify(cb.message), c.settings) // resend event
-				}
+			this.emitter.emit("nostrEvent", {
+				id: e.id,
+				pub: e.pubkey,
+				to: targetPubkey,
+				kind: e.kind,
+				content: plaintext,
 			});
-		});
+		} catch (err) {
+			logger.warn("relay session decrypt/process failed", { relay: this.url, err });
+		}
 	}
 }
+
+
+
+
+
+let pool: TransportPool | null = null;
+export const getPool = () => (pool ??= new TransportPool());
+
+
+
+export const appTag = "shockwallet"
 
 export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag) => {
 	if (relays.length === 0) return null;
 
-	return pool.get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] })
+	return getPool().get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] });
 }
 export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
 	return {
@@ -506,44 +790,13 @@ export const newSourceDocEvent = (data: string, pubkey: string, dTag = appTag) =
 
 export const publishNostrEvent = async (data: Event, relays: string[]) => {
 
-	return Promise.any(pool.publish(relays, data))
+	return getPool().publish(relays, data);
 }
 
-
-export const newNip78ChangelogEvent = (data: string, pubkey: string) => {
-	return {
-		content: data,
-		created_at: Math.floor(Date.now() / 1000),
-		kind: 2121,
-		tags: [["d", changelogsTag]],
-		pubkey
-	}
-}
-
-
-export const subToNip78DocEvents = (relays: string[], filter: Filter[], onEvent: (e: Event) => Promise<void>) => {
-	return pool.subscribeMany(
+export const subToNip78DocEvents = (relays: string[], filters: Filter[], onEvent: (e: Event) => Promise<void>) => {
+	return getPool().subscribeMany(
 		relays,
-		filter,
-		{
-			onevent: (e) => {
-				onEvent(e)
-			},
-		}
-	)
-}
-
-export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp: number, onEvent: (e: Event) => Promise<void>) => {
-	return pool.subscribeMany(
-		relays,
-		[
-			{
-				since: timestamp,
-				kinds: [2121],
-				'#d': [changelogsTag],
-				authors: [pubkey]
-			}
-		],
+		filters,
 		{
 			onevent: (e) => {
 				onEvent(e)
@@ -554,7 +807,5 @@ export const subToNip78Changelogs = (pubkey: string, relays: string[], timestamp
 
 
 export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: string[]) => {
-	return pool.get(relayUrl, { kinds: [0], authors: [pubKey] })
+	return getPool().get(relayUrl, { kinds: [0], authors: [pubKey] })
 }
-
-

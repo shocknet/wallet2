@@ -71,7 +71,7 @@
     "idb": "^8.0.3",
     "ionicons": "^7.4.0",
     "moment": "^2.29.4",
-    "nostr-tools": "^2.13.0",
+    "nostr-tools": "^2.19.4",
     "npm": "^10.3.0",
     "psl": "^1.15.0",
     "qrcode.react": "^4.2.0",

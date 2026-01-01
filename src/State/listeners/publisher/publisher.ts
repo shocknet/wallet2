@@ -23,6 +23,7 @@ const isIdentityDirtying = isAnyOf(
 const isSourceDirtying = isAnyOf(
 	sourcesActions._createDraftDoc,
 	sourcesActions.updateSourceLabel,
+	sourcesActions.updateBridgeUrl,
 	sourcesActions.markDeleted,
 	sourcesActions.setRelayPresence,
 	sourcesActions.applyRemoteSource,
@@ -41,7 +42,7 @@ export const publisherSpec: ListenerSpec = {
 					if (!isSourceDirtying(action)) return false;
 					const { sourceId } = action.payload;
 					const source = docsSelectors.selectById(state, sourceId);
-					if (!source || source.draft.deleted.value || !source.dirty) {
+					if (!source || !source.dirty) {
 						return false;
 					}
 

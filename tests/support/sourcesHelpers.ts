@@ -98,12 +98,13 @@ export const getPreloadedSourcesState = (
 			beaconStaleMs: opts.beaconStaleMs ?? 150_000,
 		},
 		history: { ...historyDefault, ...(opts.historyOverride ?? {}) },
+		beaconProbe: { entities: {}, ids: [] }
 	};
 };
 
 
 export type GenSource = { id: string; lpk: string };
-export function generateSources(count: number, prefix = "src", lpk?: string): GenSource[] {
+export function generateSources(count: number, _prefix = "src", lpk?: string): GenSource[] {
 
 
 	return Array.from({ length: count }, () => {

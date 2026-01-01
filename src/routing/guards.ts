@@ -1,5 +1,5 @@
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
-import { selectHealthyAdminNprofileViews, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminNprofileViews, selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
 
@@ -14,6 +14,32 @@ export const loadedIdentityGuard: Guard = () => {
 	};
 };
 
+export const atLeastOneNprofileSource: Guard = ({ props }) => {
+	const ids = selectNprofileViews(store.getState());
+	const ok = ids.length > 0;
+	return {
+		allow: ok,
+		redirectTo: ok ? undefined : {
+			pathname: "/home",
+			state: { from: props.location, reason: "You don't have any nprofile sources. Add one first" },
+		},
+		keySuffix: `sources:${ids.length}`,
+	};
+}
+
+export const atLeastOneSource: Guard = ({ props }) => {
+	const ids = selectSourceViews(store.getState());
+	const ok = ids.length > 0;
+	return {
+		allow: ok,
+		redirectTo: ok ? undefined : {
+			pathname: "/home",
+			state: { from: props.location, reason: "You don't have any sources. Add one first" },
+		},
+		keySuffix: `sources:${ids.length}`,
+	};
+}
+
 export const atLeastOneHealthyNprofileSourceGuard: Guard = ({ props }) => {
 	const ids = selectHealthyNprofileViews(store.getState());
 	const ok = ids.length > 0;
@@ -27,8 +53,8 @@ export const atLeastOneHealthyNprofileSourceGuard: Guard = ({ props }) => {
 	};
 };
 
-export const atLeastOneHealthyAdminNprofileSourceGuard: Guard = ({ props }) => {
-	const ids = selectHealthyAdminNprofileViews(store.getState());
+export const atLeastOneAdminNprofileSourceGuard: Guard = ({ props }) => {
+	const ids = selectAdminNprofileViews(store.getState());
 	const ok = ids.length > 0;
 	return {
 		allow: ok,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { canonicalHttpBase, canonicalRelayBase } from "./url";
+import { normalizeHttpUrl, normalizeWsUrl } from "./url";
 
 
 
@@ -7,7 +7,7 @@ import { canonicalHttpBase, canonicalRelayBase } from "./url";
 export const HttpBaseSchema = z
 	.string()
 	.transform((val, ctx) => {
-		const r = canonicalHttpBase(val);
+		const r = normalizeHttpUrl(val);
 		if (!r.ok) {
 			ctx.issues.push({
 				code: "custom",
@@ -27,7 +27,7 @@ export type HttpBase = z.output<typeof HttpBaseSchema>;
 export const RelayBaseSchema = z
 	.string()
 	.transform((val, ctx) => {
-		const r = canonicalRelayBase(val);
+		const r = normalizeWsUrl(val);
 		if (!r.ok) {
 			ctx.issues.push({
 				code: "custom",

@@ -52,10 +52,27 @@ export const opsAdapter = createEntityAdapter<SourceOperation, OpKey>({
 	sortComparer: (a, b) => b.paidAtUnix - a.paidAtUnix,
 });
 
+export type BeaconProbeStatus = "idle" | "probing" | "done";
+
+export type BeaconProbeState = {
+	sourceId: string;
+	epoch: number;
+	status: BeaconProbeStatus;
+};
+
+export const beaconProbeAdapter = createEntityAdapter<BeaconProbeState, string>({
+	selectId: (b) => b.sourceId
+})
+
+export type SourcesBeaconProbe = EntityState<BeaconProbeState, string>;
+
+
+
 export interface SourcesState {
 	docs: SourceDocsState;
 	metadata: SourcesMetadataState;
-	history: HistoryState
+	history: HistoryState;
+	beaconProbe: SourcesBeaconProbe;
 }
 
 export const getIntialState = (): SourcesState => ({
@@ -69,7 +86,8 @@ export const getIntialState = (): SourcesState => ({
 		ops: opsAdapter.getInitialState(),
 		bySource: {},
 		newPaymentsCount: 0
-	}
+	},
+	beaconProbe: beaconProbeAdapter.getInitialState()
 });
 
 

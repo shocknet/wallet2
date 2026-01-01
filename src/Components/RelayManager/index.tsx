@@ -5,7 +5,8 @@ import { addOutline, closeOutline } from "ionicons/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import deepEqual from "fast-deep-equal";
-import { canonicalRelayBase } from "@/lib/url";
+import { normalizeWsUrl } from "@/lib/url";
+
 
 type RelayManagerProps = {
 	relays: string[];
@@ -20,7 +21,7 @@ type Row = { id: string; raw: string };
 const normalizeRelay = (s: string): string | null => {
 	const trimmed = s.trim();
 	if (!trimmed) return null;
-	const res = canonicalRelayBase(trimmed)
+	const res = normalizeWsUrl(trimmed)
 	if (!res.ok) return null;
 	return res.value;
 

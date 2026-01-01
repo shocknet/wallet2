@@ -215,15 +215,6 @@ export const removeSource = (sourceId: string): AppThunk<void> => async (dispatc
 	}
 
 	dispatch(sourcesActions.markDeleted({ sourceId, by: deviceId }));
-
-	const favoriteSourceId = selectFavoriteSourceId(getState());
-	const sourceIds = docsSelectors.selectIds(getState());
-
-	if (favoriteSourceId === sourceId && sourceIds.length !== 0) {
-		dispatch(identityActions.setFavoriteSource({ sourceId: sourceIds[0], by: deviceId }));
-	}
-
-
 }
 
 
