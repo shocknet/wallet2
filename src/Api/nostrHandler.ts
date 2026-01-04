@@ -5,7 +5,6 @@ import { Buffer } from 'buffer';
 import dLogger from "./helpers/debugLog";
 import { decodePayload, decryptData, encodePayload, encryptData, getSharedSecret } from "./nip44v1";
 import logger from "./helpers/logger";
-import { TypedEmitter } from "@/State/utils";
 import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-pool";
 import { makeId } from "@/constants";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
@@ -420,6 +419,7 @@ export class RelaySession {
 		this.handledEvents = handledEvents;
 	}
 
+
 	isConnected() {
 		return this.relay.connected;
 	}
@@ -491,7 +491,6 @@ export class RelaySession {
 				this.running = undefined;
 
 				if (this.pending && !this.paused) {
-					console.log("was it this?")
 					this.applyInterests();
 				}
 			});
@@ -755,7 +754,6 @@ export class RelaySession {
 
 
 
-
 let pool: TransportPool | null = null;
 export const getPool = () => (pool ??= new TransportPool());
 
@@ -808,4 +806,50 @@ export const subToNip78DocEvents = (relays: string[], filters: Filter[], onEvent
 
 export const fetchNostrUserMetadataEvent = async (pubKey: string, relayUrl: string[]) => {
 	return getPool().get(relayUrl, { kinds: [0], authors: [pubKey] })
+}
+
+export class TypedEmitter<Events extends Record<string, any>> {
+	private listeners = new Map<keyof Events, Set<(payload: any) => void>>();
+
+	on<K extends keyof Events>(
+		event: K,
+		fn: (payload: Events[K]) => void,
+		opts?: { signal?: AbortSignal }
+	): () => void {
+		let set = this.listeners.get(event);
+		if (!set) {
+			set = new Set();
+			this.listeners.set(event, set);
+		}
+		set.add(fn as any);
+
+		const off = () => {
+			set!.delete(fn as any);
+			if (set!.size === 0) this.listeners.delete(event);
+		};
+
+		if (opts?.signal) {
+			if (opts.signal.aborted) off();
+			else opts.signal.addEventListener("abort", off, { once: true });
+		}
+
+		return off;
+	}
+
+	emit<K extends keyof Events>(event: K, payload: Events[K]) {
+		const set = this.listeners.get(event);
+		if (!set) return;
+
+		[...set].forEach((fn) => {
+			try {
+				(fn as any)(payload);
+			} catch (e) {
+				console.error("TypedEmitter listener error", e);
+			}
+		});
+	}
+
+	removeAll() {
+		this.listeners.clear();
+	}
 }

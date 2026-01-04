@@ -14,7 +14,6 @@ import { sourcesActions } from "../scoped/backups/sources/slice";
 import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
 import { appApi } from "../api/api";
 import { SourceType } from "../scoped/common";
-import { fetchAllSourcesHistory } from "../scoped/backups/sources/history/thunks";
 import { identityLoaded, identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
 import { appStateActions } from "../appState/slice";
@@ -98,10 +97,6 @@ export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<vo
 
 		dLogger.setIdentityContext({ identityPubkey: pubkey, identityType: existing.type });
 
-
-		setTimeout(() => {
-			dispatch(fetchAllSourcesHistory());
-		}, 200);
 	}
 }
 

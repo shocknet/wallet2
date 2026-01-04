@@ -27,7 +27,7 @@ export const createNostrInvoice = async (nprofile: GetNostrClientNprofileArgs, k
 		memo: memo || "",
 		...(blind && { blind })
 	})
-	console.log({ res })
+
 
 
 
@@ -57,7 +57,7 @@ export const getNostrBtcAddress = async (nprofile: GetNostrClientNprofileArgs, k
 
 export const createNofferInvoice = async (noffer: OfferPointer, keys: NostrKeyPair, amount?: number) => {
 	const { offer } = noffer
-	const res = await sendNip69(noffer, { offer, amount_sats:amount }, keys)
+	const res = await sendNip69(noffer, { offer, amount_sats: amount }, keys)
 	const resErr = res as NofferError
 	if (resErr.error) {
 		if (resErr.code === 5 && resErr.range) {

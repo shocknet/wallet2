@@ -8,9 +8,9 @@ import { isAnyOf, ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
 import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
-import { isNewSourceAddition, isNprofileSource, } from "@/State/utils";
 import { runtimeActions } from "@/State/runtime/slice";
 import { AppDispatch, RootState } from "@/State/store/store";
+import { isNprofile, justAdded } from "../predicates";
 
 
 const STALE_TICK_MS = 0.7 * 60 * 1000;
@@ -47,7 +47,6 @@ const probeBeacon = (
 					const item = toProbe[i++];
 
 					try {
-
 						const res = await forkApi.pause(fetchBeaconDiscovery(item.lpk, item.relays));
 
 
@@ -98,28 +97,15 @@ const probeBeacon = (
 export const beaconWatcherSpec: ListenerSpec = {
 	name: "beaconWatcher",
 	listeners: [
-		// New Source additions
+		// Source just newly added
 		(add) =>
 			add({
-				predicate: (action, curr, prev) => {
-					if (
-						!(isAnyOf(
-							sourcesActions._createDraftDoc,
-							sourcesActions.applyRemoteSource
-						)(action))
-					) return false;
-
-					const { sourceId } = action.payload;
-					const isSourceAddition = isNewSourceAddition(curr, prev, sourceId);
-
-					if (!isSourceAddition) return false;
-
-					const source = docsSelectors.selectById(curr, sourceId)?.draft;
-					if (!isNprofileSource(source))
-						return false;
-
-					return true;
-				},
+				predicate: (action, curr, prev) =>
+				(
+					isAnyOf(sourcesActions.applyRemoteSource, sourcesActions._createDraftDoc)(action) &&
+					isNprofile(curr, action.payload.sourceId) &&
+					justAdded(curr, prev, action.payload.sourceId)
+				),
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
