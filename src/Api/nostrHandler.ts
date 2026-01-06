@@ -585,8 +585,8 @@ export class RelaySession {
 		const stored = this.subs.get(subId);
 		const filters = makeFilters();
 
-		// If we have a live, open subscription: just refire with updated filters.
-		if (stored?.sub && !stored.sub.closed) {
+		// If we have a live, open subscription: refire with updated filters if rpc version differs.
+		if (stored?.sub && !stored.sub.closed && this.rpcAppliedVersion !== this.rpcFilterVersion) {
 			if (stored.sub.lastEmitted) {
 				for (const f of filters) {
 					if (f.since !== undefined) f.since = Math.max(f.since, stored.sub.lastEmitted + 1);

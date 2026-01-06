@@ -54,6 +54,8 @@ export class ClientsCluster {
 	private shards: Record<string, ShardsInfo> = {};
 	private inflight = new Map<string, Promise<Client>>();
 
+	private logger = dLogger.withContext({ component: "cluster" })
+
 	lifecycle: LifecycleCoordinator;
 
 	private log = dLogger.withContext({ component: "nostr-clients" });
@@ -96,7 +98,7 @@ export class ClientsCluster {
 				return
 			}
 		}
-		logger.warn("no client found for", res.requestId)
+		this.logger.info("no client found for", { data: { reqId: res.requestId } });
 	}
 
 	handleEventContent = (content: string) => {
@@ -338,7 +340,7 @@ export class NostrClient {
 		if (!reqId) throw new Error("invalid sub");
 
 		if (this.clientCbs.has(reqId)) {
-			logger.warn("sub for", reqId, "was already registered")
+			/* 			this.logger.warn("sub for",) */
 			return;
 		}
 

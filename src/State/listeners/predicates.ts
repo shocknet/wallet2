@@ -5,10 +5,10 @@ import { BEACON_STALE_OLDER_THAN } from "../scoped/backups/sources/state";
 
 
 
-const draft = (state: RootState, sourceId: string) =>
+export const draft = (state: RootState, sourceId: string) =>
 	docsSelectors.selectById(state, sourceId)?.draft;
 
-const meta = (state: RootState, sourceId: string) =>
+export const meta = (state: RootState, sourceId: string) =>
 	metadataSelectors.selectById(state, sourceId);
 
 export const isNprofile = (curr: RootState, sourceId: string) => {
