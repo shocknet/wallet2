@@ -1,5 +1,5 @@
 import { createSelector, createSlice, PayloadAction, Update } from "@reduxjs/toolkit";
-import { bump, bumpFlag, eqFlags, eqLww, mergeFlags, mergeLww, } from "../lww";
+import { bump, bumpFlag, eqFlags, eqLww, mergeLww, mergeRelayFlags, } from "../lww";
 import { type SourceDocV0 } from "./schema";
 import { RootState } from "@/State/store/store";
 import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/persist/scope";
@@ -23,7 +23,7 @@ import { normalizeWsUrl } from "@/lib/url";
 const mergeSourceDoc = (b: SourceDocV0, r: SourceDocV0) => {
 	const base: SourceDocV0 = { ...b, label: mergeLww<string | null>(b.label, r.label), deleted: mergeLww<boolean>(b.deleted, r.deleted) }
 	if (b.type === SourceType.NPROFILE_SOURCE && r.type === SourceType.NPROFILE_SOURCE) {
-		base.relays = mergeFlags(b.relays, r.relays);
+		base.relays = mergeRelayFlags(b.relays, r.relays);
 		base.bridgeUrl = mergeLww(b.bridgeUrl, r.bridgeUrl);
 		base.admin_token = mergeLww(b.admin_token, r.admin_token);
 		base.is_ndebit_discoverable = mergeLww(b.is_ndebit_discoverable, r.is_ndebit_discoverable);
