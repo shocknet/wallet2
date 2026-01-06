@@ -246,7 +246,7 @@ export class NostrClient {
 	getClientState = () => {
 		return {
 			latestResponseAtMillis: this.latestResponseAtMillis,
-			latestHelthReqAtMillis: this.latestHealthReqAtMillis,
+			latestHealthReqAtMillis: this.latestHealthReqAtMillis,
 		}
 	}
 
@@ -340,7 +340,6 @@ export class NostrClient {
 		if (!reqId) throw new Error("invalid sub");
 
 		if (this.clientCbs.has(reqId)) {
-			/* 			this.logger.warn("sub for",) */
 			return;
 		}
 
