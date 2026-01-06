@@ -21,11 +21,12 @@ type Row = { id: string; raw: string };
 const normalizeRelay = (s: string): string | null => {
 	const trimmed = s.trim();
 	if (!trimmed) return null;
-	const res = normalizeWsUrl(trimmed)
-	if (!res.ok) return null;
-	return res.value;
-
-
+	try {
+		const res = normalizeWsUrl(trimmed);
+		return res;
+	} catch {
+		return null;
+	}
 };
 
 

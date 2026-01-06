@@ -24,7 +24,7 @@ import { closeOutline, key, pencil } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { useGetProfileQuery } from "@/State/api/api";
-import { nip19, utils } from "nostr-tools";
+import { nip19 } from "nostr-tools";
 import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
@@ -36,6 +36,7 @@ import { BackupKeysDialog, DownloadFileBackupDialog } from "@/Components/Modals/
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup } from "@/lib/file-backup";
 import { useToast } from "@/lib/contexts/useToast";
+import { normalizeWsUrl } from "@/lib/url";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -147,7 +148,7 @@ const IdentityOverviewPage = () => {
 					api.getRelays()
 						.then((r) => {
 							const sanctumRelays = Object.keys(r);
-							setRelays(sanctumRelays.map(utils.normalizeURL))
+							setRelays(sanctumRelays.map(normalizeWsUrl))
 						})
 						.catch(() => console.error("Error getting sanctum relays"))
 				})

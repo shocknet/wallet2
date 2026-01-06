@@ -54,10 +54,8 @@ export class TransportPool {
 
 
 	private ensureRelaySession(urlRaw: string): RelaySession {
-		const { ok, value: url } = normalizeWsUrl(urlRaw);
-		if (!ok) {
-			throw new Error(`Invalid URL: ${urlRaw}`);
-		}
+		const url = normalizeWsUrl(urlRaw);
+
 
 		let sess = this.sessions.get(url);
 		if (!sess) {
@@ -115,10 +113,7 @@ export class TransportPool {
 	subscribe(relays: string[], filter: Filter, params: SubscribeManyParams): SubCloser {
 		const request: { url: string; filter: Filter }[] = []
 		for (let i = 0; i < relays.length; i++) {
-			const { ok, value: url } = normalizeWsUrl(relays[i]);
-			if (!ok) {
-				throw new Error(`Invalid URL: ${relays[i]}`);
-			}
+			const url = normalizeWsUrl(relays[i]);
 
 			if (!request.find(r => r.url === url)) {
 				request.push({ url, filter: filter })
@@ -133,10 +128,7 @@ export class TransportPool {
 
 		const request: { url: string; filter: Filter }[] = [];
 		for (let i = 0; i < relays.length; i++) {
-			const { ok, value: url } = normalizeWsUrl(relays[i]);
-			if (!ok) {
-				throw new Error(`Invalid URL: ${relays[i]}`);
-			}
+			const url = normalizeWsUrl(relays[i]);
 
 			for (let f = 0; f < filters.length; f++) {
 				request.push({ url, filter: filters[f] });
@@ -330,10 +322,7 @@ export class TransportPool {
 		event: Event,
 	) {
 		const normalize = (r: string) => {
-			const { ok, value: url } = normalizeWsUrl(r);
-			if (!ok) {
-				throw new Error(`Invalid URL: ${r}`);
-			}
+			const url = normalizeWsUrl(r);
 			return url;
 		}
 		return Promise.any(

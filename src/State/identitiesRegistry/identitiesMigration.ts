@@ -7,10 +7,10 @@ import { IdentityExtension, IdentityKeys, IdentitySanctum, IdentityType } from "
 import { createIdentity } from "./thunks";
 import { initialState as spendSourcesInitialState } from "../Slices/spendSourcesSlice";
 import { initialState as paySourcesInitialState } from "../Slices/paySourcesSlice";
-import { utils } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY, NOSTR_RELAYS } from "@/constants";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
+import { normalizeWsUrl } from "@/lib/url";
 
 
 
@@ -30,7 +30,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 				privkey: keypair.privateKey,
 				label: "My Nostr pair Identity",
 				createdAt: Date.now(),
-				relays: NOSTR_RELAYS.map(utils.normalizeURL)
+				relays: NOSTR_RELAYS.map(normalizeWsUrl)
 			};
 
 			await dispatch(createIdentity(identity, sources));
@@ -76,7 +76,7 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 			pubkey,
 			label: "My Nostr Extension Identity",
 			createdAt: Date.now(),
-			relays: relays ? Object.keys(relays).map(utils.normalizeURL) : NOSTR_RELAYS.map(utils.normalizeURL)
+			relays: relays ? Object.keys(relays).map(normalizeWsUrl) : NOSTR_RELAYS.map(normalizeWsUrl)
 		};
 		await dispatch(createIdentity(identity, sources));
 	} else {

@@ -18,7 +18,6 @@ import { ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
 import { getPublicKey, nip19 } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { utils } from "nostr-tools";
 import { IdentityKeys, IdentityType } from "@/State/identitiesRegistry/types";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -29,9 +28,10 @@ import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
 import { getSourcesFromLegacyFileBackup, SourceToMigrate } from "@/State/identitiesRegistry/helpers/migrateToIdentities";
+import { normalizeWsUrl } from "@/lib/url";
 
 
-const defaultRelay = utils.normalizeURL("wss://relay.lightning.pub");
+const defaultRelay = normalizeWsUrl("wss://relay.lightning.pub");
 
 const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
 	const [generatedPrivKey, setGeneratedPrivKey] = useState("");

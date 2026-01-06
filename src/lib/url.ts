@@ -1,21 +1,5 @@
 import z from "zod";
 
-
-
-interface UrlOk {
-	ok: true;
-	value: string;
-	error?: never;
-}
-
-interface UrlBad {
-	ok: false;
-	error: string;
-	value?: never;
-}
-
-type UrlResult = UrlOk | UrlBad;
-
 const DEFAULT_PORT: Record<string, string> = {
 	"http:": "80",
 	"https:": "443",
@@ -23,13 +7,12 @@ const DEFAULT_PORT: Record<string, string> = {
 	"wss:": "443",
 };
 
-function parseWithDefault(raw: string, def: "https" | "wss"): URL | null {
+function parseWithDefault(raw: string, def: "https" | "wss") {
 	const s = raw.trim();
-	if (!s) return null;
+	if (!s) throw new Error("Invalid URL");
 	try { return new URL(s); }
 	catch {
-		try { return new URL(`${def}://${s.replace(/^\/+/, "")}`); }
-		catch { return null; }
+		return new URL(`${def}://${s.replace(/^\/+/, "")}`);
 	}
 }
 
@@ -51,10 +34,10 @@ function hasCredentials(u: URL) {
 }
 
 
-function sanitize(u: URL): UrlResult {
-	if (hasCredentials(u)) return { ok: false, error: "URL must not have credentials" };
+function sanitize(u: URL) {
+	if (hasCredentials(u)) throw new Error("URL must not have credentials");
 
-	if (!isValidHost(u.hostname)) return { ok: false, error: "Invalid/unsupported host" };
+	if (!isValidHost(u.hostname)) throw new Error("Invalid/unsupported host");
 
 	if (u.port && u.port === DEFAULT_PORT[u.protocol]) u.port = "";
 
@@ -68,14 +51,13 @@ function sanitize(u: URL): UrlResult {
 	let value = u.toString();
 	if (value.endsWith("/")) value = value.slice(0, -1)
 
-	return { ok: true, value };
+	return value;
 }
 
 
-export function normalizeHttpUrl(input: string): UrlResult {
+export function normalizeHttpUrl(input: string) {
 	const u = parseWithDefault(input, "https");
-	if (!u) return { ok: false, error: "Invalid URL" };
-	if (u.protocol !== "http:" && u.protocol !== "https:") return { ok: false, error: "Only http(s) allowed" };
+	if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("Only http(s) allowed");
 
 	return sanitize(u);
 }
@@ -83,10 +65,9 @@ export function normalizeHttpUrl(input: string): UrlResult {
 
 
 
-export function normalizeWsUrl(input: string): UrlResult {
+export function normalizeWsUrl(input: string) {
 	const u = parseWithDefault(input, "wss");
-	if (!u) return { ok: false, error: "Invalid URL" };
-	if (u.protocol !== "ws:" && u.protocol !== "wss:") return { ok: false, error: "Only ws(s) allowed" };
+	if (u.protocol !== "ws:" && u.protocol !== "wss:") throw new Error("Only ws(s) allowed");
 
 	return sanitize(u);
 }

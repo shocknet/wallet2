@@ -104,14 +104,12 @@ const Inner = ({
 
 	useEffect(() => {
 		if (bridgeInputTouched) {
-			const res = normalizeHttpUrl(debouncedBridgeUrl);
-
-
-			if (!res.ok) {
+			try {
+				const res = normalizeHttpUrl(debouncedBridgeUrl);
+				setFinalBridgeUrl(res);
+			} catch {
 				setBridgeInputError(true);
 				setFinalBridgeUrl(null);
-			} else {
-				setFinalBridgeUrl(res.value);
 			}
 		}
 	}, [debouncedBridgeUrl, bridgeInputTouched])
