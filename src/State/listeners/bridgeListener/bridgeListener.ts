@@ -3,13 +3,15 @@ import Bridge from "@/Api/bridge";
 import { Buffer } from "buffer";
 import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
-import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { NprofileView, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { isAnyOf, TaskAbortError, UnknownAction } from "@reduxjs/toolkit";
 import logger from "@/Api/helpers/logger";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { RootState } from "@/State/store/store";
-import { isNprofileSource } from "@/State/utils";
+import { draft, exists, isNprofile, justAdded } from "../predicates";
+import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
+
 const { getToken } = nip98
 
 const isBridgeRelated = isAnyOf(
@@ -24,22 +26,21 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 	if (!isBridgeRelated(action)) return false;
 
 	const { sourceId } = action.payload;
-	const prevSource = docsSelectors.selectById(prev, sourceId)?.draft;
-	const currSource = docsSelectors.selectById(curr, sourceId)?.draft;
 
-	// If it doesn't exist now, nothing to do
-	if (!isNprofileSource(currSource)) return false;
+	if (!exists(curr, sourceId) || !isNprofile(curr, sourceId)) return false;
 
-	if (prevSource && !isNprofileSource(prevSource)) return false;
+	const justCreated = justAdded(curr, prev, sourceId);
 
-	const justCreated = !prevSource;
+	const dPrev = draft(prev, sourceId) as NprofileSourceDocV0;
+	const dCurr = draft(curr, sourceId) as NprofileSourceDocV0;
 
-	const hasNoVanityYet = !metadataSelectors.selectById(curr, sourceId).vanityName;
 
-	const bridgeChanged =
-		prevSource && prevSource.bridgeUrl.value !== currSource.bridgeUrl.value;
+	const bridgeUrlChanged = dPrev.bridgeUrl.value !== dCurr.bridgeUrl.value;
 
-	return justCreated || hasNoVanityYet || bridgeChanged;
+	const hasNoVanityNameYet = !metadataSelectors.selectById(curr, sourceId).vanityName
+
+
+	return justCreated || bridgeUrlChanged || hasNoVanityNameYet;
 }
 
 export const bridgeListenerSpec: ListenerSpec = {
@@ -49,7 +50,6 @@ export const bridgeListenerSpec: ListenerSpec = {
 			add({
 				predicate: bridgePredicate,
 				effect: async (action, listenerApi) => {
-
 					const { sourceId } = action.payload as { sourceId: string };
 
 					const source = selectSourceViewById(

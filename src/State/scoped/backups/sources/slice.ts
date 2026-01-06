@@ -168,16 +168,15 @@ export const sourcesSlice = createSlice({
 			const e = state.docs.entities[r.source_id];
 
 			if (!e) {
-				if (!r.deleted.value) {
-					docsAdapter.addOne(state.docs, { base: r, draft: r, dirty: false });
-					if (r.type === SourceType.NPROFILE_SOURCE) {
-						const metadataForSource = getIntialMetadataEntry(r.source_id, r.lpk);
-						metadataAdapter.upsertOne(state.metadata, metadataForSource);
-					}
-					return;
-				} else {
-					return
+				if (r.deleted.value) return;
+
+				docsAdapter.addOne(state.docs, { base: r, draft: r, dirty: false });
+
+				if (r.type === SourceType.NPROFILE_SOURCE) {
+					metadataAdapter.upsertOne(state.metadata, getIntialMetadataEntry(r.source_id, r.lpk));
 				}
+
+				return;
 			}
 
 

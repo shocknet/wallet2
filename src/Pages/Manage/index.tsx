@@ -1,12 +1,22 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as Icons from "../../Assets/SvgIconLibrary";
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { getNostrClient } from "@/Api/nostr";
-import { IonContent, IonHeader, IonPage, useIonRouter } from "@ionic/react";
+import {
+	IonContent,
+	IonHeader,
+	IonPage,
+	useIonRouter,
+	useIonLoading,
+} from "@ionic/react";
 import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
-import { useSelectedAdminSource } from "../Metrics/selectedAdminSourceContext";
 import { nip19 } from "nostr-tools";
+
+
+import { useAppSelector } from "@/State/store/hooks";
+import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 const Manage = () => {
 	const router = useIonRouter();
@@ -20,7 +30,17 @@ const Manage = () => {
 	const [isDefaultManage, setIsDefaultManage] = useState<boolean>(true);
 	const [isAutoService, setIsAutoService] = useState<boolean>(true);
 	const [isRecoveryKey, setIsRecoveryKey] = useState<boolean>(true);
-	const { adminSource } = useSelectedAdminSource();
+
+	const [error, setError] = useState<string | null>(null);
+	const [presentLoading, dismissLoading] = useIonLoading();
+
+
+	const admins = useAppSelector(selectAdminNprofileViews);
+	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
+	const adminSource = useMemo(
+		() => admins.find(a => a.sourceId === selectedId),
+		[admins, selectedId]
+	)!;
 
 	const seeditems: string[] = [
 		"albert",
@@ -46,11 +66,28 @@ const Manage = () => {
 	];
 
 	const fetchSeed = async () => {
-		if (!isRevealed) {
-			setIsRevealed(true);
-			const client = await getNostrClient({ pubkey: adminSource.lpk, relays: adminSource.relays }, adminSource.keys!);
+		setError(null);
+
+
+		if (isRevealed) {
+			setIsRevealed(false);
+			return;
+		}
+
+		setIsRevealed(true);
+
+		await dismissLoading();
+		await presentLoading("Fetching seed...");
+
+		try {
+			const client = await getNostrClient(
+				{ pubkey: adminSource.lpk, relays: adminSource.relays },
+				adminSource.keys!
+			);
+
 			const res = await client.GetSeed();
 			if (res.status !== "OK") {
+				setError(res.reason || "Failed to fetch seed");
 				toast.error(
 					<Toast
 						title="Metrics Error"
@@ -59,14 +96,17 @@ const Manage = () => {
 				);
 				return;
 			}
+
 			setSeed(res.seed);
-		} else {
-			setIsRevealed(false);
+		} catch (e) {
+			console.error(e);
+			const msg = e instanceof Error ? e.message : "Failed to fetch seed";
+			setError(msg);
+			toast.error(<Toast title="Metrics Error" message={`failed to fetch seed ${msg}`} />);
+		} finally {
+			await dismissLoading();
 		}
 	}
-	/*   const handleSave = () => {
-			router.push("/metrics");
-		}; */
 
 	const questionContent = (
 		<React.Fragment>
@@ -103,6 +143,12 @@ const Manage = () => {
 				<MetricsSubPageToolbar title="Manage" />
 			</IonHeader>
 			<IonContent className="ion-padding">
+				{error && (
+					<div style={{ color: "red", padding: 12 }}>
+						<div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
+						<div style={{ opacity: 0.85 }}>{error}</div>
+					</div>
+				)}
 
 				<div className="Manage">
 					<div className="Manage_settings">

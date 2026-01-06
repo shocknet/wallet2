@@ -8,7 +8,6 @@ import { SourceMetadata } from "./metadata/types";
 import { selectFavoriteSourceId } from "../identity/slice";
 import { RootState } from "@/State/store/store";
 import { BEACON_STALE_OLDER_THAN, BeaconProbeState, BeaconProbeStatus } from "./state";
-import { isNprofileSource, isSourceDeleted } from "@/State/utils";
 import { selectNowMs } from "@/State/runtime/slice";
 
 export const selectLiveSourceIds = createSelector(
@@ -136,10 +135,10 @@ export const selectSourceViews = createSelector(
 		for (const source of sourceEntities) {
 
 			const d = source.draft;
-			if (isSourceDeleted(d)) continue;
+			if (d.deleted.value) continue;
 
 			let view;
-			if (isNprofileSource(d)) {
+			if (d.type === SourceType.NPROFILE_SOURCE) {
 				view = createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs)
 			} else {
 				view = createLightningAddressView(d)
@@ -161,10 +160,10 @@ export const selectSourceViewById = createSelector(
 	(sourceEntities, metaEntities, beaconProbeEntities, nowMs, sourceId) => {
 
 		const e = sourceEntities[sourceId];
-		if (!e || isSourceDeleted(e.draft)) return null;
+		if (!e || e.draft.deleted.value) return null;
 
 		const d = e.draft;
-		if (isNprofileSource(d)) {
+		if (d.type === SourceType.NPROFILE_SOURCE) {
 			return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs);
 		} else {
 			return createLightningAddressView(d);
@@ -200,7 +199,7 @@ export const makeSelectNprofileViewsByLpk = () => {
 
 export const selectHealthyNprofileViews = createSelector(
 	[selectNprofileViews],
-	(views) => views.filter(v => !v.beaconStale)
+	(views) => views.filter(v => v.beaconStale === "fresh")
 );
 
 export const selectAdminNprofileViews = createSelector(
@@ -230,10 +229,10 @@ export const selectFavoriteSourceView = createSelector(
 	(favId, sourceEntities, metaEntities, beaconProbeEntities, nowMs): SourceView | null => {
 		if (!favId) return null;
 		const e = sourceEntities[favId];
-		if (!e || isSourceDeleted(e.draft)) return null;
+		if (!e || e.draft.deleted.value) return null;
 
 		const d = e.draft;
-		if (isNprofileSource(d)) {
+		if (d.type === SourceType.NPROFILE_SOURCE) {
 			return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs)
 		} else {
 			return createLightningAddressView(d);
