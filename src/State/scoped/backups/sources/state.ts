@@ -3,7 +3,7 @@ import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
 
-export const BEACON_STALE_OLDER_THAN = 1.5 * 60 * 1000;
+export const BEACON_STALE_OLDER_THAN = 3 * 60 * 1000;
 export const BEACON_SEMI_STALE_OLDER_THAN = 1 * 60 * 1000;
 
 
