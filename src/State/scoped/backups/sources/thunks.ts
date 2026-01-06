@@ -1,6 +1,6 @@
 import { AppThunk } from "@/State/store/store"
 import { docsSelectors, sourcesActions } from "./slice"
-import { identityActions, selectFavoriteSourceId } from "../identity/slice"
+import { identityActions } from "../identity/slice"
 import { SourceDocV0 } from "./schema"
 import { LwwFlag, newflag, newLww } from "../lww"
 import { getDeviceId, NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "@/constants"
@@ -8,7 +8,7 @@ import { SourceType } from "../../common"
 import { generateNewKeyPair } from "@/Api/helpers"
 import { selectNprofileViewsByLpk } from "./selectors"
 import { getNostrClient } from "@/Api/nostr"
-import { utils } from "nostr-tools"
+import { normalizeWsUrl } from "@/lib/url"
 
 
 export type NProfileSourceToAdd = {
@@ -37,7 +37,7 @@ export const addBootstrapSource = (): AppThunk<Promise<void>> => async (dispatch
 	const id = `${NOSTR_PUB_DESTINATION}-${keyPair.publicKey}`;
 	const relaysFlags: Record<string, LwwFlag> = {};
 	NOSTR_RELAYS.forEach(r => {
-		relaysFlags[utils.normalizeURL(r)] = { clock: { v: 0, by: deviceId }, present: true }
+		relaysFlags[normalizeWsUrl(r)] = { clock: { v: 0, by: deviceId }, present: true }
 	})
 	const bootstrapSource: SourceDocV0 = {
 		type: SourceType.NPROFILE_SOURCE,
@@ -215,15 +215,6 @@ export const removeSource = (sourceId: string): AppThunk<void> => async (dispatc
 	}
 
 	dispatch(sourcesActions.markDeleted({ sourceId, by: deviceId }));
-
-	const favoriteSourceId = selectFavoriteSourceId(getState());
-	const sourceIds = docsSelectors.selectIds(getState());
-
-	if (favoriteSourceId === sourceId && sourceIds.length !== 0) {
-		dispatch(identityActions.setFavoriteSource({ sourceId: sourceIds[0], by: deviceId }));
-	}
-
-
 }
 
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { canonicalHttpBase, canonicalRelayBase } from "./url";
+import { normalizeHttpUrl, normalizeWsUrl } from "./url";
 
 
 
@@ -7,16 +7,16 @@ import { canonicalHttpBase, canonicalRelayBase } from "./url";
 export const HttpBaseSchema = z
 	.string()
 	.transform((val, ctx) => {
-		const r = canonicalHttpBase(val);
-		if (!r.ok) {
+		try {
+			const r = normalizeHttpUrl(val);
+			return r;
+		} catch {
 			ctx.issues.push({
 				code: "custom",
 				message: "Not a valid http URL",
 				input: val
 			})
-			return z.NEVER
-		} else {
-			return r.value;
+			return z.NEVER;
 		}
 	});
 
@@ -27,15 +27,16 @@ export type HttpBase = z.output<typeof HttpBaseSchema>;
 export const RelayBaseSchema = z
 	.string()
 	.transform((val, ctx) => {
-		const r = canonicalRelayBase(val);
-		if (!r.ok) {
+		try {
+			const r = normalizeWsUrl(val);
+			return r;
+		} catch {
 			ctx.issues.push({
 				code: "custom",
 				message: "Not a valid relay URL",
 				input: val
 			})
-		} else {
-			return r.value;
+			return z.NEVER;
 		}
 	});
 

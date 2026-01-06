@@ -7,6 +7,11 @@ import { subscribeToNostrEvents } from "@/State/identitiesRegistry/helpers/nostr
 import { identityDocDtag, processRemoteDoc } from "@/State/identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import dLogger from "@/Api/helpers/debugLog";
+
+const log = dLogger.withContext({
+	procedure: "docs-puller"
+});
 
 export const pullerSpec: ListenerSpec = {
 	name: "puller",
@@ -15,6 +20,8 @@ export const pullerSpec: ListenerSpec = {
 			add({
 				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
+
+					log.info("started");
 					const state = listenerApi.getState();
 
 					const identity = selectActiveIdentity(state)!;
@@ -30,8 +37,13 @@ export const pullerSpec: ListenerSpec = {
 					];
 
 					const subCloser = await subscribeToNostrEvents(identityApi, filters, async (decrypted) => {
+						log.info("doc-event-received");
 						let parsed: unknown;
-						try { parsed = JSON.parse(decrypted); } catch { /* noop */ }
+						try {
+							parsed = JSON.parse(decrypted);
+						} catch {
+							log.error("Error json parsing received remote doc");
+						}
 						if (!parsed) return;
 
 						const data = await processRemoteDoc(parsed);

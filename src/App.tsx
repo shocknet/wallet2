@@ -17,7 +17,7 @@ import "./theme/tailwind.css";
 import "./theme/variables.css";
 
 import { Redirect, Route } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
@@ -34,11 +34,10 @@ import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
+import Swaps from './Pages/Swaps';
 import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
 import { useAppSelector } from './State/store/hooks';
-import { migrateDeviceToIdentities } from './State/identitiesRegistry/identitiesMigration';
 import { PersistGate } from 'redux-persist/integration/react';
-import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from './State/identitiesRegistry/thunks';
 import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
@@ -46,11 +45,10 @@ import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
 
 import { StatusBar, Style } from "@capacitor/status-bar";
-import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from './constants';
-import { initialState as backupInitialState } from "@/State/Slices/backupState";
-import IonicStorageAdapter from './storage/redux-persist-ionic-storage-adapter';
+
 import { GuardedRoute } from './routing/GuardedRoute';
-import { atLeastOneHealthyAdminNprofileSourceGuard, atLeastOneHealthyNprofileSourceGuard, loadedIdentityGuard } from './routing/guards';
+import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource, loadedIdentityGuard } from './routing/guards';
+import onBeforeLift from './onBeforeLift';
 
 
 async function setEnvColors() {
@@ -249,7 +247,7 @@ const AppContent: React.FC = () => {
 					path="/send"
 					component={Send}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
 				/>
 
 				<GuardedRoute
@@ -258,7 +256,7 @@ const AppContent: React.FC = () => {
 					path="/Receive"
 					component={Receive}
 
-					guards={[loadedIdentityGuard]}
+					guards={[loadedIdentityGuard, atLeastOneSource]}
 				/>
 
 				<GuardedRoute
@@ -330,19 +328,16 @@ const AppContent: React.FC = () => {
 					path="/metrics"
 					component={Metrics}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyAdminNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneAdminNprofileSourceGuard]}
 
 				/>
-
-
-
 
 				<GuardedRoute
 					exact
 					path="/offers"
 					component={Offers}
 
-					guards={[loadedIdentityGuard, atLeastOneHealthyNprofileSourceGuard]}
+					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
 				/>
 
 
@@ -365,6 +360,13 @@ const AppContent: React.FC = () => {
 					guards={[loadedIdentityGuard]}
 				/>
 
+				<GuardedRoute
+					exact
+					path="/swaps"
+					component={Swaps}
+					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
+				/>
+
 
 				<Route exact path="/" >
 					<Redirect to="/home" />
@@ -382,55 +384,7 @@ const App: React.FC = () => {
 		<ErrorBoundary>
 			<Provider store={store}>
 				<PersistGate
-					onBeforeLift={async () => {
-						const exists = localStorage.getItem(NOSTR_PRIVATE_KEY_STORAGE_KEY);
-						const hasRanMigration = await IonicStorageAdapter.getItem(HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY)
-
-						try {
-							if (exists || !hasRanMigration) {
-								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
-								await store.dispatch(migrateDeviceToIdentities());
-								return
-							}
-						} catch (err: any) {
-							const subbedToBackUp = backupInitialState;
-							if (subbedToBackUp.subbedToBackUp) {
-								if (subbedToBackUp.usingSanctum) {
-									alert(
-										`An error occured with Sanctum: \n\n ${err?.message || ""}`
-									);
-								} else if (subbedToBackUp.usingExtension) {
-									alert(
-										`An error occured with NIP07 extension: \n\n ${err?.message || ""}`
-									);
-								} else {
-									alert(
-										`An un known error occured: \n\n ${err?.message || ""}`
-									);
-								}
-							} else {
-								alert(
-									`An un known error occured: \n\n ${err?.message || ""}`
-								);
-							}
-							await new Promise(() => {/*  */ })
-
-						}
-
-
-						const pubkey = localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
-
-
-						if (pubkey) {
-							try {
-								await store.dispatch(switchIdentity(pubkey, true))
-							} catch {
-								localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
-								window.location.reload();
-								await new Promise(() => {/*  */ })
-							}
-						}
-					}}
+					onBeforeLift={onBeforeLift}
 					persistor={persistor}
 					loading={<FullSpinner />}
 				>

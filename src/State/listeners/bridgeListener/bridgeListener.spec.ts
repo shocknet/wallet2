@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	configureStore,
 	combineReducers,
@@ -18,6 +18,7 @@ import { nip98 } from "nostr-tools";
 import logger from "@/Api/helpers/logger";
 import { createDeferred } from "@/lib/deferred";
 import { SourceType } from "@/State/scoped/common";
+import { runTimeReducer } from "@/State/runtime/slice";
 
 
 vi.mock("@/Api/nostr", () => ({
@@ -71,6 +72,7 @@ const makeStore = (sourcesGen: GenSource[]) => {
 			scoped: combineReducers({
 				sources: sourcesSlice.reducer,
 			}),
+			runtime: runTimeReducer
 		},
 		preloadedState: {
 			scoped: {
@@ -103,12 +105,8 @@ const makeStore = (sourcesGen: GenSource[]) => {
 describe("bridgeListener integration", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.useFakeTimers();
 	});
 
-	afterEach(() => {
-		vi.useRealTimers();
-	})
 
 	it("calls nostr + bridge and dispatches setVanityName", async () => {
 		const sources = generateSources(1);
@@ -157,6 +155,10 @@ describe("bridgeListener integration", () => {
 					...d,
 					bridgeUrl: {
 						...d.bridgeUrl,
+						clock: {
+							v: 1,
+							by: "me"
+						},
 						value: newBridgeUrl,
 					},
 				},
@@ -165,7 +167,10 @@ describe("bridgeListener integration", () => {
 
 
 
-		await vi.runAllTimersAsync();
+		await vi.waitFor(() => {
+			if (!getNostrClientMock.mock.calls.length) throw new Error;
+		})
+
 
 		// nostr client called with right args
 		expect(getNostrClientMock).toHaveBeenCalledTimes(1);
@@ -180,7 +185,7 @@ describe("bridgeListener integration", () => {
 
 		// nostr calls
 		expect(fakeClient.GetUserInfo).toHaveBeenCalledTimes(1);
-		expect(fakeClient.GetLnurlPayLink).toHaveBeenCalledTimes(1);
+
 
 		// nip98 token call
 		expect(getTokenMock).toHaveBeenCalledTimes(1);
@@ -195,7 +200,6 @@ describe("bridgeListener integration", () => {
 			"nostr-header",
 		);
 		expect(bridgeInstance.GetOrCreateNofferName).toHaveBeenCalledWith({
-			k1: "k1-value",
 			noffer: "noffer",
 		});
 

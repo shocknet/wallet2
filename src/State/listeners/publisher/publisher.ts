@@ -6,9 +6,9 @@ import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNost
 import { getSourceDocDtag, identityDocDtag } from "../../identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { selectActiveIdentity, } from "@/State/identitiesRegistry/slice";
-import logger from "@/Api/helpers/logger";
 import { publisherFlushRequested } from "../actions";
 import { createDeferred } from "@/lib/deferred";
+import dLogger from "@/Api/helpers/debugLog";
 
 
 
@@ -23,6 +23,7 @@ const isIdentityDirtying = isAnyOf(
 const isSourceDirtying = isAnyOf(
 	sourcesActions._createDraftDoc,
 	sourcesActions.updateSourceLabel,
+	sourcesActions.updateBridgeUrl,
 	sourcesActions.markDeleted,
 	sourcesActions.setRelayPresence,
 	sourcesActions.applyRemoteSource,
@@ -41,7 +42,7 @@ export const publisherSpec: ListenerSpec = {
 					if (!isSourceDirtying(action)) return false;
 					const { sourceId } = action.payload;
 					const source = docsSelectors.selectById(state, sourceId);
-					if (!source || source.draft.deleted.value || !source.dirty) {
+					if (!source || !source.dirty) {
 						return false;
 					}
 
@@ -49,6 +50,12 @@ export const publisherSpec: ListenerSpec = {
 				},
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
+					const log = dLogger.withContext({
+						procedure: "publisher-source",
+						data: { sourceId }
+					});
+
+					log.info("started");
 					const state = listenerApi.getState();
 					const identity = selectActiveIdentity(state)!;
 
@@ -71,9 +78,9 @@ export const publisherSpec: ListenerSpec = {
 
 						} catch (err) {
 							if (err instanceof TaskAbortError) {
-								logger.info(`[${publisherSpec.name}] source doc write cancelled by a newer one`);
-							} else if (err instanceof Error) {
-								logger.error(`[${publisherSpec.name}] error: ${err.message}`);
+								log.info("task aborted", { error: err });
+							} else {
+								log.error("publisher error", { error: err });
 							}
 						} finally {
 							publishTasks.delete(sourceId);
@@ -93,6 +100,11 @@ export const publisherSpec: ListenerSpec = {
 					return true
 				},
 				effect: async (_, listenerApi) => {
+					const log = dLogger.withContext({
+						procedure: "publisher-identity"
+					});
+					log.info("started");
+
 					const state = listenerApi.getState();
 					const identity = selectActiveIdentity(state)!;
 
@@ -114,9 +126,9 @@ export const publisherSpec: ListenerSpec = {
 
 						} catch (err) {
 							if (err instanceof TaskAbortError) {
-								logger.info(`[${publisherSpec.name}] identity doc write cancelled by a newer one`);
-							} else if (err instanceof Error) {
-								logger.error(`[${publisherSpec.name}] error: ${err.message}`);
+								log.info("task aborted", { error: err });
+							} else {
+								log.error("publisher error", { error: err });
 							}
 						} finally {
 							publishTasks.delete(identityKey);

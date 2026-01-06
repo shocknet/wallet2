@@ -3,6 +3,7 @@ import { type AppstartListening } from "@/State/store/listenerMiddleware";
 import { identityLoaded, identityUnloaded, listenerKick } from "../actions";
 import { addListener, type UnsubscribeListener } from "@reduxjs/toolkit";
 import type { AppDispatch, AppThunkDispatch, RootState } from "@/State/store/store";
+import dLogger from "@/Api/helpers/debugLog";
 
 type ListenerRegistration = (add: AppAddListener) => ReturnType<AppAddListener>;
 export type ListenerSpec = {
@@ -26,6 +27,11 @@ export const addIdentityLifecycle = (startAppListening: AppstartListening, specs
 	startAppListening({
 		actionCreator: identityLoaded,
 		effect: async (_, listenerApi) => {
+			const log = dLogger.withContext({
+				procedure: "lifecycle api"
+			});
+
+			log.info("started");
 
 			listenerApi.unsubscribe();
 
@@ -67,11 +73,14 @@ export const addIdentityLifecycle = (startAppListening: AppstartListening, specs
 			await Promise.allSettled(pre);
 
 			for (const unsub of activeUnsubs) {
-				try { unsub({ cancelActive: true }); } catch { /*  */ }
+				try { unsub({ cancelActive: true }); } catch (err) {
+					log.error("error unsubing listeners", { error: err });
+				}
 			}
 			activeUnsubs = [];
 			action.payload.deferred.resolve();
 
+			log.info("ended");
 			listenerApi.subscribe();
 		},
 	});

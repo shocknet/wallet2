@@ -14,11 +14,10 @@ import {
 	IonSegmentButton,
 	IonSpinner,
 	IonText,
+	IonTitle,
 	IonToggle,
 	IonToolbar,
 	useIonModal,
-	useIonRouter,
-	useIonViewDidEnter,
 } from '@ionic/react';
 import { createLnurlInvoice, createNostrInvoice, createNostrPayLink, getNostrBtcAddress } from '../../Api/helpers';
 import { parseBitcoinInput } from '../../constants';
@@ -41,6 +40,7 @@ import styles from "./styles/index.module.scss";
 import { useAppSelector } from '@/State/store/hooks';
 import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
 import { SourceType } from '@/State/scoped/common';
+import { BeaconStatusLine } from '@/Components/BeaconStatusLine';
 
 
 
@@ -57,63 +57,11 @@ type Slide = {
 
 
 const Receive = () => {
-	const router = useIonRouter();
 	const swiperRef = useRef<SwiperClass>();
 
 	const favoriteSource = useAppSelector(selectFavoriteSourceView);
 
-	const { showAlert } = useAlert();
 
-	useIonViewDidEnter(() => {
-		if (!favoriteSource) {
-			showAlert({
-				header: "No sources",
-				message: "You need to add a pay source before receiving payments.",
-				buttons: [
-					{
-						text: "Cancel",
-						role: "cancel",
-
-					},
-					{
-						text: "Add Source",
-						role: "confirm",
-					},
-				]
-			}).then(({ role }) => {
-				if (role === "cancel") {
-					router.goBack();
-				} else if (role === "confirm") {
-					router.push("/sources", "forward", "replace")
-				}
-			})
-		} else if (favoriteSource.type === SourceType.NPROFILE_SOURCE && favoriteSource.beaconStale) {
-			showAlert({
-				header: "Stale source",
-				message: "Your favorite source's pub seems to be down or unavailable",
-				buttons: [
-					{
-						text: "Cancel",
-						role: "cancel",
-
-					},
-					{
-						text: "Go to sources",
-						role: "confirm",
-					},
-				]
-			}).then(({ role }) => {
-				if (role === "cancel") {
-					router.goBack();
-				} else if (role === "confirm") {
-					router.push("/sources", "forward", "replace")
-				}
-			})
-		}
-
-
-
-	}, [])
 
 	const handleInvalidate = useCallback((id: string) => {
 		setValidSlides(prev => {
@@ -123,7 +71,6 @@ const Receive = () => {
 			return newSlides;
 		});
 	}, []);
-
 
 
 	const handleInvalidateChain = useCallback(() => {
@@ -154,12 +101,19 @@ const Receive = () => {
 
 
 
-
 	return (
 		<IonPage className="ion-page-width">
-
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Receive" />
+				{
+					favoriteSource?.type === SourceType.NPROFILE_SOURCE
+					&&
+					<IonToolbar>
+						<IonTitle className="android-centered-title">
+							<BeaconStatusLine state={favoriteSource.beaconStale} />
+						</IonTitle>
+					</IonToolbar>
+				}
 				<IonToolbar>
 					<IonSegment
 						value={selectedSegment}
@@ -592,17 +546,7 @@ const OnChainTab = memo(({ onInvalidate }: TabProps) => {
 			if (invalidated.current) return;
 			invalidated.current = true;
 			onInvalidate();
-			if (err instanceof Error) {
-				showAlert({
-					header: "Chain error",
-					message: err.message,
-				});
-			} else {
-				showAlert({
-					header: "Chain error",
-					message: "Error getting chain address",
-				});
-			}
+			console.log("error", err);
 		}
 		setIsloading(false);
 	}, [qrCodeValue, favoriteSource, onInvalidate, showAlert])

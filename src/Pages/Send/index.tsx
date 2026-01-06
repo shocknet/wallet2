@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-	IonAvatar,
 	IonButton,
 	IonCol,
 	IonContent,
@@ -49,11 +48,15 @@ import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
 import { useQrScanner } from '@/lib/hooks/useQrScanner';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
-import { NprofileView, selectHealthyNprofileViews } from '@/State/scoped/backups/sources/selectors';
+import { NprofileView, selectNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
 import { RecipentInputHelperText } from '@/lib/jsxHelperts';
 import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
+import { SelectedSource, SourceSelectOption } from '@/Components/CustomSelect/commonSelects';
 
+
+const hasBalance = (s: { maxWithdrawableSats?: number }) =>
+	(s.maxWithdrawableSats ?? 0) > 0;
 
 
 
@@ -71,26 +74,39 @@ const Send = () => {
 	const { showToast } = useToast();
 
 
-	const healthyNprofileViews = useAppSelector(selectHealthyNprofileViews);
+	const nprofileViews = useAppSelector(selectNprofileViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
+	const [selectedSourceId, setSelectedSourceId] = useState("");
 
-	// Send page is only accessible if healthyNprofileViews.length > 0
-	// so we can safely assume healthyNprofileViews is not empty here
-	const [selectedSource, setSelectedSource] = useState<NprofileView>(() => {
-		const favIsNprofile = healthyNprofileViews.find(s => s.sourceId === favoriteSourceId);
-		if (favIsNprofile) {
-			if (favIsNprofile.maxWithdrawableSats || 0 > 0) return favIsNprofile
-		}
 
-		const withBalance = healthyNprofileViews.find(s => s.maxWithdrawableSats || 0 > 0);
-		if (withBalance) return withBalance;
+	useEffect(() => {
+		setSelectedSourceId(prev => {
+			// keep current selection if it still exists
+			if (prev && nprofileViews.some(v => v.sourceId === prev)) return prev;
 
-		if (healthyNprofileViews.length === 0) {
-			throw new Error("No healthyNprofileViews available");
-		}
-		return healthyNprofileViews[0];
-	});
+			// otherwise pick a fresh default
+			if (favoriteSourceId) {
+				const fav = nprofileViews.find(v => v.sourceId === favoriteSourceId);
+				if (fav && hasBalance(fav)) return fav.sourceId;
+			}
+
+			const withBalance = nprofileViews.find(hasBalance);
+			if (withBalance) return withBalance.sourceId;
+
+			return nprofileViews[0].sourceId;
+		});
+	}, [nprofileViews, favoriteSourceId]);
+
+	const selectedSource = useMemo(() => {
+		// primary: user's selection
+		const chosen = nprofileViews.find(v => v.sourceId === selectedSourceId);
+		if (chosen) return chosen;
+
+		// fallback (while state is being repaired / initial load)
+		return nprofileViews[0];
+	}, [nprofileViews, selectedSourceId]);
+
 
 	useIonViewWillEnter(() => {
 		amountInput.clearFixed();
@@ -292,9 +308,9 @@ const Send = () => {
 			amountInput.effectiveSats !== null &&
 			amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)
 		) {
-			const foundOneWithEnoughBalance = healthyNprofileViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
+			const foundOneWithEnoughBalance = nprofileViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
 			if (foundOneWithEnoughBalance) {
-				setSelectedSource(foundOneWithEnoughBalance)
+				setSelectedSourceId(foundOneWithEnoughBalance.sourceId);
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -340,7 +356,11 @@ const Send = () => {
 
 	// --- Handle Payment ---
 	const canPay = useMemo(() =>
-		inputState.status === "parsedOk" && amountInput.effectiveSats !== null && amountInput.effectiveSats !== 0 && (selectedSource.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats
+		inputState.status === "parsedOk" &&
+		amountInput.effectiveSats !== null &&
+		amountInput.effectiveSats !== 0 &&
+		(selectedSource.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats &&
+		selectedSource.beaconStale === "fresh"
 		, [inputState, amountInput.effectiveSats, selectedSource]);
 
 
@@ -520,40 +540,20 @@ const Send = () => {
 						)
 					}
 					<IonRow className="ion-margin-top">
-						<IonCol size="6">
+						<IonCol size="12">
 							<IonText style={{ display: "block", marginBottom: "9px" }}>Spend From</IonText>
 							<CustomSelect<NprofileView>
-								items={healthyNprofileViews}
+								items={nprofileViews}
 								selectedItem={selectedSource}
-								onSelect={setSelectedSource}
+								onSelect={(view) => setSelectedSourceId(view.sourceId)}
 								getIndex={(source) => source.sourceId}
 								title="Select Source"
 								subTitle="Select the source you want to spend from"
-								renderItem={(source) => {
-									return (
-										<>
-											<IonAvatar slot="start">
-												<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
-											</IonAvatar>
-											<IonLabel style={{ width: "100%" }}>
-												<h2>{source.label}</h2>
-												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
-													Lightning.Pub Source
-												</IonNote>
-											</IonLabel>
-											<IonText slot="end" color="primary">
-												{+(source.balanceSats || 0 as Satoshi).toLocaleString()} sats
-											</IonText>
-										</>
-									)
-								}}
+								renderItem={(source) => (
+									<SourceSelectOption source={source} />
+								)}
 								renderSelected={(source) => (
-									<IonText className="text-medium">
-										{source?.label || ''}
-										<IonNote className="text-low" style={{ display: 'block' }}>
-											{(+(source?.balanceSats || 0 as Satoshi)).toLocaleString()} sats
-										</IonNote>
-									</IonText>
+									<SelectedSource source={source} />
 								)}
 							>
 							</CustomSelect>

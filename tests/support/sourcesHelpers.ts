@@ -11,6 +11,8 @@ import { generateNewKeyPair } from "@/Api/helpers"
 
 
 
+export const TEST_RELAY_URL = "wss://test-relay.lightning.pub";
+
 export const createTestSourceDoc = (sourceLpk: string, sourceId: string): NprofileSourceDocV0 => {
 	const keys = generateNewKeyPair();
 	return {
@@ -18,7 +20,7 @@ export const createTestSourceDoc = (sourceLpk: string, sourceId: string): Nprofi
 		source_id: sourceId,
 		schema_rev: 0,
 		label: newLww(null),
-		relays: {},
+		relays: { [TEST_RELAY_URL]: { clock: { v: 0, by: "test" }, present: true } },
 		bridgeUrl: newLww(null),
 		admin_token: newLww(null),
 		is_ndebit_discoverable: newLww(false),
@@ -98,12 +100,13 @@ export const getPreloadedSourcesState = (
 			beaconStaleMs: opts.beaconStaleMs ?? 150_000,
 		},
 		history: { ...historyDefault, ...(opts.historyOverride ?? {}) },
+		beaconProbe: { entities: {}, ids: [] }
 	};
 };
 
 
 export type GenSource = { id: string; lpk: string };
-export function generateSources(count: number, prefix = "src", lpk?: string): GenSource[] {
+export function generateSources(count: number, _prefix = "src", lpk?: string): GenSource[] {
 
 
 	return Array.from({ length: count }, () => {

@@ -3,7 +3,7 @@ import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
 
-export const BEACON_STALE_OLDER_THAN = 1.5 * 60 * 1000;
+export const BEACON_STALE_OLDER_THAN = 3 * 60 * 1000;
 export const BEACON_SEMI_STALE_OLDER_THAN = 1 * 60 * 1000;
 
 
@@ -52,10 +52,27 @@ export const opsAdapter = createEntityAdapter<SourceOperation, OpKey>({
 	sortComparer: (a, b) => b.paidAtUnix - a.paidAtUnix,
 });
 
+export type BeaconProbeStatus = "idle" | "probing" | "done";
+
+export type BeaconProbeState = {
+	sourceId: string;
+	epoch: number;
+	status: BeaconProbeStatus;
+};
+
+export const beaconProbeAdapter = createEntityAdapter<BeaconProbeState, string>({
+	selectId: (b) => b.sourceId
+})
+
+export type SourcesBeaconProbe = EntityState<BeaconProbeState, string>;
+
+
+
 export interface SourcesState {
 	docs: SourceDocsState;
 	metadata: SourcesMetadataState;
-	history: HistoryState
+	history: HistoryState;
+	beaconProbe: SourcesBeaconProbe;
 }
 
 export const getIntialState = (): SourcesState => ({
@@ -69,7 +86,8 @@ export const getIntialState = (): SourcesState => ({
 		ops: opsAdapter.getInitialState(),
 		bySource: {},
 		newPaymentsCount: 0
-	}
+	},
+	beaconProbe: beaconProbeAdapter.getInitialState()
 });
 
 

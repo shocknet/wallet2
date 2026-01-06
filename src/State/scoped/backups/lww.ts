@@ -1,4 +1,5 @@
 import { getDeviceId } from "@/constants";
+import { normalizeWsUrl } from "@/lib/url";
 import { z } from "zod";
 
 const ClockSchema = z.strictObject({
@@ -39,6 +40,54 @@ export function mergeLww<T>(a: Lww<T>, b: Lww<T>): Lww<T> {
 	if (!a) return b;
 	if (!b) return a;
 	return chooseByClock(a, b);
+}
+
+function normalizeFlagMapPreferSlashOnTie(
+	m: Record<string, LwwFlag> = {}
+): Record<string, LwwFlag> {
+	const out: Record<string, LwwFlag> = {};
+	const meta: Record<string, { hadTrailingSlash: boolean }> = {};
+
+	for (const [k, v] of Object.entries(m)) {
+		const nk = normalizeWsUrl(k);
+		const hadTrailingSlash = k.endsWith("/");
+
+		const existing = out[nk];
+		if (!existing) {
+			out[nk] = v;
+			meta[nk] = { hadTrailingSlash };
+			continue;
+		}
+
+		// Prefer higher clock value
+		const chosen = chooseByClock(existing, v);
+
+		if (chosen !== existing) {
+			out[nk] = chosen;
+			meta[nk] = { hadTrailingSlash };
+			continue;
+		}
+
+		// Tie-break (same clock): prefer the one that *had* a trailing slash
+		if (!meta[nk]?.hadTrailingSlash && hadTrailingSlash) {
+			out[nk] = v;
+			meta[nk] = { hadTrailingSlash };
+		}
+	}
+
+	return out;
+}
+
+export function mergeRelayFlags(
+	a: Record<string, LwwFlag> = {},
+	b: Record<string, LwwFlag> = {}
+): Record<string, LwwFlag> {
+
+	const na = normalizeFlagMapPreferSlashOnTie(a);
+	const nb = normalizeFlagMapPreferSlashOnTie(b);
+
+
+	return mergeFlags(na, nb);
 }
 
 export function mergeFlags(

@@ -3,6 +3,7 @@ import { decodeNprofile, getDeviceId } from "@/constants";
 import { PayTo, SourceTrustLevel, SpendFrom } from "@/globalTypes";
 import { identifyBitcoinInput } from "@/lib/parse";
 import { InputClassification } from "@/lib/types/parse";
+import { normalizeWsUrl } from "@/lib/url";
 import { IdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { fetchNip78Event } from "@/State/identitiesRegistry/helpers/nostr";
 import { LwwFlag } from "@/State/scoped/backups/lww";
@@ -10,7 +11,6 @@ import { SourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { SourceType } from "@/State/scoped/common";
 import { findReducerMerger } from "@/State/store/store";
 import { GeneralShard, ShardsTagsRecord } from "@/State/types";
-import { utils } from "nostr-tools";
 
 
 
@@ -218,7 +218,7 @@ const migrateSourcesToDocs = async (sources: SourceToMigrate[]): Promise<(Source
 		const relays = profilePointer.relays || [];
 		const relaysFlags: Record<string, LwwFlag> = {};
 		relays.forEach(r => {
-			relaysFlags[utils.normalizeURL(r)] = { clock: { v: 0, by: deviceId }, present: true }
+			relaysFlags[normalizeWsUrl(r)] = { clock: { v: 0, by: deviceId }, present: true }
 		})
 		const doc: (SourceDocV0 & { vanity_name?: string }) = {
 			doc_type: "doc/shockwallet/source_",

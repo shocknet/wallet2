@@ -5,7 +5,7 @@ import { sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/sli
 import { identityLoaded } from "../actions";
 import { Identity, IdentityType } from "@/State/identitiesRegistry/types";
 import { BeaconUpdate } from "@/Api/nostrHandler";
-import { createTestSourceDoc, generateSources, getPreloadedSourcesState } from "@tests/support/sourcesHelpers";
+import { createTestSourceDoc, generateSources, getPreloadedSourcesState, TEST_RELAY_URL } from "@tests/support/sourcesHelpers";
 import { beaconWatcherSpec } from "./beaconWatcher";
 import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
 import { addIdentityLifecycle } from "../lifecycle/lifecycle";
@@ -145,11 +145,11 @@ describe("beaconWatcher", () => {
 			})
 
 			for (const src of sources) {
-				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: 1_000 });
+				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: 1_000, relayUrl: TEST_RELAY_URL });
 			}
 
 			// one emit should update all sources of lpk "knownlpk"
-			__emitBeacon?.({ createdByPub: knownLpkSources[0].lpk, name: "known-lpk-beacon", updatedAtUnix: 2_000 });
+			__emitBeacon?.({ createdByPub: knownLpkSources[0].lpk, name: "known-lpk-beacon", updatedAtUnix: 2_000, relayUrl: TEST_RELAY_URL });
 
 			await vi.waitFor(() => {
 				if (vi.mocked(getNostrClient).mock.calls.length !== 6) throw new Error
@@ -195,7 +195,7 @@ describe("beaconWatcher", () => {
 
 			const goodUnix = Math.floor(artificalNowMs / 1000);
 			for (const src of sources) {
-				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: goodUnix });
+				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: goodUnix, relayUrl: TEST_RELAY_URL });
 			}
 
 			await vi.waitFor(() => {
@@ -240,7 +240,7 @@ describe("beaconWatcher", () => {
 
 			const goodUnix = Math.floor(artificalNowMs / 1000);
 
-			__emitBeacon?.({ createdByPub: source.lpk, name: "beacon", updatedAtUnix: goodUnix });
+			__emitBeacon?.({ createdByPub: source.lpk, name: "beacon", updatedAtUnix: goodUnix, relayUrl: TEST_RELAY_URL });
 
 
 			await vi.waitFor(() => {

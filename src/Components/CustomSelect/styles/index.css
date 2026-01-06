@@ -2,56 +2,14 @@ ion-modal#alert-select-modal {
 	--width: fit-content;
 	--min-width: 300px;
 	--height: fit-content;
-	--border-radius: 4px;
+	--max-height: 700px;
+	--border-radius: 16px;
 	--box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2), 0 24px 38px 3px rgba(0, 0, 0, 0.14), 0 9px 46px 8px rgba(0, 0, 0, 0.12);
 }
 
-ion-item.item-select {
-	--detail-icon-font-size: 1rem;
-	--background: var(--ion-color-secondary);
-
-}
-
-
-.alert-select-item {
-	--padding-start: 16px;
-	--padding-end: 16px;
-	--min-height: 48px;
-	--border-radius: 8px;
-	margin: 8px 0;
-}
-
-ion-modal#alert-select-modal .wrapper {
-	background: var(--ion-color-secondary);
-}
 
 
 
-ion-modal#alert-select-modal .title {
-	padding-bottom: 15px;
-	padding-inline-end: 23px;
-	padding-inline-start: 23px;
-	padding-top: 20px;
-	-webkit-font-smoothing: antialiased;
-	line-height: 24px;
-	text-align: start;
-	user-select: none;
-}
-
-ion-modal#alert-select-modal .title h2 {
-	margin: 0;
-	font-size: 1.3rem;
-	font-weight: 500;
-
-}
-
-ion-modal#alert-select-modal .title h3 {
-	margin: 0;
-	font-size: 1rem;
-	font-weight: 400;
-	line-height: 19px;
-	margin-block-start: 5px;
-}
 
 ion-modal#alert-select-modal ion-item {
 	margin: 0;

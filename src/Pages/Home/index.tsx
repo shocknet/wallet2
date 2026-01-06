@@ -94,7 +94,7 @@ const Home = () => {
 		if (reason) {
 			history.replace(history.location.pathname + history.location.search);
 			showAlert({
-				header: "No sources",
+				header: "Not an Administrator",
 				message: reason,
 				buttons: [
 					{
@@ -103,7 +103,7 @@ const Home = () => {
 
 					},
 					{
-						text: "Add Source",
+						text: "Manage Connections",
 						role: "confirm",
 					},
 				]

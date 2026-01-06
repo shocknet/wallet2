@@ -33,8 +33,8 @@ import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/
 import CardishList from "@/Components/CardishList";
 import { RelayManager } from "@/Components/RelayManager";
 import useDebounce from "@/Hooks/useDebounce";
-import { canonicalHttpBase } from "@/lib/url";
 import { useConfirmDialog } from "@/lib/hooks/useConfirmDialog";
+import { normalizeHttpUrl } from "@/lib/url";
 
 interface EditSourceModalProps {
 	open: boolean;
@@ -104,14 +104,12 @@ const Inner = ({
 
 	useEffect(() => {
 		if (bridgeInputTouched) {
-			const res = canonicalHttpBase(debouncedBridgeUrl);
-
-
-			if (!res.ok) {
+			try {
+				const res = normalizeHttpUrl(debouncedBridgeUrl);
+				setFinalBridgeUrl(res);
+			} catch {
 				setBridgeInputError(true);
 				setFinalBridgeUrl(null);
-			} else {
-				setFinalBridgeUrl(res.value);
 			}
 		}
 	}, [debouncedBridgeUrl, bridgeInputTouched])

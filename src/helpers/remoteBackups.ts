@@ -1,6 +1,5 @@
-import type { SubCloser } from "nostr-tools/lib/types/abstract-pool"
 import logger from "../Api/helpers/logger"
-import { getNip78Event, newNip78ChangelogEvent, newNip78Event, publishNostrEvent, pubServiceTag, subToNip78Changelogs } from "../Api/nostrHandler"
+import { getNip78Event, newNip78Event, publishNostrEvent, pubServiceTag } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
 import { getSanctumNostrExtention } from "./nip07Extention"
 
@@ -21,43 +20,6 @@ export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'acces
 }
 
 
-export const subscribeToRemoteChangelogs = async (
-    latestTimestamp: number,
-    handleChangelogCallback: (decrypted: string, eventTimestamp: number) => Promise<void>,
-): Promise<SubCloser> => {
-    const ext = await getSanctumNostrExtention()
-    if (!ext.valid) {
-        throw new Error("accessTokenMissing")
-    }
-    const pubkey = await ext.getPublicKey()
-    const relays = await ext.getRelays()
-    const subCloser = subToNip78Changelogs(pubkey, Object.keys(relays), latestTimestamp, async event => {
-        const decrypted = await ext.decrypt(pubkey, event.content);
-        await handleChangelogCallback(decrypted, event.created_at);
-    });
-    return subCloser
-}
-
-export const saveChangelog = async (changelog: string): Promise<number> => {
-    const ext = await getSanctumNostrExtention()
-    if (!ext.valid) {
-        throw new Error('access token missing')
-    }
-    const pubkey = await ext.getPublicKey()
-    const relays = await ext.getRelays()
-    const encrypted = await ext.encrypt(pubkey, changelog);
-
-    const changelogEvent = newNip78ChangelogEvent(encrypted, pubkey);
-
-    const signed = await ext.signEvent(changelogEvent);
-
-    await publishNostrEvent(signed, Object.keys(relays));
-
-    return signed.created_at;
-
-
-
-}
 
 export const saveRemoteBackup = async (backup: string, dTag?: string): Promise<number> => {
     const ext = await getSanctumNostrExtention()
