@@ -61,7 +61,7 @@ export const atLeastOneAdminNprofileSourceGuard: Guard = ({ props }) => {
 		allow: ok,
 		redirectTo: ok ? undefined : {
 			pathname: "/home",
-			state: { from: props.location, reason: "You don't have any admin sources to access metrics with" },
+			state: { from: props.location, reason: "You are not an administrator of any connected nodes." },
 		},
 		keySuffix: `sources:${ids.length}`,
 	};
