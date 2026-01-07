@@ -43,7 +43,7 @@ const getMenuItems = (hasAdminSoures: boolean) => {
 		{ title: "Linked Apps", icon: starOutline, path: "/lapps" },
 		{ title: "Offer Codes", icon: pricetagOutline, path: "/offers" },
 		{ title: "Preferences", icon: settingsOutline, path: "/prefs" },
-		{ title: "Manage Sources", icon: flashOutline, path: "/sources" },
+		{ title: "Node Connections", icon: flashOutline, path: "/sources" },
 		{ title: "Node Invitations", icon: personAddOutline, path: "/invitations" },
 	]
 	if (hasAdminSoures) {
