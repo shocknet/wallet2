@@ -14,7 +14,7 @@ const Contacts = () => {
   return (
     <div className='Contacts_container'>
       <div className="Contacts">
-        <div className="Contacts_header_text">Contacts</div>
+        <div className="Contacts_header_text">Address Book</div>
         <div className='Contacts_content'>
           <div className='Contacts_content_desc'>
             <span>Coming soon!</span>
