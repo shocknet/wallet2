@@ -1,6 +1,6 @@
 import { listenerKick } from "@/State/listeners/actions";
 import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
-import { getAllNostrClients, getNostrClient, subToBeacons } from "@/Api/nostr";
+import { getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
 import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
@@ -241,17 +241,6 @@ export const beaconWatcherSpec: ListenerSpec = {
 								});
 
 								if (newlyStaleLpks.length) {
-									const clients = getAllNostrClients();
-									clients
-										.filter(c => newlyStaleLpks.includes(c.getLpk()))
-										.forEach(c => {
-											try {
-												c.disconnectCalls("Stale beacon from pub");
-											} catch {
-												/* noop */
-											}
-										});
-
 									if (!forkApi.signal.aborted) {
 										listenerApi.dispatch(runtimeActions.clockTick({
 											nowMs
