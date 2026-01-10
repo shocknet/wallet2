@@ -167,9 +167,9 @@ export class ClientsCluster {
 		}
 	}
 
-	pauseSinglesOnBackground(reason = "backgrounded") {
-		for (const c of Object.values(this.clients)) c.pauseOrFailSinglesOnBackground(reason);
-		for (const c of Object.values(this.tempClients)) c.pauseOrFailSinglesOnBackground(reason);
+	pauseSinglesOnBackground() {
+		for (const c of Object.values(this.clients)) c.pauseOrFailSinglesOnBackground();
+		for (const c of Object.values(this.tempClients)) c.pauseOrFailSinglesOnBackground();
 	}
 
 	async resumePausedSingles() {
@@ -299,6 +299,7 @@ export class NostrClient {
 
 		const ret = new Promise(resolve => {
 			const timeout = setTimeout(() => {
+				if (message.rpcName === "PayInvoice") return;
 				this.failClientCb(reqId, "Request timed out");
 			}, RPC_SINGLE_TIMEOUT_MS);
 
@@ -370,9 +371,9 @@ export class NostrClient {
 
 
 
-	pauseOrFailSinglesOnBackground(reason = "backgrounded") {
+	pauseOrFailSinglesOnBackground() {
 		const entries = [...this.clientCbs.entries()];
-		for (const [id, cb] of entries) {
+		for (const [_, cb] of entries) {
 			if (cb.type !== "single") continue;
 
 			const rpcName = cb.message.rpcName || "";
@@ -381,9 +382,6 @@ export class NostrClient {
 			if (safe) {
 				cb.paused = true;
 				clearTimeout(cb.timeout);
-			} else {
-				cb.f({ status: "ERROR", reason });
-				this.clientCbs.delete(id);
 			}
 		}
 	}
@@ -399,9 +397,12 @@ export class NostrClient {
 				this.failClientCb(id, "Request timed out");
 			}, RPC_SINGLE_TIMEOUT_MS);
 			cb.timeout = timeout;
-
-			await this.ensureReadyForSend();
-			await this.pool.send(this.relays, cb.to, JSON.stringify(cb.message), this.settings);
+			try {
+				await this.ensureReadyForSend();
+				await this.pool.send(this.relays, cb.to, JSON.stringify(cb.message), this.settings);
+			} catch {
+				this.failClientCb(id, "send failed");
+			}
 		}
 	}
 
@@ -460,7 +461,7 @@ class LifecycleCoordinator {
 		}
 	}
 	toBackground() {
-		this.cluster.pauseSinglesOnBackground("backgrounded");
+		this.cluster.pauseSinglesOnBackground();
 		this.pool.pause();
 		this.actualActive = false;
 	}

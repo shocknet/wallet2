@@ -230,6 +230,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    GetAdminTransactionSwapQuote: async (request: Types.TransactionSwapRequest): Promise<ResultError | ({ status: 'OK' } & Types.TransactionSwapQuote)> => {
+        const auth = await params.retrieveNostrAdminAuth()
+        if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'GetAdminTransactionSwapQuote', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.TransactionSwapQuoteValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     GetAppsMetrics: async (request: Types.AppsMetricsRequest): Promise<ResultError | ({ status: 'OK' } & Types.AppsMetrics)> => {
         const auth = await params.retrieveNostrMetricsAuth()
         if (auth === null) throw new Error('retrieveNostrMetricsAuth() returned null')
@@ -651,6 +666,20 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    ListAdminSwaps: async (): Promise<ResultError | ({ status: 'OK' } & Types.SwapsList)> => {
+        const auth = await params.retrieveNostrAdminAuth()
+        if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        const data = await send(params.pubDestination, { rpcName: 'ListAdminSwaps', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.SwapsListValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     ListChannels: async (): Promise<ResultError | ({ status: 'OK' } & Types.LndChannels)> => {
         const auth = await params.retrieveNostrAdminAuth()
         if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
@@ -765,6 +794,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.PayAddressResponseValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    PayAdminTransactionSwap: async (request: Types.TransactionSwapQuoteRequest): Promise<ResultError | ({ status: 'OK' } & Types.AdminSwapResponse)> => {
+        const auth = await params.retrieveNostrAdminAuth()
+        if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'PayAdminTransactionSwap', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.AdminSwapResponseValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }

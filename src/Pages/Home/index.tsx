@@ -30,7 +30,7 @@ import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
 
 
-import { historySelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { historySelectors } from "@/State/scoped/backups/sources/slice";
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
@@ -64,22 +64,6 @@ const Home = () => {
 		}).then(listener => {
 			cleanupListener = () => listener.remove();
 		});
-
-		// If the user exits the app before an optimstic operation is done
-		// then those optimistic operations should be removed
-		// This is to prevent optimistic operations from being stuck in the history
-		operations.forEach(op => {
-			if ("optimistic" in op && op.optimistic) {
-				if (op.type === "INVOICE") {
-					dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
-				} else {
-					if (op.status === "broadcasting") {
-						dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
-					}
-				}
-			}
-		});
-
 
 
 		return () => {
