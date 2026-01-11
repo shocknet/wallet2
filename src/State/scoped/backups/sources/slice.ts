@@ -339,7 +339,7 @@ export const sourcesSlice = createSlice({
 			const idx = ensureHistoryIndex(state, sourceId);
 			const key = makeKey(sourceId, operation.operationId);
 			const existing = state.history.ops.entities[key];
-			const sourceOperation = userOperationToSourceOperation(operation, sourceId, existing)
+			const sourceOperation = userOperationToSourceOperation(operation, sourceId, existing, true);
 
 
 			opsAdapter.upsertOne(state.history.ops, sourceOperation);

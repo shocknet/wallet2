@@ -3,6 +3,7 @@ import type { HistoryCursor, OpKey, SourceActualOperation, SourceOperation, Sour
 import { decodeInvoice } from "@/lib/invoice";
 import type { Satoshi } from "@/lib/types/units";
 
+
 export const makeKey = (sourceId: string, operationId: string): OpKey =>
 	`${sourceId}/${operationId}`;
 
@@ -13,11 +14,16 @@ export const breakKey = (key: string) => {
 }
 
 // Helper function to convert a UserOperation to a SourceOperation
-export const userOperationToSourceOperation = (op: UserOperation, sourceId: string, local?: SourceOperation): SourceActualOperation => {
+export const userOperationToSourceOperation = (op: UserOperation, sourceId: string, local?: SourceOperation, notify = false): SourceActualOperation => {
 	const incoming = transformUserOperationToSourceOperation(op, sourceId);
 
 
 	if (local === undefined) {
+		if (notify && incoming.inbound) {
+			import("@/lib/local-notifications")
+				.then(({ notifyReceivedOperation }) => notifyReceivedOperation(incoming.amount, incoming.operationId, incoming.type === "ON-CHAIN").catch(() => {/* no-op */ }))
+				.catch(err => console.error('Failed to lazy-load "@/lib/local-notifications', err));
+		}
 		return incoming;
 	}
 
