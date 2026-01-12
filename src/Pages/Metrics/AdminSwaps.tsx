@@ -45,7 +45,7 @@ export default function AdminSwaps() {
 
     useEffect(() => {
         fetchSwaps()
-    }, [adminSource])
+    }, [adminSource?.sourceId])
 
     const fetchSwaps = async () => {
         const res = await fetch([(client) => client.ListAdminSwaps()], "Fetching swaps...")
