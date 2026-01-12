@@ -7,8 +7,8 @@ export type RequestMetric = AuthContext & RequestInfo & RequestStats & { error?:
 export type AdminContext = {
     admin_id: string
 }
-export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AuthApp_Input | BanUser_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetInviteLinkState_Input | GetSeed_Input | ListChannels_Input | LndGetInfo_Input | OpenChannel_Input | UpdateChannelPolicy_Input
-export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AuthApp_Output | BanUser_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetInviteLinkState_Output | GetSeed_Output | ListChannels_Output | LndGetInfo_Output | OpenChannel_Output | UpdateChannelPolicy_Output
+export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AuthApp_Input | BanUser_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetAdminTransactionSwapQuote_Input | GetInviteLinkState_Input | GetSeed_Input | ListAdminSwaps_Input | ListChannels_Input | LndGetInfo_Input | OpenChannel_Input | PayAdminTransactionSwap_Input | UpdateChannelPolicy_Input
+export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AuthApp_Output | BanUser_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetAdminTransactionSwapQuote_Output | GetInviteLinkState_Output | GetSeed_Output | ListAdminSwaps_Output | ListChannels_Output | LndGetInfo_Output | OpenChannel_Output | PayAdminTransactionSwap_Output | UpdateChannelPolicy_Output
 export type AppContext = {
     app_id: string
 }
@@ -98,6 +98,9 @@ export type EnrollAdminToken_Output = ResultError | { status: 'OK' }
 
 export type EnrollMessagingToken_Input = { rpcName: 'EnrollMessagingToken', req: MessagingToken }
 export type EnrollMessagingToken_Output = ResultError | { status: 'OK' }
+
+export type GetAdminTransactionSwapQuote_Input = { rpcName: 'GetAdminTransactionSwapQuote', req: TransactionSwapRequest }
+export type GetAdminTransactionSwapQuote_Output = ResultError | ({ status: 'OK' } & TransactionSwapQuote)
 
 export type GetApp_Input = { rpcName: 'GetApp' }
 export type GetApp_Output = ResultError | ({ status: 'OK' } & Application)
@@ -235,6 +238,9 @@ export type Health_Output = ResultError | { status: 'OK' }
 export type LinkNPubThroughToken_Input = { rpcName: 'LinkNPubThroughToken', req: LinkNPubThroughTokenRequest }
 export type LinkNPubThroughToken_Output = ResultError | { status: 'OK' }
 
+export type ListAdminSwaps_Input = { rpcName: 'ListAdminSwaps' }
+export type ListAdminSwaps_Output = ResultError | ({ status: 'OK' } & SwapsList)
+
 export type ListChannels_Input = { rpcName: 'ListChannels' }
 export type ListChannels_Output = ResultError | ({ status: 'OK' } & LndChannels)
 
@@ -261,6 +267,9 @@ export type OpenChannel_Output = ResultError | ({ status: 'OK' } & OpenChannelRe
 
 export type PayAddress_Input = { rpcName: 'PayAddress', req: PayAddressRequest }
 export type PayAddress_Output = ResultError | ({ status: 'OK' } & PayAddressResponse)
+
+export type PayAdminTransactionSwap_Input = { rpcName: 'PayAdminTransactionSwap', req: PayAdminTransactionSwapRequest }
+export type PayAdminTransactionSwap_Output = ResultError | ({ status: 'OK' } & AdminSwapResponse)
 
 export type PayAppUserInvoice_Input = { rpcName: 'PayAppUserInvoice', req: PayAppUserInvoiceRequest }
 export type PayAppUserInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
@@ -348,6 +357,7 @@ export type ServerMethods = {
     EncryptionExchange?: (req: EncryptionExchange_Input & { ctx: GuestContext }) => Promise<void>
     EnrollAdminToken?: (req: EnrollAdminToken_Input & { ctx: UserContext }) => Promise<void>
     EnrollMessagingToken?: (req: EnrollMessagingToken_Input & { ctx: UserContext }) => Promise<void>
+    GetAdminTransactionSwapQuote?: (req: GetAdminTransactionSwapQuote_Input & { ctx: AdminContext }) => Promise<TransactionSwapQuote>
     GetApp?: (req: GetApp_Input & { ctx: AppContext }) => Promise<Application>
     GetAppUser?: (req: GetAppUser_Input & { ctx: AppContext }) => Promise<AppUser>
     GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & { ctx: AppContext }) => Promise<LnurlPayInfoResponse>
@@ -387,6 +397,7 @@ export type ServerMethods = {
     HandleLnurlWithdraw?: (req: HandleLnurlWithdraw_Input & { ctx: GuestContext }) => Promise<void>
     Health?: (req: Health_Input & { ctx: GuestContext }) => Promise<void>
     LinkNPubThroughToken?: (req: LinkNPubThroughToken_Input & { ctx: GuestWithPubContext }) => Promise<void>
+    ListAdminSwaps?: (req: ListAdminSwaps_Input & { ctx: AdminContext }) => Promise<SwapsList>
     ListChannels?: (req: ListChannels_Input & { ctx: AdminContext }) => Promise<LndChannels>
     ListSwaps?: (req: ListSwaps_Input & { ctx: UserContext }) => Promise<SwapsList>
     LndGetInfo?: (req: LndGetInfo_Input & { ctx: AdminContext }) => Promise<LndGetInfoResponse>
@@ -395,6 +406,7 @@ export type ServerMethods = {
     NewProductInvoice?: (req: NewProductInvoice_Input & { ctx: UserContext }) => Promise<NewInvoiceResponse>
     OpenChannel?: (req: OpenChannel_Input & { ctx: AdminContext }) => Promise<OpenChannelResponse>
     PayAddress?: (req: PayAddress_Input & { ctx: UserContext }) => Promise<PayAddressResponse>
+    PayAdminTransactionSwap?: (req: PayAdminTransactionSwap_Input & { ctx: AdminContext }) => Promise<AdminSwapResponse>
     PayAppUserInvoice?: (req: PayAppUserInvoice_Input & { ctx: AppContext }) => Promise<PayInvoiceResponse>
     PayInvoice?: (req: PayInvoice_Input & { ctx: UserContext }) => Promise<PayInvoiceResponse>
     PingSubProcesses?: (req: PingSubProcesses_Input & { ctx: MetricsContext }) => Promise<void>
@@ -655,6 +667,29 @@ export const AddProductRequestValidate = (o?: AddProductRequest, opts: AddProduc
 
     if (typeof o.price_sats !== 'number') return new Error(`${path}.price_sats: is not a number`)
     if (opts.price_sats_CustomCheck && !opts.price_sats_CustomCheck(o.price_sats)) return new Error(`${path}.price_sats: custom check failed`)
+
+    return null
+}
+
+export type AdminSwapResponse = {
+    network_fee: number
+    tx_id: string
+}
+export const AdminSwapResponseOptionalFields: [] = []
+export type AdminSwapResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    network_fee_CustomCheck?: (v: number) => boolean
+    tx_id_CustomCheck?: (v: string) => boolean
+}
+export const AdminSwapResponseValidate = (o?: AdminSwapResponse, opts: AdminSwapResponseOptions = {}, path: string = 'AdminSwapResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.network_fee !== 'number') return new Error(`${path}.network_fee: is not a number`)
+    if (opts.network_fee_CustomCheck && !opts.network_fee_CustomCheck(o.network_fee)) return new Error(`${path}.network_fee: custom check failed`)
+
+    if (typeof o.tx_id !== 'string') return new Error(`${path}.tx_id: is not a string`)
+    if (opts.tx_id_CustomCheck && !opts.tx_id_CustomCheck(o.tx_id)) return new Error(`${path}.tx_id: custom check failed`)
 
     return null
 }
@@ -1303,24 +1338,24 @@ export const CreateOneTimeInviteLinkResponseValidate = (o?: CreateOneTimeInviteL
 }
 
 export type CumulativeFees = {
-    networkFeeFixed: number
     serviceFeeBps: number
+    serviceFeeFloor: number
 }
 export const CumulativeFeesOptionalFields: [] = []
 export type CumulativeFeesOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    networkFeeFixed_CustomCheck?: (v: number) => boolean
     serviceFeeBps_CustomCheck?: (v: number) => boolean
+    serviceFeeFloor_CustomCheck?: (v: number) => boolean
 }
 export const CumulativeFeesValidate = (o?: CumulativeFees, opts: CumulativeFeesOptions = {}, path: string = 'CumulativeFees::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.networkFeeFixed !== 'number') return new Error(`${path}.networkFeeFixed: is not a number`)
-    if (opts.networkFeeFixed_CustomCheck && !opts.networkFeeFixed_CustomCheck(o.networkFeeFixed)) return new Error(`${path}.networkFeeFixed: custom check failed`)
-
     if (typeof o.serviceFeeBps !== 'number') return new Error(`${path}.serviceFeeBps: is not a number`)
     if (opts.serviceFeeBps_CustomCheck && !opts.serviceFeeBps_CustomCheck(o.serviceFeeBps)) return new Error(`${path}.serviceFeeBps: custom check failed`)
+
+    if (typeof o.serviceFeeFloor !== 'number') return new Error(`${path}.serviceFeeFloor: is not a number`)
+    if (opts.serviceFeeFloor_CustomCheck && !opts.serviceFeeFloor_CustomCheck(o.serviceFeeFloor)) return new Error(`${path}.serviceFeeFloor: custom check failed`)
 
     return null
 }
@@ -3273,6 +3308,29 @@ export const PayAddressResponseValidate = (o?: PayAddressResponse, opts: PayAddr
     return null
 }
 
+export type PayAdminTransactionSwapRequest = {
+    address: string
+    swap_operation_id: string
+}
+export const PayAdminTransactionSwapRequestOptionalFields: [] = []
+export type PayAdminTransactionSwapRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    address_CustomCheck?: (v: string) => boolean
+    swap_operation_id_CustomCheck?: (v: string) => boolean
+}
+export const PayAdminTransactionSwapRequestValidate = (o?: PayAdminTransactionSwapRequest, opts: PayAdminTransactionSwapRequestOptions = {}, path: string = 'PayAdminTransactionSwapRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.address !== 'string') return new Error(`${path}.address: is not a string`)
+    if (opts.address_CustomCheck && !opts.address_CustomCheck(o.address)) return new Error(`${path}.address: custom check failed`)
+
+    if (typeof o.swap_operation_id !== 'string') return new Error(`${path}.swap_operation_id: is not a string`)
+    if (opts.swap_operation_id_CustomCheck && !opts.swap_operation_id_CustomCheck(o.swap_operation_id)) return new Error(`${path}.swap_operation_id: custom check failed`)
+
+    return null
+}
+
 export type PayAppUserInvoiceRequest = {
     amount: number
     debit_npub?: string
@@ -3417,7 +3475,9 @@ export const PayerDataValidate = (o?: PayerData, opts: PayerDataOptions = {}, pa
 
 export type PaymentState = {
     amount: number
+    internal: boolean
     network_fee: number
+    operation_id: string
     paid_at_unix: number
     service_fee: number
 }
@@ -3425,7 +3485,9 @@ export const PaymentStateOptionalFields: [] = []
 export type PaymentStateOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
     amount_CustomCheck?: (v: number) => boolean
+    internal_CustomCheck?: (v: boolean) => boolean
     network_fee_CustomCheck?: (v: number) => boolean
+    operation_id_CustomCheck?: (v: string) => boolean
     paid_at_unix_CustomCheck?: (v: number) => boolean
     service_fee_CustomCheck?: (v: number) => boolean
 }
@@ -3436,8 +3498,14 @@ export const PaymentStateValidate = (o?: PaymentState, opts: PaymentStateOptions
     if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
     if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
 
+    if (typeof o.internal !== 'boolean') return new Error(`${path}.internal: is not a boolean`)
+    if (opts.internal_CustomCheck && !opts.internal_CustomCheck(o.internal)) return new Error(`${path}.internal: custom check failed`)
+
     if (typeof o.network_fee !== 'number') return new Error(`${path}.network_fee: is not a number`)
     if (opts.network_fee_CustomCheck && !opts.network_fee_CustomCheck(o.network_fee)) return new Error(`${path}.network_fee: custom check failed`)
+
+    if (typeof o.operation_id !== 'string') return new Error(`${path}.operation_id: is not a string`)
+    if (opts.operation_id_CustomCheck && !opts.operation_id_CustomCheck(o.operation_id)) return new Error(`${path}.operation_id: custom check failed`)
 
     if (typeof o.paid_at_unix !== 'number') return new Error(`${path}.paid_at_unix: is not a number`)
     if (opts.paid_at_unix_CustomCheck && !opts.paid_at_unix_CustomCheck(o.paid_at_unix)) return new Error(`${path}.paid_at_unix: custom check failed`)
@@ -3887,17 +3955,27 @@ export const SwapOperationValidate = (o?: SwapOperation, opts: SwapOperationOpti
 }
 
 export type SwapsList = {
+    quotes: TransactionSwapQuote[]
     swaps: SwapOperation[]
 }
 export const SwapsListOptionalFields: [] = []
 export type SwapsListOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
+    quotes_ItemOptions?: TransactionSwapQuoteOptions
+    quotes_CustomCheck?: (v: TransactionSwapQuote[]) => boolean
     swaps_ItemOptions?: SwapOperationOptions
     swaps_CustomCheck?: (v: SwapOperation[]) => boolean
 }
 export const SwapsListValidate = (o?: SwapsList, opts: SwapsListOptions = {}, path: string = 'SwapsList::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.quotes)) return new Error(`${path}.quotes: is not an array`)
+    for (let index = 0; index < o.quotes.length; index++) {
+        const quotesErr = TransactionSwapQuoteValidate(o.quotes[index], opts.quotes_ItemOptions, `${path}.quotes[${index}]`)
+        if (quotesErr !== null) return quotesErr
+    }
+    if (opts.quotes_CustomCheck && !opts.quotes_CustomCheck(o.quotes)) return new Error(`${path}.quotes: custom check failed`)
 
     if (!Array.isArray(o.swaps)) return new Error(`${path}.swaps: is not an array`)
     for (let index = 0; index < o.swaps.length; index++) {

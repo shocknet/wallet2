@@ -15,6 +15,7 @@ import Earnings from "./earnings";
 import Routing from "./routing";
 import Manage from "../Manage";
 import Channels from "../Channels";
+import AdminSwaps from "./AdminSwaps";
 
 const Metrics = ({ match, location, history }: RouteComponentProps) => {
 
@@ -31,14 +32,15 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 	}, [admins, dispatch, selectedId]);
 
 	useIonViewWillEnter(() => {
+		console.log("enterr")
 		// If we’re already on /metrics/select, don’t push again.
 		if (location.pathname.startsWith("/metrics/select")) return;
-
+		console.log("selectedId", selectedId);
 		if (!selectedId) return;
-
+		console.log("admins", admins);
 		const sel = admins.find((a) => a.sourceId === selectedId);
 		if (!sel) return;
-
+		console.log("sel", sel);
 		// Beacon is checked ONLY here (and on selection page).
 		if (sel.beaconStale === "warmingUp" || sel.beaconStale === "stale") {
 			history.replace("/metrics/select", { from: location });
@@ -55,6 +57,7 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 				<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
+				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
 			</IonRouterOutlet>
 		</IonPage>
 	);
