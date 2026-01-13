@@ -40,7 +40,7 @@ const Prefs = () => {
 	const screenWidth = window.innerWidth * 0.88 - 23;
 	const [mempool, setMempool] = useState(prefsRedux.mempoolUrl || "https://mempool.space/api/v1/fees/recommended");
 	const [fiatCurreny, setFiatCurreny] = useState<string>('USD');
-	const [fiat, setFiat] = useState<string>('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+	const [fiat, setFiat] = useState<string>('https://rates.shockwallet.app/v2/prices/BTC-USD/spot');
 	const [chainFees, setChainFees] = useState<ChainFeesInter>({
 		fastestFee: 0,
 		halfHourFee: 0,
@@ -217,7 +217,7 @@ const Prefs = () => {
 								return (<option value={e.currency} key={i}>{e.currency}</option>);
 							})}
 						</select>
-						<input value={fiat} onChange={(e) => setFiat(e.target.value)} type="text" placeholder="https://api.coinbase.com/v2/prices/BTC-USD/spot" />
+						<input value={fiat} onChange={(e) => setFiat(e.target.value)} type="text" placeholder="https://rates.shockwallet.app/v2/prices/BTC-USD/spot" />
 					</div>
 				</div>
 				<div className='Prefs_buttons'>
