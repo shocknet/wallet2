@@ -151,7 +151,7 @@ export const handlePayBitcoinAddress = async (source: SpendFrom, address: string
 	if (!source.pubSource || !source.keys) throw new Error("Source is not nprofile");
 	const payRes = await (await getNostrClient(source.pasteField, source.keys)).PayAddress({
 		address,
-		amoutSats: +amount,
+		amountSats: +amount,
 		satsPerVByte
 	})
 
