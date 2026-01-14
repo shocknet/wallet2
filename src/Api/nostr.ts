@@ -299,7 +299,7 @@ export class NostrClient {
 
 		const ret = new Promise(resolve => {
 			const timeout = setTimeout(() => {
-				if (message.rpcName === "PayInvoice") return;
+				if (message.rpcName === "PayInvoice" || message.rpcName === "PayAddress") return;
 				this.failClientCb(reqId, "Request timed out");
 			}, RPC_SINGLE_TIMEOUT_MS);
 
