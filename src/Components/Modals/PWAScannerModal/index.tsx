@@ -21,9 +21,10 @@ interface PWAScannerModalProps {
 	onResult: (txt: string) => void;
 	onCancel: () => void;
 	onError: (error: string) => void;
+	isOpen: boolean;
 }
 
-const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScannerModalProps) => {
+const PWAScannerModal = ({ instruction, onResult, onCancel, onError, isOpen }: PWAScannerModalProps) => {
 	const regionRef = useRef<HTMLDivElement | null>(null);
 	const html5Ref = useRef<Html5Qrcode | null>(null);
 
@@ -35,8 +36,11 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScanne
 	const handleDidPresent = async () => {
 		if (!regionRef.current) return;
 
-		const html5 = new Html5Qrcode(regionRef.current.id, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
-		html5Ref.current = html5;
+		if (!html5Ref.current) {
+			const html5 = new Html5Qrcode(regionRef.current.id, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
+			html5Ref.current = html5;
+		}
+		const html5 = html5Ref.current;
 
 		try {
 			await html5.start(
@@ -68,17 +72,16 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError }: PWAScanne
 
 	return (
 		<IonModal
-			isOpen
+			isOpen={isOpen}
 			onDidDismiss={handleDismiss}
 			onDidPresent={handleDidPresent}
-			onWillDismiss={stopScanner}
 			className="wallet-modal"
 		>
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>Scan QR Code</IonTitle>
 					<IonButtons slot="end">
-						<IonButton color="primary" onClick={onCancel}>
+						<IonButton color="primary" onClick={handleDismiss}>
 							<IonIcon slot="icon-only" icon={closeOutline} />
 						</IonButton>
 					</IonButtons>
