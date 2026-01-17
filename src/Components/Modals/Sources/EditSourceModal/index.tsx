@@ -219,7 +219,7 @@ const Inner = ({
 						</span>
 					</IonTitle>
 					<IonButtons slot="end">
-						<IonButton color="light" fill="clear" shape="round" onClick={makeFavorite}>
+						<IonButton color="secondary" fill="clear" shape="round" onClick={makeFavorite}>
 							<IonIcon slot="icon-only" icon={isFavorite ? star : starOutline} />
 						</IonButton>
 						<IonButton onClick={onClose}><IonIcon icon={closeOutline} /></IonButton>

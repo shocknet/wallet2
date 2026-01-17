@@ -255,7 +255,7 @@ const SourcesPage = () => {
 				</IonList>
 
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">
-					<IonFabButton color="light" onClick={() => setIsAddSourceOpen(true)}>
+					<IonFabButton color="primary" onClick={() => setIsAddSourceOpen(true)}>
 						<IonIcon icon={add}></IonIcon>
 					</IonFabButton>
 				</IonFab>
