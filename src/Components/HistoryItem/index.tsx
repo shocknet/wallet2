@@ -1,13 +1,11 @@
-import type { SourceActualOperation, SourceOperation } from "@/State/history/types";
+import type { SourceActualOperation, SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
-import { useSelector } from "@/State/store/store";
 import styles from "./styles/index.module.scss";
 import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
-import { convertSatsToFiat } from "@/lib/fiat";
-import { formatFiat } from "@/lib/format";
+import { FiatDisplay } from "../FiatDisplay";
 
 
 
@@ -29,7 +27,6 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 
 	const { unit } = usePreferredAmountUnit();
 
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit)
 	const [displayAmount, setDisplayAmount] = useState("");
 
 
@@ -37,7 +34,6 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 
 	const { label, date, typeIcon, typeIconColor, color, directionIcon, sign } = getOperationDisplayData(operation);
 
-	const [fiatAmount, setFiatAmount] = useState<string | null>(null);
 
 	useEffect(() => {
 
@@ -47,13 +43,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 			: formatSatoshi(operation.amount);
 		setDisplayAmount(convertedValue);
 
-		const setFiat = async () => {
-			const fiat = await convertSatsToFiat(operation.amount, currency, url);
-			setFiatAmount(formatFiat(fiat, currency));
-
-		}
-		setFiat();
-	}, [operation, currency, url, unit]);
+	}, [operation, unit]);
 
 
 
@@ -102,10 +92,8 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 							<IonNote className="text-low">{date}</IonNote>
 						</IonCol>
 						<IonCol size="auto">
-							{fiatAmount &&
-								(<IonNote className="text-low">
-									{sign}{fiatAmount}
-								</IonNote>)}
+							<FiatDisplay sign={sign} sats={operation.amount} className="text-low" />
+
 						</IonCol>
 					</IonRow>
 				</IonGrid>

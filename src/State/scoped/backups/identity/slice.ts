@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IdentityDocV0 } from "./schema";
-import { bump, eqLww, mergeLww } from "../lww";
+import { FiatCurrency, IdentityDocV0, Theme } from "./schema";
+import { bump, eqLww, mergeLww, newLww } from "../lww";
 import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/persist/scope";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 import type { RootState } from "@/State/store/store";
 import { selectScopedStrict } from "../../stricScopedSelector";
+import { createMigrate } from "redux-persist";
 
 
 export type IdentityState = {
@@ -43,11 +44,11 @@ export const identitySlice = createSlice({
 				doc_type: "doc/shockwallet/identity_",
 				schema_rev: 0,
 				identity_pubkey,
-				label: bump(undefined, "", by),                 // required by schema
-				favorite_source_id: bump(undefined, null, by),  // start empty
-				sources: [],
+				favorite_source_id: newLww(null, by),
 				created_at: Date.now(),
-				bridge_url: bump(undefined, null, by),
+
+				theme: newLww("system", by),
+				fiatCurrency: newLww("USD", by)
 			};
 			state.dirty = true;
 		},
@@ -60,6 +61,30 @@ export const identitySlice = createSlice({
 			const cur = state.draft.favorite_source_id;
 			if (cur.value !== a.payload.sourceId) {
 				state.draft.favorite_source_id = bump(cur, a.payload.sourceId, a.payload.by);
+				state.dirty = true;
+			}
+		},
+
+		setTheme(
+			state,
+			a: PayloadAction<{ theme: Theme; by: string }>
+		) {
+			if (!state.draft) return;
+			const cur = state.draft.theme;
+			if (cur.value !== a.payload.theme) {
+				state.draft.theme = bump(cur, a.payload.theme, a.payload.by);
+				state.dirty = true;
+			}
+		},
+
+		setFiatCurrency(
+			state,
+			a: PayloadAction<{ currency: FiatCurrency; by: string }>
+		) {
+			if (!state.draft) return;
+			const cur = state.draft.fiatCurrency;
+			if (cur.value !== a.payload.currency) {
+				state.draft.fiatCurrency = bump(cur, a.payload.currency, a.payload.by);
 				state.dirty = true;
 			}
 		},
@@ -86,6 +111,8 @@ export const identitySlice = createSlice({
 				const basePrime: IdentityDocV0 = {
 					...r,
 					favorite_source_id: mergeLww(r.favorite_source_id, d.favorite_source_id),
+					theme: mergeLww(r.theme, d.theme),
+					fiatCurrency: mergeLww(r.fiatCurrency, d.fiatCurrency)
 				};
 				state.base = basePrime;
 				state.draft = basePrime;
@@ -103,12 +130,16 @@ export const identitySlice = createSlice({
 					...b,
 					identity_pubkey: b.identity_pubkey,
 					favorite_source_id: mergeLww(b.favorite_source_id, r.favorite_source_id),
+					theme: mergeLww(b.theme, r.theme),
+					fiatCurrency: mergeLww(b.fiatCurrency, r.fiatCurrency)
 				};
 
 				// 2) rebase local -> draft
 				const draftPrime: IdentityDocV0 = {
 					...basePrime,
 					favorite_source_id: mergeLww(basePrime.favorite_source_id, d.favorite_source_id),
+					theme: mergeLww(basePrime.theme, d.theme),
+					fiatCurrency: mergeLww(basePrime.fiatCurrency, d.fiatCurrency)
 				};
 
 				state.base = basePrime;
@@ -128,6 +159,25 @@ export const identitySlice = createSlice({
 
 export const identityActions = identitySlice.actions;
 
+
+const migrations = {
+	2: (state: IdentityState): IdentityState => {
+		const d = state.draft;
+
+		if (!d) return state;
+
+
+		return {
+			...state,
+			draft: {
+				...d,
+				theme: newLww("system"),
+				fiatCurrency: newLww("USD")
+			}
+		}
+	}
+}
+
 const persistKey = "_identity";
 export function getScopedIdentityReducer(identityPubkey: string) {
 	return makeScopedPersistedReducer(
@@ -135,8 +185,10 @@ export function getScopedIdentityReducer(identityPubkey: string) {
 		persistKey,
 		identityPubkey,
 		{
-			version: 0,
+			version: 2,
 			storage: IonicStorageAdapter,
+			// @ts-expect-error redux-persist typing issue
+			migrate: createMigrate(migrations, { debug: false })
 		},
 	);
 }
@@ -152,6 +204,11 @@ const selectIdentityState = (s: RootState) => selectScopedStrict(s).identity;
 export const selectIdentityDraft = (s: RootState) => selectIdentityState(s).draft;
 export const selectIdentityBase = (s: RootState) => selectIdentityState(s).base;
 export const selectIsIdentityDirty = (s: RootState) => !!selectIdentityState(s).dirty;
+
+export const selectTheme = (s: RootState) => selectIdentityState(s).draft!.theme.value;
+export const selectFiatCurrency = (s: RootState) => selectIdentityState(s).draft!.fiatCurrency.value
+
+
 
 export const selectFavoriteSourceId = (s: RootState) =>
 	selectIdentityState(s).draft?.favorite_source_id.value ?? null;

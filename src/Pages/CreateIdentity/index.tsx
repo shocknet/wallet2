@@ -113,7 +113,6 @@ const CreateIdentityPage = () => {
 							<IonCard
 								style={{
 									borderRadius: 12,
-									backgroundColor: "var(--ion-color-secondary)",
 								}}
 							>
 								<IonCardHeader>
@@ -127,7 +126,7 @@ const CreateIdentityPage = () => {
 								</IonCardHeader>
 
 								<IonCardContent>
-									<IonList className="round secondary" lines="none">
+									<IonList className="round" lines="none">
 										<IonItem
 											detail
 											routerLink="/identity/create/sanctum"

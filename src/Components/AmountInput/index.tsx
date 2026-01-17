@@ -1,11 +1,10 @@
 import { IonButton, IonInput } from "@ionic/react";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { parseUserInputToSats } from "@/lib/units";
-
-import { formatFiat } from "@/lib/format";
 import { Satoshi } from "@/lib/types/units";
-import { useSelector } from "@/State/store/store";
-import { convertSatsToFiat } from "@/lib/fiat";
+import { selectFiatCurrency } from "@/State/scoped/backups/identity/slice";
+import { useAppSelector } from "@/State/store/hooks";
+import { getFiatString } from "../FiatDisplay";
 
 
 
@@ -44,7 +43,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 	const input = useRef<HTMLIonInputElement>(null);
 	useImperativeHandle(ref, () => input.current as HTMLIonInputElement);
 
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit)
+	const fiatCurrency = useAppSelector(selectFiatCurrency);
 
 
 
@@ -70,16 +69,23 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 
 
 	useEffect(() => {
+		let alive = true;
 		const setFiat = async () => {
 			if (!effectiveSats) {
 				setMoney("");
 				return;
 			}
-			const fiat = await convertSatsToFiat(effectiveSats, currency, url);
-			setMoney(formatFiat(fiat, currency));
+
+			const fiat = await getFiatString(effectiveSats, fiatCurrency);
+			if (!alive) return;
+			setMoney(fiat);
 		}
 		setFiat();
-	}, [effectiveSats, currency, url]);
+		return () => {
+			alive = false;
+		}
+	}, [effectiveSats, fiatCurrency]);
+
 
 
 	const maxSelected = limits && displayValue && parseUserInputToSats(displayValue, unit) === limits.max;
@@ -109,6 +115,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 				size="small"
 				onClick={onToggleUnit}
 				aria-label="Toggle unit"
+				color="medium"
 			>
 				{unit.toUpperCase()}
 			</IonButton>
@@ -121,6 +128,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 					onClick={onPressMax}
 					aria-label="Set max"
 					disabled={isDisabled}
+					color={maxSelected ? "primary" : "medium"}
 				>
 					Max
 				</IonButton>
