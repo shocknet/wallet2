@@ -19,7 +19,6 @@ const isIdentityDirtying = isAnyOf(
 	identityActions.setFavoriteSource,
 	identityActions.applyRemoteIdentity,
 	identityActions.setFiatCurrency,
-	identityActions.setTheme
 )
 
 const isSourceDirtying = isAnyOf(
