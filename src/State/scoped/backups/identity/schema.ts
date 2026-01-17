@@ -2,7 +2,7 @@ import { z } from "zod";
 import { type DocBase, DocBaseSchema } from "../../common";
 import { LwwSchema } from "../lww";
 
-export const fiatCurrencies = ["USD", "EUR", "CAD", "BRL", "GBP", "CHF", "JPY", "AUD"] as const;
+export const fiatCurrencies = ["USD", "EUR", "CAD", "BRL", "GBP", "CHF", "JPY", "AUD", "NONE"] as const;
 
 const fiatCurrencySchema = z.union(fiatCurrencies.map(c => z.literal(c)))
 

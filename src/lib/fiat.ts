@@ -61,6 +61,8 @@ export async function convertSatsToFiat(
 		return null;
 	}
 
+	if (currency === "NONE") return null;
+
 	const rate = await getExchangeRate(currency);
 	if (!rate) return null;
 
