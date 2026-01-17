@@ -94,7 +94,7 @@ const Home = () => {
 		if (reason) {
 			history.replace(history.location.pathname + history.location.search);
 			showAlert({
-				header: "Not an Administrator",
+				header: "Cannot access",
 				message: reason,
 				buttons: [
 					{
@@ -236,7 +236,7 @@ const Home = () => {
 						</IonButton>
 					</div>
 					<IonButton color="primary" shape="round" className={styles["fab-button"]} onClick={openScan}>
-						<IonIcon color="dark" slot="icon-only" icon={qrCodeOutline} />
+						<IonIcon slot="icon-only" icon={qrCodeOutline} />
 					</IonButton>
 				</div>
 			</IonFooter>
