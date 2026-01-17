@@ -33,9 +33,7 @@ const Prefs = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<IonHeader className="ion-no-border">
-					<BackToolbar title="Preferences" />
-				</IonHeader>
+				<BackToolbar title="Preferences" />
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<div className="mt-6 flex flex-col">
