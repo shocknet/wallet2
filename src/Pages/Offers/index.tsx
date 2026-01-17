@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-	IonAvatar,
 	IonCol,
 	IonContent,
 	IonFab,
@@ -8,9 +7,7 @@ import {
 	IonGrid,
 	IonHeader,
 	IonIcon,
-	IonLabel,
 	IonList,
-	IonNote,
 	IonPage,
 	IonRow,
 	IonToolbar,
@@ -27,7 +24,8 @@ import EmptyState from "@/Components/common/ui/emptyState";
 import { useAppSelector } from "@/State/store/hooks";
 import { NprofileView, selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import HomeHeader from "@/Layout2/HomeHeader";
+import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
+import BackToolbar from "@/Layout2/BackToolbar";
 
 
 const Offers = () => {
@@ -146,8 +144,9 @@ const Offers = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<HomeHeader />
-				<IonToolbar className="ion-padding-horizontal ion-padding-bottom">
+				<BackToolbar title="Offers" />
+
+				<IonToolbar className="ion-padding-horizontal ion-padding-bottom mt-6">
 					<CustomSelect<NprofileView>
 						items={nprofileSources}
 						selectedItem={selectedSource}
@@ -155,37 +154,14 @@ const Offers = () => {
 						getIndex={(source) => source.sourceId}
 						title="Select Source"
 						subTitle="Select the source you want to spend from"
-						renderItem={(source) => {
-							return (
-								<>
-									<IonAvatar slot="start">
-										<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
-									</IonAvatar>
-									<IonLabel style={{ width: "100%" }}>
-										<h2>{source.label}</h2>
-										<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
-											Lightning.Pub Source
-										</IonNote>
-									</IonLabel>
-								</>
-							)
-						}}
-						renderSelected={(source) => (
-							<>
-								<IonAvatar slot="start">
-									<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
-								</IonAvatar>
-								<IonLabel>
-									{source?.label || ''}
-								</IonLabel>
-							</>
-						)}
+						renderItem={(source) => <SourceSelectOption source={source} />}
+						renderSelected={(source) => <SelectedSource source={source} />}
 					>
 					</CustomSelect>
 
 				</IonToolbar>
 			</IonHeader>
-			<IonContent className="ion-padding" fullscreen>
+			<IonContent className="ion-padding">
 				{
 					isLoading ? (
 						<FullSpinner />
@@ -193,7 +169,7 @@ const Offers = () => {
 						<IonGrid>
 							<IonRow className="ion-margin-top">
 								<IonCol>
-									<IonList lines="none">
+									<IonList lines="none" className="">
 										{
 											sourceOffers.map((offer, i) => (
 												<OfferItem

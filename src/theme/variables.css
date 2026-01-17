@@ -674,7 +674,9 @@ ion-list {
 	border-radius: 12px;
 }
 
-
+ion-list {
+	background-color: var(--ion-color-background) !important;
+}
 
 
 
