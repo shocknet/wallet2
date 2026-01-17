@@ -264,7 +264,7 @@ const IdentityOverviewPage = () => {
 							registry.type !== IdentityType.SANCTUM
 							&&
 							<section className="main-block flex justify-center mt-20">
-								<IonButton color="light" onClick={() => setEditOpen(true)}>
+								<IonButton color="secondary" onClick={() => setEditOpen(true)}>
 									<IonIcon slot="start" icon={pencil} />
 									Edit Identity
 								</IonButton>
@@ -274,7 +274,7 @@ const IdentityOverviewPage = () => {
 							registry.type === IdentityType.LOCAL_KEY
 							&&
 							<section className="main-block flex justify-center mt-20">
-								<IonButton color="light" onClick={handleBackup}>
+								<IonButton color="secondary" onClick={handleBackup}>
 									<IonIcon slot="start" icon={key} />
 									Backup secret key
 								</IonButton>
@@ -350,7 +350,7 @@ const IdentityOverviewPage = () => {
 
 					</IonContent>
 					<IonFooter className="ion-no-border">
-						<IonToolbar color="secondary">
+						<IonToolbar>
 							<IonButtons slot="end">
 
 								<IonButton color="primary" disabled={!relaysDirty} onClick={updateRelays}>

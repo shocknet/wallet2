@@ -63,7 +63,7 @@ export function formatFiat(
 	amount: number | null,
 	currency: string
 ): string {
-	if (amount === null) return 'N/A';
+	if (amount === null) return "";
 
 	return new Intl.NumberFormat(undefined, {
 		style: 'currency',
@@ -82,4 +82,11 @@ export function truncateTextMiddle(
 ): string {
 	if (!address || address.length <= startChars + endChars) return address;
 	return `${address.substring(0, startChars)}${separator}${address.substring(address.length - endChars)}`;
+}
+
+export function capFirstLetter(
+	text: string
+): string {
+	if (!text) return text;
+	return text.charAt(0).toUpperCase() + text.slice(1);
 }

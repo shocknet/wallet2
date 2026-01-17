@@ -16,7 +16,6 @@ import {
 	IonToolbar,
 	useIonToast
 } from "@ionic/react";
-import BackToolbar from "@/Layout2/BackToolbar";
 import { CustomSelect } from "@/Components/CustomSelect";
 import OfferItem from "@/Components/OfferItem";
 import { add } from "ionicons/icons";
@@ -26,28 +25,28 @@ import { addUserOffer, deleteUserOffer, getUserOffer, getUserOfferInvoices, getU
 import FullSpinner from "@/Components/common/ui/fullSpinner";
 import EmptyState from "@/Components/common/ui/emptyState";
 import { useAppSelector } from "@/State/store/hooks";
-import { NprofileView, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { NprofileView, selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import HomeHeader from "@/Layout2/HomeHeader";
 
 
 const Offers = () => {
 	const [present] = useIonToast();
-	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const nprofileSources = useAppSelector(selectNprofileViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const [selectedSource, setSelectedSource] = useState<NprofileView>(() => {
-		const favIsNprofile = healthyNprofileSourceViews.find(s => s.sourceId === favoriteSourceId);
+		const favIsNprofile = nprofileSources.find(s => s.sourceId === favoriteSourceId);
 		if (favIsNprofile) {
 			return favIsNprofile
 		}
 
-		const withBalance = healthyNprofileSourceViews.find(s => s.maxWithdrawableSats || 0 > 0);
+		const withBalance = nprofileSources.find(s => s.maxWithdrawableSats || 0 > 0);
 		if (withBalance) return withBalance;
 
-		if (healthyNprofileSourceViews.length === 0) {
+		if (nprofileSources.length === 0) {
 			throw new Error("No healthyNprofileViews available");
 		}
-		return healthyNprofileSourceViews[0];
+		return nprofileSources[0];
 	});
 
 
@@ -150,7 +149,7 @@ const Offers = () => {
 				<HomeHeader />
 				<IonToolbar className="ion-padding-horizontal ion-padding-bottom">
 					<CustomSelect<NprofileView>
-						items={healthyNprofileSourceViews}
+						items={nprofileSources}
 						selectedItem={selectedSource}
 						onSelect={setSelectedSource}
 						getIndex={(source) => source.sourceId}

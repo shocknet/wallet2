@@ -2,6 +2,11 @@ import { z } from "zod";
 import { type DocBase, DocBaseSchema } from "../../common";
 import { LwwSchema } from "../lww";
 
+export const fiatCurrencies = ["USD", "EUR", "CAD", "BRL", "GBP", "CHF", "JPY", "AUD", "NONE"] as const;
+
+const fiatCurrencySchema = z.union(fiatCurrencies.map(c => z.literal(c)))
+
+export type FiatCurrency = z.infer<typeof fiatCurrencySchema>;
 
 
 const CURRENT_SCHEMA_REV = 0;
@@ -12,6 +17,9 @@ export const IdentityDocV0Schema = DocBaseSchema.safeExtend({
 	schema_rev: z.literal(0),
 	identity_pubkey: z.string().nonempty(),
 	favorite_source_id: LwwSchema(z.string().nullable()),
+
+	// preferences
+	fiatCurrency: LwwSchema(fiatCurrencySchema)
 });
 export type IdentityDocV0 = z.infer<typeof IdentityDocV0Schema>;
 

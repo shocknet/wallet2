@@ -6,6 +6,7 @@ import { useAppSelector } from '@/State/store/hooks';
 import { selectActiveIdentity } from '@/State/identitiesRegistry/slice';
 import { IdentityType } from '@/State/identitiesRegistry/types';
 import { useEffect, useState } from 'react';
+import SourcesStatusIndicator from '@/Components/SourcesStatusIndicator';
 
 
 
@@ -70,6 +71,7 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 					</IonButton>
 				</IonButtons>
 				<IonButtons slot="end">
+					<SourcesStatusIndicator />
 					<IonButton shape="round" fill="clear" routerLink="/identities" routerDirection="root">
 						<IonAvatar aria-hidden="true" slot="start" style={{ height: 40, width: 40 }}>
 							{isLoading ? (

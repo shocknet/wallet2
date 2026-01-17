@@ -58,7 +58,7 @@ export const BackupKeysDialog = (
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar color="secondary">
+				<IonToolbar>
 					<IonTitle>
 						<IonText className="text-high text-lg text-weight-high">
 							Backup Keys
@@ -118,7 +118,7 @@ export const BackupKeysDialog = (
 						</IonRow>
 						<IonRow className="ion-justify-content-end">
 							<IonCol size="auto">
-								<IonButton type="submit" color="medium">Save</IonButton>
+								<IonButton type="submit" color="secondary">Save</IonButton>
 							</IonCol>
 						</IonRow>
 					</form>
@@ -126,7 +126,7 @@ export const BackupKeysDialog = (
 
 					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
 						<IonCol size="auto">
-							<IonButton color="dark" onClick={() => dismiss(undefined, "file")}>
+							<IonButton color="secondary" onClick={() => dismiss(undefined, "file")}>
 								Download as file
 							</IonButton>
 						</IonCol>
@@ -155,7 +155,7 @@ export const DecryptFileDialog = (
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar color="secondary">
+				<IonToolbar>
 					<IonTitle>
 						<IonText className="text-high text-lg text-weight-high">
 							Decrypt backup file
@@ -184,12 +184,12 @@ export const DecryptFileDialog = (
 					</IonRow>
 					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
 						<IonCol size="auto">
-							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+							<IonButton fill="clear" color="medium" onClick={() => dismiss(null, "cancel")}>
 								Cancel
 							</IonButton>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton disabled={!passphrase} onClick={() => dismiss({ passphrase }, "confirm")}>
+							<IonButton color="primary" disabled={!passphrase} onClick={() => dismiss({ passphrase }, "confirm")}>
 								Confrim
 							</IonButton>
 						</IonCol>
@@ -216,7 +216,7 @@ export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passph
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar color="secondary">
+				<IonToolbar>
 					<IonTitle>
 						<IonText className="text-medium text-lg text-weight-high">
 							Encrypt File
@@ -265,12 +265,12 @@ export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passph
 					</IonRow>
 					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
 						<IonCol size="auto">
-							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+							<IonButton fill="clear" color="medium" onClick={() => dismiss(null, "cancel")}>
 								Cancel
 							</IonButton>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton disabled={!match} onClick={handleConfirm}>
+							<IonButton fill="clear" color="primary" disabled={!match} onClick={handleConfirm}>
 								Done
 							</IonButton>
 						</IonCol>
@@ -298,7 +298,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar color="secondary">
+				<IonToolbar>
 					<IonTitle>
 						<IonText className="text-medium text-lg text-weight-high">
 							Sweep LNURL-W to one of your sources
@@ -362,12 +362,12 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 					</IonRow>
 					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
 						<IonCol size="auto">
-							<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+							<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
 								Cancel
 							</IonButton>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton disabled={!selectedSource} onClick={() => dismiss({ selectedSource }, "confirm")}>
+							<IonButton color="primary" disabled={!selectedSource} onClick={() => dismiss({ selectedSource }, "confirm")}>
 								Sweep
 							</IonButton>
 						</IonCol>
@@ -479,7 +479,7 @@ export const AddConnectionDialog = (
 	return (
 		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar color="secondary">
+				<IonToolbar>
 					<IonTitle>
 						<IonText className="text-medium text-lg text-weight-high">
 							Add Node Connection
@@ -516,10 +516,10 @@ export const AddConnectionDialog = (
 						</IonInput>
 					</div>
 					<div className="flex justify-end gap-2 mt-12">
-						<IonButton color="dark" onClick={() => dismiss(null, "cancel")}>
+						<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
 							Cancel
 						</IonButton>
-						<IonButton disabled={!parsedNprofile} onClick={() => dismiss({ parsedNprofile: parsedNprofile! }, "confirm")}>
+						<IonButton color="primary" disabled={!parsedNprofile} onClick={() => dismiss({ parsedNprofile: parsedNprofile! }, "confirm")}>
 							Done
 						</IonButton>
 					</div>

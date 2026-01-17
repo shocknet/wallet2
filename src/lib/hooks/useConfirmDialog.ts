@@ -5,9 +5,10 @@ interface Props {
 	header: string;
 	message: string;
 	confirmText: string;
+	danger: boolean;
 }
 
-export const useConfirmDialog = ({ header, message, confirmText }: Props) => {
+export const useConfirmDialog = ({ header, message, confirmText, danger = false }: Props) => {
 	const { showAlert } = useAlert();
 
 
@@ -20,12 +21,12 @@ export const useConfirmDialog = ({ header, message, confirmText }: Props) => {
 				{
 					text: "Cancel",
 					role: "cancel",
-
+					cssClass: "alert-button-cancel"
 				},
 				{
 					text: confirmText,
 					role: "confirm",
-					cssClass: "text-red-500"
+					cssClass: danger ? "alert-button-confirm-danger" : "alert-button-confirm"
 
 				}
 			]

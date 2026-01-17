@@ -16,11 +16,16 @@ export function ScannerProvider({ children }: { children: React.ReactNode }) {
 		reject: (reason?: any) => void;
 	} | null>(null);
 
+	const [loadedPwaScannerModal, setLoadedPwaScannerModal] = useState(false);
+
 	const scanBarcode = useCallback((instruction = 'Align the QR inside the frame') => {
+		if (!loadedPwaScannerModal) {
+			setLoadedPwaScannerModal(true);
+		}
 		return new Promise<string>((resolve, reject) => {
 			setScanConfig({ instruction, resolve, reject });
 		});
-	}, []);
+	}, [loadedPwaScannerModal]);
 
 	const handleResult = (result: string) => {
 		scanConfig?.resolve(result.toLowerCase());
@@ -41,13 +46,14 @@ export function ScannerProvider({ children }: { children: React.ReactNode }) {
 		<ScannerContext.Provider value={{ scanBarcode }}>
 			{children}
 			{
-				scanConfig && (
+				loadedPwaScannerModal && (
 					<Suspense fallback={<FullSpinner />}>
 						<PWAScannerModal
-							instruction={scanConfig.instruction}
+							instruction={scanConfig?.instruction || ""}
 							onResult={handleResult}
 							onCancel={handleCancel}
 							onError={handleError}
+							isOpen={!!scanConfig}
 						/>
 					</Suspense>
 				)

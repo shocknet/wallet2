@@ -71,6 +71,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
 		<AlertContext.Provider value={{ showAlert }}>
 			{children}
 			<IonAlert
+				className="custom-alert"
 				isOpen={isOpen}
 				onDidDismiss={handleDidDismiss}
 				{...(currentAlert?.options ?? {})}

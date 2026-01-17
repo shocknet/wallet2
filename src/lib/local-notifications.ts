@@ -44,10 +44,12 @@ export async function initLocalNotifications(
 					{
 						text: "Deny",
 						role: "cancel",
+						cssClass: "alert-button-cancel"
 					},
 					{
 						text: "Allow",
 						role: "confirm",
+						cssClass: "alert-button-confirm",
 						handler: () => {
 							setupNotifications();
 						}

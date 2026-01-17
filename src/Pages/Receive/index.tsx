@@ -7,7 +7,6 @@ import {
 	IonGrid,
 	IonHeader,
 	IonLabel,
-	IonNote,
 	IonPage,
 	IonRow,
 	IonSegment,
@@ -32,15 +31,15 @@ import NewInvoiceModal from '../../Components/Modals/NewInvoiceModal';
 import { getCache, setCache } from '@/lib/cache';
 import { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
-import { formatFiat, truncateTextMiddle } from '@/lib/format';
+import { truncateTextMiddle } from '@/lib/format';
 import BackToolbar from '@/Layout2/BackToolbar';
-import { convertSatsToFiat } from '@/lib/fiat';
 import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
 import { useAppSelector } from '@/State/store/hooks';
 import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
 import { SourceType } from '@/State/scoped/common';
 import { BeaconStatusLine } from '@/Components/BeaconStatusLine';
+import { FiatDisplay } from '@/Components/FiatDisplay';
 
 
 
@@ -322,10 +321,8 @@ const InvoiceTab = memo(() => {
 	const { isActive } = useSwiperSlide();
 	const favoriteSource = useAppSelector(selectFavoriteSourceView, (next, prev) => next?.sourceId === prev?.sourceId)!;
 
-	const { url, currency } = useAppSelector(state => state.prefs.FiatUnit)
 
 
-	const [money, setMoney] = useState("");
 	const [loading, setIsloading] = useState(false);
 	const [qrCodeValue, setQrCodeValue] = useState("");
 	const [amount, setAmount] = useState("");
@@ -341,13 +338,6 @@ const InvoiceTab = memo(() => {
 	);
 
 
-	useEffect(() => {
-		const setFiat = async () => {
-			const fiat = await convertSatsToFiat(amountNum, currency, url);
-			setMoney(formatFiat(fiat, currency));
-		}
-		setFiat();
-	}, [amountNum, currency, url]);
 
 
 	const modalOpenedRef = useRef(false);
@@ -458,7 +448,7 @@ const InvoiceTab = memo(() => {
 							</IonRow>
 							<IonRow className="ion-justify-content-center">
 								<IonCol size="auto" style={{ padding: "0px" }}>
-									<IonNote className="text-medium">{`~ ${money}`}</IonNote>
+									<FiatDisplay sats={amountNum} />
 								</IonCol>
 							</IonRow>
 						</>

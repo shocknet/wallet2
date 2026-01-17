@@ -68,8 +68,9 @@ const Inner = ({
 
 	const showConfirm = useConfirmDialog({
 		header: "Delete source",
-		message: "Are you sure you wish to delete this source from your identity?",
-		confirmText: "Delete"
+		message: "Are you sure you wish to delete this source from your profile?",
+		confirmText: "Delete",
+		danger: true
 	});
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
