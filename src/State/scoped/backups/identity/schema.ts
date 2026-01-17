@@ -8,9 +8,6 @@ const fiatCurrencySchema = z.union(fiatCurrencies.map(c => z.literal(c)))
 
 export type FiatCurrency = z.infer<typeof fiatCurrencySchema>;
 
-const themeSchema = z.union([z.literal("dark"), z.literal("light"), z.literal("system")]);
-
-export type Theme = z.infer<typeof themeSchema>
 
 const CURRENT_SCHEMA_REV = 0;
 
@@ -22,7 +19,6 @@ export const IdentityDocV0Schema = DocBaseSchema.safeExtend({
 	favorite_source_id: LwwSchema(z.string().nullable()),
 
 	// preferences
-	theme: LwwSchema(themeSchema),
 	fiatCurrency: LwwSchema(fiatCurrencySchema)
 });
 export type IdentityDocV0 = z.infer<typeof IdentityDocV0Schema>;

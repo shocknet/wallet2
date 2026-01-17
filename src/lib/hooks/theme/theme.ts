@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@/State/store/hooks";
-import { Theme } from "@/State/scoped/backups/identity/schema";
+import { selectTheme, Theme } from "@/State/appState/slice";
 
 
 
@@ -11,8 +11,8 @@ function getPrefersDark(): boolean {
 	return !!window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 }
 
-function computeEffectiveTheme(pref: Theme | null | undefined, prefersDark: boolean): EffectiveTheme {
-	if (!pref || pref === "system") return prefersDark ? "dark" : "light";
+function computeEffectiveTheme(pref: Theme, prefersDark: boolean): EffectiveTheme {
+	if (pref === "system") return prefersDark ? "dark" : "light";
 	return pref;
 }
 
@@ -20,8 +20,8 @@ function computeEffectiveTheme(pref: Theme | null | undefined, prefersDark: bool
 export function useThemeManager() {
 
 
-	const prefFromDoc = useAppSelector((s) => s.scoped?.identity.draft?.theme.value);
-	const pref: Theme = prefFromDoc ?? "system";
+	const pref = useAppSelector(selectTheme);
+
 
 
 	const [prefersDark, setPrefersDark] = useState<boolean>(() => getPrefersDark());

@@ -1,13 +1,13 @@
-import { useCallback, useState } from 'react';
-import { useDispatch } from '../../State/store/store';
-import { IonContent, IonHeader, IonPage, useIonRouter } from '@ionic/react';
+import { useCallback, } from 'react';
+import { IonContent, IonHeader, IonPage } from '@ionic/react';
 import { getDeviceId } from '../../constants';
 import BackToolbar from '@/Layout2/BackToolbar';
 import { CustomSelect } from '@/Components/CustomSelect';
-import { fiatCurrencies, FiatCurrency, Theme } from '@/State/scoped/backups/identity/schema';
+import { fiatCurrencies, FiatCurrency } from '@/State/scoped/backups/identity/schema';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
-import { identityActions, selectFiatCurrency, selectTheme } from '@/State/scoped/backups/identity/slice';
+import { identityActions, selectFiatCurrency } from '@/State/scoped/backups/identity/slice';
 import { capFirstLetter } from '@/lib/format';
+import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -26,8 +26,7 @@ const Prefs = () => {
 
 	const theme = useAppSelector(selectTheme);
 	const setTheme = useCallback((newTheme: Theme) => {
-		const deviceId = getDeviceId();
-		dispatch(identityActions.setTheme({ theme: newTheme, by: deviceId }));
+		dispatch(appStateActions.setTheme({ theme: newTheme }));
 	}, [dispatch])
 
 
