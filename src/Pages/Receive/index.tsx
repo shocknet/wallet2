@@ -282,7 +282,7 @@ const LnurlTab = memo(() => {
 						</IonRow>
 						<IonRow className="ion-justify-content-center ion-margin-top">
 							<IonCol size="auto">
-								<IonText color="light">
+								<IonText>
 									LNURL
 								</IonText>
 							</IonCol>
@@ -301,7 +301,7 @@ const LnurlTab = memo(() => {
 						</IonRow>
 						<IonRow className="ion-justify-content-center ion-margin-top">
 							<IonCol size="auto">
-								<IonText color="light">
+								<IonText>
 									{lightningAddress}
 								</IonText>
 							</IonCol>
