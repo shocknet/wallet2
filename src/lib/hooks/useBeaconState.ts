@@ -1,4 +1,4 @@
-import { BEACON_SEMI_STALE_OLDER_THAN, BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
+import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 
 
 export const useBeaconState = (beaconLastSeenAtMs: number) => {
@@ -10,8 +10,6 @@ export const useBeaconState = (beaconLastSeenAtMs: number) => {
 
 	if (diff > BEACON_STALE_OLDER_THAN) {
 		return "stale"
-	} else if (diff > BEACON_SEMI_STALE_OLDER_THAN) {
-		return "semi-stale"
 	} else {
 		return "healthy"
 	}
