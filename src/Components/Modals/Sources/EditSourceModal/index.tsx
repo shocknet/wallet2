@@ -68,8 +68,9 @@ const Inner = ({
 
 	const showConfirm = useConfirmDialog({
 		header: "Delete source",
-		message: "Are you sure you wish to delete this source from your identity?",
-		confirmText: "Delete"
+		message: "Are you sure you wish to delete this source from your profile?",
+		confirmText: "Delete",
+		danger: true
 	});
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
@@ -218,7 +219,7 @@ const Inner = ({
 						</span>
 					</IonTitle>
 					<IonButtons slot="end">
-						<IonButton color="light" fill="clear" shape="round" onClick={makeFavorite}>
+						<IonButton color="secondary" fill="clear" shape="round" onClick={makeFavorite}>
 							<IonIcon slot="icon-only" icon={isFavorite ? star : starOutline} />
 						</IonButton>
 						<IonButton onClick={onClose}><IonIcon icon={closeOutline} /></IonButton>

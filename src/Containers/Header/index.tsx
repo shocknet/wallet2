@@ -298,7 +298,7 @@ export const PubHeader = () => {
 					<div className="Header_modal_content_item_img">
 						{Icons.Contacts()}
 					</div>
-					<div className="Header_modal_content_item_text">Contacts</div>
+					<div className="Header_modal_content_item_text">Address Book</div>
 				</div>
 				<div className="Header_modal_content_item" onClick={() => {
 					router.push("/prefs");
@@ -316,7 +316,7 @@ export const PubHeader = () => {
 					<div className="Header_modal_content_item_img">
 						{Icons.SourceIcon()}
 					</div>
-					<div className="Header_modal_content_item_text">Manage Sources</div>
+					<div className="Header_modal_content_item_text">Node Connections</div>
 				</div>
 				<div className="Header_modal_content_item">
 					<hr />

@@ -119,39 +119,6 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 								</IonPopover>
 							</>
 						}
-
-						{
-							beaconState === "semi-stale"
-							&&
-							<>
-								<span
-									id="online-dot"
-									style={{
-										backgroundColor: "var(--ion-color-warning)",
-										width: "10px",
-										height: "10px",
-										borderRadius: "50%",
-										marginRight: "1rem"
-									}}
-								/>
-								<IonPopover
-									showBackdrop={false}
-									dismissOnSelect
-									trigger="online-dot"
-									triggerAction="click"
-									reference="trigger"
-									side="bottom"
-									alignment="start"
-
-									className="hinty-popover"
-								>
-									<IonContent className="ion-padding">
-										Maybe stale
-									</IonContent>
-
-								</IonPopover>
-							</>
-						}
 					</>
 				}
 			</IonListHeader>

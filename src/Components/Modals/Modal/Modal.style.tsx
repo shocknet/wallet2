@@ -37,7 +37,7 @@ export const StyledModal = styled.div`
   text-align: center;
   z-index: 100;
   font-size: 20px;
-  background: linear-gradient(135deg, #16191c, #151d24);
+  background-color: var(--ion-color-light);
   margin: auto;
   border-radius: 5px;
   position: relative;

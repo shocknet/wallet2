@@ -30,7 +30,7 @@ import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
 
 
-import { historySelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { historySelectors } from "@/State/scoped/backups/sources/slice";
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
@@ -65,22 +65,6 @@ const Home = () => {
 			cleanupListener = () => listener.remove();
 		});
 
-		// If the user exits the app before an optimstic operation is done
-		// then those optimistic operations should be removed
-		// This is to prevent optimistic operations from being stuck in the history
-		operations.forEach(op => {
-			if ("optimistic" in op && op.optimistic) {
-				if (op.type === "INVOICE") {
-					dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
-				} else {
-					if (op.status === "broadcasting") {
-						dispatch(sourcesActions.removeOptimistic({ sourceId: op.sourceId, operationId: op.operationId }));
-					}
-				}
-			}
-		});
-
-
 
 		return () => {
 			cleanupListener?.();
@@ -94,7 +78,7 @@ const Home = () => {
 		if (reason) {
 			history.replace(history.location.pathname + history.location.search);
 			showAlert({
-				header: "Not an Administrator",
+				header: "Cannot access",
 				message: reason,
 				buttons: [
 					{
@@ -224,18 +208,18 @@ const Home = () => {
 			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
 				<div className={styles["toolbar"]}>
 					<div className={styles["button-container"]}>
-						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
+						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
 							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
 							Receive
 						</IonButton>
 					</div>
 					<div className={styles["button-container"]}>
-						<IonButton color="secondary" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
+						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
 							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
 							Send
 						</IonButton>
 					</div>
-					<IonButton shape="round" className={styles["fab-button"]} onClick={openScan}>
+					<IonButton color="primary" shape="round" className={styles["fab-button"]} onClick={openScan}>
 						<IonIcon slot="icon-only" icon={qrCodeOutline} />
 					</IonButton>
 				</div>

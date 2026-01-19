@@ -13,12 +13,13 @@ import classNames from "classnames";
 import { EditSource } from "../../Assets/SvgIconLibrary";
 import { setDebitToEdit } from "../../State/Slices/modalsSlice";
 import Checkbox from "../../Components/Checkbox";
-import { IonAvatar, IonLabel, IonNote, useIonRouter } from "@ionic/react";
+import { useIonRouter } from "@ionic/react";
 import Toast from "../../Components/Toast";
 import { useAppSelector } from "@/State/store/hooks";
 import { NprofileView, selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { CustomSelect } from "@/Components/CustomSelect";
+import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
 
 type StateDebitAuth = DebitAuthorization & { source: NprofileView, domainName?: string, avatarUrl?: string }
 
@@ -175,7 +176,7 @@ const LinkedApp = () => {
 		if (!selectedSource) return;
 		const deviceId = getDeviceId();
 
-		dispatch(sourcesActions.updateisNDebitDiscoverable({ sourceId: selectedSource.sourceId, isNdebitDiscoverable: checked, by: deviceId, now: Date.now() }));
+		dispatch(sourcesActions.updateisNDebitDiscoverable({ sourceId: selectedSource.sourceId, isNdebitDiscoverable: checked, by: deviceId }));
 		setIsPubliclyAvailable(checked)
 
 	}
@@ -193,31 +194,8 @@ const LinkedApp = () => {
 						getIndex={(source) => source.sourceId}
 						title="Select Source"
 						subTitle="Select a source to view its nbedit rules"
-						renderItem={(source) => {
-							return (
-								<>
-									<IonAvatar slot="start">
-										<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
-									</IonAvatar>
-									<IonLabel style={{ width: "100%" }}>
-										<h2>{source.label}</h2>
-										<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
-											Lightning.Pub Source
-										</IonNote>
-									</IonLabel>
-								</>
-							)
-						}}
-						renderSelected={(source) => (
-							<>
-								<IonAvatar slot="start">
-									<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
-								</IonAvatar>
-								<IonLabel>
-									{source?.label || ''}
-								</IonLabel>
-							</>
-						)}
+						renderItem={(source) => <SourceSelectOption source={source} />}
+						renderSelected={(source) => <SelectedSource source={source} />}
 					>
 					</CustomSelect>
 				</div>
@@ -249,7 +227,7 @@ const LinkedApp = () => {
 							borderRadius: '5px',
 							border: '1px solid #2a3035',
 							boxShadow: '0px 0px 2px rgba(0, 0, 0, 1)',
-							backgroundColor: '#16191c',
+
 							padding: '10px'
 						}}
 					>

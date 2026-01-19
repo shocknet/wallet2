@@ -4,6 +4,7 @@ import { formatSatoshi } from "./units";
 import { isPlatform } from "@ionic/react";
 import type { AlertOptions, AlertResult } from "./contexts/useAlert";
 import { Preferences } from "@capacitor/preferences";
+import { toastController } from "@ionic/core";
 
 const DENIED_NOTIFICATIONS_PERMISSIONS = "notif_perms_denied";
 
@@ -43,10 +44,12 @@ export async function initLocalNotifications(
 					{
 						text: "Deny",
 						role: "cancel",
+						cssClass: "alert-button-cancel"
 					},
 					{
 						text: "Allow",
 						role: "confirm",
+						cssClass: "alert-button-confirm",
 						handler: () => {
 							setupNotifications();
 						}
@@ -139,6 +142,13 @@ async function showOperationNotification(
 
 
 export async function notifyReceivedOperation(amount: Satoshi, operationId: string, isOnChain: boolean) {
+	const toast = await toastController.create({
+		message: "Payment received",
+		color: "success",
+		duration: 4000,
+		position: "bottom",
+	});
+	await toast.present();
 	return showOperationNotification(
 		"Payment Received",
 		`You Received ${formatSatoshi(amount)} sats`,

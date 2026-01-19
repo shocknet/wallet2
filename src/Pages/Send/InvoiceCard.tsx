@@ -17,10 +17,10 @@ import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import NoteInput from "./common";
 import InvoiceInfoDisplay from "@/Components/common/info/invoiceInfoDisplay";
-import { useSelector } from "@/State/store/store";
 import { useEffect, useState } from "react";
-import { convertSatsToFiat } from "@/lib/fiat";
-import { formatFiat } from "@/lib/format";
+import { getFiatString } from "@/Components/FiatDisplay";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectFiatCurrency } from "@/State/scoped/backups/identity/slice";
 
 
 const InvoiceCard = ({
@@ -30,20 +30,22 @@ const InvoiceCard = ({
 	selectedSource
 }: Pick<CardProps, "invoiceData" | "note" | "setNote" | "selectedSource">) => {
 
-	const { url, currency } = useSelector(state => state.prefs.FiatUnit);
+	const currency = useAppSelector(selectFiatCurrency);
 	const [money, setMoney] = useState("");
 
 	useEffect(() => {
+		let alive = true;
 		const setFiat = async () => {
-			if (!invoiceData.amount) {
-				setMoney("");
-				return;
-			}
-			const fiat = await convertSatsToFiat(invoiceData.amount, currency, url);
-			setMoney(formatFiat(fiat, currency));
+			const fiat = await getFiatString(invoiceData.amount, currency);
+			if (!alive) return;
+			setMoney(fiat)
+
 		}
 		setFiat();
-	}, [invoiceData.amount, currency, url]);
+		return () => {
+			alive = false;
+		}
+	}, [invoiceData.amount, currency]);
 
 	const hasEnough = (selectedSource?.maxWithdrawableSats || 0 as Satoshi) > invoiceData.amount!
 

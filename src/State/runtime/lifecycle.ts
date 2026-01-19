@@ -6,10 +6,12 @@ import { getCluster } from "@/Api/nostr"
 
 
 export function registerRootLifecycle() {
-	if (!Capacitor.isNativePlatform()) return;
+
 
 	App.addListener("appStateChange", ({ isActive }) => {
-		getCluster().lifecycle.setDesiredActive(isActive);
+		if (Capacitor.isNativePlatform()) {
+			getCluster().lifecycle.setDesiredActive(isActive);
+		}
 		store.dispatch(runtimeActions.setAppActiveStatus({ active: isActive }));
 	});
 }

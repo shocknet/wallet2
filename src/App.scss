@@ -26,7 +26,7 @@ $clear-color: #E2E2E2;
 
 
 
-body {
+/* body {
 	background-color: #16191c;
 	color: #fcfcfc;
 	font-family: Arial, Helvetica, sans-serif;
@@ -45,7 +45,7 @@ body {
 		font-family: Montserrat;
 		text-shadow: none;
 	}
-}
+} */
 
 #root {
 	position: relative;
@@ -54,14 +54,7 @@ body {
 	max-height: 100vh;
 }
 
-.App {
-	width: 100%;
-	max-width: 1200px;
-	margin: 0 auto;
-	font-size: 1.6rem;
-	height: 100vh;
-	position: relative;
-}
+
 
 
 @mixin buttonPrimary {
@@ -181,7 +174,7 @@ input[type=number] {
 @import "./Pages/Manage//Manage.scss";
 @import "./Pages/Channels/Channels.scss";
 @import "./Pages/Send/Send.scss";
-@import "./Pages/Prefs/Prefs.scss";
+
 @import "./Pages/Automation/Auto.scss";
 
 @import "./Pages/Notify/notify.scss";

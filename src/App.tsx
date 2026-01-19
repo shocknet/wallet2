@@ -11,14 +11,15 @@ import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
+import '@ionic/react/css/global.bundle.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import "./theme/tailwind.css";
 import "./theme/variables.css";
 
 import { Redirect, Route } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useState } from "react";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { BackButtonEvent, IonApp, IonRouterOutlet, setupIonicReact, useIonRouter, useIonToast } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import store, { persistor, useSelector } from './State/store/store';
@@ -49,6 +50,7 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { GuardedRoute } from './routing/GuardedRoute';
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource, loadedIdentityGuard } from './routing/guards';
 import onBeforeLift from './onBeforeLift';
+import { App as CapApp } from '@capacitor/app';
 
 
 async function setEnvColors() {
@@ -92,11 +94,13 @@ addIcons({
 	nostr: nostrSvg,
 })
 setupIonicReact();
-document.documentElement.classList.add('dark');
+
+const EXIT_WINDOW_MS = 2000;
 
 
 
 const AppJobs = () => {
+	usePressBackAgainToExit();
 	useAppUrlListener();
 
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
@@ -283,7 +287,6 @@ const AppContent: React.FC = () => {
 					component={Prefs}
 
 					guards={[loadedIdentityGuard]}
-					layout={Layout}
 				/>
 
 
@@ -393,7 +396,6 @@ const App: React.FC = () => {
 							<IonApp>
 								<AlertProvider>
 									<AppContent />
-
 								</AlertProvider>
 							</IonApp>
 						</ScannerProvider>
@@ -414,3 +416,41 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+const usePressBackAgainToExit = () => {
+	const ionRouter = useIonRouter();
+	const [presentToast, dismissToast] = useIonToast();
+	const lastPressRef = useRef<number>(0);
+
+	useEffect(() => {
+		const onBack = (event: BackButtonEvent) => {
+			event.detail.register(-1, () => {
+
+				if (ionRouter.canGoBack()) return;
+
+				const now = Date.now();
+				const elapsed = now - lastPressRef.current;
+
+				if (elapsed < EXIT_WINDOW_MS) {
+					CapApp.exitApp();
+					return;
+				}
+
+				lastPressRef.current = now;
+
+				presentToast({
+					message: "Press back again to exit",
+					duration: EXIT_WINDOW_MS,
+					position: "bottom",
+				});
+			});
+		};
+
+		document.addEventListener("ionBackButton", onBack);
+		return () => {
+			document.removeEventListener("ionBackButton", onBack);
+			dismissToast();
+		}
+	}, [ionRouter, dismissToast, presentToast]);
+}

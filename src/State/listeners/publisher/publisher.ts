@@ -18,6 +18,7 @@ const DEBOUNCE_MS = 900;
 const isIdentityDirtying = isAnyOf(
 	identityActions.setFavoriteSource,
 	identityActions.applyRemoteIdentity,
+	identityActions.setFiatCurrency,
 )
 
 const isSourceDirtying = isAnyOf(

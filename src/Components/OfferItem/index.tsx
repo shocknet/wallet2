@@ -89,18 +89,18 @@ const OfferItem = ({ offer, handleSelectOffer, onDelete }: OfferItemProps) => {
 						<IonCol size="auto" className={styles["offer-item-chips-container"]}>
 							{
 								offer.price_sats === 0 ? (
-									<IonChip color="primary">
+									<IonChip color="secondary">
 										<IonLabel className={styles["chip-label"]}>Spontaneous Payments</IonLabel>
 									</IonChip>
 								) : (
-									<IonChip color="primary">
+									<IonChip color="secondary">
 										<IonLabel className={styles["chip-label"]}>{formatSatoshi(offer.price_sats as Satoshi)} sats</IonLabel>
 									</IonChip>
 								)
 							}
 							{
 								offer.callback_url && (
-									<IonChip color="primary">
+									<IonChip color="secondary">
 										<IonLabel className={styles["chip-label"]}>{highlightUrlTemplate(offer.callback_url)}</IonLabel>
 									</IonChip>
 								)
@@ -114,7 +114,7 @@ const OfferItem = ({ offer, handleSelectOffer, onDelete }: OfferItemProps) => {
 							</IonNote>
 						</IonCol>
 						<IonCol size="auto">
-							<IonButton fill="clear" className={styles["offer-item-copy-button"]} onClick={(e) => {
+							<IonButton color="secondary" fill="clear" className={styles["offer-item-copy-button"]} onClick={(e) => {
 								e.stopPropagation();
 								copy();
 							}}>

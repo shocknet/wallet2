@@ -1,15 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import styles from "./styles/index.module.scss";
+import { useRef, } from "react";
 import { IonButton, IonNote, IonRippleEffect, IonText } from "@ionic/react";
 import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
-import { convertSatsToFiat } from "@/lib/fiat";
-import { formatFiat } from "@/lib/format";
+
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { selectTotalBalance } from "@/State/scoped/backups/sources/selectors";
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
+import { FiatDisplay } from "@/Components/FiatDisplay";
 
 
 
@@ -20,9 +19,7 @@ const BalanceCard = () => {
 	const { unit, setUnit } = usePreferredAmountUnit();
 
 
-	const { url, currency } = useAppSelector(state => state.prefs.FiatUnit);
 	const balance = useAppSelector(selectTotalBalance);
-	const [money, setMoney] = useState("");
 	const displayBalance = unit === "sats" ? formatSatoshi(balance) : formatBitcoin(satsToBtc(balance))
 
 	const holdTimer = useRef<NodeJS.Timeout | null>(null);
@@ -45,17 +42,6 @@ const BalanceCard = () => {
 
 
 
-
-	useEffect(() => {
-		const setFiat = async () => {
-			const fiat = await convertSatsToFiat(balance, currency, url);
-			setMoney(formatFiat(fiat, currency));
-		}
-		setFiat();
-	}, [balance, currency, url]);
-
-
-
 	const toggleUnit = () => {
 		const newUnit = unit === "BTC" ? "sats" : "BTC";
 		setUnit(newUnit);
@@ -64,18 +50,21 @@ const BalanceCard = () => {
 
 	return (
 		<div
-			className={`${styles["balance-card"]} ion-activatable`}
+			className="ion-activatable w-[93%] mx-auto h-44 border-2 border-primary
+			flex flex-col justify-center items-center rounded-md bg-light
+			"
 			onPointerDown={handlePointerDown}
 			onPointerUp={clearHoldTimer}
 			onPointerLeave={clearHoldTimer}
 			style={{ marginBottom: "1rem" }}
 		>
 			<IonRippleEffect></IonRippleEffect>
-			<IonText color="light" className={styles["amount"]}>{displayBalance}</IonText>
+			<IonText className="text-3xl font-bold text-[color:var(--ion-text-color-step-100)]">{displayBalance}</IonText>
 			<IonButton onClick={toggleUnit} fill="clear" className="ion-no-margin">{unit}</IonButton>
-			{
-				money && <IonNote className="text-medium">~ {money}</IonNote>
-			}
+			<IonNote className="text-medium">
+
+				<FiatDisplay sign="~" className="text-medium" sats={balance} />
+			</IonNote>
 		</div>
 	);
 };

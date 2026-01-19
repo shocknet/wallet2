@@ -39,14 +39,14 @@ interface AppBuildInfo {
 const getMenuItems = (hasAdminSoures: boolean) => {
 	const items: { title: string, icon: any, path: string, color?: string }[] = [
 		{ title: "Automation", icon: calendarNumberOutline, path: "/automation" },
-		{ title: "Contacts", icon: peopleOutline, path: "/contacts" },
+		{ title: "Address Book", icon: peopleOutline, path: "/contacts" },
 		{ title: "Linked Apps", icon: starOutline, path: "/lapps" },
-		{ title: "Offer Codes", icon: pricetagOutline, path: "/offers" },
+		{ title: "Static Offers", icon: pricetagOutline, path: "/offers" },
 		{ title: "Preferences", icon: settingsOutline, path: "/prefs" },
-		{ title: "Manage Sources", icon: flashOutline, path: "/sources" },
-		{ title: "Node Invitations", icon: personAddOutline, path: "/invitations" },
+		{ title: "Node Connections", icon: flashOutline, path: "/sources" },
 	]
 	if (hasAdminSoures) {
+		items.push({ title: "Invite Links", icon: personAddOutline, path: "/invitations" })
 		items.push({ title: "Dashboard", icon: analyticsOutline, path: "/metrics", color: '#c740c7' })
 	}
 	return items

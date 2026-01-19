@@ -15,6 +15,8 @@ import classNames from 'classnames';
 import moment from 'moment';
 import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
+import { IonButton, IonIcon } from '@ionic/react';
+import { add } from 'ionicons/icons';
 
 
 
@@ -185,7 +187,7 @@ const Automation = () => {
 						<Dropdown<Interval>
 							setState={(e) => setInputs(prev => ({ ...prev, schedule: e }))}
 							otherOptions={otherOptions}
-							jsx={<span style={{ display: "flex", alignItems: "center", backgroundColor: "black" }}>{inputs.schedule} {Icons.arrowRight()}</span>}
+							jsx={<span style={{ display: "flex", alignItems: "center" }}>{inputs.schedule} {Icons.arrowRight()}</span>}
 						/>
 					</div>
 				</div>
@@ -250,12 +252,12 @@ const Automation = () => {
 												</div>
 											</div>
 											<div className="Automation_content_item_right">
-												<button className="Automation_content_item_close" onClick={() => {
+												<IonButton className="Automation_content_item_close" onClick={() => {
 													setEditSubId(item.subId);
 													toggle()
 												}}>
 													{Icons.EditSource()}
-												</button>
+												</IonButton>
 											</div>
 										</li>
 									)
@@ -313,7 +315,10 @@ const Automation = () => {
 				{subscriptionsView}
 				<div className="Automation_content">
 					<div className="Automation_add_button">
-						<button onClick={() => toggle()}><span>{Icons.plusIcon()}</span> NEW</button>
+						<IonButton onClick={() => toggle()}>
+							<IonIcon slot="start" icon={add} />
+							NEW
+						</IonButton>
 					</div>
 				</div>
 			</div>

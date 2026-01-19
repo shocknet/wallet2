@@ -1,16 +1,16 @@
 .Automation {
 
-	&_add_button {
+  &_add_button {
     display: inline-flex;
     margin-top: 15px;
     z-index: 9999;
-		align-self: flex-end;
+    align-self: flex-end;
 
     & button {
-			cursor: pointer;
+      cursor: pointer;
       display: flex;
       align-items: center;
-			gap: 8px;
+      gap: 8px;
       position: relative;
       box-sizing: border-box;
       font-size: 22px;
@@ -18,208 +18,225 @@
       font-weight: bold;
       padding: 4px 12px;
       $border: 1px;
-      color: #FFF;
+
       background: #16191c;
-      background-clip: padding-box; /* !importanté */
-      border: solid $border transparent; /* !importanté */
+      background-clip: padding-box;
+      /* !importanté */
+      border: solid $border transparent;
+      /* !importanté */
       border-radius: 5px;
-    
+
       &:before {
         content: '';
         position: absolute;
-        top: 0; right: 0; bottom: 0; left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         z-index: -1;
-        margin: -$border; /* !importanté */
-        border-radius: 3px; /* !importanté */
-        background: linear-gradient(150deg, #29ABE2, #B0B0B0);
+        margin: -$border;
+        /* !importanté */
+        border-radius: 3px;
+        /* !importanté */
+        background: var(--ion-color-light)
       }
     }
   }
 
-    &_container {
-      max-width: 800px;
-      width: 100%;
-      padding-bottom: 30px;
-      transition-duration: 500ms;
+  &_container {
+    max-width: 800px;
+    width: 100%;
+    padding-bottom: 30px;
+    transition-duration: 500ms;
+    font-family: Montserrat;
+    left: 0;
+    height: 100%;
+    margin: 0 auto;
+  }
+
+  &_header {
+    display: inline-flex;
+    align-items: center;
+    width: 290px;
+    margin: auto;
+    aspect-ratio: 1 / 1;
+
+    border: 1px solid #2693c1;
+    border-radius: 10px;
+
+    &_text {
+      margin-block: 10px;
+      text-align: center;
+
+      font-size: 26px;
       font-family: Montserrat;
-      left: 0;
-      height: 100%;
-      margin: 0 auto;
     }
-  
-    &_header {
-      display: inline-flex;
-      align-items: center;
-      width: 290px;
-      margin: auto;
-      aspect-ratio : 1 / 1;
-      background-color: white;
-      border: 1px solid #2693c1;
-      border-radius: 10px;
-      &_text{
-        margin-block: 10px;
-        text-align: center;
-        color: white;
-        font-size: 26px;
-        font-family: Montserrat;
+  }
+
+  &_content {
+    margin: 0 auto;
+    margin-top: 4%;
+    width: 100%;
+    // @media (max-width: 768px) {
+    //     width: 100%;
+    // }
+    display: flex;
+    flex-direction: column;
+
+    justify-self: center;
+
+    &_title {
+      font-size: 16px;
+
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      color: var(--ion-text-color-step-150);
+
+
+      &_checkbox {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        fill: #16191c;
+        border: 1px solid #a3a3a3;
+        stroke-width: 1;
       }
     }
 
-    &_content {
-        margin: 0 auto;
-        margin-top: 4%;
-        width: 100%;
-        // @media (max-width: 768px) {
-        //     width: 100%;
-        // }
-        display: flex;
-        flex-direction: column;
-        
-        justify-self: center;
+    &_desc {
+      font-size: 16px;
 
-        &_title {
-            font-size: 16px;
-            color: #29abe2;
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            text-shadow: 0px 0px 2px rgba(0,0,0,1);
-            
-
-            &_checkbox {
-                width: 16px;
-                height: 16px;
-                border-radius: 5px;
-                fill: #16191c;
-                border: 1px solid #a3a3a3;
-                stroke-width: 1;
-            }
-        }
-
-        &_desc {
-            font-size: 16px;
-            color: #ffffff;
-            margin: 7px 0;
-        }
-
-        &_input {
-          background-color: transparent;
-          width: 30px;
-          height: 19px;
-          padding: 0px 4px;
-          border: 1px solid #29abe2;
-          border-radius: 5px;
-          background-size: cover;
-          font-family: Montserrat;
-          font-size: 12px;
-          color: #999999;
-          text-align: center;
-        }
-				&_list_box {
-					margin-top: 5px;
-					border-radius: 7px;
-					max-height: 25vh;
-					overflow-y: auto;
-				}
-				&_item{
-					display: flex;
-					align-items: center;
-					height: 45px;
-					padding: 0 auto;
-					background-color: black;
-					margin-block: 3px;
-					border-radius: 6px;
-			
-			
-				}
-				&_item:hover {
-					z-index: 0;
-				}
-			
-				&_item_left{
-					height: 100%;
-					width: calc(100% - 80px);
-					display: inline-flex;
-					float: left;
-					overflow: hidden;
-				}
-        &_disabled {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          display: block;
-          background-color:#d90000;
-        }
-        &_enabled {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          display: block;
-          background-color: #00ff1e;
-        }
-        &_item_close{
-          width: 50%;
-          background-color: transparent;
-          margin-inline: 4px;
-          position: relative;
-          border: 0px solid transparent;
-        }
-				&_item_right{
-					display: inline-flex;
-					width: 75px;
-          justify-content: flex-end;
-				}
-			
-				&_modal_icon{
-					width: 30px;
-				}
-			
-				&_item_input{
-					text-align: center;
-					display: flex;
-					align-items: center;
-          gap: 5px;
-				}
-				&_item_icon {
-					margin-inline: 10px;
-					height: 100%;
-					display: flex;
-					align-items: center;
-			
-					& div {
-						width: 33px;
-						height: 33px;
-						display: inline-flex;
-						align-items: center;
-					}
-				}
+      margin: 7px 0;
     }
 
-    &_buttons {
-        padding-inline: 16%;
+    &_input {
+      background-color: transparent;
+      width: 30px;
+      height: 19px;
+      padding: 0px 4px;
+      border: 1px solid #29abe2;
+      border-radius: 5px;
+      background-size: cover;
+      font-family: Montserrat;
+      font-size: 12px;
+
+      text-align: center;
+    }
+
+    &_list_box {
+      margin-top: 5px;
+      border-radius: 7px;
+      max-height: 25vh;
+      overflow-y: auto;
+    }
+
+    &_item {
+      display: flex;
+      align-items: center;
+      height: 45px;
+      padding: 0 auto;
+
+      margin-block: 3px;
+      border-radius: 6px;
+
+
+    }
+
+    &_item:hover {
+      z-index: 0;
+    }
+
+    &_item_left {
+      height: 100%;
+      width: calc(100% - 80px);
+      display: inline-flex;
+      float: left;
+      overflow: hidden;
+    }
+
+    &_disabled {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+      background-color: #d90000;
+    }
+
+    &_enabled {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+      background-color: #00ff1e;
+    }
+
+    &_item_close {
+      width: 50%;
+      background-color: transparent;
+      margin-inline: 4px;
+      position: relative;
+      border: 0px solid transparent;
+    }
+
+    &_item_right {
+      display: inline-flex;
+      width: 75px;
+      justify-content: flex-end;
+    }
+
+    &_modal_icon {
+      width: 30px;
+    }
+
+    &_item_input {
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    &_item_icon {
+      margin-inline: 10px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      & div {
+        width: 33px;
+        height: 33px;
         display: inline-flex;
-        width: 100%;
-        position: fixed;
-        bottom: 100px;
-        left: 0px;
-        & button {
-            background-color: #151d24;
-            border: 1px solid #268fbc;
-            border-radius: 6px;
-            color: white;
-            padding: 10px;
-            width: 100px;
-            height: 45px;
-            font-size: 20px;
-            transition-duration: 400ms;
-        }
-
-        &_cancel {
-            margin-right: auto;
-        }
-
-        &_save {
-            float: right;
-        }
+        align-items: center;
+      }
     }
   }
+
+  &_buttons {
+    padding-inline: 16%;
+    display: inline-flex;
+    width: 100%;
+    position: fixed;
+    bottom: 100px;
+    left: 0px;
+
+    & button {
+
+      border: 1px solid #268fbc;
+      border-radius: 6px;
+
+      padding: 10px;
+      width: 100px;
+      height: 45px;
+      font-size: 20px;
+      transition-duration: 400ms;
+    }
+
+    &_cancel {
+      margin-right: auto;
+    }
+
+    &_save {
+      float: right;
+    }
+  }
+}
