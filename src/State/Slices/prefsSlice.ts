@@ -31,7 +31,7 @@ export const migrations: Record<number, MigrationFunction<PrefsInterface>> = {
   // Neither Fiaturl or FiatUnit existing at all migration
   2: (state) => {
     if (!state.FiatUnit) {
-      state.FiatUnit = { url: "https://api.coinbase.com/v2/prices/BTC-USD/spot", symbol: "$", currency: "USD" };
+      state.FiatUnit = { url: "https://rates.shockwallet.app/v2/prices/BTC-USD/spot", symbol: "$", currency: "USD" };
       return state;
     }
     return state;
@@ -84,7 +84,7 @@ const update = (value: PrefsInterface) => {
 
 const initialState: PrefsInterface = loadInitialState(
   storageKey,
-  '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
+  '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://rates.shockwallet.app/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
   migrations,
   update
 );
@@ -108,7 +108,7 @@ const prefsSlice = createSlice({
     builder.addCase(syncRedux, () => {
       return loadInitialState(
         storageKey,
-        '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://api.coinbase.com/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
+        '{"selected":"","mempoolUrl":"", "FiatUnit": {"url": "https://rates.shockwallet.app/v2/prices/BTC-USD/spot", "symbol": "$", "currency": "USD"}}',
         migrations,
         update
       );
