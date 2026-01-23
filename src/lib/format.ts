@@ -14,7 +14,7 @@ function formatSatsInput(input: string): string {
 	if (asNumber > MAX_SATS) {
 		asNumber = MAX_SATS;
 	}
-	return asNumber.toLocaleString();
+	return asNumber.toLocaleString("fr-FR");
 }
 
 function formatBtcInput(input: string): string {
