@@ -97,7 +97,7 @@ const AmountInput = forwardRef<HTMLIonInputElement, AmountInputProps>(({
 			ref={input}
 			label="Amount"
 			color="primary"
-			inputMode="decimal"
+			inputMode={unit === "sats" ? "numeric" : "decimal"}
 			type="text"
 			onIonInput={handleInputChange}
 			placeholder={`Enter amount in ${unit}`}
