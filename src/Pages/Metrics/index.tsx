@@ -15,7 +15,7 @@ import Earnings from "./earnings";
 import Routing from "./routing";
 import Manage from "../Manage";
 import Channels from "../Channels";
-import AdminSwaps from "./AdminSwaps";
+import AdminSwaps from "./adminSwaps/AdminSwaps";
 
 const Metrics = ({ match, location, history }: RouteComponentProps) => {
 
