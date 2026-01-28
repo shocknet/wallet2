@@ -3,6 +3,8 @@ import { MAX_BTC, MAX_DECIMALS, MAX_SATS } from "./constants/units";
 
 
 function formatSatsInput(input: string): string {
+	// Remove all non-digit characters (including decimal points)
+	// Sats are the smallest unit - no decimals allowed
 	let cleaned = input.replace(/\D/g, "");
 
 	cleaned = cleaned.replace(/^0+/, "");

@@ -8,9 +8,21 @@ const asBitcoin = (value: number): Bitcoin => value as Bitcoin;
 const asSatoshi = (value: number): Satoshi => value as Satoshi;
 
 
+function btcToSats(btc: string): Satoshi {
 
-export function btcToSats(btc: Bitcoin): Satoshi {
-	return asSatoshi(Math.round(btc * SATS_PER_BTC));
+	const [integer, fraction] = btc.split(".");
+	const whole = integer === "" ? "0" : integer;
+
+	let frac = (fraction ?? "").slice(0, 8);
+	while (frac.length < 8) frac += "0";
+
+	let satsStr = (whole + frac).replace(/^0+(?=\d)/, "");
+	if (satsStr === "") satsStr = "0";
+
+	const sats = Number(satsStr);
+	if (!Number.isFinite(sats) || sats < 0) throw new Error("invalid");
+
+	return asSatoshi(sats);
 }
 
 export function satsToBtc(sats: Satoshi): Bitcoin {
@@ -39,20 +51,22 @@ export function msatsToSats(
 }
 
 export function parseUserInputToSats(input: string, unit: "BTC" | "sats"): Satoshi {
-	const raw = input.replace(/,/g, "").trim(); // remove commas & spaces
-	if (!raw) return asSatoshi(0);
+	const trimmed = input.trim();
+	if (!trimmed) return asSatoshi(0);
 
-	const numeric = Number(raw);
-	if (Number.isNaN(numeric) || numeric < 0) {
-		throw new Error("Invalid amount");
+
+	if (unit === "sats") {
+		const digits = trimmed.replace(/\D/g, ""); // remove anything but digits
+		const numeric = Number(digits);
+		if (!Number.isFinite(numeric) || numeric < 0) {
+			throw new Error("Invalid amount");
+		}
+
+		return asSatoshi(numeric);
 	}
 
-	if (unit === "BTC") {
-		const btcAmount = asBitcoin(numeric);
-		return btcToSats(btcAmount);
-	} else {
-		return asSatoshi(Math.round(numeric));
-	}
+
+	return btcToSats(trimmed);
 }
 
 
