@@ -45,9 +45,13 @@ export async function initPushNotifications() {
 	if (result.status === "registered") {
 		const prev = getCachedPushToken();
 		if (prev !== result.token) {
+			console.log("[Push] New token registered:", result.token.substring(0, 20) + "...");
 			setCachedPushToken(result.token);
 			store.dispatch(pushTokenUpdated({ token: result.token }));
+		} else {
+			console.log("[Push] Using cached token");
 		}
-
+	} else {
+		console.warn("[Push] Registration result:", result);
 	}
 }

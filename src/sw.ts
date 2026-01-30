@@ -41,9 +41,11 @@ self.addEventListener("notificationclick", (event) => {
 			const url = new URL("/", self.location.origin);
 			url.searchParams.set("push", "1");
 			if (intent.identityHint) url.searchParams.set("identity_hint", intent.identityHint);
-			if (intent.actionData) url.searchParams.set("action_type", intent.actionData.action_type);
-			if (intent.actionData?.action_type === "payment-received") {
-				url.searchParams.set("notif_op_id", intent.actionData.notif_op_id);
+			if (intent.actionData) {
+				url.searchParams.set("action_type", intent.actionData.action_type);
+				if (intent.actionData.action_type === "payment-received" || intent.actionData.action_type === "payment-sent") {
+					url.searchParams.set("notif_op_id", intent.actionData.notif_op_id);
+				}
 			}
 			await self.clients.openWindow(url.toString());
 		} else {

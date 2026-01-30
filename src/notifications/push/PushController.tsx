@@ -12,8 +12,7 @@ type RouteIntent = {
 };
 
 function routeForIntent(i: { actionData?: PushActionData }): RouteIntent {
-
-	if (i.actionData?.action_type === "payment-received") {
+	if (i.actionData?.action_type === "payment-received" || i.actionData?.action_type === "payment-sent") {
 		return {
 			path: "/home",
 			state: {
@@ -31,7 +30,7 @@ export function PushIntentController() {
 
 	useEffect(() => {
 		const unsubscribe = onIntent(async (intent) => {
-			console.log("I caught the intent!!!!!!!!!!!!")
+			console.log("[PushController] Handling push intent:", intent);
 			const targetRoute = routeForIntent(intent);
 
 
