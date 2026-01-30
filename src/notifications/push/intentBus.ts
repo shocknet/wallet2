@@ -1,11 +1,16 @@
-export type PushActionType = "payment-received";
+export type PushActionType = "payment-received" | "payment-sent";
 
 export type PaymentReceivedIntentData = {
 	action_type: "payment-received";
 	notif_op_id: string;
 };
 
-export type PushActionData = PaymentReceivedIntentData;
+export type PaymentSentIntentData = {
+	action_type: "payment-sent";
+	notif_op_id: string;
+};
+
+export type PushActionData = PaymentReceivedIntentData | PaymentSentIntentData;
 
 export type PushClickIntent = {
 	type: "push_click";
@@ -43,12 +48,12 @@ export function parsePushIntentFromPayload(
 
 	let actionData: PushActionData | undefined;
 	if (actionType) {
-		if (actionType === "payment-received") {
+		if (actionType === "payment-received" || actionType === "payment-sent") {
 			const notifOpId = isNonEmptyString(actionPayload.notif_op_id)
 				? (actionPayload.notif_op_id as string)
 				: undefined;
 			if (!notifOpId) return null;
-			actionData = { action_type: "payment-received", notif_op_id: notifOpId };
+			actionData = { action_type: actionType, notif_op_id: notifOpId };
 		} else {
 			return null;
 		}

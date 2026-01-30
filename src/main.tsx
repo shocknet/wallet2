@@ -10,6 +10,11 @@ registerRootLifecycle();
 initPushNotifications();
 initLocalNotifications();
 
+// Load test helpers in development
+if (import.meta.env.DEV) {
+	import('./notifications/push/testHelpers');
+}
+
 const container = document.getElementById('root');
 const root = createRoot(container!);
 

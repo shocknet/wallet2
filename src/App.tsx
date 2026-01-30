@@ -43,6 +43,8 @@ import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
+import { PushIntentController } from './notifications/push/PushController';
+import { ConsumePendingNav } from './notifications/push/pendingNav';
 
 
 import { StatusBar, Style } from "@capacitor/status-bar";
@@ -189,6 +191,8 @@ const AppContent: React.FC = () => {
 	return (
 		<IonReactRouter>
 			<AppJobs />
+			<PushIntentController />
+			<ConsumePendingNav />
 			<NavigationMenu />
 			<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
 				<GuardedRoute

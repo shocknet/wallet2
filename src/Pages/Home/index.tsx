@@ -36,7 +36,9 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
 
-import { getNotificationsPermission } from "@/notifications/permission";
+import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
+import { initLocalNotifications } from "@/notifications/local/local-notifications";
+import { initPushNotifications } from "@/notifications/push/init";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
@@ -124,8 +126,18 @@ const Home = () => {
 				]
 			}).then(async ({ role }) => {
 				if (role !== "confirm") return;
-				/* await requestPushPermission();
-				await initLocalNotifications(); */
+				try {
+					await requestNotificationsPermission();
+					await initPushNotifications();
+					await initLocalNotifications();
+				} catch (err) {
+					console.error("Failed to enable notifications", err);
+					showToast({
+						message: "Failed to enable notifications. Check settings.",
+						color: "warning",
+						duration: 3000
+					});
+				}
 			});
 		});
 	}, [showAlert]);
@@ -133,7 +145,16 @@ const Home = () => {
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);
 
-
+	useIonViewDidEnter(() => {
+		const state = history.location.state as { notif_op_id?: string } | undefined;
+		if (state?.notif_op_id) {
+			history.replace(history.location.pathname);
+			const operation = operations.find(op => op.id === state.notif_op_id);
+			if (operation) {
+				handleSelectOperation(operation);
+			}
+		}
+	}, [history.location.key, operations]);
 
 	const handleSelectOperation = useCallback((operation: SourceOperation) => {
 		setSelectedOperation(operation);
