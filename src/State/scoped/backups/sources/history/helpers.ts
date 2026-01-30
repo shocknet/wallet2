@@ -20,7 +20,7 @@ export const userOperationToSourceOperation = (op: UserOperation, sourceId: stri
 
 	if (local === undefined) {
 		if (notify && incoming.inbound) {
-			import("@/lib/local-notifications")
+			import("@/notifications/local/local-notifications")
 				.then(({ notifyReceivedOperation }) => notifyReceivedOperation(incoming.amount, incoming.operationId, incoming.type === "ON-CHAIN").catch(() => {/* no-op */ }))
 				.catch(err => console.error('Failed to lazy-load "@/lib/local-notifications', err));
 		}

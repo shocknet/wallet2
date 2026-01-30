@@ -1,5 +1,5 @@
-import { useCallback, } from 'react';
-import { IonContent, IonHeader, IonPage } from '@ionic/react';
+import { useCallback, useState } from 'react';
+import { IonButton, IonContent, IonHeader, IonPage, IonSpinner } from '@ionic/react';
 import { getDeviceId } from '../../constants';
 import BackToolbar from '@/Layout2/BackToolbar';
 import { CustomSelect } from '@/Components/CustomSelect';
@@ -8,6 +8,9 @@ import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { identityActions, selectFiatCurrency } from '@/State/scoped/backups/identity/slice';
 import { capFirstLetter } from '@/lib/format';
 import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
+import { initLocalNotifications } from '@/notifications/local/local-notifications';
+import { requestNotificationsPermission } from '@/notifications/permission';
+import { initPushNotifications } from '@/notifications/push/init';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -15,6 +18,8 @@ const themeOptions: Theme[] = ["system", "dark", "light"];
 
 const Prefs = () => {
 	const dispatch = useAppDispatch();
+	const [pushBusy, setPushBusy] = useState(false);
+	const pushStatus = useAppSelector(state => state.runtime.pushStatus);
 
 
 	const fiatCurrency = useAppSelector(selectFiatCurrency);
@@ -28,6 +33,17 @@ const Prefs = () => {
 	const setTheme = useCallback((newTheme: Theme) => {
 		dispatch(appStateActions.setTheme({ theme: newTheme }));
 	}, [dispatch])
+
+	const onEnablePush = useCallback(async () => {
+		setPushBusy(true);
+		try {
+			await requestNotificationsPermission();
+			await initPushNotifications();
+			await initLocalNotifications();
+		} finally {
+			setPushBusy(false);
+		}
+	}, []);
 
 
 	return (
@@ -68,6 +84,44 @@ const Prefs = () => {
 							<div className="text-[var(--ion-text-color-step-200)]">{capFirstLetter(curr)}</div>
 						)}
 					/>
+				</div>
+
+				<div className="mt-6 flex flex-col">
+					<div className="text-lg text-[var(--ion-text-color-step-150)] font-medium">Notifications</div>
+					<div className="text-sm text-[var(--ion-text-color-step-350)]">
+						Enable push notifications for important account activity.
+					</div>
+					<div className="mt-3 flex items-center gap-3">
+						{
+							(!pushStatus || pushStatus.status === "prompt") && (
+								<IonButton onClick={onEnablePush} disabled={pushBusy}>
+									{pushBusy ? <IonSpinner name="dots" /> : "Enable notifications"}
+								</IonButton>
+							)
+						}
+						{
+							pushStatus?.status === "registered" && (
+								<span className="text-sm text-[var(--ion-text-color-step-200)]">Enabled</span>
+							)
+						}
+						{
+							pushStatus?.status === "denied" && (
+								<span className="text-sm text-[var(--ion-text-color-step-200)]">Denied in system settings</span>
+							)
+						}
+						{
+							pushStatus?.status === "unsupported" && (
+								<span className="text-sm text-[var(--ion-text-color-step-200)]">Not supported on this device</span>
+							)
+						}
+						{
+							pushStatus?.status === "error" && (
+								<span className="text-sm text-[var(--ion-text-color-step-200)]">
+									Failed to register notifications
+								</span>
+							)
+						}
+					</div>
 				</div>
 			</IonContent>
 		</IonPage>

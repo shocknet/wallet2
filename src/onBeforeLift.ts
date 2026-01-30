@@ -1,4 +1,5 @@
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
+import { getIntent } from "./notifications/push/intentBus";
 import { migrateDeviceToIdentities } from "./State/identitiesRegistry/identitiesMigration";
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from "./State/identitiesRegistry/thunks";
 import store from "./State/store/store";
@@ -12,7 +13,13 @@ export default async function onBeforeLift() {
 	const didMigrate = await doIdentityMigration();
 
 	if (!didMigrate) {
-		await preloadLastActiveIdentity();
+		const intent = getIntent();
+		if (intent?.identityHint) {
+			const success = await preloadIdentity(intent.identityHint);
+			if (!success) await preloadLastActiveIdentity();
+		} else {
+			await preloadLastActiveIdentity();
+		}
 	}
 }
 
@@ -64,6 +71,15 @@ async function preloadLastActiveIdentity() {
 			window.location.reload();
 			await new Promise(() => {/*  */ })
 		}
+	}
+}
+
+async function preloadIdentity(pubkey: string) {
+	try {
+		await store.dispatch(switchIdentity(pubkey, true))
+		return true;
+	} catch {
+		return false;
 	}
 }
 

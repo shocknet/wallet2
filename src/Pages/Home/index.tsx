@@ -36,8 +36,11 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
 
+import { getNotificationsPermission } from "@/notifications/permission";
+
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
+const NOTIF_PROMPT_SEEN_KEY = "notif_prompt_seen";
 
 
 const Home = () => {
@@ -98,6 +101,34 @@ const Home = () => {
 			})
 		}
 	}, [history.location.key]);
+
+	useIonViewDidEnter(() => {
+		const seen = localStorage.getItem(NOTIF_PROMPT_SEEN_KEY);
+		if (seen) return;
+
+		getNotificationsPermission().then((status) => {
+			if (status !== "prompt") return;
+			localStorage.setItem(NOTIF_PROMPT_SEEN_KEY, "1");
+			showAlert({
+				header: "Enable notifications?",
+				message: "Turn on notifications for payment updates and important alerts.",
+				buttons: [
+					{
+						text: "Not now",
+						role: "cancel",
+					},
+					{
+						text: "Enable",
+						role: "confirm",
+					},
+				]
+			}).then(async ({ role }) => {
+				if (role !== "confirm") return;
+				/* await requestPushPermission();
+				await initLocalNotifications(); */
+			});
+		});
+	}, [showAlert]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);
