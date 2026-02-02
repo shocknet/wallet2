@@ -14,7 +14,7 @@ import AmountInput from "@/Components/AmountInput";
 
 export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileView | undefined }) {
     const router = useIonRouter();
-    const [invoice, setInvoice] = useState<string>("");
+    const [amountSats, setAmountSats] = useState<number>(0);
     const [satPerVByte, setSatPerVByte] = useState<number>(0);
     const [quotes, setQuotes] = useState<InvoiceSwapQuote[]>([]);
     const [refundingOp, setRefundingOp] = useState<string | null>(null);
@@ -48,7 +48,7 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
         setSwaps(swaps);
     }
     const requestQuote = async () => {
-        const res = await fetch([(client) => client.GetAdminInvoiceSwapQuotes({ invoice: invoice })], "Fetching quotes...")
+        const res = await fetch([(client) => client.GetAdminInvoiceSwapQuotes({ amount_sats: amountSats })], "Fetching quotes...")
         if (!res) return;
         const [quote] = res
         setQuotes(quote.quotes);
@@ -96,9 +96,9 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
         {quotes.length === 0 && <>
             <IonRow className="ion-margin-top"> <IonText>Amount received by destination address</IonText></IonRow>
             <IonInput
-                label="Invoice"
-                value={invoice}
-                onIonChange={(e) => setInvoice(e.detail.value || "")}
+                label="Amount sats"
+                value={amountSats}
+                onIonChange={(e) => setAmountSats(Number(e.detail.value) || 0)}
             />
             <IonButton onClick={requestQuote}>
                 Request Quotes
