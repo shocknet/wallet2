@@ -17,7 +17,9 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
     const [invoice, setInvoice] = useState<string>("");
     const [satPerVByte, setSatPerVByte] = useState<number>(0);
     const [quotes, setQuotes] = useState<InvoiceSwapQuote[]>([]);
-    const [address, setAddress] = useState<string>("");
+    const [refundingOp, setRefundingOp] = useState<string | null>(null);
+    const [refundSatPerVByte, setRefundSatPerVByte] = useState<number>(0);
+    // const [address, setAddress] = useState<string>("");
 
     const [swaps, setSwaps] = useState<InvoiceSwapsList>({ quotes: [], swaps: [] });
     const [loading, setLoading] = useState(true)
@@ -67,6 +69,17 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
         fetchSwaps();
     }
 
+    const refundSwap = async () => {
+        if (!refundingOp) {
+            toast.error("No swap operation id found");
+            return;
+        }
+        const req: Types.RefundAdminInvoiceSwapRequest = { sat_per_v_byte: refundSatPerVByte, swap_operation_id: refundingOp }
+        const res = await fetch([(client) => client.RefundAdminInvoiceSwap(req)], "Refunding swap...")
+        if (!res) return;
+        fetchSwaps();
+    }
+
     return <IonContent className="ion-padding ion-content-no-footer">
         {error && (
             <div style={{ color: "red", padding: 12 }}>
@@ -97,6 +110,13 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
             <IonRow className="ion-margin-top"> <IonText>{quote.invoice_amount_sats} sats invoice will be paid by swap service</IonText></IonRow>
             <IonRow  > <IonText>{quote.address} needs to receive {quote.transaction_amount_sats} sats to perform the swap</IonText></IonRow>
             <IonRow  > <IonText>diff: {quote.transaction_amount_sats - quote.invoice_amount_sats}</IonText></IonRow>
+            <IonRow>
+                <IonText>Sat per v byte</IonText>
+                <IonInput
+                    value={satPerVByte}
+                    onIonChange={(e) => setSatPerVByte(Number(e.detail.value) || 0)}
+                />
+            </IonRow>
             <IonButton onClick={() => doSwap(quote.swap_operation_id)}>Swap</IonButton>
         </div>)}
         {quotes.length > 0 && <IonButton onClick={cancelSwap}>Change Swap Invoice</IonButton>}
@@ -107,13 +127,39 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
             <IonRow className="ion-margin-top"> <IonText>{quote.invoice_amount_sats} sats invoice will be paid by swap service</IonText></IonRow>
             <IonRow  > <IonText>{quote.address} needs to receive {quote.transaction_amount_sats} sats to perform the swap</IonText></IonRow>
             <IonRow  > <IonText>diff: {quote.transaction_amount_sats - quote.invoice_amount_sats}</IonText></IonRow>
-            <IonButton onClick={() => doSwap(quote.swap_operation_id)}>Swap</IonButton>
+            {refundingOp !== quote.swap_operation_id && quote.tx_id && <IonButton onClick={() => setRefundingOp(quote.swap_operation_id)}>Refund</IonButton>}
+            {refundingOp !== quote.swap_operation_id && !quote.tx_id && <IonButton onClick={() => doSwap(quote.swap_operation_id)}>Swap</IonButton>}
+            {refundingOp === quote.swap_operation_id && <>
+                <IonRow>
+                    <IonText>Sat per v byte</IonText>
+                    <IonInput
+                        value={refundSatPerVByte}
+                        onIonChange={(e) => setRefundSatPerVByte(Number(e.detail.value) || 0)}
+                    />
+                </IonRow>
+                <IonButton onClick={() => refundSwap()}>Refund</IonButton>
+            </>}
         </div>)}
         {swaps.swaps.length > 0 && <IonRow><IonText className="ion-margin-top" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Swaps</IonText></IonRow>}
         {swaps.swaps.map(op => <div key={op.swap_operation_id}>
             <IonItem>
                 {!op.failure_reason && <IonText>success: {op.operation_payment?.amount} sats to {op.invoice_paid}</IonText>}
-                {op.failure_reason && <IonText>failed: {op.operation_payment?.amount} sats to {op.invoice_paid} reason: {op.failure_reason}</IonText>}
+                {op.failure_reason && refundingOp !== op.swap_operation_id && <>
+                    <IonText>failed: {op.operation_payment?.amount} sats to {op.invoice_paid}</IonText>
+                    <IonText>reason: {op.failure_reason}</IonText>
+                    <IonButton onClick={() => setRefundingOp(op.swap_operation_id)}>Refund</IonButton>
+                </>}
+                {refundingOp === op.swap_operation_id && <>
+                    <IonText>refunding: {op.operation_payment?.amount} sats</IonText>
+                    <IonRow>
+                        <IonText>Sat per v byte</IonText>
+                        <IonInput
+                            value={refundSatPerVByte}
+                            onIonChange={(e) => setRefundSatPerVByte(Number(e.detail.value) || 0)}
+                        />
+                    </IonRow>
+                    <IonButton onClick={() => refundSwap()}>Refund</IonButton>
+                </>}
             </IonItem>
         </div>)}
     </IonContent>
