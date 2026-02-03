@@ -26,6 +26,7 @@ export interface IdentityExtension extends IdentityBase {
 export interface IdentitySanctum extends IdentityBase {
 	type: IdentityType.SANCTUM;
 	accessToken: string;
+	refreshToken?: string;
 }
 
 export type Identity = IdentityKeys | IdentityExtension | IdentitySanctum;

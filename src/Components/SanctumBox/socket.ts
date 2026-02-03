@@ -2,6 +2,7 @@ import { getClientKey } from "./helpers";
 
 export interface Creds {
 	accessToken: string;
+	refreshToken?: string;
 	nsec: string;
 	identifier: string;
 }

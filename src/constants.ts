@@ -32,6 +32,7 @@ export const HTTP_ADMIN_TOKEN_STORAGE_KEY = "HTTP_ADMIN_TOKEN"
 export const HTTP_AUTH_TOKEN_STORAGE_KEY = "HTTP_AUTH_TOKEN"
 export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
 export const SANCTUM_ACCESS_TOKEN_STORAGE_KEY = "SANCTUM_ACCESS_TOKEN"
+export const SANCTUM_REFRESH_TOKEN_STORAGE_KEY = "SANCTUM_REFRESH_TOKEN"
 export const HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY = "HAS_MIGRATED_TO_IDENTITIES__";
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
 export const NOSTR_RELAYS = import.meta.env.VITE_NOSTR_RELAYS ? [import.meta.env.VITE_NOSTR_RELAYS] : ["wss://relay.lightning.pub"]
@@ -49,7 +50,7 @@ export const options: any = {
 	very: "Very well.",
 	mine: "It's my node.",
 }
-export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY, SANCTUM_ACCESS_TOKEN_STORAGE_KEY, WALLET_CLIENT_KEY_STORAGE_KEY]
+export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY, SANCTUM_ACCESS_TOKEN_STORAGE_KEY, SANCTUM_REFRESH_TOKEN_STORAGE_KEY, WALLET_CLIENT_KEY_STORAGE_KEY]
 
 function padZero(number: number) {
 	return number.toString().padStart(2, '0');

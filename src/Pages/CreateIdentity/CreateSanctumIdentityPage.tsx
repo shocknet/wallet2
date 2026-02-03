@@ -28,7 +28,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 	const [presentLoading, dismissLoading] = useIonLoading();
 
 
-	const onSubmit = async (accessToken: string) => {
+	const onSubmit = async (accessToken: string, refreshToken?: string) => {
 		try {
 			await presentLoading({ message: "Loading identity" });
 			const api = await getSanctumIdentityApi({ accessToken });
@@ -37,6 +37,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 			const identity: IdentitySanctum = {
 				type: IdentityType.SANCTUM,
 				accessToken: accessToken,
+				refreshToken: refreshToken,
 				pubkey: pubkey,
 				label: "New Sanctum Identity",
 				createdAt: Date.now()
@@ -80,7 +81,7 @@ const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteC
 					<SanctumBox
 						loggedIn={false}
 						successCallback={(creds) => {
-							onSubmit(creds.accessToken)
+							onSubmit(creds.accessToken, creds.refreshToken)
 						}}
 						errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
 						sanctumUrl={SANCTUM_URL}
