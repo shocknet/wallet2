@@ -3,7 +3,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { parsePushIntentFromPayload } from './notifications/push/intentBus';
+import { parseEnvelopeJsonString } from './notifications/push/intentBus';
 
 self.skipWaiting()
 clientsClaim()
@@ -12,19 +12,22 @@ cleanupOutdatedCaches()
 
 self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
-	const data = event.notification?.data ?? {};
+	const data = event.notification?.data["FCM_MSG"].data.raw;
+	console.log("data in service worker", data);
 
-
-
-	const intent = parsePushIntentFromPayload(data, "web");
+	const envelope = typeof data === "string" ? parseEnvelopeJsonString(data) : null;
+	console.log("parsed envelope in service worker", envelope);
 
 	event.waitUntil((async () => {
 		const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
 
 		if (wins.length) {
-			if (intent) {
+
+
+			if (envelope) {
 				try {
-					wins[0].postMessage(intent);
+					console.log("posting message to window", envelope);
+					wins[0].postMessage(envelope);
 				} catch {
 					/* ignore */
 				}
@@ -37,16 +40,10 @@ self.addEventListener("notificationclick", (event) => {
 			return;
 		}
 
-		if (intent) {
+		if (envelope) {
 			const url = new URL("/", self.location.origin);
 			url.searchParams.set("push", "1");
-			if (intent.identityHint) url.searchParams.set("identity_hint", intent.identityHint);
-			if (intent.actionData) {
-				url.searchParams.set("action_type", intent.actionData.action_type);
-				if (intent.actionData.action_type === "payment-received" || intent.actionData.action_type === "payment-sent") {
-					url.searchParams.set("notif_op_id", intent.actionData.notif_op_id);
-				}
-			}
+			url.searchParams.set("push_envelope", encodeURIComponent(JSON.stringify(envelope)));
 			await self.clients.openWindow(url.toString());
 		} else {
 			await self.clients.openWindow("/");
@@ -59,4 +56,5 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging } from 'firebase/messaging/sw';
 
 const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
+console.log("firebaseApp", firebaseApp);
 getMessaging(firebaseApp);

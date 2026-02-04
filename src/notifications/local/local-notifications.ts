@@ -74,6 +74,7 @@ async function showOperationNotification(
 
 
 export async function notifyReceivedOperation(amount: Satoshi, operationId: string, isOnChain: boolean) {
+	return;
 	const toast = await toastController.create({
 		message: "Payment received",
 		color: "success",

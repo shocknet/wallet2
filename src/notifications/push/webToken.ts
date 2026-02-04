@@ -17,6 +17,8 @@ export async function registerWebPush(): Promise<PushRegistrationResult> {
 		serviceWorkerRegistration: swReg,
 	});
 
+	console.log("registered", { token })
+
 	return { status: "registered", token };
 }
 

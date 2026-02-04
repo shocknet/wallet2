@@ -10,12 +10,12 @@ export async function registerNativePush(): Promise<PushRegistrationResult> {
 
 	await PushNotifications.register();
 	return await new Promise<PushRegistrationResult>((resolve) => {
-		PushNotifications.addListener("registration", (t) => (
+		PushNotifications.addListener("registration", (t) => {
 			resolve({
 				status: "registered",
 				token: t.value
 			})
-		));
+		});
 		PushNotifications.addListener("registrationError", (err) => (
 			resolve({ status: "error", error: err.error })
 		));

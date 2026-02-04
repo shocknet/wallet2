@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useIonRouter } from "@ionic/react";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
+import { useHistory } from "react-router-dom";
 
 const KEY = "PENDING_PUSH_NAV";
 
@@ -32,7 +33,7 @@ export function clearPendingNav() {
 }
 
 export function ConsumePendingNav() {
-	const ionRouter = useIonRouter();
+	const history = useHistory();
 	const activeIdentityId = useAppSelector(selectActiveIdentityId);
 
 	useEffect(() => {
@@ -42,8 +43,8 @@ export function ConsumePendingNav() {
 
 
 		clearPendingNav();
-		ionRouter.push(nav.path, "root", "replace", nav.state);
-	}, [ionRouter, activeIdentityId]);
+		history.replace(nav.path, nav.state);
+	}, [history, activeIdentityId]);
 
 	return null;
 }
