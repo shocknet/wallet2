@@ -63,6 +63,17 @@
 	--ion-color-dark-tint: #353e47;
 
 
+	--ripple-color: var(--ion-color-primary);
+
+	--ion-overlay-background-color: var(--ion-color-secondary);
+
+	--wallet-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06),
+		0 4px 12px -2px rgba(0, 0, 0, 0.08);
+	--wallet-box-shadow-strong:
+		0 10px 20px 0 rgba(0, 0, 0, 0.16),
+		0 28px 48px -8px rgba(0, 0, 0, 0.24);
+	--ion-padding: 14px;
+	--ion-margin: 14px;
 	--ion-item-background: var(--ion-color-light);
 
 }
@@ -185,17 +196,7 @@
 
 
 
-	--ripple-color: var(--ion-color-primary);
 
-	--ion-overlay-background-color: var(--ion-color-secondary);
-
-	--wallet-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06),
-		0 4px 12px -2px rgba(0, 0, 0, 0.08);
-	--wallet-box-shadow-strong:
-		0 10px 20px 0 rgba(0, 0, 0, 0.16),
-		0 28px 48px -8px rgba(0, 0, 0, 0.24);
-	--ion-padding: 14px;
-	--ion-margin: 14px;
 }
 
 :root.ios.dark,

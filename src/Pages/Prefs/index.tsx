@@ -10,7 +10,7 @@ import { capFirstLetter } from '@/lib/format';
 import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
 import { initLocalNotifications } from '@/notifications/local/local-notifications';
 import { requestNotificationsPermission } from '@/notifications/permission';
-import { initPushNotifications } from '@/notifications/push/init';
+import { refreshPushRegistration } from '@/notifications/push/register';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -37,8 +37,12 @@ const Prefs = () => {
 	const onEnablePush = useCallback(async () => {
 		setPushBusy(true);
 		try {
-			await requestNotificationsPermission();
-			await initPushNotifications();
+			const res = await requestNotificationsPermission();
+			if (res !== "granted") {
+				console.log("[Prefs] Permission not granted:", res);
+				return;
+			}
+			await refreshPushRegistration();
 			await initLocalNotifications();
 		} finally {
 			setPushBusy(false);
@@ -86,43 +90,40 @@ const Prefs = () => {
 					/>
 				</div>
 
-				<div className="mt-6 flex flex-col">
-					<div className="text-lg text-[var(--ion-text-color-step-150)] font-medium">Notifications</div>
-					<div className="text-sm text-[var(--ion-text-color-step-350)]">
-						Enable push notifications for important account activity.
+				{pushStatus?.status !== "unsupported" && pushStatus?.status !== "error" && (
+					<div className="mt-6 flex flex-col">
+						<div className="text-lg text-[var(--ion-text-color-step-150)] font-medium">Notifications</div>
+						<div className="text-sm text-[var(--ion-text-color-step-350)]">
+							Enable push notifications for important account activity.
+						</div>
+						<div className="mt-3 flex flex-col gap-3">
+							{
+								(!pushStatus || pushStatus.status === "prompt") && (
+									<IonButton onClick={onEnablePush} disabled={pushBusy} size="default" style={{ maxWidth: "fit-content" }}>
+										{pushBusy ? <IonSpinner name="dots" /> : "Enable Notifications"}
+									</IonButton>
+								)
+							}
+							{
+								pushStatus?.status === "registered" && (
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-[var(--ion-color-success)]">✓ Enabled</span>
+									</div>
+								)
+							}
+							{
+								pushStatus?.status === "denied" && (
+									<div className="flex flex-col gap-2">
+										<span className="text-sm text-[var(--ion-color-warning)]">⚠ Permission Denied</span>
+										<span className="text-xs text-[var(--ion-text-color-step-400)]">
+											To enable notifications, go to your browser or system settings and allow notifications for this site.
+										</span>
+									</div>
+								)
+							}
+						</div>
 					</div>
-					<div className="mt-3 flex items-center gap-3">
-						{
-							(!pushStatus || pushStatus.status === "prompt") && (
-								<IonButton onClick={onEnablePush} disabled={pushBusy}>
-									{pushBusy ? <IonSpinner name="dots" /> : "Enable notifications"}
-								</IonButton>
-							)
-						}
-						{
-							pushStatus?.status === "registered" && (
-								<span className="text-sm text-[var(--ion-text-color-step-200)]">Enabled</span>
-							)
-						}
-						{
-							pushStatus?.status === "denied" && (
-								<span className="text-sm text-[var(--ion-text-color-step-200)]">Denied in system settings</span>
-							)
-						}
-						{
-							pushStatus?.status === "unsupported" && (
-								<span className="text-sm text-[var(--ion-text-color-step-200)]">Not supported on this device</span>
-							)
-						}
-						{
-							pushStatus?.status === "error" && (
-								<span className="text-sm text-[var(--ion-text-color-step-200)]">
-									Failed to register notifications
-								</span>
-							)
-						}
-					</div>
-				</div>
+				)}
 			</IonContent>
 		</IonPage>
 	)

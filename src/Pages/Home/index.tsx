@@ -20,7 +20,7 @@ import { useHistory } from "react-router";
 import BalanceCard from "./BalanceCard";
 import HomeHeader from "@/Layout2/HomeHeader";
 import styles from "./styles/index.module.scss";
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
@@ -38,7 +38,8 @@ import { useAlert } from "@/lib/contexts/useAlert";
 
 import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
 import { initLocalNotifications } from "@/notifications/local/local-notifications";
-import { initPushNotifications } from "@/notifications/push/init";
+import { refreshPushRegistration } from "@/notifications/push/register";
+import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
@@ -55,6 +56,8 @@ const Home = () => {
 	const { showToast } = useToast();
 
 	const operations = useAppSelector(historySelectors.selectAll);
+	const [highlightOpKey, setHighlightOpKey] = useState<string | null>(null);
+	const highlightTimeoutRef = useRef<number | null>(null);
 
 
 	useIonViewDidEnter(() => {
@@ -105,6 +108,44 @@ const Home = () => {
 	}, [history.location.key]);
 
 	useIonViewDidEnter(() => {
+		const { notif_op_id, sourceId } = history.location.state as { notif_op_id?: string, sourceId?: string } || {}
+		if (!notif_op_id || !sourceId) return;
+		const key = makeKey(sourceId, notif_op_id);
+		console.log("[Home] Setting highlight key:", key);
+		setHighlightOpKey(key);
+		history.replace(history.location.pathname + history.location.search);
+	}, [history.location.key]);
+
+	useEffect(() => {
+		if (!highlightOpKey) {
+			if (highlightTimeoutRef.current) {
+				window.clearTimeout(highlightTimeoutRef.current);
+				highlightTimeoutRef.current = null;
+			}
+			return;
+		}
+		if (highlightTimeoutRef.current) return;
+		const exists = operations.some(op => highlightOpKey === op.opKey);
+		console.log("[Home] Highlight key exists in operations:", exists, { highlightOpKey, operationCount: operations.length });
+		if (!exists) return;
+		console.log("[Home] Starting highlight timeout (3s)");
+		highlightTimeoutRef.current = window.setTimeout(() => {
+			console.log("[Home] Clearing highlight");
+			setHighlightOpKey(null);
+			highlightTimeoutRef.current = null;
+		}, 3000);
+	}, [highlightOpKey, operations]);
+
+	useEffect(() => {
+		return () => {
+			if (highlightTimeoutRef.current) {
+				window.clearTimeout(highlightTimeoutRef.current);
+				highlightTimeoutRef.current = null;
+			}
+		};
+	}, []);
+
+	useIonViewDidEnter(() => {
 		const seen = localStorage.getItem(NOTIF_PROMPT_SEEN_KEY);
 		if (seen) return;
 
@@ -112,11 +153,11 @@ const Home = () => {
 			if (status !== "prompt") return;
 			localStorage.setItem(NOTIF_PROMPT_SEEN_KEY, "1");
 			showAlert({
-				header: "Enable notifications?",
-				message: "Turn on notifications for payment updates and important alerts.",
+				header: "Stay Updated",
+				message: "Get instant notifications for incoming payments and important account activity.",
 				buttons: [
 					{
-						text: "Not now",
+						text: "Not Now",
 						role: "cancel",
 					},
 					{
@@ -127,34 +168,33 @@ const Home = () => {
 			}).then(async ({ role }) => {
 				if (role !== "confirm") return;
 				try {
-					await requestNotificationsPermission();
-					await initPushNotifications();
+					const perm = await requestNotificationsPermission();
+					if (perm !== "granted") {
+						console.log("[Home] Permission not granted:", perm);
+						return;
+					}
+					await refreshPushRegistration();
 					await initLocalNotifications();
+					showToast({
+						message: "Notifications enabled!",
+						color: "success",
+						duration: 2000
+					});
 				} catch (err) {
 					console.error("Failed to enable notifications", err);
 					showToast({
-						message: "Failed to enable notifications. Check settings.",
+						message: "Unable to enable notifications. You can try again in Settings.",
 						color: "warning",
-						duration: 3000
+						duration: 4000
 					});
 				}
 			});
 		});
-	}, [showAlert]);
+	}, [showAlert, showToast]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);
 
-	useIonViewDidEnter(() => {
-		const state = history.location.state as { notif_op_id?: string } | undefined;
-		if (state?.notif_op_id) {
-			history.replace(history.location.pathname);
-			const operation = operations.find(op => op.id === state.notif_op_id);
-			if (operation) {
-				handleSelectOperation(operation);
-			}
-		}
-	}, [history.location.key, operations]);
 
 	const handleSelectOperation = useCallback((operation: SourceOperation) => {
 		setSelectedOperation(operation);
@@ -248,9 +288,11 @@ const Home = () => {
 								minHeight: 56,
 								padding: "0 1rem"
 							}}
+
 						>
 							<HistoryItem
 								operation={op}
+								className={op.opKey === highlightOpKey ? styles["highlight-row"] : undefined}
 								handleSelectOperation={handleSelectOperation}
 							/>
 						</div>
