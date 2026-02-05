@@ -11,6 +11,7 @@ precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
 self.addEventListener("notificationclick", (event) => {
+	event.preventDefault();
 	event.notification.close();
 	const data = event.notification?.data["FCM_MSG"].data.raw;
 	console.log("data in service worker", data);
