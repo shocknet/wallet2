@@ -1,10 +1,9 @@
-import { useAppLifecycle } from "./useAppLifecycle";
+
 
 
 
 
 import { useWatchClipboard } from "./useWatchClipboard";
-/* import { usePush } from "./usePush"; */
 
 
 /* import { useSubscriptionsBackground } from "./useSubscriptionsBackground"; */
@@ -12,12 +11,9 @@ import { useWatchClipboard } from "./useWatchClipboard";
 
 
 const BackgroundJobs = () => {
-	/* usePush(); */
-
 	useWatchClipboard();
 
 	/* useSubscriptionsBackground(); */
-	useAppLifecycle();
 
 	return null;
 }

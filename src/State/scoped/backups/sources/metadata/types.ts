@@ -9,6 +9,7 @@ export type MetaForNprofile = {
 	beaconName?: string;
 	lastSeenAtMs: number;
 	lpk: string;
+	topicId?: string;
 	balance: Satoshi;
 	maxWithdrable: Satoshi;
 	vanityName?: string;

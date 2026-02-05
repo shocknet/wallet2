@@ -9,6 +9,7 @@ import { historySyncerSpec } from '../listeners/historySyncer/historySyncer';
 import { liveRequestsListenerSpec } from '../listeners/liveRequests/liveRequests';
 import { publisherSpec } from '../listeners/publisher/publisher';
 import { pullerSpec } from '../listeners/puller/puller';
+import { pushEnrollmentSpec } from '../listeners/push/push';
 
 
 
@@ -32,7 +33,8 @@ const specs = [
 	historySyncerSpec,
 	liveRequestsListenerSpec,
 	publisherSpec,
-	pullerSpec
+	pullerSpec,
+	pushEnrollmentSpec
 ]
 
 addHydrationListener(startAppListening);

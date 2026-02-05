@@ -1,4 +1,8 @@
+import { Capacitor } from "@capacitor/core";
 import { HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY, NOSTR_PRIVATE_KEY_STORAGE_KEY } from "./constants";
+import { captureNativeEarly, captureWebEarly } from "./notifications/push/capture";
+import { getIntent, getPendingEnvelope } from "./notifications/push/intentBus";
+import { resolveTopicTarget } from "./notifications/push/topicResolver";
 import { migrateDeviceToIdentities } from "./State/identitiesRegistry/identitiesMigration";
 import { LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from "./State/identitiesRegistry/thunks";
 import store from "./State/store/store";
@@ -9,9 +13,29 @@ import { initialState as backupInitialState } from "@/State/Slices/backupState";
 
 
 export default async function onBeforeLift() {
+
+	if (Capacitor.isNativePlatform()) {
+		captureNativeEarly();
+	} else {
+		captureWebEarly();
+	}
+
+
 	const didMigrate = await doIdentityMigration();
 
 	if (!didMigrate) {
+		const intent = getIntent();
+		const pendingEnvelope = getPendingEnvelope();
+		const topicId = intent?.topicId ?? pendingEnvelope?.topic_id;
+
+		if (topicId) {
+			const resolution = await resolveTopicTarget(topicId);
+			if (resolution) {
+				const success = await preloadIdentity(resolution.identityId);
+				if (success) return;
+			}
+		}
+
 		await preloadLastActiveIdentity();
 	}
 }
@@ -64,6 +88,15 @@ async function preloadLastActiveIdentity() {
 			window.location.reload();
 			await new Promise(() => {/*  */ })
 		}
+	}
+}
+
+async function preloadIdentity(pubkey: string) {
+	try {
+		await store.dispatch(switchIdentity(pubkey, true))
+		return true;
+	} catch {
+		return false;
 	}
 }
 

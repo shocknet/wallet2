@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
+import { PushRegistrationResult } from "@/notifications/push/types";
 
 
 
@@ -8,12 +9,19 @@ interface RuntimeState {
 	isActive: boolean;
 
 
+	pushStatus: PushRegistrationResult | null;
+
+
+
 	selectedMetricsAdminSourceId: string | null;
 }
 
 const initialState: RuntimeState = {
 	nowMs: Date.now(),
 	isActive: true,
+
+	pushStatus: null,
+
 
 	selectedMetricsAdminSourceId: null
 }
@@ -30,6 +38,15 @@ const runtimeSlice = createSlice({
 		/* lifecycle */
 		setAppActiveStatus: (state, action: PayloadAction<{ active: boolean }>) => {
 			state.isActive = action.payload.active;
+		},
+
+		setPushRuntimeStatus: (
+			state,
+			action: PayloadAction<{
+				pushStatus: PushRegistrationResult
+			}>
+		) => {
+			state.pushStatus = action.payload.pushStatus
 		},
 
 		/* metrics selection */
