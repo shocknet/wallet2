@@ -42,14 +42,22 @@ export function captureWebEarly() {
 	// warm (postMessage)
 	if ("serviceWorker" in navigator) {
 		navigator.serviceWorker.addEventListener("message", (event) => {
-			console.log("[Push] Service worker message:", event.data);
+			console.log("[Push] ====== Service worker postMessage received ======");
+			console.log("[Push] App state: document.hasFocus =", document.hasFocus());
+			console.log("[Push] Message data:", event.data);
+			console.log("[Push] Message origin:", event.origin);
+			console.trace("[Push] Stack trace for postMessage");
+
 			const d = event.data;
 			const parsedEnvelope = parsePushEnvelopeFromPayload(d);
-			console.log({ parsedEnvelope });
-			if (!parsedEnvelope) return;
+			console.log("[Push] Parsed envelope:", parsedEnvelope);
+			if (!parsedEnvelope) {
+				console.log("[Push] Failed to parse envelope, ignoring message");
+				return;
+			}
 			setPendingEnvelope(parsedEnvelope);
 			void resolveTopicTarget(parsedEnvelope.topic_id).then((resolution) => {
-				console.log({ resolution });
+				console.log("[Push] Topic resolution:", resolution);
 				if (!resolution) return;
 				const payload = decryptPushEnvelope(parsedEnvelope, resolution.privateKey);
 				if (!payload) return;
@@ -59,11 +67,43 @@ export function captureWebEarly() {
 					identityId: resolution.identityId,
 					sourceId: resolution.sourceId
 				};
-				console.log("[Push] Parsed intent from service worker:", intent);
+				console.log("[Push] Setting intent from service worker:", intent);
 				setIntent(intent);
 				clearPendingEnvelope();
 			});
 		});
+	}
+
+	// BroadcastChannel fallback for Safari
+	if (typeof BroadcastChannel !== 'undefined') {
+		const channel = new BroadcastChannel('push-notification');
+		channel.onmessage = (event) => {
+			console.log("[Push] ====== BroadcastChannel message received (Safari fallback) ======");
+			console.log("[Push] Channel data:", event.data);
+
+			const parsedEnvelope = parsePushEnvelopeFromPayload(event.data);
+			console.log("[Push] Parsed envelope from BroadcastChannel:", parsedEnvelope);
+			if (!parsedEnvelope) {
+				console.log("[Push] Failed to parse envelope from BroadcastChannel");
+				return;
+			}
+			setPendingEnvelope(parsedEnvelope);
+			void resolveTopicTarget(parsedEnvelope.topic_id).then((resolution) => {
+				console.log("[Push] Topic resolution from BroadcastChannel:", resolution);
+				if (!resolution) return;
+				const payload = decryptPushEnvelope(parsedEnvelope, resolution.privateKey);
+				if (!payload) return;
+				const intent = {
+					topicId: parsedEnvelope.topic_id,
+					payload,
+					identityId: resolution.identityId,
+					sourceId: resolution.sourceId
+				};
+				console.log("[Push] Setting intent from BroadcastChannel:", intent);
+				setIntent(intent);
+				clearPendingEnvelope();
+			});
+		};
 	}
 }
 
