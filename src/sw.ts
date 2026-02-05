@@ -24,16 +24,12 @@ self.addEventListener("notificationclick", (event) => {
 		if (wins.length) {
 
 
-			if (envelope) {
-				try {
-					console.log("posting message to window", envelope);
-					wins[0].postMessage(envelope);
-				} catch {
-					/* ignore */
-				}
-			}
 			try {
 				await wins[0].focus();
+
+				if (envelope) {
+					wins[0].postMessage(envelope);
+				}
 			} catch {
 				/* ignore focus errors */
 			}
@@ -54,6 +50,7 @@ self.addEventListener("notificationclick", (event) => {
 
 import { initializeApp } from 'firebase/app';
 import { getMessaging } from 'firebase/messaging/sw';
+import { en } from 'zod/v4/locales';
 
 const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
 console.log("firebaseApp", firebaseApp);
