@@ -52,10 +52,9 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 
-(async () => {
-	const { initializeApp } = await import("firebase/app");
-	const { getMessaging } = await import("firebase/messaging/sw");
+import { initializeApp } from 'firebase/app';
+import { getMessaging } from 'firebase/messaging/sw';
 
-	const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
-	getMessaging(firebaseApp);
-})();
+const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
+console.log("firebaseApp", firebaseApp);
+getMessaging(firebaseApp);
