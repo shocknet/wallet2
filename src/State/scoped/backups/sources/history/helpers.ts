@@ -116,7 +116,7 @@ const transformUserOperationToSourceOperation = (op: UserOperation, sourceId: st
 				serviceFee: op.service_fee,
 			}
 		default:
-			throw new Error("Unknown operation type")
+			throw new Error("Unknown operation type" + op.type)
 	}
 };
 
