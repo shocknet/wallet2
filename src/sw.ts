@@ -4,7 +4,6 @@ declare const self: ServiceWorkerGlobalScope;
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { parseEnvelopeJsonString } from './notifications/push/intentBus';
-import { storePendingEnvelope } from './notifications/push/envelopeStore';
 
 self.skipWaiting()
 clientsClaim()
@@ -20,33 +19,30 @@ self.addEventListener("notificationclick", (event) => {
 	const envelope = typeof data === "string" ? parseEnvelopeJsonString(data) : null;
 	console.log("[SW] Parsed envelope:", envelope);
 
-	event.waitUntil((async () => {
-		// Store envelope in IndexedDB for app to pick up
-		if (envelope) {
-			await storePendingEnvelope(envelope);
-			console.log("[SW] Envelope stored in IndexedDB");
-		}
-
-		const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-		console.log("[SW] Found clients:", clients.length);
-
-		if (clients.length > 0) {
-			// Warm start: focus existing window
-			// App will check IndexedDB on focus/visibility change
-			console.log("[SW] Focusing existing window");
-			try {
-				await clients[0].focus();
-				console.log("[SW] Window focused");
-			} catch (err) {
-				console.error("[SW] Failed to focus:", err);
+	event.waitUntil(
+		self.clients.matchAll({
+			type: "window",
+			includeUncontrolled: true
+		}).then(clientsList => {
+			for (const client of clientsList) {
+				if (client.url.includes(self.location.origin) && "focus" in client) {
+					if (envelope) {
+						client.postMessage(envelope);
+					}
+					return client.focus();
+				}
 			}
-		} else {
-			// Cold start: open new window
-			// App will check IndexedDB on startup
-			console.log("[SW] Opening new window");
-			await self.clients.openWindow("/");
-		}
-	})());
+
+			if (self.clients.openWindow) {
+				const url = new URL("/", self.location.origin);
+				if (envelope) {
+					url.searchParams.set("push", "1");
+					url.searchParams.set("push_envelope", encodeURIComponent(JSON.stringify(envelope)));
+				}
+				return self.clients.openWindow(url.toString());
+			}
+		})
+	);
 });
 
 
