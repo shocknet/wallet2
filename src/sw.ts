@@ -5,6 +5,16 @@ import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { parseEnvelopeJsonString } from './notifications/push/intentBus';
 
+
+import { initializeApp } from 'firebase/app';
+import { getMessaging } from 'firebase/messaging/sw';
+
+
+const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
+console.log("firebaseApp", firebaseApp);
+getMessaging(firebaseApp);
+
+
 self.skipWaiting()
 clientsClaim()
 precacheAndRoute(self.__WB_MANIFEST)
@@ -45,11 +55,3 @@ self.addEventListener("notificationclick", (event) => {
 	);
 });
 
-
-import { initializeApp } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging/sw';
-
-
-const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG));
-console.log("firebaseApp", firebaseApp);
-getMessaging(firebaseApp);
