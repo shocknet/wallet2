@@ -9,7 +9,7 @@ export async function registerNativePush(): Promise<PushRegistrationResult> {
 	if (perm !== "granted") return { status: perm };
 
 	await PushNotifications.register();
-	return await new Promise<PushRegistrationResult>((resolve) => {
+	const nativeRegisterRes = await new Promise<PushRegistrationResult>((resolve) => {
 		PushNotifications.addListener("registration", (t) => {
 			resolve({
 				status: "registered",
@@ -20,4 +20,6 @@ export async function registerNativePush(): Promise<PushRegistrationResult> {
 			resolve({ status: "error", error: err.error })
 		));
 	});
+	console.log({ nativeRegisterRes });
+	return nativeRegisterRes;
 }
