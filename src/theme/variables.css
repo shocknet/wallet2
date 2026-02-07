@@ -843,3 +843,16 @@ ion-popover.custom-dropdown-popover {
 .ion-content-no-footer::part(scroll) {
 	padding-bottom: var(--ion-safe-area-bottom, 0);
 }
+
+ion-footer {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+	padding-bottom: constant(safe-area-inset-bottom, 0px);
+	
+	position: relative;
+	z-index: 100;
+}
+
+ion-footer ion-toolbar {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+	padding-bottom: constant(safe-area-inset-bottom, 0px);
+}
