@@ -79,7 +79,6 @@ export function captureNativeEarly() {
 
 	PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
 		console.log("[Push] Native notification tapped:", action);
-		alert(JSON.stringify(action));
 
 
 		const d: any = action.notification?.data;
