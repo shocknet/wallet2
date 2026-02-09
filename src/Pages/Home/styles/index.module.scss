@@ -1,20 +1,8 @@
 .footer {
-	padding-bottom: env(safe-area-inset-bottom, 0px);
-	padding-bottom: constant(safe-area-inset-bottom, 0px);
-	
-	position: relative;
-	z-index: 100;
-	
 	.toolbar {
 		display: flex !important;
 		position: relative;
-		
-		// Additional bottom padding for toolbar itself
-		padding-bottom: env(safe-area-inset-bottom, 0px);
-		padding-bottom: constant(safe-area-inset-bottom, 0px);
-		
-		// Minimum height with safe area consideration
-		min-height: 56px;
+		padding-bottom: var(--ion-safe-area-bottom, 0px);
 
 		.button-container:first-of-type {
 			border-right: 1px solid var(--ion-color-primary);
