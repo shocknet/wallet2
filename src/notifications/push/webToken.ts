@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { PushRegistrationResult } from "./types";
+import dLogger from "@/Api/helpers/debugLog";
 
-
+const log = dLogger.withContext({ component: "push-webToken" });
 
 export async function registerWebPush(): Promise<PushRegistrationResult> {
 	if (!isSupported()) return { status: "unsupported" };
@@ -17,8 +18,7 @@ export async function registerWebPush(): Promise<PushRegistrationResult> {
 		serviceWorkerRegistration: swReg,
 	});
 
-	console.log("registered", { token })
-
+	log.debug("web_token_obtained", { data: { hasToken: !!token } });
 	return { status: "registered", token };
 }
 

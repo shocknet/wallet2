@@ -4,6 +4,9 @@ import { formatSatoshi } from "../../lib/units";
 import { isPlatform } from "@ionic/react";
 import { toastController } from "@ionic/core";
 import { getNotificationsPermission } from "../permission";
+import dLogger from "@/Api/helpers/debugLog";
+
+const log = dLogger.withContext({ component: "local-notifications" });
 
 const NOTIFICATION_CHANNELS = {
 	OPERATIONS: 'payment_operations',
@@ -21,7 +24,7 @@ export async function initLocalNotifications() {
 			await setUpAndroidNotificationChannel();
 		}
 	} catch (err) {
-		console.error("Error initializing notifications", err);
+		log.error("init_error", { error: err });
 	}
 }
 
@@ -67,7 +70,7 @@ async function showOperationNotification(
 
 
 	} catch (err) {
-		console.error("Error showing notification", err);
+		log.error("show_notification_error", { error: err });
 	}
 }
 
