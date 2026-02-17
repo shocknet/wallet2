@@ -12,7 +12,7 @@ import { InvoiceSwapsList, InvoiceSwapQuote, InvoiceSwapOperation } from "../../
 import { fetcher, FetcherFuncs } from "../fetcher";
 import AmountInput from "@/Components/AmountInput";
 const currentBlock = 1000000;
-const pendingUnpaidQueote: InvoiceSwapQuote = {
+const pendingUnpaidQuote: InvoiceSwapQuote = {
     swap_operation_id: "1",
     service_url: "https://example.com",
     invoice_amount_sats: 1000,
@@ -110,7 +110,7 @@ const failedExpiredSwap: InvoiceSwapOperation = {
 }
 const testData: InvoiceSwapsList = {
     current_block_height: currentBlock,
-    swaps: [completedSwap, failedSwap, failedExpiredSwap, { quote: pendingUnpaidQueote }, { quote: pendingPaidQuote }, { quote: expiredPaidQuote }],
+    swaps: [completedSwap, failedSwap, failedExpiredSwap, { quote: pendingUnpaidQuote }, { quote: pendingPaidQuote }, { quote: expiredPaidQuote }],
 }
 
 type SwapStatus =
@@ -389,7 +389,7 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
     const [refundSatPerVByte, setRefundSatPerVByte] = useState<number>(0);
     // const [address, setAddress] = useState<string>("");
 
-    const [swaps, setSwaps] = useState<InvoiceSwapsList>(testData);
+    const [swaps, setSwaps] = useState<InvoiceSwapsList>({ current_block_height: 0, swaps: [] });
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -412,8 +412,10 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
     const fetchSwaps = async () => {
         const res = await fetch([(client) => client.ListAdminInvoiceSwaps()], "Fetching swaps...")
         if (!res) return;
-        const [swaps] = res
-        // setSwaps(swaps);
+        const [data] = res;
+        if (data && data.status === "OK") {
+            setSwaps({ current_block_height: data.current_block_height, swaps: data.swaps });
+        }
     }
     const requestQuote = async () => {
         const res = await fetch([(client) => client.GetAdminInvoiceSwapQuotes({ amount_sats: amountSats })], "Fetching quotes...")
