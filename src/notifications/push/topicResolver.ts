@@ -5,6 +5,9 @@ import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 import { SourceType } from "@/State/scoped/common";
 import { SourceDocEntity, SourcesState } from "@/State/scoped/backups/sources/state";
 import { MetaForNprofile } from "@/State/scoped/backups/sources/metadata/types";
+import dLogger from "@/Api/helpers/debugLog";
+
+const log = dLogger.withContext({ component: "push-topic-resolver" });
 
 type TopicResolution = {
 	identityId: string;
@@ -42,34 +45,23 @@ export async function resolveTopicTarget(
 	state: RootState = store.getState()
 ): Promise<TopicResolution | null> {
 	if (!topicId) {
-		console.log("[Push] resolveTopicTarget: missing topicId");
+		log.warn("resolve_missing_topic_id", {});
 		return null;
 	}
 
-	console.log("[Push] resolveTopicTarget: start", { topicId });
-
 	const activeIdentityId = selectActiveIdentityId(state);
-	console.log("[Push] resolveTopicTarget: active identity", { activeIdentityId });
 
-	// If there is a loaded identity check if the addressed source is in it
 	if (activeIdentityId && state.scoped?.sources) {
 		const docs = docsSelectors.selectEntities(state);
 		const metadata = metadataSelectors.selectEntities(state);
 		const match = findSourceInIdentityByTopicId(activeIdentityId, docs, metadata, topicId);
 		if (match) {
-			console.log("[Push] resolveTopicTarget: match in active identity", {
-				identityId: activeIdentityId,
-				sourceId: match.sourceId
-			});
+			log.debug("resolve_match_active", { data: { identityId: activeIdentityId, sourceId: match.sourceId } });
 			return match;
 		}
 	}
 
-	// Search for the source in other identities
 	const allIdentityIds = identitiesSelectors.selectIds(state);
-	console.log("[Push] resolveTopicTarget: scanning persisted identities", {
-		count: allIdentityIds.length
-	});
 	const persistedMatch = await findInPersistedIdentities(
 		allIdentityIds,
 		activeIdentityId,
@@ -77,7 +69,7 @@ export async function resolveTopicTarget(
 	);
 	if (persistedMatch) return persistedMatch;
 
-	console.log("[Push] resolveTopicTarget: no match", { topicId });
+	log.warn("resolve_no_match", { data: { topicId } });
 	return null;
 }
 
@@ -91,13 +83,8 @@ async function findInPersistedIdentities(
 		.map(async (identityId) => {
 			const identityKey = String(identityId);
 			const key = "persist:" + getScopedSourcesPersistKey(identityKey);
-			console.log("[Push] resolveTopicTarget: checking persisted sources", { identityId: identityKey, key });
 			const stored = await IonicStorageAdapter.getItem(key);
-			if (!stored) {
-				console.log("[Push] resolveTopicTarget: no persisted sources", { identityId: identityKey });
-				throw new Error("no persisted sources");
-			}
-			console.log({ stored })
+			if (!stored) throw new Error("no persisted sources");
 			let parsed: SourcesState | null = null;
 			try {
 				parsed = parseReduxPersist(stored) as any as SourcesState;
@@ -105,16 +92,13 @@ async function findInPersistedIdentities(
 				parsed = null;
 			}
 			if (!parsed) {
-				console.log("[Push] resolveTopicTarget: failed to parse persisted sources", { identityId: identityKey });
+				log.debug("resolve_parse_failed", { data: { identityId: identityKey } });
 				throw new Error("failed to parse persisted sources");
 			}
 			const { docs, metadata } = getPersistedSlice(parsed);
 			const match = findSourceInIdentityByTopicId(identityKey, docs, metadata, topicId);
 			if (!match) throw new Error("no match");
-			console.log("[Push] resolveTopicTarget: match in persisted identity", {
-				identityId: identityKey,
-				sourceId: match.sourceId
-			});
+			log.debug("resolve_match_persisted", { data: { identityId: identityKey, sourceId: match.sourceId } });
 			return match;
 		});
 

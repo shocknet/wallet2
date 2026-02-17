@@ -7,11 +7,12 @@ import store from "@/State/store/store";
 import { runtimeActions } from "@/State/runtime/slice";
 import { getCachedPushToken, setCachedPushToken } from "./tokenCache";
 import { pushTokenUpdated } from "./actions";
+import dLogger from "@/Api/helpers/debugLog";
 
+const log = dLogger.withContext({ component: "push-register" });
 
 export async function registerPushIfGranted(): Promise<PushRegistrationResult> {
 	const perm = await getNotificationsPermission();
-	console.log({ perm })
 	if (perm !== "granted") return { status: perm };
 
 	if (Capacitor.isNativePlatform()) {
@@ -28,27 +29,24 @@ export async function refreshPushRegistration(): Promise<void> {
 	try {
 		result = await registerPushIfGranted();
 	} catch (err) {
-		console.error("push registration error: ", err)
-		if (err instanceof Error) {
-			result = { status: "error", error: err.message };
-		} else {
-			result = { status: "error", error: "Unknown error occured when registring push notifications" };
-		}
+		log.error("registration_error", { error: err });
+		result = err instanceof Error
+			? { status: "error", error: err.message }
+			: { status: "error", error: "Unknown error when registering push notifications" };
 	}
 
 	store.dispatch(runtimeActions.setPushRuntimeStatus({ pushStatus: result }));
 
-
 	if (result.status === "registered") {
 		const prev = getCachedPushToken();
 		if (prev !== result.token) {
-			console.log("[Push] New token registered:", result.token.substring(0, 20) + "...");
+			log.info("token_registered", { data: { tokenPrefix: result.token.substring(0, 12) + "…" } });
 			await setCachedPushToken(result.token);
 			store.dispatch(pushTokenUpdated({ token: result.token }));
 		} else {
-			console.log("[Push] Using cached token");
+			log.debug("token_unchanged", {});
 		}
 	} else {
-		console.warn("[Push] Registration result:", result);
+		log.warn("registration_result", { data: { status: result.status, error: result.status === "error" ? result.error : undefined } });
 	}
 }
