@@ -51,7 +51,7 @@ function getSwapStatus(operation: InvoiceSwapOperation, currentBlockHeight: numb
     }
 
     // Only paid expired swaps and quotes are refundable
-    const isRefundable = isPaid && isExpired && !hasFailed;
+    const isRefundable = isPaid && isExpired && hasFailed;
 
     return { operation, status, isRefundable, isExpired };
 }
