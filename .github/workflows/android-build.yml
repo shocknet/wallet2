@@ -97,6 +97,10 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./android/gradlew
 
+      - name: Write google-services.json for push notifications
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 --decode > android/app/google-services.json
+
       - name: Build ionic, sync, build gradle
         run: |
           npm run android:release
