@@ -176,27 +176,31 @@ const Home = () => {
 
 
 	return (
-		<IonPage className="ion-page-width">
+		<IonPage 
+			className="ion-page-width"
+		>
 			<HomeHeader>
 				<BalanceCard />
 			</HomeHeader>
-			<IonContent scrollY={false}>
-				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-					<IonRefresherContent></IonRefresherContent>
-				</IonRefresher>
-				<Virtuoso
-					style={{ height: "100%" }}
-					data={operations}
-					defaultItemHeight={56}
-					itemContent={(_, op) => (
+		<IonContent 
+			scrollY={false}
+		>
+			<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+				<IonRefresherContent></IonRefresherContent>
+			</IonRefresher>
+			<Virtuoso
+				style={{ height: "100%" }}
+				data={operations}
+				defaultItemHeight={56}
+				itemContent={(_, op) => (
 
-						<div
-							key={op.operationId}
-							style={{
-								minHeight: 56,
-								padding: "0 1rem"
-							}}
-						>
+					<div
+						key={op.operationId}
+						style={{
+							minHeight: 56,
+							padding: "0 1rem"
+						}}
+					>
 							<HistoryItem
 								operation={op}
 								handleSelectOperation={handleSelectOperation}
@@ -204,26 +208,26 @@ const Home = () => {
 						</div>
 					)}
 				/>
-			</IonContent>
-			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
-				<div className={styles["toolbar"]}>
-					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
-							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
-							Receive
-						</IonButton>
-					</div>
-					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
-							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
-							Send
-						</IonButton>
-					</div>
-					<IonButton color="primary" shape="round" className={styles["fab-button"]} onClick={openScan}>
-						<IonIcon slot="icon-only" icon={qrCodeOutline} />
+		</IonContent>
+		<IonFooter className={`ion-no-border ${styles["footer"]}`}>
+			<div className={styles["toolbar"]}>
+				<div className={styles["button-container"]}>
+					<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
+						<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
+						Receive
 					</IonButton>
 				</div>
-			</IonFooter>
+				<div className={styles["button-container"]}>
+					<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
+						<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
+						Send
+					</IonButton>
+				</div>
+				<IonButton color="primary" shape="round" className={styles["fab-button"]} onClick={openScan}>
+					<IonIcon slot="icon-only" icon={qrCodeOutline} />
+				</IonButton>
+			</div>
+		</IonFooter>
 			{
 				loadOperationModal &&
 				<Suspense fallback={null}>

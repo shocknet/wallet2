@@ -1,59 +1,44 @@
 .footer {
-
-
-
-
 	.toolbar {
 		display: flex !important;
 		position: relative;
-
+		padding-bottom: var(--ion-safe-area-bottom, 0px);
 
 		.button-container:first-of-type {
 			border-right: 1px solid var(--ion-color-primary);
 		}
 
-
-
 		.button-container {
 			flex: 1;
-
 
 			ion-button.toolbar-button {
 				flex: 1;
 				margin: 0;
-
-
 
 				&::part(native) {
 					box-shadow: none;
 					height: 56px;
 					border-top: 2px solid var(--ion-color-primary);
 					margin: 0px;
-
 				}
 
 				&.toolbar-button-left {
 					&::part(native) {
 						border-left: 2px solid var(--ion-color-primary);
-
-
 					}
 				}
 
 				&.toolbar-button-right {
 					&::part(native) {
 						border-right: 2px solid var(--ion-color-primary);
-
 					}
 				}
-
 			}
 		}
 
-
 		.fab-button {
 			margin: 0;
-			z-index: 999999;
+			z-index: 10;
 			position: absolute;
 			height: 50px;
 			width: 50px;
@@ -61,7 +46,5 @@
 			left: 50%;
 			top: -25px;
 		}
-
-
 	}
 }
