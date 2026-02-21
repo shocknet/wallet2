@@ -5,7 +5,7 @@ on:
     types: [created]
   push:
     branches:
-      - test
+      - main
 
 env:
   ACTIONS_RUNNER_DEBUG: true
