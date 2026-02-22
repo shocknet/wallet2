@@ -16,8 +16,8 @@
 		"lint": "eslint . --ext .ts",
 		"cypress:open": "cypress open",
 		"android:sync": "npm run build:android && npx cap sync android",
-		"android:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
-		"android:bundle": "npm run android:sync && cd android && ./gradlew clean bundleRelease -PVERSION_CODE=$VERSION_CODE -PVERSION=$VERSION",
+		"android:release:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
+		"android:release:apk:bundle": "npm run android:sync && cd android && ./gradlew clean assembleRelease bundleRelease -PVERSION_CODE=$VERSION_CODE -PVERSION=$VERSION",
 		"android:run": "npm run android:sync && npx cap run android"
 	},
 	"dependencies": {
