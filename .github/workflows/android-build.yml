@@ -169,7 +169,6 @@ jobs:
           asset_content_type: application/vnd.android.package-archive
 
       - name: Upload APK as artifact
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-dev
