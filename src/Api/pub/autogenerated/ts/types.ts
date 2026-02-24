@@ -3843,6 +3843,53 @@ export const ProvidersDisruptionValidate = (o?: ProvidersDisruption, opts: Provi
     return null
 }
 
+export type PushNotificationEnvelope = {
+    app_npub_hex: string
+    encrypted_payload: string
+    topic_id: string
+}
+export const PushNotificationEnvelopeOptionalFields: [] = []
+export type PushNotificationEnvelopeOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    app_npub_hex_CustomCheck?: (v: string) => boolean
+    encrypted_payload_CustomCheck?: (v: string) => boolean
+    topic_id_CustomCheck?: (v: string) => boolean
+}
+export const PushNotificationEnvelopeValidate = (o?: PushNotificationEnvelope, opts: PushNotificationEnvelopeOptions = {}, path: string = 'PushNotificationEnvelope::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.app_npub_hex !== 'string') return new Error(`${path}.app_npub_hex: is not a string`)
+    if (opts.app_npub_hex_CustomCheck && !opts.app_npub_hex_CustomCheck(o.app_npub_hex)) return new Error(`${path}.app_npub_hex: custom check failed`)
+
+    if (typeof o.encrypted_payload !== 'string') return new Error(`${path}.encrypted_payload: is not a string`)
+    if (opts.encrypted_payload_CustomCheck && !opts.encrypted_payload_CustomCheck(o.encrypted_payload)) return new Error(`${path}.encrypted_payload: custom check failed`)
+
+    if (typeof o.topic_id !== 'string') return new Error(`${path}.topic_id: is not a string`)
+    if (opts.topic_id_CustomCheck && !opts.topic_id_CustomCheck(o.topic_id)) return new Error(`${path}.topic_id: custom check failed`)
+
+    return null
+}
+
+export type PushNotificationPayload = {
+    data: PushNotificationPayload_data
+}
+export const PushNotificationPayloadOptionalFields: [] = []
+export type PushNotificationPayloadOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    data_Options?: PushNotificationPayload_dataOptions
+}
+export const PushNotificationPayloadValidate = (o?: PushNotificationPayload, opts: PushNotificationPayloadOptions = {}, path: string = 'PushNotificationPayload::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    const dataErr = PushNotificationPayload_dataValidate(o.data, opts.data_Options, `${path}.data`)
+    if (dataErr !== null) return dataErr
+
+
+    return null
+}
+
 export type RefundAdminInvoiceSwapRequest = {
     sat_per_v_byte: number
     swap_operation_id: string
@@ -4185,7 +4232,10 @@ export const SingleMetricReqValidate = (o?: SingleMetricReq, opts: SingleMetricR
 
 export type TransactionSwapQuote = {
     chain_fee_sats: number
+    completed_at_unix: number
+    expires_at_block_height: number
     invoice_amount_sats: number
+    paid_at_unix: number
     service_fee_sats: number
     service_url: string
     swap_fee_sats: number
@@ -4196,7 +4246,10 @@ export const TransactionSwapQuoteOptionalFields: [] = []
 export type TransactionSwapQuoteOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
     chain_fee_sats_CustomCheck?: (v: number) => boolean
+    completed_at_unix_CustomCheck?: (v: number) => boolean
+    expires_at_block_height_CustomCheck?: (v: number) => boolean
     invoice_amount_sats_CustomCheck?: (v: number) => boolean
+    paid_at_unix_CustomCheck?: (v: number) => boolean
     service_fee_sats_CustomCheck?: (v: number) => boolean
     service_url_CustomCheck?: (v: string) => boolean
     swap_fee_sats_CustomCheck?: (v: number) => boolean
@@ -4210,8 +4263,17 @@ export const TransactionSwapQuoteValidate = (o?: TransactionSwapQuote, opts: Tra
     if (typeof o.chain_fee_sats !== 'number') return new Error(`${path}.chain_fee_sats: is not a number`)
     if (opts.chain_fee_sats_CustomCheck && !opts.chain_fee_sats_CustomCheck(o.chain_fee_sats)) return new Error(`${path}.chain_fee_sats: custom check failed`)
 
+    if (typeof o.completed_at_unix !== 'number') return new Error(`${path}.completed_at_unix: is not a number`)
+    if (opts.completed_at_unix_CustomCheck && !opts.completed_at_unix_CustomCheck(o.completed_at_unix)) return new Error(`${path}.completed_at_unix: custom check failed`)
+
+    if (typeof o.expires_at_block_height !== 'number') return new Error(`${path}.expires_at_block_height: is not a number`)
+    if (opts.expires_at_block_height_CustomCheck && !opts.expires_at_block_height_CustomCheck(o.expires_at_block_height)) return new Error(`${path}.expires_at_block_height: custom check failed`)
+
     if (typeof o.invoice_amount_sats !== 'number') return new Error(`${path}.invoice_amount_sats: is not a number`)
     if (opts.invoice_amount_sats_CustomCheck && !opts.invoice_amount_sats_CustomCheck(o.invoice_amount_sats)) return new Error(`${path}.invoice_amount_sats: custom check failed`)
+
+    if (typeof o.paid_at_unix !== 'number') return new Error(`${path}.paid_at_unix: is not a number`)
+    if (opts.paid_at_unix_CustomCheck && !opts.paid_at_unix_CustomCheck(o.paid_at_unix)) return new Error(`${path}.paid_at_unix: custom check failed`)
 
     if (typeof o.service_fee_sats !== 'number') return new Error(`${path}.service_fee_sats: is not a number`)
     if (opts.service_fee_sats_CustomCheck && !opts.service_fee_sats_CustomCheck(o.service_fee_sats)) return new Error(`${path}.service_fee_sats: custom check failed`)
@@ -4273,25 +4335,27 @@ export const TransactionSwapRequestValidate = (o?: TransactionSwapRequest, opts:
 }
 
 export type TxSwapOperation = {
-    address_paid: string
+    address_paid?: string
     failure_reason?: string
     operation_payment?: UserOperation
-    swap_operation_id: string
+    quote: TransactionSwapQuote
+    tx_id?: string
 }
-export type TxSwapOperationOptionalField = 'failure_reason' | 'operation_payment'
-export const TxSwapOperationOptionalFields: TxSwapOperationOptionalField[] = ['failure_reason', 'operation_payment']
+export type TxSwapOperationOptionalField = 'address_paid' | 'failure_reason' | 'operation_payment' | 'tx_id'
+export const TxSwapOperationOptionalFields: TxSwapOperationOptionalField[] = ['address_paid', 'failure_reason', 'operation_payment', 'tx_id']
 export type TxSwapOperationOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: TxSwapOperationOptionalField[]
-    address_paid_CustomCheck?: (v: string) => boolean
+    address_paid_CustomCheck?: (v?: string) => boolean
     failure_reason_CustomCheck?: (v?: string) => boolean
     operation_payment_Options?: UserOperationOptions
-    swap_operation_id_CustomCheck?: (v: string) => boolean
+    quote_Options?: TransactionSwapQuoteOptions
+    tx_id_CustomCheck?: (v?: string) => boolean
 }
 export const TxSwapOperationValidate = (o?: TxSwapOperation, opts: TxSwapOperationOptions = {}, path: string = 'TxSwapOperation::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
 
-    if (typeof o.address_paid !== 'string') return new Error(`${path}.address_paid: is not a string`)
+    if ((o.address_paid || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('address_paid')) && typeof o.address_paid !== 'string') return new Error(`${path}.address_paid: is not a string`)
     if (opts.address_paid_CustomCheck && !opts.address_paid_CustomCheck(o.address_paid)) return new Error(`${path}.address_paid: custom check failed`)
 
     if ((o.failure_reason || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('failure_reason')) && typeof o.failure_reason !== 'string') return new Error(`${path}.failure_reason: is not a string`)
@@ -4303,34 +4367,28 @@ export const TxSwapOperationValidate = (o?: TxSwapOperation, opts: TxSwapOperati
     }
 
 
-    if (typeof o.swap_operation_id !== 'string') return new Error(`${path}.swap_operation_id: is not a string`)
-    if (opts.swap_operation_id_CustomCheck && !opts.swap_operation_id_CustomCheck(o.swap_operation_id)) return new Error(`${path}.swap_operation_id: custom check failed`)
+    const quoteErr = TransactionSwapQuoteValidate(o.quote, opts.quote_Options, `${path}.quote`)
+    if (quoteErr !== null) return quoteErr
+
+
+    if ((o.tx_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('tx_id')) && typeof o.tx_id !== 'string') return new Error(`${path}.tx_id: is not a string`)
+    if (opts.tx_id_CustomCheck && !opts.tx_id_CustomCheck(o.tx_id)) return new Error(`${path}.tx_id: custom check failed`)
 
     return null
 }
 
 export type TxSwapsList = {
-    quotes: TransactionSwapQuote[]
     swaps: TxSwapOperation[]
 }
 export const TxSwapsListOptionalFields: [] = []
 export type TxSwapsListOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: []
-    quotes_ItemOptions?: TransactionSwapQuoteOptions
-    quotes_CustomCheck?: (v: TransactionSwapQuote[]) => boolean
     swaps_ItemOptions?: TxSwapOperationOptions
     swaps_CustomCheck?: (v: TxSwapOperation[]) => boolean
 }
 export const TxSwapsListValidate = (o?: TxSwapsList, opts: TxSwapsListOptions = {}, path: string = 'TxSwapsList::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
-
-    if (!Array.isArray(o.quotes)) return new Error(`${path}.quotes: is not an array`)
-    for (let index = 0; index < o.quotes.length; index++) {
-        const quotesErr = TransactionSwapQuoteValidate(o.quotes[index], opts.quotes_ItemOptions, `${path}.quotes[${index}]`)
-        if (quotesErr !== null) return quotesErr
-    }
-    if (opts.quotes_CustomCheck && !opts.quotes_CustomCheck(o.quotes)) return new Error(`${path}.quotes: custom check failed`)
 
     if (!Array.isArray(o.swaps)) return new Error(`${path}.swaps: is not an array`)
     for (let index = 0; index < o.swaps.length; index++) {
@@ -4539,6 +4597,7 @@ export type UserInfo = {
     nmanage: string
     noffer: string
     service_fee_bps: number
+    topic_id: string
     userId: string
     user_identifier: string
 }
@@ -4555,6 +4614,7 @@ export type UserInfoOptions = OptionsBaseMessage & {
     nmanage_CustomCheck?: (v: string) => boolean
     noffer_CustomCheck?: (v: string) => boolean
     service_fee_bps_CustomCheck?: (v: number) => boolean
+    topic_id_CustomCheck?: (v: string) => boolean
     userId_CustomCheck?: (v: string) => boolean
     user_identifier_CustomCheck?: (v: string) => boolean
 }
@@ -4591,6 +4651,9 @@ export const UserInfoValidate = (o?: UserInfo, opts: UserInfoOptions = {}, path:
 
     if (typeof o.service_fee_bps !== 'number') return new Error(`${path}.service_fee_bps: is not a number`)
     if (opts.service_fee_bps_CustomCheck && !opts.service_fee_bps_CustomCheck(o.service_fee_bps)) return new Error(`${path}.service_fee_bps: custom check failed`)
+
+    if (typeof o.topic_id !== 'string') return new Error(`${path}.topic_id: is not a string`)
+    if (opts.topic_id_CustomCheck && !opts.topic_id_CustomCheck(o.topic_id)) return new Error(`${path}.topic_id: custom check failed`)
 
     if (typeof o.userId !== 'string') return new Error(`${path}.userId: is not a string`)
     if (opts.userId_CustomCheck && !opts.userId_CustomCheck(o.userId)) return new Error(`${path}.userId: custom check failed`)
@@ -5007,6 +5070,43 @@ export const NPubLinking_stateValidate = (o?: NPubLinking_state, opts: NPubLinki
         case NPubLinking_state_type.UNLINKED:
             const unlinkedErr = EmptyValidate(o.unlinked, opts.unlinked_Options, `${path}.unlinked`)
             if (unlinkedErr !== null) return unlinkedErr
+
+
+            break
+        default:
+            return new Error(path + ': unknown type ' + stringType)
+    }
+    return null
+}
+export enum PushNotificationPayload_data_type {
+    RECEIVED_OPERATION = 'received_operation',
+    SENT_OPERATION = 'sent_operation',
+}
+export const enumCheckPushNotificationPayload_data_type = (e?: PushNotificationPayload_data_type): boolean => {
+    for (const v in PushNotificationPayload_data_type) if (e === v) return true
+    return false
+}
+export type PushNotificationPayload_data =
+    { type: PushNotificationPayload_data_type.RECEIVED_OPERATION, received_operation: UserOperation } |
+    { type: PushNotificationPayload_data_type.SENT_OPERATION, sent_operation: UserOperation }
+
+export type PushNotificationPayload_dataOptions = {
+    received_operation_Options?: UserOperationOptions
+    sent_operation_Options?: UserOperationOptions
+}
+export const PushNotificationPayload_dataValidate = (o?: PushNotificationPayload_data, opts: PushNotificationPayload_dataOptions = {}, path: string = 'PushNotificationPayload_data::root.'): Error | null => {
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+    const stringType: string = o.type
+    switch (o.type) {
+        case PushNotificationPayload_data_type.RECEIVED_OPERATION:
+            const received_operationErr = UserOperationValidate(o.received_operation, opts.received_operation_Options, `${path}.received_operation`)
+            if (received_operationErr !== null) return received_operationErr
+
+
+            break
+        case PushNotificationPayload_data_type.SENT_OPERATION:
+            const sent_operationErr = UserOperationValidate(o.sent_operation, opts.sent_operation_Options, `${path}.sent_operation`)
+            if (sent_operationErr !== null) return sent_operationErr
 
 
             break
