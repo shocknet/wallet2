@@ -17,6 +17,31 @@ export type PushIntent = {
 	sourceId: string;
 };
 
+function assertPushIntent(candidate: unknown): asserts candidate is PushIntent {
+	if (!candidate || typeof candidate !== "object") {
+		throw new Error("Invalid push intent: expected object");
+	}
+
+	const maybeIntent = candidate as Partial<PushIntent>;
+	if (typeof maybeIntent.topicId !== "string") {
+		throw new Error("Invalid push intent: topicId must be a string");
+	}
+	if (typeof maybeIntent.identityId !== "string") {
+		throw new Error("Invalid push intent: identityId must be a string");
+	}
+	if (typeof maybeIntent.sourceId !== "string") {
+		throw new Error("Invalid push intent: sourceId must be a string");
+	}
+	if (!maybeIntent.payload) {
+		throw new Error("Invalid push intent: payload is required");
+	}
+
+	const payloadErr = PushNotificationPayloadValidate(maybeIntent.payload as PushNotificationPayload);
+	if (payloadErr) {
+		throw new Error(`Invalid push intent payload: ${payloadErr}`);
+	}
+}
+
 export function parseEnvelopeJsonString(value: string): PushNotificationEnvelope | null {
 	try {
 		const candidate = JSON.parse(value);
@@ -87,7 +112,9 @@ export function getIntent(): PushIntent | null {
 	try {
 		const s = sessionStorage.getItem(SS_KEY);
 		if (!s) return null;
-		pending = JSON.parse(s);
+		const candidate = JSON.parse(s);
+		assertPushIntent(candidate);
+		pending = candidate;
 		return pending;
 	} catch {
 		return null;
