@@ -72,10 +72,13 @@ jobs:
       - name: Set VERSION and VERSION_CODE
         run: |
           if [[ ${{ github.event_name }} == 'release' ]]; then
-            echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+            VERSION="${{ github.ref_name }}"
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+            echo "VERSION_SAFE=${VERSION//./_}" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           else
             echo "VERSION=dev-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "VERSION_SAFE=dev" >> $GITHUB_ENV
             echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
           fi
 
@@ -157,6 +160,13 @@ jobs:
           jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.aab
         shell: bash
 
+      - name: Upload AAB as artifact
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle-${{ env.VERSION_SAFE }}
+          path: android/app/build/outputs/bundle/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.aab
+
       - name: Upload APK to GitHub Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
@@ -171,7 +181,7 @@ jobs:
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-dev
+          name: app-release-${{ env.VERSION_SAFE }}
           path: android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
 
       - name: Debug Build Environment
