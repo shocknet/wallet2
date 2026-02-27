@@ -42,6 +42,7 @@ export type NprofileView = SourceViewBase & {
 	balanceSats: Satoshi;
 	maxWithdrawableSats: Satoshi;
 	lpk: string;
+	topicId?: string;
 	keys: NostrKeyPair;
 	bridgeUrl: string | null;
 	isNDebitDiscoverable: boolean;
@@ -84,6 +85,7 @@ const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata, probe: Be
 		...base,
 		type: SourceType.NPROFILE_SOURCE,
 		lpk: d.lpk,
+		topicId: m.topicId,
 		keys: d.keys,
 		relays,
 		balanceSats: m.balance,
@@ -175,6 +177,7 @@ export const selectNprofileViews = createSelector(
 	[selectSourceViews],
 	(views) => views.filter(v => v.type === SourceType.NPROFILE_SOURCE)
 );
+
 
 export const selectNprofileViewsByLpk = createSelector(
 	[

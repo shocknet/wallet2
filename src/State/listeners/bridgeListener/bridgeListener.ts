@@ -35,7 +35,7 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 	const dCurr = draft(curr, sourceId) as NprofileSourceDocV0;
 
 
-	const bridgeUrlChanged = dPrev.bridgeUrl.value !== dCurr.bridgeUrl.value;
+	const bridgeUrlChanged = dPrev && dPrev.bridgeUrl.value !== dCurr.bridgeUrl.value;
 
 	const hasNoVanityNameYet = !metadataSelectors.selectById(curr, sourceId).vanityName
 

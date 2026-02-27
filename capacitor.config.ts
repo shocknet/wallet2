@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-	appId: 'app.shockwallet',
+	appId: 'app.shockwallet.my',
 	appName: 'SHOCKWALLET',
 	webDir: 'dist',
 	server: {
