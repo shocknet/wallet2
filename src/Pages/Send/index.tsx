@@ -205,7 +205,7 @@ const Send = () => {
 					}
 				);
 				if (classification === InputClassification.UNKNOWN) {
-					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
+					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Sending onchain will be available soon!" });
 					return;
 				}
 				inputStateChange({
