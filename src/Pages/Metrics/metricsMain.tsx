@@ -483,6 +483,11 @@ const Dashboard = () => {
 								</IonButton>
 							</div>
 							<div className={styles["section"]}>
+								<IonButton expand="block" fill="clear" color="light" routerLink="/metrics/assets-liabilities" routerDirection="forward" className={classNames(styles["box"], styles["border"])}>
+									Assets & Liabilities
+								</IonButton>
+							</div>
+							<div className={styles["section"]}>
 								<div className='metric-footer'>
 									<i>
 										Connected to <br />
