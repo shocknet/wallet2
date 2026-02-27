@@ -4,1553 +4,1553 @@ import * as Types from './types.js'
 export type Logger = { log: (v: any) => void, error: (v: any) => void }
 type NostrResponse = (message: object) => void
 export type NostrRequest = {
-    rpcName?: string
-    params?: Record<string, string>
-    query?: Record<string, string>
-    body?: any
-    authIdentifier?: string
-    requestId?: string
-    appId?: string
+	rpcName?: string
+	params?: Record<string, string>
+	query?: Record<string, string>
+	body?: any
+	authIdentifier?: string
+	requestId?: string
+	appId?: string
 }
 export type NostrOptions = {
-    logger?: Logger
-    throwErrors?: true
-    metricsCallback: (metrics: Types.RequestMetric[]) => void
-    NostrAdminAuthGuard: (appId?: string, identifier?: string) => Promise<Types.AdminContext>
-    NostrGuestWithPubAuthGuard: (appId?: string, identifier?: string) => Promise<Types.GuestWithPubContext>
-    NostrMetricsAuthGuard: (appId?: string, identifier?: string) => Promise<Types.MetricsContext>
-    NostrUserAuthGuard: (appId?: string, identifier?: string) => Promise<Types.UserContext>
+	logger?: Logger
+	throwErrors?: true
+	metricsCallback: (metrics: Types.RequestMetric[]) => void
+	NostrAdminAuthGuard: (appId?: string, identifier?: string) => Promise<Types.AdminContext>
+	NostrGuestWithPubAuthGuard: (appId?: string, identifier?: string) => Promise<Types.GuestWithPubContext>
+	NostrMetricsAuthGuard: (appId?: string, identifier?: string) => Promise<Types.MetricsContext>
+	NostrUserAuthGuard: (appId?: string, identifier?: string) => Promise<Types.UserContext>
 }
 const logErrorAndReturnResponse = (error: Error, response: string, res: NostrResponse, logger: Logger, metric: Types.RequestMetric, metricsCallback: (metrics: Types.RequestMetric[]) => void) => {
-    logger.error(error.message || error); metricsCallback([{ ...metric, error: response }]); res({ status: 'ERROR', reason: response })
+	logger.error(error.message || error); metricsCallback([{ ...metric, error: response }]); res({ status: 'ERROR', reason: response })
 }
 export default (methods: Types.ServerMethods, opts: NostrOptions) => {
-    const logger = opts.logger || { log: console.log, error: console.error }
-    return async (req: NostrRequest, res: NostrResponse, startString: string, startMs: number) => {
-        const startTime = BigInt(startString)
-        const info: Types.RequestInfo = { rpcName: req.rpcName || 'unkown', batch: false, nostr: true, batchSize: 0 }
-        const stats: Types.RequestStats = { startMs, start: startTime, parse: process.hrtime.bigint(), guard: 0n, validate: 0n, handle: 0n }
-        let authCtx: Types.AuthContext = {}
-        switch (req.rpcName) {
-            case 'AddApp':
-                try {
-                    if (!methods.AddApp) throw new Error('method: AddApp is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.AddAppRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AddApp({ rpcName: 'AddApp', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'AddPeer':
-                try {
-                    if (!methods.AddPeer) throw new Error('method: AddPeer is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.AddPeerRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.AddPeer({ rpcName: 'AddPeer', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'AddProduct':
-                try {
-                    if (!methods.AddProduct) throw new Error('method: AddProduct is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.AddProductRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AddProduct({ rpcName: 'AddProduct', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'AddUserOffer':
-                try {
-                    if (!methods.AddUserOffer) throw new Error('method: AddUserOffer is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.OfferConfigValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AddUserOffer({ rpcName: 'AddUserOffer', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'AuthApp':
-                try {
-                    if (!methods.AuthApp) throw new Error('method: AuthApp is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.AuthAppRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AuthApp({ rpcName: 'AuthApp', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'AuthorizeManage':
-                try {
-                    if (!methods.AuthorizeManage) throw new Error('method: AuthorizeManage is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.ManageAuthorizationRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.AuthorizeManage({ rpcName: 'AuthorizeManage', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'BanDebit':
-                try {
-                    if (!methods.BanDebit) throw new Error('method: BanDebit is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.DebitOperationValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.BanDebit({ rpcName: 'BanDebit', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'BanUser':
-                try {
-                    if (!methods.BanUser) throw new Error('method: BanUser is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.BanUserRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.BanUser({ rpcName: 'BanUser', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'BatchUser':
-                try {
-                    info.batch = true
-                    const requests = req.body.requests as Types.UserMethodInputs[]
-                    if (!Array.isArray(requests)) throw new Error('invalid body, is not an array')
-                    info.batchSize = requests.length
-                    if (requests.length > 10) throw new Error('too many requests in the batch')
-                    const ctx = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = ctx
-                    stats.validate = stats.guard
-                    const responses = []
-                    const callsMetrics: Types.RequestMetric[] = []
-                    for (let i = 0; i < requests.length; i++) {
-                        const operation = requests[i]
-                        const opInfo: Types.RequestInfo = { rpcName: operation.rpcName, batch: true, nostr: true, batchSize: 0 }
-                        const opStats: Types.RequestStats = { startMs, start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
-                        try {
-                            switch (operation.rpcName) {
-                                case 'AddProduct':
-                                    if (!methods.AddProduct) {
-                                        throw new Error('method not defined: AddProduct')
-                                    } else {
-                                        const error = Types.AddProductRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.AddProduct({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'AddUserOffer':
-                                    if (!methods.AddUserOffer) {
-                                        throw new Error('method not defined: AddUserOffer')
-                                    } else {
-                                        const error = Types.OfferConfigValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.AddUserOffer({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'AuthorizeManage':
-                                    if (!methods.AuthorizeManage) {
-                                        throw new Error('method not defined: AuthorizeManage')
-                                    } else {
-                                        const error = Types.ManageAuthorizationRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.AuthorizeManage({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'BanDebit':
-                                    if (!methods.BanDebit) {
-                                        throw new Error('method not defined: BanDebit')
-                                    } else {
-                                        const error = Types.DebitOperationValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.BanDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'DecodeInvoice':
-                                    if (!methods.DecodeInvoice) {
-                                        throw new Error('method not defined: DecodeInvoice')
-                                    } else {
-                                        const error = Types.DecodeInvoiceRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.DecodeInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'DeleteUserOffer':
-                                    if (!methods.DeleteUserOffer) {
-                                        throw new Error('method not defined: DeleteUserOffer')
-                                    } else {
-                                        const error = Types.OfferIdValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.DeleteUserOffer({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'EditDebit':
-                                    if (!methods.EditDebit) {
-                                        throw new Error('method not defined: EditDebit')
-                                    } else {
-                                        const error = Types.DebitAuthorizationRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.EditDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'EnrollAdminToken':
-                                    if (!methods.EnrollAdminToken) {
-                                        throw new Error('method not defined: EnrollAdminToken')
-                                    } else {
-                                        const error = Types.EnrollAdminTokenRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.EnrollAdminToken({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'EnrollMessagingToken':
-                                    if (!methods.EnrollMessagingToken) {
-                                        throw new Error('method not defined: EnrollMessagingToken')
-                                    } else {
-                                        const error = Types.MessagingTokenValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.EnrollMessagingToken({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetDebitAuthorizations':
-                                    if (!methods.GetDebitAuthorizations) {
-                                        throw new Error('method not defined: GetDebitAuthorizations')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetDebitAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetHttpCreds':
-                                    if (!methods.GetHttpCreds) {
-                                        throw new Error('method not defined: GetHttpCreds')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetHttpCreds({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetLNURLChannelLink':
-                                    if (!methods.GetLNURLChannelLink) {
-                                        throw new Error('method not defined: GetLNURLChannelLink')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetLNURLChannelLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetLnurlPayLink':
-                                    if (!methods.GetLnurlPayLink) {
-                                        throw new Error('method not defined: GetLnurlPayLink')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetLnurlPayLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetLnurlWithdrawLink':
-                                    if (!methods.GetLnurlWithdrawLink) {
-                                        throw new Error('method not defined: GetLnurlWithdrawLink')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetLnurlWithdrawLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetManageAuthorizations':
-                                    if (!methods.GetManageAuthorizations) {
-                                        throw new Error('method not defined: GetManageAuthorizations')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetManageAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetPaymentState':
-                                    if (!methods.GetPaymentState) {
-                                        throw new Error('method not defined: GetPaymentState')
-                                    } else {
-                                        const error = Types.GetPaymentStateRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.GetPaymentState({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetTransactionSwapQuotes':
-                                    if (!methods.GetTransactionSwapQuotes) {
-                                        throw new Error('method not defined: GetTransactionSwapQuotes')
-                                    } else {
-                                        const error = Types.TransactionSwapRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.GetTransactionSwapQuotes({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetUserInfo':
-                                    if (!methods.GetUserInfo) {
-                                        throw new Error('method not defined: GetUserInfo')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetUserInfo({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetUserOffer':
-                                    if (!methods.GetUserOffer) {
-                                        throw new Error('method not defined: GetUserOffer')
-                                    } else {
-                                        const error = Types.OfferIdValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.GetUserOffer({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetUserOfferInvoices':
-                                    if (!methods.GetUserOfferInvoices) {
-                                        throw new Error('method not defined: GetUserOfferInvoices')
-                                    } else {
-                                        const error = Types.GetUserOfferInvoicesReqValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.GetUserOfferInvoices({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetUserOffers':
-                                    if (!methods.GetUserOffers) {
-                                        throw new Error('method not defined: GetUserOffers')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.GetUserOffers({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'GetUserOperations':
-                                    if (!methods.GetUserOperations) {
-                                        throw new Error('method not defined: GetUserOperations')
-                                    } else {
-                                        const error = Types.GetUserOperationsRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.GetUserOperations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'ListTxSwaps':
-                                    if (!methods.ListTxSwaps) {
-                                        throw new Error('method not defined: ListTxSwaps')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.ListTxSwaps({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'NewAddress':
-                                    if (!methods.NewAddress) {
-                                        throw new Error('method not defined: NewAddress')
-                                    } else {
-                                        const error = Types.NewAddressRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.NewAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'NewInvoice':
-                                    if (!methods.NewInvoice) {
-                                        throw new Error('method not defined: NewInvoice')
-                                    } else {
-                                        const error = Types.NewInvoiceRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.NewInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'NewProductInvoice':
-                                    if (!methods.NewProductInvoice) {
-                                        throw new Error('method not defined: NewProductInvoice')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.NewProductInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'PayAddress':
-                                    if (!methods.PayAddress) {
-                                        throw new Error('method not defined: PayAddress')
-                                    } else {
-                                        const error = Types.PayAddressRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.PayAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'PayInvoice':
-                                    if (!methods.PayInvoice) {
-                                        throw new Error('method not defined: PayInvoice')
-                                    } else {
-                                        const error = Types.PayInvoiceRequestValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.PayInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'ResetDebit':
-                                    if (!methods.ResetDebit) {
-                                        throw new Error('method not defined: ResetDebit')
-                                    } else {
-                                        const error = Types.DebitOperationValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.ResetDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'ResetManage':
-                                    if (!methods.ResetManage) {
-                                        throw new Error('method not defined: ResetManage')
-                                    } else {
-                                        const error = Types.ManageOperationValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.ResetManage({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'RespondToDebit':
-                                    if (!methods.RespondToDebit) {
-                                        throw new Error('method not defined: RespondToDebit')
-                                    } else {
-                                        const error = Types.DebitResponseValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.RespondToDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'UpdateCallbackUrl':
-                                    if (!methods.UpdateCallbackUrl) {
-                                        throw new Error('method not defined: UpdateCallbackUrl')
-                                    } else {
-                                        const error = Types.CallbackUrlValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        const res = await methods.UpdateCallbackUrl({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'UpdateUserOffer':
-                                    if (!methods.UpdateUserOffer) {
-                                        throw new Error('method not defined: UpdateUserOffer')
-                                    } else {
-                                        const error = Types.OfferConfigValidate(operation.req)
-                                        opStats.validate = process.hrtime.bigint()
-                                        if (error !== null) throw error
-                                        await methods.UpdateUserOffer({ ...operation, ctx }); responses.push({ status: 'OK' })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                case 'UserHealth':
-                                    if (!methods.UserHealth) {
-                                        throw new Error('method not defined: UserHealth')
-                                    } else {
-                                        opStats.validate = opStats.guard
-                                        const res = await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
-                                        opStats.handle = process.hrtime.bigint()
-                                        callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
-                                    }
-                                    break
-                                default:
-                                    throw new Error('unkown rpcName')
-                            }
-                        } catch (ex) { const e = ex as any; logger.error(e.message || e); callsMetrics.push({ ...opInfo, ...opStats, ...ctx, error: e.message }); responses.push({ status: 'ERROR', reason: e.message || e }) }
-                    }
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', responses })
-                    opts.metricsCallback([{ ...info, ...stats, ...ctx }, ...callsMetrics])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'CloseChannel':
-                try {
-                    if (!methods.CloseChannel) throw new Error('method: CloseChannel is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.CloseChannelRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.CloseChannel({ rpcName: 'CloseChannel', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'CreateOneTimeInviteLink':
-                try {
-                    if (!methods.CreateOneTimeInviteLink) throw new Error('method: CreateOneTimeInviteLink is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.CreateOneTimeInviteLinkRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.CreateOneTimeInviteLink({ rpcName: 'CreateOneTimeInviteLink', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'DecodeInvoice':
-                try {
-                    if (!methods.DecodeInvoice) throw new Error('method: DecodeInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.DecodeInvoiceRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.DecodeInvoice({ rpcName: 'DecodeInvoice', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'DeleteUserOffer':
-                try {
-                    if (!methods.DeleteUserOffer) throw new Error('method: DeleteUserOffer is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.OfferIdValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.DeleteUserOffer({ rpcName: 'DeleteUserOffer', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'EditDebit':
-                try {
-                    if (!methods.EditDebit) throw new Error('method: EditDebit is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.DebitAuthorizationRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.EditDebit({ rpcName: 'EditDebit', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'EnrollAdminToken':
-                try {
-                    if (!methods.EnrollAdminToken) throw new Error('method: EnrollAdminToken is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.EnrollAdminTokenRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.EnrollAdminToken({ rpcName: 'EnrollAdminToken', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'EnrollMessagingToken':
-                try {
-                    if (!methods.EnrollMessagingToken) throw new Error('method: EnrollMessagingToken is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.MessagingTokenValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.EnrollMessagingToken({ rpcName: 'EnrollMessagingToken', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetAdminInvoiceSwapQuotes':
-                try {
-                    if (!methods.GetAdminInvoiceSwapQuotes) throw new Error('method: GetAdminInvoiceSwapQuotes is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.InvoiceSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetAdminInvoiceSwapQuotes({ rpcName: 'GetAdminInvoiceSwapQuotes', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetAdminTransactionSwapQuotes':
-                try {
-                    if (!methods.GetAdminTransactionSwapQuotes) throw new Error('method: GetAdminTransactionSwapQuotes is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.TransactionSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetAdminTransactionSwapQuotes({ rpcName: 'GetAdminTransactionSwapQuotes', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetAppsMetrics':
-                try {
-                    if (!methods.GetAppsMetrics) throw new Error('method: GetAppsMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.AppsMetricsRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetAppsMetrics({ rpcName: 'GetAppsMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetBundleMetrics':
-                try {
-                    if (!methods.GetBundleMetrics) throw new Error('method: GetBundleMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LatestBundleMetricReqValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetBundleMetrics({ rpcName: 'GetBundleMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetDebitAuthorizations':
-                try {
-                    if (!methods.GetDebitAuthorizations) throw new Error('method: GetDebitAuthorizations is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetDebitAuthorizations({ rpcName: 'GetDebitAuthorizations', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetErrorStats':
-                try {
-                    if (!methods.GetErrorStats) throw new Error('method: GetErrorStats is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetErrorStats({ rpcName: 'GetErrorStats', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetHttpCreds':
-                try {
-                    if (!methods.GetHttpCreds) throw new Error('method: GetHttpCreds is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetHttpCreds({ rpcName: 'GetHttpCreds', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetInviteLinkState':
-                try {
-                    if (!methods.GetInviteLinkState) throw new Error('method: GetInviteLinkState is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.GetInviteTokenStateRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetInviteLinkState({ rpcName: 'GetInviteLinkState', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLNURLChannelLink':
-                try {
-                    if (!methods.GetLNURLChannelLink) throw new Error('method: GetLNURLChannelLink is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetLNURLChannelLink({ rpcName: 'GetLNURLChannelLink', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLiveDebitRequests':
-                try {
-                    if (!methods.GetLiveDebitRequests) throw new Error('method: GetLiveDebitRequests is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    methods.GetLiveDebitRequests({
-                        rpcName: 'GetLiveDebitRequests', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLiveManageRequests':
-                try {
-                    if (!methods.GetLiveManageRequests) throw new Error('method: GetLiveManageRequests is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    methods.GetLiveManageRequests({
-                        rpcName: 'GetLiveManageRequests', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLiveUserOperations':
-                try {
-                    if (!methods.GetLiveUserOperations) throw new Error('method: GetLiveUserOperations is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    methods.GetLiveUserOperations({
-                        rpcName: 'GetLiveUserOperations', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLndForwardingMetrics':
-                try {
-                    if (!methods.GetLndForwardingMetrics) throw new Error('method: GetLndForwardingMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LndMetricsRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetLndForwardingMetrics({ rpcName: 'GetLndForwardingMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLndMetrics':
-                try {
-                    if (!methods.GetLndMetrics) throw new Error('method: GetLndMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LndMetricsRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetLndMetrics({ rpcName: 'GetLndMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLnurlPayLink':
-                try {
-                    if (!methods.GetLnurlPayLink) throw new Error('method: GetLnurlPayLink is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetLnurlPayLink({ rpcName: 'GetLnurlPayLink', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetLnurlWithdrawLink':
-                try {
-                    if (!methods.GetLnurlWithdrawLink) throw new Error('method: GetLnurlWithdrawLink is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetLnurlWithdrawLink({ rpcName: 'GetLnurlWithdrawLink', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetManageAuthorizations':
-                try {
-                    if (!methods.GetManageAuthorizations) throw new Error('method: GetManageAuthorizations is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetManageAuthorizations({ rpcName: 'GetManageAuthorizations', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetMigrationUpdate':
-                try {
-                    if (!methods.GetMigrationUpdate) throw new Error('method: GetMigrationUpdate is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    methods.GetMigrationUpdate({
-                        rpcName: 'GetMigrationUpdate', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetPaymentState':
-                try {
-                    if (!methods.GetPaymentState) throw new Error('method: GetPaymentState is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.GetPaymentStateRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetPaymentState({ rpcName: 'GetPaymentState', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetProvidersDisruption':
-                try {
-                    if (!methods.GetProvidersDisruption) throw new Error('method: GetProvidersDisruption is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetProvidersDisruption({ rpcName: 'GetProvidersDisruption', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetSeed':
-                try {
-                    if (!methods.GetSeed) throw new Error('method: GetSeed is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetSeed({ rpcName: 'GetSeed', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetSingleBundleMetrics':
-                try {
-                    if (!methods.GetSingleBundleMetrics) throw new Error('method: GetSingleBundleMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.SingleMetricReqValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetSingleBundleMetrics({ rpcName: 'GetSingleBundleMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetSingleUsageMetrics':
-                try {
-                    if (!methods.GetSingleUsageMetrics) throw new Error('method: GetSingleUsageMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.SingleMetricReqValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetSingleUsageMetrics({ rpcName: 'GetSingleUsageMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetTransactionSwapQuotes':
-                try {
-                    if (!methods.GetTransactionSwapQuotes) throw new Error('method: GetTransactionSwapQuotes is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.TransactionSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetTransactionSwapQuotes({ rpcName: 'GetTransactionSwapQuotes', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUsageMetrics':
-                try {
-                    if (!methods.GetUsageMetrics) throw new Error('method: GetUsageMetrics is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LatestUsageMetricReqValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetUsageMetrics({ rpcName: 'GetUsageMetrics', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUserInfo':
-                try {
-                    if (!methods.GetUserInfo) throw new Error('method: GetUserInfo is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetUserInfo({ rpcName: 'GetUserInfo', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUserOffer':
-                try {
-                    if (!methods.GetUserOffer) throw new Error('method: GetUserOffer is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.OfferIdValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetUserOffer({ rpcName: 'GetUserOffer', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUserOfferInvoices':
-                try {
-                    if (!methods.GetUserOfferInvoices) throw new Error('method: GetUserOfferInvoices is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.GetUserOfferInvoicesReqValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetUserOfferInvoices({ rpcName: 'GetUserOfferInvoices', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUserOffers':
-                try {
-                    if (!methods.GetUserOffers) throw new Error('method: GetUserOffers is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.GetUserOffers({ rpcName: 'GetUserOffers', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'GetUserOperations':
-                try {
-                    if (!methods.GetUserOperations) throw new Error('method: GetUserOperations is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.GetUserOperationsRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.GetUserOperations({ rpcName: 'GetUserOperations', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'LinkNPubThroughToken':
-                try {
-                    if (!methods.LinkNPubThroughToken) throw new Error('method: LinkNPubThroughToken is not implemented')
-                    const authContext = await opts.NostrGuestWithPubAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LinkNPubThroughTokenRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.LinkNPubThroughToken({ rpcName: 'LinkNPubThroughToken', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ListAdminInvoiceSwaps':
-                try {
-                    if (!methods.ListAdminInvoiceSwaps) throw new Error('method: ListAdminInvoiceSwaps is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.ListAdminInvoiceSwaps({ rpcName: 'ListAdminInvoiceSwaps', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ListAdminTxSwaps':
-                try {
-                    if (!methods.ListAdminTxSwaps) throw new Error('method: ListAdminTxSwaps is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.ListAdminTxSwaps({ rpcName: 'ListAdminTxSwaps', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ListChannels':
-                try {
-                    if (!methods.ListChannels) throw new Error('method: ListChannels is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.ListChannels({ rpcName: 'ListChannels', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ListTxSwaps':
-                try {
-                    if (!methods.ListTxSwaps) throw new Error('method: ListTxSwaps is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.ListTxSwaps({ rpcName: 'ListTxSwaps', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'LndGetInfo':
-                try {
-                    if (!methods.LndGetInfo) throw new Error('method: LndGetInfo is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.LndGetInfoRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.LndGetInfo({ rpcName: 'LndGetInfo', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'NewAddress':
-                try {
-                    if (!methods.NewAddress) throw new Error('method: NewAddress is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.NewAddressRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.NewAddress({ rpcName: 'NewAddress', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'NewInvoice':
-                try {
-                    if (!methods.NewInvoice) throw new Error('method: NewInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.NewInvoiceRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.NewInvoice({ rpcName: 'NewInvoice', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'NewProductInvoice':
-                try {
-                    if (!methods.NewProductInvoice) throw new Error('method: NewProductInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.NewProductInvoice({ rpcName: 'NewProductInvoice', ctx: authContext, query: req.query || {} })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'OpenChannel':
-                try {
-                    if (!methods.OpenChannel) throw new Error('method: OpenChannel is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.OpenChannelRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.OpenChannel({ rpcName: 'OpenChannel', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'PayAddress':
-                try {
-                    if (!methods.PayAddress) throw new Error('method: PayAddress is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.PayAddressRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayAddress({ rpcName: 'PayAddress', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'PayAdminInvoiceSwap':
-                try {
-                    if (!methods.PayAdminInvoiceSwap) throw new Error('method: PayAdminInvoiceSwap is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.PayAdminInvoiceSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayAdminInvoiceSwap({ rpcName: 'PayAdminInvoiceSwap', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'PayAdminTransactionSwap':
-                try {
-                    if (!methods.PayAdminTransactionSwap) throw new Error('method: PayAdminTransactionSwap is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.PayAdminTransactionSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayAdminTransactionSwap({ rpcName: 'PayAdminTransactionSwap', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'PayInvoice':
-                try {
-                    if (!methods.PayInvoice) throw new Error('method: PayInvoice is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.PayInvoiceRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.PayInvoice({ rpcName: 'PayInvoice', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'PingSubProcesses':
-                try {
-                    if (!methods.PingSubProcesses) throw new Error('method: PingSubProcesses is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    await methods.PingSubProcesses({ rpcName: 'PingSubProcesses', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'RefundAdminInvoiceSwap':
-                try {
-                    if (!methods.RefundAdminInvoiceSwap) throw new Error('method: RefundAdminInvoiceSwap is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.RefundAdminInvoiceSwapRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.RefundAdminInvoiceSwap({ rpcName: 'RefundAdminInvoiceSwap', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ResetDebit':
-                try {
-                    if (!methods.ResetDebit) throw new Error('method: ResetDebit is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.DebitOperationValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.ResetDebit({ rpcName: 'ResetDebit', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ResetManage':
-                try {
-                    if (!methods.ResetManage) throw new Error('method: ResetManage is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.ManageOperationValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.ResetManage({ rpcName: 'ResetManage', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ResetMetricsStorages':
-                try {
-                    if (!methods.ResetMetricsStorages) throw new Error('method: ResetMetricsStorages is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    await methods.ResetMetricsStorages({ rpcName: 'ResetMetricsStorages', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'RespondToDebit':
-                try {
-                    if (!methods.RespondToDebit) throw new Error('method: RespondToDebit is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.DebitResponseValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.RespondToDebit({ rpcName: 'RespondToDebit', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'SubToWebRtcCandidates':
-                try {
-                    if (!methods.SubToWebRtcCandidates) throw new Error('method: SubToWebRtcCandidates is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    methods.SubToWebRtcCandidates({
-                        rpcName: 'SubToWebRtcCandidates', ctx: authContext, cb: (response, err) => {
-                            stats.handle = process.hrtime.bigint()
-                            if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
-                        }
-                    })
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'SubmitWebRtcMessage':
-                try {
-                    if (!methods.SubmitWebRtcMessage) throw new Error('method: SubmitWebRtcMessage is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.WebRtcMessageValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.SubmitWebRtcMessage({ rpcName: 'SubmitWebRtcMessage', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'UpdateCallbackUrl':
-                try {
-                    if (!methods.UpdateCallbackUrl) throw new Error('method: UpdateCallbackUrl is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.CallbackUrlValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    const response = await methods.UpdateCallbackUrl({ rpcName: 'UpdateCallbackUrl', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'UpdateChannelPolicy':
-                try {
-                    if (!methods.UpdateChannelPolicy) throw new Error('method: UpdateChannelPolicy is not implemented')
-                    const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.UpdateChannelPolicyRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.UpdateChannelPolicy({ rpcName: 'UpdateChannelPolicy', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'UpdateUserOffer':
-                try {
-                    if (!methods.UpdateUserOffer) throw new Error('method: UpdateUserOffer is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.OfferConfigValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.UpdateUserOffer({ rpcName: 'UpdateUserOffer', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'UseInviteLink':
-                try {
-                    if (!methods.UseInviteLink) throw new Error('method: UseInviteLink is not implemented')
-                    const authContext = await opts.NostrGuestWithPubAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    const request = req.body
-                    const error = Types.UseInviteLinkRequestValidate(request)
-                    stats.validate = process.hrtime.bigint()
-                    if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
-                    await methods.UseInviteLink({ rpcName: 'UseInviteLink', ctx: authContext, req: request })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK' })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'UserHealth':
-                try {
-                    if (!methods.UserHealth) throw new Error('method: UserHealth is not implemented')
-                    const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            case 'ZipMetricsStorages':
-                try {
-                    if (!methods.ZipMetricsStorages) throw new Error('method: ZipMetricsStorages is not implemented')
-                    const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
-                    stats.guard = process.hrtime.bigint()
-                    authCtx = authContext
-                    stats.validate = stats.guard
-                    const response = await methods.ZipMetricsStorages({ rpcName: 'ZipMetricsStorages', ctx: authContext })
-                    stats.handle = process.hrtime.bigint()
-                    res({ status: 'OK', ...response })
-                    opts.metricsCallback([{ ...info, ...stats, ...authContext }])
-                } catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
-                break
-            default: logger.error('unknown rpc call name from nostr event:' + req.rpcName)
-        }
-    }
+	const logger = opts.logger || { log: console.log, error: console.error }
+	return async (req: NostrRequest, res: NostrResponse, startString: string, startMs: number) => {
+		const startTime = BigInt(startString)
+		const info: Types.RequestInfo = { rpcName: req.rpcName || 'unkown', batch: false, nostr: true, batchSize: 0 }
+		const stats: Types.RequestStats = { startMs, start: startTime, parse: process.hrtime.bigint(), guard: 0n, validate: 0n, handle: 0n }
+		let authCtx: Types.AuthContext = {}
+		switch (req.rpcName) {
+			case 'AddApp':
+				try {
+					if (!methods.AddApp) throw new Error('method: AddApp is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.AddAppRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.AddApp({ rpcName: 'AddApp', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'AddPeer':
+				try {
+					if (!methods.AddPeer) throw new Error('method: AddPeer is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.AddPeerRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.AddPeer({ rpcName: 'AddPeer', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'AddProduct':
+				try {
+					if (!methods.AddProduct) throw new Error('method: AddProduct is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.AddProductRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.AddProduct({ rpcName: 'AddProduct', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'AddUserOffer':
+				try {
+					if (!methods.AddUserOffer) throw new Error('method: AddUserOffer is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.OfferConfigValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.AddUserOffer({ rpcName: 'AddUserOffer', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'AuthApp':
+				try {
+					if (!methods.AuthApp) throw new Error('method: AuthApp is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.AuthAppRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.AuthApp({ rpcName: 'AuthApp', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'AuthorizeManage':
+				try {
+					if (!methods.AuthorizeManage) throw new Error('method: AuthorizeManage is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.ManageAuthorizationRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.AuthorizeManage({ rpcName: 'AuthorizeManage', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'BanDebit':
+				try {
+					if (!methods.BanDebit) throw new Error('method: BanDebit is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.DebitOperationValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.BanDebit({ rpcName: 'BanDebit', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'BanUser':
+				try {
+					if (!methods.BanUser) throw new Error('method: BanUser is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.BanUserRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.BanUser({ rpcName: 'BanUser', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'BatchUser':
+				try {
+					info.batch = true
+					const requests = req.body.requests as Types.UserMethodInputs[]
+					if (!Array.isArray(requests)) throw new Error('invalid body, is not an array')
+					info.batchSize = requests.length
+					if (requests.length > 10) throw new Error('too many requests in the batch')
+					const ctx = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = ctx
+					stats.validate = stats.guard
+					const responses = []
+					const callsMetrics: Types.RequestMetric[] = []
+					for (let i = 0; i < requests.length; i++) {
+						const operation = requests[i]
+						const opInfo: Types.RequestInfo = { rpcName: operation.rpcName, batch: true, nostr: true, batchSize: 0 }
+						const opStats: Types.RequestStats = { startMs, start: startTime, parse: stats.parse, guard: stats.guard, validate: 0n, handle: 0n }
+						try {
+							switch (operation.rpcName) {
+								case 'AddProduct':
+									if (!methods.AddProduct) {
+										throw new Error('method not defined: AddProduct')
+									} else {
+										const error = Types.AddProductRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.AddProduct({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'AddUserOffer':
+									if (!methods.AddUserOffer) {
+										throw new Error('method not defined: AddUserOffer')
+									} else {
+										const error = Types.OfferConfigValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.AddUserOffer({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'AuthorizeManage':
+									if (!methods.AuthorizeManage) {
+										throw new Error('method not defined: AuthorizeManage')
+									} else {
+										const error = Types.ManageAuthorizationRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.AuthorizeManage({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'BanDebit':
+									if (!methods.BanDebit) {
+										throw new Error('method not defined: BanDebit')
+									} else {
+										const error = Types.DebitOperationValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.BanDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'DecodeInvoice':
+									if (!methods.DecodeInvoice) {
+										throw new Error('method not defined: DecodeInvoice')
+									} else {
+										const error = Types.DecodeInvoiceRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.DecodeInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'DeleteUserOffer':
+									if (!methods.DeleteUserOffer) {
+										throw new Error('method not defined: DeleteUserOffer')
+									} else {
+										const error = Types.OfferIdValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.DeleteUserOffer({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'EditDebit':
+									if (!methods.EditDebit) {
+										throw new Error('method not defined: EditDebit')
+									} else {
+										const error = Types.DebitAuthorizationRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.EditDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'EnrollAdminToken':
+									if (!methods.EnrollAdminToken) {
+										throw new Error('method not defined: EnrollAdminToken')
+									} else {
+										const error = Types.EnrollAdminTokenRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.EnrollAdminToken({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'EnrollMessagingToken':
+									if (!methods.EnrollMessagingToken) {
+										throw new Error('method not defined: EnrollMessagingToken')
+									} else {
+										const error = Types.MessagingTokenValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.EnrollMessagingToken({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetDebitAuthorizations':
+									if (!methods.GetDebitAuthorizations) {
+										throw new Error('method not defined: GetDebitAuthorizations')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetDebitAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetHttpCreds':
+									if (!methods.GetHttpCreds) {
+										throw new Error('method not defined: GetHttpCreds')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetHttpCreds({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetLNURLChannelLink':
+									if (!methods.GetLNURLChannelLink) {
+										throw new Error('method not defined: GetLNURLChannelLink')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetLNURLChannelLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetLnurlPayLink':
+									if (!methods.GetLnurlPayLink) {
+										throw new Error('method not defined: GetLnurlPayLink')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetLnurlPayLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetLnurlWithdrawLink':
+									if (!methods.GetLnurlWithdrawLink) {
+										throw new Error('method not defined: GetLnurlWithdrawLink')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetLnurlWithdrawLink({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetManageAuthorizations':
+									if (!methods.GetManageAuthorizations) {
+										throw new Error('method not defined: GetManageAuthorizations')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetManageAuthorizations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetPaymentState':
+									if (!methods.GetPaymentState) {
+										throw new Error('method not defined: GetPaymentState')
+									} else {
+										const error = Types.GetPaymentStateRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.GetPaymentState({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetTransactionSwapQuotes':
+									if (!methods.GetTransactionSwapQuotes) {
+										throw new Error('method not defined: GetTransactionSwapQuotes')
+									} else {
+										const error = Types.TransactionSwapRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.GetTransactionSwapQuotes({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetUserInfo':
+									if (!methods.GetUserInfo) {
+										throw new Error('method not defined: GetUserInfo')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetUserInfo({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetUserOffer':
+									if (!methods.GetUserOffer) {
+										throw new Error('method not defined: GetUserOffer')
+									} else {
+										const error = Types.OfferIdValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.GetUserOffer({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetUserOfferInvoices':
+									if (!methods.GetUserOfferInvoices) {
+										throw new Error('method not defined: GetUserOfferInvoices')
+									} else {
+										const error = Types.GetUserOfferInvoicesReqValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.GetUserOfferInvoices({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetUserOffers':
+									if (!methods.GetUserOffers) {
+										throw new Error('method not defined: GetUserOffers')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.GetUserOffers({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'GetUserOperations':
+									if (!methods.GetUserOperations) {
+										throw new Error('method not defined: GetUserOperations')
+									} else {
+										const error = Types.GetUserOperationsRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.GetUserOperations({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'ListTxSwaps':
+									if (!methods.ListTxSwaps) {
+										throw new Error('method not defined: ListTxSwaps')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.ListTxSwaps({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'NewAddress':
+									if (!methods.NewAddress) {
+										throw new Error('method not defined: NewAddress')
+									} else {
+										const error = Types.NewAddressRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.NewAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'NewInvoice':
+									if (!methods.NewInvoice) {
+										throw new Error('method not defined: NewInvoice')
+									} else {
+										const error = Types.NewInvoiceRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.NewInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'NewProductInvoice':
+									if (!methods.NewProductInvoice) {
+										throw new Error('method not defined: NewProductInvoice')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.NewProductInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'PayAddress':
+									if (!methods.PayAddress) {
+										throw new Error('method not defined: PayAddress')
+									} else {
+										const error = Types.PayAddressRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.PayAddress({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'PayInvoice':
+									if (!methods.PayInvoice) {
+										throw new Error('method not defined: PayInvoice')
+									} else {
+										const error = Types.PayInvoiceRequestValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.PayInvoice({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'ResetDebit':
+									if (!methods.ResetDebit) {
+										throw new Error('method not defined: ResetDebit')
+									} else {
+										const error = Types.DebitOperationValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.ResetDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'ResetManage':
+									if (!methods.ResetManage) {
+										throw new Error('method not defined: ResetManage')
+									} else {
+										const error = Types.ManageOperationValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.ResetManage({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'RespondToDebit':
+									if (!methods.RespondToDebit) {
+										throw new Error('method not defined: RespondToDebit')
+									} else {
+										const error = Types.DebitResponseValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.RespondToDebit({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'UpdateCallbackUrl':
+									if (!methods.UpdateCallbackUrl) {
+										throw new Error('method not defined: UpdateCallbackUrl')
+									} else {
+										const error = Types.CallbackUrlValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										const res = await methods.UpdateCallbackUrl({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'UpdateUserOffer':
+									if (!methods.UpdateUserOffer) {
+										throw new Error('method not defined: UpdateUserOffer')
+									} else {
+										const error = Types.OfferConfigValidate(operation.req)
+										opStats.validate = process.hrtime.bigint()
+										if (error !== null) throw error
+										await methods.UpdateUserOffer({ ...operation, ctx }); responses.push({ status: 'OK' })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								case 'UserHealth':
+									if (!methods.UserHealth) {
+										throw new Error('method not defined: UserHealth')
+									} else {
+										opStats.validate = opStats.guard
+										const res = await methods.UserHealth({ ...operation, ctx }); responses.push({ status: 'OK', ...res })
+										opStats.handle = process.hrtime.bigint()
+										callsMetrics.push({ ...opInfo, ...opStats, ...ctx })
+									}
+									break
+								default:
+									throw new Error('unkown rpcName')
+							}
+						} catch (ex) { const e = ex as any; logger.error(e.message || e); callsMetrics.push({ ...opInfo, ...opStats, ...ctx, error: e.message }); responses.push({ status: 'ERROR', reason: e.message || e }) }
+					}
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', responses })
+					opts.metricsCallback([{ ...info, ...stats, ...ctx }, ...callsMetrics])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'CloseChannel':
+				try {
+					if (!methods.CloseChannel) throw new Error('method: CloseChannel is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.CloseChannelRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.CloseChannel({ rpcName: 'CloseChannel', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'CreateOneTimeInviteLink':
+				try {
+					if (!methods.CreateOneTimeInviteLink) throw new Error('method: CreateOneTimeInviteLink is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.CreateOneTimeInviteLinkRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.CreateOneTimeInviteLink({ rpcName: 'CreateOneTimeInviteLink', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'DecodeInvoice':
+				try {
+					if (!methods.DecodeInvoice) throw new Error('method: DecodeInvoice is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.DecodeInvoiceRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.DecodeInvoice({ rpcName: 'DecodeInvoice', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'DeleteUserOffer':
+				try {
+					if (!methods.DeleteUserOffer) throw new Error('method: DeleteUserOffer is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.OfferIdValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.DeleteUserOffer({ rpcName: 'DeleteUserOffer', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'EditDebit':
+				try {
+					if (!methods.EditDebit) throw new Error('method: EditDebit is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.DebitAuthorizationRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.EditDebit({ rpcName: 'EditDebit', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'EnrollAdminToken':
+				try {
+					if (!methods.EnrollAdminToken) throw new Error('method: EnrollAdminToken is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.EnrollAdminTokenRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.EnrollAdminToken({ rpcName: 'EnrollAdminToken', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'EnrollMessagingToken':
+				try {
+					if (!methods.EnrollMessagingToken) throw new Error('method: EnrollMessagingToken is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.MessagingTokenValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.EnrollMessagingToken({ rpcName: 'EnrollMessagingToken', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetAdminInvoiceSwapQuotes':
+				try {
+					if (!methods.GetAdminInvoiceSwapQuotes) throw new Error('method: GetAdminInvoiceSwapQuotes is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.InvoiceSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetAdminInvoiceSwapQuotes({ rpcName: 'GetAdminInvoiceSwapQuotes', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetAdminTransactionSwapQuotes':
+				try {
+					if (!methods.GetAdminTransactionSwapQuotes) throw new Error('method: GetAdminTransactionSwapQuotes is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.TransactionSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetAdminTransactionSwapQuotes({ rpcName: 'GetAdminTransactionSwapQuotes', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetAppsMetrics':
+				try {
+					if (!methods.GetAppsMetrics) throw new Error('method: GetAppsMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.AppsMetricsRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetAppsMetrics({ rpcName: 'GetAppsMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetBundleMetrics':
+				try {
+					if (!methods.GetBundleMetrics) throw new Error('method: GetBundleMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LatestBundleMetricReqValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetBundleMetrics({ rpcName: 'GetBundleMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetDebitAuthorizations':
+				try {
+					if (!methods.GetDebitAuthorizations) throw new Error('method: GetDebitAuthorizations is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetDebitAuthorizations({ rpcName: 'GetDebitAuthorizations', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetErrorStats':
+				try {
+					if (!methods.GetErrorStats) throw new Error('method: GetErrorStats is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetErrorStats({ rpcName: 'GetErrorStats', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetHttpCreds':
+				try {
+					if (!methods.GetHttpCreds) throw new Error('method: GetHttpCreds is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetHttpCreds({ rpcName: 'GetHttpCreds', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetInviteLinkState':
+				try {
+					if (!methods.GetInviteLinkState) throw new Error('method: GetInviteLinkState is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.GetInviteTokenStateRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetInviteLinkState({ rpcName: 'GetInviteLinkState', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLNURLChannelLink':
+				try {
+					if (!methods.GetLNURLChannelLink) throw new Error('method: GetLNURLChannelLink is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetLNURLChannelLink({ rpcName: 'GetLNURLChannelLink', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLiveDebitRequests':
+				try {
+					if (!methods.GetLiveDebitRequests) throw new Error('method: GetLiveDebitRequests is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					methods.GetLiveDebitRequests({
+						rpcName: 'GetLiveDebitRequests', ctx: authContext, cb: (response, err) => {
+							stats.handle = process.hrtime.bigint()
+							if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+						}
+					})
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLiveManageRequests':
+				try {
+					if (!methods.GetLiveManageRequests) throw new Error('method: GetLiveManageRequests is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					methods.GetLiveManageRequests({
+						rpcName: 'GetLiveManageRequests', ctx: authContext, cb: (response, err) => {
+							stats.handle = process.hrtime.bigint()
+							if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+						}
+					})
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLiveUserOperations':
+				try {
+					if (!methods.GetLiveUserOperations) throw new Error('method: GetLiveUserOperations is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					methods.GetLiveUserOperations({
+						rpcName: 'GetLiveUserOperations', ctx: authContext, cb: (response, err) => {
+							stats.handle = process.hrtime.bigint()
+							if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+						}
+					})
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLndForwardingMetrics':
+				try {
+					if (!methods.GetLndForwardingMetrics) throw new Error('method: GetLndForwardingMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LndMetricsRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetLndForwardingMetrics({ rpcName: 'GetLndForwardingMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLndMetrics':
+				try {
+					if (!methods.GetLndMetrics) throw new Error('method: GetLndMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LndMetricsRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetLndMetrics({ rpcName: 'GetLndMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLnurlPayLink':
+				try {
+					if (!methods.GetLnurlPayLink) throw new Error('method: GetLnurlPayLink is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetLnurlPayLink({ rpcName: 'GetLnurlPayLink', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetLnurlWithdrawLink':
+				try {
+					if (!methods.GetLnurlWithdrawLink) throw new Error('method: GetLnurlWithdrawLink is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetLnurlWithdrawLink({ rpcName: 'GetLnurlWithdrawLink', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetManageAuthorizations':
+				try {
+					if (!methods.GetManageAuthorizations) throw new Error('method: GetManageAuthorizations is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetManageAuthorizations({ rpcName: 'GetManageAuthorizations', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetMigrationUpdate':
+				try {
+					if (!methods.GetMigrationUpdate) throw new Error('method: GetMigrationUpdate is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					methods.GetMigrationUpdate({
+						rpcName: 'GetMigrationUpdate', ctx: authContext, cb: (response, err) => {
+							stats.handle = process.hrtime.bigint()
+							if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+						}
+					})
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetPaymentState':
+				try {
+					if (!methods.GetPaymentState) throw new Error('method: GetPaymentState is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.GetPaymentStateRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetPaymentState({ rpcName: 'GetPaymentState', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetProvidersDisruption':
+				try {
+					if (!methods.GetProvidersDisruption) throw new Error('method: GetProvidersDisruption is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetProvidersDisruption({ rpcName: 'GetProvidersDisruption', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetSeed':
+				try {
+					if (!methods.GetSeed) throw new Error('method: GetSeed is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetSeed({ rpcName: 'GetSeed', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetSingleBundleMetrics':
+				try {
+					if (!methods.GetSingleBundleMetrics) throw new Error('method: GetSingleBundleMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.SingleMetricReqValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetSingleBundleMetrics({ rpcName: 'GetSingleBundleMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetSingleUsageMetrics':
+				try {
+					if (!methods.GetSingleUsageMetrics) throw new Error('method: GetSingleUsageMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.SingleMetricReqValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetSingleUsageMetrics({ rpcName: 'GetSingleUsageMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetTransactionSwapQuotes':
+				try {
+					if (!methods.GetTransactionSwapQuotes) throw new Error('method: GetTransactionSwapQuotes is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.TransactionSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetTransactionSwapQuotes({ rpcName: 'GetTransactionSwapQuotes', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUsageMetrics':
+				try {
+					if (!methods.GetUsageMetrics) throw new Error('method: GetUsageMetrics is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LatestUsageMetricReqValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetUsageMetrics({ rpcName: 'GetUsageMetrics', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUserInfo':
+				try {
+					if (!methods.GetUserInfo) throw new Error('method: GetUserInfo is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetUserInfo({ rpcName: 'GetUserInfo', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUserOffer':
+				try {
+					if (!methods.GetUserOffer) throw new Error('method: GetUserOffer is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.OfferIdValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetUserOffer({ rpcName: 'GetUserOffer', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUserOfferInvoices':
+				try {
+					if (!methods.GetUserOfferInvoices) throw new Error('method: GetUserOfferInvoices is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.GetUserOfferInvoicesReqValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetUserOfferInvoices({ rpcName: 'GetUserOfferInvoices', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUserOffers':
+				try {
+					if (!methods.GetUserOffers) throw new Error('method: GetUserOffers is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.GetUserOffers({ rpcName: 'GetUserOffers', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'GetUserOperations':
+				try {
+					if (!methods.GetUserOperations) throw new Error('method: GetUserOperations is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.GetUserOperationsRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.GetUserOperations({ rpcName: 'GetUserOperations', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'LinkNPubThroughToken':
+				try {
+					if (!methods.LinkNPubThroughToken) throw new Error('method: LinkNPubThroughToken is not implemented')
+					const authContext = await opts.NostrGuestWithPubAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LinkNPubThroughTokenRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.LinkNPubThroughToken({ rpcName: 'LinkNPubThroughToken', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ListAdminInvoiceSwaps':
+				try {
+					if (!methods.ListAdminInvoiceSwaps) throw new Error('method: ListAdminInvoiceSwaps is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.ListAdminInvoiceSwaps({ rpcName: 'ListAdminInvoiceSwaps', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ListAdminTxSwaps':
+				try {
+					if (!methods.ListAdminTxSwaps) throw new Error('method: ListAdminTxSwaps is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.ListAdminTxSwaps({ rpcName: 'ListAdminTxSwaps', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ListChannels':
+				try {
+					if (!methods.ListChannels) throw new Error('method: ListChannels is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.ListChannels({ rpcName: 'ListChannels', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ListTxSwaps':
+				try {
+					if (!methods.ListTxSwaps) throw new Error('method: ListTxSwaps is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.ListTxSwaps({ rpcName: 'ListTxSwaps', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'LndGetInfo':
+				try {
+					if (!methods.LndGetInfo) throw new Error('method: LndGetInfo is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.LndGetInfoRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.LndGetInfo({ rpcName: 'LndGetInfo', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'NewAddress':
+				try {
+					if (!methods.NewAddress) throw new Error('method: NewAddress is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.NewAddressRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.NewAddress({ rpcName: 'NewAddress', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'NewInvoice':
+				try {
+					if (!methods.NewInvoice) throw new Error('method: NewInvoice is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.NewInvoiceRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.NewInvoice({ rpcName: 'NewInvoice', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'NewProductInvoice':
+				try {
+					if (!methods.NewProductInvoice) throw new Error('method: NewProductInvoice is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.NewProductInvoice({ rpcName: 'NewProductInvoice', ctx: authContext, query: req.query || {} })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'OpenChannel':
+				try {
+					if (!methods.OpenChannel) throw new Error('method: OpenChannel is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.OpenChannelRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.OpenChannel({ rpcName: 'OpenChannel', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'PayAddress':
+				try {
+					if (!methods.PayAddress) throw new Error('method: PayAddress is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.PayAddressRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.PayAddress({ rpcName: 'PayAddress', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'PayAdminInvoiceSwap':
+				try {
+					if (!methods.PayAdminInvoiceSwap) throw new Error('method: PayAdminInvoiceSwap is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.PayAdminInvoiceSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.PayAdminInvoiceSwap({ rpcName: 'PayAdminInvoiceSwap', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'PayAdminTransactionSwap':
+				try {
+					if (!methods.PayAdminTransactionSwap) throw new Error('method: PayAdminTransactionSwap is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.PayAdminTransactionSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.PayAdminTransactionSwap({ rpcName: 'PayAdminTransactionSwap', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'PayInvoice':
+				try {
+					if (!methods.PayInvoice) throw new Error('method: PayInvoice is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.PayInvoiceRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.PayInvoice({ rpcName: 'PayInvoice', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'PingSubProcesses':
+				try {
+					if (!methods.PingSubProcesses) throw new Error('method: PingSubProcesses is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					await methods.PingSubProcesses({ rpcName: 'PingSubProcesses', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'RefundAdminInvoiceSwap':
+				try {
+					if (!methods.RefundAdminInvoiceSwap) throw new Error('method: RefundAdminInvoiceSwap is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.RefundAdminInvoiceSwapRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.RefundAdminInvoiceSwap({ rpcName: 'RefundAdminInvoiceSwap', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ResetDebit':
+				try {
+					if (!methods.ResetDebit) throw new Error('method: ResetDebit is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.DebitOperationValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.ResetDebit({ rpcName: 'ResetDebit', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ResetManage':
+				try {
+					if (!methods.ResetManage) throw new Error('method: ResetManage is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.ManageOperationValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.ResetManage({ rpcName: 'ResetManage', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ResetMetricsStorages':
+				try {
+					if (!methods.ResetMetricsStorages) throw new Error('method: ResetMetricsStorages is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					await methods.ResetMetricsStorages({ rpcName: 'ResetMetricsStorages', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'RespondToDebit':
+				try {
+					if (!methods.RespondToDebit) throw new Error('method: RespondToDebit is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.DebitResponseValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.RespondToDebit({ rpcName: 'RespondToDebit', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'SubToWebRtcCandidates':
+				try {
+					if (!methods.SubToWebRtcCandidates) throw new Error('method: SubToWebRtcCandidates is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					methods.SubToWebRtcCandidates({
+						rpcName: 'SubToWebRtcCandidates', ctx: authContext, cb: (response, err) => {
+							stats.handle = process.hrtime.bigint()
+							if (err) { logErrorAndReturnResponse(err, err.message, res, logger, { ...info, ...stats, ...authContext }, opts.metricsCallback) } else { res({ status: 'OK', ...response }); opts.metricsCallback([{ ...info, ...stats, ...authContext }]) }
+						}
+					})
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'SubmitWebRtcMessage':
+				try {
+					if (!methods.SubmitWebRtcMessage) throw new Error('method: SubmitWebRtcMessage is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.WebRtcMessageValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.SubmitWebRtcMessage({ rpcName: 'SubmitWebRtcMessage', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'UpdateCallbackUrl':
+				try {
+					if (!methods.UpdateCallbackUrl) throw new Error('method: UpdateCallbackUrl is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.CallbackUrlValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					const response = await methods.UpdateCallbackUrl({ rpcName: 'UpdateCallbackUrl', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'UpdateChannelPolicy':
+				try {
+					if (!methods.UpdateChannelPolicy) throw new Error('method: UpdateChannelPolicy is not implemented')
+					const authContext = await opts.NostrAdminAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.UpdateChannelPolicyRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.UpdateChannelPolicy({ rpcName: 'UpdateChannelPolicy', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'UpdateUserOffer':
+				try {
+					if (!methods.UpdateUserOffer) throw new Error('method: UpdateUserOffer is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.OfferConfigValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.UpdateUserOffer({ rpcName: 'UpdateUserOffer', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'UseInviteLink':
+				try {
+					if (!methods.UseInviteLink) throw new Error('method: UseInviteLink is not implemented')
+					const authContext = await opts.NostrGuestWithPubAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					const request = req.body
+					const error = Types.UseInviteLinkRequestValidate(request)
+					stats.validate = process.hrtime.bigint()
+					if (error !== null) return logErrorAndReturnResponse(error, 'invalid request body', res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback)
+					await methods.UseInviteLink({ rpcName: 'UseInviteLink', ctx: authContext, req: request })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK' })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'UserHealth':
+				try {
+					if (!methods.UserHealth) throw new Error('method: UserHealth is not implemented')
+					const authContext = await opts.NostrUserAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.UserHealth({ rpcName: 'UserHealth', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			case 'ZipMetricsStorages':
+				try {
+					if (!methods.ZipMetricsStorages) throw new Error('method: ZipMetricsStorages is not implemented')
+					const authContext = await opts.NostrMetricsAuthGuard(req.appId, req.authIdentifier)
+					stats.guard = process.hrtime.bigint()
+					authCtx = authContext
+					stats.validate = stats.guard
+					const response = await methods.ZipMetricsStorages({ rpcName: 'ZipMetricsStorages', ctx: authContext })
+					stats.handle = process.hrtime.bigint()
+					res({ status: 'OK', ...response })
+					opts.metricsCallback([{ ...info, ...stats, ...authContext }])
+				} catch (ex) { const e = ex as any; logErrorAndReturnResponse(e, e.message || e, res, logger, { ...info, ...stats, ...authCtx }, opts.metricsCallback); if (opts.throwErrors) throw e }
+				break
+			default: logger.error('unknown rpc call name from nostr event:' + req.rpcName)
+		}
+	}
 }

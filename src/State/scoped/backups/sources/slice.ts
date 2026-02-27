@@ -67,6 +67,7 @@ function getIntialMetadataEntry(sourceId: string, lpk: string): SourceMetadata {
 	return {
 		id: sourceId,
 		lpk,
+		topicId: undefined,
 		balance: 0 as Satoshi,
 		maxWithdrable: 0 as Satoshi,
 		lastSeenAtMs: 0
@@ -245,6 +246,11 @@ export const sourcesSlice = createSlice({
 
 			m.ndebit = a.payload.ndebit;
 
+		},
+		setTopicId(state, a: PayloadAction<{ sourceId: string; topicId: string }>) {
+			const m = state.metadata.entities[a.payload.sourceId];
+			if (!m) return;
+			m.topicId = a.payload.topicId;
 		},
 		setBalance(state, a: PayloadAction<{ sourceId: string; balance: { balance: Satoshi, maxWithdrawable: Satoshi } }>) {
 			const m = state.metadata.entities[a.payload.sourceId]

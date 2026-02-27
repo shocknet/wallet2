@@ -97,9 +97,18 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./android/gradlew
 
-      - name: Build ionic, sync, build gradle
+      - name: Write google-services.json for push notifications
         run: |
-          npm run android:release
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 --decode > android/app/google-services.json
+
+      - name: Build ionic, sync, build gradle (APK always; AAB on release)
+        run: |
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            npm run android:release:apk:bundle
+          else
+            npm run android:release:apk
+          fi
+
 
       - name: Check merged manifest
         run: |
@@ -129,6 +138,25 @@ jobs:
           $ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner verify android/app/build/outputs/apk/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.apk
         shell: bash
 
+      - name: Sign AAB with jarsigner
+        if: github.event_name == 'release'
+        run: |
+          UNSIGNED_AAB="android/app/build/outputs/bundle/release/app-release.aab"
+          SIGNED_AAB="android/app/build/outputs/bundle/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.aab"
+          cp "$UNSIGNED_AAB" "$SIGNED_AAB"
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore my-release-key.keystore \
+            -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            "$SIGNED_AAB" "${{ secrets.ANDROID_KEY_ALIAS }}"
+        shell: bash
+
+      - name: Verify AAB signature
+        if: github.event_name == 'release'
+        run: |
+          jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/${{ env.VITE_APP_NAME }}-${{ env.VERSION }}.aab
+        shell: bash
+
       - name: Upload APK to GitHub Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
@@ -141,7 +169,6 @@ jobs:
           asset_content_type: application/vnd.android.package-archive
 
       - name: Upload APK as artifact
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-dev
@@ -187,3 +214,4 @@ jobs:
           echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
           echo "ANDROID_HOME: $ANDROID_HOME"
           ls -R $ANDROID_SDK_ROOT || ls -R $ANDROID_HOME
+
