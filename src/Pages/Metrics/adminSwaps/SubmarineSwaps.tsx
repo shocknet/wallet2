@@ -50,8 +50,9 @@ function getSwapStatus(operation: InvoiceSwapOperation, currentBlockHeight: numb
         status = 'unpaid_quote';
     }
 
-    // Only paid expired swaps and quotes are refundable
-    const isRefundable = isPaid && isExpired && hasFailed;
+    // Refundable: (1) finalized with error → early cooperative refund, or (2) unfinalized and expired
+    const isRefundable =
+        isPaid && ((hasFailed && isCompleted) || (isExpired && !isCompleted));
 
     return { operation, status, isRefundable, isExpired };
 }
@@ -62,7 +63,7 @@ function getStatusLabel(status: SwapStatus): string {
         case 'paid_pending': return 'Paid - Pending';
         case 'expired_paid_quote': return 'Expired (Refundable)';
         case 'completed': return 'Completed';
-        case 'failed': return 'Failed';
+        case 'failed': return 'Failed (Refundable)';
         case 'failed_expired': return 'Failed & Expired (Refundable)';
     }
 }
@@ -551,14 +552,14 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
             </IonCard>
         )}
 
-        {/* Refundable swaps - show first */}
-        {(groupedSwaps.expired_paid_quote.length > 0 || groupedSwaps.failed_expired.length > 0) && (
+        {/* Refundable swaps - show first (early cooperative + after-expiration) */}
+        {(groupedSwaps.expired_paid_quote.length > 0 || groupedSwaps.failed.length > 0 || groupedSwaps.failed_expired.length > 0) && (
             <>
                 <IonText className="ion-margin-top" style={{ fontSize: "1.2rem", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
                     <IonIcon icon={alertCircle} style={{ marginRight: "8px" }} />
                     Refundable Swaps
                 </IonText>
-                {[...groupedSwaps.expired_paid_quote, ...groupedSwaps.failed_expired].map(swap => (
+                {[...groupedSwaps.expired_paid_quote, ...groupedSwaps.failed, ...groupedSwaps.failed_expired].map(swap => (
                     <SwapCard
                         key={swap.operation.quote.swap_operation_id}
                         swap={swap}
@@ -636,26 +637,6 @@ export default function SubmarineSwaps({ adminSource }: { adminSource: NprofileV
             </>
         )}
 
-        {/* Failed (non-expired) */}
-        {groupedSwaps.failed.length > 0 && (
-            <>
-                <IonText className="ion-margin-top" style={{ fontSize: "1.2rem", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
-                    Failed Swaps
-                </IonText>
-                {groupedSwaps.failed.map(swap => (
-                    <SwapCard
-                        key={swap.operation.quote.swap_operation_id}
-                        swap={swap}
-                        refundingOp={refundingOp}
-                        setRefundingOp={setRefundingOp}
-                        refundSatPerVByte={refundSatPerVByte}
-                        setRefundSatPerVByte={setRefundSatPerVByte}
-                        refundSwap={refundSwap}
-                        doSwap={doSwap}
-                    />
-                ))}
-            </>
-        )}
     </IonContent>
 
 }
