@@ -71,6 +71,11 @@ export const historySyncerSpec: ListenerSpec = {
 								listenerApi.dispatch(
 									sourcesActions.setNdebit({ sourceId, ndebit: infoRes.ndebit })
 								);
+								if (infoRes.topic_id) {
+									listenerApi.dispatch(
+										sourcesActions.setTopicId({ sourceId, topicId: infoRes.topic_id })
+									);
+								}
 							}
 						} catch (err) {
 							if (err instanceof TaskAbortError) {

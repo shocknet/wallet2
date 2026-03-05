@@ -137,6 +137,18 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
+    BumpTx: async (request: Types.BumpTx): Promise<ResultError | ({ status: 'OK' })> => {
+        const auth = await params.retrieveNostrAdminAuth()
+        if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'BumpTx', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            return data
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
     CloseChannel: async (request: Types.CloseChannelRequest): Promise<ResultError | ({ status: 'OK' } & Types.CloseChannelResponse)> => {
         const auth = await params.retrieveNostrAdminAuth()
         if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
@@ -271,6 +283,21 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
             const error = Types.AppsMetricsValidate(result)
+            if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+        }
+        return { status: 'ERROR', reason: 'invalid response' }
+    },
+    GetAssetsAndLiabilities: async (request: Types.AssetsAndLiabilitiesReq): Promise<ResultError | ({ status: 'OK' } & Types.AssetsAndLiabilities)> => {
+        const auth = await params.retrieveNostrAdminAuth()
+        if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
+        const nostrRequest: NostrRequest = {}
+        nostrRequest.body = request
+        const data = await send(params.pubDestination, { rpcName: 'GetAssetsAndLiabilities', authIdentifier: auth, ...nostrRequest })
+        if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+        if (data.status === 'OK') {
+            const result = data
+            if (!params.checkResult) return { status: 'OK', ...result }
+            const error = Types.AssetsAndLiabilitiesValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	IonButton,
+	IonButtons,
 	IonCol,
 	IonContent,
 	IonFooter,
@@ -650,20 +651,17 @@ const Send = () => {
 			</IonContent>
 			<IonFooter className="ion-no-border">
 				<IonToolbar>
-					<IonGrid className="ion-no-padding">
-						<IonRow className="ion-justify-content-center ion-align-items-center" style={{ gap: "1rem" }}>
-							<IonCol size="5" >
-								<IonButton color="light" fill="default" expand="block" onClick={() => router.push("/home", "back", "pop")}>
-									Cancel
-								</IonButton>
-							</IonCol>
-							<IonCol size="5" >
-								<IonButton color="primary" fill="solid" expand="block" disabled={!canPay} onClick={handlePayment}>
-									Pay
-								</IonButton>
-							</IonCol>
-						</IonRow>
-					</IonGrid>
+					<IonButtons slot="start" className="w-[48%]">
+						<IonButton fill="clear" expand="block" className="w-full" onClick={() => router.push("/home", "back", "pop")}>
+							Cancel
+						</IonButton>
+					</IonButtons>
+					<IonButtons slot="end" className="w-[48%]">
+						<IonButton color="primary" fill="solid" className="w-full" expand="block" disabled={!canPay} onClick={handlePayment}>
+							Pay
+						</IonButton>
+					</IonButtons>
+
 
 
 				</IonToolbar>

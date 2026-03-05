@@ -6,6 +6,7 @@ import styles from "./styles/index.module.scss";
 import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { FiatDisplay } from "../FiatDisplay";
+import cn from "clsx";
 
 
 
@@ -13,9 +14,10 @@ import { FiatDisplay } from "../FiatDisplay";
 interface HistoryItemProps {
 	operation: SourceOperation & { sourceId: string };
 	handleSelectOperation: (operation: SourceOperation) => void;
+	className?: string;
 }
 
-const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => {
+const HistoryItem = ({ operation, handleSelectOperation, className }: HistoryItemProps) => {
 	const [_tick, setTick] = useState(0);
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -58,7 +60,7 @@ const HistoryItem = ({ operation, handleSelectOperation }: HistoryItemProps) => 
 	return (
 
 
-		<IonItem lines="full" className={styles["history-item"]} detail={false} button onClick={handleItemClick}>
+		<IonItem lines="full" className={cn(styles["history-item"], className)} detail={false} button onClick={handleItemClick}>
 			<IonIcon
 				slot="start"
 				icon={typeIcon}

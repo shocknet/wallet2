@@ -1,4 +1,5 @@
 .footer {
+
 	.toolbar {
 		display: flex !important;
 		position: relative;
@@ -46,5 +47,34 @@
 			left: 50%;
 			top: -25px;
 		}
+	}
+}
+
+.highlight-row {
+
+	animation: highlightPulse 2.4s ease-in-out;
+	--background: var(--ion-color-light);
+
+}
+
+@keyframes highlightPulse {
+	0% {
+		--background: rgba(var(--ion-color-primary-rgb), 0.04);
+	}
+
+	25% {
+		--background: rgba(var(--ion-color-primary-rgb), 0.06);
+	}
+
+	50% {
+		--background: rgba(var(--ion-color-primary-rgb), 0.08);
+	}
+
+	75% {
+		--background: rgba(var(--ion-color-primary-rgb), 0.06);
+	}
+
+	100% {
+		--background: rgba(var(--ion-color-primary-rgb), 0.04);
 	}
 }
