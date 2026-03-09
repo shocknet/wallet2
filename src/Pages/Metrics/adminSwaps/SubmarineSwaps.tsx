@@ -25,14 +25,16 @@ interface CategorizedSwap {
     status: SwapStatus;
     isRefundable: boolean;
     isExpired: boolean;
+    isRefunded: boolean;
 }
 
 function getSwapStatus(operation: InvoiceSwapOperation, currentBlockHeight: number): CategorizedSwap {
-    const { quote, completed_at_unix, failure_reason } = operation;
+    const { quote, completed_at_unix, failure_reason, refund_at_unix } = operation;
     const isPaid = quote.tx_id !== "";
     const isExpired = currentBlockHeight > quote.expires_at_block_height;
     const isCompleted = completed_at_unix !== undefined && completed_at_unix > 0;
     const hasFailed = failure_reason !== undefined && failure_reason !== "";
+    const isRefunded = refund_at_unix !== undefined && refund_at_unix > 0;
 
     // Determine status
     let status: SwapStatus;
@@ -51,10 +53,13 @@ function getSwapStatus(operation: InvoiceSwapOperation, currentBlockHeight: numb
     }
 
     // Refundable: (1) finalized with error → early cooperative refund, or (2) unfinalized and expired
+    // Never refundable once a refund has already been processed (refund_at_unix set)
     const isRefundable =
-        isPaid && ((hasFailed && isCompleted) || (isExpired && !isCompleted));
+        isPaid &&
+        !isRefunded &&
+        ((hasFailed && isCompleted) || (isExpired && !isCompleted));
 
-    return { operation, status, isRefundable, isExpired };
+    return { operation, status, isRefundable, isExpired, isRefunded };
 }
 
 function getStatusLabel(status: SwapStatus): string {
@@ -117,8 +122,8 @@ interface SwapCardProps {
 }
 
 function SwapCard({ swap, refundingOp, setRefundingOp, refundSatPerVByte, setRefundSatPerVByte, refundSwap, doSwap }: SwapCardProps) {
-    const { operation, status, isRefundable, isExpired } = swap;
-    const { quote, completed_at_unix, failure_reason } = operation;
+    const { operation, status, isRefundable, isExpired, isRefunded } = swap;
+    const { quote, completed_at_unix, failure_reason, refund_at_unix, refund_tx_id, refund_address } = operation;
     const isRefunding = refundingOp === quote.swap_operation_id;
 
     return (
@@ -225,6 +230,23 @@ function SwapCard({ swap, refundingOp, setRefundingOp, refundSatPerVByte, setRef
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <IonText color="medium">TX ID:</IonText>
                             <IonText style={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{quote.tx_id.substring(0, 16)}...</IonText>
+                        </div>
+                    )}
+                    {isRefunded && (
+                        <div style={{ marginTop: '8px', padding: '8px', borderRadius: '4px', background: 'var(--ion-color-light)' }}>
+                            <IonBadge color="medium" style={{ marginBottom: '4px' }}>
+                                Refunded at {refund_at_unix ? formatTimestamp(refund_at_unix) : 'N/A'}
+                            </IonBadge>
+                            {refund_tx_id && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--ion-color-medium)' }}>
+                                    Refund TX: <span style={{ fontFamily: 'monospace' }}>{refund_tx_id.substring(0, 16)}...</span>
+                                </div>
+                            )}
+                            {refund_address && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--ion-color-medium)', marginTop: '2px', wordBreak: 'break-all' }}>
+                                    Refund Address: {refund_address}
+                                </div>
+                            )}
                         </div>
                     )}
                     {failure_reason && (
