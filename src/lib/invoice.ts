@@ -19,11 +19,11 @@ export function decodeInvoice(invoice: string, expectedAmount?: Satoshi): Decode
 	const description = decodedInvoice.sections.find(section => section.name === "description")?.value;
 
 	if (!amountSection) {
-		throw new Error("Error decoding provided invoice");
+		throw new Error("Error invoice must have an amount");
 	}
 
 	if (!isValidMSats(+amountSection.value)) {
-		throw new Error("Error decoding provided invoice");
+		throw new Error("Error invoice amount is not valid");
 	}
 
 	const sats = msatsToSats(amountSection.value, "round");
