@@ -1,10 +1,17 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
+import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { parseEnvelopeJsonString } from './notifications/push/intentBus';
 
+self.addEventListener('message', (event) => {
+	if (event.data && event.data.type === 'SKIP_WAITING')
+		self.skipWaiting()
+})
 
+self.skipWaiting()
+clientsClaim()
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
 
