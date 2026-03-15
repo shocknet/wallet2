@@ -97,7 +97,7 @@ const Receive = () => {
 
 
 	const [selectedSegment, setSelectedSegment] = useState(validSlides[0].id);
-	const x = "file change  test";
+
 
 
 
@@ -105,6 +105,7 @@ const Receive = () => {
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Receive" />
+				<span>X</span>
 				{
 					favoriteSource?.type === SourceType.NPROFILE_SOURCE
 					&&
