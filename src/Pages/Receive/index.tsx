@@ -97,6 +97,7 @@ const Receive = () => {
 
 
 	const [selectedSegment, setSelectedSegment] = useState(validSlides[0].id);
+	const x = "file change";
 
 
 
