@@ -105,7 +105,6 @@ const Receive = () => {
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<BackToolbar title="Receive" />
-				<span>test</span>
 				{
 					favoriteSource?.type === SourceType.NPROFILE_SOURCE
 					&&

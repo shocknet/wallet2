@@ -317,6 +317,8 @@ const Send = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [amountInput])
 
+	const x = "test assets mismatch";
+
 
 
 	const clearRecipientError = () => {
