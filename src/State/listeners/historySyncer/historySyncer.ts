@@ -1,6 +1,6 @@
 import { getNostrClient } from "@/Api/nostr";
 import { historySelectors, selectCursorForSource, sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { selectNprofileViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { selectHealthyNprofileViews, selectNprofileViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { Satoshi } from "@/lib/types/units";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { historyFetchAllRequested, historyFetchSourceRequested, listenerKick } from "@/State/listeners/actions";
@@ -44,10 +44,11 @@ export const historySyncerSpec: ListenerSpec = {
 					}
 
 					const state = listenerApi.getState();
-					const view = selectNprofileViews(state).find(v => v.sourceId === sourceId);
+					const view = selectHealthyNprofileViews(state).find(v => v.sourceId === sourceId);
 					if (!view) {
-						log.error("Source not found");
-						throw new Error(`Source not found: ${sourceId}`);
+						log.error("Source is not fresh");
+						deferred.reject("Source is not fresh");
+						return;
 					}
 
 					const fetchBalanceTask = listenerApi.fork(async forkApi => {
@@ -234,7 +235,7 @@ export const historySyncerSpec: ListenerSpec = {
 										sourcesActions.replaceOptimistic({
 											sourceId,
 											oldOperationId: invoice,
-											operation: payInvoiceReponseToUserOperation({ ...res, amount_paid: res.amount, preimage: res.preimage || "" }, o)
+											operation: payInvoiceReponseToUserOperation({ ...res, amount_paid: res.amount, preimage: res.internal ? "" : "no" }, o)
 										})
 									);
 								} else if (res.paid_at_unix < 0) {
