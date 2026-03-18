@@ -210,7 +210,7 @@ export const historySyncerSpec: ListenerSpec = {
 
 					const task = listenerApi.fork(async forkApi => {
 
-						optimisticOperations.map(async o => {
+						await Promise.all(optimisticOperations.map(async o => {
 
 							const sourceId = o.sourceId;
 							const invoice = o.invoice;
@@ -248,7 +248,7 @@ export const historySyncerSpec: ListenerSpec = {
 							} catch (err) {
 								log.error("failed", { error: err });
 							}
-						})
+						}));
 					});
 
 					await task.result;
