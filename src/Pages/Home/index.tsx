@@ -79,6 +79,12 @@ const Home = () => {
 		}
 	})
 
+	useEffect(() => {
+		setInterval(() => {
+			dispatch(fetchAllSourcesHistory());
+		}, 8_100);
+	}, [])
+
 
 	useIonViewDidEnter(() => {
 		const { reason } = history.location.state as { reason?: string } || {}

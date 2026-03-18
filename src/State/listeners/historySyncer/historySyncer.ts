@@ -142,6 +142,14 @@ export const historySyncerSpec: ListenerSpec = {
 						const deferred = createDeferred<TaskResult<void>>();
 						promises.push(deferred);
 						listenerApi.dispatch(historyFetchSourceRequested({ sourceId: v.sourceId, deferred }));
+						deferred.then(
+							res => {
+								console.log("history sync succeeded for ", v.sourceId)
+							},
+							() => {
+								console.log("history sync failed for ", v.sourceId)
+							}
+						)
 					}
 					await Promise.allSettled(promises)
 					action.payload.deferred.resolve();
