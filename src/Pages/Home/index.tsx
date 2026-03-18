@@ -81,6 +81,7 @@ const Home = () => {
 
 	useEffect(() => {
 		setInterval(() => {
+			console.log("retesting history sync....")
 			dispatch(fetchAllSourcesHistory());
 		}, 8_100);
 	}, [])
