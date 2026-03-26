@@ -106,7 +106,7 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			privkey: privateKey,
 			pubkey: pubkey,
 			relays: [defaultRelay],
-			label: "New Sanctum Identity",
+			label: "New Keys Identity",
 			createdAt: Date.now()
 		}
 
