@@ -67,7 +67,11 @@ const IdentityOverviewPage = () => {
 	);
 
 	const displayName = useMemo(
-		() => profile?.display_name || profile?.name || "Anonymous",
+		() => profile?.display_name || (profile?.name ? `@${profile.name}` : "Anonymous"),
+		[profile]
+	);
+	const username = useMemo(
+		() => profile?.name ? `@${profile.name}` : null,
 		[profile]
 	);
 	const picture = profile?.picture || (activeHex ? `https://robohash.org/${activeHex}.png?bgset=bg1` : "");
@@ -182,6 +186,16 @@ const IdentityOverviewPage = () => {
 			<IonContent className="ion-padding">
 				<div className="page-outer">
 					<div className="page-body">
+						{profile?.banner && (
+							<section className="main-block mb-5">
+								<img
+									src={profile.banner}
+									alt=""
+									referrerPolicy="no-referrer"
+									style={{ width: "100%", maxHeight: 180, objectFit: "cover", borderRadius: 12 }}
+								/>
+							</section>
+						)}
 
 						<section className="hero-block flex-row gap-4">
 							<div className="flex items-center flex-grow  justify-center max-w-[80px] lg:max-w-[100px]">
@@ -211,6 +225,11 @@ const IdentityOverviewPage = () => {
 								<div className="text-high text-left font-semibold text-xl">
 									{displayName}
 								</div>
+								{username && username !== displayName && (
+									<div className="text-medium text-left text-md mt-1">
+										{username}
+									</div>
+								)}
 
 								<div className="flex flex-row flex-wrap items-center justify-center gap-2 mt-1">
 									<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string">
@@ -255,6 +274,16 @@ const IdentityOverviewPage = () => {
 													relays: adminSource.relays,
 												})
 											)}
+										</dd>
+									</>
+								)}
+								{profile?.lud16 && (
+									<>
+										<dt className="text-high text-lg text-center sm:text-left sm:pr-2">
+											Lightning address:
+										</dt>
+										<dd className="text-low pt-1 leading-snug break-all text-center sm:text-left">
+											{profile.lud16}
 										</dd>
 									</>
 								)}

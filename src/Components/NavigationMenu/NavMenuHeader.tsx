@@ -32,7 +32,8 @@ export const NavMenuHeader: React.FC = () => {
 		{ skip: !activeHex }
 	);
 
-	const displayName = profile?.display_name || profile?.name || 'Anonymous';
+	const username = profile?.name ? `@${profile.name}` : '';
+	const displayName = profile?.display_name || username || 'Anonymous';
 	const npub = useMemo(() => (activeHex ? nip19.npubEncode(activeHex) : ''), [activeHex]);
 	const img = profile?.picture;
 
@@ -77,6 +78,11 @@ export const NavMenuHeader: React.FC = () => {
 						) : (
 							<>
 								<h2 className="text-high" style={{ margin: 0 }}>{displayName}</h2>
+								{username && username !== displayName && (
+									<IonNote style={{ display: 'block', "--color": "var(--ion-text-color-step-450)" }}>
+										{username}
+									</IonNote>
+								)}
 								<IonNote style={{ display: 'block', "--color": "var(--ion-text-color-step-450)" }}>{truncate(npub)}</IonNote>
 							</>
 						)}
