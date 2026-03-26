@@ -113,7 +113,8 @@ const IdentityRow
 		);
 		const isActive = activeHex === pubkeyHex;
 
-		const displayName = profile?.display_name || profile?.name || "Anonymous"
+		const username = profile?.name ? `@${profile.name}` : "";
+		const displayName = profile?.display_name || username || "Anonymous";
 		const picture = profile?.picture || robo(pubkeyHex);
 		const npub = nip19.npubEncode(pubkeyHex);
 
@@ -147,6 +148,11 @@ const IdentityRow
 					<IonText className="text-high text-md">
 						{displayName}
 					</IonText>
+					{username && username !== displayName && (
+						<IonText className="text-medium" style={{ display: "block", marginTop: 2 }}>
+							{username}
+						</IonText>
+					)}
 
 					<IonText className="ion-margin-top text-medium code-string" style={{ display: "block" }}>
 						{truncateTextMiddle(npub)}
