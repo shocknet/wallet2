@@ -1,11 +1,10 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import {
 	IonButton,
 	IonContent,
 	IonPage,
 	useIonLoading,
-	useIonRouter,
-	useIonViewWillEnter
+	useIonRouter
 } from "@ionic/react";
 import { Chart as ChartJS, registerables, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2'
@@ -69,6 +68,8 @@ const Dashboard = () => {
 	const [rootOps, setRootOps] = useState<RootEvent[]>([])
 	const [eventsCollapsed, setEventsCollapsed] = useState(true)
 	const [offset, setOffset] = useState(0);
+	const isFetchingRef = useRef(false);
+	const fetchMetricsRef = useRef<(() => Promise<void>) | null>(null);
 
 	const [presentLoading, dismissLoading] = useIonLoading();
 
@@ -100,6 +101,10 @@ const Dashboard = () => {
 	}, [])
 
 	const fetchMetrics = useCallback(async () => {
+		if (isFetchingRef.current) {
+			return;
+		}
+		isFetchingRef.current = true;
 		setError(null);
 
 
@@ -222,12 +227,17 @@ const Dashboard = () => {
 		} finally {
 			setLoading(false);
 			await dismissLoading();
+			isFetchingRef.current = false;
 		}
 	}, [period, adminSource, offset, fetchInfo, dismissLoading, presentLoading,]);
 
-	useIonViewWillEnter(() => {
-		void fetchMetrics();
-	}, [selectedId]);
+	useEffect(() => {
+		fetchMetricsRef.current = fetchMetrics;
+	}, [fetchMetrics]);
+
+	useEffect(() => {
+		void fetchMetricsRef.current?.();
+	}, [selectedId, period, offset]);
 
 	const nextOffset = () => {
 		if (period === Period.ALL_TIME || offset >= 0) {
