@@ -1,5 +1,5 @@
 .sanctum-container {
-	height: 128px;
+	min-height: 128px;
 	border: 2px solid #32a852;
 	border-radius: 5px;
 	display: flex;
@@ -11,6 +11,33 @@
 	&.when-confirmed {
 		padding: 0;
 		padding-bottom: 15px;
+	}
+
+	.deprecation-notice {
+		border: 1px solid rgba(255, 193, 7, 0.6);
+		background: rgba(255, 193, 7, 0.08);
+		border-radius: 5px;
+		padding: 8px 10px;
+		text-align: left;
+		color: #ffffff;
+	}
+
+	.deprecation-title {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.2px;
+		margin-bottom: 2px;
+	}
+
+	.deprecation-message {
+		font-size: 11px;
+		line-height: 1.25;
+	}
+
+	.deprecation-sunset {
+		font-size: 11px;
+		color: #cfcfcf;
+		margin-top: 4px;
 	}
 
 
