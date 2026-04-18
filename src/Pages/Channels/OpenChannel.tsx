@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IonButton } from "@ionic/react";
 import { getNostrClient } from "@/Api/nostr";
 import PromptForActionModal, { ActionType } from "../../Components/Modals/PromptForActionModal";
 import { toast } from "react-toastify";
@@ -58,10 +59,13 @@ export const OpenChannel = ({ adminSource }: { adminSource: NprofileView }) => {
 
 	return (
 		<div>
-			<div>
-				<button onClick={() => setOpenModal('addPeer')}>ADD PEER</button>
-				<button onClick={() => setOpenModal('openChannel')}>ADD CHANNEL</button>
-
+			<div className="Channels_open-actions">
+				<IonButton expand="block" onClick={() => setOpenModal("addPeer")}>
+					Add peer
+				</IonButton>
+				<IonButton expand="block" fill="outline" onClick={() => setOpenModal("openChannel")}>
+					Add channel
+				</IonButton>
 			</div>
 			{openModal === 'addPeer' && <PromptForActionModal title="Add Peer"
 				actionText="Add Peer"
