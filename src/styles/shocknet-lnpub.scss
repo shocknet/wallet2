@@ -1,0 +1,187 @@
+/*
+ * SHOCKNET — Lightning.pub product styles (dashboard scope)
+ * Based on shocknet-lnpub.css v1.2 — scoped to [data-product="lnpub"] only.
+ */
+
+[data-product="lnpub"] {
+	--lp-a: #ff8a00;
+	--lp-b: #f040f5;
+	--prod-a: var(--lp-a);
+	--prod-b: var(--lp-b);
+	--prod-on-a: #111213;
+	--prod-on-b: #f1f1f1;
+	--prod-gradient: linear-gradient(90deg, var(--lp-a), var(--lp-b));
+}
+
+@media (prefers-color-scheme: light) {
+	[data-product="lnpub"] {
+		--lp-a: #ff9900;
+		--lp-b: #d75ad7;
+	}
+}
+
+[data-product="lnpub"] {
+	input:focus,
+	textarea:focus,
+	select:focus {
+		border-color: var(--lp-a);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--lp-a) 20%, transparent);
+		outline: none;
+	}
+}
+
+[data-product="lnpub"] .btn-lp,
+[data-product="lnpub"] .btn-lp-sm {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 100%;
+	border: none;
+	border-radius: 10px;
+	padding: 12px 18px;
+	font-family: Montserrat, system-ui, sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: none;
+	cursor: pointer;
+	transition: box-shadow 0.2s ease, filter 0.15s ease;
+	background: linear-gradient(90deg, var(--lp-a), var(--lp-b));
+	color: #ffffff;
+}
+
+[data-product="lnpub"] .btn-lp-sm {
+	padding: 8px 14px;
+	font-size: 13px;
+	border-radius: 8px;
+	width: auto;
+	min-width: 0;
+}
+
+[data-product="lnpub"] .btn-lp:hover,
+[data-product="lnpub"] .btn-lp-sm:hover {
+	box-shadow: 0 0 20px rgba(255, 138, 0, 0.22);
+}
+
+[data-product="lnpub"] .btn-lp:active,
+[data-product="lnpub"] .btn-lp-sm:active {
+	filter: brightness(1.05);
+}
+
+[data-product="lnpub"] .btn-lp-a {
+	background: var(--lp-a);
+	border: 1px solid var(--lp-a);
+	color: #111213;
+}
+
+[data-product="lnpub"] .btn-lp-b {
+	background: var(--lp-b);
+	border: 1px solid var(--lp-b);
+	color: #f1f1f1;
+}
+
+[data-product="lnpub"] .btn-lp-out {
+	background: transparent;
+	border: 1px solid var(--lp-a);
+	color: var(--lp-a);
+}
+
+[data-product="lnpub"] .btn-lp-out:hover {
+	box-shadow: 0 0 20px rgba(255, 138, 0, 0.22);
+}
+
+[data-product="lnpub"] .btn-lp-in {
+	background: transparent;
+	border: 1px solid var(--lp-b);
+	color: var(--lp-b);
+}
+
+[data-product="lnpub"] .btn-lp-in:hover {
+	box-shadow: 0 0 20px rgba(240, 64, 245, 0.22);
+}
+
+[data-product="lnpub"] .pill-lp {
+	background: color-mix(in srgb, var(--lp-a) 14%, transparent);
+	border: 1px solid var(--lp-a);
+	color: var(--lp-a);
+}
+
+[data-product="lnpub"] .pill-lp2 {
+	background: color-mix(in srgb, var(--lp-b) 14%, transparent);
+	border: 1px solid var(--lp-b);
+	color: var(--lp-b);
+}
+
+@media (prefers-color-scheme: light) {
+	[data-product="lnpub"] .pill-lp {
+		color: #cc7700;
+		border-color: #ff9900;
+		background: color-mix(in srgb, #ff9900 14%, transparent);
+	}
+
+	[data-product="lnpub"] .pill-lp2 {
+		color: #a83fa8;
+		border-color: #d75ad7;
+		background: color-mix(in srgb, #d75ad7 14%, transparent);
+	}
+}
+
+[data-product="lnpub"] .callout--lp {
+	background: color-mix(in srgb, var(--lp-a) 7%, transparent);
+	border-color: color-mix(in srgb, var(--lp-a) 20%, transparent);
+}
+
+[data-product="lnpub"] .icon-cell--lp:hover {
+	background: color-mix(in srgb, var(--lp-a) 10%, transparent);
+}
+
+[data-product="lnpub"] .product-bar--lp {
+	background: linear-gradient(180deg, var(--lp-a), var(--lp-b));
+}
+
+/* Form rows inside LNPUB modals (channels / metrics) */
+[data-product="lnpub"] .lnpub-form-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	text-align: left;
+	margin-top: 8px;
+}
+
+[data-product="lnpub"] .lnpub-form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+[data-product="lnpub"] .lnpub-form-row label {
+	font-size: 12px;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--ion-text-color, #fff) 72%, transparent);
+}
+
+[data-product="lnpub"] .lnpub-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--lp-a) 35%, transparent);
+	background: color-mix(in srgb, var(--ion-background-color, #16191c) 92%, #000);
+	color: var(--ion-text-color, #fcfcfc);
+	font-size: 14px;
+	font-family: Montserrat, system-ui, sans-serif;
+}
+
+[data-product="lnpub"] .lnpub-inline-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+	margin-top: 12px;
+}
+
+[data-product="lnpub"] .lnpub-inline-actions .btn-lp-sm {
+	flex: 1 1 auto;
+	min-width: 120px;
+}

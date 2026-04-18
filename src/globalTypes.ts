@@ -76,12 +76,8 @@ export interface ModalProps {
   hide: () => void;
   modalContent: JSX.Element;
   headerText?: string;
-}
-
-export interface ModalProps {
-  isShown: boolean;
-  hide: () => void;
-  modalContent: JSX.Element;
+  /** When set, modal frame uses Lightning.pub dashboard styling (portaled modals). */
+  variant?: "default" | "lnpub";
 }
 
 export interface SwItemData {

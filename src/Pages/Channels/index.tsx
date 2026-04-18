@@ -90,10 +90,11 @@ const Channels = () => {
 				if (c.remote_balance > max) {
 					max = c.remote_balance
 				}
+				const avatar = channelRoboAvatarUrl(c)
 				if (c.active) {
-					active.push({ avatar: "", id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance, channel: c })
+					active.push({ avatar, id: i, name: c.label, localSatAmount: c.local_balance, RemoteSatAmount: c.remote_balance, channel: c })
 				} else {
-					offline.push({ avatar: "", id: i, name: c.label, encumbered: c.local_balance, timeStamp: c.inactive_since_unix, subNode: "Initiate force-close", channel: c })
+					offline.push({ avatar, id: i, name: c.label, encumbered: c.local_balance, timeStamp: c.inactive_since_unix, subNode: "Initiate force-close", channel: c })
 				}
 			})
 			setMaxBalance(max);
@@ -134,10 +135,10 @@ const Channels = () => {
 			</IonHeader>
 			<IonContent className="ion-padding ion-content-no-footer">
 				{error && (
-					<div style={{ color: "red", padding: 12 }}>
-						<div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
-						<div style={{ opacity: 0.85, marginBottom: 12 }}>{error}</div>
-						<div style={{ display: "flex", gap: 8 }}>
+					<div className="callout--lp Channels_error-callout">
+						<div className="Channels_error-title">Something went wrong</div>
+						<div className="Channels_error-body">{error}</div>
+						<div className="Channels_error-actions">
 							<IonButton onClick={() => void fetchChannels()}>Retry</IonButton>
 							<IonButton fill="outline" onClick={() => router.push("/metrics/select", "back")}>
 								Change Source
@@ -167,10 +168,10 @@ const Channels = () => {
 											<div className="avatar">
 												<img
 													src={channel.avatar}
-													width={12}
-													height={12}
-													className=""
-													alt="avatar"
+													width={32}
+													height={32}
+													decoding="async"
+													alt=""
 												/>
 												<div>{channel.name}</div>
 											</div>
@@ -222,10 +223,10 @@ const Channels = () => {
 											<div className="avatar">
 												<img
 													src={channel.avatar}
-													width={12}
-													height={12}
-													className=""
-													alt="avatar"
+													width={32}
+													height={32}
+													decoding="async"
+													alt=""
 												/>
 												<div>{channel.name}</div>
 											</div>
@@ -289,7 +290,7 @@ const SatAmountBar: React.FC<ComponentProps> = ({
 	return (
 		<div
 			style={{
-				backgroundColor: `${type === "local" ? "#ff7700" : "#5912c7"}`,
+				backgroundColor: type === "local" ? "var(--lp-a, #ff8a00)" : "var(--lp-b, #f040f5)",
 				width: `calc(${percent} * 100%)`,
 				textWrap: "nowrap",
 			}}
@@ -298,6 +299,15 @@ const SatAmountBar: React.FC<ComponentProps> = ({
 		</div>
 	);
 };
+
+function channelRoboAvatarUrl(channel: OpenChannel): string {
+	const seed =
+		channel.channel_id?.trim() ||
+		channel.channel_point?.trim() ||
+		channel.label?.trim() ||
+		"channel"
+	return `https://robohash.org/${encodeURIComponent(seed)}.png?bgset=bg1`
+}
 
 const formatCryptoAmount = (amount: number): string => {
 	if (amount >= 1000000) {

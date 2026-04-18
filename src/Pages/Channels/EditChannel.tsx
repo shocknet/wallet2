@@ -74,75 +74,195 @@ export const EditChannel = ({ adminSource, selectedChannel, deselect }: { adminS
 	}
 
 	if (openModal === 'showPolicy') {
-		return <PromptForActionModal title="Channel Policy"
-			actionText="OK"
-			actionType={ActionType.NORMAL}
-			closeModal={() => { deselect() }}
-			action={() => { deselect() }}
-			jsx={<>
-				{selectedChannel.policy && <div>
-					<p>Base fee Msat: {selectedChannel.policy.base_fee_msat}</p>
-					<p>Fee rate Ppm: {selectedChannel.policy.fee_rate_ppm}</p>
-					<p>Max HTLC Msat: {selectedChannel.policy.max_htlc_msat}</p>
-					<p>Min HTLC Msat: {selectedChannel.policy.min_htlc_msat}</p>
-					<p>Time Lock Delta: {selectedChannel.policy.timelock_delta}</p>
-					<button onClick={e => { setOpenModal('updatePolocy') }}>EDIT POLICY</button>
-					<button onClick={e => { setOpenModal('closeChannel') }}>CLOSE CHANNEL</button>
-				</div>}
-				{!selectedChannel.policy && <div>No Policy found for channel</div>}
-			</>}
-		/>
+		return (
+			<PromptForActionModal
+				title="Channel Policy"
+				actionText="OK"
+				actionType={ActionType.NORMAL}
+				variant="lnpub"
+				closeModal={() => {
+					deselect();
+				}}
+				action={() => {
+					deselect();
+				}}
+				jsx={
+					<>
+						{selectedChannel.policy && (
+							<div className="lnpub-form-stack">
+								<p>Base fee (msat): {selectedChannel.policy.base_fee_msat}</p>
+								<p>Fee rate (ppm): {selectedChannel.policy.fee_rate_ppm}</p>
+								<p>Max HTLC (msat): {selectedChannel.policy.max_htlc_msat}</p>
+								<p>Min HTLC (msat): {selectedChannel.policy.min_htlc_msat}</p>
+								<p>Timelock delta: {selectedChannel.policy.timelock_delta}</p>
+								<div className="lnpub-inline-actions">
+									<button
+										type="button"
+										className="btn-lp-sm btn-lp-a"
+										onClick={() => {
+											setOpenModal("updatePolocy");
+										}}
+									>
+										Edit policy
+									</button>
+									<button
+										type="button"
+										className="btn-lp-sm btn-lp-b"
+										onClick={() => {
+											setOpenModal("closeChannel");
+										}}
+									>
+										Close channel
+									</button>
+								</div>
+							</div>
+						)}
+						{!selectedChannel.policy && <div>No policy found for this channel.</div>}
+					</>
+				}
+			/>
+		);
 	}
-	if (openModal === 'updatePolocy') {
-		return <PromptForActionModal title="Update Policy"
-			actionText="Update Policy"
-			actionType={ActionType.NORMAL}
-			closeModal={() => { setOpenModal('showPolicy') }}
-			action={() => { updatePolicy(); setOpenModal('showPolicy') }}
-			jsx={<>
-				{selectedChannel.policy && <div>
-					<div>
-						<label>Base Fee Msat:</label>
-						<input type="text" style={{ backgroundColor: 'black' }} placeholder="baseFeeMsat" value={baseFeeMsat} onChange={e => { setBaseFeeMsat(+e.target.value) }}></input>
-					</div>
-					<div>
-						<label>Fee Rate Ppm:</label>
-						<input type="text" style={{ backgroundColor: 'black' }} placeholder="feeRatePpm" value={feeRatePpm} onChange={e => { setFeeRatePpm(+e.target.value) }}></input>
-					</div>
-					<div>
-						<label>Max HTLC Msat:</label>
-						<input type="text" style={{ backgroundColor: 'black' }} placeholder="maxHtlcMsat" value={maxHtlcMsat} onChange={e => { setMaxHtlcMsat(+e.target.value) }}></input>
-					</div>
-					<div>
-						<label>Min HTLC Msat:</label>
-						<input type="text" style={{ backgroundColor: 'black' }} placeholder="minHtlcMsat" value={minHtlcMsat} onChange={e => { setMinHtlcMsat(+e.target.value) }}></input>
-					</div>
-					<div>
-						<label>Time Lock Delta:</label>
-						<input type="text" style={{ backgroundColor: 'black' }} placeholder="timeLockDelta" value={timeLockDelta} onChange={e => { setTimeLockDelta(+e.target.value) }}></input>
-					</div>
-				</div>}
-			</>}
-		/>
+	if (openModal === "updatePolocy") {
+		return (
+			<PromptForActionModal
+				title="Update Policy"
+				actionText="Update Policy"
+				actionType={ActionType.NORMAL}
+				variant="lnpub"
+				closeModal={() => {
+					setOpenModal("showPolicy");
+				}}
+				action={() => {
+					void updatePolicy();
+					setOpenModal("showPolicy");
+				}}
+				jsx={
+					selectedChannel.policy ? (
+						<div className="lnpub-form-stack">
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-base-fee">Base fee (msat)</label>
+								<input
+									id="lnpub-base-fee"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="base fee msat"
+									value={baseFeeMsat ?? ""}
+									onChange={(e) => {
+										setBaseFeeMsat(+e.target.value);
+									}}
+								/>
+							</div>
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-fee-rate">Fee rate (ppm)</label>
+								<input
+									id="lnpub-fee-rate"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="fee rate ppm"
+									value={feeRatePpm || ""}
+									onChange={(e) => {
+										setFeeRatePpm(+e.target.value);
+									}}
+								/>
+							</div>
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-max-htlc">Max HTLC (msat)</label>
+								<input
+									id="lnpub-max-htlc"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="max HTLC msat"
+									value={maxHtlcMsat || ""}
+									onChange={(e) => {
+										setMaxHtlcMsat(+e.target.value);
+									}}
+								/>
+							</div>
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-min-htlc">Min HTLC (msat)</label>
+								<input
+									id="lnpub-min-htlc"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="min HTLC msat"
+									value={minHtlcMsat || ""}
+									onChange={(e) => {
+										setMinHtlcMsat(+e.target.value);
+									}}
+								/>
+							</div>
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-timelock">Timelock delta</label>
+								<input
+									id="lnpub-timelock"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="timelock delta"
+									value={timeLockDelta || ""}
+									onChange={(e) => {
+										setTimeLockDelta(+e.target.value);
+									}}
+								/>
+							</div>
+						</div>
+					) : null
+				}
+			/>
+		);
 	}
-	if (openModal === 'closeChannel') {
-		return <PromptForActionModal title="Close Channel"
-			actionText={force ? "Force Close Channel" : "Close Channel"}
-			actionType={ActionType.NORMAL}
-			closeModal={() => { setOpenModal('showPolicy') }}
-			action={() => { closeChannel(); setOpenModal('showPolicy') }}
-			jsx={<>
-				<p>Are you sure you want to close the channel?</p>
-				{!force && <div>
-					<label >Sats per VByte:</label>
-					<input type="text" style={{ backgroundColor: 'black' }} placeholder="satPerVByte" value={satsPerVByte} onChange={e => { setSatsPerVByte(+e.target.value) }}></input>
-				</div>}
-				<div>
-					<label >Force:</label>
-					<Checkbox state={force} setState={(e) => { setForce(e.target.checked) }} id="forceClose" />
-				</div>
-			</>}
-		/>
+	if (openModal === "closeChannel") {
+		return (
+			<PromptForActionModal
+				title="Close Channel"
+				actionText={force ? "Force Close Channel" : "Close Channel"}
+				actionType={ActionType.NORMAL}
+				variant="lnpub"
+				closeModal={() => {
+					setOpenModal("showPolicy");
+				}}
+				action={() => {
+					void closeChannel();
+					setOpenModal("showPolicy");
+				}}
+				jsx={
+					<div className="lnpub-form-stack">
+						<p>Are you sure you want to close this channel?</p>
+						{!force && (
+							<div className="lnpub-form-row">
+								<label htmlFor="lnpub-close-sats-vb">Sats per vbyte</label>
+								<input
+									id="lnpub-close-sats-vb"
+									className="lnpub-input"
+									type="text"
+									inputMode="numeric"
+									placeholder="sats per vbyte"
+									value={satsPerVByte || ""}
+									onChange={(e) => {
+										setSatsPerVByte(+e.target.value);
+									}}
+								/>
+							</div>
+						)}
+						<div className="lnpub-form-row">
+							<label htmlFor="forceClose">Force close</label>
+							<Checkbox
+								state={force}
+								setState={(e) => {
+									setForce(e.target.checked);
+								}}
+								id="forceClose"
+							/>
+						</div>
+					</div>
+				}
+			/>
+		);
 	}
 
 	return null

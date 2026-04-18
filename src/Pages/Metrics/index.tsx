@@ -46,17 +46,19 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 
 	return (
 		<IonPage>
-			<IonRouterOutlet key={`metrics-subtree:${selectedId ?? "none"}`}>
-				<Route exact path={`${match.url}/select`} component={MetricsSelectSource} />
+			<div data-product="lnpub" data-theme="dark" style={{ display: "contents" }}>
+				<IonRouterOutlet key={`metrics-subtree:${selectedId ?? "none"}`}>
+					<Route exact path={`${match.url}/select`} component={MetricsSelectSource} />
 
-				<GuardedRoute exact path={match.url} component={Dashboard} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/earnings`} component={Earnings} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
-			</IonRouterOutlet>
+					<GuardedRoute exact path={match.url} component={Dashboard} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/earnings`} component={Earnings} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
+					<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
+				</IonRouterOutlet>
+			</div>
 		</IonPage>
 	);
 };

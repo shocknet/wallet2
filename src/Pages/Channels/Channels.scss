@@ -31,7 +31,7 @@
 
     & > .line {
       margin-block: 5px;
-      background: linear-gradient(60deg, #ff7700 0%, #c740c7 100%);
+      background: linear-gradient(90deg, var(--lp-a, #ff8a00), var(--lp-b, #f040f5));
       width: 100%;
       height: 1px;
       margin-inline: auto;
@@ -52,13 +52,22 @@
 
       & .avatar {
         display: flex;
-        gap: 5px;
+        gap: 8px;
         align-items: center;
+        min-width: 0;
         & > img {
           border-radius: 50%;
+          flex-shrink: 0;
+          width: 32px;
+          height: 32px;
+          object-fit: cover;
         }
         & > div {
           font-size: 12px;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
 
@@ -92,7 +101,7 @@
           gap: 5px;
 
           & > .sub-node {
-            color: #a012c7;
+            color: var(--lp-b, #f040f5);
             font-size: 11px;
             text-decoration: underline;
           }
@@ -146,5 +155,37 @@
     font-style: italic;
     text-align: center;
     margin-block-end: 10px;
+  }
+
+  &_open-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-block: 8px 16px;
+  }
+
+  &_error-callout {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    color: var(--ion-text-color, #fcfcfc);
+  }
+
+  &_error-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  &_error-body {
+    opacity: 0.9;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  &_error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }

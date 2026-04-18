@@ -16,8 +16,20 @@ interface Props {
 	actionText: string;
 	jsx?: ReactNode;
 	blur?: boolean;
+	/** Lightning.pub metrics dashboard styling (modal shell + actions). */
+	variant?: "default" | "lnpub";
 }
-export default function PromptForActionModal({ descriptionText, action, title, actionType, closeModal, actionText, blur, jsx }: Props) {
+export default function PromptForActionModal({
+	descriptionText,
+	action,
+	title,
+	actionType,
+	closeModal,
+	actionText,
+	blur: _blur,
+	jsx,
+	variant = "default",
+}: Props) {
 
 	const handleConfirm = () => {
 		action();
@@ -25,7 +37,11 @@ export default function PromptForActionModal({ descriptionText, action, title, a
 	}
 
 	const modalContent = (
-		<div className={styles["container"]}>
+		<div
+			className={classNames(styles["container"], {
+				[styles["container--lnpub"]]: variant === "lnpub",
+			})}
+		>
 			<div className={styles["modal-header"]}>
 				{title}
 			</div>
@@ -53,5 +69,13 @@ export default function PromptForActionModal({ descriptionText, action, title, a
 		</div>
 	)
 
-	return <Modal isShown={true} hide={closeModal} modalContent={modalContent} headerText={''} />
+	return (
+		<Modal
+			isShown={true}
+			hide={closeModal}
+			modalContent={modalContent}
+			headerText=""
+			variant={variant === "lnpub" ? "lnpub" : "default"}
+		/>
+	);
 }

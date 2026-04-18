@@ -1,5 +1,5 @@
-@import "/src/styles/modals.module";
-@import "/src/styles/buttons.module";
+@import "/src/styles/_modals.module";
+@import "/src/styles/_buttons.module";
 .container {
 	@include modal-wrapper;
 	.content-container {
@@ -36,6 +36,88 @@
 		}
 	}
 }
+
+.container--lnpub {
+	.modal-header {
+		position: relative;
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		margin-bottom: 6px;
+		padding-bottom: 14px;
+
+		&::after {
+			content: "";
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			height: 2px;
+			border-radius: 2px;
+			background: linear-gradient(90deg, var(--lp-a, #ff8a00), var(--lp-b, #f040f5));
+		}
+	}
+
+	.content-container {
+		padding-top: 8px;
+	}
+
+	.description {
+		text-align: left;
+		font-size: 14px;
+		line-height: 1.45;
+		color: color-mix(in srgb, var(--ion-text-color, #fff) 88%, transparent);
+	}
+
+	.action-buttons {
+		flex-direction: column-reverse;
+		gap: 10px;
+		margin-top: 4px;
+
+		.button {
+			width: 100%;
+			justify-content: center;
+			min-height: 44px;
+			border-radius: 10px;
+			font-weight: 600;
+			font-size: 15px;
+			text-transform: none;
+			transition: box-shadow 0.2s ease, filter 0.15s ease;
+		}
+
+		.cancel-button {
+			background: transparent;
+			border: 1px solid var(--lp-a, #ff8a00);
+			color: var(--lp-a, #ff8a00);
+		}
+
+		.cancel-button:hover {
+			box-shadow: 0 0 20px rgba(255, 138, 0, 0.22);
+		}
+
+		.normal {
+			background: linear-gradient(90deg, var(--lp-a, #ff8a00), var(--lp-b, #f040f5));
+			border: none;
+			color: #ffffff;
+		}
+
+		.normal:hover {
+			box-shadow: 0 0 20px rgba(255, 138, 0, 0.22);
+		}
+
+		.danger {
+			background: #f04437;
+			border: 1px solid #f04437;
+			color: #fff;
+		}
+
+		.danger:hover {
+			filter: brightness(1.06);
+			box-shadow: 0 0 16px rgba(240, 68, 55, 0.35);
+		}
+	}
+}
+
 .modal-wrapper {
 
 	&.blur {

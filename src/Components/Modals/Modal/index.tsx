@@ -14,12 +14,17 @@ export const Modal: FunctionComponent<ModalProps> = ({
   isShown,
   hide,
   modalContent,
+  variant = "default",
 }) => {
   const modal = (
     <React.Fragment>
       <Backdrop id="backdrop-background" onClick={hide} onTouchEnd={hide} />
       <Wrapper>
-        <StyledModal>
+        <StyledModal
+          $variant={variant}
+          data-product={variant === "lnpub" ? "lnpub" : undefined}
+          data-theme={variant === "lnpub" ? "dark" : undefined}
+        >
           <Content>{modalContent}</Content>
         </StyledModal>
       </Wrapper>
