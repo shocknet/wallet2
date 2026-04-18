@@ -311,13 +311,20 @@
 				left: 1px;
 				right: 1px;
 				bottom: 1px;
-				background: #16191c;
+				background: var(--ion-background-color);
 				z-index: -1;
 				border-radius: 4px;
 			}
 		}
 	}
 
+}
+
+/* Ionic `color="light"` on clear buttons uses the light palette as label color; on dark
+   card chrome that becomes low-contrast. Tie label color to theme text instead. */
+.dashboard-action-button {
+	--color: var(--ion-text-color);
+	font-weight: 600;
 }
 
 .column {
