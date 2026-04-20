@@ -14,26 +14,15 @@ import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
 import { nip19 } from "nostr-tools";
 
 
-import { useAppSelector } from "@/State/store/hooks";
+import { publishNodeBeacon } from "@/helpers/remoteBackups";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 const Manage = () => {
 	const router = useIonRouter();
-
-	const [isShowQuestion, setIsShowQuestion] = useState<boolean>(false);
-	const [isRevealed, setIsRevealed] = useState<boolean>(false);
-	const [seed, setSeed] = useState<string[]>([])
-	const [nodeName, setNodeName] = useState<string>("");
-	const [specificNostr, setSpecificNostr] = useState<string>("");
-	const [isNodeDiscover, setIsNodeDiscover] = useState<boolean>(true);
-	const [isDefaultManage, setIsDefaultManage] = useState<boolean>(true);
-	const [isAutoService, setIsAutoService] = useState<boolean>(true);
-	const [isRecoveryKey, setIsRecoveryKey] = useState<boolean>(true);
-
-	const [error, setError] = useState<string | null>(null);
-	const [presentLoading, dismissLoading] = useIonLoading();
-
+	const dispatch = useAppDispatch();
 
 	const admins = useAppSelector(selectAdminNprofileViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
@@ -41,6 +30,20 @@ const Manage = () => {
 		() => admins.find(a => a.sourceId === selectedId),
 		[admins, selectedId]
 	)!;
+
+	const [isShowQuestion, setIsShowQuestion] = useState<boolean>(false);
+	const [isRevealed, setIsRevealed] = useState<boolean>(false);
+	const [seed, setSeed] = useState<string[]>([])
+	const [nodeName, setNodeName] = useState<string>(() => adminSource.beaconName || adminSource.label || "");
+	const [specificNostr, setSpecificNostr] = useState<string>("");
+	const [isNodeDiscover, setIsNodeDiscover] = useState<boolean>(true);
+	const [isDefaultManage, setIsDefaultManage] = useState<boolean>(true);
+	const [isAutoService, setIsAutoService] = useState<boolean>(true);
+	const [isRecoveryKey, setIsRecoveryKey] = useState<boolean>(true);
+	const [isSaving, setIsSaving] = useState<boolean>(false);
+
+	const [error, setError] = useState<string | null>(null);
+	const [presentLoading, dismissLoading] = useIonLoading();
 
 	const seeditems: string[] = [
 		"albert",
@@ -134,8 +137,54 @@ const Manage = () => {
 		</React.Fragment>
 	);
 
-	const onDone = () => {
-		router.push("/metrics", "back")
+	const onDone = async () => {
+		setError(null);
+
+		const trimmedNodeName = nodeName.trim();
+		const publishedNodeName = adminSource.beaconName?.trim() ?? "";
+
+		if (trimmedNodeName === publishedNodeName) {
+			router.push("/metrics", "back");
+			return;
+		}
+
+		if (!trimmedNodeName) {
+			const msg = "Node name cannot be empty";
+			setError(msg);
+			toast.error(<Toast title="Manage Error" message={msg} />);
+			return;
+		}
+
+		setIsSaving(true);
+		await dismissLoading();
+		await presentLoading({ message: "Saving node settings..." });
+
+		try {
+			const createdAtUnix = await publishNodeBeacon({
+				pubkey: adminSource.lpk,
+				relays: adminSource.relays,
+				keys: adminSource.keys,
+				name: trimmedNodeName,
+			});
+
+			dispatch(
+				sourcesActions.recordBeaconForSource({
+					sourceId: adminSource.sourceId,
+					name: trimmedNodeName,
+					seenAtMs: createdAtUnix * 1000,
+				})
+			);
+			setNodeName(trimmedNodeName);
+			router.push("/metrics", "back");
+		} catch (e) {
+			console.error(e);
+			const msg = e instanceof Error ? e.message : "Failed to save node settings";
+			setError(msg);
+			toast.error(<Toast title="Manage Error" message={msg} />);
+		} finally {
+			setIsSaving(false);
+			await dismissLoading();
+		}
 	}
 	return (
 		<IonPage className="ion-page-width">
@@ -159,9 +208,8 @@ const Manage = () => {
 							<div className="line" />
 						</div>
 						<div className="input-group">
-							<div className="bg-over"></div>
 							<span>Node name, seen by wallet users (Nostr):</span>
-							<input type="text" placeholder="Nodey McNodeFace" value={nodeName} onChange={(e) => { setNodeName(e.target.value) }} />
+							<input type="text" placeholder="Nodey McNodeFace" value={nodeName} disabled={isSaving} onChange={(e) => { setNodeName(e.target.value) }} />
 						</div>
 						<div className="checkbox">
 							<div className="bg-over"></div>
@@ -267,7 +315,7 @@ const Manage = () => {
 							{isRevealed ? "Click to hide seed" : "Click to reveal seed"}
 						</div>
 					</div>
-					<button onClick={onDone} className="Manage_save">
+					<button onClick={() => void onDone()} className="Manage_save" disabled={isSaving}>
 						Done
 					</button>
 					<div className="Manage_footer">

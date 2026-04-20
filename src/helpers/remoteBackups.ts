@@ -1,6 +1,9 @@
+import { hexToBytes } from "@noble/hashes/utils";
+import { finalizeEvent } from "nostr-tools";
 import logger from "../Api/helpers/logger"
 import { getNip78Event, newNip78Event, publishNostrEvent, pubServiceTag } from "../Api/nostrHandler"
 import { getDeviceId } from "../constants"
+import { NostrKeyPair } from "../lib/regex";
 import { getSanctumNostrExtention } from "./nip07Extention"
 
 export const fetchRemoteBackup = async (dTag?: string): Promise<{ result: 'accessTokenMissing' } | { result: 'success', decrypted: string }> => {
@@ -147,4 +150,35 @@ export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Pr
         name: data.name
     }
 
+}
+
+export const publishNodeBeacon = async ({
+    pubkey,
+    relays,
+    keys,
+    name,
+}: {
+    pubkey: string;
+    relays: string[];
+    keys: NostrKeyPair;
+    name: string;
+}): Promise<number> => {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+        throw new Error("Node name cannot be empty");
+    }
+    if (relays.length === 0) {
+        throw new Error("Cannot publish node name without any relays");
+    }
+
+    const beaconEvent = newNip78Event(
+        JSON.stringify({ type: "service", name: trimmedName }),
+        pubkey,
+        pubServiceTag
+    );
+    const signed = finalizeEvent(beaconEvent, hexToBytes(keys.privateKey));
+
+    await publishNostrEvent(signed, relays);
+    return signed.created_at;
 }
