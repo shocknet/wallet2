@@ -14,24 +14,35 @@ import {
 	IonIcon,
 	useIonLoading,
 } from "@ionic/react";
-import { ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPublicKey, nip19 } from "nostr-tools";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { IdentityKeys, IdentityType } from "@/State/identitiesRegistry/types";
+import { IdentityExtension, IdentityKeys, IdentityType } from "@/State/identitiesRegistry/types";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { getNostrExtensionIdentityApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
-import { chevronBackOutline, cloudUploadOutline, keyOutline } from "ionicons/icons";
+import { chevronBackOutline, cloudUploadOutline, extensionPuzzleOutline, keyOutline } from "ionicons/icons";
 import { BackupKeysDialog, DecryptFileDialog, DownloadFileBackupDialog } from "@/Components/Modals/DialogeModals";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { downloadNsecBackup, importBackupFileText } from "@/lib/file-backup";
 import { getSourcesFromLegacyFileBackup, SourceToMigrate } from "@/State/identitiesRegistry/helpers/migrateToIdentities";
 import { normalizeWsUrl } from "@/lib/url";
+import { NOSTR_RELAYS } from "@/constants";
 
 
 const defaultRelay = normalizeWsUrl("wss://relay.lightning.pub");
+
+type Nip07Probe = "absent" | "unsupported" | "ready";
+
+function readNip07ExtensionState(): Nip07Probe {
+	const w = window as unknown as { nostr?: { nip44?: unknown; nip04?: unknown } };
+	if (!w?.nostr) return "absent";
+	if (w.nostr.nip44 || w.nostr.nip04) return "ready";
+	return "unsupported";
+}
 
 const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
 	const [generatedPrivKey, setGeneratedPrivKey] = useState("");
@@ -64,7 +75,23 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const [nip07Probe, setNip07Probe] = useState<Nip07Probe>(() => readNip07ExtensionState());
 
+	const probeNip07 = useCallback(() => {
+		setNip07Probe(readNip07ExtensionState());
+	}, []);
+
+	useEffect(() => {
+		probeNip07();
+		window.addEventListener("focus", probeNip07);
+		const interval = window.setInterval(probeNip07, 600);
+		const clearIntervalTimer = window.setTimeout(() => window.clearInterval(interval), 8000);
+		return () => {
+			window.clearInterval(interval);
+			window.clearTimeout(clearIntervalTimer);
+			window.removeEventListener("focus", probeNip07);
+		};
+	}, [probeNip07]);
 
 
 	const parsedPriv = useMemo(() => {
@@ -91,6 +118,50 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 
 	}
 
+	const completeIdentityCreation = useCallback(
+		async (identity: IdentityKeys | IdentityExtension, sources?: SourceToMigrate[]) => {
+			await presentLoading({
+				message: "Creating identity...",
+			});
+			try {
+				const { foundBackup } = await dispatch(createIdentity(identity, sources));
+				await dismissLoading();
+				if (foundBackup) {
+					router.push("/sources", "root", "replace");
+				} else {
+					router.push("/identity/bootstrap", "root", "replace");
+				}
+			} catch (err: any) {
+				await dismissLoading();
+				showToast({
+					color: "warning",
+					message: err?.message || "An error occured when creating the identity",
+				});
+			}
+		},
+		[dispatch, router, showToast, presentLoading, dismissLoading]
+	);
+
+	const handleUseNip07Extension = useCallback(async () => {
+		try {
+			const ext = await getNostrExtensionIdentityApi();
+			const pubkey = await ext.getPublicKey();
+			const identity: IdentityExtension = {
+				type: IdentityType.NIP07,
+				pubkey,
+				label: "Nostr extension",
+				createdAt: Date.now(),
+				relays: NOSTR_RELAYS.map(normalizeWsUrl),
+			};
+			await completeIdentityCreation(identity);
+		} catch (err: any) {
+			showToast({
+				color: "warning",
+				message: err?.message || "Could not use the Nostr extension",
+			});
+		}
+	}, [completeIdentityCreation, showToast]);
+
 	const addSource = useCallback(async (privateKey: string, sources?: SourceToMigrate[]) => {
 
 		let pubkey;
@@ -110,35 +181,11 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 			createdAt: Date.now()
 		}
 
-		await presentLoading({
-			message: "Creating identity...",
-		});
-
-		try {
-			const { foundBackup } = await dispatch(createIdentity(identity, sources));
-			await dismissLoading();
-
-
-			if (foundBackup) {
-				router.push("/sources", "root", "replace");
-
-			} else {
-				router.push("/identity/bootstrap", "root", "replace");
-			}
-		} catch (err: any) {
-			await dismissLoading();
-			showToast({
-				color: "warning",
-				message: err?.message || "An error occured when creating the identity"
-			})
-			return;
-		}
+		await completeIdentityCreation(identity, sources);
 
 
 
-
-
-	}, [dispatch, router, showToast, presentLoading, dismissLoading]);
+	}, [completeIdentityCreation]);
 
 
 	const handleBackupFileDownload = useCallback(async (passphrase: string, privateKey: string) => {
@@ -267,6 +314,35 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 								<IonIcon icon={keyOutline} className="text-8xl" style={{ color: "var(--ion-text-color-step-200)" }} />
 							</div>
 						</section>
+						{nip07Probe === "ready" && (
+							<section className="main-block w-full max-w-[500px] self-center">
+								<IonButton
+									className="pill-button"
+									expand="full"
+									size="large"
+									shape="round"
+									onClick={handleUseNip07Extension}
+								>
+									<IonIcon icon={extensionPuzzleOutline} slot="start" />
+									Continue with browser extension
+								</IonButton>
+								<IonText className="block text-sm text-low ion-text-center ion-margin-top">
+									Uses your Nostr extension for signing; relays use the app default list.
+								</IonText>
+							</section>
+						)}
+						{nip07Probe === "unsupported" && (
+							<section className="main-block w-full max-w-[500px] self-center">
+								<IonText className="block text-sm text-low ion-text-center">
+									A Nostr extension is present but does not expose NIP-04 or NIP-44, which this app needs for encrypted sync.
+								</IonText>
+							</section>
+						)}
+						{(nip07Probe === "ready" || nip07Probe === "unsupported") && (
+							<section className="main-block self-center">
+								<div className="text-low text-lg font-semibold my-9">or</div>
+							</section>
+						)}
 						<section className="main-block flex flex-col justify-center w-full max-w-[500px] self-center">
 							<div className="flex w-full justify-center items-center gap-1">
 								<div className="w-3 flex-shrink-0">
@@ -302,9 +378,7 @@ const CreateKeysIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComp
 
 						</section>
 						<section className="main-block self-center">
-							<div className="text-low text-lg font-semibold my-9">
-								or
-							</div>
+							<div className="text-low text-lg font-semibold my-9">or</div>
 						</section>
 						<section className="main-block w-full max-w-[500px] self-center">
 							<div className="flex w-full justify-center items-center gap-1">
