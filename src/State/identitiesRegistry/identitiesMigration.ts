@@ -68,15 +68,12 @@ export const migrateDeviceToIdentities = (): AppThunk<Promise<void>> => async (d
 		const ext = await getNostrExtensionIdentityApi();
 		const pubkey = await ext.getPublicKey();
 
-
-		const relays = ext.getRelays().catch(() => null);
-
 		const identity: IdentityExtension = {
 			type: IdentityType.NIP07,
 			pubkey,
 			label: "My Nostr Extension Identity",
 			createdAt: Date.now(),
-			relays: relays ? Object.keys(relays).map(normalizeWsUrl) : NOSTR_RELAYS.map(normalizeWsUrl)
+			relays: NOSTR_RELAYS.map(normalizeWsUrl),
 		};
 		await dispatch(createIdentity(identity, sources));
 	} else {

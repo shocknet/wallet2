@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 import { NostrKeyPair } from "@/Api/nostrHandler";
 import { tsFilesWrapper } from "@/Components/Toast";
 import { hexToBytes } from "@noble/hashes/utils";
-import { SANCTUM_URL } from "@/constants";
+import { NOSTR_RELAYS, SANCTUM_URL } from "@/constants";
+import { normalizeWsUrl } from "@/lib/url";
 import { Identity, IdentityType } from "../types";
 
 
@@ -21,7 +22,18 @@ export interface IdentityNostrApi {
 
 
 
-export async function getNostrExtensionIdentityApi(pubkey?: string): Promise<IdentityNostrApi> {
+function relaysToRecord(urls: string[]): Record<string, { read: boolean; write: boolean }> {
+	return urls.reduce((acc: Record<string, { read: boolean; write: boolean }>, r) => {
+		acc[r] = { read: true, write: true };
+		return acc;
+	}, {});
+}
+
+/** Extension is used for signing / NIP-04|44; relay list comes from the app identity, not the extension. */
+export async function getNostrExtensionIdentityApi(
+	pubkey?: string,
+	relayUrls?: string[]
+): Promise<IdentityNostrApi> {
 	const w = window as any
 	if (!w || !w.nostr) throw new Error("No nostr extension is installed on this browser");
 	const ext = w.nostr;
@@ -35,12 +47,13 @@ export async function getNostrExtensionIdentityApi(pubkey?: string): Promise<Ide
 		throw new Error("Identity does not match this Nostr Extension profile");
 	}
 
+	const urls = relayUrls?.length ? relayUrls : NOSTR_RELAYS.map(normalizeWsUrl);
 
 	return {
 		...ext,
 		decrypt: (pubkey, ciphertext) => nipx4.decrypt(pubkey, ciphertext),
 		encrypt: (pubkey, plaintext) => nipx4.encrypt(pubkey, plaintext),
-		getRelays: async () => ({} as Record<string, { read: boolean; write: boolean }>)
+		getRelays: async () => relaysToRecord(urls),
 	}
 }
 
@@ -119,7 +132,7 @@ export default async function getIdentityNostrApi(identity: Identity) {
 		case IdentityType.SANCTUM:
 			return getSanctumIdentityApi({ pubkey: identity.pubkey, accessToken: identity.accessToken });
 		case IdentityType.NIP07:
-			return getNostrExtensionIdentityApi(identity.pubkey);
+			return getNostrExtensionIdentityApi(identity.pubkey, identity.relays);
 		default:
 			return getLocalKeysIdentityApi({ publicKey: identity.pubkey, privateKey: identity.privkey }, identity.relays);
 	}
