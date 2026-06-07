@@ -108,6 +108,12 @@ export const useWatchClipboard = () => {
 
 		const handleYes = async () => {
 			try {
+				// Noffer needs spend-source keys to fetch invoices — Send parses with selectedSource
+				if (classification === InputClassification.NOFFER) {
+					history.push({ pathname: "/send", state: { input: value } });
+					return;
+				}
+
 				const parsed = await parseBitcoinInput(value, classification);
 
 
@@ -130,7 +136,6 @@ export const useWatchClipboard = () => {
 				history.push({
 					pathname: "/send",
 					state: {
-						// pass the input string as opposed to parsed object because in the case of noffer it needs the selected source
 						input: parsed.data
 					}
 				});
