@@ -24,16 +24,34 @@ export type SanctumNostrExtention = EncryptionCalls & {
     valid: true
 }
 type InvalidExtention = { valid: false }
-export const getNostrExtention = (): NostrExtention | null => {
+const getNostrExtention = (): NostrExtention | null => {
     const w = window as any
-    if (!w || !w.nostr) {
+    if (!w || !w.nostr || !w.nostr.getPublicKey) {
         return null
     }
     return w.nostr as NostrExtention
 }
 
+type GetWithRetriesOptions = {
+    maxRetries?: number
+    delayMs?: number
+}
+
+export const getExtentionsWithRetries = async ({ maxRetries = 5, delayMs = 200 }: GetWithRetriesOptions = {}): Promise<NostrExtention | null> => {
+    let attempts = 0
+    while (attempts < maxRetries) {
+        const ext = getNostrExtention()
+        if (ext) {
+            return ext
+        }
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+        attempts++
+    }
+    return null
+}
+
 export const getSanctumNostrExtention = async (): Promise<SanctumNostrExtention | InvalidExtention> => {
-    const ext = getNostrExtention()
+    const ext = await getExtentionsWithRetries()
     if (ext && (ext.nip44 || ext.nip04)) {
         const nipx4 = (ext.nip44 || ext.nip04)!
         return {
