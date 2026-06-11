@@ -56,10 +56,11 @@ export async function getNostrExtensionIdentityApi(
 	const urls = relayUrls?.length ? relayUrls : NOSTR_RELAYS.map(normalizeWsUrl);
 
 	return {
-		...ext,
 		decrypt: (pubkey, ciphertext) => nipx4.decrypt(pubkey, ciphertext),
 		encrypt: (pubkey, plaintext) => nipx4.encrypt(pubkey, plaintext),
 		getRelays: async () => relaysToRecord(urls),
+		getPublicKey: async () => ext.getPublicKey(),
+		signEvent: async (event) => ext.signEvent(event),
 	}
 }
 

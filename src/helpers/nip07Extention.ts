@@ -26,7 +26,7 @@ export type SanctumNostrExtention = EncryptionCalls & {
 type InvalidExtention = { valid: false }
 const getNostrExtention = (): NostrExtention | null => {
     const w = window as any
-    if (!w || !w.nostr || !w.nostr.getPublicKey) {
+    if (!w || !w.nostr || !w.nostr.getPublicKey || typeof w.nostr.getPublicKey !== 'function') {
         return null
     }
     return w.nostr as NostrExtention
@@ -46,6 +46,7 @@ export const getExtentionsWithRetries = async ({ maxRetries = 5, delayMs = 200 }
         }
         await new Promise(resolve => setTimeout(resolve, delayMs))
         attempts++
+        console.log(`Attempt ${attempts} of ${maxRetries} to get nostr extension`)
     }
     return null
 }
