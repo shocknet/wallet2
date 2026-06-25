@@ -1,15 +1,12 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import { registerRootLifecycle } from './State/runtime/lifecycle';
-import { initLocalNotifications } from './notifications/local/local-notifications';
-import { initPushNotifications } from './notifications/push/init';
+import bootstrapShockwallet from './bootstrap';
 
-registerRootLifecycle();
 
-initPushNotifications();
-initLocalNotifications();
 
+
+bootstrapShockwallet();
 
 
 const container = document.getElementById('root');
