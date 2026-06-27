@@ -16,29 +16,29 @@ const LnurlInfoDisplay = ({ lnurlData, inset, labelsColor }: Props) => {
 			<IonList inset={inset}>
 				<IonItem>
 					<IonLabel>
-						<IonText className="text-medium">
+						<IonText className="text-secondary">
 							Amount Range
 						</IonText>
 					</IonLabel>
-					<IonText className="text-low">{lnurlData.min.toLocaleString()} - {lnurlData.max.toLocaleString()} sats</IonText>
+					<IonText className="text-muted">{lnurlData.min.toLocaleString()} - {lnurlData.max.toLocaleString()} sats</IonText>
 				</IonItem>
 				{lnurlData.identifier && (
 					<IonItem>
 						<IonLabel color={labelsColor}>
-							<IonText className="text-medium">
+							<IonText className="text-secondary">
 								Identifier
 							</IonText>
 						</IonLabel>
-						<IonText className="text-low">{lnurlData.identifier}</IonText>
+						<IonText className="text-muted">{lnurlData.identifier}</IonText>
 					</IonItem>
 				)}
 				{lnurlData.description && (
 					<IonItem >
 						<IonLabel>
-							<IonText className="text-medium">
+							<IonText className="text-secondary">
 								Description
 							</IonText>
-							<IonNote style={{ display: "block" }} className="ion-text-wrap text-low ion-margin-top">{lnurlData.description}</IonNote>
+							<IonNote style={{ display: "block" }} className="ion-text-wrap text-muted ion-margin-top">{lnurlData.description}</IonNote>
 						</IonLabel>
 					</IonItem>
 				)}
@@ -46,7 +46,7 @@ const LnurlInfoDisplay = ({ lnurlData, inset, labelsColor }: Props) => {
 					<IonItem onClick={() => setExpandImage(true)} button>
 						<IonLabel>
 							Image
-							<IonNote style={{ display: "block", fontSize: "0.7rem" }} className="text-low">(Tap to expand)</IonNote>
+							<IonNote style={{ display: "block", fontSize: "0.7rem" }} className="text-muted">(Tap to expand)</IonNote>
 						</IonLabel>
 						<IonThumbnail>
 							<img src={lnurlData.image} alt="LNURL Pay Merchant" />

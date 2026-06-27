@@ -15,7 +15,7 @@ const FullSpinner = ({ message }: Props) => {
 			<IonSpinner name="crescent" />
 			{
 				message &&
-				<h2 className="text-high" style={{ marginTop: "4rem" }}>{message}</h2>
+				<h2 className="text-primary" style={{ marginTop: "4rem" }}>{message}</h2>
 			}
 
 		</div>

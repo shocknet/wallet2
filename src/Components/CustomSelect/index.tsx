@@ -59,7 +59,7 @@ export function CustomSelect<T>({
 				onClick={() => setIsOpen(true)}
 				className="
 					custom-select-ion-item-button
-					[--background:var(--ion-color-light)]
+					[--background:var(--ion-color-surface)]
 					[--border-color:var(--ion-background-color-step-500, gray)]
 					border-b
 					border-b-[var(--ion-background-color-step-500)]
@@ -83,14 +83,14 @@ export function CustomSelect<T>({
 
 
 			<IonModal isOpen={isOpen} onDidDismiss={() => setIsOpen(false)} id="alert-select-modal">
-				<div className="bg-[var(--ion-color-light)]">
+				<div className="bg-[var(--app-surface)]">
 					<div className="px-5 pb-4 pt-5">
 						{
-							title && <h2 className="m-0 font-medium text-medium text-xl">{title}</h2>
+							title && <h2 className="m-0 font-medium text-secondary text-xl">{title}</h2>
 						}
 
 						{subTitle && (
-							<h3 className="m-0 font-normal text-low text-base">{subTitle}</h3>
+							<h3 className="m-0 font-normal text-muted text-base">{subTitle}</h3>
 						)}
 					</div>
 					<div className="max-h-[min(25vh,240px)] overflow-y-auto overscroll-contain">
@@ -119,7 +119,7 @@ export function CustomSelect<T>({
 					</div>
 				</div>
 				<IonFooter className="ion-no-border" >
-					<IonToolbar color="light">
+					<IonToolbar color="surface">
 						<IonButtons slot="end">
 							<IonButton color="medium" onClick={() => setIsOpen(false)}>Cancel</IonButton>
 						</IonButtons>

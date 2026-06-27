@@ -304,13 +304,13 @@ const Home = () => {
 			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
 				<div className={styles["toolbar"]}>
 					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
+						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
 							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
 							Receive
 						</IonButton>
 					</div>
 					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
+						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
 							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
 							Send
 						</IonButton>
