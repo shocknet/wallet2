@@ -19,10 +19,12 @@ import {
 	IonFooter,
 	useIonViewDidEnter,
 	useIonModal,
+	IonBackButton,
 } from "@ionic/react";
-import { closeOutline, key, pencil } from "ionicons/icons";
+import { chevronBackOutline, closeOutline, key, pencil } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { identitiesRegistryActions, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { useGetProfileQuery } from "@/State/api/api";
 import { nip19 } from "nostr-tools";
 import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
@@ -93,7 +95,7 @@ const IdentityOverviewPage = () => {
 	);
 
 	const [presentKeysBackup, dismissKeysBackup] = useIonModal(
-		<BackupKeysDialog dismiss={(data: undefined, role: "cancel" | "file" | "confirm") => dismissKeysBackup(data, role)} privKey={registry.type === IdentityType.LOCAL_KEY ? registry.privkey : ""} />
+		<BackupKeysDialog dismiss={(data: undefined, role: "cancel" | "file" | "confirm") => dismissKeysBackup(data, role)} privKey={registry.type === IdentityType.LOCAL_KEY ? registry.privateKey : ""} />
 	);
 	const [presentFileBackup, dismissFileBackup] = useIonModal(
 		<DownloadFileBackupDialog
@@ -125,7 +127,7 @@ const IdentityOverviewPage = () => {
 							if (event.detail.role === "cancel") return;
 							if (event.detail.role === "confirm") {
 								if (registry.type === IdentityType.LOCAL_KEY)
-									handleBackupFileDownload(event.detail.data.passphrase, registry.privkey);
+									handleBackupFileDownload(event.detail.data.passphrase, registry.privateKey);
 
 							}
 						},
@@ -171,13 +173,49 @@ const IdentityOverviewPage = () => {
 
 	return (
 		<IonPage className="ion-page-width">
-			<HomeHeader>
+			<IonHeader className="ion-no-border">
 				<IonToolbar>
-					<IonTitle className="android-centered-title">
-						Profile
+					<IonButtons slot="start">
+						<IonBackButton icon={chevronBackOutline} defaultHref="/identity/create" />
+					</IonButtons>
+					<IonTitle>
+						Accounts / Active
 					</IonTitle>
 				</IonToolbar>
-			</HomeHeader>
+				<div className="flex items-start justify-center gap-4 py-4">
+					<IonAvatar aria-hidden="true" className="size-32 shrink-0 rounded-full object-cover">
+						{isLoading ? (
+							<IonSkeletonText
+								animated
+								className="w-full aspect-square"
+							/>
+						) : (
+							<img
+								src={picture}
+								alt=""
+								referrerPolicy="no-referrer"
+								onError={(e) => {
+									const el = e.currentTarget as HTMLImageElement;
+									if (!/robohash/.test(el.src) && activeHex) {
+										el.src = `https://robohash.org/${activeHex}.png?bgset=bg1`;
+									}
+								}}
+							/>
+						)}
+					</IonAvatar>
+					<div className="flex flex-col justify-start">
+						<div className="text-primary ion-text-wrap font-bold tracking-tight ion-text-justify">
+							{displayName}
+						</div>
+						<div className="flex items-center gap-1 p-0">
+							<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
+							<div className="text-muted font-medium ion-text-justify code-string">
+								{truncateTextMiddle(npub, 6, 6)}
+							</div>
+						</div>
+					</div>
+				</div>
+			</IonHeader>
 
 			<IonContent className="ion-padding">
 				<div className="page-outer">
@@ -208,12 +246,12 @@ const IdentityOverviewPage = () => {
 							</div>
 
 							<div className="flex flex-col items-start">
-								<div className="text-high text-left font-semibold text-xl">
+								<div className="text-primary text-left font-semibold text-xl">
 									{displayName}
 								</div>
 
 								<div className="flex flex-row flex-wrap items-center justify-center gap-2 mt-1">
-									<IonText className="text-medium ion-text-wrap text-weight-medium ion-text-justify code-string">
+									<IonText className="text-secondary ion-text-wrap text-weight-medium ion-text-justify code-string">
 										{truncateTextMiddle(npub, 6, 6)}
 									</IonText>
 									<CopyMorphButton shape="round" size="small" value={npub} fill="clear" />
@@ -229,11 +267,11 @@ const IdentityOverviewPage = () => {
 								{/* RELAYS */}
 								{relays.length !== 0 && (
 									<>
-										<dt className="text-high text-lg text-center sm:text-left sm:pr-2">
+										<dt className="text-primary text-lg text-center sm:text-left sm:pr-2">
 											Backup/Sync Relays:
 										</dt>
 
-										<dd className="text-md pt-1 text-low  leading-snug break-all text-center sm:text-left">
+										<dd className="text-md pt-1 text-muted  leading-snug break-all text-center sm:text-left">
 											{relays.map(r => (
 												<div key={r}>{r}</div>
 											))}
@@ -244,11 +282,11 @@ const IdentityOverviewPage = () => {
 								{/* ADMIN */}
 								{adminSource && (
 									<>
-										<dt className="text-high text-lg text-center sm:text-left  sm:pr-2">
+										<dt className="text-primary text-lg text-center sm:text-left  sm:pr-2">
 											Administrator of:
 										</dt>
 
-										<dd className="text-low pt-1  leading-snug break-all text-center sm:text-left">
+										<dd className="text-muted pt-1  leading-snug break-all text-center sm:text-left">
 											{truncateTextMiddle(
 												nip19.nprofileEncode({
 													pubkey: adminSource.lpk,
@@ -294,7 +332,7 @@ const IdentityOverviewPage = () => {
 						<IonToolbar>
 
 							<IonTitle>
-								<span className="text-medium">
+								<span className="text-secondary">
 
 									Edit Identity
 								</span>
@@ -316,7 +354,7 @@ const IdentityOverviewPage = () => {
 
 							>
 
-								<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+								<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 									<IonLabel >Relays</IonLabel>
 									{
 										isEditingRelays
@@ -339,7 +377,7 @@ const IdentityOverviewPage = () => {
 										)
 										: relays.map(r => (
 											<IonItem key={r}>
-												<IonText className="text-medium text-weight-medium" style={{ textDecoration: "underline" }}>
+												<IonText className="text-secondary text-weight-medium" style={{ textDecoration: "underline" }}>
 													{r}
 												</IonText>
 											</IonItem>
@@ -366,7 +404,7 @@ const IdentityOverviewPage = () => {
 			</IonContent>
 			<IonFooter className="ion-no-border">
 				<div className="flex justify-center pb-3">
-					<div className="text-medium font-semibold text-lg">
+					<div className="text-secondary font-semibold text-lg">
 						{getIdentityTypeText(registry.type)}
 					</div>
 				</div>
@@ -420,7 +458,7 @@ export function IdentityStatGrid({
 							<div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "center" }}>
 
 								<IonText className="text-weight-high text-lg">{sourcesCount}</IonText>
-								<IonText className="text-medium text-low">configured</IonText>
+								<IonText className="text-secondary text-muted">configured</IonText>
 							</div>
 						</IonCardContent>
 					</IonCard>
@@ -475,7 +513,7 @@ export function IdentityStatGrid({
 								<div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "center" }}>
 
 									<IonText className="text-weight-high text-lg">{relaysCount}</IonText>
-									<IonText className="text-medium text-low">configured</IonText>
+									<IonText className="text-secondary text-muted">configured</IonText>
 								</div>
 							</IonCardContent>
 						</IonCard>

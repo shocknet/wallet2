@@ -1,5 +1,5 @@
 import { LnAddrView, NprofileView, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import {
 	IonModal,
 	IonHeader,
@@ -213,7 +213,7 @@ const Inner = ({
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>
-						<span className={classNames("text-medium", styles["modal-header"])}>
+						<span className={classNames("text-secondary", styles["modal-header"])}>
 							<IonIcon style={{ marginRight: "0.4rem" }} icon={pencilOutline} />
 							Edit Source
 						</span>
@@ -289,7 +289,7 @@ const Inner = ({
 							</IonItem>
 							<IonItem lines="none" className="ion-margin-top">
 								<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
-									<IonText className="text-medium">ndebit discoverable</IonText>
+									<IonText className="text-secondary">ndebit discoverable</IonText>
 								</IonToggle>
 							</IonItem>
 						</>
@@ -308,7 +308,7 @@ const Inner = ({
 							style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 
 						>
-							<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+							<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 								<IonLabel >Relays</IonLabel>
 								{
 									isEditingRelays
@@ -338,7 +338,7 @@ const Inner = ({
 									)
 									: relays.map(r => (
 										<IonItem key={r}>
-											<IonText className="text-medium text-weight-medium" style={{ textDecoration: "underline" }}>
+											<IonText className="text-secondary text-weight-medium" style={{ textDecoration: "underline" }}>
 												{r}
 											</IonText>
 										</IonItem>

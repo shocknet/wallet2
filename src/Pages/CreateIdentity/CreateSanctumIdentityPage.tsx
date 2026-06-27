@@ -1,98 +1,88 @@
 import {
-	IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+	IonPage, IonHeader, IonToolbar, IonContent,
 	useIonRouter,
 	IonButtons,
 	IonBackButton,
-	IonText,
-
-	useIonLoading
+	useIonLoading,
+	IonFooter,
 } from "@ionic/react";
-import { SANCTUM_URL } from "../../constants";
-import { toast } from "react-toastify";
-import Toast from "../../Components/Toast";
-import SanctumBox from '../../Components/SanctumBox';
-import { useAppDispatch } from '@/State/store/hooks';
+import { useRef } from "react";
+import type { TokensData } from "sanctum-sdk";
+import { useAppDispatch } from "@/State/store/hooks";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
-import { IdentitySanctum, IdentityType } from "@/State/identitiesRegistry/types";
-import { getSanctumIdentityApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useToast } from "@/lib/contexts/useToast";
 import { RouteComponentProps } from "react-router";
 import { chevronBackOutline } from "ionicons/icons";
+import { SanctumAuthWidget } from "@/Components/SanctumAuthWidget";
+import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
+import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
+import { useEventCallback } from "@/lib/hooks/useEventCallbck/useEventCallback";
 
 
 
 const CreateSanctumIdentityPage: React.FC<RouteComponentProps> = (_props: RouteComponentProps) => {
-	const dispatch = useAppDispatch()
+	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 	const router = useIonRouter();
 	const [presentLoading, dismissLoading] = useIonLoading();
+	const authHandledRef = useRef(false);
 
+	const onAuthenticated = useEventCallback(
+		async (tokensData: TokensData) => {
+			if (authHandledRef.current) return;
+			authHandledRef.current = true;
+			try {
+				await presentLoading({ message: "Loading identity" });
+				const { foundBackup } = await dispatch(createIdentity({
+					type: IdentityType.SANCTUM,
+					label: "New Sanctum Identity",
+					tokensData,
+				}));
+				await dismissLoading();
 
-	const onSubmit = async (accessToken: string) => {
-		try {
-			await presentLoading({ message: "Loading identity" });
-			const api = await getSanctumIdentityApi({ accessToken });
-			const pubkey = await api.getPublicKey();
-
-			const identity: IdentitySanctum = {
-				type: IdentityType.SANCTUM,
-				accessToken: accessToken,
-				pubkey: pubkey,
-				label: "New Sanctum Identity",
-				createdAt: Date.now()
+				if (foundBackup) {
+					router.push("/sources", "root", "replace");
+				} else {
+					router.push("/identity/bootstrap", "root", "replace");
+				}
+			} catch (err: unknown) {
+				authHandledRef.current = false;
+				const message = err instanceof Error ? err.message : "An error occured when creating identity";
+				showToast({ color: "danger", message });
+			} finally {
+				dismissLoading();
 			}
-			const { foundBackup } = await dispatch(createIdentity(identity));
-			await dismissLoading()
-
-			if (foundBackup) {
-				router.push("/sources", "root", "replace");
-			} else {
-				router.push("/identity/bootstrap", "root", "replace");
-			}
-		} catch (err: any) {
-			showToast({
-				color: "danger",
-				message: err?.message || "An error occured when creating identity"
-			});
-			return;
-		}
-
-
-	}
+		});
 
 	return (
-
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonBackButton icon={chevronBackOutline} defaultHref="/identity/create"></IonBackButton>
+						<IonBackButton text="Back" icon={chevronBackOutline} defaultHref="/identity/create" />
 					</IonButtons>
-					<IonTitle>
-						<IonText className="wallet-title-text">
-							Sanctum
-						</IonText>
-					</IonTitle>
 				</IonToolbar>
+				<div className="w-[93%] mx-auto flex flex-col justify-center items-center gap-10">
+					<ShockwalletHero />
+				</div>
 			</IonHeader>
 			<IonContent className="ion-padding">
-				<div style={{ height: "100%", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-					<SanctumBox
-						loggedIn={false}
-						successCallback={(creds) => {
-							onSubmit(creds.accessToken)
-						}}
-						errorCallback={(reason) => toast.error(<Toast title="Sanctum Error" message={reason} />)}
-						sanctumUrl={SANCTUM_URL}
+				<div className="min-h-full flex flex-col gap-12 justify-center items-center">
+					<div className="text-lg font-normal tracking-tight text-center text-secondary">
+						Use Sanctum to access your money
+					</div>
+					<SanctumAuthWidget
+						onTokensUpdated={onAuthenticated}
+						className="w-full max-w-md"
 					/>
 				</div>
-
 			</IonContent>
+			<IonFooter className="ion-no-border">
+				<DisclaimerFooter />
+			</IonFooter>
 		</IonPage>
-
-	)
-}
+	);
+};
 
 export default CreateSanctumIdentityPage;
-
-

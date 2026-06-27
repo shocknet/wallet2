@@ -6,9 +6,9 @@ import { InputClassification } from "@/lib/types/parse";
 import { normalizeWsUrl } from "@/lib/url";
 import { IdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { fetchNip78Event } from "@/State/identitiesRegistry/helpers/nostr";
-import { LwwFlag } from "@/State/scoped/backups/lww";
+import { LwwFlag } from "@/State/sync/lww";
 import { SourceDocV0 } from "@/State/scoped/backups/sources/schema";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { findReducerMerger } from "@/State/store/store";
 import { GeneralShard, ShardsTagsRecord } from "@/State/types";
 

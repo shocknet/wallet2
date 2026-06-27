@@ -1,14 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	configureStore,
 	combineReducers,
 	createListenerMiddleware,
 } from "@reduxjs/toolkit";
 import { sourcesSlice, sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { generateSources, GenSource, getPreloadedSourcesState } from "@tests/support/sourcesHelpers";
+import { generateSources, GenSource, getPreloadedSourcesState, TEST_RELAY_URL } from "@tests/support/sourcesHelpers";
 import { addIdentityLifecycle } from "../lifecycle/lifecycle";
 import { identityLoaded, identityUnloaded } from "../actions";
-import { Identity, IdentityType } from "@/State/identitiesRegistry/types";
+import { IdentityType, RuntimeIdentity } from "@/State/identitiesRegistry/types";
 import type { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { bridgeListenerSpec, bridgePredicate } from "./bridgeListener";
 
@@ -17,7 +17,7 @@ import Bridge from "@/Api/bridge";
 import { nip98 } from "nostr-tools";
 import logger from "@/Api/helpers/logger";
 import { createDeferred } from "@/lib/deferred";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { runTimeReducer } from "@/State/runtime/slice";
 
 
@@ -49,13 +49,14 @@ const errorLogSpy = vi.spyOn(logger, "error");
 const infoLogSpy = vi.spyOn(logger, "info");
 
 
-const identity: Identity = {
+const identity: RuntimeIdentity = {
 	type: IdentityType.LOCAL_KEY,
+	wrappedDataKeyCiphertext: "cipher",
 	label: "label",
-	createdAt: Date.now(),
 	pubkey: "hexhexhex",
-	privkey: "hexhexhex",
+	privateKey: "hexhexhex",
 	relays: ["wss://example.com"],
+	unlockedAtMs: Date.now(),
 };
 
 function delay(ms: number) {
@@ -105,6 +106,10 @@ const makeStore = (sourcesGen: GenSource[]) => {
 describe("bridgeListener integration", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.useFakeTimers();
+	});
+	afterEach(() => {
+		vi.useRealTimers();
 	});
 
 
@@ -177,7 +182,7 @@ describe("bridgeListener integration", () => {
 		expect(getNostrClientMock).toHaveBeenCalledWith(
 			{
 				pubkey: d.lpk,
-				relays: []
+				relays: [TEST_RELAY_URL]
 
 			},
 			expect.objectContaining(d.keys), // source.keys

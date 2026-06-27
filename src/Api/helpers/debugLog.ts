@@ -2,9 +2,11 @@ import { IdentityType } from "@/State/identitiesRegistry/types";
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Device, DeviceInfo } from '@capacitor/device';
+import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 const MAX_ENTRIES = 500;
+const SECURE_IDENTITIES_MIGRATION_JOURNAL_KEY = "__secure_identities_migration_journal_v1__";
 
 
 
@@ -51,6 +53,7 @@ interface DebugReport {
 	deviceId: string;
 	deviceInfo: DeviceInfo;
 	entries: LogEntry[];
+	secureIdentitiesMigrationJournal?: unknown;
 }
 
 interface DebugLogger {
@@ -228,6 +231,15 @@ function createDebugLogger(): DebugLogger {
 
 				entries: [...entries],
 			};
+
+			const secureMigrationJournalRaw = await IonicStorageAdapter.getItem(SECURE_IDENTITIES_MIGRATION_JOURNAL_KEY);
+			if (secureMigrationJournalRaw) {
+				try {
+					report.secureIdentitiesMigrationJournal = JSON.parse(secureMigrationJournalRaw);
+				} catch {
+					report.secureIdentitiesMigrationJournal = secureMigrationJournalRaw;
+				}
+			}
 
 			return JSON.stringify(report, undefined, 4);
 		}

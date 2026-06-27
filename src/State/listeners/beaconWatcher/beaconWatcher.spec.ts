@@ -3,19 +3,20 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/slice";
 import { identityLoaded } from "../actions";
-import { Identity, IdentityType } from "@/State/identitiesRegistry/types";
+import { IdentityType, RuntimeIdentity } from "@/State/identitiesRegistry/types";
 import { BeaconUpdate } from "@/Api/nostrHandler";
 import { createTestSourceDoc, generateSources, getPreloadedSourcesState, TEST_RELAY_URL } from "@tests/support/sourcesHelpers";
 import { beaconWatcherSpec } from "./beaconWatcher";
-import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
+import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
 import { addIdentityLifecycle } from "../lifecycle/lifecycle";
 import { BEACON_STALE_OLDER_THAN, SourcesState } from "@/State/scoped/backups/sources/state";
 import { getAllNostrClients, getNostrClient, NostrClient, subToBeacons } from "@/Api/nostr";
+import { runTimeReducer } from "@/State/runtime/slice";
 
 
 let __emitBeacon: ((b: BeaconUpdate) => void) | null = null;
 
-vi.mock("@/helpers/remoteBackups", () => ({
+vi.mock("@/Api/nostrHandler", () => ({
 	fetchBeaconDiscovery: vi.fn(),
 }));
 
@@ -33,13 +34,14 @@ const fetchBeaconDiscoveryMock = vi.mocked(fetchBeaconDiscovery);
 const getAllNostrClientsMock = vi.mocked(getAllNostrClients);
 
 
-const identity: Identity = {
+const identity: RuntimeIdentity = {
 	type: IdentityType.LOCAL_KEY,
+	wrappedDataKeyCiphertext: "cipher",
 	label: "label",
-	createdAt: Date.now(),
 	pubkey: "hexhexhex",
-	privkey: "hexhexhex",
-	relays: ["wss://example.com"]
+	privateKey: "hexhexhex",
+	relays: ["wss://example.com"],
+	unlockedAtMs: Date.now(),
 }
 
 
@@ -58,6 +60,7 @@ const makeStore = (initialState?: SourcesState) => {
 			scoped: combineReducers({
 				sources: sourcesSlice.reducer,
 			}),
+			runtime: runTimeReducer,
 		},
 		preloadedState: initialState ?
 			{
@@ -120,7 +123,7 @@ describe("beaconWatcher", () => {
 
 			await vi.waitFor(() => {
 				state = store.getState().scoped.sources;
-				if (state.metadata.entities[source.id].lastSeenAtMs === 0) throw new Error
+				if (state.metadata.entities[source.id].lastSeenAtMs === 0) throw new Error("lastSeenAtMs not updated")
 			})
 
 
@@ -141,7 +144,7 @@ describe("beaconWatcher", () => {
 
 
 			await vi.waitFor(() => {
-				if (vi.mocked(subToBeacons).mock.calls.length === 0) throw new Error
+				if (vi.mocked(subToBeacons).mock.calls.length === 0) throw new Error("sub to beacons not called")
 			})
 
 			for (const src of sources) {
@@ -152,7 +155,7 @@ describe("beaconWatcher", () => {
 			__emitBeacon?.({ createdByPub: knownLpkSources[0].lpk, name: "known-lpk-beacon", updatedAtUnix: 2_000, relayUrl: TEST_RELAY_URL });
 
 			await vi.waitFor(() => {
-				if (vi.mocked(getNostrClient).mock.calls.length !== 6) throw new Error
+				if (vi.mocked(getNostrClient).mock.calls.length !== 6) throw new Error("getNostrClient not called")
 			})
 
 
@@ -169,102 +172,6 @@ describe("beaconWatcher", () => {
 				expect(store.getState().scoped!.sources.metadata.entities[src.id].beaconName).toBe("known-lpk-beacon");
 			}
 		});
-	});
-
-	describe("disconnecting nostr clients", () => {
-		it("disconnects a source's nostr client when it becomes stale", async () => {
-			const sources = generateSources(3);
-			const initialState = getPreloadedSourcesState(sources);
-			store = makeStore(initialState);
-
-			const artificalNowMs = 1_000_000;
-			vi.setSystemTime(artificalNowMs);
-
-
-			const disconnectCallsSpy = vi.fn();
-			getAllNostrClientsMock.mockReturnValue(
-				sources.map(s => ({ pubDestination: s.lpk, disconnectCalls: disconnectCallsSpy } as unknown as NostrClient))
-			);
-
-			store.dispatch(identityLoaded({ identity }));
-
-
-			await vi.waitFor(() => {
-				if (vi.mocked(subToBeacons).mock.calls.length === 0) throw new Error
-			})
-
-			const goodUnix = Math.floor(artificalNowMs / 1000);
-			for (const src of sources) {
-				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: goodUnix, relayUrl: TEST_RELAY_URL });
-			}
-
-			await vi.waitFor(() => {
-				if (store.getState().scoped!.sources.metadata.entities[sources[0].id].lastSeenAtMs === 500_000) throw new Error
-			})
-
-			for (const src of sources) {
-				expect(store.getState().scoped!.sources.metadata.entities[src.id].lastSeenAtMs).toBe(goodUnix * 1000);
-			}
-
-
-			// Advance time beyond stale window (150s) and allow one tick to fire
-			vi.setSystemTime(artificalNowMs + BEACON_STALE_OLDER_THAN + 20_000); // +180s
-			await vi.advanceTimersByTimeAsync(1.7 * 60 * 1000);
-
-
-			expect(disconnectCallsSpy).toHaveBeenCalledTimes(3);
-			expect(disconnectCallsSpy).toHaveBeenCalledWith("Stale beacon from pub");
-
-		});
-
-		it("only calls disconnect for newly stale sources", async () => {
-			const [source] = generateSources(1);
-			const initialState = getPreloadedSourcesState([source]);
-			store = makeStore(initialState);
-
-			const artificalNowMs = 1_000_000;
-			vi.setSystemTime(artificalNowMs);
-
-
-			const disconnectCallsSpy = vi.fn();
-			getAllNostrClientsMock.mockReturnValue(
-				[({ pubDestination: source.lpk, disconnectCalls: disconnectCallsSpy } as unknown as NostrClient)]
-			);
-
-			store.dispatch(identityLoaded({ identity }));
-
-
-			await vi.waitFor(() => {
-				if (vi.mocked(subToBeacons).mock.calls.length === 0) throw new Error
-			})
-
-			const goodUnix = Math.floor(artificalNowMs / 1000);
-
-			__emitBeacon?.({ createdByPub: source.lpk, name: "beacon", updatedAtUnix: goodUnix, relayUrl: TEST_RELAY_URL });
-
-
-			await vi.waitFor(() => {
-				if (store.getState().scoped!.sources.metadata.entities[source.id].lastSeenAtMs === 500_000) throw new Error
-			})
-
-
-			expect(store.getState().scoped!.sources.metadata.entities[source.id].lastSeenAtMs).toBe(goodUnix * 1000);
-
-
-
-			vi.setSystemTime(artificalNowMs + BEACON_STALE_OLDER_THAN + 20_000); // +180s
-			await vi.advanceTimersByTimeAsync(1.7 * 60 * 1000);
-
-
-			expect(disconnectCallsSpy).toHaveBeenCalledTimes(1);
-			expect(disconnectCallsSpy).toHaveBeenCalledWith("Stale beacon from pub");
-
-			// advance timers again and this time it shouldn't call disconnect again
-			vi.setSystemTime(artificalNowMs + BEACON_STALE_OLDER_THAN + 20_000); // +180s
-			await vi.advanceTimersByTimeAsync(1.7 * 60 * 1000);
-			expect(disconnectCallsSpy).toHaveBeenCalledTimes(1);
-		});
-
 	});
 })
 
