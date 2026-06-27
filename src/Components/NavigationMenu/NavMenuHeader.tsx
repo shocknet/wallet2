@@ -76,7 +76,7 @@ export const NavMenuHeader: React.FC = () => {
 							</>
 						) : (
 							<>
-								<h2 className="text-high" style={{ margin: 0 }}>{displayName}</h2>
+								<h2 className="text-primary" style={{ margin: 0 }}>{displayName}</h2>
 								<IonNote style={{ display: 'block', "--color": "var(--ion-text-color-step-450)" }}>{truncate(npub)}</IonNote>
 							</>
 						)}

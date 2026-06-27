@@ -1,5 +1,5 @@
 import { IonBackButton, IonButtons, IonMenuButton, IonTitle, IonToolbar } from '@ionic/react';
-import { chevronBack } from 'ionicons/icons';
+import { chevronBackOutline } from 'ionicons/icons';
 
 interface BackHeaderProps {
 	title?: string;
@@ -11,7 +11,7 @@ const BackToolbar: React.FC<BackHeaderProps> = ({ title }: BackHeaderProps) => {
 
 		<IonToolbar>
 			<IonButtons slot="start">
-				<IonBackButton defaultHref="/home" text="Back" icon={chevronBack}></IonBackButton>
+				<IonBackButton defaultHref="/home" text="Back" icon={chevronBackOutline}></IonBackButton>
 			</IonButtons>
 			{title && <IonTitle className="android-centered-title">{title}</IonTitle>}
 			<IonButtons slot="end">

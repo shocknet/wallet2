@@ -17,7 +17,7 @@ const CardishList = ({
 		style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 		{...listProps}
 	>
-		<IonListHeader className="text-medium font-semibold text-base" lines="full">
+		<IonListHeader className="text-secondary font-semibold text-base" lines="full">
 			<IonLabel >{listHeader}</IonLabel>
 		</IonListHeader>
 		{children}

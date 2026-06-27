@@ -209,7 +209,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 
 								<IonList className={styles["edit-list"]} lines="none">
 
-									<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+									<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 										<IonLabel >Offer Price</IonLabel>
 									</IonListHeader>
 
@@ -241,7 +241,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 											checked={isSpontaneous}
 											justify="start"
 											onIonChange={e => handleModeChange(e.detail.checked)}
-											className="text-low"
+											className="text-muted"
 											style={{ fontWeight: "600", fontSize: "0.85rem" }}
 										>
 											Spontaneous (payer chooses price)
@@ -277,19 +277,19 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 						) : (
 							<>
 								<IonList className={styles["edit-list"]} lines="none">
-									<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+									<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 										<IonLabel >Basic Offer Info</IonLabel>
 									</IonListHeader>
 									<IonItem>
 										<IonLabel color="primary">Label</IonLabel>
-										<IonText className="text-medium">{draft.label}</IonText>
+										<IonText className="text-secondary">{draft.label}</IonText>
 									</IonItem>
 									<IonItem>
 										<IonLabel color="primary">Price</IonLabel>
 										{
 											draft.price_sats === 0
 												? (
-													<IonText className="text-low" style={{ display: "flex", alignItems: "center" }}>
+													<IonText className="text-muted" style={{ display: "flex", alignItems: "center" }}>
 														Spontaneous
 													</IonText>
 												) : (
@@ -326,7 +326,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 										</IonLabel>
 										{
 											draft.payer_data.length === 0 && (
-												<IonText className="text-quiet" style={{ opacity: 0.8 }}>&lt;No payer data&gt;</IonText>
+												<IonText className="text-muted" style={{ opacity: 0.8 }}>&lt;No payer data&gt;</IonText>
 											)
 										}
 									</IonItem>
@@ -343,7 +343,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 										</IonLabel>
 										{
 											!draft.callback_url && (
-												<IonText className="text-quiet" style={{ opacity: 0.8 }}>
+												<IonText className="text-muted" style={{ opacity: 0.8 }}>
 													&lt;No callback URL&gt;
 												</IonText>
 											)
@@ -351,15 +351,15 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 									</IonItem>
 									<IonItem>
 										<IonLabel color="primary">Created</IonLabel>
-										<IonText className="text-medium">{moment(draft.createdAtUnix).fromNow()}</IonText>
+										<IonText className="text-secondary">{moment(draft.createdAtUnix).fromNow()}</IonText>
 									</IonItem>
 									<IonItem>
 										<IonLabel color="primary">Blinded Path</IonLabel>
-										<IonText className="text-medium">{draft.blind ? "Enabled" : "Disabled"}</IonText>
+										<IonText className="text-secondary">{draft.blind ? "Enabled" : "Disabled"}</IonText>
 									</IonItem>
 								</IonList>
 								<IonList className={styles["edit-list"]} lines="none" style={{ minHeight: "18.7rem" }}>
-									<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+									<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 										<IonLabel >Offer Invoices</IonLabel>
 									</IonListHeader>
 									{

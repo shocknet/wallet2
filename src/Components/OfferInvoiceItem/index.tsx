@@ -41,7 +41,7 @@ const OfferInvoiceItem = ({ invoice }: OfferInvoiceItemProps) => {
 				<IonGrid>
 					<IonRow className="ion-nowrap ion-justify-content-between ion-align-items-center">
 						<IonCol size="auto" className="ion-text-start">
-							<IonText className="text-medium"><IonText color="primary">{formatSatoshi(parsedInvoice.amount)}</IonText> sats</IonText>
+							<IonText className="text-secondary"><IonText color="primary">{formatSatoshi(parsedInvoice.amount)}</IonText> sats</IonText>
 						</IonCol>
 						<IonCol size="auto" className="ion-text-end">
 							<IonChip color="primary">{isPaid ? 'Paid Invoice' : 'Unpaid Invoice'}</IonChip>
@@ -58,7 +58,7 @@ const OfferInvoiceItem = ({ invoice }: OfferInvoiceItemProps) => {
 											value?.trim?.() ? (
 												<IonRow key={key}>
 													<IonCol>
-														<IonText className="text-quiet">{key}</IonText><IonText className="text-medium">: {value}</IonText>
+														<IonText className="text-muted">{key}</IonText><IonText className="text-secondary">: {value}</IonText>
 													</IonCol>
 												</IonRow>
 											) : null
@@ -67,7 +67,7 @@ const OfferInvoiceItem = ({ invoice }: OfferInvoiceItemProps) => {
 								}
 							</IonCol>
 							<IonCol size="6" className="ion-text-end">
-								<IonText className="text-quiet text-sm">Paid {moment(invoice.paid_at_unix * 1000).fromNow()}</IonText>
+								<IonText className="text-muted text-sm">Paid {moment(invoice.paid_at_unix * 1000).fromNow()}</IonText>
 							</IonCol>
 						</IonRow>
 					}

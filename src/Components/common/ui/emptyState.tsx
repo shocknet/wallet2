@@ -13,10 +13,10 @@ const EmptyState = ({ message, ionicon }: EmptyStateProps) => (
 				<IonIcon
 					icon={ionicon || documentTextOutline}
 					size="large"
-					className="text-medium"
+					className="text-secondary"
 					style={{ fontSize: "4rem" }}
 				/>
-				<IonText className="text-medium">
+				<IonText className="text-secondary">
 					<h2
 						className="text-xl"
 						style={{ marginTop: "0.75rem", fontWeight: 500, lineHeight: "1.4" }}
