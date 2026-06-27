@@ -10,7 +10,7 @@ import { InputClassification, ParsedInput, ParsedInvoiceInput } from '@/lib/type
 import { NofferError, OfferPriceType } from '@shocknet/clink-sdk';
 import { AppThunk, AppThunkDispatch } from '@/State/store/store';
 import { NprofileView, selectSourceViewById } from '../selectors';
-import { SourceType } from '@/State/scoped/common';
+import { SourceType } from '@/State/scoped/backups/sources/schema';
 import { sourcesActions } from '../slice';
 import { createDeferred } from '@/lib/deferred';
 import { historyFetchSourceRequested } from '@/State/listeners/actions';

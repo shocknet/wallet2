@@ -27,7 +27,7 @@ import { App } from "@capacitor/app"
 import { Capacitor } from "@capacitor/core"
 import { useAppSelector } from "@/State/store/hooks"
 import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors"
-import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice"
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice"
 import { exportDebugReport } from "@/lib/debugReportExport"
 
 
@@ -53,9 +53,9 @@ const getMenuItems = (hasAdminSoures: boolean) => {
 }
 
 const NavigationMenu = memo(() => {
-	const activeIdentityId = useAppSelector(selectActiveIdentityId);
+	const activeIdentity = useAppSelector(selectActiveIdentity);
 
-	if (!activeIdentityId) return null;
+	if (!activeIdentity) return null;
 	return <Inner />
 })
 NavigationMenu.displayName = "NavigationMenu";

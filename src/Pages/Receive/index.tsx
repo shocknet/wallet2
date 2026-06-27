@@ -37,7 +37,7 @@ import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
 import { useAppSelector } from '@/State/store/hooks';
 import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
-import { SourceType } from '@/State/scoped/common';
+import { SourceType } from '@/State/scoped/backups/sources/schema';
 import { BeaconStatusLine } from '@/Components/BeaconStatusLine';
 import { FiatDisplay } from '@/Components/FiatDisplay';
 

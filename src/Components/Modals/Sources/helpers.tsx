@@ -1,4 +1,4 @@
-import { BeaconDiscoveryResult, fetchBeaconDiscovery } from "@/helpers/remoteBackups";
+import { BeaconDiscoveryResult, fetchBeaconDiscovery } from "@/Api/nostrHandler";
 import { truncateTextMiddle } from "@/lib/format";
 import { useBeaconState } from "@/lib/hooks/useBeaconState";
 import {
@@ -37,7 +37,7 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 			style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 		>
 
-			<IonListHeader className="text-medium font-semibold text-base" lines="full">
+			<IonListHeader className="text-secondary font-semibold text-base" lines="full">
 				{
 					beaconData === undefined
 					&&
@@ -45,7 +45,7 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 				}
 				{
 					beaconData === null &&
-					<IonText className="text-low">Unreachable</IonText>
+					<IonText className="text-muted">Unreachable</IonText>
 				}
 				{
 					beaconData
@@ -151,12 +151,12 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 				<>
 					<IonItem className="ion-margin-top">
 						<IonLabel>
-							<IonText className="text-medium">
+							<IonText className="text-secondary">
 								Pubkey
 							</IonText>
 							<IonText
 								id="pub-source-lpk"
-								className="text-low code-string ion-text-wrap ion-margin"
+								className="text-muted code-string ion-text-wrap ion-margin"
 								style={{ display: "block", width: "fit-content", marginTop: "0.7rem" }}
 							>
 								{truncateTextMiddle(pubkey)}
@@ -184,7 +184,7 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 
 							<IonText
 								id="pub-source-lpk"
-								className="text-low code-string ion-text-wrap ion-margin"
+								className="text-muted code-string ion-text-wrap ion-margin"
 								style={{ display: "block", width: "fit-content", marginTop: "0.7rem" }}
 							>
 								Last beacon: {moment(beaconData.beaconLastSeenAtMs).fromNow()}

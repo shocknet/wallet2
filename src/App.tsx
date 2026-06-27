@@ -36,15 +36,12 @@ import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { useAppUrlListener } from './Hooks/appUrlListener';
 import { cleanupStaleServiceWorkers } from './sw-cleanup';
 import Swaps from './Pages/Swaps';
-import { selectActiveIdentityId } from './State/identitiesRegistry/slice';
 import { useAppSelector } from './State/store/hooks';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-import { PushIntentController } from './notifications/push/PushController';
-import { ConsumePendingNav } from './notifications/push/pendingNav';
 
 
 import { StatusBar, Style } from "@capacitor/status-bar";
@@ -53,6 +50,10 @@ import { GuardedRoute } from './routing/GuardedRoute';
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource, loadedIdentityGuard } from './routing/guards';
 import onBeforeLift from './onBeforeLift';
 import { App as CapApp } from '@capacitor/app';
+import { selectActiveIdentity } from './State/identitiesRegistry/slice';
+import { ConsumePendingNav } from './identityIntent/pendingNav';
+import { IdentityIntentBootstrap } from './identityIntent/IdentityIntentBootstrap';
+
 
 
 async function setEnvColors() {
@@ -67,7 +68,9 @@ const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
 const Send = lazy(() => import('./Pages/Send'));
 
-const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateKeysIdentity"));
+const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/keys"));
+const ImportNostrKeyPage = lazy(() => import("./Pages/CreateIdentity/keys/ImportNostrKey"));
+const GenerateNewKeyPage = lazy(() => import("./Pages/CreateIdentity/keys/GenerateNewKey"));
 const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
 const BootstrapSourcePage = lazy(() => import("./Pages/CreateIdentity/BootstrapSource"));
 const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
@@ -108,7 +111,7 @@ const AppJobs = () => {
 	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
-	const activeIdentityId = useSelector(selectActiveIdentityId);
+	const activeIdentityId = useSelector(selectActiveIdentity);
 
 	useEffect(() => {
 		cleanupStaleServiceWorkers()
@@ -185,200 +188,208 @@ const AppContent: React.FC = () => {
 
 
 
-	const identityKey = useAppSelector(selectActiveIdentityId);
+	const identityKey = useAppSelector(selectActiveIdentity)?.pubkey ?? "anon";
 
 
 	return (
 		<IonReactRouter>
-			<AppJobs />
-			<PushIntentController />
-			<ConsumePendingNav />
-			<NavigationMenu />
-			<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
-				<GuardedRoute
-					exact
-					path="/identities"
-					component={IdentitiesPage}
-				/>
+			<IdentityIntentBootstrap>
+				<ConsumePendingNav />
+				<AppJobs />
+				<NavigationMenu />
+				<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
+					<GuardedRoute
+						exact
+						path="/identities"
+						component={IdentitiesPage}
+					/>
 
-				<GuardedRoute
-					exact
-					path="/identity/create"
-					component={CreateIdentityPage}
-				/>
+					<GuardedRoute
+						exact
+						path="/identity/create"
+						component={CreateIdentityPage}
+					/>
 
-				<GuardedRoute
-					exact
-					path="/identity/create/keys"
-					component={CreateKeysIdentityPage}
+					<GuardedRoute
+						exact
+						path="/identity/create/keys"
+						component={CreateKeysIdentityPage}
+					/>
+					<GuardedRoute exact
+						path="/identity/create/keys/import"
+						component={ImportNostrKeyPage}
+					/>
+					<GuardedRoute exact
+						path="/identity/create/keys/generate"
+						component={GenerateNewKeyPage}
+					/>
+					<GuardedRoute
+						exact
+						path="/identity/create/sanctum"
+						component={CreateSanctumIdentityPage}
 
-				/>
-				<GuardedRoute
-					exact
-					path="/identity/create/sanctum"
-					component={CreateSanctumIdentityPage}
+					/>
 
-				/>
+					<GuardedRoute
+						exact
+						path="/identity/bootstrap"
+						component={BootstrapSourcePage}
 
-				<GuardedRoute
-					exact
-					path="/identity/bootstrap"
-					component={BootstrapSourcePage}
-
-					guards={[loadedIdentityGuard]}
-				/>
-
-
-
-				<GuardedRoute
-					exact
-					path="/identity/overview"
-					component={IdentityOverviewPage}
-
-					guards={[loadedIdentityGuard]}
-				/>
+						guards={[loadedIdentityGuard]}
+					/>
 
 
 
-				<GuardedRoute
+					<GuardedRoute
+						exact
+						path="/identity/overview"
+						component={IdentityOverviewPage}
 
-					exact
-					path="/home"
-					component={Home}
-
-					guards={[loadedIdentityGuard]}
-				/>
-
-				<GuardedRoute
-
-					exact
-					path="/send"
-					component={Send}
-
-					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-				/>
-
-				<GuardedRoute
-
-					exact
-					path="/Receive"
-					component={Receive}
-
-					guards={[loadedIdentityGuard, atLeastOneSource]}
-				/>
-
-				<GuardedRoute
-					exact
-					path="/sources"
-					component={SourcesPage}
-
-					guards={[loadedIdentityGuard]}
-				/>
+						guards={[loadedIdentityGuard]}
+					/>
 
 
-				<GuardedRoute
-					exact
-					path="/automation"
-					component={Automation}
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+					<GuardedRoute
 
-				<GuardedRoute
-					exact
-					path="/prefs"
-					component={Prefs}
+						exact
+						path="/home"
+						component={Home}
 
-					guards={[loadedIdentityGuard]}
-				/>
+						guards={[loadedIdentityGuard]}
+					/>
 
+					<GuardedRoute
 
-				<GuardedRoute
-					exact
-					path="/contacts"
-					component={Contacts}
+						exact
+						path="/send"
+						component={Send}
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
+					/>
 
-				<GuardedRoute
-					exact
-					path="/invitations"
-					component={Invitations}
+					<GuardedRoute
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+						exact
+						path="/Receive"
+						component={Receive}
 
-				<GuardedRoute
-					exact
-					path="/notify"
-					component={Notify}
+						guards={[loadedIdentityGuard, atLeastOneSource]}
+					/>
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+					<GuardedRoute
+						exact
+						path="/sources"
+						component={SourcesPage}
+
+						guards={[loadedIdentityGuard]}
+					/>
 
 
-				<GuardedRoute
-					exact
-					path="/management"
-					component={Management}
+					<GuardedRoute
+						exact
+						path="/automation"
+						component={Automation}
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
 
-				<GuardedRoute
-					path="/metrics"
-					component={Metrics}
+					<GuardedRoute
+						exact
+						path="/prefs"
+						component={Prefs}
 
-					guards={[loadedIdentityGuard, atLeastOneAdminNprofileSourceGuard]}
-
-				/>
-
-				<GuardedRoute
-					exact
-					path="/offers"
-					component={Offers}
-
-					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-				/>
+						guards={[loadedIdentityGuard]}
+					/>
 
 
-				<GuardedRoute
-					exact
-					path="/Stats"
-					component={Stats}
+					<GuardedRoute
+						exact
+						path="/contacts"
+						component={Contacts}
 
-					guards={[loadedIdentityGuard]}
-					layout={Layout}
-				/>
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
+
+					<GuardedRoute
+						exact
+						path="/invitations"
+						component={Invitations}
+
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
+
+					<GuardedRoute
+						exact
+						path="/notify"
+						component={Notify}
+
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
 
 
-				<GuardedRoute
-					exact
-					path="/LApps"
-					component={LinkedApp}
-					layout={Layout}
+					<GuardedRoute
+						exact
+						path="/management"
+						component={Management}
 
-					guards={[loadedIdentityGuard]}
-				/>
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
 
-				<GuardedRoute
-					exact
-					path="/swaps"
-					component={Swaps}
-					guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-				/>
+					<GuardedRoute
+						path="/metrics"
+						component={Metrics}
+
+						guards={[loadedIdentityGuard, atLeastOneAdminNprofileSourceGuard]}
+
+					/>
+
+					<GuardedRoute
+						exact
+						path="/offers"
+						component={Offers}
+
+						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
+					/>
 
 
-				<Route exact path="/" >
-					<Redirect to="/home" />
-				</Route>
-			</IonRouterOutlet >
+					<GuardedRoute
+						exact
+						path="/Stats"
+						component={Stats}
+
+						guards={[loadedIdentityGuard]}
+						layout={Layout}
+					/>
+
+
+					<GuardedRoute
+						exact
+						path="/LApps"
+						component={LinkedApp}
+						layout={Layout}
+
+						guards={[loadedIdentityGuard]}
+					/>
+
+					<GuardedRoute
+						exact
+						path="/swaps"
+						component={Swaps}
+						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
+					/>
+
+
+					<Route exact path="/" >
+						<Redirect to="/home" />
+					</Route>
+				</IonRouterOutlet >
+			</IdentityIntentBootstrap>
 		</IonReactRouter >
 	);
 };
@@ -393,7 +404,7 @@ const App: React.FC = () => {
 				<PersistGate
 					onBeforeLift={onBeforeLift}
 					persistor={persistor}
-					loading={<FullSpinner />}
+					loading={null}
 				>
 					<ToastProvider>
 						<ScannerProvider>

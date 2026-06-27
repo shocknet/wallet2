@@ -3,7 +3,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { parseEnvelopeJsonString } from './notifications/push/intentBus';
+import { parseEnvelopeJsonString } from './notifications/push/capture';
 
 self.skipWaiting()
 clientsClaim()

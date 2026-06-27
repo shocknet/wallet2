@@ -21,7 +21,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectFavoriteSourceView, selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { CustomSelect } from "@/Components/CustomSelect";
 import { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
@@ -31,7 +31,82 @@ import { InputClassification, ParsedNprofileInput } from "@/lib/types/parse";
 import cn from "clsx";
 import { useQrScanner } from "@/lib/hooks/useQrScanner";
 
+export const LocalKeyEncryptDialog = (
+	{ onConfirm }: { onConfirm: (password: string) => void }
+) => {
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 
+
+	const match = password.length && password === confirmPassword;
+
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<IonToolbar>
+					<IonTitle>
+						<IonText className="text-secondary text-lg text-weight-high">
+							Encrypt Local Key
+						</IonText>
+					</IonTitle>
+				</IonToolbar>
+			</IonHeader>
+
+			<div className={classNames(styles["wrapper"], "ion-padding")}>
+				<IonText className="text-secondary">
+					Add an encryption password to your backup file so that no unauthorized software can read it.
+				</IonText>
+				<IonGrid>
+					<IonRow className="ion-margin-top ion-nowrap ion-justify-content-center ion-align-items-center" >
+						<IonCol size="5" style={{ marginRight: "0.9rem" }}>
+							<IonInput
+								fill="solid"
+								className={classNames(styles["password-input"], "filled-input")}
+								type="password"
+								autocomplete="off"
+								value={password}
+								onIonInput={(e) => setPassword(e.detail.value || "")}
+
+							></IonInput>
+						</IonCol>
+						<IonCol size="5">
+							<IonInput
+								fill="solid"
+								className={classNames(styles["password-input"], "filled-input")}
+								type="password"
+								autocomplete="off"
+								value={confirmPassword}
+								onIonInput={(e) => setConfirmPassword(e.detail.value || "")}
+							></IonInput>
+						</IonCol>
+						<IonCol size="2">
+							<IonRow className="ion-justify-content-center">
+								<IonCol size="auto">
+									{
+										match && <IonIcon icon={checkmark} color="success" size="large" />
+									}
+
+								</IonCol>
+							</IonRow>
+						</IonCol>
+					</IonRow>
+					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
+						<IonCol size="auto">
+							<IonButton fill="clear" color="medium" onClick={() => dismiss(null, "cancel")}>
+								Cancel
+							</IonButton>
+						</IonCol>
+						<IonCol size="auto">
+							<IonButton fill="clear" color="primary" disabled={!match} onClick={handleConfirm}>
+								Done
+							</IonButton>
+						</IonCol>
+					</IonRow>
+				</IonGrid>
+			</div>
+		</>
+	)
+}
 
 
 export const BackupKeysDialog = (
@@ -60,7 +135,7 @@ export const BackupKeysDialog = (
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-high text-lg text-weight-high">
+						<IonText className="text-primary text-lg text-weight-high">
 							Backup Keys
 						</IonText>
 					</IonTitle>
@@ -71,7 +146,7 @@ export const BackupKeysDialog = (
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium ion-text-wrap">
+				<IonText className="text-secondary ion-text-wrap">
 					Save this key to your preferred password manager, you may use it to log in and sync across devices, or recover your node connections and settings if you get logged out.
 				</IonText>
 
@@ -157,7 +232,7 @@ export const DecryptFileDialog = (
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-high text-lg text-weight-high">
+						<IonText className="text-primary text-lg text-weight-high">
 							Decrypt backup file
 						</IonText>
 					</IonTitle>
@@ -165,7 +240,7 @@ export const DecryptFileDialog = (
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium ion-text-wrap">
+				<IonText className="text-secondary ion-text-wrap">
 					Input the passphrase for this backup file
 				</IonText>
 				<IonGrid>
@@ -218,7 +293,7 @@ export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passph
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
+						<IonText className="text-secondary text-lg text-weight-high">
 							Encrypt File
 						</IonText>
 					</IonTitle>
@@ -226,7 +301,7 @@ export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passph
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium">
+				<IonText className="text-secondary">
 					Add an encryption password to your backup file so that no unauthorized software can read it.
 				</IonText>
 				<IonGrid>
@@ -300,7 +375,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
+						<IonText className="text-secondary text-lg text-weight-high">
 							Sweep LNURL-W to one of your sources
 						</IonText>
 					</IonTitle>
@@ -308,7 +383,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium">
+				<IonText className="text-secondary">
 					Choose a source to sweep {formatSatoshi(lnurlwAmount)} sats to.
 				</IonText>
 				<IonGrid>
@@ -329,7 +404,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 											</IonAvatar>
 											<IonLabel style={{ width: "100%" }}>
 												<h2>{source.label}</h2>
-												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
+												<IonNote className="ion-text-no-wrap text-muted" style={{ display: "block" }}>
 													{source.type === SourceType.NPROFILE_SOURCE ? "Lightning.Pub Source" : "Lightning Address Source"}
 												</IonNote>
 											</IonLabel>
@@ -345,9 +420,9 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 									)
 								}}
 								renderSelected={(source) => (
-									<IonText className="text-medium">
+									<IonText className="text-secondary">
 										{source?.label || ''}
-										<IonNote className="text-low" style={{ display: 'block' }}>
+										<IonNote className="text-muted" style={{ display: 'block' }}>
 											{
 												source.type === SourceType.NPROFILE_SOURCE
 												&&
@@ -481,7 +556,7 @@ export const AddConnectionDialog = (
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
+						<IonText className="text-secondary text-lg text-weight-high">
 							Add Node Connection
 						</IonText>
 					</IonTitle>
@@ -490,7 +565,7 @@ export const AddConnectionDialog = (
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
 				<div className="flex flex-col">
-					<IonText className="text-low ion-text-wrap text-base">
+					<IonText className="text-muted ion-text-wrap text-base">
 						Add an nprofile associated with a Lightning.Pub instance
 					</IonText>
 					<div>

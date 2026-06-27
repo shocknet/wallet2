@@ -26,7 +26,7 @@ const config: CapacitorConfig = {
 		SplashScreen: {
 			backgroundColor: "#16191c",
 			androidScaleType: "CENTER_CROP",
-			launchAutoHide: true,
+			launchAutoHide: false,
 			splashFullScreen: true,
 		},
 		LocalNotifications: {

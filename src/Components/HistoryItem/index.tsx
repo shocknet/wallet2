@@ -91,10 +91,10 @@ const HistoryItem = ({ operation, handleSelectOperation, className }: HistoryIte
 					</IonRow>
 					<IonRow style={{ marginTop: "0.3rem" }}>
 						<IonCol>
-							<IonNote className="text-low">{date}</IonNote>
+							<IonNote className="text-muted">{date}</IonNote>
 						</IonCol>
 						<IonCol size="auto">
-							<FiatDisplay sign={sign} sats={operation.amount} className="text-low" />
+							<FiatDisplay sign={sign} sats={operation.amount} className="text-muted" />
 
 						</IonCol>
 					</IonRow>

@@ -55,12 +55,6 @@ export const persistedAppStateReducer = persistReducer(
 
 
 export const selectIsAppBootstrapped = (s: RootState) => s.appState.bootstrapped
-export const selectActiveIdentityId = (s: RootState) =>
-	s.identitiesRegistry.activePubkey;
-export const selectActiveIdentity = (s: RootState) => {
-	const st = s.identitiesRegistry;
-	return st.activePubkey ? st.entities[st.activePubkey] ?? null : null;
-};
 
 export const selectTheme = (s: RootState) => s.appState.theme;
 

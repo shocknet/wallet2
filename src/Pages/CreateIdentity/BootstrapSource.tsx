@@ -3,8 +3,8 @@ import {
 	IonContent,
 	IonButton,
 	useIonRouter,
-	IonIcon,
 	useIonModal,
+	IonFooter,
 } from "@ionic/react";
 import { useCallback, useState } from "react";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -12,10 +12,11 @@ import { useToast } from "@/lib/contexts/useToast";
 import { ParsedNprofileInput } from "@/lib/types/parse";
 import { addBootstrapSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
 import HomeHeader from "@/Layout2/HomeHeader";
-import { flashOutline } from "ionicons/icons";
 import cn from "clsx";
 import { AddConnectionDialog } from "@/Components/Modals/DialogeModals";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
+import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
+import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 
 
 type SelectedOption = "bootstrap" | "connection" | null;
@@ -121,124 +122,105 @@ const BootstrapSource = () => {
 
 	return (
 		<IonPage className="ion-page-width">
-			<HomeHeader />
+			<HomeHeader>
+				<div className="w-[93%] mx-auto flex flex-col justify-center items-center gap-10">
+					<ShockwalletHero />
+				</div>
+			</HomeHeader>
 			<IonContent className="ion-padding">
-				<div className="page-outer">
-					<div className="page-body">
-						{/* Page Heading */}
-						<section className="hero-block flex-row gap-4 max-h-[30vh]">
-							<div className="flex flex-col items-center gap-3">
-								<div className="text-medium font-bold text-2xl">Node Up</div>
-								<IonIcon icon={flashOutline} className="text-6xl text-medium" />
-							</div>
-						</section>
 
-						{/* Cards */}
-						<section className="main-block flex flex-col gap-4">
-							{/* Bootstrap Card */}
-							<div
-								className="rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:brightness-110"
-								style={{
-									backgroundColor: selectedOption === "bootstrap"
-										? 'var(--ion-color-secondary)'
-										: 'var(--ion-color-light)',
-									boxShadow: 'var(--wallet-box-shadow)'
-								}}
-								onClick={handleSelectOption("bootstrap")}
-							>
-								<div className="flex justify-between items-center gap-4">
-									<div className="flex-1">
-										<h2 className={cn(
-											"text-2xl font-bold m-0 mb-2",
-											selectedOption === "bootstrap" ? "text-white" : "text-high"
-										)}>Bootstrap</h2>
-										<p className={cn(
-											"text-base m-0",
+				<div className="min-h-full flex flex-col gap-12 justify-center items-center">
+					<div className="text-lg font-normal tracking-tight text-center text-secondary">
+						Add a Funding Source
+					</div>
 
-										)}>
-											Build a service credit with the default liquidity provider and upgrade later.*
-										</p>
-									</div>
-									<div
-										className="flex-shrink-0"
-										style={{ color: selectedOption === "bootstrap" ? 'white' : 'var(--ion-color-primary)' }}
-									>
-										<HandshakeIcon />
-									</div>
+					<div className="main-block flex flex-col gap-4">
+						<div
+							className="rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:brightness-110"
+							style={{
+								backgroundColor: selectedOption === "bootstrap"
+									? 'var(--ion-color-secondary)'
+									: 'var(--app-surface)',
+								boxShadow: 'var(--wallet-box-shadow)'
+							}}
+							onClick={handleSelectOption("bootstrap")}
+						>
+							<div className="flex justify-between items-center gap-4">
+								<div className="flex-1">
+									<h2 className={cn(
+										"text-2xl font-bold m-0 mb-2",
+										selectedOption === "bootstrap" ? "text-white" : "text-primary"
+									)}>Bootstrap</h2>
+									<p className={cn(
+										"text-base m-0",
+
+									)}>
+										Build a service credit with the default liquidity provider and upgrade later.*
+									</p>
 								</div>
-							</div>
-
-							{/* Node Connection Card */}
-							<div
-								className="rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:brightness-110"
-								style={{
-									backgroundColor: selectedOption === "connection"
-										? 'var(--ion-color-secondary)'
-										: 'var(--ion-color-light)',
-									boxShadow: 'var(--wallet-box-shadow)'
-								}}
-								onClick={handleSelectOption("connection")}
-							>
-								<div className="flex justify-between items-center gap-4">
-									<div className="flex-1">
-										<h2 className={cn(
-											"text-2xl font-bold m-0 mb-2",
-											selectedOption === "connection" ? "text-white" : "text-high"
-										)}>Node Connection</h2>
-										<p className={cn(
-											"text-base m-0",
-											selectedOption === "connection" ? "text-white/80" : "text-low"
-										)}>
-											Enter a connection string (nprofile) to connect to a remote node over nostr.
-										</p>
-									</div>
-									<div
-										className="flex-shrink-0"
-										style={{
-											filter: selectedOption === "connection"
-												? 'brightness(0) invert(1)'
-												: 'invert(59%) sepia(57%) saturate(2064%) hue-rotate(166deg) brightness(96%) contrast(87%)'
-										}}
-									>
-										<PlugIcon />
-									</div>
-								</div>
-							</div>
-						</section>
-
-						{/* Connect Button */}
-						<section className="main-block mt-8">
-							<div className="mx-auto w-[60%]">
-								<IonButton
-									className="pill-button"
-									expand="full"
-									size="large"
-									shape="round"
-									disabled={!selectedOption}
-									onClick={handleConnect}
+								<div
+									className="flex-shrink-0"
+									style={{ color: selectedOption === "bootstrap" ? 'white' : 'var(--ion-color-primary)' }}
 								>
-									Connect
-								</IonButton>
+									<HandshakeIcon />
+								</div>
 							</div>
-						</section>
+						</div>
 
-						{/* Disclaimer */}
-						<section className="disclaimer-block text-low pb-2">
-							By proceeding you acknowledge that this is bleeding-edge software,
-							and agree to the providers{" "}
-							<a
-								href="https://docs.shock.network/terms/"
-								target="_blank"
-								rel="noreferrer"
-								className="underline text-high"
+						{/* Node Connection Card */}
+						<div
+							className="rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:brightness-110"
+							style={{
+								backgroundColor: selectedOption === "connection"
+									? 'var(--ion-color-secondary)'
+									: 'var(--app-surface)',
+								boxShadow: 'var(--wallet-box-shadow)'
+							}}
+							onClick={handleSelectOption("connection")}
+						>
+							<div className="flex justify-between items-center gap-4">
+								<div className="flex-1">
+									<h2 className={cn(
+										"text-2xl font-bold m-0 mb-2",
+										selectedOption === "connection" ? "text-white" : "text-primary"
+									)}>Node Connection</h2>
+									<p className={cn(
+										"text-base m-0",
+										selectedOption === "connection" ? "text-white/80" : "text-muted"
+									)}>
+										Enter a connection string (nprofile) to connect to a remote node over nostr.
+									</p>
+								</div>
+								<div
+									className="flex-shrink-0"
+									style={{
+										filter: selectedOption === "connection"
+											? 'brightness(0) invert(1)'
+											: 'invert(59%) sepia(57%) saturate(2064%) hue-rotate(166deg) brightness(96%) contrast(87%)'
+									}}
+								>
+									<PlugIcon />
+								</div>
+							</div>
+						</div>
+						<div className="mx-auto w-[60%]">
+							<IonButton
+								className="pill-button"
+								expand="full"
+								size="large"
+								shape="round"
+								disabled={!selectedOption}
+								onClick={handleConnect}
 							>
-								terms
-							</a>{" "}
-							regarding any services herein.
-						</section>
+								Connect
+							</IonButton>
+						</div>
 					</div>
 				</div>
 			</IonContent>
+			<IonFooter className="ion-no-border">
+				<DisclaimerFooter />
+			</IonFooter>
 		</IonPage>
 	);
 }

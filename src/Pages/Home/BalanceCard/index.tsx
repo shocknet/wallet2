@@ -51,7 +51,7 @@ const BalanceCard = () => {
 	return (
 		<div
 			className="ion-activatable w-[93%] mx-auto h-44 border-2 border-primary
-			flex flex-col justify-center items-center rounded-md bg-light
+			flex flex-col justify-center items-center rounded-md bg-[var(--app-surface)]
 			"
 			onPointerDown={handlePointerDown}
 			onPointerUp={clearHoldTimer}
@@ -61,9 +61,9 @@ const BalanceCard = () => {
 			<IonRippleEffect></IonRippleEffect>
 			<IonText className="text-3xl font-bold text-[color:var(--ion-text-color-step-100)]">{displayBalance}</IonText>
 			<IonButton onClick={toggleUnit} fill="clear" className="ion-no-margin">{unit}</IonButton>
-			<IonNote className="text-medium">
+			<IonNote className="text-secondary">
 
-				<FiatDisplay sign="~" className="text-medium" sats={balance} />
+				<FiatDisplay sign="~" className="text-secondary" sats={balance} />
 			</IonNote>
 		</div>
 	);
