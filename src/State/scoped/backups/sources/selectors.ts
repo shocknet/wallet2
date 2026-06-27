@@ -1,11 +1,11 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { beaconProbeSelectors, docsSelectors, metadataSelectors } from "./slice";
-import { SourceType } from "../../common";
+import { SourceType } from "./schema";
 import { NostrKeyPair } from "@/lib/regex";
 import { Satoshi } from "@/lib/types/units";
 import { LightningAddressSourceDocV0, NprofileSourceDocV0, SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
-import { selectFavoriteSourceId } from "../identity/slice";
+import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { RootState } from "@/State/store/store";
 import { BEACON_STALE_OLDER_THAN, BeaconProbeState, BeaconProbeStatus } from "./state";
 import { selectNowMs } from "@/State/runtime/slice";

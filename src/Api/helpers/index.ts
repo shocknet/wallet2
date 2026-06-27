@@ -6,8 +6,8 @@ import { SpendFrom } from "../../globalTypes";
 import { generateSecretKey, getPublicKey } from "nostr-tools";
 import { NostrKeyPair } from "../nostrHandler";
 import { sendNip69 } from "../nostr";
-import { Buffer } from "buffer";
 import type { NofferError, NofferSuccess, OfferPointer } from "@shocknet/clink-sdk";
+import { bytesToHex } from "@noble/hashes/utils";
 
 
 /* This file includes all possible transactional operations.
@@ -167,7 +167,9 @@ export const generateNewKeyPair = () => {
 	const privateKey = generateSecretKey();
 	const publicKey = getPublicKey(privateKey);
 	return {
-		privateKey: Buffer.from(privateKey).toString("hex"), publicKey
+		privateKey: bytesToHex(privateKey),
+		publicKey,
+		privateKeyBytes: privateKey,
 	}
 }
 

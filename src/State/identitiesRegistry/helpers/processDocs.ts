@@ -1,7 +1,7 @@
 import dLogger from "@/Api/helpers/debugLog";
 import { IdentityDocV0, IdentityDocV0Schema, migrateIdentityDocToCurrent } from "@/State/scoped/backups/identity/schema";
 import { migrateSourceDocToCurrent, SourceDocV0, SourceDocV0Schema } from "@/State/scoped/backups/sources/schema";
-import { DocBase, DocBaseSchema } from "@/State/scoped/common";
+import { DocBase, DocBaseSchema } from "@/State/sync/docBase";
 
 
 

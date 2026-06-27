@@ -1,6 +1,6 @@
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { useAppSelector } from "@/State/store/hooks";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
 import { star, walletOutline, personCircleOutline } from "ionicons/icons";
@@ -59,7 +59,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 				<IonGrid>
 					<IonRow className="ion-nowrap ion-align-items-center">
 						<IonCol className="ion-text-start" style={{ flex: "1 1 0", minWidth: 0, paddingTop: "1.2rem" }}>
-							<IonText className="source-card-item-title text-high">
+							<IonText className="source-card-item-title text-primary">
 								{label}
 							</IonText>
 						</IonCol>
@@ -76,7 +76,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 							{
 								isNprofile
 								&&
-								<IonText className="text-medium balance-row">
+								<IonText className="text-secondary balance-row">
 									<IonIcon icon={walletOutline} />
 									{formatSatoshi(source.balanceSats ?? 0 as Satoshi)} sats
 								</IonText>

@@ -9,7 +9,7 @@ import { getNostrClient } from "@/Api/nostr";
 import { getDeviceId } from "@/constants";
 import type { RootState } from "@/State/store/store";
 import { becameFresh, exists, isFresh, isNprofile, justAdded } from "../predicates";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 
 
 async function enrollTokenForSources(token: string, state: RootState) {
@@ -76,44 +76,44 @@ export const pushEnrollmentSpec: ListenerSpec = {
 						becameFresh(curr, prev, action.payload.sourceId)
 					)
 				),
-			effect: async (action, listenerApi) => {
-				const { sourceId } = action.payload as { sourceId: string };
-				const state = listenerApi.getState();
-				const source = selectSourceViewById(state, sourceId);
-				
-				if (!source) {
-					console.warn(`[Push] Source ${sourceId} not found for enrollment`);
-					return;
-				}
+				effect: async (action, listenerApi) => {
+					const { sourceId } = action.payload as { sourceId: string };
+					const state = listenerApi.getState();
+					const source = selectSourceViewById(state, sourceId);
 
-				if (source.type !== SourceType.NPROFILE_SOURCE) {
-					console.log(`[Push] Source ${source.label} is not an nprofile source, skipping enrollment`);
-					return;
-				}
+					if (!source) {
+						console.warn(`[Push] Source ${sourceId} not found for enrollment`);
+						return;
+					}
 
-				await hydratePushTokenCache();
-				const token = getCachedPushToken();
-				if (!token) {
-					console.log("[Push] No cached token available for new source enrollment");
-					return;
-				}
+					if (source.type !== SourceType.NPROFILE_SOURCE) {
+						console.log(`[Push] Source ${source.label} is not an nprofile source, skipping enrollment`);
+						return;
+					}
 
-				console.log(`[Push] Enrolling token with new/fresh source: ${source.label}`);
-				try {
-					const nprofileSource = source as NprofileView;
-					const client = await getNostrClient(
-						{ pubkey: nprofileSource.lpk, relays: nprofileSource.relays },
-						nprofileSource.keys
-					);
-					const result = await client.EnrollMessagingToken({
-						device_id: getDeviceId(),
-						firebase_messaging_token: token,
-					});
-					console.log(`[Push] Enrolled token with source ${source.label}:`, result.status);
-				} catch (err) {
-					console.error(`[Push] Failed to enroll token with source ${source.label}:`, err);
+					await hydratePushTokenCache();
+					const token = getCachedPushToken();
+					if (!token) {
+						console.log("[Push] No cached token available for new source enrollment");
+						return;
+					}
+
+					console.log(`[Push] Enrolling token with new/fresh source: ${source.label}`);
+					try {
+						const nprofileSource = source as NprofileView;
+						const client = await getNostrClient(
+							{ pubkey: nprofileSource.lpk, relays: nprofileSource.relays },
+							nprofileSource.keys
+						);
+						const result = await client.EnrollMessagingToken({
+							device_id: getDeviceId(),
+							firebase_messaging_token: token,
+						});
+						console.log(`[Push] Enrolled token with source ${source.label}:`, result.status);
+					} catch (err) {
+						console.error(`[Push] Failed to enroll token with source ${source.label}:`, err);
+					}
 				}
-			}
 			}),
 	]
 };

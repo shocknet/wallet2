@@ -267,7 +267,7 @@ const AddSourceStart = ({
 				<IonToolbar>
 
 					<IonTitle>
-						<span className={classNames("text-medium", styles["modal-header"])}>
+						<span className={classNames("text-secondary", styles["modal-header"])}>
 							<IonIcon icon={addOutline} />
 							Add Source
 						</span>
@@ -279,8 +279,8 @@ const AddSourceStart = ({
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<div className="ion-margin-top" style={{ marginBottom: 8 }}>
-					<IonText className="text-low">
-						Paste an <strong className="text-medium">nprofile</strong>. We’ll do the rest.
+					<IonText className="text-muted">
+						Paste an <strong className="text-secondary">nprofile</strong>. We’ll do the rest.
 					</IonText>
 				</div>
 
@@ -405,7 +405,7 @@ const _AddNprofileScreen = ({
 						<IonBackButton color="light"></IonBackButton>
 					</IonButtons>
 					<IonTitle>
-						<span className={classNames("text-medium", styles["modal-header"])}>
+						<span className={classNames("text-secondary", styles["modal-header"])}>
 							<IonIcon icon={addOutline} />
 							Add Pub Source
 						</span>
@@ -462,7 +462,7 @@ const _AddNprofileScreen = ({
 					</IonItem>
 				</CardishList>
 				<IonNote style={{ display: "block" }} className="ion-margin-horizontal ion-margin-top ion-margin-vertical">
-					<IonText className="text-low">
+					<IonText className="text-muted">
 						Bridge URL is used to assign a Lightning Address for this Pub source.
 					</IonText>
 				</IonNote>
@@ -473,7 +473,7 @@ const _AddNprofileScreen = ({
 						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 
 					>
-						<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+						<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 							<IonLabel >Relays</IonLabel>
 							{
 								isEditingRelays
@@ -554,7 +554,7 @@ const _AddLnAddress = ({
 						<IonBackButton color="light"></IonBackButton>
 					</IonButtons>
 					<IonTitle>
-						<span className={classNames("text-medium", styles["modal-header"])}>
+						<span className={classNames("text-secondary", styles["modal-header"])}>
 							<IonIcon icon={addOutline} />
 							Add Lightning Address Source
 						</span>
@@ -595,7 +595,7 @@ const _AddLnAddress = ({
 					<IonAccordion value="lnurl-info">
 						<IonItem slot="header" lines="none">
 							<IonLabel>
-								<IonText className="text-low">
+								<IonText className="text-muted">
 									lightning address info
 								</IonText></IonLabel>
 						</IonItem>

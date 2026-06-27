@@ -26,7 +26,7 @@ import { SweepLnurlwDialog } from "@/Components/Modals/DialogeModals";
 import { Satoshi } from "@/lib/types/units";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { createNostrInvoice } from "@/Api/helpers";
 import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
 import HomeHeader from "@/Layout2/HomeHeader";

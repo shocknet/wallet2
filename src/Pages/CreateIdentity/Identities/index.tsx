@@ -15,50 +15,109 @@ import {
 	useIonLoading,
 	IonSkeletonText,
 	IonText,
-	IonBadge
+	IonBadge,
+	IonFooter,
 } from "@ionic/react";
-import { chevronBackOutline, addOutline, checkmarkCircle, trashOutline } from "ionicons/icons";
+import { chevronBackOutline, checkmarkCircle, trashOutline } from "ionicons/icons";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 
-import { identitiesSelectors, selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
-import { switchIdentity } from "@/State/identitiesRegistry/thunks";
+import { selectSecureIdentities } from "@/State/identitiesRegistry/slice";
+import { deleteIdentity, switchIdentity } from "@/State/identitiesRegistry/thunks";
 import { useToast } from "@/lib/contexts/useToast";
 import { Identity, IdentityType } from "@/State/identitiesRegistry/types";
 import { truncateTextMiddle } from "@/lib/format";
 import { nip19 } from "nostr-tools";
 import { useGetProfileQuery } from "@/State/api/api";
+import { RuntimeIdentity } from "@/State/identitiesRegistry/types";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import { useUnlockIdentity } from "@/lib/hooks/useUnlockIdentity";
+import { useCallback } from "react";
+import { BiometryError, BiometryErrorType } from "@aparajita/capacitor-biometric-auth";
+import { useAskPromptDecision } from "@/Components/Modals/PromptDecision";
+
 
 export default function IdentitiesPage() {
+	const presentPromptDecision = useAskPromptDecision();
+	const { prepareWithUi } = useUnlockIdentity();
 	const router = useIonRouter();
 	const [present, dismiss] = useIonLoading();
-	const all = useAppSelector(identitiesSelectors.selectAll);
-	const activeHex = useAppSelector(selectActiveIdentityId);
+	const all = useAppSelector(selectSecureIdentities);
+	const activeIdentityPubkey = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
 
 
 
-	const onSwitch = async (pubkey: string) => {
-		if (activeHex === pubkey) {
-			return router.push("/identity/overview", "forward", "push")
 
+
+	const onSwitch = useCallback(async (identity: Identity) => {
+		if (identity.pubkey === activeIdentityPubkey) {
+			return router.push("/identity/overview", "forward", "push")
 		}
+
+		let runtimeIdentity: RuntimeIdentity;
+		try {
+			runtimeIdentity = await prepareWithUi(identity);
+		} catch (err: unknown) {
+			if (err instanceof BiometryError) {
+				if (err.code !== BiometryErrorType.userCancel) {
+					showToast({
+						color: "danger",
+						message: `Failed to unlock identity: ${err.message}`
+					});
+				}
+			} else {
+				showToast({
+					color: "danger",
+					message: `Failed to unlock identity: ${err instanceof Error ? err.message : "An unknown error occurred"}`
+				});
+			}
+			return;
+		}
+
 		await present({
 			message: "Switching identity..."
 		})
 		try {
-			await dispatch(switchIdentity(pubkey));
+			await dispatch(switchIdentity(runtimeIdentity));
 			await dismiss();
 			router.push("/sources", "forward", "push");
-		} catch (err: any) {
+		} catch (err: unknown) {
 			showToast({
 				color: "danger",
-				message: err?.message || "An error occured when switching to identity"
+				message: `Failed to switch to identity: ${err instanceof Error ? err.message : "An unknown error occurred"}`
 			})
 			await dismiss();
 		}
-	};
+	}, [activeIdentityPubkey, prepareWithUi, router, dispatch, showToast, dismiss, present]);
+
+	const onDelete = useCallback(async (identity: Identity) => {
+		if (identity.pubkey === activeIdentityPubkey) return;
+
+		const answer = await presentPromptDecision({
+			title: "Delete Profile",
+			description: "Are you sure you want to delete this profile? If you don't have a backup, you will lose all your funds in this identity.",
+			descriptionColor: "danger",
+			confirmButtonColor: "danger",
+			confirmButtonLabel: "Delete",
+			denyButtonColor: "medium",
+			denyButtonLabel: "Cancel",
+		});
+
+
+		if (answer) {
+			try {
+				await dispatch(deleteIdentity(identity.pubkey));
+			} catch (err: unknown) {
+				showToast({
+					color: "danger",
+					message: `Failed to delete identity: ${err instanceof Error ? err.message : "An unknown error occurred"}`
+				})
+			}
+
+		}
+	}, [presentPromptDecision, showToast, dispatch, activeIdentityPubkey]);
 
 
 	return (
@@ -70,12 +129,8 @@ export default function IdentitiesPage() {
 							<IonIcon icon={chevronBackOutline} />
 						</IonButton>
 					</IonButtons>
-					<IonTitle>Identities</IonTitle>
-					<IonButtons slot="end">
-						<IonButton routerLink="/identity/create">
-							<IonIcon icon={addOutline} />
-						</IonButton>
-					</IonButtons>
+					<IonTitle>Profiles</IonTitle>
+
 				</IonToolbar>
 			</IonHeader>
 
@@ -85,12 +140,24 @@ export default function IdentitiesPage() {
 						<IdentityRow
 							key={id.pubkey}
 							identity={id}
-							activeHex={activeHex}
+							activeHex={activeIdentityPubkey}
 							onPick={onSwitch}
+							onDelete={onDelete}
 						/>
 					))}
 				</IonList>
 			</IonContent>
+			<IonFooter className="ion-no-border">
+				<IonToolbar>
+					<div className="w-full px-3 ">
+
+						<IonButton routerLink="/identity/create" fill="solid" className="[--border-radius:12px]" size="large" expand="block" color="primary">
+							Add New Profile
+						</IonButton>
+					</div>
+
+				</IonToolbar>
+			</IonFooter>
 		</IonPage>
 	);
 }
@@ -98,10 +165,11 @@ export default function IdentitiesPage() {
 
 const IdentityRow
 	= (
-		{ identity, activeHex, onPick }: {
+		{ identity, activeHex, onPick, onDelete }: {
 			identity: Identity;
 			activeHex?: string | null;
-			onPick: (pubkeyHex: string) => void;
+			onPick: (identity: Identity) => void;
+			onDelete: (identity: Identity) => void;
 		}
 	) => {
 		const pubkeyHex = identity.pubkey;
@@ -121,7 +189,8 @@ const IdentityRow
 			<IonItem
 				button
 				detail={false}
-				onClick={() => onPick(pubkeyHex)}
+				onClick={() => onPick(identity)}
+				className="[--background:var(--app-background)]"
 				style={{
 					borderRadius: 12,
 					marginBottom: 6,
@@ -144,11 +213,11 @@ const IdentityRow
 				</IonAvatar>
 
 				<IonLabel>
-					<IonText className="text-high text-md">
+					<IonText className="text-primary text-md">
 						{displayName}
 					</IonText>
 
-					<IonText className="ion-margin-top text-medium code-string" style={{ display: "block" }}>
+					<IonText className="ion-margin-top text-secondary code-string" style={{ display: "block" }}>
 						{truncateTextMiddle(npub)}
 					</IonText>
 
@@ -161,7 +230,10 @@ const IdentityRow
 					</IonBadge>
 				)}
 				{!isActive && (
-					<IonButton color="light" slot="end" fill="clear">
+					<IonButton color="danger" slot="end" fill="clear" onClick={(e) => {
+						e.stopPropagation();
+						onDelete(identity);
+					}}>
 						<IonIcon icon={trashOutline} slot="icon-only" />
 					</IonButton>
 				)}

@@ -5,7 +5,7 @@ import logger from "@/Api/helpers/logger";
 import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { isAnyOf, ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
-import { fetchBeaconDiscovery } from "@/helpers/remoteBackups";
+import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
 import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 import { runtimeActions } from "@/State/runtime/slice";

@@ -1,9 +1,14 @@
 import { z } from "zod";
-import { LwwFlagSchema, LwwSchema } from "../lww";
+import { LwwFlagSchema, LwwSchema } from "../../../sync/lww";
 import { HexDashHexSchema, HexKeySchema, NostrKeyPairSchema } from "@/lib/regex";
-import { DocBase, DocBaseSchema, SourceType } from "../../common";
+import { DocBase, DocBaseSchema } from "../../../sync/docBase";
 import { HttpBaseSchema } from "@/lib/urlZod";
 
+
+export enum SourceType {
+	NPROFILE_SOURCE = "NPROFILE_SOURCE",
+	LIGHTNING_ADDRESS_SOURCE = "LIGHTNING_ADDRESS_SOURCE",
+}
 
 
 const SourceTypeEnum = z.enum(SourceType)

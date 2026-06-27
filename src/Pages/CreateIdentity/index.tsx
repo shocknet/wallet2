@@ -6,6 +6,7 @@ import {
 	IonCardHeader,
 	IonCardTitle,
 	IonContent,
+	IonFooter,
 	IonHeader,
 	IonIcon,
 	IonImg,
@@ -18,16 +19,21 @@ import {
 } from '@ionic/react';
 
 import logo from "@/Assets/Images/isolated logo.png";
-import shockwalletText from "@/Assets/Images/wallet_new_text.png";
+
 import { cloudOutline, keyOutline } from 'ionicons/icons';
 
 import { useAppSelector } from '@/State/store/hooks';
-import { identitiesSelectors, selectActiveIdentityId } from '@/State/identitiesRegistry/slice';
+import { identitiesSelectors, } from '@/State/identitiesRegistry/slice';
+import { selectActiveIdentity } from '@/State/identitiesRegistry/slice';
+import { ShockwalletHero } from '@/Components/common/ui/ShockwalletHero';
+import { DisclaimerFooter } from '@/Components/common/info/disclaimerFooter';
+
+
 
 const CreateIdentityPage = () => {
 	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
 
-	const activeIdentity = useAppSelector(selectActiveIdentityId);
+	const activeIdentity = useAppSelector(selectActiveIdentity);
 	const identitiesCount = useAppSelector(identitiesSelectors.selectTotal);
 
 	const canLeave = !!isBoostrapped && !!activeIdentity;
@@ -57,155 +63,97 @@ const CreateIdentityPage = () => {
 						</IonButtons>
 					)}
 				</IonToolbar>
+				<div className="w-[93%] mx-auto flex flex-col justify-center items-center gap-10">
+					<ShockwalletHero />
+				</div>
 			</IonHeader>
 
-			<IonContent className="ion-padding ion-content-no-footer">
-				<div className="page-outer">
-					<div className="page-body">
-
-						<section className="hero-block">
-							<div
-								style={{
-									display: "flex",
-									justifyContent: "center",
-									alignItems: "center",
-									width: "64px",
-									height: "64px",
-									maxWidth: "80px",
-									maxHeight: "80px",
-								}}
-							>
-								<IonImg
-									src={logo}
-									style={{
-										width: "100%",
-										height: "auto",
-									}}
-								/>
-							</div>
-
-							<div
-								style={{
-									marginTop: "1rem",
-									maxWidth: "300px",
-									width: "100%",
-								}}
-							>
-								<IonImg
-									src={shockwalletText}
-									style={{
-										display: "block",
-										width: "100%",
-										height: "auto",
-										objectFit: "contain",
-									}}
-								/>
-							</div>
-
-							<h1
-								className="mt-6 text-base sm:text-lg md:text-xl font-medium leading-tight text-center text-high"
-							>
-								Set up your identity
-							</h1>
-						</section>
-
-						<section className="main-block">
-							<IonCard
-								style={{
-									borderRadius: 12,
-								}}
-							>
-								<IonCardHeader>
-									<IonCardTitle>
-										<IonText
-											className="text-lg md:text-xl font-medium leading-snug text-high"
-										>
-											Select a method for device sync, backups and user settings
-										</IonText>
-									</IonCardTitle>
-								</IonCardHeader>
-
-								<IonCardContent>
-									<IonList className="round" lines="none">
-										<IonItem
-											detail
-											routerLink="/identity/create/sanctum"
-											routerDirection="forward"
-										>
-											<IonIcon
-												slot="start"
-												icon={cloudOutline}
-												size="large"
-												className="text-medium"
-											/>
-											<IonLabel>
-												<h2
-													className="text-base font-medium leading-snug text-high"
-												>
-													Log-In or Sign-Up with Email
-												</h2>
-												<IonText
-													className="block text-sm leading-snug text-low"
-												>
-													Use the Nostr network via a cloud based policy engine.
-												</IonText>
-											</IonLabel>
-										</IonItem>
-
-										<IonItem
-											detail
-											routerLink="/identity/create/keys"
-											routerDirection="forward"
-										>
-											<IonIcon
-												slot="start"
-												icon={keyOutline}
-												size="large"
-												className="text-medium"
-											/>
-											<IonLabel>
-												<h2
-													className="text-base font-medium leading-snug text-high"
-												>
-													Nostr Keys
-												</h2>
-
-												<IonText
-													className="block text-sm leading-snug text-low"
-												>
-													Use your existing Nostr key or generate a new one.
-												</IonText>
-
-												<IonText
-													className="block text-sm leading-snug text-low mt-2"
-												>
-													Includes a file based backup and NIP-07 extensions.
-												</IonText>
-											</IonLabel>
-										</IonItem>
-									</IonList>
-								</IonCardContent>
-							</IonCard>
-						</section>
-						<section className="disclaimer-block text-low pb-2">
-							By proceeding you acknowledge that this is bleeding-edge software,
-							and agree to the providers{" "}
-							<a
-								href="https://docs.shock.network/terms/"
-								target="_blank"
-								rel="noreferrer"
-								className="underline text-high"
-							>
-								terms
-							</a>{" "}
-							regarding any services herein.
-						</section>
-
+			<IonContent className="ion-padding">
+				<div className="min-h-full flex flex-col gap-12 justify-center items-center ">
+					<div className="text-lg font-normal tracking-tight text-center text-secondary">
+						Set up your profile
 					</div>
+					<IonCard
+						className="rounded-xl"
+					>
+						<IonCardHeader>
+							<IonCardTitle>
+								<IonText
+									className="text-lg md:text-xl font-medium leading-snug text-primary"
+								>
+									Select a method for device sync, backups and user settings
+								</IonText>
+							</IonCardTitle>
+						</IonCardHeader>
+
+						<IonCardContent>
+							<IonList className="round" lines="none">
+								<IonItem
+									detail
+									routerLink="/identity/create/sanctum"
+									routerDirection="forward"
+								>
+									<IonIcon
+										slot="start"
+										icon={cloudOutline}
+										size="large"
+										className="text-secondary"
+									/>
+									<IonLabel>
+										<h2
+											className="text-base font-medium leading-snug text-primary"
+										>
+											Log-In or Sign-Up with Email
+										</h2>
+										<IonText
+											className="block text-sm leading-snug text-muted"
+										>
+											Use the Nostr network via a cloud based policy engine.
+										</IonText>
+									</IonLabel>
+								</IonItem>
+
+								<IonItem
+									detail
+									routerLink="/identity/create/keys"
+									routerDirection="forward"
+								>
+									<IonIcon
+										slot="start"
+										icon={keyOutline}
+										size="large"
+										className="text-secondary"
+									/>
+									<IonLabel>
+										<h2
+											className="text-base font-medium leading-snug text-primary"
+										>
+											Nostr Keys
+										</h2>
+
+										<IonText
+											className="block text-sm leading-snug text-muted"
+										>
+											Use your existing Nostr key or generate a new one.
+										</IonText>
+
+										<IonText
+											className="block text-sm leading-snug text-muted mt-2"
+										>
+											Includes a file based backup and NIP-07 extensions.
+										</IonText>
+									</IonLabel>
+								</IonItem>
+							</IonList>
+						</IonCardContent>
+					</IonCard>
 				</div>
 
-			</IonContent>
 
+			</IonContent>
+			<IonFooter className="ion-no-border">
+				<DisclaimerFooter />
+			</IonFooter>
 
 		</IonPage>
 	);

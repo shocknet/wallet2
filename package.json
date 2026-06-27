@@ -21,6 +21,8 @@
 		"android:run": "npm run android:sync && npx cap run android"
 	},
 	"dependencies": {
+		"@aparajita/capacitor-biometric-auth": "^7.2.0",
+		"@aparajita/capacitor-secure-storage": "^7.1.6",
 		"@capacitor/android": "^7.0.0",
 		"@capacitor/app": "^7.0.0",
 		"@capacitor/barcode-scanner": "^2.0.3",
@@ -87,6 +89,7 @@
 		"react-toastify": "^10.0.4",
 		"react-virtuoso": "^4.13.0",
 		"redux-persist": "^6.0.0",
+		"sanctum-sdk": "github:shocknet/sanctumDK#d300937d82731e90089ce65b66dd12a37b9d1a30",
 		"sortablejs": "^1.15.1",
 		"styled-components": "^6.1.18",
 		"swiper": "^11.2.2",
