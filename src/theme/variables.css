@@ -405,11 +405,6 @@
 
 }
 
-ion-card::part(native) {
-	border: 3px solid red !important;
-	background-color: red !important;
-	color: red !important;
-}
 
 /* Danger alert */
 .danger-alert .alert-head .alert-sub-title {
