@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { IonToast, ToastOptions } from "@ionic/react";
-import { useThemeManager } from "../hooks/theme/theme";
 
 
 
@@ -22,7 +21,6 @@ export const useToast = () => {
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
 	const [toastOptions, setToastOptions] = useState<ToastOptions | null>(null);
-	useThemeManager()
 
 	const showToast = useCallback((options: ToastOptions) => {
 		setToastOptions(options);

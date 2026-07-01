@@ -41,10 +41,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Layout } from './Layout';
 
 import CreateIdentityPage from './Pages/CreateIdentity';
-import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-
-
-import { StatusBar, Style } from "@capacitor/status-bar";
 
 import { GuardedRoute } from './routing/GuardedRoute';
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource, loadedIdentityGuard } from './routing/guards';
@@ -53,16 +49,10 @@ import { App as CapApp } from '@capacitor/app';
 import { selectActiveIdentity } from './State/identitiesRegistry/slice';
 import { ConsumePendingNav } from './identityIntent/pendingNav';
 import { IdentityIntentBootstrap } from './identityIntent/IdentityIntentBootstrap';
+import { ThemeManager } from './theme/ThemeManager';
 
 
 
-async function setEnvColors() {
-	await StatusBar.setOverlaysWebView({ overlay: false });
-	await StatusBar.setStyle({ style: Style.Dark });
-	await StatusBar.setBackgroundColor({ color: "#16191c" });
-	await EdgeToEdge.setBackgroundColor({ color: "#16191c" });
-}
-setEnvColors();
 
 const Home = lazy(() => import('./Pages/Home'));
 const Receive = lazy(() => import('./Pages/Receive'));
@@ -406,6 +396,7 @@ const App: React.FC = () => {
 					persistor={persistor}
 					loading={null}
 				>
+					<ThemeManager />
 					<ToastProvider>
 						<ScannerProvider>
 							<IonApp>

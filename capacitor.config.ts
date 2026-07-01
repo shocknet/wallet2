@@ -15,9 +15,12 @@ const config: CapacitorConfig = {
 		BarcodeScanning: {
 			photoLibraryUsageDescription: "To scan QR codes using the camera"
 		},
-		StatusBar: {
-			insetsHandling: "css",
+		SystemBars: {
+			insetsHandling: "disable",
 			animation: "NONE"
+		},
+		StatusBar: {
+			overlaysWebView: false,
 		},
 		SplashScreen: {
 			backgroundColor: "#16191c",
