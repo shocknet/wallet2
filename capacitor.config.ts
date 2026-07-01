@@ -1,4 +1,3 @@
-/// <reference types="@capawesome/capacitor-android-edge-to-edge-support" />
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -7,9 +6,6 @@ const config: CapacitorConfig = {
 	webDir: 'dist',
 	server: {
 		androidScheme: 'https',
-	},
-	android: {
-		adjustMarginsForEdgeToEdge: 'force',
 	},
 	plugins: {
 		App: {
@@ -20,8 +16,8 @@ const config: CapacitorConfig = {
 			photoLibraryUsageDescription: "To scan QR codes using the camera"
 		},
 		StatusBar: {
-			overlaysWebView: false,
-			backgroundColor: '#16191c',
+			insetsHandling: "css",
+			animation: "NONE"
 		},
 		SplashScreen: {
 			backgroundColor: "#16191c",
@@ -39,9 +35,6 @@ const config: CapacitorConfig = {
 		CapacitorHttp: {
 			enabled: true
 		},
-		"EdgeToEdge": {
-			"backgroundColor": "#16191c"
-		}
 	}
 };
 
