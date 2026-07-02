@@ -17,6 +17,8 @@ import Manage from "../Manage";
 import Channels from "../Channels";
 import AdminSwaps from "./adminSwaps/AdminSwaps";
 import { AssetsAndLiab } from "./AssetsAndLiab";
+import UsersAdmin from "./UsersAdmin";
+import UserOperationsAdmin from "./UserOperationsAdmin";
 
 const Metrics = ({ match, location, history }: RouteComponentProps) => {
 
@@ -56,6 +58,8 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
+				<GuardedRoute exact path={`${match.url}/users`} component={UsersAdmin} guards={[requireSelectedAdminSourceGuard]} />
+				<GuardedRoute path={`${match.url}/users/:userId`} component={UserOperationsAdmin} guards={[requireSelectedAdminSourceGuard]} />
 			</IonRouterOutlet>
 		</IonPage>
 	);
