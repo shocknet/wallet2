@@ -88,7 +88,7 @@ export function AdminOperationsList({ operations }: { operations: UserOperation[
                             {operationTypeLabel(op.type)}
                         </span>
                     </div>
-                    <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                    <span style={{ fontSize: "0.8rem" }}>
                         {formatTableTs(op.paidAtUnix)}
                     </span>
                     <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>

@@ -157,7 +157,7 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
                                                 <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                                                     {formatTableAmount(user.balance)}
                                                 </span>
-                                                <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                                                <span style={{ fontSize: "0.8rem" }}>
                                                     {user.app_users.length} app user{user.app_users.length === 1 ? "" : "s"}
                                                     {user.owner_of_app_id ? ` · owns ${trimId(user.owner_of_app_id)}` : ""}
                                                 </span>

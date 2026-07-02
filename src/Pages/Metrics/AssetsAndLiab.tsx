@@ -270,7 +270,7 @@ function AssetOperationsTable({ operations }: { operations: UnifiedAssetOperatio
         <div
             style={{
                 borderRadius: "8px",
-                border: "1px solid var(--ion-color-medium-tint)",
+                border: "1px solid rgba(var(--ion-color-medium-rgb), 0.18)",
                 overflow: "hidden",
                 minWidth: "480px",
             }}
@@ -310,7 +310,8 @@ function AssetOperationsTable({ operations }: { operations: UnifiedAssetOperatio
                             padding: "10px 12px",
                             alignItems: "center",
                             fontSize: "0.85rem",
-                            borderBottom: i < operations.length - 1 ? "1px solid var(--ion-color-medium-tint)" : undefined,
+                            color: "var(--ion-text-color)",
+                            borderBottom: i < operations.length - 1 ? "1px solid rgba(var(--ion-color-medium-rgb), 0.1)" : undefined,
                             background: !isTracked
                                 ? "rgba(var(--ion-color-warning-rgb), 0.08)"
                                 : mismatch
@@ -330,7 +331,7 @@ function AssetOperationsTable({ operations }: { operations: UnifiedAssetOperatio
                                 )}
                             </span>
                         </div>
-                        <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>{formatTableTs(op.ts)}</span>
+                        <span style={{ fontSize: "0.8rem" }}>{formatTableTs(op.ts)}</span>
                         <div
                             style={{ display: "flex", alignItems: "center", gap: "4px", minWidth: 0 }}
                             title={`${providerLabel(providerKind)} · ${providerPubkey}`}

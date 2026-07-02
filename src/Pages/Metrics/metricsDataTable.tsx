@@ -20,7 +20,7 @@ export function formatTableAmount(n: number): string {
 
 const TABLE_SHELL: CSSProperties = {
     borderRadius: "8px",
-    border: "1px solid var(--ion-color-medium-tint)",
+    border: "1px solid rgba(var(--ion-color-medium-rgb), 0.18)",
     overflow: "hidden",
 };
 
@@ -39,7 +39,10 @@ const TABLE_ROW_BASE: CSSProperties = {
     padding: "10px 12px",
     alignItems: "center",
     fontSize: "0.85rem",
+    color: "var(--ion-text-color)",
 };
+
+const TABLE_ROW_BORDER = "1px solid rgba(var(--ion-color-medium-rgb), 0.1)";
 
 export function MetricsTableEmpty({ message }: { message: string }) {
     return (
@@ -99,7 +102,7 @@ export function MetricsTableRow({
             style={{
                 ...TABLE_ROW_BASE,
                 gridTemplateColumns: grid,
-                borderBottom: isLast ? undefined : "1px solid var(--ion-color-medium-tint)",
+                borderBottom: isLast ? undefined : TABLE_ROW_BORDER,
                 cursor: onClick ? "pointer" : undefined,
             }}
         >
