@@ -22,11 +22,12 @@ import {
     AssetsAndLiabilities,
     AssetsAndLiabilitiesReq,
     AssetOperation,
+    LiquidityAssetOperationsPage,
+    LndAssetOperationsPage,
     LndAssetProvider,
     LndProviderFilter,
     LiquidityAssetProvider,
     LiquidityProviderFilter,
-    OperationsCursor,
     TrackedLiquidityProvider,
     TrackedLndProvider,
     TrackedOperationType,
@@ -151,17 +152,17 @@ function collectAllOperations(data: AssetsAndLiabilities): UnifiedAssetOperation
     for (const lnd of data.lnds) {
         if (!lnd.tracked) continue;
         const { tracked } = lnd;
-        for (const op of tracked.invoices) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "invoice" });
-        for (const op of tracked.payments) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "payment" });
-        for (const op of tracked.incoming_tx) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "incoming_tx" });
-        for (const op of tracked.outgoing_tx) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "outgoing_tx" });
+        for (const op of tracked.invoices.operations) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "invoice" });
+        for (const op of tracked.payments.operations) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "payment" });
+        for (const op of tracked.incoming_tx.operations) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "incoming_tx" });
+        for (const op of tracked.outgoing_tx.operations) rows.push({ op, providerKind: "lnd", providerPubkey: lnd.pubkey, opKind: "outgoing_tx" });
     }
 
     for (const lp of data.liquidity_providers) {
         if (!lp.tracked) continue;
         const { tracked } = lp;
-        for (const op of tracked.invoices) rows.push({ op, providerKind: "lp", providerPubkey: lp.pubkey, opKind: "invoice" });
-        for (const op of tracked.payments) rows.push({ op, providerKind: "lp", providerPubkey: lp.pubkey, opKind: "payment" });
+        for (const op of tracked.invoices.operations) rows.push({ op, providerKind: "lp", providerPubkey: lp.pubkey, opKind: "invoice" });
+        for (const op of tracked.payments.operations) rows.push({ op, providerKind: "lp", providerPubkey: lp.pubkey, opKind: "payment" });
     }
 
     return rows.sort((a, b) => b.op.ts - a.op.ts);
@@ -241,17 +242,41 @@ function mergeOperations(existing: AssetOperation[], incoming: AssetOperation[])
     return merged.sort((a, b) => b.ts - a.ts);
 }
 
-function oldestCursor(ops: AssetOperation[]): OperationsCursor | undefined {
-    if (ops.length === 0) return undefined;
-    const oldest = ops.reduce((a, b) => (a.ts <= b.ts ? a : b));
-    return { ts: oldest.ts, id: 0 };
+function mergeLndPage(existing: LndAssetOperationsPage, incoming: LndAssetOperationsPage): LndAssetOperationsPage {
+    return {
+        has_more: incoming.has_more,
+        next_index_offset: incoming.next_index_offset,
+        operations: mergeOperations(existing.operations, incoming.operations),
+    };
+}
+
+function mergeLpPage(existing: LiquidityAssetOperationsPage, incoming: LiquidityAssetOperationsPage): LiquidityAssetOperationsPage {
+    return {
+        has_more: incoming.has_more,
+        next_cursor: incoming.next_cursor,
+        operations: mergeOperations(existing.operations, incoming.operations),
+    };
+}
+
+function lndProviderHasMore(tracked: TrackedLndProvider): boolean {
+    return tracked.invoices.has_more
+        || tracked.payments.has_more
+        || tracked.incoming_tx.has_more
+        || tracked.outgoing_tx.has_more;
+}
+
+function lpProviderHasMore(tracked: TrackedLiquidityProvider): boolean {
+    return tracked.invoices.has_more || tracked.payments.has_more;
 }
 
 function countProviderOperations(tracked: TrackedLndProvider | TrackedLiquidityProvider): number {
     if ("incoming_tx" in tracked) {
-        return tracked.invoices.length + tracked.payments.length + tracked.incoming_tx.length + tracked.outgoing_tx.length;
+        return tracked.invoices.operations.length
+            + tracked.payments.operations.length
+            + tracked.incoming_tx.operations.length
+            + tracked.outgoing_tx.operations.length;
     }
-    return tracked.invoices.length + tracked.payments.length;
+    return tracked.invoices.operations.length + tracked.payments.operations.length;
 }
 
 const TABLE_GRID = "minmax(80px, 1.1fr) 100px 52px 36px minmax(68px, 80px) minmax(68px, 80px)";
@@ -558,15 +583,13 @@ export const AssetsAndLiab = () => {
     const [presentLoading, dismissLoading] = useIonLoading();
     const fetchInFlightRef = useRef(false);
     const autoFetchedForSourceIdRef = useRef<string | null>(null);
-    const lpCursorRef = useRef<Record<string, { incoming?: OperationsCursor; outgoing?: OperationsCursor }>>({});
-
     const initProviderHasMore = useCallback((data: AssetsAndLiabilities) => {
         const next: Record<string, boolean> = {};
         for (const lnd of data.lnds) {
-            if (lnd.tracked) next[lnd.pubkey] = true;
+            if (lnd.tracked) next[lnd.pubkey] = lndProviderHasMore(lnd.tracked);
         }
         for (const lp of data.liquidity_providers) {
-            if (lp.tracked) next[lp.pubkey] = true;
+            if (lp.tracked) next[lp.pubkey] = lpProviderHasMore(lp.tracked);
         }
         setProviderHasMore(next);
     }, []);
@@ -616,7 +639,6 @@ export const AssetsAndLiab = () => {
         const data = await runFetch({ lnd_providers: [], liquidity_providers: [] }, true);
         if (!data) return;
         setAssetsAndLiabilities(data);
-        lpCursorRef.current = {};
         initProviderHasMore(data);
     }, [initProviderHasMore, runFetch]);
 
@@ -624,12 +646,22 @@ export const AssetsAndLiab = () => {
         const provider = assetsAndLiabilities.lnds.find((lnd) => lnd.pubkey === pubkey);
         if (!provider?.tracked || fetchInFlightRef.current) return;
 
+        const { tracked } = provider;
         const filter: LndProviderFilter = {
             pubkey,
             limit_invoices: OPERATIONS_PAGE_SIZE,
             limit_payments: OPERATIONS_PAGE_SIZE,
-            skip_invoices: provider.tracked.invoices.length,
-            skip_payments: provider.tracked.payments.length,
+            limit_transactions: OPERATIONS_PAGE_SIZE,
+            ...(tracked.invoices.has_more && tracked.invoices.next_index_offset != null
+                ? { invoice_index_offset: tracked.invoices.next_index_offset }
+                : {}),
+            ...(tracked.payments.has_more && tracked.payments.next_index_offset != null
+                ? { payment_index_offset: tracked.payments.next_index_offset }
+                : {}),
+            ...((tracked.incoming_tx.has_more || tracked.outgoing_tx.has_more)
+                && (tracked.incoming_tx.next_index_offset ?? tracked.outgoing_tx.next_index_offset) != null
+                ? { tx_index_offset: tracked.incoming_tx.next_index_offset ?? tracked.outgoing_tx.next_index_offset }
+                : {}),
         };
 
         setLoadingMorePubkey(pubkey);
@@ -643,33 +675,27 @@ export const AssetsAndLiab = () => {
                 return;
             }
 
-            const newInvoices = incoming.tracked.invoices;
-            const newPayments = incoming.tracked.payments;
-            const gotMore = newInvoices.length > 0 || newPayments.length > 0;
+            const incomingTracked = incoming.tracked;
+            const existingTracked = provider.tracked;
+            const mergedTracked: TrackedLndProvider = {
+                confirmed_balance: incomingTracked.confirmed_balance,
+                unconfirmed_balance: incomingTracked.unconfirmed_balance,
+                channels_balance: incomingTracked.channels_balance,
+                invoices: mergeLndPage(existingTracked.invoices, incomingTracked.invoices),
+                payments: mergeLndPage(existingTracked.payments, incomingTracked.payments),
+                incoming_tx: mergeLndPage(existingTracked.incoming_tx, incomingTracked.incoming_tx),
+                outgoing_tx: mergeLndPage(existingTracked.outgoing_tx, incomingTracked.outgoing_tx),
+            };
 
             setAssetsAndLiabilities((prev) => ({
                 ...prev,
-                lnds: prev.lnds.map((lnd) => {
-                    if (lnd.pubkey !== pubkey || !lnd.tracked) return lnd;
-                    return {
-                        ...lnd,
-                        tracked: {
-                            ...lnd.tracked,
-                            confirmed_balance: incoming.tracked!.confirmed_balance,
-                            unconfirmed_balance: incoming.tracked!.unconfirmed_balance,
-                            channels_balance: incoming.tracked!.channels_balance,
-                            invoices: mergeOperations(lnd.tracked.invoices, newInvoices),
-                            payments: mergeOperations(lnd.tracked.payments, newPayments),
-                            incoming_tx: mergeOperations(lnd.tracked.incoming_tx, incoming.tracked!.incoming_tx),
-                            outgoing_tx: mergeOperations(lnd.tracked.outgoing_tx, incoming.tracked!.outgoing_tx),
-                        },
-                    };
-                }),
+                lnds: prev.lnds.map((lnd) => (
+                    lnd.pubkey === pubkey ? { ...lnd, tracked: mergedTracked } : lnd
+                )),
             }));
-
             setProviderHasMore((prev) => ({
                 ...prev,
-                [pubkey]: gotMore && (newInvoices.length >= OPERATIONS_PAGE_SIZE || newPayments.length >= OPERATIONS_PAGE_SIZE),
+                [pubkey]: lndProviderHasMore(mergedTracked),
             }));
         } finally {
             setLoadingMorePubkey(null);
@@ -680,16 +706,16 @@ export const AssetsAndLiab = () => {
         const provider = assetsAndLiabilities.liquidity_providers.find((lp) => lp.pubkey === pubkey);
         if (!provider?.tracked || fetchInFlightRef.current) return;
 
-        const cursors = lpCursorRef.current[pubkey] ?? {
-            incoming: oldestCursor(provider.tracked.invoices),
-            outgoing: oldestCursor(provider.tracked.payments),
-        };
-
+        const { tracked } = provider;
         const filter: LiquidityProviderFilter = {
             pubkey,
             limit: OPERATIONS_PAGE_SIZE,
-            ...(cursors.incoming ? { latestIncomingInvoice: cursors.incoming } : {}),
-            ...(cursors.outgoing ? { latestOutgoingInvoice: cursors.outgoing } : {}),
+            ...(tracked.invoices.has_more && tracked.invoices.next_cursor
+                ? { latestIncomingInvoice: tracked.invoices.next_cursor }
+                : {}),
+            ...(tracked.payments.has_more && tracked.payments.next_cursor
+                ? { latestOutgoingInvoice: tracked.payments.next_cursor }
+                : {}),
         };
 
         setLoadingMorePubkey(pubkey);
@@ -703,35 +729,23 @@ export const AssetsAndLiab = () => {
                 return;
             }
 
-            const newInvoices = incoming.tracked.invoices;
-            const newPayments = incoming.tracked.payments;
-            const gotMore = newInvoices.length > 0 || newPayments.length > 0;
+            const incomingTracked = incoming.tracked;
+            const existingTracked = provider.tracked;
+            const mergedTracked: TrackedLiquidityProvider = {
+                balance: incomingTracked.balance,
+                invoices: mergeLpPage(existingTracked.invoices, incomingTracked.invoices),
+                payments: mergeLpPage(existingTracked.payments, incomingTracked.payments),
+            };
 
             setAssetsAndLiabilities((prev) => ({
                 ...prev,
-                liquidity_providers: prev.liquidity_providers.map((lp) => {
-                    if (lp.pubkey !== pubkey || !lp.tracked) return lp;
-                    const mergedInvoices = mergeOperations(lp.tracked.invoices, newInvoices);
-                    const mergedPayments = mergeOperations(lp.tracked.payments, newPayments);
-                    lpCursorRef.current[pubkey] = {
-                        incoming: oldestCursor(mergedInvoices),
-                        outgoing: oldestCursor(mergedPayments),
-                    };
-                    return {
-                        ...lp,
-                        tracked: {
-                            ...lp.tracked,
-                            balance: incoming.tracked!.balance,
-                            invoices: mergedInvoices,
-                            payments: mergedPayments,
-                        },
-                    };
-                }),
+                liquidity_providers: prev.liquidity_providers.map((lp) => (
+                    lp.pubkey === pubkey ? { ...lp, tracked: mergedTracked } : lp
+                )),
             }));
-
             setProviderHasMore((prev) => ({
                 ...prev,
-                [pubkey]: gotMore && (newInvoices.length + newPayments.length) >= OPERATIONS_PAGE_SIZE,
+                [pubkey]: lpProviderHasMore(mergedTracked),
             }));
         } finally {
             setLoadingMorePubkey(null);
@@ -745,7 +759,6 @@ export const AssetsAndLiab = () => {
 
     useEffect(() => {
         autoFetchedForSourceIdRef.current = null;
-        lpCursorRef.current = {};
         setProviderHasMore({});
     }, [selectedId]);
 
