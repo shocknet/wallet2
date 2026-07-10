@@ -39,7 +39,7 @@ export const StyledModal = styled.div`
   text-align: right;
   z-index: 100;
   font-size: 20px;
-  background: #16191c;
+  background: #15191c;
   position: fixed;
   border-radius: 5px;
 `;

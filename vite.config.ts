@@ -36,7 +36,7 @@ export default defineConfig({
 				short_name: 'App',
 				description: 'Lightning for Everyone',
 				theme_color: '#29abe2',
-				background_color: '#16191c',
+				background_color: '#15191c',
 				icons: [
 					{
 						src: 'pwa-64x64.png',

@@ -1,6 +1,5 @@
-
-import { IonAvatar, IonButton, IonButtons, IonHeader, IonImg, IonMenuButton, IonSkeletonText, IonToolbar, useIonRouter, } from '@ionic/react';
-import logo from "@/Assets/Images/isolated logo.png";
+import { IonAvatar, IonButton, IonButtons, IonHeader, IonMenuButton, IonSkeletonText, IonToolbar, useIonRouter, } from '@ionic/react';
+import { WALLET_AVATAR_HEIGHT, useWalletAvatar } from "@/Assets/Images/wallet-avatar";
 import { useGetProfileQuery } from '@/State/api/api';
 import { useAppSelector } from '@/State/store/hooks';
 import { selectActiveIdentity } from '@/State/identitiesRegistry/slice';
@@ -8,16 +7,9 @@ import { IdentityType } from '@/State/identitiesRegistry/types';
 import { useEffect, useState } from 'react';
 import SourcesStatusIndicator from '@/Components/SourcesStatusIndicator';
 
-
-
-
-
 const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
-
 	const registry = useAppSelector(selectActiveIdentity)!;
-
-
-
+	const logoSrc = useWalletAvatar();
 
 	const activeHex = registry.pubkey;
 	const { data: profile, isLoading } = useGetProfileQuery({
@@ -55,20 +47,29 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [logoClickCounter]);
 
-
-
 	return (
 		<IonHeader className="ion-no-border">
 			<IonToolbar>
 				<IonButtons slot="start">
-					<IonButton shape="round" onClick={() => setLogoClickCounter(prev => prev + 1)}>
-						<IonImg
-							slot="start"
-							src={logo}
-							style={{ width: "25px", height: "auto" }}
-						>
-						</IonImg>
-					</IonButton>
+					<button
+						type="button"
+						aria-label="Home"
+						onClick={() => setLogoClickCounter(prev => prev + 1)}
+						style={{
+							background: "none",
+							border: "none",
+							padding: "0 8px",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+						}}
+					>
+						<img
+							src={logoSrc}
+							alt="Shockwallet"
+							style={{ display: "block", height: WALLET_AVATAR_HEIGHT.nav, width: "auto" }}
+						/>
+					</button>
 				</IonButtons>
 				<IonButtons slot="end">
 					<SourcesStatusIndicator />

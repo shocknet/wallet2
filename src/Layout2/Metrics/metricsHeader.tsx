@@ -1,21 +1,34 @@
-
-import { IonButton, IonButtons, IonHeader, IonImg, IonTitle, IonToolbar } from '@ionic/react';
-import logo from "@/Assets/Images/bootstrap_source.jpg";
-
+import { IonButtons, IonHeader, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
+import { LIGHTNING_PUB_MARK_HEIGHT, useLightningPubLogo } from "@/Assets/Images/lightning-pub";
 
 const MetricsHeader = ({ children }: { children?: React.ReactNode }) => {
+	const router = useIonRouter();
+	const logoSrc = useLightningPubLogo("mark");
+	const markHeight = LIGHTNING_PUB_MARK_HEIGHT.nav;
 
 	return (
 		<IonHeader className="ion-no-border">
 			<IonToolbar>
 				<IonButtons slot="start">
-					<IonButton shape="round" routerLink="/home" routerDirection="back">
-						<IonImg
-							slot="start"
-							src={logo}
-							className="w-16 h-auto"
+					<button
+						type="button"
+						aria-label="Back to home"
+						onClick={() => router.push("/home", "back")}
+						style={{
+							background: "none",
+							border: "none",
+							padding: "0 8px",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+						}}
+					>
+						<img
+							src={logoSrc}
+							alt="Lightning.pub"
+							style={{ display: "block", height: markHeight, width: "auto" }}
 						/>
-					</IonButton>
+					</button>
 				</IonButtons>
 				<IonTitle className="android-centered-title">Metrics</IonTitle>
 			</IonToolbar>

@@ -23,7 +23,7 @@ const config: CapacitorConfig = {
 			overlaysWebView: false,
 		},
 		SplashScreen: {
-			backgroundColor: "#16191c",
+			backgroundColor: "#15191c",
 			androidScaleType: "CENTER_CROP",
 			launchAutoHide: false,
 			splashFullScreen: true,

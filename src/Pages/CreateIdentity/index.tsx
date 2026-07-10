@@ -9,16 +9,16 @@ import {
 	IonFooter,
 	IonHeader,
 	IonIcon,
-	IonImg,
 	IonItem,
 	IonLabel,
 	IonList,
 	IonPage,
 	IonText,
 	IonToolbar,
+	useIonRouter,
 } from '@ionic/react';
 
-import logo from "@/Assets/Images/isolated logo.png";
+import { WALLET_AVATAR_HEIGHT, useWalletAvatar } from "@/Assets/Images/wallet-avatar";
 
 import { cloudOutline, keyOutline } from 'ionicons/icons';
 
@@ -32,6 +32,8 @@ import { DisclaimerFooter } from '@/Components/common/info/disclaimerFooter';
 
 const CreateIdentityPage = () => {
 	const isBoostrapped = useAppSelector(state => state.appState.bootstrapped);
+	const logoSrc = useWalletAvatar();
+	const router = useIonRouter();
 
 	const activeIdentity = useAppSelector(selectActiveIdentity);
 	const identitiesCount = useAppSelector(identitiesSelectors.selectTotal);
@@ -45,13 +47,25 @@ const CreateIdentityPage = () => {
 				<IonToolbar>
 					{canLeave && (
 						<IonButtons slot="start">
-							<IonButton shape="round" routerLink="/home">
-								<IonImg
-									slot="start"
-									src={logo}
-									style={{ width: "30px", height: "auto" }}
+							<button
+								type="button"
+								aria-label="Back to home"
+								onClick={() => router.push("/home", "back")}
+								style={{
+									background: "none",
+									border: "none",
+									padding: "0 8px",
+									cursor: "pointer",
+									display: "flex",
+									alignItems: "center",
+								}}
+							>
+								<img
+									src={logoSrc}
+									alt="Shockwallet"
+									style={{ display: "block", height: WALLET_AVATAR_HEIGHT.nav, width: "auto" }}
 								/>
-							</IonButton>
+							</button>
 						</IonButtons>
 					)}
 

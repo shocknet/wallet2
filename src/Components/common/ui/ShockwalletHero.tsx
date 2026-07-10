@@ -1,25 +1,20 @@
-import { IonImg } from "@ionic/react";
-import logo from "@/Assets/Images/isolated logo.png";
-import shockwalletText from "@/Assets/Images/wallet_new_text.png";
+import { WALLET_AVATAR_HEIGHT, useWalletWelcomeWordmark } from "@/Assets/Images/wallet-avatar";
 
 export function ShockwalletHero() {
+	const wordmarkSrc = useWalletWelcomeWordmark();
+
 	return (
-		<div className="flex flex-col items-center justify-center">
-			<div className="h-16 w-16">
-				<IonImg
-					src={logo}
-					style={{
-						width: "100%",
-						height: "auto",
-					}}
-				/>
-			</div>
-			<div className="mt-8 max-w-80">
-				<IonImg
-					src={shockwalletText}
-					className="w-full h-auto object-contain"
-				/>
-			</div>
+		<div className="flex flex-col items-center justify-center w-full max-w-md px-4">
+			<img
+				src={wordmarkSrc}
+				alt="Shockwallet"
+				style={{
+					display: "block",
+					height: WALLET_AVATAR_HEIGHT.welcome,
+					width: "auto",
+					maxWidth: "100%",
+				}}
+			/>
 		</div>
 	);
 }

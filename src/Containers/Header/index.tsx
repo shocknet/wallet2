@@ -7,6 +7,7 @@ import { UseModal } from "../../Hooks/UseModal";
 //It import svg icons library
 import * as Icons from "../../Assets/SvgIconLibrary";
 import SWText from "../../Assets/Images/wallet_new_text.png";
+import { useLightningPubLogo, LIGHTNING_PUB_WORDMARK_HEIGHT } from "@/Assets/Images/lightning-pub";
 import { MenuList } from "../../Components/Modals/MenuList";
 import { useSelector } from "../../State/store/store";
 import { Modal } from "../../Components/Modals/Modal";
@@ -184,6 +185,7 @@ export const Header = () => {
 export const PubHeader = () => {
 	const location = useLocation();
 	const router = useIonRouter();
+	const pubLogoSrc = useLightningPubLogo("full");
 
 	const isNopeUp: boolean = location.pathname === "/";
 	const isLoader: boolean = location.pathname === "/loader";
@@ -352,7 +354,7 @@ export const PubHeader = () => {
 	return (
 		<div className="Header pub_header">
 			<button className="Header_logo_2" onClick={() => setLogoClickCounter(prev => prev + 1)}>
-				<img src="/pub_logo.png" width={147} height={26} alt="logo" />
+				<img src={pubLogoSrc} alt="Lightning.pub" style={{ display: "block", height: LIGHTNING_PUB_WORDMARK_HEIGHT.nav, width: "auto" }} />
 			</button>
 			<button className="Header_menu" onClick={() => {
 				router.push("#");

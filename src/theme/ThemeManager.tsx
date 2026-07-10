@@ -34,7 +34,7 @@ export function ThemeManager() {
 		const root = document.documentElement;
 		root.classList.toggle("dark", effective === "dark");
 		SystemBars.setStyle({ style: effective === "dark" ? SystemBarsStyle.Dark : SystemBarsStyle.Light });
-		StatusBar.setBackgroundColor({ color: effective === "dark" ? "#16191c" : "#f5f7fa" }); // android version < 15
+		StatusBar.setBackgroundColor({ color: effective === "dark" ? "#15191c" : "#f5f7fa" }); // android version < 15
 		root.style.colorScheme = effective;
 	}, [pref, prefersDark]);
 
