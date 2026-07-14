@@ -9,13 +9,12 @@ import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 import { RootState } from "../store/store";
 import {
 	IdentityType,
-	isSecureIdentity,
-	RuntimeIdentity,
 	type Identity,
 	type LocalPrivateKeyStorage,
 	type SanctumTokensStorage,
 	type WrappedDataKeyStorage,
 } from "./types";
+import type { RuntimeIdentity } from "@/shell/types";
 import { TokensData } from "sanctum-sdk";
 
 
@@ -32,12 +31,14 @@ export type TopicIndexEntry = {
 export interface IdentitiesState extends EntityState<Identity, string> {
 	topicIndexById: Record<string, TopicIndexEntry>;
 	active: RuntimeIdentity | null;
+	lastActiveIdentityId: string | null;
 }
 
 
 const initialState: IdentitiesState = identitiesAdapter.getInitialState({
 	topicIndexById: {},
 	active: null,
+	lastActiveIdentityId: null,
 })
 
 
@@ -60,7 +61,7 @@ export const identitiesRegistrySlice = createSlice({
 
 		updateIdentityRelays: (state, { payload }: PayloadAction<{ pubkey: string, relays: string[] }>) => {
 			const e = state.entities[payload.pubkey];
-			if (e.type === IdentityType.SANCTUM) return;
+			if (!e || e.type === IdentityType.SANCTUM) return;
 			e.relays = payload.relays;
 		},
 
@@ -119,6 +120,12 @@ export const identitiesRegistrySlice = createSlice({
 				}
 			}
 		},
+		setLastActiveIdentityId: (state, { payload }: PayloadAction<{ pubkey: string }>) => {
+			state.lastActiveIdentityId = payload.pubkey;
+		},
+		clearLastActiveIdentityId: (state) => {
+			state.lastActiveIdentityId = null;
+		},
 
 
 
@@ -175,16 +182,20 @@ export const persistedIdentitiesRegistryReducer = persistReducer(
 
 
 
+
+
 export const identitiesSelectors = identitiesAdapter.getSelectors(
 	(s: RootState) => s.identitiesRegistry
 );
 
-export const selectSecureIdentities = createSelector(
+export const selectIdentities = createSelector(
 	[
-		identitiesSelectors.selectEntities,
+		identitiesSelectors.selectAll,
 	],
-	(entities) => Object.values(entities).filter(isSecureIdentity)
+	(identities) => identities
 )
+
+
 
 
 export const selectIdentityByPubkey = createSelector(
@@ -214,3 +225,6 @@ export const selectActiveRuntimeSanctumTokensData = (s: RootState) =>
 	s.identitiesRegistry.active?.type === IdentityType.SANCTUM
 		? s.identitiesRegistry.active.tokensData
 		: null;
+export const selectLastActiveIdentityId = (s: RootState) => s.identitiesRegistry.lastActiveIdentityId;
+
+export const selectTopicIndexFromRegistry = (s: RootState, topicId: string) => s.identitiesRegistry.topicIndexById[topicId] ?? null;

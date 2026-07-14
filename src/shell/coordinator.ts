@@ -1,0 +1,309 @@
+import type {
+	AppDispatch,
+	AppThunk,
+	RootState,
+} from "@/State/store/store";
+import { createSanctumDK, type TokensData } from "sanctum-sdk";
+import {
+	IdentityType,
+} from "../State/identitiesRegistry/types";
+import { switchIdentity } from "../State/identitiesRegistry/thunks";
+import { selectIdentities } from "../State/identitiesRegistry/slice";
+import { setIdentitySanctumTokensData } from "../State/identitiesRegistry/helpers/platformSecretStorage";
+import { shellActions } from "./slice";
+import { runShellMigrations } from "./migrations";
+import {
+	continueFreshAfterDeviceToIdentitiesFailure,
+	drainPendingDeviceToIdentitiesLocalSources,
+	type DeviceToIdentitiesMigrationFailure,
+} from "./migrations/deviceToIdentities";
+import {
+	continueFreshAfterSecureIdentitiesFailure,
+} from "./migrations/secureIdentities";
+import type {
+	DeviceToIdentitiesRepairAction,
+	RuntimeIdentity,
+	RuntimeIdentitySanctum,
+	SecureIdentitiesRepairAction,
+	UnlockReason,
+} from "./types";
+import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities/errors";
+import { selectIdentitySession } from "./selectors";
+import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
+import { materializePushIntentToPendingNav } from "./pendingNav";
+import { SANCTUM_URL } from "@/constants";
+
+
+
+
+
+export async function startShell(
+	dispatch: AppDispatch,
+	getState: () => RootState,
+) {
+	dispatch(shellActions.migrationStarted());
+
+	const migrationResult = await runShellMigrations(dispatch, getState);
+
+	if (!migrationResult.ok) {
+		dispatch(
+			shellActions.migrationFailed({
+				failure: migrationResult.failure,
+			}),
+		);
+
+		return;
+	}
+
+	dispatch(continueAfterMigrationSuccess());
+}
+
+export function retryShellMigration(
+	dispatch: AppDispatch,
+	getState: () => RootState,
+) {
+	void startShell(dispatch, getState);
+}
+
+export async function repairDeviceToIdentitiesMigration(
+	dispatch: AppDispatch,
+	getState: () => RootState,
+	failure: DeviceToIdentitiesMigrationFailure,
+	action: DeviceToIdentitiesRepairAction,
+): Promise<void> {
+	if (action === "continue-fresh") {
+		await continueFreshAfterDeviceToIdentitiesFailure();
+		dispatch(continueAfterMigrationSuccess());
+		return;
+	}
+
+	retryShellMigration(dispatch, getState);
+}
+
+export async function repairSecureIdentitiesMigration(
+	dispatch: AppDispatch,
+	getState: () => RootState,
+	failure: SecureIdentitiesMigrationFailure,
+	action: SecureIdentitiesRepairAction,
+): Promise<void> {
+	if (action === "continue-fresh") {
+		await continueFreshAfterSecureIdentitiesFailure(failure);
+		void startShell(dispatch, getState);
+		return;
+	}
+
+	retryShellMigration(dispatch, getState);
+}
+
+
+/*
+
+*/
+const continueAfterMigrationSuccess =
+	(): AppThunk<void> => (dispatch, getState) => {
+		dispatch(shellActions.migrationSucceeded());
+
+		const state = getState();
+
+		if (selectIdentities(state).length === 0) {
+			dispatch(shellActions.pushIntentCleared());
+			dispatch(shellActions.startupIdentityResolved());
+			return;
+		}
+
+		const target = resolveStartupIdentityTarget(state);
+
+		if (target) {
+			dispatch(
+				shellActions.identityUnlockRequested({
+					identityId: target.identityId,
+					reason: target.reason,
+				}),
+			);
+		} else {
+			dispatch(shellActions.identitySessionCleared());
+		}
+
+		if (!target || target.source !== "push") {
+			dispatch(shellActions.pushIntentCleared());
+		}
+
+		dispatch(shellActions.startupIdentityResolved());
+	};
+
+export const proceedAfterIdentityUnlocked = (
+	runtimeIdentity: RuntimeIdentity,
+): AppThunk<Promise<void>> => async (dispatch) => {
+	const verification = await verifySanctumRuntimeIdentity(
+		runtimeIdentity,
+	);
+
+	if (!verification.ok) {
+		dispatch(
+			shellActions.sanctumReauthRequired({
+				runtimeIdentity,
+				reason: verification.reason,
+			}),
+		);
+		return;
+	}
+
+	await dispatch(completeShellIdentityLoad(runtimeIdentity));
+};
+
+export function requestIdentityUnlock(
+	dispatch: AppDispatch,
+	input: {
+		identityId: string;
+		reason: UnlockReason;
+	},
+) {
+	dispatch(
+		shellActions.identityUnlockRequested({
+			identityId: input.identityId,
+			reason: input.reason,
+		}),
+	);
+}
+
+export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch) => {
+	dispatch(shellActions.identitySessionCleared());
+	dispatch(shellActions.pushIntentCleared());
+};
+
+async function verifySanctumRuntimeIdentity(
+	runtimeIdentity: RuntimeIdentity,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+	if (runtimeIdentity.type !== IdentityType.SANCTUM) {
+		return { ok: true };
+	}
+
+	if (!runtimeIdentity.tokensData) {
+		return {
+			ok: false,
+			reason: "Sanctum reauth required",
+		};
+	}
+
+	const verification = await verifySanctumSession({
+		expectedPubkey: runtimeIdentity.pubkey,
+		tokensData: runtimeIdentity.tokensData,
+	});
+
+	if (verification.ok) {
+		return { ok: true };
+	}
+
+	return {
+		ok: false,
+		reason: verification.reason,
+	};
+}
+
+export const completeShellIdentityLoad = (
+	runtimeIdentity: RuntimeIdentity,
+): AppThunk<Promise<void>> => async (dispatch, getState) => {
+	dispatch(
+		shellActions.identityLoadingStarted({
+			identityId: runtimeIdentity.pubkey,
+		}),
+	);
+
+	try {
+		const current =
+			getState().identitiesRegistry.active ??
+			getState().shell.activeIdentity;
+		const boot =
+			!current || current.pubkey === runtimeIdentity.pubkey;
+
+		await dispatch(switchIdentity(runtimeIdentity, boot));
+		await dispatch(drainPendingDeviceToIdentitiesLocalSources());
+
+		dispatch(shellActions.identitySessionCleared());
+		dispatch(materializePushIntentToPendingNav());
+	} catch (_error) {
+		dispatch(shellActions.identitySessionCleared());
+	}
+};
+
+
+
+
+export const completeSanctumReauth =
+	(tokensData: TokensData): AppThunk<Promise<void>> =>
+		async (dispatch, getState) => {
+			const session = selectIdentitySession(getState());
+
+			if (session.kind !== "sanctum-reauth") {
+				return;
+			}
+
+			const runtimeIdentity = session.runtimeIdentity;
+
+			if (runtimeIdentity.type !== IdentityType.SANCTUM) {
+				dispatch(shellActions.identitySessionCleared());
+				return;
+			}
+
+			const verification = await verifySanctumSession({
+				expectedPubkey: runtimeIdentity.pubkey,
+				tokensData,
+			});
+
+			if (!verification.ok) {
+				throw new Error(verification.reason);
+			}
+
+			await dispatch(
+				setIdentitySanctumTokensData({
+					pubkey: runtimeIdentity.pubkey,
+					tokensData,
+				}),
+			);
+
+			const refreshedRuntime: RuntimeIdentitySanctum = {
+				...runtimeIdentity,
+				tokensData,
+				reauthReason: null,
+			};
+
+			await dispatch(completeShellIdentityLoad(refreshedRuntime));
+		};
+
+
+
+async function verifySanctumSession(args: {
+	expectedPubkey: string;
+	tokensData: TokensData;
+}): Promise<{ ok: true } | { ok: false; reason: string }> {
+	const sdk = createSanctumDK({
+		url: SANCTUM_URL,
+		tokenDataAdapter: {
+			getTokenData: () => args.tokensData,
+			setTokenData: () => { },
+			clearTokenData: () => { },
+		},
+	});
+
+	try {
+		const pubkey = await sdk.api.getPublicKey();
+
+		if (pubkey !== args.expectedPubkey) {
+			return {
+				ok: false,
+				reason: "Sanctum account does not match this identity",
+			};
+		}
+
+		return { ok: true };
+	} catch (error) {
+		return {
+			ok: false,
+			reason: error instanceof Error
+				? error.message
+				: "Sanctum session is not valid",
+		};
+	} finally {
+		void sdk.destroy();
+	}
+}

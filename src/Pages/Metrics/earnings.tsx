@@ -184,9 +184,9 @@ export const getUnixTimeRange = (period: Period, offset: number) => {
     switch (period) {
         case Period.WEEK: {
             /*       const thisWeek = new Date(now.setDate(now.getDate() - now.getDay()))
-                        thisWeek.setHours(0, 0, 0, 0)
-                        console.log({ thisWeek: thisWeek.toISOString() })
-                        const thisWeekMs = thisWeek.getTime() */
+                                    thisWeek.setHours(0, 0, 0, 0)
+                                    console.log({ thisWeek: thisWeek.toISOString() })
+                                    const thisWeekMs = thisWeek.getTime() */
 
             const firstDayOfWeek = new Date(new Date().setDate(now.getDate() - now.getDay() + (offset * 7))).setHours(0, 0, 0, 0);
             const lastDayOfWeek = new Date(new Date().setDate(now.getDate() - now.getDay() + 6 + (offset * 7))).setHours(23, 59, 59, 999);

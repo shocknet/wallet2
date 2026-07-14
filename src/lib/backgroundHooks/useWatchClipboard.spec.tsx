@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, expect, vi, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
 import { MemoryRouter as Router } from "react-router-dom";
-import { useWatchClipboard } from "./useWatchClipboard";
+import { useWatchClipboard } from "../../Hooks/useWatchClipboard";
 import { InputClassification } from "../types/parse";
 
 function Harness() {

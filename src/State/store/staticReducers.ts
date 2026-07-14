@@ -12,6 +12,7 @@ import { persistedIdentitiesRegistryReducer } from '../identitiesRegistry/slice'
 import { appApi } from '../api/api';
 import { persistedAppStateReducer } from '../appState/slice';
 import { runTimeReducer } from '../runtime/slice';
+import { shellReducer } from '../../shell/slice';
 
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -31,5 +32,6 @@ export const staticReducers = combineSlices({
 	identitiesRegistry: persistedIdentitiesRegistryReducer,
 	appState: persistedAppStateReducer,
 	runtime: runTimeReducer,
-	[appApi.reducerPath]: appApi.reducer
+	[appApi.reducerPath]: appApi.reducer,
+	shell: shellReducer,
 }).withLazyLoadedSlices<LazyLoadedSlices>();

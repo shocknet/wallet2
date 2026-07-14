@@ -69,17 +69,12 @@ export async function toLocalPrivateKeyStorage(
 		const encryptedPrivkey = await encryptLocalPrivateKeyForWeb(privkey, userPassword);
 		return {
 			storage: "inline_encrypted",
-			scheme: "app-password-only-v1",
-			passwordMode: "user",
 			encryptedPrivkey,
 		};
 	} else {
-		const encryptedPrivkey = await encryptLocalPrivateKeyForWeb(privkey);
 		return {
-			storage: "inline_encrypted",
-			scheme: "app-password-only-v1",
-			passwordMode: "default",
-			encryptedPrivkey,
+			storage: "inline",
+			privateKey: privkey,
 		};
 	}
 }
@@ -106,22 +101,26 @@ export async function resolveLocalPrivateKey(
 	args?: {
 		userPassword?: string;
 	}
-): Promise<string | null> {
+): Promise<string> {
 	if (identity.localSecret.storage === "secure_ref") {
 		const localPrivKey = await getLocalPrivateKey(identity.localSecret.localKeyRef);
 		if (!localPrivKey) {
-			throw new Error(`Missing local private key for identity ${identity.pubkey}`);
+			throw new Error(`Local private key missing from secure storage for identity ${identity.pubkey}`);
 		}
 		return localPrivKey;
 	}
-	const passwordMode = identity.localSecret.passwordMode;
-	if (passwordMode === "user" && !args?.userPassword) {
-		throw new Error(`Missing user password for local identity ${identity.pubkey}`);
+	if (identity.localSecret.storage === "inline_encrypted") {
+		if (!args?.userPassword) {
+			throw new Error(`User password not provided for inline encrypted local private key for identity ${identity.pubkey}`);
+		}
+		return decryptLocalPrivateKeyForWeb(
+			identity.localSecret.encryptedPrivkey,
+			args.userPassword
+		);
+
 	}
-	return decryptLocalPrivateKeyForWeb(
-		identity.localSecret.encryptedPrivkey,
-		passwordMode === "user" ? args?.userPassword : undefined
-	);
+
+	return identity.localSecret.privateKey;
 }
 
 export async function resolveSanctumTokensData(

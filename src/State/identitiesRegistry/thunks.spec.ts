@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Identity } from "./types";
 import { IdentityType } from "./types";
-import type { RuntimeIdentity } from "./types";
+import type { RuntimeIdentity } from "@/shell/types";
 
 const {
 	unwrapIdentityDataKeyMock,

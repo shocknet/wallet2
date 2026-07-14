@@ -169,7 +169,6 @@ export const generateNewKeyPair = () => {
 	return {
 		privateKey: bytesToHex(privateKey),
 		publicKey,
-		privateKeyBytes: privateKey,
 	}
 }
 

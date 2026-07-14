@@ -7,6 +7,28 @@ export enum IdentityType {
 	NIP07 = "NIP07_IDENTITY"
 }
 
+export function identityTypeLabel(identity: { type: IdentityType }): string {
+	switch (identity.type) {
+		case IdentityType.LOCAL_KEY:
+			return "Local key";
+		case IdentityType.SANCTUM:
+			return "Sanctum";
+		case IdentityType.NIP07:
+			return "Browser extension";
+	}
+}
+
+
+export function resolveIdentityRelays(identity: {
+	type: IdentityType;
+	relays?: string[];
+}): string[] {
+	if (identity.type === IdentityType.SANCTUM) {
+		return ["wss://strfry.shock.network", "wss://relay.lightning.pub"];
+	}
+	return identity.relays ?? [];
+}
+
 
 
 export type WrappedDataKeyStorage =
@@ -23,10 +45,9 @@ export type LocalPrivateKeyPasswordMode = "default" | "user";
 
 export type LocalPrivateKeyStorage =
 	| { storage: "secure_ref"; localKeyRef: string }
+	| { storage: "inline"; privateKey: string }
 	| {
 		storage: "inline_encrypted";
-		scheme: "app-password-only-v1";
-		passwordMode: LocalPrivateKeyPasswordMode;
 		encryptedPrivkey: EncryptedBlobV1;
 	};
 
@@ -64,64 +85,11 @@ export interface IdentitySanctum extends IdentityBase {
 
 export type Identity = IdentityKeys | IdentityExtension | IdentitySanctum;
 
-export function isSecureIdentity(identity: Identity | IdentityV0): identity is Identity {
-	return "wrappedDataKey" in identity && identity.wrappedDataKey !== undefined;
+export function isSecureIdentity(identity: unknown): identity is Identity {
+	return (
+		typeof identity === "object" &&
+		identity !== null &&
+		"wrappedDataKey" in identity &&
+		(identity as { wrappedDataKey?: unknown }).wrappedDataKey !== undefined
+	);
 }
-
-
-
-/* Runtime types for active identity */
-type RuntimeIdentityBase<TIdentity extends Identity> =
-	Pick<TIdentity, "type" | "pubkey" | "label"> & {
-		unlockedAtMs: number;
-		wrappedDataKeyCiphertext: string;
-	};
-
-export type RuntimeIdentityKeys =
-	RuntimeIdentityBase<IdentityKeys> & {
-		privateKey: string;
-		relays: string[];
-	};
-
-export type RuntimeIdentitySanctum =
-	RuntimeIdentityBase<IdentitySanctum> & {
-		tokensData: TokensData | null;
-		reauthReason: string | null;
-	};
-
-export type RuntimeIdentityExtension =
-	RuntimeIdentityBase<IdentityExtension> & {
-		relays: string[];
-	};
-
-export type RuntimeIdentity =
-	| RuntimeIdentityKeys
-	| RuntimeIdentitySanctum
-	| RuntimeIdentityExtension;
-
-
-/* V0 types for migration */
-export interface IdentityBaseV0 {
-	pubkey: string;
-	label: string;
-	createdAt: number;
-	lastUsedAt?: number;
-}
-
-export interface IdentityKeysV0 extends IdentityBaseV0 {
-	type: IdentityType.LOCAL_KEY;
-	privkey: string;
-	relays: string[];
-}
-
-export interface IdentityExtensionV0 extends IdentityBaseV0 {
-	type: IdentityType.NIP07;
-	relays: string[];
-}
-
-export interface IdentitySanctumV0 extends IdentityBaseV0 {
-	type: IdentityType.SANCTUM;
-	accessToken: string;
-}
-
-export type IdentityV0 = IdentityKeysV0 | IdentityExtensionV0 | IdentitySanctumV0;

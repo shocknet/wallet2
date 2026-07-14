@@ -195,7 +195,6 @@
 
 
 
-
 /* ionic global variables settings */
 :root.ios,
 :root.md {
@@ -679,6 +678,15 @@ ion-modal.wallet-modal {
 	--border-radius: 6px;
 }
 
+ion-modal.inactive-profile-sheet {
+	--border-radius: 16px 16px 0 0;
+	--background: var(--app-background);
+}
+
+ion-modal.inactive-profile-sheet ion-content {
+	--background: var(--app-background);
+}
+
 
 
 
@@ -791,23 +799,10 @@ ion-grid {
 
 
 
-ion-back-button {
-	--color: var(--app-text-secondary);
 
 
-	--color: var(--app-text-secondary);
-	--icon-font-size: 1.2rem;
-	--icon-margin-end: 0.6rem
-}
 
 
-ion-back-button::part(icon) {
-	color: var(--app-text-secondary);
-	background-color: var(--app-surface);
-	padding: 5px;
-	border-radius: 50%;
-	font-size: 1.2rem;
-}
 
 
 ion-popover.hinty-popover {
@@ -840,12 +835,19 @@ ion-popover.custom-dropdown-popover {
 
 .ion-content-no-header::part(scroll) {
 	padding-top: var(--ion-safe-area-top, 0);
+	padding-left: var(--ion-safe-area-left, 0);
+	padding-right: var(--ion-safe-area-right, 0);
 }
 
 .ion-content-no-footer::part(scroll) {
 	padding-bottom: var(--ion-safe-area-bottom, 0);
+	padding-left: var(--ion-safe-area-left, 0);
+	padding-right: var(--ion-safe-area-right, 0);
 }
 
-ion-footer {
-	padding-bottom: var(--ion-safe-area-bottom, 0px);
+.ion-content-only::part(scroll) {
+	padding-top: var(--ion-safe-area-top, 0);
+	padding-bottom: var(--ion-safe-area-bottom, 0);
+	padding-left: var(--ion-safe-area-left, 0);
+	padding-right: var(--ion-safe-area-right, 0);
 }

@@ -38,6 +38,20 @@ module.exports = {
 				appbg: 'var(--ion-background-color)',
 				apptext: 'var(--ion-text-color)',
 			},
+			keyframes: {
+				'shell-breathe': {
+					'0%, 100%': { transform: 'scale(1)', opacity: '1' },
+					'50%': { transform: 'scale(1.04)', opacity: '0.92' },
+				},
+				'shell-progress': {
+					'0%': { transform: 'translateX(-120%)' },
+					'100%': { transform: 'translateX(320%)' },
+				},
+			},
+			animation: {
+				'shell-breathe': 'shell-breathe 2.4s ease-in-out infinite',
+				'shell-progress': 'shell-progress 1.35s ease-in-out infinite',
+			},
 		},
 	},
 	plugins: [],

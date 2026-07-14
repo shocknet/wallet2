@@ -34,7 +34,7 @@ async function getAppPasswordOnlyAesKey(password: string): Promise<CryptoKey> {
 
 export async function encryptLocalPrivateKeyForWeb(
 	privkey: string,
-	password: string = DEFAULT_WEB_PASSWORD
+	password: string
 ): Promise<EncryptedBlobV1> {
 	const key = await getAppPasswordOnlyAesKey(password);
 	const nonce = globalThis.crypto.getRandomValues(new Uint8Array(12));
@@ -56,7 +56,7 @@ export async function encryptLocalPrivateKeyForWeb(
 
 export async function decryptLocalPrivateKeyForWeb(
 	encrypted: EncryptedBlobV1,
-	password: string = DEFAULT_WEB_PASSWORD
+	password: string
 ): Promise<string> {
 	if (encrypted.alg !== "AES-GCM") {
 		throw new Error(`Unsupported local secret encryption algorithm: ${encrypted.alg}`);
@@ -64,14 +64,21 @@ export async function decryptLocalPrivateKeyForWeb(
 	const key = await getAppPasswordOnlyAesKey(password);
 	const nonce = base64urlDecode(encrypted.nonce);
 	const ciphertext = base64urlDecode(encrypted.ciphertext);
-	const plaintext = await globalThis.crypto.subtle.decrypt(
-		{
-			name: "AES-GCM",
-			iv: toArrayBuffer(nonce),
-			tagLength: 128,
-		},
-		key,
-		toArrayBuffer(ciphertext)
-	);
-	return new TextDecoder().decode(plaintext);
+
+	try {
+		const plaintext = await globalThis.crypto.subtle.decrypt(
+			{
+				name: "AES-GCM",
+				iv: toArrayBuffer(nonce),
+				tagLength: 128,
+			},
+			key,
+			toArrayBuffer(ciphertext)
+		);
+
+		return new TextDecoder().decode(plaintext);
+	} catch {
+		throw new Error("Failed to decrypt local private key. Incorrect password");
+	}
+
 }

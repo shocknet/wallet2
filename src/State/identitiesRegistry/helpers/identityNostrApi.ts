@@ -4,7 +4,8 @@ import { NostrKeyPair } from "@/Api/nostrHandler";
 import { hexToBytes } from "@noble/hashes/utils";
 import { NOSTR_RELAYS } from "@/constants";
 import { normalizeWsUrl } from "@/lib/url";
-import { IdentityType, RuntimeIdentity, RuntimeIdentitySanctum } from "../types";
+import { IdentityType } from "../types";
+import type { RuntimeIdentity, RuntimeIdentitySanctum } from "@/shell/types";
 import { getExtentionsWithRetries } from "@/lib/nip07Extension";
 import store from "@/State/store/store";
 import { identitiesRegistryActions, selectActiveRuntimeSanctumTokensData } from "../slice";
@@ -176,7 +177,5 @@ export default async function getIdentityNostrApi(identity: RuntimeIdentity, off
 			return getNostrExtensionIdentityApi(identity.pubkey, identity.relays);
 		case IdentityType.LOCAL_KEY:
 			return getLocalKeysIdentityApi({ publicKey: identity.pubkey, privateKey: identity.privateKey }, identity.relays);
-		default:
-			throw new Error("Unsupported identity type");
 	}
 }
