@@ -1,8 +1,6 @@
 import { base64urlDecode, base64urlEncode } from "@/lib/base64url";
 import type { EncryptedBlobV1 } from "../types";
 
-export const DEFAULT_WEB_PASSWORD = "shockwallet";
-
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 	return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
 }

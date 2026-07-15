@@ -13,10 +13,6 @@ import {
 	getLocalKeysIdentityApi,
 	getNostrExtensionIdentityApi,
 } from "@/State/identitiesRegistry/helpers/identityNostrApi";
-import {
-	DEFAULT_WEB_PASSWORD,
-	encryptLocalPrivateKeyForWeb,
-} from "@/State/identitiesRegistry/helpers/localSecretCrypto";
 import { toWrappedDataKeyStorage } from "@/State/identitiesRegistry/helpers/platformSecretStorage";
 import {
 	setLocalPrivateKey,
@@ -125,11 +121,8 @@ async function migrateLocalKeyV0(
 				),
 			}
 			: {
-				storage: "inline_encrypted",
-				encryptedPrivkey: await encryptLocalPrivateKeyForWeb(
-					identity.privkey,
-					DEFAULT_WEB_PASSWORD,
-				),
+				storage: "inline",
+				privateKey: identity.privkey,
 			},
 	};
 
