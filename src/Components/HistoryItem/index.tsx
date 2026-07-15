@@ -3,7 +3,7 @@ import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText }
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
 import styles from "./styles/index.module.scss";
-import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
+import { usePreferredAmountUnit } from "@/Hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { FiatDisplay } from "../FiatDisplay";
 import cn from "clsx";

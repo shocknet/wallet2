@@ -2,7 +2,7 @@ import { ForkedTask, isAnyOf, TaskAbortError } from "@reduxjs/toolkit";
 import { identityActions, selectIdentityDraft, } from "@/State/scoped/backups/identity/slice";
 import { docsSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { saveNip78Event, saveSourceDocEvent } from "@/State/identitiesRegistry/helpers/nostr";
-import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { getSourceDocDtag, identityDocDtag } from "../../identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { selectActiveIdentity, } from "@/State/identitiesRegistry/slice";
@@ -60,7 +60,7 @@ export const publisherSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const identity = selectActiveIdentity(state)!;
 
-					const identityApi = await getIdentityNostrApi(identity);
+					const identityApi = await getActiveIdentityNostrApi();
 
 					const d = docsSelectors.selectById(listenerApi.getState(), sourceId).draft;
 
@@ -107,9 +107,8 @@ export const publisherSpec: ListenerSpec = {
 					log.info("started");
 
 					const state = listenerApi.getState();
-					const identity = selectActiveIdentity(state)!;
 
-					const identityApi = await getIdentityNostrApi(identity);
+					const identityApi = await getActiveIdentityNostrApi();
 					const draft = selectIdentityDraft(state)!;
 
 

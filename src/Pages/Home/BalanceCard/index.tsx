@@ -1,6 +1,6 @@
 import { useRef, } from "react";
 import { IonButton, IonNote, IonRippleEffect, IonText } from "@ionic/react";
-import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
+import { usePreferredAmountUnit } from "@/Hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 
 import { useToast } from "@/lib/contexts/useToast";

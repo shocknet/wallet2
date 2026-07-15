@@ -19,15 +19,15 @@ import {
 import { nip19 } from "nostr-tools";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
-	identitiesRegistryActions,
 	selectActiveIdentity,
 	selectIdentityByPubkey,
 } from "@/State/identitiesRegistry/slice";
+import { setIdentityRelays } from "@/State/identitiesRegistry/identitySyncThunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
-import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 
 import { useToast } from "@/lib/contexts/useToast";
 import { normalizeWsUrl } from "@/lib/url";
@@ -58,7 +58,7 @@ const IdentityOverviewPage = () => {
 	useEffect(() => {
 		if (!runtime) return;
 		if (runtime.type === IdentityType.SANCTUM) {
-			void getIdentityNostrApi(runtime)
+			void getActiveIdentityNostrApi()
 				.then((api) => api.getRelays())
 				.then((r) => {
 					setRelays(Object.keys(r).map(normalizeWsUrl));
@@ -91,18 +91,11 @@ const IdentityOverviewPage = () => {
 	const saveRelays = () => {
 		if (!runtime || runtime.type === IdentityType.SANCTUM) return;
 		dispatch(
-			identitiesRegistryActions.updateIdentityRelays({
+			setIdentityRelays({
 				pubkey: runtime.pubkey,
 				relays,
 			}),
 		);
-		/* 		if (runtime.type !== IdentityType.SANCTUM) {
-					dispatch(
-						shellActions.activeIdentitySet({
-							identity: { ...runtime, relays },
-						}),
-					);
-				} */
 		setEditingRelays(false);
 		showToast({
 			color: "success",

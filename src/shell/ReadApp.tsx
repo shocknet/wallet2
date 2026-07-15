@@ -216,7 +216,7 @@ export function ReadyApp({
 				<Route
 					exact
 					path="/profile/create"
-					render={() => <IdentityGate initialView="create" />}
+					component={IdentityGate}
 				/>
 
 				<Route exact path="/">

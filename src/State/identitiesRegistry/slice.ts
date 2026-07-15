@@ -12,7 +12,6 @@ import {
 	type Identity,
 	type LocalPrivateKeyStorage,
 	type SanctumTokensStorage,
-	type WrappedDataKeyStorage,
 } from "./types";
 import type { RuntimeIdentity } from "@/shell/types";
 import { TokensData } from "sanctum-sdk";
@@ -69,14 +68,6 @@ export const identitiesRegistrySlice = createSlice({
 		updateRegistryIdentityLabel: (state, { payload }: PayloadAction<{ pubkey: string; label: string }>) => {
 			const e = state.entities[payload.pubkey];
 			if (e) e.label = payload.label;
-		},
-		setIdentityWrappedDataKeyStorage: (
-			state,
-			{ payload }: PayloadAction<{ pubkey: string; wrappedDataKey: WrappedDataKeyStorage }>
-		) => {
-			const e = state.entities[payload.pubkey];
-			if (!e) return;
-			e.wrappedDataKey = payload.wrappedDataKey;
 		},
 		setLocalSecretStorage: (
 			state,
@@ -135,6 +126,28 @@ export const identitiesRegistrySlice = createSlice({
 		},
 		clearActiveIdentityRuntime: (state) => {
 			state.active = null;
+		},
+		updateActiveIdentityRelays: (
+			state,
+			action: PayloadAction<{ pubkey: string; relays: string[] }>
+		) => {
+			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
+			if (state.active.type === IdentityType.SANCTUM) return;
+			state.active.relays = action.payload.relays;
+		},
+		updateActiveIdentityLabel: (
+			state,
+			action: PayloadAction<{ pubkey: string; label: string }>
+		) => {
+			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
+			state.active.label = action.payload.label;
+		},
+		setActiveWrappedDataKeyCiphertext: (
+			state,
+			action: PayloadAction<{ pubkey: string; wrappedDataKeyCiphertext: string }>
+		) => {
+			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
+			state.active.wrappedDataKeyCiphertext = action.payload.wrappedDataKeyCiphertext;
 		},
 		/* Sanctum specific for tokens writes */
 		setActiveSanctumTokensData: (

@@ -1,7 +1,5 @@
 import { Capacitor } from "@capacitor/core";
 import type { TokensData } from "sanctum-sdk";
-import type { AppThunk } from "../../store/store";
-import { identitiesRegistryActions } from "../slice";
 import type {
 	Identity,
 	IdentityKeys,
@@ -10,7 +8,6 @@ import type {
 	SanctumTokensStorage,
 	WrappedDataKeyStorage,
 } from "../types";
-import { IdentityType } from "../types";
 import {
 	decryptStringAesGcm,
 	deriveAesGcmKeyFromPassword,
@@ -18,7 +15,6 @@ import {
 } from "@/lib/aesGcm";
 import { base64urlDecode, } from "@/lib/base64url";
 import {
-	deleteSanctumSession,
 	getLocalPrivateKey,
 	getSanctumTokensData,
 	getWrappedDataKeyCiphertext,
@@ -154,56 +150,3 @@ export async function resolveSanctumTokensData(
 	}
 	return getSanctumTokensData(identity.sanctumTokens.sessionRef);
 }
-
-export const setIdentityWrappedDataKey = (args: {
-	pubkey: string;
-	wrappedDataKeyCiphertext: string;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
-		const identity = getState().identitiesRegistry.entities[args.pubkey];
-		if (!identity) throw new Error(`Identity ${args.pubkey} does not exist`);
-
-		const wrappedDataKey = await toWrappedDataKeyStorage(args.pubkey, args.wrappedDataKeyCiphertext);
-		dispatch(
-			identitiesRegistryActions.setIdentityWrappedDataKeyStorage({
-				pubkey: args.pubkey,
-				wrappedDataKey,
-			})
-		);
-	};
-};
-
-
-
-export const setIdentitySanctumTokensData = (args: {
-	pubkey: string;
-	tokensData: TokensData;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch) => {
-
-		const sanctumTokens = await toSanctumTokensStorage(args.pubkey, args.tokensData);
-		dispatch(
-			identitiesRegistryActions.setSanctumTokensStorage({
-				pubkey: args.pubkey,
-				sanctumTokens,
-			})
-		);
-	};
-};
-
-export const clearIdentitySanctumTokensData = (args: {
-	pubkey: string;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
-		const identity = getState().identitiesRegistry.entities[args.pubkey];
-		if (!identity || identity.type !== IdentityType.SANCTUM) {
-			throw new Error(`Sanctum identity ${args.pubkey} does not exist`);
-		}
-
-		if (identity.sanctumTokens?.storage === "secure_ref") {
-			await deleteSanctumSession(identity.sanctumTokens.sessionRef);
-		}
-
-		dispatch(identitiesRegistryActions.clearSanctumTokensData({ pubkey: args.pubkey }));
-	};
-};

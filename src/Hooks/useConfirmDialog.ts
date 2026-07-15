@@ -1,5 +1,5 @@
-import { useAlert } from "../contexts/useAlert";
-import { useEventCallback } from "./useEventCallbck/useEventCallback";
+import { useAlert } from "../lib/contexts/useAlert";
+import { useEventCallback } from "./useEventCallback";
 
 interface Props {
 	header: string;

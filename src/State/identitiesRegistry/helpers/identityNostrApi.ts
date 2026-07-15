@@ -8,14 +8,17 @@ import { IdentityType } from "../types";
 import type { RuntimeIdentity, RuntimeIdentitySanctum } from "@/shell/types";
 import { getExtentionsWithRetries } from "@/lib/nip07Extension";
 import store from "@/State/store/store";
-import { identitiesRegistryActions, selectActiveRuntimeSanctumTokensData } from "../slice";
+import { selectActiveIdentity, selectActiveRuntimeSanctumTokensData } from "../slice";
 import {
 	clearIdentitySanctumTokensData,
-	resolveSanctumTokensData,
+	markSanctumReauthRequired,
 	setIdentitySanctumTokensData,
-} from "./platformSecretStorage";
-import { type SanctumApi, TokenDataAdapter } from "sanctum-sdk";
-import { getOrCreateSanctumIdentitySdk } from "./sanctumIdentitySdkManager";
+} from "../identitySyncThunks";
+import { type SanctumApi, type TokenDataAdapter } from "sanctum-sdk";
+import {
+	clearSanctumIdentitySdk,
+	getOrCreateSanctumIdentitySdk,
+} from "./sanctumIdentitySdkManager";
 
 
 export function adaptSanctumDKApiToIdentityNostrApi(api: SanctumApi): IdentityNostrApi {
@@ -105,77 +108,121 @@ export async function getLocalKeysIdentityApi(keys: NostrKeyPair, relays: string
 	return api;
 }
 
+function createEphemeralSanctumTokenAdapter(
+	runtime: RuntimeIdentitySanctum,
+): TokenDataAdapter {
+	return {
+		getTokenData: () => runtime.tokensData,
+		setTokenData: (tokensData) => {
+			runtime.tokensData = tokensData;
+			runtime.reauthReason = null;
+		},
+		clearTokenData: () => {
+			runtime.tokensData = null;
+		},
+	};
+}
 
-export async function getSanctumIdentityApi(inputIdentity: RuntimeIdentitySanctum, offOfStore: boolean = false): Promise<IdentityNostrApi> {
-	const pubkey = inputIdentity.pubkey;
+function createActiveSanctumTokenAdapter(pubkey: string): TokenDataAdapter {
+	return {
+		getTokenData: () => {
+			const state = store.getState();
+			const active = state.identitiesRegistry.active;
+			if (
+				active?.type === IdentityType.SANCTUM &&
+				active.pubkey === pubkey
+			) {
+				return selectActiveRuntimeSanctumTokensData(state);
+			}
+			return null;
+		},
+		setTokenData: async (tokensData) => {
+			await store.dispatch(setIdentitySanctumTokensData({ pubkey, tokensData }));
+		},
+		clearTokenData: async () => {
+			await store.dispatch(clearIdentitySanctumTokensData({ pubkey }));
+		},
+	};
+}
 
-	let tokenDataAdapter: TokenDataAdapter | null = null;
-	if (offOfStore) {
-		tokenDataAdapter = {
-			getTokenData: () => inputIdentity.tokensData,
-			setTokenData: (newTokensData) => {
-				inputIdentity.tokensData = newTokensData;
-			},
-			clearTokenData: () => {
-				inputIdentity.tokensData = null;
-			},
-		}
-	} else {
-		const fromRegistry = store.getState().identitiesRegistry.entities[pubkey];
-		if (!fromRegistry || fromRegistry.type !== IdentityType.SANCTUM) throw new Error("Identity is not a Sanctum identity");
-
-		tokenDataAdapter = {
-			getTokenData: () => {
-				const state = store.getState();
-				const activeRuntime = state.identitiesRegistry.active;
-				if (
-					activeRuntime &&
-					activeRuntime.type === IdentityType.SANCTUM &&
-					activeRuntime.pubkey === pubkey
-				) {
-					return selectActiveRuntimeSanctumTokensData(state);
-				}
-				const freshIdentity = state.identitiesRegistry.entities[pubkey];
-				if (!freshIdentity || freshIdentity.type !== IdentityType.SANCTUM) return Promise.resolve(null);
-				return resolveSanctumTokensData(freshIdentity);
-			},
-			setTokenData: async (newTokensData) => {
-				store.dispatch(
-					identitiesRegistryActions.setActiveSanctumTokensData({ pubkey, tokensData: newTokensData })
-				);
-				await store.dispatch(setIdentitySanctumTokensData({ pubkey, tokensData: newTokensData }));
-			},
-			clearTokenData: () => {
-				store.dispatch(identitiesRegistryActions.clearActiveSanctumTokensData({ pubkey }));
-				store.dispatch(clearIdentitySanctumTokensData({ pubkey }));
-			},
-
-		}
-
-	}
-
+async function verifySanctumPubkey(
+	pubkey: string,
+	tokenDataAdapter: TokenDataAdapter,
+	onReauthRequired?: (reason?: string) => void,
+): Promise<IdentityNostrApi> {
 	const sdk = getOrCreateSanctumIdentitySdk({
 		pubkey,
 		tokenDataAdapter,
-		onReauthRequired: (reason) => {
-			store.dispatch(identitiesRegistryActions.markSanctumReauthRequired({ pubkey, reason }));
-			store.dispatch(identitiesRegistryActions.setActiveSanctumReauthRequired({ pubkey, reason }));
-		},
+		onReauthRequired,
 	});
 
 	const remoteKey = await sdk.api.getPublicKey();
-	if (remoteKey !== pubkey) throw new Error("Identity does not match this Sanctum profile");
+	if (remoteKey !== pubkey) {
+		clearSanctumIdentitySdk(pubkey);
+		throw new Error("Identity does not match this Sanctum profile");
+	}
 
 	return adaptSanctumDKApiToIdentityNostrApi(sdk.api);
 }
 
-export default async function getIdentityNostrApi(identity: RuntimeIdentity, offOfStore: boolean = false): Promise<IdentityNostrApi> {
+async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNostrApi> {
 	switch (identity.type) {
-		case IdentityType.SANCTUM:
-			return getSanctumIdentityApi(identity, offOfStore);
 		case IdentityType.NIP07:
 			return getNostrExtensionIdentityApi(identity.pubkey, identity.relays);
 		case IdentityType.LOCAL_KEY:
-			return getLocalKeysIdentityApi({ publicKey: identity.pubkey, privateKey: identity.privateKey }, identity.relays);
+			return getLocalKeysIdentityApi(
+				{ publicKey: identity.pubkey, privateKey: identity.privateKey },
+				identity.relays,
+			);
+		default:
+			throw new Error("Expected non-Sanctum identity");
 	}
+}
+
+/**
+ * Probe / unlock / create path: bind Sanctum tokens to the candidate RuntimeIdentity only.
+ * Does not read or write the registry. Clears any cached SDK first so an active adapter
+ * cannot leak into this phase.
+ */
+export async function createEphemeralIdentityNostrApi(
+	identity: RuntimeIdentity,
+): Promise<IdentityNostrApi> {
+	if (identity.type !== IdentityType.SANCTUM) {
+		return buildNonSanctumApi(identity);
+	}
+
+	clearSanctumIdentitySdk(identity.pubkey);
+
+	return verifySanctumPubkey(
+		identity.pubkey,
+		createEphemeralSanctumTokenAdapter(identity),
+		(reason) => {
+			identity.reauthReason = reason ?? "Session expired or invalid";
+		},
+	);
+}
+
+/**
+ * Ready path: Sanctum tokens come from `active` only (already unlocked).
+ * Writes go through identitySyncThunks (registry + active).
+ */
+export async function getActiveIdentityNostrApi(): Promise<IdentityNostrApi> {
+	const active = selectActiveIdentity(store.getState());
+	if (!active) {
+		throw new Error("No active identity");
+	}
+
+	if (active.type !== IdentityType.SANCTUM) {
+		return buildNonSanctumApi(active);
+	}
+
+	return verifySanctumPubkey(
+		active.pubkey,
+		createActiveSanctumTokenAdapter(active.pubkey),
+		(reason) => {
+			store.dispatch(
+				markSanctumReauthRequired({ pubkey: active.pubkey, reason }),
+			);
+		},
+	);
 }

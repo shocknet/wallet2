@@ -25,7 +25,7 @@ import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
-import { useQrScanner } from "@/lib/hooks/useQrScanner";
+import { useQrScanner } from "@/Hooks/useQrScanner";
 import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
 

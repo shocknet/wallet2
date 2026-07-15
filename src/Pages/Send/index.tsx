@@ -46,7 +46,7 @@ import { parseUserInputToSats } from '@/lib/units';
 import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
-import { useQrScanner } from '@/lib/hooks/useQrScanner';
+import { useQrScanner } from '@/Hooks/useQrScanner';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { NprofileView, selectNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';

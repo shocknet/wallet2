@@ -1,4 +1,4 @@
-import { AmountUnit } from "../types/units"
+import { AmountUnit } from "../lib/types/units"
 import { usePreference } from "./usePreference"
 
 export const usePreferredAmountUnit = () => {

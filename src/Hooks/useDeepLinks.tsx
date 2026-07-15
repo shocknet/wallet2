@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { App, URLOpenListenerEvent } from "@capacitor/app";
 import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
-import { useEventCallback } from "@/lib/hooks/useEventCallbck/useEventCallback";
+import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useAppDispatch } from "@/State/store/hooks";
 import { shellActions } from "@/shell/slice";
 

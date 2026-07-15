@@ -76,7 +76,6 @@ export function AppShell() {
 		case "ready":
 			return (
 				<ReadyApp
-					key={`identity-session-${phase.runtimeIdentity.pubkey}`}
 					runtimeIdentity={phase.runtimeIdentity}
 				/>
 			);

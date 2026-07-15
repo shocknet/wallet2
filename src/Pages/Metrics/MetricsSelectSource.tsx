@@ -17,7 +17,7 @@ import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runt
 
 import { CustomSelect } from "@/Components/CustomSelect";
 import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
-import { useEventCallback } from "@/lib/hooks/useEventCallbck/useEventCallback";
+import { useEventCallback } from "@/Hooks/useEventCallback";
 
 
 

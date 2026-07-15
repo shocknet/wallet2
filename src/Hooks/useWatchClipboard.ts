@@ -1,78 +1,106 @@
-import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { useAlert } from "../lib/contexts/useAlert";
+import { useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
-import { useCallback, useEffect, useRef } from "react";
 import { Clipboard } from "@capacitor/clipboard";
-import { InputClassification } from "../lib/types/parse";
-import { truncateTextMiddle } from "../lib/format";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { addAsset } from "@/State/Slices/generatedAssets";
-import { useEventCallback } from "../lib/hooks/useEventCallbck/useEventCallback";
-import { useAppStateChange } from "../lib/hooks/useAppStateChange/useAppStateChange";
-import { useLocalStorage } from "../lib/hooks/useLocalStorage/useLocalStorage";
-
+import { useAlert } from "@/lib/contexts/useAlert";
+import { InputClassification } from "@/lib/types/parse";
+import { truncateTextMiddle } from "@/lib/format";
+import { useEventCallback } from "@/Hooks/useEventCallback";
+import { useLocalStorage } from "@/Hooks/useLocalStorage/useLocalStorage";
+import { useOnAppActive } from "@/Hooks/useOnAppActive";
+import { useWindowEvent } from "@/Hooks/useWindowEvent";
 
 const CLIPBOARD_THROTTLE_MS = 500;
-
 const FOCUS_SETTLE_DELAY_MS = 50;
 
-export const useWatchClipboard = () => {
+export function useWatchClipboard() {
 	const { showAlert } = useAlert();
 	const dispatch = useAppDispatch();
 	const history = useHistory();
-	const [warned, updateWraned] = useLocalStorage({ key: "warned-clipboard-not-allowed", defaultValue: false });
+
+	const [warned, setWarned] = useLocalStorage({
+		key: "warned-clipboard-not-allowed",
+		defaultValue: false,
+	});
 
 
-	const isBootstrapped = useAppSelector(state => state.appState.bootstrapped);
-	const seenAssets = useAppSelector(state => state.generatedAssets.assets);
-
+	const seenAssets = useAppSelector((state) => state.generatedAssets.assets);
 
 	const lastCheckTsRef = useRef(0);
 	const alertInFlightRef = useRef(false);
 	const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+	const navigateForClipboard = useEventCallback(
+		async (
+			value: string,
+			classification: InputClassification,
+			parseBitcoinInput: typeof import("@/lib/parse").parseBitcoinInput,
+		) => {
+			if (classification === InputClassification.NOFFER) {
+				history.push({ pathname: "/send", state: { input: value } });
+				return;
+			}
+
+			const parsed = await parseBitcoinInput(value, classification);
+
+			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
+				history.push({
+					pathname: "/sources",
+					state: { parsedLnurlW: parsed },
+				});
+				return;
+			}
+
+			if (parsed.type === InputClassification.NPROFILE) {
+				history.push({
+					pathname: "/sources",
+					state: { parsedNprofile: parsed },
+				});
+				return;
+			}
+
+			history.push({
+				pathname: "/send",
+				state: { input: parsed.data },
+			});
+		},
+	);
 
 	const checkClipboard = useEventCallback(async () => {
-
 		const now = Date.now();
 		if (now - lastCheckTsRef.current < CLIPBOARD_THROTTLE_MS) return;
-
 		lastCheckTsRef.current = now;
-
-
-		if (!isBootstrapped) return;
 
 
 		if (!document.hasFocus()) return;
 		if (document.visibilityState !== "visible") return;
-
-
 		if (alertInFlightRef.current) return;
-
 
 		let text = "";
 		try {
 			const { type, value } = await Clipboard.read();
-			if (warned) updateWraned(false)
+			if (warned) setWarned(false);
 			if (type === "text/plain" && typeof value === "string") {
 				text = value.trim();
 			}
-		} catch (err: any) {
-			if (err?.name === "NotAllowedError" && !warned) {
+		} catch (err: unknown) {
+			const name = err && typeof err === "object" && "name" in err ? err.name : undefined;
+			if (name === "NotAllowedError" && !warned) {
 				showAlert({
 					header: "Clipboard Permission Denided",
-					message: "Shockwallet reads your clipboard to prompt you to use data on your clipboard",
-					onDidPresent: () => updateWraned(true)
+					message:
+						"Shockwallet reads your clipboard to prompt you to use data on your clipboard",
+					onDidPresent: () => setWarned(true),
 				});
 			}
 			return;
 		}
 
-
 		if (!text) return;
 
-
-		let identifyBitcoinInput;
-		let parseBitcoinInput;
+		let identifyBitcoinInput: typeof import("@/lib/parse").identifyBitcoinInput;
+		let parseBitcoinInput: typeof import("@/lib/parse").parseBitcoinInput;
 		try {
 			({ identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse"));
 		} catch (err) {
@@ -80,10 +108,7 @@ export const useWatchClipboard = () => {
 			return;
 		}
 
-
 		const { classification, value } = identifyBitcoinInput(text);
-
-
 		if (
 			!value ||
 			value.length === 0 ||
@@ -92,111 +117,72 @@ export const useWatchClipboard = () => {
 			return;
 		}
 
-
-		if ((seenAssets || []).includes(value)) {
-			return;
-		}
-
-
-		if (alertInFlightRef.current) {
-			return;
-		}
-
+		if ((seenAssets || []).includes(value)) return;
+		if (alertInFlightRef.current) return;
 
 		alertInFlightRef.current = true;
 
-
-		const handleYes = async () => {
-			try {
-				// Noffer needs spend-source keys to fetch invoices — Send parses with selectedSource
-				if (classification === InputClassification.NOFFER) {
-					history.push({ pathname: "/send", state: { input: value } });
-					return;
-				}
-
-				const parsed = await parseBitcoinInput(value, classification);
-
-
-				if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-					history.push({
-						pathname: "/sources",
-						state: { parsedLnurlW: parsed }
-					});
-					return;
-				}
-
-				if (parsed.type === InputClassification.NPROFILE) {
-					history.push({
-						pathname: "/sources",
-						state: { parsedNprofile: parsed }
-					});
-					return;
-				}
-
-				history.push({
-					pathname: "/send",
-					state: {
-						input: parsed.data
-					}
-				});
-			} catch (err: any) {
-				console.error("Error parsing clipboard input:", err);
-				showAlert({
-					header: "Error",
-					message: err?.message || "Unknown error occurred while parsing clipboard input.",
-					buttons: ["OK"]
-				});
-			}
-		};
-
-
-		showAlert({
+		const { role } = await showAlert({
 			header: "Clipboard Detected",
 			subHeader: "Do you want to use the content from your clipboard?",
 			message: truncateTextMiddle(value, 20),
-			onWillPresent: () => alertInFlightRef.current = true,
 			buttons: [
-				{
-					text: "No",
-					role: "cancel",
-				},
-				{
-					text: "Yes",
-					role: "confirm",
-				}
-			]
-		}).then(({ role }) => {
-			dispatch(addAsset({ asset: value }));
-			alertInFlightRef.current = false;
-			if (role === "confirm") handleYes();
-		})
+				{ text: "No", role: "cancel" },
+				{ text: "Yes", role: "confirm" },
+			],
+		});
+
+		dispatch(addAsset({ asset: value }));
+		alertInFlightRef.current = false;
+
+		if (role !== "confirm") return;
+
+		try {
+			await navigateForClipboard(value, classification, parseBitcoinInput);
+		} catch (err: unknown) {
+			console.error("Error parsing clipboard input:", err);
+			const message =
+				err && typeof err === "object" && "message" in err && typeof err.message === "string"
+					? err.message
+					: "Unknown error occurred while parsing clipboard input.";
+			showAlert({
+				header: "Error",
+				message,
+				buttons: ["OK"],
+			});
+		}
 	});
 
-	const throttle = useCallback(() => {
-
+	const scheduleCheck = useEventCallback(() => {
 		if (settleTimerRef.current) {
 			clearTimeout(settleTimerRef.current);
 		}
 		settleTimerRef.current = setTimeout(() => {
-			checkClipboard();
+			void checkClipboard();
 		}, FOCUS_SETTLE_DELAY_MS);
-
-	}, [checkClipboard])
-
+	});
 
 	useEffect(() => {
-		throttle();
-	}, [throttle])
-
-
-	useAppStateChange({
-		onChange: (next, prev) => {
-			if (warned) return;
-			if (next && !prev) {
-
-				throttle();
+		scheduleCheck();
+		return () => {
+			if (settleTimerRef.current) {
+				clearTimeout(settleTimerRef.current);
 			}
-		}
-	})
+		};
+	}, [scheduleCheck]);
 
-};
+	const onVisibilityChange = useEventCallback(() => {
+		if (document.visibilityState === "visible") {
+			scheduleCheck();
+		}
+	});
+
+	const onAppActive = useEventCallback(() => {
+		if (warned) return;
+		scheduleCheck();
+	});
+
+	useOnAppActive(onAppActive);
+	useWindowEvent("focus", scheduleCheck);
+	useWindowEvent("visibilitychange", onVisibilityChange);
+}

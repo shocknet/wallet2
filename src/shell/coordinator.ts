@@ -3,13 +3,13 @@ import type {
 	AppThunk,
 	RootState,
 } from "@/State/store/store";
-import { createSanctumDK, type TokensData } from "sanctum-sdk";
+import { type TokensData } from "sanctum-sdk";
 import {
 	IdentityType,
 } from "../State/identitiesRegistry/types";
 import { switchIdentity } from "../State/identitiesRegistry/thunks";
 import { selectIdentities } from "../State/identitiesRegistry/slice";
-import { setIdentitySanctumTokensData } from "../State/identitiesRegistry/helpers/platformSecretStorage";
+import { markSanctumReauthRequired, setIdentitySanctumTokensData } from "../State/identitiesRegistry/identitySyncThunks";
 import { shellActions } from "./slice";
 import { runShellMigrations } from "./migrations";
 import {
@@ -23,7 +23,6 @@ import {
 import type {
 	DeviceToIdentitiesRepairAction,
 	RuntimeIdentity,
-	RuntimeIdentitySanctum,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
 } from "./types";
@@ -31,8 +30,9 @@ import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdenti
 import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
 import { materializePushIntentToPendingNav } from "./pendingNav";
-import { SANCTUM_URL } from "@/constants";
 import dLogger from "@/Api/helpers/debugLog";
+import { createEphemeralIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
 
 
 
@@ -135,9 +135,9 @@ const continueAfterMigrationSuccess =
 export const proceedAfterIdentityUnlocked = (
 	runtimeIdentity: RuntimeIdentity,
 ): AppThunk<Promise<void>> => async (dispatch) => {
-	const verification = await verifySanctumRuntimeIdentity(
+	const verification = await dispatch(verifySanctumSession(
 		runtimeIdentity,
-	);
+	));
 
 	if (!verification.ok) {
 		dispatch(
@@ -172,34 +172,6 @@ export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch) => {
 	dispatch(shellActions.pushIntentCleared());
 };
 
-async function verifySanctumRuntimeIdentity(
-	runtimeIdentity: RuntimeIdentity,
-): Promise<{ ok: true } | { ok: false; reason: string }> {
-	if (runtimeIdentity.type !== IdentityType.SANCTUM) {
-		return { ok: true };
-	}
-
-	if (!runtimeIdentity.tokensData) {
-		return {
-			ok: false,
-			reason: "Sanctum reauth required",
-		};
-	}
-
-	const verification = await verifySanctumSession({
-		expectedPubkey: runtimeIdentity.pubkey,
-		tokensData: runtimeIdentity.tokensData,
-	});
-
-	if (verification.ok) {
-		return { ok: true };
-	}
-
-	return {
-		ok: false,
-		reason: verification.reason,
-	};
-}
 
 export const completeShellIdentityLoad = (
 	runtimeIdentity: RuntimeIdentity,
@@ -262,65 +234,69 @@ export const completeSanctumReauth =
 				return;
 			}
 
-			const verification = await verifySanctumSession({
-				expectedPubkey: runtimeIdentity.pubkey,
-				tokensData,
-			});
+			// this instance of runtimeIdentity comes from the store, so we need to make a copy to avoid mutating the store
+			const copy = { ...runtimeIdentity, tokensData };
+
+
+			const verification = await dispatch(verifySanctumSession(copy));
 
 			if (!verification.ok) {
-				throw new Error(verification.reason);
+				throw new Error(verification.reason); // should never happen
 			}
 
-			await dispatch(
-				setIdentitySanctumTokensData({
-					pubkey: runtimeIdentity.pubkey,
-					tokensData,
-				}),
-			);
 
-			const refreshedRuntime: RuntimeIdentitySanctum = {
-				...runtimeIdentity,
-				tokensData,
-				reauthReason: null,
-			};
-
-			await dispatch(completeShellIdentityLoad(refreshedRuntime));
+			await dispatch(completeShellIdentityLoad(copy));
 		};
 
 
 
-async function verifySanctumSession(args: {
-	expectedPubkey: string;
-	tokensData: TokensData;
-}): Promise<{ ok: true } | { ok: false; reason: string }> {
-	const sdk = createSanctumDK({
-		url: SANCTUM_URL,
-		tokenDataAdapter: {
-			getTokenData: () => args.tokensData,
-			setTokenData: () => { },
-			clearTokenData: () => { },
-		},
-	});
+export const verifySanctumSession =
+	(runtimeIdentity: RuntimeIdentity): AppThunk<Promise<{ ok: true } | { ok: false; reason: string }>> =>
+		async (dispatch) => {
+			if (runtimeIdentity.type !== IdentityType.SANCTUM) {
+				return {
+					ok: true,
+				};
+			}
 
-	try {
-		const pubkey = await sdk.api.getPublicKey();
+			if (!runtimeIdentity.tokensData || runtimeIdentity.reauthReason) {
+				return {
+					ok: false,
+					reason: "Sanctum reauth required",
+				};
+			}
 
-		if (pubkey !== args.expectedPubkey) {
-			return {
-				ok: false,
-				reason: "Sanctum account does not match this identity",
-			};
+			try {
+				await createEphemeralIdentityNostrApi(runtimeIdentity);
+
+				if (runtimeIdentity.tokensData) {
+					await dispatch(
+						setIdentitySanctumTokensData({
+							pubkey: runtimeIdentity.pubkey,
+							tokensData: runtimeIdentity.tokensData,
+						}),
+					);
+				}
+				if (runtimeIdentity.reauthReason) {
+					dispatch(
+						markSanctumReauthRequired({
+							pubkey: runtimeIdentity.pubkey,
+							reason: runtimeIdentity.reauthReason,
+						}),
+					);
+				}
+				// Drop ephemeral SDK so ready callers build the store-backed adapter
+				clearSanctumIdentitySdk(runtimeIdentity.pubkey);
+
+				return { ok: true };
+			} catch (error) {
+				return {
+					ok: false,
+					reason: error instanceof Error
+						? error.message
+						: "Sanctum session is not valid",
+				};
+
+			}
 		}
 
-		return { ok: true };
-	} catch (error) {
-		return {
-			ok: false,
-			reason: error instanceof Error
-				? error.message
-				: "Sanctum session is not valid",
-		};
-	} finally {
-		void sdk.destroy();
-	}
-}

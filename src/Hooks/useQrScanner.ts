@@ -1,8 +1,8 @@
-import { useScanner } from '../contexts/pwaScannerProvider';
-import { useToast } from '../contexts/useToast';
+import { useScanner } from '../lib/contexts/pwaScannerProvider';
+import { useToast } from '../lib/contexts/useToast';
 import { useCallback } from 'react';
 import { isPlatform } from '@ionic/react';
-import { BITCOIN_ADDRESS_BASE58_REGEX } from '../regex';
+import { BITCOIN_ADDRESS_BASE58_REGEX } from '../lib/regex';
 
 
 // Native scanning function

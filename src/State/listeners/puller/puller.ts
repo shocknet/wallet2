@@ -2,7 +2,7 @@ import { listenerKick } from "@/State/listeners/actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { identityActions } from "@/State/scoped/backups/identity/slice";
 import { Filter } from "nostr-tools";
-import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { subscribeToNostrEvents } from "@/State/identitiesRegistry/helpers/nostr";
 import { identityDocDtag, processRemoteDoc } from "@/State/identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "../lifecycle/lifecycle";
@@ -27,7 +27,7 @@ export const pullerSpec: ListenerSpec = {
 					const identity = selectActiveIdentity(state)!;
 					const pubkey = identity.pubkey;
 
-					const identityApi = await getIdentityNostrApi(identity);
+					const identityApi = await getActiveIdentityNostrApi();
 
 					const filters: Filter[] = [
 						{ kinds: [30078], authors: [pubkey], "#d": [identityDocDtag] },

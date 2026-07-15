@@ -13,7 +13,7 @@ import { chevronBackOutline } from "ionicons/icons";
 import { SanctumAuthWidget } from "@/Components/SanctumAuthWidget";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
-import { useEventCallback } from "@/lib/hooks/useEventCallbck/useEventCallback";
+import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";

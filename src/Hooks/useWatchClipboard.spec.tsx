@@ -1,8 +1,8 @@
 import { describe, it, beforeEach, expect, vi, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
 import { MemoryRouter as Router } from "react-router-dom";
-import { useWatchClipboard } from "../../Hooks/useWatchClipboard";
-import { InputClassification } from "../types/parse";
+import { useWatchClipboard } from "./useWatchClipboard";
+import { InputClassification } from "../lib/types/parse";
 
 function Harness() {
 	useWatchClipboard();
@@ -38,7 +38,7 @@ vi.mock("@capacitor/clipboard", () => {
 });
 
 const mockShowAlert = vi.fn();
-vi.mock("../contexts/useAlert", () => {
+vi.mock("@/lib/contexts/useAlert", () => {
 	return {
 		useAlert: () => ({
 			showAlert: mockShowAlert,
@@ -57,7 +57,7 @@ vi.mock("react-router-dom", async (orig) => {
 	};
 });
 
-vi.mock("../format", () => {
+vi.mock("@/lib/format", () => {
 	return {
 		truncateTextMiddle: (v: string, _n: number) => `TRUNC(${v})`,
 	};
@@ -101,17 +101,10 @@ vi.mock("@/lib/parse", () => {
 });
 
 
-vi.mock("../hooks/useEventCallbck/useEventCallback", () => {
-	return {
-		useEventCallback: (fn: any) => fn,
-	};
-});
-
-
 let warnedMockVal = false;
 const mockUpdateWarned = vi.fn();
 
-vi.mock("../hooks/useLocalStorage/useLocalStorage", () => {
+vi.mock("@/Hooks/useLocalStorage/useLocalStorage", () => {
 	return {
 		useLocalStorage: () => [warnedMockVal, mockUpdateWarned] as const,
 	};

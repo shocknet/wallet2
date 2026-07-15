@@ -33,7 +33,7 @@ import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/
 import CardishList from "@/Components/CardishList";
 import { RelayManager } from "@/Components/RelayManager";
 import useDebounce from "@/Hooks/useDebounce";
-import { useConfirmDialog } from "@/lib/hooks/useConfirmDialog";
+import { useConfirmDialog } from "@/Hooks/useConfirmDialog";
 import { normalizeHttpUrl } from "@/lib/url";
 
 interface EditSourceModalProps {

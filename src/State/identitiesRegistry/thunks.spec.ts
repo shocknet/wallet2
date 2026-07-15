@@ -31,7 +31,8 @@ vi.mock("./helpers/datakey", () => ({
 }));
 
 vi.mock("./helpers/identityNostrApi", () => ({
-	default: getIdentityNostrApiMock,
+	createEphemeralIdentityNostrApi: getIdentityNostrApiMock,
+	getActiveIdentityNostrApi: getIdentityNostrApiMock,
 }));
 
 vi.mock("../scope/inject", () => ({
