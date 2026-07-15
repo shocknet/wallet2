@@ -1,5 +1,6 @@
 
 import type { TokensData } from "sanctum-sdk";
+import { AesGcmEnvelopeWithSalt } from "@/lib/aesGcm";
 
 export enum IdentityType {
 	LOCAL_KEY = "LOCAL_KEYS_IDENTITY",
@@ -35,11 +36,6 @@ export type WrappedDataKeyStorage =
 	| { storage: "inline"; wrappedDataKeyCiphertext: string }
 	| { storage: "secure_ref"; wrappedDataKeyRef: string };
 
-export interface EncryptedBlobV1 {
-	alg: "AES-GCM";
-	nonce: string;
-	ciphertext: string;
-}
 
 export type LocalPrivateKeyPasswordMode = "default" | "user";
 
@@ -48,7 +44,7 @@ export type LocalPrivateKeyStorage =
 	| { storage: "inline"; privateKey: string }
 	| {
 		storage: "inline_encrypted";
-		encryptedPrivkey: EncryptedBlobV1;
+		encryptedPrivkey: AesGcmEnvelopeWithSalt;
 	};
 
 export type SanctumTokensStorage =

@@ -80,7 +80,12 @@ export type IdentitySessionStatus =
 		runtimeIdentity: RuntimeIdentity;
 		reason?: string;
 	}
-	| { kind: "loading"; identityId: string };
+	| { kind: "loading"; identityId: string }
+	| {
+		kind: "load-failed";
+		identityId: string;
+		message: string;
+	};
 
 export type ShellPhase =
 	| { kind: "starting-up" }
@@ -107,6 +112,11 @@ export type ShellPhase =
 		reason?: string;
 	}
 	| { kind: "loading-identity"; identityId: string }
+	| {
+		kind: "identity-load-failed";
+		identityId: string;
+		message: string;
+	}
 	| { kind: "ready"; runtimeIdentity: RuntimeIdentity };
 
 
@@ -126,5 +136,4 @@ export type ShellState = {
 	identitySession: IdentitySessionStatus;
 	pushIntent: PushIntent | null;
 	pendingNav: PendingNav | null;
-	activeIdentity: RuntimeIdentity | null;
 };

@@ -21,13 +21,12 @@ import {
 import { useMemo, useState } from "react";
 import { nip19 } from "nostr-tools";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { identitiesSelectors } from "@/State/identitiesRegistry/slice";
+import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import type { Identity } from "@/State/identitiesRegistry/types";
 import { deleteIdentity } from "@/State/identitiesRegistry/thunks";
 import { ProfileCard } from "@/Components/User/ProfileCard";
 import { InactiveProfileCard } from "@/Components/User/InactiveProfileCard";
 import CopyMorphButton from "@/Components/CopyMorphButton";
-import { selectActiveShellIdentityId } from "@/shell/selectors";
 import { requestIdentityUnlock } from "@/shell/coordinator";
 import { useAskPromptDecision } from "@/Components/Modals/PromptDecision";
 import { useToast } from "@/lib/contexts/useToast";
@@ -44,7 +43,7 @@ export function SwitchProfileSheet({
 	const router = useIonRouter();
 	const { showToast } = useToast();
 	const presentPromptDecision = useAskPromptDecision();
-	const activeIdentityId = useAppSelector(selectActiveShellIdentityId);
+	const activeIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	const all = useAppSelector(identitiesSelectors.selectAll);
 	const others = useMemo(
 		() => all.filter((identity) => identity.pubkey !== activeIdentityId),

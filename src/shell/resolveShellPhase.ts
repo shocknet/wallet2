@@ -53,6 +53,13 @@ export function resolveShellPhase(snapshot: ShellSnapshot): ShellPhase {
 				identityId: identitySession.identityId,
 			};
 
+		case "load-failed":
+			return {
+				kind: "identity-load-failed",
+				identityId: identitySession.identityId,
+				message: identitySession.message,
+			};
+
 		case "none":
 			if (activeIdentity) {
 				return {

@@ -21,7 +21,6 @@ const initialState: ShellState = {
 	},
 	pushIntent: null,
 	pendingNav: null,
-	activeIdentity: null,
 };
 
 export const shellSlice = createSlice({
@@ -115,17 +114,18 @@ export const shellSlice = createSlice({
 			};
 		},
 
-		activeIdentitySet(
+		identityLoadFailed(
 			state,
 			action: PayloadAction<{
-				identity: RuntimeIdentity;
+				identityId: string;
+				message: string;
 			}>,
 		) {
-			state.activeIdentity = action.payload.identity;
-		},
-
-		activeIdentityCleared(state) {
-			state.activeIdentity = null;
+			state.identitySession = {
+				kind: "load-failed",
+				identityId: action.payload.identityId,
+				message: action.payload.message,
+			};
 		},
 
 		pendingNavSet(

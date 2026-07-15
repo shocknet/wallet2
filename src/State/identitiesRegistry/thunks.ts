@@ -9,7 +9,6 @@ import { getScopedIdentityPersistKey, identityActions, selectIdentityDraft } fro
 import { getDeviceId } from "@/constants";
 import { IdentityType } from "./types";
 import type { RuntimeIdentity } from "@/shell/types";
-import { shellActions } from "@/shell/slice";
 import { identityDocDtag } from "./helpers/processDocs";
 import { fetchNip78Event } from "./helpers/nostr";
 import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
@@ -32,12 +31,7 @@ import {
 	provisionIdentity,
 	type CreateIdentityInput,
 } from "./helpers/provisionIdentity";
-export type { CreateIdentityInput } from "./helpers/provisionIdentity";
-export {
-	setIdentityWrappedDataKey,
-	setIdentityLocalPrivateKey,
-	setIdentitySanctumTokensData,
-} from "./helpers/platformSecretStorage";
+
 
 
 
@@ -46,13 +40,12 @@ export {
 export const LAST_ACTIVE_IDENTITY_PUBKEY_KEY = "__shockwallet_lai_";
 
 
-const unloadActiveIdentity = (): AppThunk<Promise<void>> => {
+const unloadActiveIdentityIfPresent = (): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 		const state = getState();
-		const currentIdentity =
-			state.identitiesRegistry.active ?? state.shell.activeIdentity;
+		const currentIdentity = state.identitiesRegistry.active
 
-		if (!currentIdentity) {
+		if (!currentIdentity || !state.scoped) {
 			return;
 		}
 
@@ -66,7 +59,6 @@ const unloadActiveIdentity = (): AppThunk<Promise<void>> => {
 		await persistor.flush().catch(() => { });
 
 		dispatch(identitiesRegistryActions.clearActiveIdentityRuntime());
-		dispatch(shellActions.activeIdentityCleared());
 		dLogger.removeIdentityContext();
 
 		const deferred = createDeferred<void>();
@@ -84,12 +76,12 @@ const unloadActiveIdentity = (): AppThunk<Promise<void>> => {
 	};
 };
 
-export const switchIdentity = (toIdentity: RuntimeIdentity, boot?: boolean): AppThunk<Promise<void>> => {
+export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 
 		const log = dLogger.withContext({
 			procedure: "switch-identity",
-			data: { pubkey: toIdentity.pubkey, boot }
+			data: { pubkey: toIdentity.pubkey }
 		});
 
 		log.info("started");
@@ -98,7 +90,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity, boot?: boolean): App
 		const currentIdentity = state.identitiesRegistry.active;
 
 
-		if (!boot && currentIdentity?.pubkey === toIdentity.pubkey) {
+		if (currentIdentity?.pubkey === toIdentity.pubkey) {
 			log.debug("aborted-same-pubkey");
 			return;
 		}
@@ -121,11 +113,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity, boot?: boolean): App
 			wrappedDataKeyCiphertext: toIdentity.wrappedDataKeyCiphertext,
 		});
 
-
-		if (!boot && currentIdentity !== null) {
-			await dispatch(unloadActiveIdentity());
-		}
-
+		await dispatch(unloadActiveIdentityIfPresent());
 
 		injectNewScopedReducer(toIdentity.pubkey, dispatch, unwrappedDataKey);
 		const keys = [getScopedIdentityPersistKey(toIdentity.pubkey), getScopedSourcesPersistKey(toIdentity.pubkey)];
@@ -140,7 +128,6 @@ export const switchIdentity = (toIdentity: RuntimeIdentity, boot?: boolean): App
 		}
 
 		dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: toIdentity }));
-		dispatch(shellActions.activeIdentitySet({ identity: toIdentity }));
 		dispatch(identitiesRegistryActions.setLastActiveIdentityId({ pubkey: toIdentity.pubkey }));
 		dLogger.setIdentityContext({ identityPubkey: toIdentity.pubkey, identityType: toIdentity.type });
 		dispatch(identityLoaded({ identity: toIdentity }));

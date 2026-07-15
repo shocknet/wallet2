@@ -21,8 +21,7 @@ import { cloudOutline, keyOutline } from "ionicons/icons";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { useAppSelector } from "@/State/store/hooks";
-import { identitiesSelectors } from "@/State/identitiesRegistry/slice";
-import { selectActiveShellIdentityId } from "@/shell/selectors";
+import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { IdentitiesListPage } from "../IdentitiesListPage";
 import { CreateKeysPage } from "./CreateKeysPage";
 import { CreateSanctumPage } from "./CreateSanctumPage";
@@ -30,7 +29,7 @@ import { CreateSanctumPage } from "./CreateSanctumPage";
 export function CreateMethodPage() {
 	const router = useIonRouter();
 	const identitiesCount = useAppSelector(identitiesSelectors.selectTotal);
-	const activeIdentityId = useAppSelector(selectActiveShellIdentityId);
+	const activeIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	// ReadyApp mounts this under /profile/create while a session is active
 	const fromReadyApp = !!activeIdentityId;
 	const canGoToIdentities = !fromReadyApp && identitiesCount > 0;

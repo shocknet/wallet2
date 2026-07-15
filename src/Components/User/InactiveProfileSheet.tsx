@@ -15,13 +15,13 @@ import { nip19 } from "nostr-tools";
 import type { Identity } from "@/State/identitiesRegistry/types";
 import { deleteIdentity } from "@/State/identitiesRegistry/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectActiveShellIdentityId } from "@/shell/selectors";
 import { requestIdentityUnlock } from "@/shell/coordinator";
 import type { UnlockReason } from "@/shell/types";
 import { useAskPromptDecision } from "@/Components/Modals/PromptDecision";
 import { useToast } from "@/lib/contexts/useToast";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { ProfileCard } from "./ProfileCard";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 
 export function InactiveProfileSheet({
 	identity,
@@ -37,7 +37,7 @@ export function InactiveProfileSheet({
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 	const presentPromptDecision = useAskPromptDecision();
-	const activeIdentityId = useAppSelector(selectActiveShellIdentityId);
+	const activeIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	const [busy, setBusy] = useState<"unlock" | "delete" | null>(null);
 
 	const canDelete =

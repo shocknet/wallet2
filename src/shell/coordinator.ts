@@ -32,6 +32,7 @@ import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
 import { materializePushIntentToPendingNav } from "./pendingNav";
 import { SANCTUM_URL } from "@/constants";
+import dLogger from "@/Api/helpers/debugLog";
 
 
 
@@ -202,7 +203,12 @@ async function verifySanctumRuntimeIdentity(
 
 export const completeShellIdentityLoad = (
 	runtimeIdentity: RuntimeIdentity,
-): AppThunk<Promise<void>> => async (dispatch, getState) => {
+): AppThunk<Promise<void>> => async (dispatch) => {
+	const log = dLogger.withContext({
+		procedure: "complete-shell-identity-load",
+		data: { pubkey: runtimeIdentity.pubkey },
+	});
+
 	dispatch(
 		shellActions.identityLoadingStarted({
 			identityId: runtimeIdentity.pubkey,
@@ -210,20 +216,31 @@ export const completeShellIdentityLoad = (
 	);
 
 	try {
-		const current =
-			getState().identitiesRegistry.active ??
-			getState().shell.activeIdentity;
-		const boot =
-			!current || current.pubkey === runtimeIdentity.pubkey;
-
-		await dispatch(switchIdentity(runtimeIdentity, boot));
-		await dispatch(drainPendingDeviceToIdentitiesLocalSources());
-
-		dispatch(shellActions.identitySessionCleared());
-		dispatch(materializePushIntentToPendingNav());
-	} catch (_error) {
-		dispatch(shellActions.identitySessionCleared());
+		await dispatch(switchIdentity(runtimeIdentity));
+	} catch (error) {
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to load this profile";
+		log.error("identity-load-failed", { message, error });
+		dispatch(
+			shellActions.identityLoadFailed({
+				identityId: runtimeIdentity.pubkey,
+				message,
+			}),
+		);
+		dispatch(shellActions.pushIntentCleared());
+		return;
 	}
+
+	try {
+		await dispatch(drainPendingDeviceToIdentitiesLocalSources());
+	} catch (error) {
+		log.error("drain-pending-local-sources-failed", { error });
+	}
+
+	dispatch(shellActions.identitySessionCleared());
+	dispatch(materializePushIntentToPendingNav());
 };
 
 

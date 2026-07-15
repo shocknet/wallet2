@@ -4,6 +4,7 @@ import { DeviceToIdentitiesMigrationFailedScreen } from "./screens/DeviceToIdent
 import { SecureIdentitiesMigrationFailedScreen } from "./screens/SecureIdentitiesMigrationFailedScreen";
 import { SanctumReauthScreen } from "./screens/SanctumReauthScreen";
 import { LoadingIdentityScreen } from "./screens/LoadingIdentityScreen";
+import { IdentityLoadFailedScreen } from "./screens/IdentityLoadFailedScreen";
 import { ReadyApp } from "./ReadApp";
 import { UnlockIdentityScreen } from "./screens/UnlockIdentityScreen";
 import { IdentityGate } from "./screens/identityGate";
@@ -11,12 +12,10 @@ import { StartupScreen } from "./screens/StartupScreen";
 import { useTheme } from "@/Hooks/useTheme";
 import { useDeepLinks } from "@/Hooks/useDeepLinks";
 
-
 export function AppShell() {
 	const phase = useAppSelector(selectAppPhase);
 	useTheme();
 	useDeepLinks();
-
 
 	switch (phase.kind) {
 		case "starting-up":
@@ -63,6 +62,14 @@ export function AppShell() {
 			return (
 				<LoadingIdentityScreen
 					identityId={phase.identityId}
+				/>
+			);
+
+		case "identity-load-failed":
+			return (
+				<IdentityLoadFailedScreen
+					identityId={phase.identityId}
+					message={phase.message}
 				/>
 			);
 

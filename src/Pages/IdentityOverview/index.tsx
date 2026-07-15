@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	IonBackButton,
 	IonButton,
@@ -10,13 +10,9 @@ import {
 	IonText,
 	IonTitle,
 	IonToolbar,
-	useIonModal,
 } from "@ionic/react";
 import {
 	chevronBackOutline,
-	cloudOutline,
-	extensionPuzzleOutline,
-	keyOutline,
 	saveOutline,
 	swapHorizontalOutline,
 } from "ionicons/icons";
@@ -32,15 +28,11 @@ import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
 import getIdentityNostrApi from "@/State/identitiesRegistry/helpers/identityNostrApi";
-import {
-	BackupKeysDialog,
-	DownloadFileBackupDialog,
-} from "@/Components/Modals/DialogeModals";
-import type { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
-import { downloadNsecBackup } from "@/lib/file-backup";
+
 import { useToast } from "@/lib/contexts/useToast";
 import { normalizeWsUrl } from "@/lib/url";
 import { ProfileCard } from "@/Components/User/ProfileCard";
+import { IdentitySecuritySection } from "./IdentitySecuritySection";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -93,70 +85,8 @@ const IdentityOverviewPage = () => {
 
 	const npub = runtime ? nip19.npubEncode(runtime.pubkey) : "";
 
-	const [presentKeysBackup, dismissKeysBackup] = useIonModal(
-		<BackupKeysDialog
-			dismiss={(data: undefined, role: "cancel" | "file" | "confirm") =>
-				dismissKeysBackup(data, role)
-			}
-			privKey={
-				runtime?.type === IdentityType.LOCAL_KEY
-					? runtime.privateKey
-					: ""
-			}
-		/>,
-	);
-	const [presentFileBackup, dismissFileBackup] = useIonModal(
-		<DownloadFileBackupDialog
-			dismiss={(
-				data: { passphrase: string } | null,
-				role: "cancel" | "confirm",
-			) => dismissFileBackup(data, role)}
-		/>,
-	);
 
-	const handleBackupFileDownload = useCallback(
-		async (passphrase: string, privateKey: string) => {
-			try {
-				await downloadNsecBackup(privateKey, passphrase);
-			} catch {
-				showToast({
-					color: "danger",
-					message: "File backup download failed",
-				});
-			}
-		},
-		[showToast],
-	);
 
-	const handleBackup = useCallback(() => {
-		if (runtime?.type !== IdentityType.LOCAL_KEY) return;
-
-		presentKeysBackup({
-			onDidDismiss: (event: CustomEvent<OverlayEventDetail>) => {
-				if (event.detail.role === "cancel") return;
-				if (event.detail.role === "file") {
-					presentFileBackup({
-						onDidDismiss: (
-							fileEvent: CustomEvent<OverlayEventDetail>,
-						) => {
-							if (fileEvent.detail.role !== "confirm") return;
-							void handleBackupFileDownload(
-								fileEvent.detail.data.passphrase,
-								runtime.privateKey,
-							);
-						},
-						cssClass: "dialog-modal wallet-modal",
-					});
-				}
-			},
-			cssClass: "dialog-modal wallet-modal",
-		});
-	}, [
-		runtime,
-		presentKeysBackup,
-		presentFileBackup,
-		handleBackupFileDownload,
-	]);
 
 	const saveRelays = () => {
 		if (!runtime || runtime.type === IdentityType.SANCTUM) return;
@@ -225,84 +155,7 @@ const IdentityOverviewPage = () => {
 							/>
 						</div>
 					</section>
-
-					<section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
-						<h2 className="text-base font-semibold tracking-tight text-primary mb-2">
-							Security
-						</h2>
-
-						{runtime.type === IdentityType.LOCAL_KEY ? (
-							<>
-								<p className="text-sm leading-6 text-muted mb-4">
-									Back up your secret key so you can recover
-									this profile on another device.
-								</p>
-								<IonButton
-									expand="block"
-									color="secondary"
-									className="[--border-radius:12px]"
-									onClick={handleBackup}
-								>
-									<IonIcon slot="start" icon={keyOutline} />
-									Backup secret key
-								</IonButton>
-							</>
-						) : null}
-
-						{runtime.type === IdentityType.SANCTUM ? (
-							<div className="flex items-start gap-3">
-								<div
-									className="
-										mt-0.5 flex size-9 shrink-0 items-center
-										justify-center rounded-xl
-										bg-[var(--app-surface-muted)]
-										text-[var(--ion-color-primary)]
-									"
-								>
-									<IonIcon icon={cloudOutline} />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-primary">
-										Sanctum session
-									</p>
-									<p className="mt-1 text-sm leading-6 text-muted">
-										{runtime.tokensData
-											? "Signed in. If access expires, you will be asked to sign in again."
-											: "Session needs refresh. You will be prompted to sign in again when required."}
-										{runtime.reauthReason
-											? ` (${runtime.reauthReason})`
-											: ""}
-									</p>
-								</div>
-							</div>
-						) : null}
-
-						{runtime.type === IdentityType.NIP07 ? (
-							<div className="flex items-start gap-3">
-								<div
-									className="
-										mt-0.5 flex size-9 shrink-0 items-center
-										justify-center rounded-xl
-										bg-[var(--app-surface-muted)]
-										text-[var(--ion-color-primary)]
-									"
-								>
-									<IonIcon icon={extensionPuzzleOutline} />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-primary">
-										Browser extension
-									</p>
-									<p className="mt-1 text-sm leading-6 text-muted">
-										Keys are managed by your Nostr
-										extension. Export and backups happen
-										there, not in this app.
-									</p>
-								</div>
-							</div>
-						) : null}
-					</section>
-
+					<IdentitySecuritySection runtimeIdentity={runtime} />
 					<section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
 						<div className="flex items-center justify-between gap-2 mb-2">
 							<h2 className="text-base font-semibold tracking-tight text-primary">

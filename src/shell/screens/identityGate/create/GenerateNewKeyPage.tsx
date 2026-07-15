@@ -22,28 +22,28 @@ import {
 	IonFooter,
 } from "@ionic/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { makeIdentityFileBackupPmUsername, makeIdentityPrivateKeyPmUsername } from "@/lib/pmParams";
+import { makeIdentityPrivateKeyPmUsername } from "@/lib/pmParams";
 import { nip19 } from "nostr-tools";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { chevronBackOutline } from "ionicons/icons";
-import { downloadNsecBackup } from "@/lib/file-backup";
 import { useAskCreatePassword } from "@/Hooks/useAskCreatePassword";
 import { hexToBytes } from "@noble/hashes/utils";
+import { useDownloadFileBackup } from "@/Hooks/useDownloadFileBackup";
 
 
 export function GenerateNewKeyPage() {
+	const generatedPair = useMemo(() => generateNewKeyPair(), []);
 
 
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const { showToast } = useToast();
 	const dispatch = useAppDispatch();
+	const handleDownloadFileBackup = useDownloadFileBackup(generatedPair);
 
-	const generatedPair = useMemo(() => generateNewKeyPair(), []);
 	const privateKeyBytes = useMemo(() => hexToBytes(generatedPair.privateKey), [generatedPair]);
 	const pmUsername = useMemo(() => generatedPair ? makeIdentityPrivateKeyPmUsername(generatedPair.publicKey) : "", [generatedPair]);
 	const askCreatePassword = useAskCreatePassword(pmUsername, "Create a password to secure your private key. You may skip this now and set it later in the profile settings.");
-	const askCreateFileBackupPassword = useAskCreatePassword(makeIdentityFileBackupPmUsername(generatedPair?.publicKey), "Create a password to encrypt your file backup with. You will need to enter this password when importing the backup file on a different device.");
 
 
 
@@ -94,20 +94,7 @@ export function GenerateNewKeyPage() {
 
 	}, [askCreatePassword, dispatch, presentLoading, dismissLoading, showToast, generatedPair]);
 
-	const handleDownloadFileBackup = useCallback(async () => {
-		if (!generatedPair) return;
-		const passphrase = await askCreateFileBackupPassword();
-		if (!passphrase) return;
-		try {
-			await downloadNsecBackup(generatedPair.privateKey, passphrase);
-		} catch (err: unknown) {
-			showToast({
-				color: "warning",
-				message: err instanceof Error ? err.message : "An error occured when downloading the file backup",
-			});
-		}
 
-	}, [generatedPair, askCreateFileBackupPassword, showToast]);
 
 
 	return (

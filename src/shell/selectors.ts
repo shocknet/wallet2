@@ -2,7 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/State/store/store";
 import type { ShellSnapshot } from "./types";
 import { resolveShellPhase } from "./resolveShellPhase";
-import { selectIdentities } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity, selectIdentities } from "@/State/identitiesRegistry/slice";
 
 
 export const selectIdentityCount = createSelector(
@@ -30,14 +30,6 @@ export const selectIdentitySession = (
 	state: RootState,
 ) => state.shell.identitySession;
 
-export const selectActiveShellIdentity = (
-	state: RootState,
-) => state.shell.activeIdentity;
-
-
-export const selectActiveShellIdentityId = (
-	state: RootState,
-) => state.shell.activeIdentity?.pubkey ?? null;
 
 export const selectPushIntent = (
 	state: RootState,
@@ -53,7 +45,7 @@ export const selectShellSnapshot = createSelector(
 		selectStartupStatus,
 		selectIdentitySession,
 		selectIdentityCount,
-		selectActiveShellIdentity,
+		selectActiveIdentity
 	],
 	(
 		migration,

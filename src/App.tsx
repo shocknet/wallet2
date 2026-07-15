@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import './App.scss';
 import "react-toastify/dist/ReactToastify.css";
 /* Core CSS required for Ionic components to work properly */
@@ -30,11 +28,11 @@ import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { ToastProvider } from "./lib/contexts/useToast";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { AlertProvider } from "./lib/contexts/useAlert";
-import { StartupScreen } from './shell/screens/StartupScreen';
 import { usePressBackAgainToExit } from './Hooks/useBackAgainToExit';
 import { ToastContainer } from 'react-toastify';
 import { addIcons } from 'ionicons';
 import nostrSvg from "../icons/nostr.svg";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 addIcons({
 	nostr: nostrSvg,
@@ -47,9 +45,14 @@ export default function App() {
 
 	return (
 		<ErrorBoundary>
-
 			<Provider store={store}>
-				<PersistGate loading={<StartupScreen />} persistor={persistor}>
+				<PersistGate
+					loading={null}
+					persistor={persistor}
+					onBeforeLift={() =>
+						SplashScreen.hide()
+					}
+				>
 					<ToastProvider>
 						<ScannerProvider>
 

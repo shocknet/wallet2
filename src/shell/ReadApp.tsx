@@ -10,7 +10,6 @@ import {
 import { lazy, Suspense, useEffect } from "react";
 import {
 	selectPendingNav,
-	selectActiveShellIdentityId,
 } from "./selectors";
 import {
 	useAppDispatch,
@@ -30,6 +29,7 @@ import Swaps from '@/Pages/Swaps';
 import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
 import { cleanupStaleServiceWorkers } from "@/sw-cleanup";
 import FullSpinner from "@/Components/common/ui/fullSpinner";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -233,7 +233,7 @@ function PendingNavConsumer() {
 	const router = useIonRouter();
 	const dispatch = useAppDispatch();
 	const pendingNav = useAppSelector(selectPendingNav);
-	const readyIdentityId = useAppSelector(selectActiveShellIdentityId);
+	const readyIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 
 	useEffect(() => {
 		if (
