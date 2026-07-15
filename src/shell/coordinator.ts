@@ -23,6 +23,7 @@ import {
 import type {
 	DeviceToIdentitiesRepairAction,
 	RuntimeIdentity,
+	RuntimeIdentitySanctum,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
 } from "./types";
@@ -235,9 +236,7 @@ export const completeSanctumReauth =
 			}
 
 			// this instance of runtimeIdentity comes from the store, so we need to make a copy to avoid mutating the store
-			const copy = { ...runtimeIdentity, tokensData };
-
-
+			const copy: RuntimeIdentitySanctum = { ...runtimeIdentity, tokensData, reauthReason: null };
 			const verification = await dispatch(verifySanctumSession(copy));
 
 			if (!verification.ok) {
