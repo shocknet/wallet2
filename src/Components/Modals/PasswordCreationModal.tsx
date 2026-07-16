@@ -12,27 +12,34 @@ import { CreatePasswordForm } from "../password/CreatePasswordForm";
 
 interface PasswordCreationModalProps {
 	description?: string;
-
 	username?: string;
-	dismiss: (data?: string | null | undefined | number, role?: string) => void
+	/** When set, shows a labeled cancel/skip action (e.g. "Skip") next to Confirm. */
+	cancelButtonLabel?: string;
+	dismiss: (data?: string | null | undefined | number, role?: string) => void;
 }
 
-export function PasswordCreationModal({ description, username, dismiss }: PasswordCreationModalProps) {
+export function PasswordCreationModal({
+	description,
+	username,
+	cancelButtonLabel,
+	dismiss,
+}: PasswordCreationModalProps) {
 	const id = useId();
 	return (
 		<>
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
-					<IonTitle className="text-primary text-lg font-bold">Create Password</IonTitle>
+					<IonTitle className="text-primary text-lg font-bold">
+						Create Password
+					</IonTitle>
 					<IonButtons slot="end">
-						<IonButton onClick={() => dismiss(undefined, "cancel")}><IonIcon slot="icon-only" icon={closeOutline} /></IonButton>
+						<IonButton onClick={() => dismiss(undefined, "cancel")}>
+							<IonIcon slot="icon-only" icon={closeOutline} />
+						</IonButton>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
 			<div className="ion-padding bg-[var(--app-surface)]">
-
-
-
 				<CreatePasswordForm
 					id={id}
 					description={description}
@@ -44,7 +51,16 @@ export function PasswordCreationModal({ description, username, dismiss }: Passwo
 					}}
 				/>
 
-				<div className="w-full flex justify-end mt-5">
+				<div className="w-full flex justify-end gap-3 mt-5">
+					{cancelButtonLabel ? (
+						<IonButton
+							color="dark"
+							fill="solid"
+							onClick={() => dismiss(undefined, "cancel")}
+						>
+							{cancelButtonLabel}
+						</IonButton>
+					) : null}
 					<IonButton
 						type="submit"
 						form={id}
@@ -57,5 +73,5 @@ export function PasswordCreationModal({ description, username, dismiss }: Passwo
 				</div>
 			</div>
 		</>
-	)
+	);
 }
