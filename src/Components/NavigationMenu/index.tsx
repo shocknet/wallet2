@@ -4,7 +4,6 @@ import {
 	IonContent,
 	IonHeader,
 	IonIcon,
-	IonImg,
 	IonItem,
 	IonItemDivider,
 	IonItemGroup,
@@ -33,8 +32,11 @@ import {
 import { memo, useEffect, useState } from "react";
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
-import logo from "@/Assets/Images/isolated logo.png";
-import shockwalletText from "@/Assets/Images/wallet_new_text.png";
+import {
+	WALLET_AVATAR_HEIGHT,
+	useWalletAvatar,
+	useWalletWelcomeWordmark,
+} from "@/Assets/Images/wallet-avatar";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { exportDebugReport } from "@/lib/debugReportExport";
@@ -90,6 +92,8 @@ export const NavigationMenu = memo(function NavigationMenu({
 	const [switchOpen, setSwitchOpen] = useState(false);
 	const healthyAdminSources = useAppSelector(selectAdminNprofileViews);
 	const hasAdminSources = healthyAdminSources.length > 0;
+	const markSrc = useWalletAvatar();
+	const wordmarkSrc = useWalletWelcomeWordmark();
 
 	useEffect(() => {
 		const setupAppBuildInfo = async () => {
@@ -125,15 +129,25 @@ export const NavigationMenu = memo(function NavigationMenu({
 					<IonToolbar className="[--background:transparent]">
 						<IonTitle>
 							<div className="flex items-center gap-2.5 min-w-0">
-								<IonImg
-									src={logo}
+								<img
+									src={markSrc}
 									alt=""
-									className="h-7 w-7 shrink-0"
+									className="shrink-0"
+									style={{
+										display: "block",
+										height: "1.75rem",
+										width: "auto",
+									}}
 								/>
-								<IonImg
-									src={shockwalletText}
+								<img
+									src={wordmarkSrc}
 									alt="ShockWallet"
-									className="h-4 w-auto max-w-[8.5rem] object-contain opacity-90"
+									className="max-w-[8.5rem] opacity-90"
+									style={{
+										display: "block",
+										height: WALLET_AVATAR_HEIGHT.welcome,
+										width: "auto",
+									}}
 								/>
 							</div>
 						</IonTitle>

@@ -238,12 +238,12 @@ export const Graphs = ({ adminSource }: { adminSource: NprofileView }) => {
 
 
 const tabStyle = (selected: boolean) => ({
-    backgroundColor: !selected ? 'white' : '#16191c',
+    backgroundColor: !selected ? 'white' : '#15191c',
     width: 200,
     height: 40,
-    color: !selected ? '#16191c' : 'white',
+    color: !selected ? '#15191c' : 'white',
     borderRadius: '4px 4px 0 0',
     margin: '0 5px',
     border: !selected ? '' : '1px solid white',
-    borderBottom: !selected ? '' : '1px solid #16191c',
+    borderBottom: !selected ? '' : '1px solid #15191c',
 })

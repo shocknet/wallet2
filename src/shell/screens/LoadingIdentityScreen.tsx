@@ -1,5 +1,8 @@
-import { IonContent, IonImg, IonPage } from "@ionic/react";
-import logo from "@/Assets/Images/isolated logo.png";
+import { IonContent, IonPage } from "@ionic/react";
+import {
+	WALLET_AVATAR_HEIGHT,
+	useWalletAvatar,
+} from "@/Assets/Images/wallet-avatar";
 import { truncateTextMiddle } from "@/lib/format";
 
 export function LoadingIdentityScreen({
@@ -7,6 +10,8 @@ export function LoadingIdentityScreen({
 }: {
 	identityId: string;
 }) {
+	const markSrc = useWalletAvatar();
+
 	return (
 		<IonPage className="ion-page-width">
 			<IonContent className="ion-padding ion-content-only">
@@ -38,10 +43,14 @@ export function LoadingIdentityScreen({
 							animate-shell-breathe
 						"
 					>
-						<IonImg
-							src={logo}
+						<img
+							src={markSrc}
 							alt=""
-							className="h-14 w-14"
+							style={{
+								display: "block",
+								height: WALLET_AVATAR_HEIGHT.hero,
+								width: "auto",
+							}}
 						/>
 					</div>
 

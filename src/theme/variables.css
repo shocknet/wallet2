@@ -113,15 +113,15 @@
 
 	--ion-color-warning: #f4a259;
 	--ion-color-warning-rgb: 244, 162, 89;
-	--ion-color-warning-contrast: #16191c;
-	--ion-color-warning-contrast-rgb: 22, 25, 28;
+	--ion-color-warning-contrast: #15191c;
+	--ion-color-warning-contrast-rgb: 21, 25, 28;
 	--ion-color-warning-shade: #d9924f;
 	--ion-color-warning-tint: #f5af6b;
 
 	--ion-color-danger: #e8505b;
 	--ion-color-danger-rgb: 232, 80, 91;
 	--ion-color-danger-contrast: #000000;
-	--ion-color-danger-contrast-rgb: 22, 25, 28;
+	--ion-color-danger-contrast-rgb: 21, 25, 28;
 	--ion-color-danger-shade: #d14751;
 	--ion-color-danger-tint: #ec656f;
 
@@ -157,8 +157,8 @@
 
 
 	/* Dark theme surface colors */
-	--app-background: #16191c;
-	--app-background-rgb: 22, 25, 28;
+	--app-background: #15191c;
+	--app-background-rgb: 21, 25, 28;
 
 	--app-surface: #151d24;
 	--app-surface-elevated: #212325;

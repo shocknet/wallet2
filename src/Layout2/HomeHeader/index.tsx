@@ -1,18 +1,20 @@
 import {
-	IonButton,
 	IonButtons,
 	IonHeader,
-	IonImg,
 	IonToolbar,
 	useIonRouter,
 } from "@ionic/react";
 import { useEffect, useState } from "react";
-import logo from "@/Assets/Images/isolated logo.png";
+import {
+	WALLET_AVATAR_HEIGHT,
+	useWalletAvatar,
+} from "@/Assets/Images/wallet-avatar";
 import SourcesStatusIndicator from "@/Components/SourcesStatusIndicator";
 import { ProfileMenuButton } from "../ProfileMenuButton";
 
 const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 	const router = useIonRouter();
+	const logoSrc = useWalletAvatar();
 
 	const [logoClickCounter, setLogoClickCounter] = useState(0);
 	useEffect(() => {
@@ -42,16 +44,29 @@ const HomeHeader = ({ children }: { children?: React.ReactNode }) => {
 		<IonHeader className="ion-no-border">
 			<IonToolbar>
 				<IonButtons slot="start">
-					<IonButton
-						shape="round"
+					<button
+						type="button"
+						aria-label="Home"
 						onClick={() => setLogoClickCounter((prev) => prev + 1)}
+						style={{
+							background: "none",
+							border: "none",
+							padding: "0 8px",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+						}}
 					>
-						<IonImg
-							slot="start"
-							src={logo}
-							style={{ width: "25px", height: "auto" }}
+						<img
+							src={logoSrc}
+							alt="Shockwallet"
+							style={{
+								display: "block",
+								height: WALLET_AVATAR_HEIGHT.nav,
+								width: "auto",
+							}}
 						/>
-					</IonButton>
+					</button>
 				</IonButtons>
 				<IonButtons slot="end">
 					<SourcesStatusIndicator />

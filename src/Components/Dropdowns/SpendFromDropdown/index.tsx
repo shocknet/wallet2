@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
-import BootstrapSource from "../../../Assets/Images/bootstrap_source.jpg";
+import { useLightningPubLogo, LIGHTNING_PUB_MARK_HEIGHT } from "@/Assets/Images/lightning-pub";
 import { NprofileView } from '@/State/scoped/backups/sources/selectors';
 
 type DropDownProps = {
@@ -19,6 +19,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   const [allValue, setAllValue] = useState(values);
   const [display, setDisplay] = useState(0);
   const [rotation, setRotation] = useState(0);
+  const lpMarkSrc = useLightningPubLogo("mark");
 
   useEffect(() => {
     setShowDropDown(showDropDown);
@@ -30,7 +31,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     switch (value) {
       case "0":
         return <React.Fragment>
-          <img src={BootstrapSource} width="23px" alt='Avatar' style={{ borderRadius: "50%" }} />
+          <img src={lpMarkSrc} alt="Lightning.pub" style={{ height: LIGHTNING_PUB_MARK_HEIGHT.inline, width: "auto", display: "block" }} />
         </React.Fragment>
       case "1":
         return icons.mynodeSmall()

@@ -1,16 +1,18 @@
-import { IonImg } from "@ionic/react";
 import { motion } from "framer-motion";
-import logo from "@/Assets/Images/isolated logo.png";
-import shockwalletText from "@/Assets/Images/wallet_new_text.png";
+import {
+	WALLET_AVATAR_HEIGHT,
+	useWalletAvatar,
+	useWalletWelcomeWordmark,
+} from "@/Assets/Images/wallet-avatar";
 
 const sizes = {
 	md: {
-		logo: "h-12 w-12",
-		wordmark: "mt-4 max-w-56",
+		mark: "mt-0",
+		wordmark: "mt-4",
 	},
 	lg: {
-		logo: "h-16 w-16",
-		wordmark: "mt-5 max-w-72",
+		mark: "mt-0",
+		wordmark: "mt-5",
 	},
 } as const;
 
@@ -24,6 +26,10 @@ export function ShockwalletHero({
 	className?: string;
 }) {
 	const dims = sizes[size];
+	const markSrc = useWalletAvatar();
+	const wordmarkSrc = useWalletWelcomeWordmark();
+	const markHeight =
+		size === "lg" ? WALLET_AVATAR_HEIGHT.hero : "clamp(2rem, 6vw, 2.75rem)";
 
 	return (
 		<motion.div
@@ -32,21 +38,27 @@ export function ShockwalletHero({
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
 		>
-			<div className={dims.logo}>
-				<IonImg
-					src={logo}
+			<div className={dims.mark}>
+				<img
+					src={markSrc}
 					alt=""
 					style={{
-						width: "100%",
-						height: "auto",
+						display: "block",
+						height: markHeight,
+						width: "auto",
 					}}
 				/>
 			</div>
 			<div className={dims.wordmark}>
-				<IonImg
-					src={shockwalletText}
+				<img
+					src={wordmarkSrc}
 					alt="ShockWallet"
-					className="w-full h-auto object-contain"
+					style={{
+						display: "block",
+						height: WALLET_AVATAR_HEIGHT.welcome,
+						width: "auto",
+						maxWidth: "100%",
+					}}
 				/>
 			</div>
 			{tagline ? (

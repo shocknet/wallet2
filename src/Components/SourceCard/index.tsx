@@ -25,7 +25,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 
 
 	const label = source.type === SourceType.NPROFILE_SOURCE
-		? source.beaconName || source.label || "Unnamed source"
+		? source.label || source.beaconName || "Unnamed source"
 		: source.label || source.sourceId;
 
 
@@ -36,7 +36,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 			detail={false}
 			onClick={() => onPick(source)}
 
-			aria-label={`Open source ${source.label} `}
+			aria-label={`Open source ${label}`}
 		>
 			<div slot="start" className="relative">
 

@@ -27,6 +27,6 @@ export function applyTheme(effective: EffectiveTheme) {
 		style: isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light,
 	});
 	StatusBar.setBackgroundColor({
-		color: isDark ? "#16191c" : "#f5f7fa",
+		color: isDark ? "#15191c" : "#f5f7fa",
 	});
 }

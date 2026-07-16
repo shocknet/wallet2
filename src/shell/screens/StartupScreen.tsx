@@ -1,8 +1,14 @@
-import { IonContent, IonImg, IonPage } from "@ionic/react";
-import logo from "@/Assets/Images/isolated logo.png";
-import shockwalletText from "@/Assets/Images/wallet_new_text.png";
+import { IonContent, IonPage } from "@ionic/react";
+import {
+	WALLET_AVATAR_HEIGHT,
+	useWalletAvatar,
+	useWalletWelcomeWordmark,
+} from "@/Assets/Images/wallet-avatar";
 
 export function StartupScreen() {
+	const markSrc = useWalletAvatar();
+	const wordmarkSrc = useWalletWelcomeWordmark();
+
 	return (
 		<IonPage className="ion-page-width">
 			<IonContent className="ion-padding ion-content-only">
@@ -34,18 +40,27 @@ export function StartupScreen() {
 							animate-shell-breathe
 						"
 					>
-						<IonImg
-							src={logo}
+						<img
+							src={markSrc}
 							alt=""
-							className="h-14 w-14"
+							style={{
+								display: "block",
+								height: WALLET_AVATAR_HEIGHT.hero,
+								width: "auto",
+							}}
 						/>
 					</div>
 
-					<div className="relative z-[1] mt-8 max-w-[13rem] w-full opacity-90">
-						<IonImg
-							src={shockwalletText}
+					<div className="relative z-[1] mt-8 max-w-[13rem] w-full opacity-90 flex justify-center">
+						<img
+							src={wordmarkSrc}
 							alt="ShockWallet"
-							className="w-full h-auto object-contain"
+							style={{
+								display: "block",
+								height: WALLET_AVATAR_HEIGHT.welcome,
+								width: "auto",
+								maxWidth: "100%",
+							}}
 						/>
 					</div>
 
