@@ -34,7 +34,7 @@ import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { useAppDispatch } from "@/State/store/hooks";
 import { addLightningAddressSource, addNprofileSource } from "@/State/scoped/backups/sources/thunks";
 import { PubSourceStatus } from "../helpers";
-import { useQrScanner } from "@/lib/hooks/useQrScanner";
+import { useQrScanner } from "@/Hooks/useQrScanner";
 
 
 interface AddSourceNavModalProps {

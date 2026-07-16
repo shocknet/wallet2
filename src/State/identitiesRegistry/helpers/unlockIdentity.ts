@@ -1,13 +1,11 @@
-import {
-	RuntimeIdentity,
-} from "@/State/identitiesRegistry/types";
 import type { TokensData } from "sanctum-sdk";
-import { IdentityType, type Identity, isSecureIdentity } from "../types";
+import { IdentityType, type Identity } from "../types";
 import {
 	resolveLocalPrivateKey,
 	resolveSanctumTokensData,
 	resolveWrappedDataKeyCiphertext,
 } from "./platformSecretStorage";
+import { RuntimeIdentity } from "@/shell/types";
 
 
 export type UnlockIdentityOptions = {
@@ -16,25 +14,21 @@ export type UnlockIdentityOptions = {
 };
 
 
-
+/* returns runtime identity, which includes the secrets */
 export async function unlockIdentity(
 	identity: Identity,
-	options: UnlockIdentityOptions = {}
+	userPassword?: string
 ): Promise<RuntimeIdentity> {
-	if (!isSecureIdentity(identity)) {
-		throw new Error("Identity has not completed secure migration");
-	}
+
 
 	const unlockedAtMs = Date.now();
-
-
 
 	switch (identity.type) {
 		case IdentityType.LOCAL_KEY: {
 			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
-			const privateKey = await resolveLocalPrivateKey(identity, { userPassword: options.userPassword });
+			const privateKey = await resolveLocalPrivateKey(identity, { userPassword });
 			if (!privateKey) {
-				throw new Error(`Unable to resolve local private key for ${identity.pubkey}`);
+				throw new Error(`Unable to resolve local private key, password is incorrect`);
 			}
 			return {
 				type: IdentityType.LOCAL_KEY,
@@ -48,7 +42,7 @@ export async function unlockIdentity(
 		}
 		case IdentityType.SANCTUM: {
 			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
-			const tokensData = options.sanctumTokensData ?? await resolveSanctumTokensData(identity);
+			const tokensData = await resolveSanctumTokensData(identity);
 			return {
 				type: IdentityType.SANCTUM,
 				pubkey: identity.pubkey,

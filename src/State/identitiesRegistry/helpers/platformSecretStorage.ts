@@ -1,7 +1,5 @@
 import { Capacitor } from "@capacitor/core";
 import type { TokensData } from "sanctum-sdk";
-import type { AppThunk } from "../../store/store";
-import { identitiesRegistryActions } from "../slice";
 import type {
 	Identity,
 	IdentityKeys,
@@ -10,10 +8,13 @@ import type {
 	SanctumTokensStorage,
 	WrappedDataKeyStorage,
 } from "../types";
-import { IdentityType } from "../types";
-import { decryptLocalPrivateKeyForWeb, encryptLocalPrivateKeyForWeb } from "./localSecretCrypto";
 import {
-	deleteSanctumSession,
+	decryptStringAesGcm,
+	deriveAesGcmKeyFromPassword,
+	passwordDeriveAndEcrypt,
+} from "@/lib/aesGcm";
+import { base64urlDecode, } from "@/lib/base64url";
+import {
 	getLocalPrivateKey,
 	getSanctumTokensData,
 	getWrappedDataKeyCiphertext,
@@ -21,6 +22,8 @@ import {
 	setSanctumTokensData,
 	setWrappedDataKeyCiphertext,
 } from "./secureSecrets";
+
+export const LOCAL_PRIVKEY_AAD = { purpose: "local-privkey" } as const;
 
 export async function resolveWrappedDataKeyCiphertext(
 	identity: Identity
@@ -66,20 +69,20 @@ export async function toLocalPrivateKeyStorage(
 	}
 
 	if (userPassword) {
-		const encryptedPrivkey = await encryptLocalPrivateKeyForWeb(privkey, userPassword);
+		const envelope = await passwordDeriveAndEcrypt({
+			plaintext: privkey,
+			aad: LOCAL_PRIVKEY_AAD,
+			password: userPassword,
+		});
+
 		return {
 			storage: "inline_encrypted",
-			scheme: "app-password-only-v1",
-			passwordMode: "user",
-			encryptedPrivkey,
+			encryptedPrivkey: envelope,
 		};
 	} else {
-		const encryptedPrivkey = await encryptLocalPrivateKeyForWeb(privkey);
 		return {
-			storage: "inline_encrypted",
-			scheme: "app-password-only-v1",
-			passwordMode: "default",
-			encryptedPrivkey,
+			storage: "inline",
+			privateKey: privkey,
 		};
 	}
 }
@@ -106,22 +109,36 @@ export async function resolveLocalPrivateKey(
 	args?: {
 		userPassword?: string;
 	}
-): Promise<string | null> {
+): Promise<string> {
 	if (identity.localSecret.storage === "secure_ref") {
 		const localPrivKey = await getLocalPrivateKey(identity.localSecret.localKeyRef);
 		if (!localPrivKey) {
-			throw new Error(`Missing local private key for identity ${identity.pubkey}`);
+			throw new Error(`Local private key missing from secure storage for identity ${identity.pubkey}`);
 		}
 		return localPrivKey;
 	}
-	const passwordMode = identity.localSecret.passwordMode;
-	if (passwordMode === "user" && !args?.userPassword) {
-		throw new Error(`Missing user password for local identity ${identity.pubkey}`);
+	if (identity.localSecret.storage === "inline_encrypted") {
+		if (!args?.userPassword) {
+			throw new Error(`User password not provided for inline encrypted local private key for identity ${identity.pubkey}`);
+		}
+		const { salt, ...envelope } = identity.localSecret.encryptedPrivkey;
+		const key = await deriveAesGcmKeyFromPassword(
+			args.userPassword,
+			base64urlDecode(salt),
+		);
+		try {
+			return await decryptStringAesGcm({
+				key,
+				envelope,
+				expectedAad: LOCAL_PRIVKEY_AAD,
+			});
+		} catch {
+			throw new Error("Failed to decrypt local private key. Incorrect password");
+		}
+
 	}
-	return decryptLocalPrivateKeyForWeb(
-		identity.localSecret.encryptedPrivkey,
-		passwordMode === "user" ? args?.userPassword : undefined
-	);
+
+	return identity.localSecret.privateKey;
 }
 
 export async function resolveSanctumTokensData(
@@ -133,74 +150,3 @@ export async function resolveSanctumTokensData(
 	}
 	return getSanctumTokensData(identity.sanctumTokens.sessionRef);
 }
-
-export const setIdentityWrappedDataKey = (args: {
-	pubkey: string;
-	wrappedDataKeyCiphertext: string;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
-		const identity = getState().identitiesRegistry.entities[args.pubkey];
-		if (!identity) throw new Error(`Identity ${args.pubkey} does not exist`);
-
-		const wrappedDataKey = await toWrappedDataKeyStorage(args.pubkey, args.wrappedDataKeyCiphertext);
-		dispatch(
-			identitiesRegistryActions.setIdentityWrappedDataKeyStorage({
-				pubkey: args.pubkey,
-				wrappedDataKey,
-			})
-		);
-	};
-};
-
-export const setIdentityLocalPrivateKey = (args: {
-	pubkey: string;
-	privkey: string;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
-		const identity = getState().identitiesRegistry.entities[args.pubkey];
-		if (!identity || identity.type !== IdentityType.LOCAL_KEY) {
-			throw new Error(`Local-key identity ${args.pubkey} does not exist`);
-		}
-
-		const localSecret = await toLocalPrivateKeyStorage(args.pubkey, args.privkey);
-		dispatch(
-			identitiesRegistryActions.setLocalSecretStorage({
-				pubkey: args.pubkey,
-				localSecret,
-			})
-		);
-	};
-};
-
-export const setIdentitySanctumTokensData = (args: {
-	pubkey: string;
-	tokensData: TokensData;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch) => {
-
-		const sanctumTokens = await toSanctumTokensStorage(args.pubkey, args.tokensData);
-		dispatch(
-			identitiesRegistryActions.setSanctumTokensStorage({
-				pubkey: args.pubkey,
-				sanctumTokens,
-			})
-		);
-	};
-};
-
-export const clearIdentitySanctumTokensData = (args: {
-	pubkey: string;
-}): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
-		const identity = getState().identitiesRegistry.entities[args.pubkey];
-		if (!identity || identity.type !== IdentityType.SANCTUM) {
-			throw new Error(`Sanctum identity ${args.pubkey} does not exist`);
-		}
-
-		if (identity.sanctumTokens?.storage === "secure_ref") {
-			await deleteSanctumSession(identity.sanctumTokens.sessionRef);
-		}
-
-		dispatch(identitiesRegistryActions.clearSanctumTokensData({ pubkey: args.pubkey }));
-	};
-};

@@ -1,6 +1,6 @@
 import { BeaconDiscoveryResult, fetchBeaconDiscovery } from "@/Api/nostrHandler";
 import { truncateTextMiddle } from "@/lib/format";
-import { useBeaconState } from "@/lib/hooks/useBeaconState";
+import { useBeaconState } from "@/Hooks/useBeaconState";
 import {
 	IonContent,
 	IonItem,

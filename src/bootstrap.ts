@@ -3,12 +3,14 @@ import { initDeviceAuthRuntime } from "./lib/deviceAuth/capability";
 
 import { initLocalNotifications } from "./notifications/local/local-notifications";
 import { initPushNotifications } from "./notifications/push/init";
+import { startPushCapture } from "./notifications/push/capture";
 import { registerRootLifecycle } from "./State/runtime/lifecycle";
 import store from "./State/store/store";
 import { runtimeActions } from "./State/runtime/slice";
 export default function bootstrapShockwallet() {
 	registerRootLifecycle();
 	initPushNotifications();
+	startPushCapture();
 	initLocalNotifications();
 	initDeviceAuthRuntime((deviceAuth) => {
 		store.dispatch(runtimeActions.setDeviceAuthStatus({ deviceAuth }));

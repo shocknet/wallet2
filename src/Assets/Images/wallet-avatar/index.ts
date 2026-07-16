@@ -2,7 +2,10 @@ import swMarkDark from "@/Assets/Images/wallet-avatar/dark/sw-mark.svg";
 import swMarkLight from "@/Assets/Images/wallet-avatar/light/sw-mark.svg";
 import shockWalletWordmarkDark from "@/Assets/Images/wallet-avatar/dark/shock-wallet.svg";
 import shockWalletWordmarkLight from "@/Assets/Images/wallet-avatar/light/shock-wallet.svg";
-import { useEffectiveTheme, type EffectiveTheme } from "@/Assets/Images/lightning-pub";
+import {
+	useEffectiveTheme,
+	type EffectiveTheme,
+} from "@/Hooks/useEffectiveTheme";
 
 /**
  * Responsive logo heights (no fixed px).

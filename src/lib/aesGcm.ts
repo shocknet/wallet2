@@ -7,11 +7,19 @@ export const aesGcmEnvelope = z.object({
 	nonce: z.string(),
 	ciphertext: z.string(),
 });
+export const aesGcmEnvelopeWithSalt = aesGcmEnvelope.extend({
+	salt: z.string(),
+});
 
 export type AesGcmEnvelope = z.infer<typeof aesGcmEnvelope>;
+export type AesGcmEnvelopeWithSalt = z.infer<typeof aesGcmEnvelopeWithSalt>;
 
 export function isAesGcmEnvelope(value: unknown): value is AesGcmEnvelope {
 	return aesGcmEnvelope.safeParse(value).success;
+}
+
+export function isAesGcmEnvelopeWithSalt(value: unknown): value is AesGcmEnvelopeWithSalt {
+	return aesGcmEnvelopeWithSalt.safeParse(value).success;
 }
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -38,6 +46,38 @@ export async function generateAesGcmKey(): Promise<CryptoKey> {
 		{ name: "AES-GCM", length: 256 },
 		true,
 		["encrypt", "decrypt"]
+	);
+}
+
+const PBKDF2_ITERATIONS = 200_000;
+
+/** Derive an AES-GCM key from a password + salt (PBKDF2-SHA256). */
+export async function deriveAesGcmKeyFromPassword(
+	password: string,
+	salt: Uint8Array,
+): Promise<CryptoKey> {
+	const keyMaterial = await globalThis.crypto.subtle.importKey(
+		"raw",
+		new TextEncoder().encode(password),
+		"PBKDF2",
+		false,
+		["deriveKey"],
+	);
+
+	return globalThis.crypto.subtle.deriveKey(
+		{
+			name: "PBKDF2",
+			hash: "SHA-256",
+			salt: toArrayBuffer(salt),
+			iterations: PBKDF2_ITERATIONS,
+		},
+		keyMaterial,
+		{
+			name: "AES-GCM",
+			length: 256,
+		},
+		false,
+		["encrypt", "decrypt"],
 	);
 }
 
@@ -69,6 +109,25 @@ export async function encryptStringAesGcm(args: {
 		alg: "AES-GCM",
 		nonce: base64urlEncode(nonce),
 		ciphertext: base64urlEncode(new Uint8Array(ciphertext)),
+	};
+}
+
+
+export async function passwordDeriveAndEcrypt(args: {
+	plaintext: string;
+	aad: any;
+	password: string;
+}): Promise<AesGcmEnvelopeWithSalt> {
+	const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
+	const key = await deriveAesGcmKeyFromPassword(args.password, salt);
+	const envelope = await encryptStringAesGcm({
+		key,
+		plaintext: args.plaintext,
+		aad: args.aad,
+	});
+	return {
+		...envelope,
+		salt: base64urlEncode(salt),
 	};
 }
 

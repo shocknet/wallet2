@@ -123,5 +123,5 @@ export function InputPasswordModal({
 }
 
 export function useAskPassword() {
-	return useAskModal<InputPasswordModalOptions, string>(InputPasswordModal, "wallet-modal");
+	return useAskModal<InputPasswordModalOptions, string>(InputPasswordModal, "wallet-modal dialog-modal");
 }

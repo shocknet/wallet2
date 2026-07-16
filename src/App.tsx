@@ -17,393 +17,54 @@ import '@ionic/react/css/display.css';
 import "./theme/tailwind.css";
 import "./theme/variables.css";
 
-import { Redirect, Route } from "react-router-dom";
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { BackButtonEvent, IonApp, IonRouterOutlet, setupIonicReact, useIonRouter, useIonToast } from "@ionic/react";
+import { IonApp, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
+import { PersistGate } from "redux-persist/integration/react";
+import store, { persistor } from "@/State/store/store";
+import { ShellBootstrap } from "@/shell/ShellBootstrap";
+import { AppShell } from "@/shell/AppShell";
+import { Provider } from "react-redux";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
-import store, { persistor, useSelector } from './State/store/store';
-import { Provider } from 'react-redux';
-import { ToastContainer } from "react-toastify";
-import LoadingOverlay from "./Components/LoadingOverlay";
-import NavigationMenu from "./Components/NavigationMenu";
-import { AlertProvider } from "./lib/contexts/useAlert";
 import { ToastProvider } from "./lib/contexts/useToast";
-import nostrSvg from "../icons/nostr.svg"
-import { addIcons } from "ionicons";
-import FullSpinner from "./Components/common/ui/fullSpinner";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
-import { useAppUrlListener } from './Hooks/appUrlListener';
-import { cleanupStaleServiceWorkers } from './sw-cleanup';
-import Swaps from './Pages/Swaps';
-import { useAppSelector } from './State/store/hooks';
-import { PersistGate } from 'redux-persist/integration/react';
-import { Layout } from './Layout';
-
-import CreateIdentityPage from './Pages/CreateIdentity';
-
-import { GuardedRoute } from './routing/GuardedRoute';
-import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource, loadedIdentityGuard } from './routing/guards';
-import onBeforeLift from './onBeforeLift';
-import { App as CapApp } from '@capacitor/app';
-import { selectActiveIdentity } from './State/identitiesRegistry/slice';
-import { ConsumePendingNav } from './identityIntent/pendingNav';
-import { IdentityIntentBootstrap } from './identityIntent/IdentityIntentBootstrap';
-import { ThemeManager } from './theme/ThemeManager';
-
-
-
-
-const Home = lazy(() => import('./Pages/Home'));
-const Receive = lazy(() => import('./Pages/Receive'));
-const Send = lazy(() => import('./Pages/Send'));
-
-const CreateKeysIdentityPage = lazy(() => import("./Pages/CreateIdentity/keys"));
-const ImportNostrKeyPage = lazy(() => import("./Pages/CreateIdentity/keys/ImportNostrKey"));
-const GenerateNewKeyPage = lazy(() => import("./Pages/CreateIdentity/keys/GenerateNewKey"));
-const CreateSanctumIdentityPage = lazy(() => import("./Pages/CreateIdentity/CreateSanctumIdentityPage"));
-const BootstrapSourcePage = lazy(() => import("./Pages/CreateIdentity/BootstrapSource"));
-const IdentityOverviewPage = lazy(() => import("./Pages/CreateIdentity/IdentityOverview"));
-const SourcesPage = lazy(() => import("./Pages/Sources"));
-const IdentitiesPage = lazy(() => import("./Pages/CreateIdentity/Identities"));
-
-
-const Automation = lazy(() => import('./Pages/Automation'));
-const Prefs = lazy(() => import('./Pages/Prefs'));
-const Contacts = lazy(() => import('./Pages/Contacts'));
-const Invitations = lazy(() => import('./Pages/Invitations'));
-const Notify = lazy(() => import('./Pages/Notify'));
-const Metrics = lazy(() => import('./Pages/Metrics'));
-const LinkedApp = lazy(() => import('./Pages/LinkedApp'));
-const Offers = lazy(() => import('./Pages/Offers'));
-const Stats = lazy(() => import("./Pages/Stats"));
-const Management = lazy(() => import("./Pages/Management"));
-
-
-const BackgroundJobs = lazy(() => import("@/lib/backgroundHooks")); // Background jobs
-const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequestModal"));
-const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
-const EditDebitModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.EditDebitModal })));
+import { AlertProvider } from "./lib/contexts/useAlert";
+import { usePressBackAgainToExit } from './Hooks/useBackAgainToExit';
+import { ToastContainer } from 'react-toastify';
+import { addIcons } from 'ionicons';
+import nostrSvg from "../icons/nostr.svg";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 addIcons({
 	nostr: nostrSvg,
-})
+});
+
 setupIonicReact();
 
-const EXIT_WINDOW_MS = 2000;
-
-
-
-const AppJobs = () => {
+export default function App() {
 	usePressBackAgainToExit();
-	useAppUrlListener();
-
-	const manageRequests = useSelector(state => state.modalsSlice.manageRequests);
-	const debitRequests = useSelector(state => state.modalsSlice.debitRequests);
-	const debitToEdit = useSelector(state => state.modalsSlice.editDebit);
-	const activeIdentityId = useSelector(selectActiveIdentity);
-
-	useEffect(() => {
-		cleanupStaleServiceWorkers()
-	}, []);
-
-
-	/*
-	* Defer loading in the background jobs until browser decides main thread is idle
-	*/
-	const [loadBackgroundJobs, setLoadBackgroundJobs] = useState(false);
-	useEffect(() => {
-		// Prefer requestIdleCallback; fall back to a small timeout
-		const id = ('requestIdleCallback' in window)
-			? requestIdleCallback(
-				() => {
-					setLoadBackgroundJobs(true)
-				},
-				{ timeout: 3000 }
-			)
-			: setTimeout(() => setLoadBackgroundJobs(true), 1500);
-
-		return () => {
-			if ('cancelIdleCallback' in window)
-				cancelIdleCallback(id as number);
-			else
-				clearTimeout(id);
-		};
-	}, []);
-
-	return (
-		<>
-			{
-				(
-					loadBackgroundJobs
-					&&
-					activeIdentityId
-				)
-				&&
-				<Suspense fallback={null}>
-					<BackgroundJobs />
-				</Suspense>
-			}
-			<LoadingOverlay />
-
-			{/* Modals */}
-			{
-				(manageRequests && manageRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<ManageRequestsModal />
-				</Suspense>
-			}
-			{
-				(debitRequests && debitRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<DebitRequestModal />
-				</Suspense>
-			}
-			{
-				debitToEdit
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<EditDebitModal />
-				</Suspense>
-			}
-
-		</>
-	)
-
-}
-
-const AppContent: React.FC = () => {
-
-
-
-	const identityKey = useAppSelector(selectActiveIdentity)?.pubkey ?? "anon";
-
-
-	return (
-		<IonReactRouter>
-			<IdentityIntentBootstrap>
-				<ConsumePendingNav />
-				<AppJobs />
-				<NavigationMenu />
-				<IonRouterOutlet id="main-content" key={`session-${identityKey}`}>
-					<GuardedRoute
-						exact
-						path="/identities"
-						component={IdentitiesPage}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/identity/create"
-						component={CreateIdentityPage}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/identity/create/keys"
-						component={CreateKeysIdentityPage}
-					/>
-					<GuardedRoute exact
-						path="/identity/create/keys/import"
-						component={ImportNostrKeyPage}
-					/>
-					<GuardedRoute exact
-						path="/identity/create/keys/generate"
-						component={GenerateNewKeyPage}
-					/>
-					<GuardedRoute
-						exact
-						path="/identity/create/sanctum"
-						component={CreateSanctumIdentityPage}
-
-					/>
-
-					<GuardedRoute
-						exact
-						path="/identity/bootstrap"
-						component={BootstrapSourcePage}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-
-
-					<GuardedRoute
-						exact
-						path="/identity/overview"
-						component={IdentityOverviewPage}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-
-
-					<GuardedRoute
-
-						exact
-						path="/home"
-						component={Home}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-					<GuardedRoute
-
-						exact
-						path="/send"
-						component={Send}
-
-						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-					/>
-
-					<GuardedRoute
-
-						exact
-						path="/Receive"
-						component={Receive}
-
-						guards={[loadedIdentityGuard, atLeastOneSource]}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/sources"
-						component={SourcesPage}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-
-					<GuardedRoute
-						exact
-						path="/automation"
-						component={Automation}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/prefs"
-						component={Prefs}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-
-					<GuardedRoute
-						exact
-						path="/contacts"
-						component={Contacts}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/invitations"
-						component={Invitations}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/notify"
-						component={Notify}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-
-					<GuardedRoute
-						exact
-						path="/management"
-						component={Management}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-					<GuardedRoute
-						path="/metrics"
-						component={Metrics}
-
-						guards={[loadedIdentityGuard, atLeastOneAdminNprofileSourceGuard]}
-
-					/>
-
-					<GuardedRoute
-						exact
-						path="/offers"
-						component={Offers}
-
-						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-					/>
-
-
-					<GuardedRoute
-						exact
-						path="/Stats"
-						component={Stats}
-
-						guards={[loadedIdentityGuard]}
-						layout={Layout}
-					/>
-
-
-					<GuardedRoute
-						exact
-						path="/LApps"
-						component={LinkedApp}
-						layout={Layout}
-
-						guards={[loadedIdentityGuard]}
-					/>
-
-					<GuardedRoute
-						exact
-						path="/swaps"
-						component={Swaps}
-						guards={[loadedIdentityGuard, atLeastOneNprofileSource]}
-					/>
-
-
-					<Route exact path="/" >
-						<Redirect to="/home" />
-					</Route>
-				</IonRouterOutlet >
-			</IdentityIntentBootstrap>
-		</IonReactRouter >
-	);
-};
-
-
-const App: React.FC = () => {
-
 
 	return (
 		<ErrorBoundary>
 			<Provider store={store}>
 				<PersistGate
-					onBeforeLift={onBeforeLift}
-					persistor={persistor}
 					loading={null}
+					persistor={persistor}
+					onBeforeLift={() =>
+						SplashScreen.hide()
+					}
 				>
-					<ThemeManager />
 					<ToastProvider>
 						<ScannerProvider>
-							<IonApp>
-								<AlertProvider>
-									<AppContent />
-								</AlertProvider>
-							</IonApp>
+
+							<AlertProvider>
+								<IonApp>
+									<IonReactRouter>
+										<ShellBootstrap />
+										<AppShell />
+									</IonReactRouter>
+								</IonApp>
+							</AlertProvider>
+
 						</ScannerProvider>
 					</ToastProvider>
 				</PersistGate>
@@ -419,44 +80,4 @@ const App: React.FC = () => {
 			/>
 		</ErrorBoundary>
 	);
-};
-
-export default App;
-
-
-const usePressBackAgainToExit = () => {
-	const ionRouter = useIonRouter();
-	const [presentToast, dismissToast] = useIonToast();
-	const lastPressRef = useRef<number>(0);
-
-	useEffect(() => {
-		const onBack = (event: BackButtonEvent) => {
-			event.detail.register(-1, () => {
-
-				if (ionRouter.canGoBack()) return;
-
-				const now = Date.now();
-				const elapsed = now - lastPressRef.current;
-
-				if (elapsed < EXIT_WINDOW_MS) {
-					CapApp.exitApp();
-					return;
-				}
-
-				lastPressRef.current = now;
-
-				presentToast({
-					message: "Press back again to exit",
-					duration: EXIT_WINDOW_MS,
-					position: "bottom",
-				});
-			});
-		};
-
-		document.addEventListener("ionBackButton", onBack);
-		return () => {
-			document.removeEventListener("ionBackButton", onBack);
-			dismissToast();
-		}
-	}, [ionRouter, dismissToast, presentToast]);
 }

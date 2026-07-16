@@ -5,9 +5,10 @@ export type ResultError = { status: 'ERROR', reason: string }
 
 export type ClientParams = {
 	baseUrl: string
-	retrieveGuestAuth: () => Promise<string | null>
-	retrieveLegacyAccessTokenAuth: () => Promise<string | null>
 	retrieveAccessTokenAuth: () => Promise<string | null>
+	retrieveGuestAuth: () => Promise<string | null>
+	retrieveGuestSensitiveAuth: () => Promise<string | null>
+	retrieveLegacyAccessTokenAuth: () => Promise<string | null>
 	retrieveUserAuth: () => Promise<string | null>
 	encryptCallback: (plain: any) => Promise<any>
 	decryptCallback: (encrypted: any) => Promise<any>
@@ -15,119 +16,109 @@ export type ClientParams = {
 	checkResult?: true
 }
 export default (params: ClientParams) => ({
-	Health: async (): Promise<ResultError | ({ status: 'OK' })> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/health'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+	AuthEmail: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthResponse)> => {
+		let finalRoute = '/api/web/guest/auth/email'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.AuthResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	AuthSocket: async (request: Types.AuthSocketClientHello, cb: (v: ResultError | ({ status: 'OK' } & Types.AuthSocketResponse)) => void, abort?: AbortSignal, ws?: { onOpen?: () => void, onClose?: () => void }): Promise<{ close: () => void }> => {
+		let finalRoute = '/socket/auth'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
+		const socket = new WebSocket(params.baseUrl + finalRoute)
+		let closedByClient = false
+		abort?.addEventListener('abort', () => { closedByClient = true; socket.close() })
+		socket.addEventListener('close', () => { if (!closedByClient) ws?.onClose?.() })
+		socket.addEventListener('open', () => {
+			ws?.onOpen?.()
+			socket.send(JSON.stringify({ body: request, _authorization: auth }))
+		})
+		socket.addEventListener('message', (event) => {
+			const data = JSON.parse(event.data) as ResultError | ({ status: 'OK' } & Types.AuthSocketResponse)
+			cb(data)
+		})
+		return { close: () => { closedByClient = true; socket.close() } }
+	},
+	AuthWithNsec: async (request: Types.AuthWithNsecRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthWithNsecResponse)> => {
+		let finalRoute = '/api/web/guest/auth/nsec'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.AuthWithNsecResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	AuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
+		let finalRoute = '/api/web/guest/auth/requestToken/authorize'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
 			return data
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
-	LegacyGetNostrPubKey: async (): Promise<ResultError | ({ status: 'OK' } & Types.LegacyUserNostrPubKey)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/pubkey'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyUserNostrPubKeyValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacyGetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNostrRelays)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/relays'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyNostrRelaysValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacySignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNostrSignResponse)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/sign'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyNostrSignResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacyNip44Decrypt: async (request: Types.Nip44DecryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip44DecryptResponse)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/decrypt'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyNip44DecryptResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacyNip44Encrypt: async (request: Types.Nip44EncryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip44EncryptResponse)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/encrypt'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyNip44EncryptResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacyNip98Event: async (request: Types.Nip98EventRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip98EventResponse)> => {
-		const auth = await params.retrieveLegacyAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
-		let finalRoute = '/api/user/nip98'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.LegacyNip98EventResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	UpgradeLegacyAccessToken: async (request: Types.UpgradeLegacyAccessTokenRequest): Promise<ResultError | ({ status: 'OK' } & Types.TokensData)> => {
+	CheckSession: async (): Promise<ResultError | ({ status: 'OK' } & Types.CheckSessionResponse)> => {
+		let finalRoute = '/api/web/user/session'
 		const auth = await params.retrieveGuestAuth()
 		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/access/upgrade'
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.CheckSessionResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetAuthRequestInfo: async (request: Types.GetAuthRequestInfoRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetAuthRequestInfoResponse)> => {
+		let finalRoute = '/api/web/guest/auth/info'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
 			const result = data
 			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.TokensDataValidate(result)
+			const error = Types.GetAuthRequestInfoResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetGrantRecords: async (request: Types.GetGrantRecordsRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetGrantRecordsResponse)> => {
+		let finalRoute = '/api/web/user/grant/records'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetGrantRecordsResponseValidate(result)
 			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	GetNostrPubKey: async (): Promise<ResultError | ({ status: 'OK' } & Types.UserNostrPubKey)> => {
+		let finalRoute = '/api/v2/user/pubkey'
 		const auth = await params.retrieveAccessTokenAuth()
 		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/pubkey'
 		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -139,9 +130,9 @@ export default (params: ClientParams) => ({
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	GetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' } & Types.NostrRelays)> => {
+		let finalRoute = '/api/v2/user/relays'
 		const auth = await params.retrieveAccessTokenAuth()
 		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/relays'
 		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -152,24 +143,197 @@ export default (params: ClientParams) => ({
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
-	SignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' } & Types.NostrSignResponse)> => {
-		const auth = await params.retrieveAccessTokenAuth()
-		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/sign'
+	GetRequestTokenData: async (request: Types.GetRequestTokenDataRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetRequestTokenDataResponse)> => {
+		let finalRoute = '/api/web/guest/requestToken/data'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
 			const result = data
 			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.NostrSignResponseValidate(result)
+			const error = Types.GetRequestTokenDataResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetUserGrants: async (): Promise<ResultError | ({ status: 'OK' } & Types.GetUserGrantsResponse)> => {
+		let finalRoute = '/api/web/user/grants'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetUserGrantsResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' } & Types.GetUserInfoResponse)> => {
+		let finalRoute = '/api/web/user/info'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.GetUserInfoResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	HasLegacyAccessTokens: async (): Promise<ResultError | ({ status: 'OK' } & Types.HasLegacyAccessTokensResponse)> => {
+		let finalRoute = '/api/web/user/legacy-access-tokens'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.HasLegacyAccessTokensResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	Health: async (): Promise<ResultError | ({ status: 'OK' })> => {
+		let finalRoute = '/api/health'
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			return data
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyAuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
+		let finalRoute = '/api/web/guest/auth/legacy/requestToken/authorize'
+		const auth = await params.retrieveUserAuth()
+		if (auth === null) throw new Error('retrieveUserAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			return data
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyGetNostrPubKey: async (): Promise<ResultError | ({ status: 'OK' } & Types.LegacyUserNostrPubKey)> => {
+		let finalRoute = '/api/user/pubkey'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyUserNostrPubKeyValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyGetNostrRelays: async (): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNostrRelays)> => {
+		let finalRoute = '/api/user/relays'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyNostrRelaysValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyNip44Decrypt: async (request: Types.Nip44DecryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip44DecryptResponse)> => {
+		let finalRoute = '/api/user/decrypt'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyNip44DecryptResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyNip44Encrypt: async (request: Types.Nip44EncryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip44EncryptResponse)> => {
+		let finalRoute = '/api/user/encrypt'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyNip44EncryptResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacyNip98Event: async (request: Types.Nip98EventRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNip98EventResponse)> => {
+		let finalRoute = '/api/user/nip98'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyNip98EventResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	LegacySignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' } & Types.LegacyNostrSignResponse)> => {
+		let finalRoute = '/api/user/sign'
+		const auth = await params.retrieveLegacyAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveLegacyAccessTokenAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.LegacyNostrSignResponseValidate(result)
+			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	Logout: async (): Promise<ResultError | ({ status: 'OK' })> => {
+		let finalRoute = '/api/web/user/logout'
+		const auth = await params.retrieveGuestAuth()
+		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			return data
+		}
+		return { status: 'ERROR', reason: 'invalid response' }
+	},
+	MintFromRefreshToken: async (request: Types.MintFromRefreshTokenRequest): Promise<ResultError | ({ status: 'OK' } & Types.TokensData)> => {
+		let finalRoute = '/api/guest/refresh'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
+		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
+		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
+		if (data.status === 'OK') {
+			const result = data
+			if (!params.checkResult) return { status: 'OK', ...result }
+			const error = Types.TokensDataValidate(result)
 			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	Nip44Decrypt: async (request: Types.Nip44DecryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.Nip44DecryptResponse)> => {
+		let finalRoute = '/api/v2/user/decrypt'
 		const auth = await params.retrieveAccessTokenAuth()
 		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/decrypt'
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -181,9 +345,9 @@ export default (params: ClientParams) => ({
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	Nip44Encrypt: async (request: Types.Nip44EncryptRequest): Promise<ResultError | ({ status: 'OK' } & Types.Nip44EncryptResponse)> => {
+		let finalRoute = '/api/v2/user/encrypt'
 		const auth = await params.retrieveAccessTokenAuth()
 		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/encrypt'
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -195,9 +359,9 @@ export default (params: ClientParams) => ({
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	Nip98Event: async (request: Types.Nip98EventRequest): Promise<ResultError | ({ status: 'OK' } & Types.Nip98EventResponse)> => {
+		let finalRoute = '/api/v2/user/nip98'
 		const auth = await params.retrieveAccessTokenAuth()
 		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
-		let finalRoute = '/api/v2/user/nip98'
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -209,9 +373,9 @@ export default (params: ClientParams) => ({
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	RequestCallback: async (request: Types.RequestCallbackRequest): Promise<ResultError | ({ status: 'OK' } & Types.RequestCallbackResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/auth/callback'
+		let finalRoute = '/api/web/guest/auth/callback'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -222,88 +386,10 @@ export default (params: ClientParams) => ({
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
-	AuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
-		const auth = await params.retrieveUserAuth()
-		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/v2/guest/auth/requestToken/authorize'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			return data
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	LegacyAuthorizeRequestToken: async (request: Types.AuthorizeRequestTokenRequest): Promise<ResultError | ({ status: 'OK' })> => {
-		const auth = await params.retrieveUserAuth()
-		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/guest/auth/requestToken/authorize'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			return data
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	AuthEmail: async (request: Types.AuthRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/auth/email'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.AuthResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	GetUserInfo: async (): Promise<ResultError | ({ status: 'OK' } & Types.GetUserInfoResponse)> => {
-		const auth = await params.retrieveUserAuth()
-		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/user/info'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.GetUserInfoResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	GetUserGrants: async (): Promise<ResultError | ({ status: 'OK' } & Types.GetUserGrantsResponse)> => {
-		const auth = await params.retrieveUserAuth()
-		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/user/grants'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.GetUserGrantsResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	GetGrantRecords: async (request: Types.GetGrantRecordsRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetGrantRecordsResponse)> => {
-		const auth = await params.retrieveUserAuth()
-		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/user/grant/records'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.GetGrantRecordsResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
 	RevokeGrant: async (request: Types.RevokeGrantRequest): Promise<ResultError | ({ status: 'OK' })> => {
+		let finalRoute = '/api/web/user/grant/revoke'
 		const auth = await params.retrieveUserAuth()
 		if (auth === null) throw new Error('retrieveUserAuth() returned null')
-		let finalRoute = '/api/user/grant/revoke'
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -311,52 +397,24 @@ export default (params: ClientParams) => ({
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
-	GetRequestTokenData: async (request: Types.GetRequestTokenDataRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetRequestTokenDataResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/requestToken'
+	SignNostrEvent: async (request: Types.NostrSignRequest): Promise<ResultError | ({ status: 'OK' } & Types.NostrSignResponse)> => {
+		let finalRoute = '/api/v2/user/sign'
+		const auth = await params.retrieveAccessTokenAuth()
+		if (auth === null) throw new Error('retrieveAccessTokenAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
 			const result = data
 			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.GetRequestTokenDataResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	GetAuthRequestInfo: async (request: Types.GetAuthRequestInfoRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetAuthRequestInfoResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/authInfo'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.GetAuthRequestInfoResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	AuthWithNsec: async (request: Types.AuthWithNsecRequest): Promise<ResultError | ({ status: 'OK' } & Types.AuthWithNsecResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/auth/nsec'
-		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.AuthWithNsecResponseValidate(result)
+			const error = Types.NostrSignResponseValidate(result)
 			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
 	SignupWithNsecAndGetAccess: async (request: Types.SignupWithNsecAndGetAccessRequest): Promise<ResultError | ({ status: 'OK' } & Types.TokensData)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/auth/nsec/access'
+		let finalRoute = '/api/web/guest/auth/nsec/access'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {
@@ -367,35 +425,10 @@ export default (params: ClientParams) => ({
 		}
 		return { status: 'ERROR', reason: 'invalid response' }
 	},
-	CheckSession: async (): Promise<ResultError | ({ status: 'OK' } & Types.CheckSessionResponse)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/user/session'
-		const { data } = await axios.get(params.baseUrl + finalRoute, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			const result = data
-			if (!params.checkResult) return { status: 'OK', ...result }
-			const error = Types.CheckSessionResponseValidate(result)
-			if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	Logout: async (): Promise<ResultError | ({ status: 'OK' })> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/user/logout'
-		const { data } = await axios.post(params.baseUrl + finalRoute, {}, { headers: { 'authorization': auth } })
-		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
-		if (data.status === 'OK') {
-			return data
-		}
-		return { status: 'ERROR', reason: 'invalid response' }
-	},
-	MintFromRefreshToken: async (request: Types.MintFromRefreshTokenRequest): Promise<ResultError | ({ status: 'OK' } & Types.TokensData)> => {
-		const auth = await params.retrieveGuestAuth()
-		if (auth === null) throw new Error('retrieveGuestAuth() returned null')
-		let finalRoute = '/api/guest/refresh'
+	UpgradeLegacyAccessToken: async (request: Types.UpgradeLegacyAccessTokenRequest): Promise<ResultError | ({ status: 'OK' } & Types.TokensData)> => {
+		let finalRoute = '/api/guest/access/upgrade'
+		const auth = await params.retrieveGuestSensitiveAuth()
+		if (auth === null) throw new Error('retrieveGuestSensitiveAuth() returned null')
 		const { data } = await axios.post(params.baseUrl + finalRoute, request, { headers: { 'authorization': auth } })
 		if (data.status === 'ERROR' && typeof data.reason === 'string') return data
 		if (data.status === 'OK') {

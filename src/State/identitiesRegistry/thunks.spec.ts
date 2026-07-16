@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Identity } from "./types";
 import { IdentityType } from "./types";
-import type { RuntimeIdentity } from "./types";
+import type { RuntimeIdentity } from "@/shell/types";
 
 const {
 	unwrapIdentityDataKeyMock,
@@ -31,7 +31,8 @@ vi.mock("./helpers/datakey", () => ({
 }));
 
 vi.mock("./helpers/identityNostrApi", () => ({
-	default: getIdentityNostrApiMock,
+	createEphemeralIdentityNostrApi: getIdentityNostrApiMock,
+	getActiveIdentityNostrApi: getIdentityNostrApiMock,
 }));
 
 vi.mock("../scope/inject", () => ({

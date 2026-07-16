@@ -1,36 +1,13 @@
-import { useEffect, useState } from "react";
-import { useAppSelector } from "@/State/store/hooks";
-import { selectTheme, Theme } from "@/State/appState/slice";
-
 import lpMarkDark from "@/Assets/Images/lightning-pub/dark/lp-mark.svg";
 import lpMarkLight from "@/Assets/Images/lightning-pub/light/lp-mark.svg";
 import lightningPubWordmarkDark from "@/Assets/Images/lightning-pub/dark/lightning-pub-full.svg";
 import lightningPubWordmarkLight from "@/Assets/Images/lightning-pub/light/lightning-pub-full.svg";
+import {
+	useEffectiveTheme,
+	type EffectiveTheme,
+} from "@/Hooks/useEffectiveTheme";
 
-export type EffectiveTheme = "dark" | "light";
-
-function getPrefersDark(): boolean {
-	return !!window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-}
-
-function computeEffectiveTheme(pref: Theme, prefersDark: boolean): EffectiveTheme {
-	if (pref === "system") return prefersDark ? "dark" : "light";
-	return pref;
-}
-
-export function useEffectiveTheme(): EffectiveTheme {
-	const pref = useAppSelector(selectTheme);
-	const [prefersDark, setPrefersDark] = useState(() => getPrefersDark());
-
-	useEffect(() => {
-		const mq = window.matchMedia("(prefers-color-scheme: dark)");
-		const onChange = () => setPrefersDark(mq.matches);
-		mq.addEventListener("change", onChange);
-		return () => mq.removeEventListener("change", onChange);
-	}, []);
-
-	return computeEffectiveTheme(pref, prefersDark);
-}
+export type { EffectiveTheme };
 
 export type LightningPubLogoVariant = "mark" | "full";
 
@@ -70,3 +47,5 @@ export function useLightningPubLogo(variant: LightningPubLogoVariant): string {
 	const theme = useEffectiveTheme();
 	return getLightningPubLogoSrc(variant, theme);
 }
+
+export { useEffectiveTheme };

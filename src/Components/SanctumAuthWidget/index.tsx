@@ -3,6 +3,7 @@ import { Browser } from "@capacitor/browser";
 import { Device } from "@capacitor/device";
 import { createSanctumDK, type TokensData } from "sanctum-sdk";
 import { SANCTUM_URL } from "@/constants";
+import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
 
 type SanctumAuthWidgetProps = {
 	onTokensUpdated: (tokensData: TokensData) => void | Promise<void>;
@@ -12,6 +13,7 @@ type SanctumAuthWidgetProps = {
 export function SanctumAuthWidget({ onTokensUpdated, className }: SanctumAuthWidgetProps) {
 	const rawId = useId();
 	const containerId = `sanctum-auth-widget-${rawId.replace(/:/g, "-")}`;
+	const effectiveTheme = useEffectiveTheme();
 
 
 	useEffect(() => {
@@ -37,7 +39,7 @@ export function SanctumAuthWidget({ onTokensUpdated, className }: SanctumAuthWid
 
 		sdk.widget.mount({
 			containerId,
-			theme: "system",
+			theme: effectiveTheme,
 			openAuthWindow: (url) => {
 				void Browser.open({ url });
 				return null;
@@ -50,7 +52,7 @@ export function SanctumAuthWidget({ onTokensUpdated, className }: SanctumAuthWid
 			sdk.widget.unmount();
 			void sdk.destroy();
 		};
-	}, [containerId, onTokensUpdated]);
+	}, [containerId, onTokensUpdated, effectiveTheme]);
 
 	return (
 		<div

@@ -1,10 +1,17 @@
-import { IonAlert } from '@ionic/react';
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
+import { IonAlert } from "@ionic/react";
+import {
+	createContext,
+	useContext,
+	useReducer,
+	type ReactNode,
+	useCallback,
+	useRef,
+} from "react";
 
 export type AlertOptions = React.ComponentProps<typeof IonAlert>;
-export type AlertResult = { role?: string; data?: any };
 
-
+type AlertDismissEvent = Parameters<NonNullable<AlertOptions["onDidDismiss"]>>[0];
+export type AlertResult = AlertDismissEvent["detail"];
 
 interface AlertContextValue {
 	showAlert: (options: AlertOptions) => Promise<AlertResult>;
@@ -12,71 +19,81 @@ interface AlertContextValue {
 
 const AlertContext = createContext<AlertContextValue | undefined>(undefined);
 
-type Queued = {
+type QueuedAlert = {
 	id: number;
 	options: AlertOptions;
-	resolve: (r: AlertResult) => void;
-	reject: (e?: unknown) => void;
+	resolve: (result: AlertResult) => void;
 };
+
+type AlertQueueState = {
+	active: QueuedAlert | null;
+	waiting: QueuedAlert[];
+};
+
+type AlertQueueAction =
+	| { type: "enqueue"; alert: QueuedAlert }
+	| { type: "complete" };
+
+function alertQueueReducer(state: AlertQueueState, action: AlertQueueAction): AlertQueueState {
+	switch (action.type) {
+		case "enqueue":
+			if (state.active === null) {
+				return { active: action.alert, waiting: state.waiting };
+			}
+			return { active: state.active, waiting: [...state.waiting, action.alert] };
+		case "complete": {
+			const [next, ...rest] = state.waiting;
+			return { active: next ?? null, waiting: rest };
+		}
+	}
+}
 
 export const useAlert = () => {
 	const ctx = useContext(AlertContext);
-	if (!ctx) throw new Error('useAlert must be used within AlertProvider');
+	if (!ctx) throw new Error("useAlert must be used within AlertProvider");
 	return ctx;
 };
 
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
-	const [alertQueue, setAlertQueue] = useState<Queued[]>([]);
-	const [currentAlert, setCurrentAlert] = useState<Queued | null>(null);
-	const [isOpen, setIsOpen] = useState(false);
+	const [queueState, dispatch] = useReducer(alertQueueReducer, {
+		active: null,
+		waiting: [],
+	});
 	const idCounter = useRef(0);
 
 
-	const showAlert = useCallback(async (options: AlertOptions): Promise<AlertResult> => {
-		let resolve!: (r: AlertResult) => void;
-		let reject!: (e?: unknown) => void;
 
-		const onDidDismiss = new Promise<AlertResult>((res, rej) => {
-			resolve = res; reject = rej;
+	const showAlert = useCallback((options: AlertOptions): Promise<AlertResult> => {
+		return new Promise((resolve) => {
+			const id = ++idCounter.current;
+			dispatch({ type: "enqueue", alert: { id, options, resolve } });
 		});
-
-		const id = ++idCounter.current;
-		setAlertQueue(prev => [...prev, { id, options, resolve, reject }]);
-
-		return onDidDismiss;
 	}, []);
 
-	useEffect(() => {
-		if (!isOpen && alertQueue.length > 0) {
-			setCurrentAlert(alertQueue[0]);
-			setAlertQueue(prev => prev.slice(1));
-			setIsOpen(true);
-		}
-	}, [isOpen, alertQueue]);
+	const handleDidDismiss = useCallback<NonNullable<AlertOptions["onDidDismiss"]>>((ev) => {
+		const alert = queueState.active;
+		alert?.options.onDidDismiss?.(ev);
+		alert?.resolve(ev.detail);
+		dispatch({ type: "complete" });
+	}, [queueState.active]);
 
-
-	const handleDidDismiss: NonNullable<AlertOptions['onDidDismiss']> = (ev) => {
-		// chain any user-supplied handler on this alert
-		currentAlert?.options.onDidDismiss?.(ev);
-
-		// resolve this specific alert’s promise
-		currentAlert?.resolve(ev.detail);
-
-		// close and allow next in queue
-		setIsOpen(false);
-		setCurrentAlert(null);
-	};
+	const {
+		onDidDismiss: _onDidDismiss,
+		isOpen: _isOpen,
+		buttons,
+		...alertProps
+	} = queueState.active?.options ?? {};
 
 	return (
 		<AlertContext.Provider value={{ showAlert }}>
 			{children}
 			<IonAlert
 				className="custom-alert"
-				isOpen={isOpen}
+				{...alertProps}
+				isOpen={queueState.active !== null}
 				onDidDismiss={handleDidDismiss}
-				{...(currentAlert?.options ?? {})}
-				buttons={currentAlert?.options.buttons || ["OK"]}
-			></IonAlert>
+				buttons={buttons ?? ["OK"]}
+			/>
 		</AlertContext.Provider>
 	);
 };

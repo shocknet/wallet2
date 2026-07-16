@@ -25,6 +25,10 @@ export function getOrCreateSanctumIdentitySdk(args: {
 	return sdk;
 }
 
+export function getSanctumIdentitySdk(pubkey: string): SanctumDK | null {
+	return sanctumSdksByPubkey.get(pubkey) ?? null;
+}
+
 export function clearSanctumIdentitySdk(pubkey: string): void {
 	const existing = sanctumSdksByPubkey.get(pubkey);
 	if (!existing) return;

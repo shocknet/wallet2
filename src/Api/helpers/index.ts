@@ -162,14 +162,16 @@ export const handlePayBitcoinAddress = async (source: SpendFrom, address: string
 	}
 };
 
-
+export type KeyPair = {
+	privateKey: string;
+	publicKey: string;
+}
 export const generateNewKeyPair = () => {
 	const privateKey = generateSecretKey();
 	const publicKey = getPublicKey(privateKey);
 	return {
 		privateKey: bytesToHex(privateKey),
 		publicKey,
-		privateKeyBytes: privateKey,
 	}
 }
 
