@@ -3,12 +3,16 @@ import { useIonModal } from "@ionic/react";
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import { useCallback } from "react";
 
-
-export function useAskCreatePassword(username?: string, description?: string) {
+export function useAskCreatePassword(
+	username?: string,
+	description?: string,
+	cancelButtonLabel?: string,
+) {
 	const [present, dismiss] = useIonModal(PasswordCreationModal, {
 		dismiss: (data: string, role: string) => dismiss(data, role),
 		username,
-		description
+		description,
+		cancelButtonLabel,
 	});
 
 	const askCreatePassword = useCallback(() => {
@@ -16,7 +20,7 @@ export function useAskCreatePassword(username?: string, description?: string) {
 			present({
 				cssClass: "wallet-modal dialog-modal",
 				onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
-					if (event.detail.role === 'confirm') {
+					if (event.detail.role === "confirm") {
 						resolve(event.detail.data as string);
 					} else {
 						resolve(undefined);

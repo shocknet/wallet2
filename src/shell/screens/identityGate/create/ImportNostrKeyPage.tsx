@@ -68,6 +68,7 @@ export function ImportNostrKeyPage() {
 	const askCreatePassword = useAskCreatePassword(
 		pmUsername,
 		"Create a password to secure your private key. You may skip this now and set it later in the profile settings.",
+		"Skip",
 	);
 
 	const completeIdentityCreation = useCallback(

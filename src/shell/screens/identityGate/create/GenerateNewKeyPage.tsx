@@ -43,7 +43,11 @@ export function GenerateNewKeyPage() {
 
 	const privateKeyBytes = useMemo(() => hexToBytes(generatedPair.privateKey), [generatedPair]);
 	const pmUsername = useMemo(() => generatedPair ? makeIdentityPrivateKeyPmUsername(generatedPair.publicKey) : "", [generatedPair]);
-	const askCreatePassword = useAskCreatePassword(pmUsername, "Create a password to secure your private key. You may skip this now and set it later in the profile settings.");
+	const askCreatePassword = useAskCreatePassword(
+		pmUsername,
+		"Create a password to secure your private key. You may skip this now and set it later in the profile settings.",
+		"Skip",
+	);
 
 
 
