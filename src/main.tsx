@@ -3,6 +3,8 @@ import App from './App';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import bootstrapShockwallet from './bootstrap';
 
+import { registerSW } from 'virtual:pwa-register';
+registerSW({ immediate: true })
 
 
 
