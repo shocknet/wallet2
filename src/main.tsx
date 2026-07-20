@@ -11,12 +11,13 @@ if (!Capacitor.isNativePlatform()) {
 
 	registerSW({
 		immediate: true,
-		onRegisteredSW(swUrl, registration) {
-			if (!registration) return;
+		onRegisteredSW(swUrl, r) {
+			if (!r) return;
 
-			const checkForUpdate = async () => {
-				if (registration.installing || !navigator) return;
-				if ("connection" in navigator && !navigator.onLine) return;
+			setInterval(async () => {
+				if (r.installing || !navigator) return;
+
+				if (("connection" in navigator) && !navigator.onLine) return;
 
 				const resp = await fetch(swUrl, {
 					cache: "no-store",
@@ -27,18 +28,8 @@ if (!Capacitor.isNativePlatform()) {
 				});
 
 				if (resp?.status === 200) {
-					await registration.update();
+					await r.update();
 				}
-			};
-
-			document.addEventListener("visibilitychange", () => {
-				if (document.visibilityState === "visible") {
-					void checkForUpdate();
-				}
-			});
-
-			window.setInterval(() => {
-				void checkForUpdate();
 			}, intervalMS);
 		},
 	});
