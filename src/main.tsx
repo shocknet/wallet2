@@ -5,6 +5,25 @@ import bootstrapShockwallet from './bootstrap';
 import { registerSW } from 'virtual:pwa-register';
 import { Capacitor } from '@capacitor/core';
 
+const registrations =
+	await navigator.serviceWorker.getRegistrations();
+
+console.table(
+	registrations.map(registration => ({
+		scope: registration.scope,
+		active: registration.active?.scriptURL,
+		activeState: registration.active?.state,
+		waiting: registration.waiting?.scriptURL,
+		installing: registration.installing?.scriptURL,
+		updateViaCache: registration.updateViaCache,
+	}))
+);
+
+console.log(
+	"Current controller:",
+	navigator.serviceWorker.controller?.scriptURL,
+);
+
 if (!Capacitor.isNativePlatform()) {
 	console.log("registering service worker");
 	registerSW({
