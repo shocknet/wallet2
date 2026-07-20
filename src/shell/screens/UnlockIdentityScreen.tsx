@@ -1,4 +1,4 @@
-import { selectIdentityByPubkey } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity, selectIdentityByPubkey } from "@/State/identitiesRegistry/slice";
 import { UnlockReason } from "../types";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
@@ -11,6 +11,7 @@ import {
 import { Identity, IdentityType } from "@/State/identitiesRegistry/types";
 import {
 	alertCircleOutline,
+	closeOutline,
 	lockClosedOutline,
 	swapHorizontalOutline,
 } from "ionicons/icons";
@@ -52,6 +53,14 @@ export function UnlockIdentityScreen({
 	return <InnerContent identity={identity} />;
 }
 
+function useUnlockDismissAction() {
+	const hasMountedIdentity = useAppSelector(selectActiveIdentity) != null;
+	if (hasMountedIdentity) {
+		return { label: "Cancel", icon: closeOutline };
+	}
+	return { label: "Use another identity", icon: swapHorizontalOutline };
+}
+
 function InnerContent({ identity }: { identity: Identity }) {
 	const pmUsername = makeIdentityPrivateKeyPmUsername(identity.pubkey);
 	const askPassword = useAskPassword(
@@ -60,6 +69,7 @@ function InnerContent({ identity }: { identity: Identity }) {
 	);
 	const { showToast } = useToast();
 	const dispatch = useDispatch();
+	const dismiss = useUnlockDismissAction();
 	const [showRetry, setShowRetry] = useState(false);
 	const mounted = useRef(true);
 	const started = useRef(false);
@@ -166,11 +176,8 @@ function InnerContent({ identity }: { identity: Identity }) {
 						onClick={() => dispatch(cancelIdentityUnlock())}
 						className="mt-8 normal-case [--color:var(--app-text-secondary)]"
 					>
-						<IonIcon
-							slot="start"
-							icon={swapHorizontalOutline}
-						/>
-						Use another identity
+						<IonIcon slot="start" icon={dismiss.icon} />
+						{dismiss.label}
 					</IonButton>
 				</div>
 			</IonContent>
@@ -180,6 +187,7 @@ function InnerContent({ identity }: { identity: Identity }) {
 
 function IdentityNotFound({ identityId }: { identityId: string }) {
 	const dispatch = useAppDispatch();
+	const hasMountedIdentity = useAppSelector(selectActiveIdentity) != null;
 
 	return (
 		<IonPage className="ion-page-width">
@@ -208,8 +216,11 @@ function IdentityNotFound({ identityId }: { identityId: string }) {
 						className="mt-8 [--border-radius:12px]"
 						onClick={() => dispatch(cancelIdentityUnlock())}
 					>
-						<IonIcon icon={swapHorizontalOutline} slot="start" />
-						Select another identity
+						<IonIcon
+							icon={hasMountedIdentity ? closeOutline : swapHorizontalOutline}
+							slot="start"
+						/>
+						{hasMountedIdentity ? "Cancel" : "Select another identity"}
 					</IonButton>
 				</div>
 			</IonContent>

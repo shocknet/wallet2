@@ -5,7 +5,6 @@ import {
 import {
 	Redirect,
 	Route,
-	useLocation,
 } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import {
@@ -59,10 +58,7 @@ const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequest
 const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
 const EditDebitModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.EditDebitModal })));
 
-const CHROME_HIDDEN_PATHS = new Set([
-	"/bootstrap",
-	"/profile/create",
-]);
+
 
 export function ReadyApp({
 	runtimeIdentity,
@@ -71,16 +67,10 @@ export function ReadyApp({
 }) {
 	useWatchClipboard();
 
-	const location = useLocation();
-	const showChrome = !CHROME_HIDDEN_PATHS.has(location.pathname);
-
 	return (
 		<>
 			<ReactiveModals />
-			{showChrome ? (
-				<NavigationMenu activeIdentity={runtimeIdentity} />
-			) : null}
-
+			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
 				<GuardedRoute
 					exact
@@ -99,21 +89,17 @@ export function ReadyApp({
 					guards={[atLeastOneNprofileSource]}
 				/>
 				<GuardedRoute
-
 					exact
 					path="/Receive"
 					component={Receive}
 
 					guards={[atLeastOneSource]}
 				/>
-
 				<GuardedRoute
 					exact
 					path="/sources"
 					component={SourcesPage}
 				/>
-
-
 				<GuardedRoute
 					exact
 					path="/automation"
@@ -121,87 +107,58 @@ export function ReadyApp({
 
 					layout={Layout}
 				/>
-
 				<GuardedRoute
 					exact
 					path="/prefs"
 					component={Prefs}
-
-
 				/>
-
 				<GuardedRoute
 					exact
 					path="/contacts"
 					component={Contacts}
-
-
 					layout={Layout}
 				/>
-
 				<GuardedRoute
 					exact
 					path="/invitations"
 					component={Invitations}
-
-
 					layout={Layout}
 				/>
-
 				<GuardedRoute
 					exact
 					path="/notify"
 					component={Notify}
-
-
 					layout={Layout}
 				/>
-
-
 				<GuardedRoute
 					exact
 					path="/management"
 					component={Management}
-
-
 					layout={Layout}
 				/>
-
 				<GuardedRoute
 					path="/metrics"
 					component={Metrics}
 					guards={[atLeastOneAdminNprofileSourceGuard]}
-
 				/>
-
 				<GuardedRoute
 					exact
 					path="/offers"
 					component={Offers}
-
 					guards={[atLeastOneNprofileSource]}
 				/>
-
-
 				<GuardedRoute
 					exact
 					path="/Stats"
 					component={Stats}
-
-
 					layout={Layout}
 				/>
-
-
 				<GuardedRoute
 					exact
 					path="/LApps"
 					component={LinkedApp}
 					layout={Layout}
-
-
 				/>
-
 				<GuardedRoute
 					exact
 					path="/swaps"
@@ -218,7 +175,6 @@ export function ReadyApp({
 					path="/profile/create"
 					component={IdentityGate}
 				/>
-
 				<Route exact path="/">
 					<Redirect to="/home" />
 				</Route>
