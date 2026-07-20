@@ -7,7 +7,41 @@ import { Capacitor } from '@capacitor/core';
 
 
 if (!Capacitor.isNativePlatform()) {
-	registerSW({ immediate: true });
+	const intervalMS = 60 * 60 * 1000;
+
+	registerSW({
+		immediate: true,
+		onRegisteredSW(swUrl, registration) {
+			if (!registration) return;
+
+			const checkForUpdate = async () => {
+				if (registration.installing || !navigator) return;
+				if ("connection" in navigator && !navigator.onLine) return;
+
+				const resp = await fetch(swUrl, {
+					cache: "no-store",
+					headers: {
+						cache: "no-store",
+						"cache-control": "no-cache",
+					},
+				});
+
+				if (resp?.status === 200) {
+					await registration.update();
+				}
+			};
+
+			document.addEventListener("visibilitychange", () => {
+				if (document.visibilityState === "visible") {
+					void checkForUpdate();
+				}
+			});
+
+			window.setInterval(() => {
+				void checkForUpdate();
+			}, intervalMS);
+		},
+	});
 }
 
 bootstrapShockwallet();
