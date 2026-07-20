@@ -1,6 +1,6 @@
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { parseEnvelopeJsonString } from './notifications/push/capture';
+import { parseEnvelopeJsonString } from './notifications/helpers';
 
 declare let self: ServiceWorkerGlobalScope
 
@@ -9,6 +9,8 @@ self.skipWaiting()
 clientsClaim()
 
 cleanupOutdatedCaches()
+
+
 precacheAndRoute(self.__WB_MANIFEST)
 
 

@@ -7,6 +7,7 @@ import {
 import dLogger from "@/Api/helpers/debugLog";
 import store from "@/State/store/store";
 import { shellActions } from "@/shell/slice";
+import { parseEnvelopeJsonString } from "../helpers";
 
 const log = dLogger.withContext({ component: "push-capture" });
 
@@ -73,16 +74,7 @@ function captureNative() {
 
 
 
-export function parseEnvelopeJsonString(value: string): PushNotificationEnvelope | null {
-	try {
-		const candidate = JSON.parse(value);
-		const err = PushNotificationEnvelopeValidate(candidate);
-		if (err) return null;
-		return candidate as PushNotificationEnvelope;
-	} catch {
-		return null;
-	}
-}
+
 
 export function parsePushEnvelopeFromPayload(payload: any): PushNotificationEnvelope | null {
 	const err = PushNotificationEnvelopeValidate(payload);
