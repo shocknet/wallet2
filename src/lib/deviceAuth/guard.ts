@@ -69,7 +69,6 @@ export async function requireDeviceAuth(options: RequireDeviceAuthOptions): Prom
 		cancelTitle: options.cancelTitle ?? "Cancel",
 		iosFallbackTitle: options.iosFallbackTitle,
 		androidTitle: options.androidTitle ?? "Authenticate",
-		androidSubtitle: options.androidSubtitle ?? options.reason,
 		...prompt
 	});
 
