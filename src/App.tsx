@@ -28,7 +28,6 @@ import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { ToastProvider } from "./lib/contexts/useToast";
 import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
 import { AlertProvider } from "./lib/contexts/useAlert";
-import { usePressBackAgainToExit } from './Hooks/useBackAgainToExit';
 import { ToastContainer } from 'react-toastify';
 import { addIcons } from 'ionicons';
 import nostrSvg from "../icons/nostr.svg";
@@ -41,8 +40,6 @@ addIcons({
 setupIonicReact();
 
 export default function App() {
-	usePressBackAgainToExit();
-
 	return (
 		<ErrorBoundary>
 			<Provider store={store}>
