@@ -1,14 +1,18 @@
-/// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
-
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { parseEnvelopeJsonString } from './notifications/push/capture';
 
+declare let self: ServiceWorkerGlobalScope
+
+
 self.skipWaiting()
 clientsClaim()
-precacheAndRoute(self.__WB_MANIFEST)
+
 cleanupOutdatedCaches()
+precacheAndRoute(self.__WB_MANIFEST)
+
+
+
 
 self.addEventListener("notificationclick", (event) => {
 	console.log("[SW] Notification clicked");

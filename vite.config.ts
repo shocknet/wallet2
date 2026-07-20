@@ -32,6 +32,9 @@ export default defineConfig({
 			injectManifest: {
 				globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
 			},
+			workbox: {
+				cleanupOutdatedCaches: true,
+			},
 			manifest: {
 				name: 'Shockwallet',
 				short_name: 'App',
