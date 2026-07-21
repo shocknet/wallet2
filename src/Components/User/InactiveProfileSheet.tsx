@@ -52,10 +52,12 @@ export function InactiveProfileSheet({
 		setBusy("unlock");
 		try {
 			onDidDismiss();
-			requestIdentityUnlock(dispatch, {
-				identityId: identity.pubkey,
-				reason: unlockReason,
-			});
+			dispatch(
+				requestIdentityUnlock({
+					identityId: identity.pubkey,
+					reason: unlockReason,
+				}),
+			);
 		} finally {
 			setBusy(null);
 		}

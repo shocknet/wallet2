@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import store from "@/State/store/store";
 import { useAppDispatch } from "@/State/store/hooks";
 import { startShell } from "./coordinator";
+
 export function ShellBootstrap() {
 	const dispatch = useAppDispatch();
 	const startedRef = useRef(false);
@@ -12,7 +12,7 @@ export function ShellBootstrap() {
 		}
 
 		startedRef.current = true;
-		startShell(dispatch, store.getState);
+		void dispatch(startShell());
 	}, [dispatch]);
 
 	return null;

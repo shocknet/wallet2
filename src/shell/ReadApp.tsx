@@ -1,23 +1,15 @@
 import {
 	IonRouterOutlet,
-	useIonRouter,
 } from "@ionic/react";
 import {
 	Redirect,
 	Route,
 } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import {
-	selectPendingNav,
-} from "./selectors";
-import {
-	useAppDispatch,
 	useAppSelector,
 } from "@/State/store/hooks";
-import { shellActions } from "./slice";
-import {
-	pendingNavReadyForIdentity,
-} from "./pendingNav";
+
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { IdentityGate } from "./screens/identityGate";
@@ -26,9 +18,9 @@ import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOn
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
-import { useHandleWarmTap } from "@/Hooks/useHandleWarmPushTap";
+import { useHandleWarmPushTap } from "@/Hooks/useHandleWarmPushTap";
 import FullSpinner from "@/Components/common/ui/fullSpinner";
-import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import { useConsumePendingNav } from "@/Hooks/readyAppHooks/useConsumePendingNav";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -66,7 +58,8 @@ export function ReadyApp({
 	runtimeIdentity: RuntimeIdentity;
 }) {
 	useWatchClipboard();
-	useHandleWarmTap(runtimeIdentity);
+	useHandleWarmPushTap(runtimeIdentity);
+	useConsumePendingNav(runtimeIdentity);
 
 	return (
 		<>
@@ -180,41 +173,11 @@ export function ReadyApp({
 					<Redirect to="/home" />
 				</Route>
 			</IonRouterOutlet>
-
-			<PendingNavConsumer />
 		</>
 	);
 }
 
-function PendingNavConsumer() {
-	const router = useIonRouter();
-	const dispatch = useAppDispatch();
-	const pendingNav = useAppSelector(selectPendingNav);
-	const readyIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 
-	useEffect(() => {
-		if (
-			!pendingNav ||
-			!pendingNavReadyForIdentity(
-				pendingNav,
-				readyIdentityId,
-			)
-		) {
-			return;
-		}
-
-		router.push(
-			pendingNav.path,
-			"root",
-			pendingNav.path === "/bootstrap" ? "replace" : "push",
-			pendingNav.state as Record<string, unknown> | undefined,
-		);
-
-		dispatch(shellActions.pendingNavCleared());
-	}, [pendingNav, readyIdentityId, router, dispatch]);
-
-	return null;
-}
 
 
 const ReactiveModals = () => {

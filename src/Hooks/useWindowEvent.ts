@@ -10,5 +10,5 @@ export function useWindowEvent<K extends string>(
 	useEffect(() => {
 		window.addEventListener(type as any, listener, options);
 		return () => window.removeEventListener(type as any, listener, options);
-	}, [type, listener]);
+	}, [type, listener, options]);
 }

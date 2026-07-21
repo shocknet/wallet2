@@ -9,7 +9,7 @@ import { RootState } from "@/State/store/store";
 import { useEffect, useRef } from "react";
 import { useStore } from "react-redux";
 
-export function useHandleWarmTap(runtimeIdentity: RuntimeIdentity) {
+export function useHandleWarmPushTap(runtimeIdentity: RuntimeIdentity) {
 	const dispatch = useAppDispatch();
 	const store = useStore<RootState>();
 	const pushIntent = useAppSelector(selectPushIntent);
@@ -43,10 +43,12 @@ export function useHandleWarmTap(runtimeIdentity: RuntimeIdentity) {
 			return;
 		}
 
-		requestIdentityUnlock(dispatch, {
-			identityId: topicEntry.identityId,
-			reason: "push-intent",
-		});
+		dispatch(
+			requestIdentityUnlock({
+				identityId: topicEntry.identityId,
+				reason: "push-intent",
+			}),
+		);
 	}, [
 		pushIntent,
 		runtimeIdentity.pubkey,

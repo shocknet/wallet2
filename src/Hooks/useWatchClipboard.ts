@@ -8,8 +8,8 @@ import { InputClassification } from "@/lib/types/parse";
 import { truncateTextMiddle } from "@/lib/format";
 import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useLocalStorage } from "@/Hooks/useLocalStorage/useLocalStorage";
-import { useOnAppActive } from "@/Hooks/useOnAppActive";
 import { useWindowEvent } from "@/Hooks/useWindowEvent";
+import { selectIsActive } from "@/State/runtime/slice";
 
 const CLIPBOARD_THROTTLE_MS = 500;
 const FOCUS_SETTLE_DELAY_MS = 50;
@@ -18,6 +18,7 @@ export function useWatchClipboard() {
 	const { showAlert } = useAlert();
 	const dispatch = useAppDispatch();
 	const history = useHistory();
+	const isAppActive = useAppSelector(selectIsActive);
 
 	const [warned, setWarned] = useLocalStorage({
 		key: "warned-clipboard-not-allowed",
@@ -163,13 +164,14 @@ export function useWatchClipboard() {
 	});
 
 	useEffect(() => {
+		if (!isAppActive) return;
 		scheduleCheck();
 		return () => {
 			if (settleTimerRef.current) {
 				clearTimeout(settleTimerRef.current);
 			}
 		};
-	}, [scheduleCheck]);
+	}, [scheduleCheck, isAppActive]);
 
 	const onVisibilityChange = useEventCallback(() => {
 		if (document.visibilityState === "visible") {
@@ -177,12 +179,9 @@ export function useWatchClipboard() {
 		}
 	});
 
-	const onAppActive = useEventCallback(() => {
-		if (warned) return;
-		scheduleCheck();
-	});
 
-	useOnAppActive(onAppActive);
+
+
 	useWindowEvent("focus", scheduleCheck);
 	useWindowEvent("visibilitychange", onVisibilityChange);
 }

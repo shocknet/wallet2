@@ -63,10 +63,12 @@ export function SwitchProfileSheet({
 		setBusy("unlock");
 		try {
 			handleDismiss();
-			requestIdentityUnlock(dispatch, {
-				identityId: identity.pubkey,
-				reason: "user-selected",
-			});
+			dispatch(
+				requestIdentityUnlock({
+					identityId: identity.pubkey,
+					reason: "user-selected",
+				}),
+			);
 		} finally {
 			setBusy(null);
 		}

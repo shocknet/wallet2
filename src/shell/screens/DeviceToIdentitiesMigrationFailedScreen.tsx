@@ -1,5 +1,4 @@
 import { useState } from "react";
-import store from "@/State/store/store";
 import { useAppDispatch } from "@/State/store/hooks";
 import { repairDeviceToIdentitiesMigration } from "../coordinator";
 import type { DeviceToIdentitiesMigrationFailure } from "../migrations/deviceToIdentities/errors";
@@ -28,11 +27,8 @@ export function DeviceToIdentitiesMigrationFailedScreen({
 		setBusyAction(action);
 
 		try {
-			await repairDeviceToIdentitiesMigration(
-				dispatch,
-				store.getState,
-				failure,
-				action,
+			await dispatch(
+				repairDeviceToIdentitiesMigration(failure, action),
 			);
 		} finally {
 			setBusyAction(null);

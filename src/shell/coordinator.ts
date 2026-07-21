@@ -1,7 +1,5 @@
 import type {
-	AppDispatch,
 	AppThunk,
-	RootState,
 } from "@/State/store/store";
 import { type TokensData } from "sanctum-sdk";
 import {
@@ -39,68 +37,59 @@ import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanc
 
 
 
-export async function startShell(
-	dispatch: AppDispatch,
-	getState: () => RootState,
-) {
-	dispatch(shellActions.migrationStarted());
+export const startShell =
+	(): AppThunk<Promise<void>> => async (dispatch) => {
+		dispatch(shellActions.migrationStarted());
 
-	const migrationResult = await runShellMigrations(dispatch, getState);
+		const migrationResult = await dispatch(runShellMigrations());
 
-	if (!migrationResult.ok) {
-		dispatch(
-			shellActions.migrationFailed({
-				failure: migrationResult.failure,
-			}),
-		);
+		if (!migrationResult.ok) {
+			dispatch(
+				shellActions.migrationFailed({
+					failure: migrationResult.failure,
+				}),
+			);
+			return;
+		}
 
-		return;
-	}
-
-	dispatch(continueAfterMigrationSuccess());
-}
-
-export function retryShellMigration(
-	dispatch: AppDispatch,
-	getState: () => RootState,
-) {
-	void startShell(dispatch, getState);
-}
-
-export async function repairDeviceToIdentitiesMigration(
-	dispatch: AppDispatch,
-	getState: () => RootState,
-	failure: DeviceToIdentitiesMigrationFailure,
-	action: DeviceToIdentitiesRepairAction,
-): Promise<void> {
-	if (action === "continue-fresh") {
-		await continueFreshAfterDeviceToIdentitiesFailure();
 		dispatch(continueAfterMigrationSuccess());
-		return;
-	}
+	};
 
-	retryShellMigration(dispatch, getState);
-}
+export const retryShellMigration =
+	(): AppThunk<Promise<void>> => async (dispatch) => {
+		await dispatch(startShell());
+	};
 
-export async function repairSecureIdentitiesMigration(
-	dispatch: AppDispatch,
-	getState: () => RootState,
-	failure: SecureIdentitiesMigrationFailure,
-	action: SecureIdentitiesRepairAction,
-): Promise<void> {
-	if (action === "continue-fresh") {
-		await continueFreshAfterSecureIdentitiesFailure(failure);
-		void startShell(dispatch, getState);
-		return;
-	}
+export const repairDeviceToIdentitiesMigration =
+	(
+		_failure: DeviceToIdentitiesMigrationFailure,
+		action: DeviceToIdentitiesRepairAction,
+	): AppThunk<Promise<void>> =>
+		async (dispatch) => {
+			if (action === "continue-fresh") {
+				await continueFreshAfterDeviceToIdentitiesFailure();
+				dispatch(continueAfterMigrationSuccess());
+				return;
+			}
 
-	retryShellMigration(dispatch, getState);
-}
+			await dispatch(retryShellMigration());
+		};
 
+export const repairSecureIdentitiesMigration =
+	(
+		failure: SecureIdentitiesMigrationFailure,
+		action: SecureIdentitiesRepairAction,
+	): AppThunk<Promise<void>> =>
+		async (dispatch) => {
+			if (action === "continue-fresh") {
+				await continueFreshAfterSecureIdentitiesFailure(failure);
+				await dispatch(startShell());
+				return;
+			}
 
-/*
+			await dispatch(retryShellMigration());
+		};
 
-*/
 const continueAfterMigrationSuccess =
 	(): AppThunk<void> => (dispatch, getState) => {
 		dispatch(shellActions.migrationSucceeded());
@@ -153,20 +142,19 @@ export const proceedAfterIdentityUnlocked = (
 	await dispatch(completeShellIdentityLoad(runtimeIdentity));
 };
 
-export function requestIdentityUnlock(
-	dispatch: AppDispatch,
-	input: {
+export const requestIdentityUnlock =
+	(input: {
 		identityId: string;
 		reason: UnlockReason;
-	},
-) {
-	dispatch(
-		shellActions.identityUnlockRequested({
-			identityId: input.identityId,
-			reason: input.reason,
-		}),
-	);
-}
+	}): AppThunk<void> =>
+		(dispatch) => {
+			dispatch(
+				shellActions.identityUnlockRequested({
+					identityId: input.identityId,
+					reason: input.reason,
+				}),
+			);
+		};
 
 export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch) => {
 	dispatch(shellActions.identitySessionCleared());
@@ -212,8 +200,8 @@ export const completeShellIdentityLoad = (
 		log.error("drain-pending-local-sources-failed", { error });
 	}
 
-	dispatch(shellActions.identitySessionCleared());
 	dispatch(materializePushIntentToPendingNav());
+	dispatch(shellActions.identitySessionCleared());
 };
 
 

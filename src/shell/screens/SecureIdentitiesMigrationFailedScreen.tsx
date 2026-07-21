@@ -1,5 +1,4 @@
 import { useState } from "react";
-import store from "@/State/store/store";
 import { useAppDispatch } from "@/State/store/hooks";
 import { repairSecureIdentitiesMigration } from "../coordinator";
 import type { SecureIdentitiesMigrationFailure } from "../migrations/secureIdentities/errors";
@@ -27,11 +26,8 @@ export function SecureIdentitiesMigrationFailedScreen({
 
 		setBusyAction(action);
 		try {
-			await repairSecureIdentitiesMigration(
-				dispatch,
-				store.getState,
-				failure,
-				action,
+			await dispatch(
+				repairSecureIdentitiesMigration(failure, action),
 			);
 		} finally {
 			setBusyAction(null);
