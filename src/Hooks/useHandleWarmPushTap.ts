@@ -25,10 +25,12 @@ export function useHandleWarmPushTap(runtimeIdentity: RuntimeIdentity) {
 			return;
 		}
 
+
 		const topicEntry = selectTopicIndexFromRegistry(
 			store.getState(),
 			pushIntent.envelope.topic_id,
 		);
+		console.log("pushIntent handled warm", pushIntent, topicEntry);
 
 		if (!topicEntry) {
 			handledPushAtRef.current = pushIntent.receivedAtMs;
