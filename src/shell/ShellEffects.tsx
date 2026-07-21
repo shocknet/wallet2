@@ -9,15 +9,13 @@ import { usePushRegistration } from "@/Hooks/usePushRegistration";
 import { useLocalNotificationsSetup } from "@/Hooks/useLocalNotificationsSetup";
 
 export const ShellEffects = memo(function ShellEffects() {
+	useNotificationsPermission();
 	usePushRegistration();
 	useRegisterRootLifecycle();
 	useDeviceAuthRuntime();
 	usePressBackAgainToExit();
 	useTheme();
 	useDeepLinks();
-
-	useNotificationsPermission();
-
 	useLocalNotificationsSetup();
 
 	return null;

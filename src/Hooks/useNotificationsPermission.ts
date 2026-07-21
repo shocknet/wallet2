@@ -6,7 +6,6 @@ import {
 } from "@/notifications/permission";
 import {
 	runtimeActions,
-	selectIsActive,
 	selectNotificationsPermission,
 } from "@/State/runtime/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
@@ -14,7 +13,6 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 export function useNotificationsPermission() {
 	const dispatch = useAppDispatch();
 	const permission = useAppSelector(selectNotificationsPermission);
-	const isActive = useAppSelector(selectIsActive);
 
 	const refreshPermission = useCallback(async (): Promise<NotificationsPermission> => {
 		const next = await getNotificationsPermission();
@@ -30,7 +28,7 @@ export function useNotificationsPermission() {
 
 	useEffect(() => {
 		void refreshPermission();
-	}, [refreshPermission, isActive]);
+	}, [refreshPermission]);
 
 	return {
 		permission,
