@@ -9,6 +9,7 @@ import { identityActions, selectFiatCurrency } from '@/State/scoped/backups/iden
 import { capFirstLetter } from '@/lib/format';
 import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
 import { requestNotificationsPermission } from '@/notifications/permission';
+import { refreshPushRegistration } from '@/notifications/push/register';
 import { runtimeActions, selectPushStatus } from '@/State/runtime/slice';
 
 
@@ -38,6 +39,7 @@ const Prefs = () => {
 		try {
 			const res = await requestNotificationsPermission();
 			dispatch(runtimeActions.setNotificationsPermission({ permission: res }));
+			await dispatch(refreshPushRegistration());
 			if (res !== "granted") {
 				console.log("[Prefs] Permission not granted:", res);
 			}

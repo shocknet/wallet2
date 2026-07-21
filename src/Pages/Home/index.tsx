@@ -37,6 +37,7 @@ import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
 
 import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
+import { refreshPushRegistration } from "@/notifications/push/register";
 import { runtimeActions } from "@/State/runtime/slice";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 
@@ -169,6 +170,7 @@ const Home = () => {
 				try {
 					const perm = await requestNotificationsPermission();
 					dispatch(runtimeActions.setNotificationsPermission({ permission: perm }));
+					await dispatch(refreshPushRegistration());
 					if (perm !== "granted") {
 						console.log("[Home] Permission not granted:", perm);
 						return;

@@ -4,6 +4,7 @@ import {
 	requestNotificationsPermission,
 	type NotificationsPermission,
 } from "@/notifications/permission";
+import { refreshPushRegistration } from "@/notifications/push/register";
 import {
 	runtimeActions,
 	selectNotificationsPermission,
@@ -23,12 +24,16 @@ export function useNotificationsPermission() {
 	const requestPermission = useCallback(async (): Promise<NotificationsPermission> => {
 		const next = await requestNotificationsPermission();
 		dispatch(runtimeActions.setNotificationsPermission({ permission: next }));
+		await dispatch(refreshPushRegistration());
 		return next;
 	}, [dispatch]);
 
 	useEffect(() => {
-		void refreshPermission();
-	}, [refreshPermission]);
+		void (async () => {
+			await refreshPermission();
+			await dispatch(refreshPushRegistration());
+		})();
+	}, [dispatch, refreshPermission]);
 
 	return {
 		permission,

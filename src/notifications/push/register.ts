@@ -12,6 +12,7 @@ const log = dLogger.withContext({ component: "push-register" });
 
 let inFlight: Promise<void> | null = null;
 
+
 export const refreshPushRegistration =
 	(): AppThunk<Promise<void>> => (dispatch, getState) => {
 		if (inFlight) {
@@ -61,6 +62,18 @@ export const refreshPushRegistration =
 						},
 					});
 				}
+			} catch (err) {
+				dispatch(
+					runtimeActions.setPushRuntimeStatus({
+						pushStatus: {
+							status: "error",
+							error:
+								err instanceof Error
+									? err.message
+									: "Unknown error when registering push notifications",
+						},
+					}),
+				);
 			} finally {
 				inFlight = null;
 			}
