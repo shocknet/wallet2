@@ -3,10 +3,13 @@ import App from './App';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { registerSW } from 'virtual:pwa-register';
 import { Capacitor } from '@capacitor/core';
+import { startPushCapture } from './notifications/push/capture';
 
 if (!Capacitor.isNativePlatform()) {
 	registerSW({ immediate: true })
 }
+
+startPushCapture();
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
