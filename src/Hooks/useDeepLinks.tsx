@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { App, URLOpenListenerEvent } from "@capacitor/app";
 import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
-import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useAppDispatch } from "@/State/store/hooks";
 import { shellActions } from "@/shell/slice";
 
@@ -20,19 +19,17 @@ export function useDeepLinks() {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
-	const enqueueRoute = useEventCallback(
-		(path: string, state?: Record<string, unknown>) => {
-			dispatch(
-				shellActions.pendingNavSet({
-					kind: "route",
-					path,
-					state,
-				}),
-			);
-		},
-	);
+	const enqueueRoute = useCallback((path: string, state?: Record<string, unknown>) => {
+		dispatch(
+			shellActions.pendingNavSet({
+				kind: "route",
+				path,
+				state,
+			}),
+		);
+	}, [dispatch]);
 
-	const parseDeepLink = useEventCallback(async (input: string) => {
+	const parseDeepLink = useCallback(async (input: string) => {
 		try {
 			const { identifyBitcoinInput, parseBitcoinInput } = await import(
 				"@/lib/parse"
@@ -60,7 +57,7 @@ export function useDeepLinks() {
 				color: "danger",
 			});
 		}
-	});
+	}, [showToast, enqueueRoute]);
 
 	useEffect(() => {
 		const listener = App.addListener(
