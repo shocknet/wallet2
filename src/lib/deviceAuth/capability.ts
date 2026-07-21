@@ -1,9 +1,6 @@
 import { BiometricAuth, type CheckBiometryResult } from "@aparajita/capacitor-biometric-auth";
 import { Capacitor } from "@capacitor/core";
-import type { PluginListenerHandle } from "@capacitor/core";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "./types";
-
-let resumeListenerHandle: PluginListenerHandle | null = null;
 
 export function getDeviceAuthCapability(info: CheckBiometryResult): DeviceAuthCapability {
 	if (info.strongBiometryIsAvailable) {
@@ -32,29 +29,3 @@ export async function refreshDeviceAuthStatus(): Promise<DeviceAuthStatus> {
 		capability: getDeviceAuthCapability(info),
 	};
 }
-
-
-export async function initDeviceAuthRuntime(
-	onStatus: (status: DeviceAuthStatus) => void,
-): Promise<void> {
-	const status = await refreshDeviceAuthStatus();
-	onStatus(status);
-
-	if (!Capacitor.isNativePlatform()) {
-		return;
-	}
-
-	if (resumeListenerHandle) {
-		await resumeListenerHandle.remove();
-		resumeListenerHandle = null;
-	}
-
-	resumeListenerHandle = await BiometricAuth.addResumeListener((info) => {
-		onStatus({
-			checkedAtMs: Date.now(),
-			capability: getDeviceAuthCapability(info),
-		});
-	});
-}
-
-

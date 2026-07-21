@@ -8,9 +8,8 @@ import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { identityActions, selectFiatCurrency } from '@/State/scoped/backups/identity/slice';
 import { capFirstLetter } from '@/lib/format';
 import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
-import { initLocalNotifications } from '@/notifications/local/local-notifications';
 import { requestNotificationsPermission } from '@/notifications/permission';
-import { refreshPushRegistration } from '@/notifications/push/register';
+import { runtimeActions, selectPushStatus } from '@/State/runtime/slice';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -19,7 +18,7 @@ const themeOptions: Theme[] = ["system", "dark", "light"];
 const Prefs = () => {
 	const dispatch = useAppDispatch();
 	const [pushBusy, setPushBusy] = useState(false);
-	const pushStatus = useAppSelector(state => state.runtime.pushStatus);
+	const pushStatus = useAppSelector(selectPushStatus);
 
 
 	const fiatCurrency = useAppSelector(selectFiatCurrency);
@@ -38,16 +37,14 @@ const Prefs = () => {
 		setPushBusy(true);
 		try {
 			const res = await requestNotificationsPermission();
+			dispatch(runtimeActions.setNotificationsPermission({ permission: res }));
 			if (res !== "granted") {
 				console.log("[Prefs] Permission not granted:", res);
-				return;
 			}
-			await refreshPushRegistration();
-			await initLocalNotifications();
 		} finally {
 			setPushBusy(false);
 		}
-	}, []);
+	}, [dispatch]);
 
 
 	return (

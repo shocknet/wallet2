@@ -1,15 +1,12 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import bootstrapShockwallet from './bootstrap';
-
 import { registerSW } from 'virtual:pwa-register';
-registerSW({ immediate: true })
+import { Capacitor } from '@capacitor/core';
 
-
-
-
-bootstrapShockwallet();
+if (!Capacitor.isNativePlatform()) {
+	registerSW({ immediate: true })
+}
 
 const container = document.getElementById('root');
 const root = createRoot(container!);

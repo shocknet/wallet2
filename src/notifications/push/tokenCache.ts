@@ -1,18 +1,21 @@
 import { Preferences } from "@capacitor/preferences";
 
-let cached: string | null = null;
+let cached: string | undefined;
 
 const KEY = "push_token";
 
-export function getCachedPushToken(): string | null {
+export async function getCachedPushToken(): Promise<string | undefined> {
+	if (!cached) {
+		const { value } = await Preferences.get({ key: KEY });
+		if (value) {
+			cached = value;
+			return value;
+		}
+	}
 	return cached;
 }
 
-export async function hydratePushTokenCache() {
-	if (cached !== null) return;
-	const { value } = await Preferences.get({ key: KEY });
-	cached = value ?? null;
-}
+
 
 export async function setCachedPushToken(t: string) {
 	cached = t;
@@ -20,6 +23,6 @@ export async function setCachedPushToken(t: string) {
 }
 
 export async function clearCachedPushToken() {
-	cached = null;
+	cached = undefined;
 	await Preferences.remove({ key: KEY });
 }

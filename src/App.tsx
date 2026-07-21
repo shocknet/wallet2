@@ -32,6 +32,7 @@ import { ToastContainer } from 'react-toastify';
 import { addIcons } from 'ionicons';
 import nostrSvg from "../icons/nostr.svg";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { ShellEffects } from './shell/ShellEffects';
 
 addIcons({
 	nostr: nostrSvg,
@@ -52,16 +53,15 @@ export default function App() {
 				>
 					<ToastProvider>
 						<ScannerProvider>
-
 							<AlertProvider>
 								<IonApp>
 									<IonReactRouter>
 										<ShellBootstrap />
+										<ShellEffects />
 										<AppShell />
 									</IonReactRouter>
 								</IonApp>
 							</AlertProvider>
-
 						</ScannerProvider>
 					</ToastProvider>
 				</PersistGate>

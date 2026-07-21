@@ -26,7 +26,7 @@ import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOn
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
-import { cleanupStaleServiceWorkers } from "@/sw-cleanup";
+import { useHandleWarmTap } from "@/Hooks/useHandleWarmPushTap";
 import FullSpinner from "@/Components/common/ui/fullSpinner";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 
@@ -66,6 +66,7 @@ export function ReadyApp({
 	runtimeIdentity: RuntimeIdentity;
 }) {
 	useWatchClipboard();
+	useHandleWarmTap(runtimeIdentity);
 
 	return (
 		<>
@@ -220,10 +221,6 @@ const ReactiveModals = () => {
 	const manageRequests = useAppSelector(state => state.modalsSlice.manageRequests);
 	const debitRequests = useAppSelector(state => state.modalsSlice.debitRequests);
 	const debitToEdit = useAppSelector(state => state.modalsSlice.editDebit);
-
-	useEffect(() => {
-		cleanupStaleServiceWorkers();
-	}, []);
 
 	return (
 		<>

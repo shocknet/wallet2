@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 import { PushRegistrationResult } from "@/notifications/push/types";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
+import type { NotificationsPermission } from "@/notifications/permission";
 
 
 
@@ -11,6 +12,7 @@ interface RuntimeState {
 
 
 	pushStatus: PushRegistrationResult | null;
+	notificationsPermission: NotificationsPermission | null;
 
 	deviceAuth: DeviceAuthStatus;
 
@@ -28,6 +30,7 @@ const initialState: RuntimeState = {
 	isActive: true,
 
 	pushStatus: null,
+	notificationsPermission: null,
 
 	deviceAuth: initialDeviceAuthStatus,
 
@@ -57,6 +60,13 @@ const runtimeSlice = createSlice({
 			state.pushStatus = action.payload.pushStatus
 		},
 
+		setNotificationsPermission: (
+			state,
+			action: PayloadAction<{ permission: NotificationsPermission }>
+		) => {
+			state.notificationsPermission = action.payload.permission;
+		},
+
 		setDeviceAuthStatus: (
 			state,
 			action: PayloadAction<{ deviceAuth: DeviceAuthStatus }>
@@ -76,6 +86,10 @@ const runtimeSlice = createSlice({
 
 export const selectNowMs = (s: RootState) => s.runtime.nowMs;
 export const selectDeviceAuthStatus = (s: RootState) => s.runtime.deviceAuth;
+export const selectNotificationsPermission = (s: RootState) =>
+	s.runtime.notificationsPermission;
+export const selectPushStatus = (s: RootState) => s.runtime.pushStatus;
+export const selectIsActive = (s: RootState) => s.runtime.isActive;
 
 export const selectSelectedMetricsAdminSourceId = (s: RootState) =>
 	s.runtime.selectedMetricsAdminSourceId;
@@ -83,7 +97,3 @@ export const selectSelectedMetricsAdminSourceId = (s: RootState) =>
 export const runTimeReducer = runtimeSlice.reducer;
 
 export const runtimeActions = runtimeSlice.actions;
-
-
-
-

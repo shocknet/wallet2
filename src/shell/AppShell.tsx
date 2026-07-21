@@ -9,24 +9,11 @@ import { ReadyApp } from "./ReadApp";
 import { UnlockIdentityScreen } from "./screens/UnlockIdentityScreen";
 import { IdentityGate } from "./screens/identityGate";
 import { StartupScreen } from "./screens/StartupScreen";
-import { ShellEffects } from "./ShellEffects";
+
 
 export function AppShell() {
 	const phase = useAppSelector(selectAppPhase);
 
-	return (
-		<>
-			<ShellEffects />
-			<AppShellPhase phase={phase} />
-		</>
-	);
-}
-
-function AppShellPhase({
-	phase,
-}: {
-	phase: ReturnType<typeof selectAppPhase>;
-}) {
 	switch (phase.kind) {
 		case "starting-up":
 			return <StartupScreen />;

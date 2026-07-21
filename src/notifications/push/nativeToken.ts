@@ -1,23 +1,36 @@
 import { PushNotifications, } from "@capacitor/push-notifications";
 import { PushRegistrationResult } from "./types";
-import { getNotificationsPermission } from "../permission";
+
 
 
 
 export async function registerNativePush(): Promise<PushRegistrationResult> {
-	const perm = await getNotificationsPermission()
-	if (perm !== "granted") return { status: perm };
+	let resolvePromise: (value: PushRegistrationResult) => void;
+	const promise = new Promise<PushRegistrationResult>((resolve) => {
+		resolvePromise = resolve;
+	});
 
-	PushNotifications.register();
-	return await new Promise<PushRegistrationResult>((resolve) => {
-		PushNotifications.addListener("registration", (t) => {
-			resolve({
-				status: "registered",
-				token: t.value
-			})
-		});
-		PushNotifications.addListener("registrationError", (err) => (
-			resolve({ status: "error", error: err.error })
-		));
+	const regHandler = await PushNotifications.addListener("registration", (t) => {
+
+		resolvePromise({
+			status: "registered",
+			token: t.value
+		})
+	});
+
+	const errHandler = await PushNotifications.addListener("registrationError", (err) => {
+		resolvePromise({ status: "error", error: err.error })
+	});
+
+	const timeout = setTimeout(() => {
+		resolvePromise({ status: "error", error: "Registration timed out" })
+	}, 10000);
+
+	await PushNotifications.register();
+	return promise.then((result) => {
+		regHandler.remove().catch(() => { });
+		errHandler.remove().catch(() => { });
+		clearTimeout(timeout);
+		return result;
 	});
 }

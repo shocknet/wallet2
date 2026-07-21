@@ -37,8 +37,7 @@ import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
 
 import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
-import { initLocalNotifications } from "@/notifications/local/local-notifications";
-import { refreshPushRegistration } from "@/notifications/push/register";
+import { runtimeActions } from "@/State/runtime/slice";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
@@ -169,12 +168,11 @@ const Home = () => {
 				if (role !== "confirm") return;
 				try {
 					const perm = await requestNotificationsPermission();
+					dispatch(runtimeActions.setNotificationsPermission({ permission: perm }));
 					if (perm !== "granted") {
 						console.log("[Home] Permission not granted:", perm);
 						return;
 					}
-					await refreshPushRegistration();
-					await initLocalNotifications();
 					showToast({
 						message: "Notifications enabled!",
 						color: "success",
@@ -190,7 +188,7 @@ const Home = () => {
 				}
 			});
 		});
-	}, [showAlert, showToast]);
+	}, [showAlert, showToast, dispatch]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);
