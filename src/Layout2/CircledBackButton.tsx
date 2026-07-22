@@ -1,4 +1,4 @@
-import { IonButton, IonIcon, useIonRouter } from "@ionic/react";
+import { IonBackButton } from "@ionic/react";
 import { chevronBackOutline } from "ionicons/icons";
 
 export function CircledBackButton({
@@ -6,34 +6,32 @@ export function CircledBackButton({
 }: {
 	defaultHref?: string;
 }) {
-	const router = useIonRouter();
 
 	return (
-		<IonButton
-			fill="solid"
-			shape="round"
+		<IonBackButton
+			defaultHref={defaultHref}
+			icon={chevronBackOutline}
 			className="
-				m-0 h-11 w-11
-				[--padding-start:0] [--padding-end:0]
-				[--padding-top:0] [--padding-bottom:0]
-				[--background:var(--app-surface-elevated)]
-
+				[--background:var(--back-button-color)]
+				[--icon-margin-bottom:0]
+				[--icon-margin-top:0]
+				[--icon-margin-end:0]
+				[--icon-margin-start:0]
+				[--icon-padding-bottom:0]
+				[--icon-padding-top:0]
+				[--icon-padding-start:0]
+				[--icon-padding-end:2px]
+				[--margin-bottom:0]
+				[--margin-top:0]
+				[--margin-end:0]
+				[--margin-start:0]
+				[--padding-bottom:0]
+				[--padding-top:0]
+				[--padding-start:0]
+				[--padding-end:0]
 			"
-			aria-label="Go back"
-			onClick={() => {
-				if (router.canGoBack()) {
-					router.goBack();
-					return;
-				}
-				router.push(defaultHref, "root", "replace");
-			}}
 		>
 
-			<IonIcon
-				icon={chevronBackOutline}
-				className="text-xl [--color:var(--app-text-primary)]"
-			/>
-
-		</IonButton>
+		</IonBackButton>
 	);
 }

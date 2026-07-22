@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import { IonButton, IonContent, IonHeader, IonPage, IonSpinner } from '@ionic/react';
 import { getDeviceId } from '../../constants';
-import BackToolbar from '@/Layout2/BackToolbar';
 import { CustomSelect } from '@/Components/CustomSelect';
 import { fiatCurrencies, FiatCurrency } from '@/State/scoped/backups/identity/schema';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
@@ -12,6 +11,7 @@ import { selectPushStatus } from '@/State/runtime/slice';
 import { requestNotificationsPermission } from '@/notifications/permission';
 import { useToast } from '@/lib/contexts/useToast';
 import { refreshPushRegistration } from '@/notifications/push/register';
+import RootPageToolbar from '@/Layout2/RootPageToolbar';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -57,7 +57,7 @@ const Prefs = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="Preferences" />
+				<RootPageToolbar title="Preferences" />
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<div className="mt-6 flex flex-col">

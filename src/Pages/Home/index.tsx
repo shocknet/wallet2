@@ -3,6 +3,7 @@ import {
 	IonButton,
 	IonContent,
 	IonFooter,
+	IonHeader,
 	IonIcon,
 	IonPage,
 	IonRefresher,
@@ -18,7 +19,6 @@ import {
 } from "ionicons/icons";
 import { useHistory } from "react-router";
 import BalanceCard from "./BalanceCard";
-import HomeHeader from "@/Layout2/HomeHeader";
 import styles from "./styles/index.module.scss";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { App } from "@capacitor/app";
@@ -36,6 +36,7 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
+import HomePageToolbar from "@/Layout2/HomePageToolbar";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
@@ -219,9 +220,10 @@ const Home = () => {
 		<IonPage
 			className="ion-page-width"
 		>
-			<HomeHeader>
+			<IonHeader className="ion-no-border">
+				<HomePageToolbar />
 				<BalanceCard />
-			</HomeHeader>
+			</IonHeader>
 			<IonContent
 				scrollY={false}
 			>

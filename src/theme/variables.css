@@ -85,6 +85,8 @@
 	--app-surface-muted: #eef2f6;
 	--app-surface-hover: #e8edf2;
 
+	--back-button-color: #ffffff;
+
 	--app-scrollbar-color: #7b8794;
 
 	--app-border: #dde3ea;
@@ -164,6 +166,9 @@
 	--app-surface-elevated: #212325;
 	--app-surface-muted: #252b30;
 	--app-surface-hover: #2b3238;
+
+	--back-button-color: #1F2225;
+
 
 
 	--app-scrollbar-color: #9ca3af;

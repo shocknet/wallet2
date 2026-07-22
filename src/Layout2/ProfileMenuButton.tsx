@@ -9,11 +9,6 @@ export function ProfileMenuButton() {
 	return (
 		<IonMenuButton
 			autoHide={false}
-			className="
-				m-0 h-11 w-11
-				[--padding-start:0] [--padding-end:0]
-				[--padding-top:0] [--padding-bottom:0]
-			"
 			aria-label="Open menu"
 		>
 			<ProfilePicture

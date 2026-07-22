@@ -53,7 +53,7 @@ import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPay
 import { RecipentInputHelperText } from '@/lib/jsxHelperts';
 import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
 import { SelectedSource, SourceSelectOption } from '@/Components/CustomSelect/commonSelects';
-import { StackPageToolbar } from '@/Layout2/StackPageToolbar';
+import StackPageToolbar from '@/Layout2/StackPageToolbar';
 
 
 const hasBalance = (s: { maxWithdrawableSats?: number }) =>

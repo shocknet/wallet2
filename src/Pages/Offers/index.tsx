@@ -25,7 +25,7 @@ import { useAppSelector } from "@/State/store/hooks";
 import { NprofileView, selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
-import BackToolbar from "@/Layout2/BackToolbar";
+import RootPageToolbar from "@/Layout2/RootPageToolbar";
 
 
 const Offers = () => {
@@ -144,7 +144,7 @@ const Offers = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="Offers" />
+				<RootPageToolbar title="Offers" />
 
 				<IonToolbar className="ion-padding-horizontal ion-padding-bottom mt-6">
 					<CustomSelect<NprofileView>

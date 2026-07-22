@@ -1,5 +1,4 @@
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonPage, IonRow, IonText, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonBadge } from "@ionic/react";
-import BackToolbar from "@/Layout2/BackToolbar";
 import AmountInput from "@/Components/AmountInput";
 import { useEffect, useState } from "react";
 import SpendFromDropdown from "@/Components/Dropdowns/SpendFromDropdown";
@@ -10,6 +9,7 @@ import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import { flashOutline, checkmarkCircle, closeCircle, walletOutline } from "ionicons/icons";
 import { useIonLoading } from "@ionic/react";
+import StackPageToolbar from "@/Layout2/StackPageToolbar";
 
 export default function Swaps() {
     const [amount, setAmount] = useState<string>("");
@@ -125,7 +125,7 @@ export default function Swaps() {
     return (
         <IonPage className="ion-page-width">
             <IonHeader className="ion-no-border">
-                <BackToolbar title="Swaps" />
+                <StackPageToolbar title="Swaps" />
             </IonHeader>
             <IonContent className="ion-padding ion-content-no-footer">
                 <IonRow>

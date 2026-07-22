@@ -11,8 +11,6 @@ import {
 	IonIcon,
 	IonList,
 	IonPage,
-	IonTitle,
-	IonToolbar,
 	useIonModal,
 	useIonViewDidEnter
 } from "@ionic/react";
@@ -29,9 +27,9 @@ import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
 import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { createNostrInvoice } from "@/Api/helpers";
 import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
-import HomeHeader from "@/Layout2/HomeHeader";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import RootPageToolbar from "@/Layout2/RootPageToolbar";
 
 const SourcesPage = () => {
 	const history = useHistory();
@@ -229,10 +227,7 @@ const SourcesPage = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<HomeHeader />
-				<IonToolbar className="big-toolbar">
-					<IonTitle className="android-centered-title">Attached Nodes</IonTitle>
-				</IonToolbar>
+				<RootPageToolbar title="Node Connections" />
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<EditSourceModal
@@ -248,7 +243,7 @@ const SourcesPage = () => {
 					integrationData={integrationData}
 					invitationToken={inviteToken}
 				/>
-				<IonList lines="none">
+				<IonList lines="none" className="mt-6">
 					{
 						favoriteFirstSortedSources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
 					}
