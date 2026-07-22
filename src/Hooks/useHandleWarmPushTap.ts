@@ -1,19 +1,19 @@
-import { selectTopicIndexFromRegistry } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity, selectTopicIndexFromRegistry } from "@/State/identitiesRegistry/slice";
 import { requestIdentityUnlock } from "@/shell/coordinator";
 import { materializePushIntentToPendingNav } from "@/shell/pendingNav";
 import { selectPushIntent } from "@/shell/selectors";
 import { shellActions } from "@/shell/slice";
-import { RuntimeIdentity } from "@/shell/types";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { RootState } from "@/State/store/store";
 import { useEffect, useRef } from "react";
 import { useStore } from "react-redux";
 
-export function useHandleWarmPushTap(runtimeIdentity: RuntimeIdentity) {
+export function useHandleWarmPushTap() {
 	const dispatch = useAppDispatch();
 	const store = useStore<RootState>();
 	const pushIntent = useAppSelector(selectPushIntent);
 	const handledPushAtRef = useRef<number | null>(null);
+	const runtimeIdentity = useAppSelector(selectActiveIdentity)!;
 
 	useEffect(() => {
 		if (!pushIntent) {

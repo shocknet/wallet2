@@ -1,14 +1,16 @@
 import { selectPendingNav } from "@/shell/selectors";
 import { shellActions } from "@/shell/slice";
-import { RuntimeIdentity } from "@/shell/types";
+
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { useIonRouter } from "@ionic/react";
 import { useEffect } from "react";
 
-export function useConsumePendingNav(activeIdentity: RuntimeIdentity) {
+export function useConsumePendingNav() {
 	const router = useIonRouter();
 	const dispatch = useAppDispatch();
 	const pendingNav = useAppSelector(selectPendingNav);
+	const activeIdentity = useAppSelector(selectActiveIdentity)!;
 
 
 	useEffect(() => {

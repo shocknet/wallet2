@@ -1,5 +1,4 @@
 import { getCluster } from "@/Api/nostr";
-import { getNotificationsPermission } from "@/notifications/permission";
 import { refreshPushRegistration } from "@/notifications/push/register";
 import { runtimeActions } from "@/State/runtime/slice";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -14,20 +13,10 @@ export function useRegisterRootLifecycle() {
 		const handle = App.addListener("appStateChange", ({ isActive }) => {
 			if (Capacitor.isNativePlatform()) {
 				getCluster().lifecycle.setDesiredActive(isActive);
+				dispatch(refreshPushRegistration());
 			}
 			dispatch(runtimeActions.setAppActiveStatus({ active: isActive }));
 
-			if (!isActive) {
-				return;
-			}
-
-			void (async () => {
-				const permission = await getNotificationsPermission();
-				dispatch(
-					runtimeActions.setNotificationsPermission({ permission }),
-				);
-				await dispatch(refreshPushRegistration());
-			})();
 		});
 		return () => {
 			void handle.then((listener) => listener.remove());

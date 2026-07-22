@@ -35,15 +35,9 @@ import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/t
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
-
-import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
-import { refreshPushRegistration } from "@/notifications/push/register";
-import { runtimeActions } from "@/State/runtime/slice";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
-
-const NOTIF_PROMPT_SEEN_KEY = "notif_prompt_seen";
 
 
 const Home = () => {
@@ -145,52 +139,6 @@ const Home = () => {
 		};
 	}, []);
 
-	useIonViewDidEnter(() => {
-		const seen = localStorage.getItem(NOTIF_PROMPT_SEEN_KEY);
-		if (seen) return;
-
-		getNotificationsPermission().then((status) => {
-			if (status !== "prompt") return;
-			localStorage.setItem(NOTIF_PROMPT_SEEN_KEY, "1");
-			showAlert({
-				header: "Stay Updated",
-				message: "Get instant notifications for incoming payments and important account activity.",
-				buttons: [
-					{
-						text: "Not Now",
-						role: "cancel",
-					},
-					{
-						text: "Enable",
-						role: "confirm",
-					},
-				]
-			}).then(async ({ role }) => {
-				if (role !== "confirm") return;
-				try {
-					const perm = await requestNotificationsPermission();
-					dispatch(runtimeActions.setNotificationsPermission({ permission: perm }));
-					await dispatch(refreshPushRegistration());
-					if (perm !== "granted") {
-						console.log("[Home] Permission not granted:", perm);
-						return;
-					}
-					showToast({
-						message: "Notifications enabled!",
-						color: "success",
-						duration: 2000
-					});
-				} catch (err) {
-					console.error("Failed to enable notifications", err);
-					showToast({
-						message: "Unable to enable notifications. You can try again in Settings.",
-						color: "warning",
-						duration: 4000
-					});
-				}
-			});
-		});
-	}, [showAlert, showToast, dispatch]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);

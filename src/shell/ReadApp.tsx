@@ -17,10 +17,8 @@ import { GuardedRoute } from "@/routing/GuardedRoute";
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
-import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
-import { useHandleWarmPushTap } from "@/Hooks/useHandleWarmPushTap";
 import FullSpinner from "@/Components/common/ui/fullSpinner";
-import { useConsumePendingNav } from "@/Hooks/readyAppHooks/useConsumePendingNav";
+import { ReadyAppEffects } from "./ReadyAppEffects";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -57,13 +55,11 @@ export function ReadyApp({
 }: {
 	runtimeIdentity: RuntimeIdentity;
 }) {
-	useWatchClipboard();
-	useHandleWarmPushTap(runtimeIdentity);
-	useConsumePendingNav(runtimeIdentity);
 
 	return (
 		<>
 			<ReactiveModals />
+			<ReadyAppEffects />
 			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
 				<GuardedRoute

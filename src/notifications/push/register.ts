@@ -3,10 +3,14 @@ import { registerNativePush } from "./nativeToken";
 import { registerWebPush } from "./webToken";
 import { PushRegistrationResult } from "./types";
 import { AppThunk } from "@/State/store/store";
-import { runtimeActions, selectNotificationsPermission } from "@/State/runtime/slice";
+import { runtimeActions } from "@/State/runtime/slice";
+import { ensureLocalNotificationChannels } from "@/notifications/local/channels";
 import { getCachedPushToken, setCachedPushToken } from "./tokenCache";
 import { pushTokenUpdated } from "./actions";
 import dLogger from "@/Api/helpers/debugLog";
+import {
+	getNotificationsPermission,
+} from "../permission";
 
 const log = dLogger.withContext({ component: "push-register" });
 
@@ -14,15 +18,14 @@ let inFlight: Promise<void> | null = null;
 
 
 export const refreshPushRegistration =
-	(): AppThunk<Promise<void>> => (dispatch, getState) => {
+	(): AppThunk<Promise<void>> => (dispatch) => {
 		if (inFlight) {
 			return inFlight;
 		}
 
 		inFlight = (async () => {
 			try {
-				const perm = selectNotificationsPermission(getState());
-				if (perm == null) return;
+				const perm = await getNotificationsPermission();
 
 				if (perm !== "granted") {
 					dispatch(
@@ -33,8 +36,9 @@ export const refreshPushRegistration =
 					return;
 				}
 
-				let result: PushRegistrationResult;
+				await ensureLocalNotificationChannels();
 
+				let result: PushRegistrationResult;
 				if (Capacitor.isNativePlatform()) {
 					result = await registerNativePush();
 				} else {

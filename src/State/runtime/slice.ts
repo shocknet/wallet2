@@ -2,21 +2,15 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 import { PushRegistrationResult } from "@/notifications/push/types";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
-import type { NotificationsPermission } from "@/notifications/permission";
+
 
 
 
 interface RuntimeState {
 	nowMs: number;
 	isActive: boolean;
-
-
 	pushStatus: PushRegistrationResult | null;
-	notificationsPermission: NotificationsPermission | null;
-
 	deviceAuth: DeviceAuthStatus;
-
-
 	selectedMetricsAdminSourceId: string | null;
 }
 
@@ -28,12 +22,8 @@ const initialDeviceAuthStatus: DeviceAuthStatus = {
 const initialState: RuntimeState = {
 	nowMs: Date.now(),
 	isActive: true,
-
 	pushStatus: null,
-	notificationsPermission: null,
-
 	deviceAuth: initialDeviceAuthStatus,
-
 	selectedMetricsAdminSourceId: null
 }
 
@@ -44,13 +34,10 @@ const runtimeSlice = createSlice({
 		clockTick(state, action: PayloadAction<{ nowMs: number }>) {
 			state.nowMs = action.payload.nowMs;
 		},
-
-
 		/* lifecycle */
 		setAppActiveStatus: (state, action: PayloadAction<{ active: boolean }>) => {
 			state.isActive = action.payload.active;
 		},
-
 		setPushRuntimeStatus: (
 			state,
 			action: PayloadAction<{
@@ -59,21 +46,12 @@ const runtimeSlice = createSlice({
 		) => {
 			state.pushStatus = action.payload.pushStatus
 		},
-
-		setNotificationsPermission: (
-			state,
-			action: PayloadAction<{ permission: NotificationsPermission }>
-		) => {
-			state.notificationsPermission = action.payload.permission;
-		},
-
 		setDeviceAuthStatus: (
 			state,
 			action: PayloadAction<{ deviceAuth: DeviceAuthStatus }>
 		) => {
 			state.deviceAuth = action.payload.deviceAuth;
 		},
-
 		/* metrics selection */
 		setSelectedMetricsAdminSourceId: (state, action: PayloadAction<{ sourceId: string }>) => {
 			state.selectedMetricsAdminSourceId = action.payload.sourceId;
@@ -86,8 +64,6 @@ const runtimeSlice = createSlice({
 
 export const selectNowMs = (s: RootState) => s.runtime.nowMs;
 export const selectDeviceAuthStatus = (s: RootState) => s.runtime.deviceAuth;
-export const selectNotificationsPermission = (s: RootState) =>
-	s.runtime.notificationsPermission;
 export const selectPushStatus = (s: RootState) => s.runtime.pushStatus;
 export const selectIsActive = (s: RootState) => s.runtime.isActive;
 

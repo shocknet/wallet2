@@ -10,7 +10,7 @@ import type { RootState } from "@/State/store/store";
 import { becameFresh, exists, isFresh, isNprofile, justAdded } from "../predicates";
 import { SourceType } from "@/State/scoped/backups/sources/schema";
 import dLogger from "@/Api/helpers/debugLog";
-import { runtimeActions, selectPushStatus } from "@/State/runtime/slice";
+import { selectPushStatus } from "@/State/runtime/slice";
 
 
 const log = dLogger.withContext({ component: "push-enrollment" });
@@ -45,9 +45,10 @@ async function enrollTokenForSources(token: string, views: NprofileView[]) {
 export const pushEnrollmentSpec: ListenerSpec = {
 	name: "push-enrollment",
 	listeners: [
+		// When the listener is kicked, we need to enroll the token for all sources
 		(add) =>
 			add({
-				matcher: isAnyOf(runtimeActions.setPushRuntimeStatus, listenerKick),
+				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
 					listenerApi.cancelActiveListeners();
 					const state = listenerApi.getState();
@@ -57,6 +58,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					await enrollTokenForSources(token, sources);
 				}
 			}),
+		// When the push token is updated (new token), we need to enroll the token for all sources
 		(add) =>
 			add({
 				actionCreator: pushTokenUpdated,
@@ -69,6 +71,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					await enrollTokenForSources(action.payload.token, sources);
 				}
 			}),
+		// when a new source is added, or became fresh, we need to enroll the token for the source
 		(add) =>
 			add({
 				predicate: (action, curr, prev) =>
