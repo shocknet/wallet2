@@ -30,7 +30,6 @@ export function useHandleWarmPushTap() {
 			store.getState(),
 			pushIntent.envelope.topic_id,
 		);
-		console.log("pushIntent handled warm", pushIntent, topicEntry);
 
 		if (!topicEntry) {
 			handledPushAtRef.current = pushIntent.receivedAtMs;
