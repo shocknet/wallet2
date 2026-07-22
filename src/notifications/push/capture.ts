@@ -47,7 +47,6 @@ function captureWeb() {
 
 	if ("serviceWorker" in navigator) {
 		navigator.serviceWorker.addEventListener("message", (ev) => {
-			console.log({ ev });
 			const parsedEnvelope = parsePushEnvelopeFromPayload(ev.data);
 			if (parsedEnvelope) {
 				store.dispatch(
