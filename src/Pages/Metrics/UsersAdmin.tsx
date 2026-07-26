@@ -22,6 +22,10 @@ import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selecto
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { fetcher } from "./fetcher";
 import { formatTableAmount, MetricsDataTable, MetricsTableEmpty, MetricsTableRow } from "./metricsDataTable";
+import { PubUpgradeNotice } from "./PubUpgradeNotice";
+import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
+import { isMissingDashboardRpcError } from "./pubDashboardCapability";
+import { usePubDashboardCapability } from "./usePubDashboardCapability";
 
 const PAGE_SIZE = 50;
 const USERS_GRID = "minmax(100px, 1.2fr) minmax(90px, 1fr) minmax(120px, 1.5fr) 68px";
@@ -38,6 +42,12 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
         () => admins.find((a) => a.sourceId === selectedId),
         [admins, selectedId]
     );
+    const {
+        needsUpgrade,
+        checking: checkingPubCapability,
+        recheck,
+        markNeedsUpgrade,
+    } = usePubDashboardCapability(adminSource);
 
     const [page, setPage] = useState(0);
     const [data, setData] = useState<UsersAdminInfo>({ total: 0, users: [] });
@@ -69,6 +79,10 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
                     await dismissLoading();
                 },
                 onFail: (err) => {
+                    if (isMissingDashboardRpcError(err)) {
+                        markNeedsUpgrade();
+                        return;
+                    }
                     setError(err);
                     toast.error(err);
                 },
@@ -79,11 +93,16 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
         if (res) {
             setData(res[0]);
         }
-    }, [adminSource, dismissLoading, presentLoading, skip]);
+    }, [adminSource, dismissLoading, markNeedsUpgrade, presentLoading, skip]);
 
     useEffect(() => {
+        if (checkingPubCapability) return;
+        if (needsUpgrade) {
+            setLoading(false);
+            return;
+        }
         void fetchUsers();
-    }, [fetchUsers]);
+    }, [checkingPubCapability, fetchUsers, needsUpgrade]);
 
     const openUser = (user: UserAdminInfo) => {
         history.push(`/metrics/users/${user.user_id}`, { user });
@@ -96,7 +115,19 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
             </IonHeader>
 
             <IonContent className="ion-padding ion-content-no-footer">
-                {error && (
+                {needsUpgrade && (
+                    <PubUpgradeNotice
+                        featureLabel="Users admin"
+                        onRecheck={recheck}
+                        checking={checkingPubCapability}
+                    />
+                )}
+
+                {!needsUpgrade && checkingPubCapability && (
+                    <MetricsProbeSkeleton variant="page" />
+                )}
+
+                {!needsUpgrade && !checkingPubCapability && error && (
                     <div style={{ color: "red", padding: 12 }}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
                         <div style={{ opacity: 0.85, marginBottom: 12 }}>{error}</div>
@@ -109,7 +140,7 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
                     </div>
                 )}
 
-                {!error && (
+                {!needsUpgrade && !checkingPubCapability && !error && (
                     <>
                         <IonCard className="ion-margin-top">
                             <IonCardHeader>
@@ -192,3 +223,4 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
         </IonPage>
     );
 }
+

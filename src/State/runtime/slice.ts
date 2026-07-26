@@ -14,6 +14,8 @@ interface RuntimeState {
 
 
 	selectedMetricsAdminSourceId: string | null;
+	/** In-memory only; cleared on full reload (F5). */
+	pubDashboardCapabilityBySourceId: Record<string, "supported" | "needs_upgrade">;
 }
 
 const initialState: RuntimeState = {
@@ -23,7 +25,8 @@ const initialState: RuntimeState = {
 	pushStatus: null,
 
 
-	selectedMetricsAdminSourceId: null
+	selectedMetricsAdminSourceId: null,
+	pubDashboardCapabilityBySourceId: {},
 }
 
 const runtimeSlice = createSlice({
@@ -55,6 +58,12 @@ const runtimeSlice = createSlice({
 		},
 		clearSelectedMetricsAdminSourceId: (state) => {
 			state.selectedMetricsAdminSourceId = null;
+		},
+		setPubDashboardCapability: (state, action: PayloadAction<{
+			sourceId: string;
+			capability: "supported" | "needs_upgrade";
+		}>) => {
+			state.pubDashboardCapabilityBySourceId[action.payload.sourceId] = action.payload.capability;
 		},
 	},
 });

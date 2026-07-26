@@ -25,6 +25,10 @@ import type { HistoryCursor } from "@/State/scoped/backups/sources/history/types
 import { AdminOperationsList } from "./adminOperationDisplay";
 import { fetcher } from "./fetcher";
 import { formatTableAmount } from "./metricsDataTable";
+import { PubUpgradeNotice } from "./PubUpgradeNotice";
+import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
+import { isMissingDashboardRpcError } from "./pubDashboardCapability";
+import { usePubDashboardCapability } from "./usePubDashboardCapability";
 
 type LocationState = { user?: UserAdminInfo };
 
@@ -47,6 +51,12 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
         () => admins.find((a) => a.sourceId === selectedId),
         [admins, selectedId]
     );
+    const {
+        needsUpgrade,
+        checking: checkingPubCapability,
+        recheck,
+        markNeedsUpgrade,
+    } = usePubDashboardCapability(adminSource);
 
     const [operations, setOperations] = useState<UserOperation[]>([]);
     const [cursor, setCursor] = useState<HistoryCursor>(emptyCursor);
@@ -82,6 +92,10 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
                     }
                 },
                 onFail: (err) => {
+                    if (isMissingDashboardRpcError(err)) {
+                        markNeedsUpgrade();
+                        return;
+                    }
                     setError(err);
                     toast.error(err);
                 },
@@ -95,17 +109,22 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
         setOperations((prev) => (append ? [...prev, ...batch] : batch));
         setCursor(newCursor);
         setHasMore(needMoreData);
-    }, [adminSource, dismissLoading, presentLoading, userId]);
+    }, [adminSource, dismissLoading, markNeedsUpgrade, presentLoading, userId]);
 
     useEffect(() => {
+        if (checkingPubCapability) return;
+        if (needsUpgrade) {
+            setLoading(false);
+            return;
+        }
         setOperations([]);
         setCursor(emptyCursor());
         setHasMore(false);
         void fetchOperations(emptyCursor(), false);
-    }, [fetchOperations, userId]);
+    }, [checkingPubCapability, fetchOperations, needsUpgrade, userId]);
 
     const loadMore = () => {
-        if (loadingMore || !hasMore) return;
+        if (loadingMore || !hasMore || needsUpgrade) return;
         void fetchOperations(cursor, true);
     };
 
@@ -116,7 +135,19 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
             </IonHeader>
 
             <IonContent className="ion-padding ion-content-no-footer">
-                {error && (
+                {needsUpgrade && (
+                    <PubUpgradeNotice
+                        featureLabel="Users admin"
+                        onRecheck={recheck}
+                        checking={checkingPubCapability}
+                    />
+                )}
+
+                {!needsUpgrade && checkingPubCapability && (
+                    <MetricsProbeSkeleton variant="page" />
+                )}
+
+                {!needsUpgrade && !checkingPubCapability && error && (
                     <div style={{ color: "red", padding: 12 }}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
                         <div style={{ opacity: 0.85, marginBottom: 12 }}>{error}</div>
@@ -132,7 +163,7 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
                     </div>
                 )}
 
-                {!error && (
+                {!needsUpgrade && !checkingPubCapability && !error && (
                     <>
                         <IonCard>
                             <IonCardHeader>
@@ -218,3 +249,4 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
         </IonPage>
     );
 }
+
