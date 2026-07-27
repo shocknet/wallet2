@@ -32,20 +32,34 @@ export function isProbeSilentFailure(reason: string): boolean {
 		|| normalized === "invalid response";
 }
 
+function errorReason(res: { status: "ERROR"; reason: string } | { status: "OK" }): string | null {
+	return res.status === "ERROR" ? res.reason : null;
+}
+
 async function runProbe(source: ProbeSource): Promise<PubDashboardCapability> {
 	const client = await getNostrClient(
 		{ pubkey: source.lpk, relays: source.relays },
 		source.keys,
 	);
+
+	// Baseline: exists on old and new Pubs. If this fails, Pub is unreachable / auth broken
+	// — do not treat that as "needs upgrade".
+	const baseline = await client.LndGetInfo({ nodeId: 0 });
+	const baselineErr = errorReason(baseline);
+	if (baselineErr) {
+		throw new Error(baselineErr);
+	}
+
 	// Cheap RPC added in the same Pub release as Assets V2 / Users admin.
 	const res = await client.GetUsersAdminInfo({ skip: 0, take: 1 });
-	if (res.status === "ERROR") {
-		if (isMissingDashboardRpcError(res.reason) || isProbeSilentFailure(res.reason)) {
-			return "needs_upgrade";
-		}
-		throw new Error(res.reason);
+	const reason = errorReason(res);
+	if (reason == null) return "supported";
+
+	// Baseline worked, so a missing/silent new RPC means the Pub is online but too old.
+	if (isMissingDashboardRpcError(reason) || isProbeSilentFailure(reason)) {
+		return "needs_upgrade";
 	}
-	return "supported";
+	throw new Error(reason);
 }
 
 /** Deduped probe. Caller owns caching (runtime slice). Throws on non-upgrade failures. */
