@@ -12,6 +12,8 @@ interface RuntimeState {
 	pushStatus: PushRegistrationResult | null;
 	deviceAuth: DeviceAuthStatus;
 	selectedMetricsAdminSourceId: string | null;
+	/** In-memory only; cleared on full reload (F5). */
+	pubDashboardCapabilityBySourceId: Record<string, "supported" | "needs_upgrade">;
 }
 
 const initialDeviceAuthStatus: DeviceAuthStatus = {
@@ -23,8 +25,11 @@ const initialState: RuntimeState = {
 	nowMs: Date.now(),
 	isActive: true,
 	pushStatus: null,
-	deviceAuth: initialDeviceAuthStatus,
-	selectedMetricsAdminSourceId: null
+
+
+	selectedMetricsAdminSourceId: null,
+	pubDashboardCapabilityBySourceId: {},
+	deviceAuth: initialDeviceAuthStatus
 }
 
 const runtimeSlice = createSlice({
@@ -58,6 +63,12 @@ const runtimeSlice = createSlice({
 		},
 		clearSelectedMetricsAdminSourceId: (state) => {
 			state.selectedMetricsAdminSourceId = null;
+		},
+		setPubDashboardCapability: (state, action: PayloadAction<{
+			sourceId: string;
+			capability: "supported" | "needs_upgrade";
+		}>) => {
+			state.pubDashboardCapabilityBySourceId[action.payload.sourceId] = action.payload.capability;
 		},
 	},
 });

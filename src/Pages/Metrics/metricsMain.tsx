@@ -27,6 +27,9 @@ import MetricsHeader from '@/Layout2/Metrics/metricsHeader';
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { PubUpgradeNotice } from "./PubUpgradeNotice";
+import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
+import { usePubDashboardCapability } from "./usePubDashboardCapability";
 
 const trimText = (text: string) => {
 	return text.length < 10 ? text : `${text.substring(0, 5)}...${text.substring(text.length - 5, text.length)}`
@@ -81,6 +84,8 @@ const Dashboard = () => {
 		() => admins.find(a => a.sourceId === selectedId),
 		[admins, selectedId]
 	)!;
+	const { needsUpgrade, checking: checkingPubCapability, recheck } =
+		usePubDashboardCapability(adminSource);
 
 	const fetchInfo = useCallback(async (client: Client) => {
 		const info = await client.LndGetInfo({ nodeId: 0 })
@@ -261,6 +266,17 @@ const Dashboard = () => {
 		<IonPage className="ion-page-width">
 			<MetricsHeader />
 			<IonContent className="ion-padding ion-content-no-footer">
+
+				{needsUpgrade && (
+					<PubUpgradeNotice
+						onRecheck={recheck}
+						checking={checkingPubCapability}
+					/>
+				)}
+
+				{!needsUpgrade && checkingPubCapability && (
+					<MetricsProbeSkeleton variant="banner" />
+				)}
 
 				{error && (
 					<div style={{ color: "red", padding: 12 }}>
@@ -495,6 +511,11 @@ const Dashboard = () => {
 							<div className={styles["section"]}>
 								<IonButton expand="block" fill="clear" routerLink="/metrics/assets-liabilities" routerDirection="forward" className={classNames(styles["box"], styles["border"], styles["dashboard-action-button"])}>
 									Assets & Liabilities
+								</IonButton>
+							</div>
+							<div className={styles["section"]}>
+								<IonButton expand="block" fill="clear" routerLink="/metrics/users" routerDirection="forward" className={classNames(styles["box"], styles["border"], styles["dashboard-action-button"])}>
+									Users
 								</IonButton>
 							</div>
 							<div className={styles["section"]}>
