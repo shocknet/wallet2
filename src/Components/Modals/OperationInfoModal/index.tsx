@@ -156,7 +156,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 			<IonList lines="none" style={{ borderRadius: "12px" }}>
 				<IonItem>
 					<IonLabel color="primary">Amount</IonLabel>
-					<IonText color="primary">{operation.inbound ? "" : "-"}{formatBitcoin(satsToBtc(operation.amount))} <IonText color="light">BTC</IonText></IonText>
+					<IonText color="primary">{operation.inbound ? "" : "-"}{formatBitcoin(satsToBtc(operation.amount))} <IonText className="text-muted">BTC</IonText></IonText>
 
 				</IonItem>
 				<IonItem>
@@ -204,7 +204,7 @@ const OnChainOperation = ({ operation }: { operation: SourceOperationOnChain | S
 								<div className={styles["long-text-container"]}>
 									<div className={styles["long-text-text"]}>
 
-										<IonNote className={classNames("ion-text-wrap text-low", styles["text"])}>{data.txHash}</IonNote>
+										<IonNote className={classNames("ion-text-wrap text-muted", styles["text"])}>{data.txHash}</IonNote>
 									</div>
 									<div className={styles["long-text-icon"]}>
 										<IonButton size="large" shape="round" fill="clear">
@@ -290,7 +290,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 				<IonItem>
 					<IonLabel color="primary">
 						Invoice
-						<IonNote style={{ display: "block", fontSize: "0.8rem" }} className="ion-text-wrap text-low">{operation.invoice}</IonNote>
+						<IonNote style={{ display: "block", fontSize: "0.8rem" }} className="ion-text-wrap text-muted">{operation.invoice}</IonNote>
 					</IonLabel>
 					<IonIcon icon={copy} slot="end" onClick={() => navigator.clipboard.writeText(operation.invoice)} />
 				</IonItem>
@@ -300,7 +300,7 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 						<IonItem>
 							<IonLabel color="primary">
 								Invoice Memo
-								<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-low">{operation.invoiceMemo}</IonNote>
+								<IonNote style={{ display: "block", fontSize: "0.9rem" }} className="ion-text-wrap text-muted">{operation.invoiceMemo}</IonNote>
 							</IonLabel>
 						</IonItem>
 					)
@@ -473,7 +473,7 @@ const NoteField = ({ note: initialNote, sourceId, operationId }: { note?: string
 							<div className={styles["long-text-container"]}>
 								<div className={styles["long-text-text"]}>
 
-									<IonNote className={classNames("ion-text-wrap text-medium", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
+									<IonNote className={classNames("ion-text-wrap text-secondary", styles["text"])}>{note || <span style={{ opacity: 0.8 }}>&lt;no note&gt;</span>}</IonNote>
 								</div>
 								<div className={styles["long-text-icon"]}>
 

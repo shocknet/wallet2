@@ -4,6 +4,8 @@ import encUtf8 from "crypto-js/enc-utf8";
 
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { isPlatform } from "@ionic/react";
+import { getPublicKey } from "nostr-tools";
+import { hexToBytes } from "@noble/hashes/utils";
 
 function timestampName(prefix: string, ext = "dat") {
 	const ts = new Date().toLocaleString().replace(/[,:\s/]/g, "-");
@@ -69,9 +71,7 @@ export async function importBackupFileText(fileText: string, passphrase: string)
 
 	try {
 		const parsed = JSON.parse(plaintext);
-		console.log({ parsed })
 		if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-
 			return { kind: "legacy", parsed };
 		} else {
 			return { kind: "legacy", parsed: {} };
@@ -80,6 +80,11 @@ export async function importBackupFileText(fileText: string, passphrase: string)
 		/* It's an nsec */
 	}
 
+	try {
+		getPublicKey(hexToBytes(plaintext.trim()));
+	} catch {
+		throw new Error("Invalid Nostr private key in the file backup.")
+	}
 
 	return { kind: "nsec", nsec: plaintext.trim() };
 }

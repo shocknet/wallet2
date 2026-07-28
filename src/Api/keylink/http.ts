@@ -10,6 +10,7 @@ export const getKeyLinkClient = (accessToken: string) => {
 	return keyLinkClient = {
 		...NewHttpClient({
 			baseUrl: SANCTUM_URL || "",
+			retrieveGuestSensitiveAuth: async () => { return "" },
 			retrieveGuestAuth: async () => { return "" },
 			retrieveUserAuth: async () => { throw new Error("User routes not enabled") },
 			retrieveLegacyAccessTokenAuth: async () => { return accessToken },

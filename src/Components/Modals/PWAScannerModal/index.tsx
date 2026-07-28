@@ -92,7 +92,7 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError, isOpen }: P
 				<IonGrid>
 					<IonRow>
 						<IonCol>
-							<p className="text-medium" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: 600 }}>{instruction}</p>
+							<p className="text-secondary" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: 600 }}>{instruction}</p>
 						</IonCol>
 					</IonRow>
 					<IonRow className="ion-justify-content-center ion-align-items-center">

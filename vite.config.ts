@@ -25,18 +25,22 @@ export default defineConfig({
 		VitePWA({
 			selfDestroying: isNativeBuild,
 			registerType: 'autoUpdate',
+			injectRegister: false,
 			strategies: "injectManifest",
 			srcDir: "src",
 			filename: "sw.ts",
 			injectManifest: {
 				globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
 			},
+			workbox: {
+				cleanupOutdatedCaches: true,
+			},
 			manifest: {
 				name: 'Shockwallet',
 				short_name: 'App',
 				description: 'Lightning for Everyone',
 				theme_color: '#29abe2',
-				background_color: '#16191c',
+				background_color: '#15191c',
 				icons: [
 					{
 						src: 'pwa-64x64.png',

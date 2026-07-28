@@ -1,23 +1,45 @@
 
 import { resetClientsCluster } from "@/Api/nostr";
-import getIdentityNostrApi from "./helpers/identityNostrApi";
-import { identitiesRegistryActions, selectActiveIdentityId } from "./slice";
+import {
+	createEphemeralIdentityNostrApi,
+	getActiveIdentityNostrApi,
+} from "./helpers/identityNostrApi";
+import { identitiesRegistryActions } from "./slice";
 import { persistor, type AppThunk } from "@/State/store/store";
-import { getAllScopedPersistKeys, injectNewScopedReducer, removeScoped } from "../scoped/scopedReducer";
+import { injectNewScopedReducer, removeScoped } from "../scope/inject";
 import { waitForRehydrateKeys } from "./middleware/switcher";
-import { identityActions, selectIdentityDraft } from "../scoped/backups/identity/slice";
+import { getScopedIdentityPersistKey, identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
 import { getDeviceId } from "@/constants";
-import { Identity } from "./types";
+import { IdentityType } from "./types";
+import type { RuntimeIdentity } from "@/shell/types";
 import { identityDocDtag } from "./helpers/processDocs";
 import { fetchNip78Event } from "./helpers/nostr";
-import { sourcesActions } from "../scoped/backups/sources/slice";
-import { getRemoteMigratedSources, SourceToMigrate } from "./helpers/migrateToIdentities";
+import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
 import { appApi } from "../api/api";
-import { SourceType } from "../scoped/common";
 import { identityLoaded, identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
 import { appStateActions } from "../appState/slice";
 import dLogger from "@/Api/helpers/debugLog";
+import { unwrapDataKeyWithNip44 } from "./helpers/datakey";
+import { clearSanctumIdentitySdk } from "./helpers/sanctumIdentitySdkManager";
+import {
+	deleteIdentityPersistedData,
+} from "./helpers/deleteIdentityStorage";
+import {
+	applyMigratedSourceDocs,
+	getSourcesFromLegacyRemoteBackup,
+	migrateLegacySourcesToDocs,
+} from "../../shell/migrations/deviceToIdentities/legacySources";
+import {
+	provisionIdentity,
+	type CreateIdentityInput,
+} from "./helpers/provisionIdentity";
+import {
+	markSanctumReauthRequired,
+	setIdentitySanctumTokensData,
+} from "./identitySyncThunks";
+import { toSanctumTokensStorage } from "./helpers/platformSecretStorage";
+
 
 
 
@@ -25,132 +47,209 @@ import dLogger from "@/Api/helpers/debugLog";
 
 export const LAST_ACTIVE_IDENTITY_PUBKEY_KEY = "__shockwallet_lai_";
 
-export const switchIdentity = (pubkey: string, boot?: true): AppThunk<Promise<void>> => {
+
+const unloadActiveIdentityIfPresent = (): AppThunk<Promise<void>> => {
+	return async (dispatch, getState) => {
+		const state = getState();
+		const currentIdentity = state.identitiesRegistry.active
+
+		if (!currentIdentity || !state.scoped) {
+			return;
+		}
+
+		const log = dLogger.withContext({
+			procedure: "unload-active-identity",
+			data: { pubkey: currentIdentity.pubkey },
+		});
+		log.info("started");
+
+		dispatch(appApi.util.resetApiState());
+		await persistor.flush().catch(() => { });
+
+		dispatch(identitiesRegistryActions.clearActiveIdentityRuntime());
+		dLogger.removeIdentityContext();
+
+		const deferred = createDeferred<void>();
+		dispatch(identityUnloaded({ deferred }));
+		await deferred;
+
+		await resetClientsCluster();
+
+		if (currentIdentity.type === IdentityType.SANCTUM) {
+			clearSanctumIdentitySdk(currentIdentity.pubkey);
+		}
+		removeScoped(dispatch);
+
+		log.info("completed");
+	};
+};
+
+export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 
 		const log = dLogger.withContext({
 			procedure: "switch-identity",
-			data: { pubkey, boot }
+			data: { pubkey: toIdentity.pubkey }
 		});
 
 		log.info("started");
 
 		const state = getState();
-		const current = selectActiveIdentityId(state);
+		const currentIdentity = state.identitiesRegistry.active;
 
 
-		if (!boot && current === pubkey) {
+		if (currentIdentity?.pubkey === toIdentity.pubkey) {
 			log.debug("aborted-same-pubkey");
 			return;
 		}
 
-		const existing = state.identitiesRegistry.entities[pubkey]
-		if (!existing) {
+		const fromRegistry = state.identitiesRegistry.entities[toIdentity.pubkey]
+		if (!fromRegistry) {
 			log.error("switch-to-nonexisting-identity");
 			throw new Error("Identity does not exist");
 		}
 
 		const deviceId = getDeviceId();
 
+		// Will throw if identity isn"t healthy (nostr extension issues, sanctum session issues)
+		const identityNostrApi = await createEphemeralIdentityNostrApi(toIdentity);
 
-		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
-		await getIdentityNostrApi(existing);
+		const unwrappedDataKey = await unwrapDataKeyWithNip44({
+			pubkey: toIdentity.pubkey,
+			api: identityNostrApi,
+			wrappedDataKeyCiphertext: toIdentity.wrappedDataKeyCiphertext,
+		});
 
-		if (!boot && current !== null) { // When it's a dynamic switch, tear down stuff nicely
-			log.info("tear-down-old-identity-started");
+		await dispatch(unloadActiveIdentityIfPresent());
 
-			dispatch(appApi.util.resetApiState());
-
-
-			await persistor.flush().catch(() => { });
-
-
-			dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey: null }));
-			dLogger.removeIdentityContext();
-
-			const deferred = createDeferred<void>();
-			dispatch(identityUnloaded({ deferred }));
-			await deferred;
-
-			await resetClientsCluster(); // Tear down nostr layer
-
-			removeScoped(dispatch);
-
-		}
-
-
-		injectNewScopedReducer(pubkey, dispatch);
-		const keys = getAllScopedPersistKeys(pubkey);
-		await waitForRehydrateKeys(Object.values(keys)); // Await redux persist rehydration of injected paths
+		injectNewScopedReducer(toIdentity.pubkey, dispatch, unwrappedDataKey);
+		const keys = [getScopedIdentityPersistKey(toIdentity.pubkey), getScopedSourcesPersistKey(toIdentity.pubkey)];
+		await waitForRehydrateKeys(keys); // Await redux persist rehydration of injected paths
 
 		const draft = selectIdentityDraft(getState());
 
 		// If no identity doc yet, init it. If a remote version comes they will converge naturally
 		if (draft === undefined) {
 			log.debug("init-identity-doc");
-			dispatch(identityActions.initIdentityDoc({ identity_pubkey: pubkey, by: deviceId }));
+			dispatch(identityActions.initIdentityDoc({ identity_pubkey: toIdentity.pubkey, by: deviceId }));
 		}
 
-		dispatch(identitiesRegistryActions.setActiveIdentity({ pubkey }));
-		localStorage.setItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY, pubkey);
-		dispatch(identityLoaded({ identity: existing }));
+		if (toIdentity.type === IdentityType.SANCTUM) {
+			if (toIdentity.tokensData) {
+				await dispatch(
+					setIdentitySanctumTokensData({
+						pubkey: toIdentity.pubkey,
+						tokensData: toIdentity.tokensData,
+					}),
+				);
+			}
+			if (toIdentity.reauthReason) {
+				dispatch(
+					markSanctumReauthRequired({
+						pubkey: toIdentity.pubkey,
+						reason: toIdentity.reauthReason,
+					}),
+				);
+			}
+			// Drop ephemeral SDK so ready callers build the store-backed adapter
+			clearSanctumIdentitySdk(toIdentity.pubkey);
+		}
 
-		dLogger.setIdentityContext({ identityPubkey: pubkey, identityType: existing.type });
+		dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: toIdentity }));
+		dispatch(identitiesRegistryActions.setLastActiveIdentityId({ pubkey: toIdentity.pubkey }));
+		dLogger.setIdentityContext({ identityPubkey: toIdentity.pubkey, identityType: toIdentity.type });
+		dispatch(identityLoaded({ identity: toIdentity }));
 
 	}
 }
 
-
-export const createIdentity = (identity: Identity, localSources?: SourceToMigrate[]): AppThunk<Promise<{ foundBackup: boolean }>> => {
+export const deleteIdentity = (pubkey: string): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 		const log = dLogger.withContext({
-			procedure: "create-identity",
-			data: { pubkey: identity.pubkey, identityType: identity.type, sourcesToMigrate: localSources ? localSources.length : null }
+			procedure: "delete-identity",
+			data: { pubkey },
 		});
 
+		const state = getState();
+		const identity = state.identitiesRegistry.entities[pubkey];
+		if (!identity) {
+			log.error("delete-nonexisting-identity");
+			throw new Error("Identity does not exist");
+		}
+
+		if (state.identitiesRegistry.active?.pubkey === pubkey) {
+			log.error("delete-active-identity-blocked");
+			throw new Error("Cannot delete the active identity");
+		}
+
+		await deleteIdentityPersistedData(identity);
+		dispatch(identitiesRegistryActions.removeIdentity({ pubkey }));
+
+		if (localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY) === pubkey) {
+			localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
+		}
+
+		await persistor.flush().catch(() => { });
+		log.info("completed");
+	};
+};
+
+export const createIdentity = (
+	input: CreateIdentityInput,
+): AppThunk<Promise<{ foundBackup: boolean; identityId: string }>> => {
+	return async (dispatch, getState) => {
+		const provisioned = await provisionIdentity(input);
+		let { identity } = provisioned;
+		const { runtime: runtimeIdentity } = provisioned;
+
+		const log = dLogger.withContext({
+			procedure: "create-identity",
+			data: { pubkey: identity.pubkey, identityType: identity.type },
+		});
 		if (getState().identitiesRegistry.entities[identity.pubkey]) {
 			log.error("identity-already-exists");
 			throw new Error("This identity already exists.");
 		}
-		// Will throw if identity isn"t healthy (nostr extension issues, sanctum access issues)
-		const identityApi = await getIdentityNostrApi(identity);
+
+		// Verify Nostr/Sanctum before writing the registry
+		await createEphemeralIdentityNostrApi(runtimeIdentity);
+		if (runtimeIdentity.type === IdentityType.SANCTUM) {
+			if (runtimeIdentity.tokensData && identity.type === IdentityType.SANCTUM) {
+				identity = {
+					...identity,
+					sanctumTokens: await toSanctumTokensStorage(
+						runtimeIdentity.pubkey,
+						runtimeIdentity.tokensData,
+					),
+					reauthReason: runtimeIdentity.reauthReason ?? undefined,
+				};
+			}
+			clearSanctumIdentitySdk(runtimeIdentity.pubkey);
+		}
 
 		dispatch(identitiesRegistryActions._createNewIdentity({ identity }));
 		dispatch(appStateActions.setAppBootstrapped());
 
-		await dispatch(switchIdentity(identity.pubkey));
+		await dispatch(switchIdentity(runtimeIdentity));
 
+		const identityApi = await getActiveIdentityNostrApi();
 
 		const identityDoc = await fetchNip78Event(identityApi, identityDocDtag);
 
-		/*
-		* This identity does not have an identity doc index.
-		* However it may have legacy backup so we need to check that.
-		*/
-
 		if (identityDoc) {
 			log.info("found-remote-identity-doc");
-			return { foundBackup: true };
+			return { foundBackup: true, identityId: runtimeIdentity.pubkey };
 		}
 
-		const migratedSourceDocs = await getRemoteMigratedSources(identityApi, localSources);
-		if (migratedSourceDocs.length) {
-			log.info("didn't find remote identity doc, but found legacy sources backups");
-			for (const sourceDoc of migratedSourceDocs) {
-				const { vanity_name, ...source } = sourceDoc
+		const remoteLegacySources = await getSourcesFromLegacyRemoteBackup(identityApi);
+		const legacySourceDocs = migrateLegacySourcesToDocs(remoteLegacySources);
 
-
-				dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
-
-				if (vanity_name && source.type === SourceType.NPROFILE_SOURCE) {
-					dispatch(sourcesActions.setVanityName({ sourceId: source.source_id, vanityName: vanity_name }));
-				}
-			}
-			return { foundBackup: true };
-		} else {
-			return { foundBackup: false };
+		if (legacySourceDocs.length) {
+			log.info("importing-legacy-sources", { data: { count: legacySourceDocs.length } });
+			applyMigratedSourceDocs(dispatch, legacySourceDocs);
+			return { foundBackup: true, identityId: runtimeIdentity.pubkey };
 		}
 
-	}
-}
-
+		return { foundBackup: false, identityId: runtimeIdentity.pubkey };
+	};
+};

@@ -1,16 +1,15 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import { registerRootLifecycle } from './State/runtime/lifecycle';
-import { initLocalNotifications } from './notifications/local/local-notifications';
-import { initPushNotifications } from './notifications/push/init';
+import { registerSW } from 'virtual:pwa-register';
+import { Capacitor } from '@capacitor/core';
+import { startPushCapture } from './notifications/push/capture';
 
-registerRootLifecycle();
+if (!Capacitor.isNativePlatform()) {
+	registerSW({ immediate: true })
+}
 
-initPushNotifications();
-initLocalNotifications();
-
-
+startPushCapture();
 
 const container = document.getElementById('root');
 const root = createRoot(container!);

@@ -1,5 +1,5 @@
-import { newLww } from "@/State/scoped/backups/lww"
-import { SourceType } from "@/State/scoped/common"
+import { newLww } from "@/State/sync/lww"
+import { SourceType } from "@/State/scoped/backups/sources/schema"
 import { Satoshi } from "@/lib/types/units"
 import { SourcesState } from "@/State/scoped/backups/sources/state"
 import { SourceMetadata } from "@/State/scoped/backups/sources/metadata/types"
@@ -125,7 +125,8 @@ export const createTestIdentitydoc = (pubkey: string, favouriteSourceId?: string
 	favorite_source_id: newLww(favouriteSourceId ?? null, "me"),
 	identity_pubkey: pubkey,
 	schema_rev: 0,
-	created_at: Date.now()
+	created_at: Date.now(),
+	fiatCurrency: newLww("USD", "me")
 })
 export const getPreloadedIdentityState = (pubkey: string, favouriteSourceId?: string): IdentityState => {
 	return {

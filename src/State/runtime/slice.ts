@@ -1,32 +1,35 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 import { PushRegistrationResult } from "@/notifications/push/types";
+import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
+
 
 
 
 interface RuntimeState {
 	nowMs: number;
 	isActive: boolean;
-
-
 	pushStatus: PushRegistrationResult | null;
-
-
-
+	deviceAuth: DeviceAuthStatus;
 	selectedMetricsAdminSourceId: string | null;
 	/** In-memory only; cleared on full reload (F5). */
 	pubDashboardCapabilityBySourceId: Record<string, "supported" | "needs_upgrade">;
 }
 
+const initialDeviceAuthStatus: DeviceAuthStatus = {
+	checkedAtMs: null,
+	capability: DeviceAuthCapability.NONE,
+};
+
 const initialState: RuntimeState = {
 	nowMs: Date.now(),
 	isActive: true,
-
 	pushStatus: null,
 
 
 	selectedMetricsAdminSourceId: null,
 	pubDashboardCapabilityBySourceId: {},
+	deviceAuth: initialDeviceAuthStatus
 }
 
 const runtimeSlice = createSlice({
@@ -36,13 +39,10 @@ const runtimeSlice = createSlice({
 		clockTick(state, action: PayloadAction<{ nowMs: number }>) {
 			state.nowMs = action.payload.nowMs;
 		},
-
-
 		/* lifecycle */
 		setAppActiveStatus: (state, action: PayloadAction<{ active: boolean }>) => {
 			state.isActive = action.payload.active;
 		},
-
 		setPushRuntimeStatus: (
 			state,
 			action: PayloadAction<{
@@ -51,7 +51,12 @@ const runtimeSlice = createSlice({
 		) => {
 			state.pushStatus = action.payload.pushStatus
 		},
-
+		setDeviceAuthStatus: (
+			state,
+			action: PayloadAction<{ deviceAuth: DeviceAuthStatus }>
+		) => {
+			state.deviceAuth = action.payload.deviceAuth;
+		},
 		/* metrics selection */
 		setSelectedMetricsAdminSourceId: (state, action: PayloadAction<{ sourceId: string }>) => {
 			state.selectedMetricsAdminSourceId = action.payload.sourceId;
@@ -69,6 +74,9 @@ const runtimeSlice = createSlice({
 });
 
 export const selectNowMs = (s: RootState) => s.runtime.nowMs;
+export const selectDeviceAuthStatus = (s: RootState) => s.runtime.deviceAuth;
+export const selectPushStatus = (s: RootState) => s.runtime.pushStatus;
+export const selectIsActive = (s: RootState) => s.runtime.isActive;
 
 export const selectSelectedMetricsAdminSourceId = (s: RootState) =>
 	s.runtime.selectedMetricsAdminSourceId;
@@ -76,7 +84,3 @@ export const selectSelectedMetricsAdminSourceId = (s: RootState) =>
 export const runTimeReducer = runtimeSlice.reducer;
 
 export const runtimeActions = runtimeSlice.actions;
-
-
-
-

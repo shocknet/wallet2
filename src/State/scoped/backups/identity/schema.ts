@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { type DocBase, DocBaseSchema } from "../../common";
-import { LwwSchema } from "../lww";
+import { type DocBase, DocBaseSchema } from "@/State/sync/docBase";
+import { LwwSchema } from "@/State/sync/lww";
 
 export const fiatCurrencies = ["USD", "EUR", "CAD", "BRL", "MXN", "GBP", "CHF", "JPY", "AUD", "NONE"] as const;
 

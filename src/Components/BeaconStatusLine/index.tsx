@@ -33,7 +33,7 @@ export const BeaconStatusLine: React.FC<Props> = ({
 		return (
 			<span className="flex items-center justify-start gap-2">
 				<IonSpinner name="dots" className="w-4 h-4" />
-				<span className="text-sm text-medium">{text}</span>
+				<span className="text-sm text-secondary">{text}</span>
 			</span>
 		);
 	}

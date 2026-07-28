@@ -1,4 +1,3 @@
-/// <reference types="@capawesome/capacitor-android-edge-to-edge-support" />
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -8,9 +7,6 @@ const config: CapacitorConfig = {
 	server: {
 		androidScheme: 'https',
 	},
-	android: {
-		adjustMarginsForEdgeToEdge: 'force',
-	},
 	plugins: {
 		App: {
 			iosScheme: "shockwallet",
@@ -19,14 +15,17 @@ const config: CapacitorConfig = {
 		BarcodeScanning: {
 			photoLibraryUsageDescription: "To scan QR codes using the camera"
 		},
+		SystemBars: {
+			insetsHandling: "disable",
+			animation: "NONE"
+		},
 		StatusBar: {
 			overlaysWebView: false,
-			backgroundColor: '#16191c',
 		},
 		SplashScreen: {
-			backgroundColor: "#16191c",
+			backgroundColor: "#15191c",
 			androidScaleType: "CENTER_CROP",
-			launchAutoHide: true,
+			launchAutoHide: false,
 			splashFullScreen: true,
 		},
 		LocalNotifications: {
@@ -39,9 +38,6 @@ const config: CapacitorConfig = {
 		CapacitorHttp: {
 			enabled: true
 		},
-		"EdgeToEdge": {
-			"backgroundColor": "#16191c"
-		}
 	}
 };
 

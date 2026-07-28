@@ -1,16 +1,17 @@
 import { useCallback, useState } from 'react';
 import { IonButton, IonContent, IonHeader, IonPage, IonSpinner } from '@ionic/react';
 import { getDeviceId } from '../../constants';
-import BackToolbar from '@/Layout2/BackToolbar';
 import { CustomSelect } from '@/Components/CustomSelect';
 import { fiatCurrencies, FiatCurrency } from '@/State/scoped/backups/identity/schema';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { identityActions, selectFiatCurrency } from '@/State/scoped/backups/identity/slice';
 import { capFirstLetter } from '@/lib/format';
 import { appStateActions, selectTheme, Theme } from '@/State/appState/slice';
-import { initLocalNotifications } from '@/notifications/local/local-notifications';
+import { selectPushStatus } from '@/State/runtime/slice';
 import { requestNotificationsPermission } from '@/notifications/permission';
+import { useToast } from '@/lib/contexts/useToast';
 import { refreshPushRegistration } from '@/notifications/push/register';
+import RootPageToolbar from '@/Layout2/RootPageToolbar';
 
 
 const themeOptions: Theme[] = ["system", "dark", "light"];
@@ -18,8 +19,9 @@ const themeOptions: Theme[] = ["system", "dark", "light"];
 
 const Prefs = () => {
 	const dispatch = useAppDispatch();
+	const { showToast } = useToast();
 	const [pushBusy, setPushBusy] = useState(false);
-	const pushStatus = useAppSelector(state => state.runtime.pushStatus);
+	const pushStatus = useAppSelector(selectPushStatus);
 
 
 	const fiatCurrency = useAppSelector(selectFiatCurrency);
@@ -39,21 +41,23 @@ const Prefs = () => {
 		try {
 			const res = await requestNotificationsPermission();
 			if (res !== "granted") {
-				console.log("[Prefs] Permission not granted:", res);
-				return;
+				showToast({
+					message: "Permission not granted",
+					color: "danger",
+					duration: 2000,
+				});
 			}
-			await refreshPushRegistration();
-			await initLocalNotifications();
+			dispatch(refreshPushRegistration());
 		} finally {
 			setPushBusy(false);
 		}
-	}, []);
+	}, [dispatch, showToast]);
 
 
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="Preferences" />
+				<RootPageToolbar title="Preferences" />
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<div className="mt-6 flex flex-col">
@@ -90,32 +94,32 @@ const Prefs = () => {
 					/>
 				</div>
 
-				{pushStatus?.status !== "unsupported" && pushStatus?.status !== "error" && (
+				{pushStatus && pushStatus.status !== "unsupported" && pushStatus.status !== "error" && (
 					<div className="mt-6 flex flex-col">
-						<div className="text-lg text-[var(--ion-text-color-step-150)] font-medium">Notifications</div>
-						<div className="text-sm text-[var(--ion-text-color-step-350)]">
+						<div className="text-lg text-secondary font-medium">Notifications</div>
+						<div className="text-sm text-muted">
 							Enable push notifications for important account activity.
 						</div>
 						<div className="mt-3 flex flex-col gap-3">
 							{
-								(!pushStatus || pushStatus.status === "prompt") && (
+								(pushStatus.status === "prompt") && (
 									<IonButton onClick={onEnablePush} disabled={pushBusy} size="default" style={{ maxWidth: "fit-content" }}>
 										{pushBusy ? <IonSpinner name="dots" /> : "Enable Notifications"}
 									</IonButton>
 								)
 							}
 							{
-								pushStatus?.status === "registered" && (
+								pushStatus.status === "registered" && (
 									<div className="flex items-center gap-2">
 										<span className="text-sm text-[var(--ion-color-success)]">✓ Enabled</span>
 									</div>
 								)
 							}
 							{
-								pushStatus?.status === "denied" && (
+								pushStatus.status === "denied" && (
 									<div className="flex flex-col gap-2">
 										<span className="text-sm text-[var(--ion-color-warning)]">⚠ Permission Denied</span>
-										<span className="text-xs text-[var(--ion-text-color-step-400)]">
+										<span className="text-xs text-muted">
 											To enable notifications, go to your browser or system settings and allow notifications for this site.
 										</span>
 									</div>

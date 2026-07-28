@@ -32,14 +32,14 @@ import { getCache, setCache } from '@/lib/cache';
 import { Satoshi } from '@/lib/types/units';
 import { formatSatoshi } from '@/lib/units';
 import { truncateTextMiddle } from '@/lib/format';
-import BackToolbar from '@/Layout2/BackToolbar';
 import { useAlert } from '@/lib/contexts/useAlert';
 import styles from "./styles/index.module.scss";
 import { useAppSelector } from '@/State/store/hooks';
 import { selectFavoriteSourceView } from '@/State/scoped/backups/sources/selectors';
-import { SourceType } from '@/State/scoped/common';
+import { SourceType } from '@/State/scoped/backups/sources/schema';
 import { BeaconStatusLine } from '@/Components/BeaconStatusLine';
 import { FiatDisplay } from '@/Components/FiatDisplay';
+import StackPageToolbar from '@/Layout2/StackPageToolbar';
 
 
 
@@ -103,7 +103,7 @@ const Receive = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<BackToolbar title="Receive" />
+				<StackPageToolbar title="Receive" />
 				{
 					favoriteSource?.type === SourceType.NPROFILE_SOURCE
 					&&

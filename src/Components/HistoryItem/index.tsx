@@ -3,7 +3,7 @@ import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText }
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
 import styles from "./styles/index.module.scss";
-import { usePreferredAmountUnit } from "@/lib/hooks/usePreferredAmountUnit";
+import { usePreferredAmountUnit } from "@/Hooks/usePreferredAmountUnit";
 import { formatBitcoin, formatSatoshi, satsToBtc } from "@/lib/units";
 import { FiatDisplay } from "../FiatDisplay";
 import cn from "clsx";
@@ -91,10 +91,10 @@ const HistoryItem = ({ operation, handleSelectOperation, className }: HistoryIte
 					</IonRow>
 					<IonRow style={{ marginTop: "0.3rem" }}>
 						<IonCol>
-							<IonNote className="text-low">{date}</IonNote>
+							<IonNote className="text-muted">{date}</IonNote>
 						</IonCol>
 						<IonCol size="auto">
-							<FiatDisplay sign={sign} sats={operation.amount} className="text-low" />
+							<FiatDisplay sign={sign} sats={operation.amount} className="text-muted" />
 
 						</IonCol>
 					</IonRow>

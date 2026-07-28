@@ -3,7 +3,7 @@ import { IonAvatar, IonIcon, IonLabel, IonSkeletonText } from "@ionic/react"
 import { personCircle } from "ionicons/icons";
 import { useState } from "react";
 import cn from "clsx";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { formatSatoshi } from "@/lib/units";
 import { BeaconStatusLine } from "../BeaconStatusLine";
 
@@ -21,7 +21,7 @@ export const SelectedSource = ({ source }: SelectSourceProps) => {
 					<SelectedNprofile source={source} />
 					:
 					<IonLabel >
-						<span className="text-lg text-medium truncate">{source.label || source.sourceId}</span>
+						<span className="text-lg text-secondary truncate">{source.label || source.sourceId}</span>
 					</IonLabel>
 			}
 		</>
@@ -32,11 +32,11 @@ const SelectedNprofile = ({ source }: { source: NprofileView }) => {
 	return (
 		<IonLabel className="flex flex-col">
 			<span className="flex gap-1 justify-start items-center">
-				<span className="text-lg text-medium truncate">
+				<span className="text-lg text-secondary truncate">
 					{source.label || source.beaconName || "Pub source"}
 				</span>
-				<span className="text-quiet">•</span>
-				<span className="text-base text-low">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
+				<span className="text-muted">•</span>
+				<span className="text-base text-muted">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
 			</span>
 
 			<BeaconStatusLine
@@ -59,7 +59,7 @@ export const SourceSelectOption = ({ source }: SelectSourceProps) => {
 					<NprofileSelectOption source={source} />
 					:
 					<IonLabel >
-						<span className="text-lg text-medium truncate">{source.label || source.sourceId}</span>
+						<span className="text-lg text-secondary truncate">{source.label || source.sourceId}</span>
 					</IonLabel>
 			}
 		</>
@@ -69,11 +69,11 @@ export const SourceSelectOption = ({ source }: SelectSourceProps) => {
 const NprofileSelectOption = ({ source }: { source: NprofileView }) => {
 	return (
 		<IonLabel className="flex flex-col">
-			<div className="text-lg text-medium truncate">
+			<div className="text-lg text-secondary truncate">
 				{source.label || source.beaconName || "Pub source"}
 			</div>
 
-			<div className="text-base text-low ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
+			<div className="text-base text-muted ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
 
 			<BeaconStatusLine state={source.beaconStale} />
 		</IonLabel>

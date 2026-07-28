@@ -12,7 +12,7 @@ import dLogger from "@/Api/helpers/debugLog";
 import { becameFresh, exists, isFresh, isNprofile, justAdded } from "../predicates";
 import { AppDispatch } from "@/State/store/store";
 import { runtimeActions } from "@/State/runtime/slice";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 
 
 const inflightBySource = new Map<string, Promise<[TaskResult<void>, TaskResult<void>]>>();

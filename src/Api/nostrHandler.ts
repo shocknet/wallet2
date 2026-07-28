@@ -755,6 +755,32 @@ export const getNip78Event = async (pubkey: string, relays: string[], dTag = app
 
 	return getPool().get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] });
 }
+
+export type BeaconDiscoveryResult = {
+	beaconLastSeenAtMs: number;
+	name: string;
+} | null
+export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Promise<BeaconDiscoveryResult> => {
+	const event = await getNip78Event(pubkey, relays, pubServiceTag)
+	if (!event) {
+		return null
+	}
+
+	let data;
+	try {
+		data = JSON.parse(event.content) as { type: 'service', name: string };
+	} catch {
+		return null;
+	}
+
+	return {
+		beaconLastSeenAtMs: event.created_at * 1000,
+		name: data.name
+	}
+
+}
+
+
 export const newNip78Event = (data: string, pubkey: string, dTag = appTag) => {
 	return {
 		content: data,

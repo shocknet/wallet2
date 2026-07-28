@@ -1,7 +1,6 @@
 import {
 	IonAvatar,
 	IonButton,
-	IonButtons,
 	IonCol,
 	IonGrid,
 	IonHeader,
@@ -14,14 +13,13 @@ import {
 	IonTitle,
 	IonToolbar
 } from "@ionic/react";
-import { checkmark, closeOutline, qrCodeOutline, } from "ionicons/icons";
+import { qrCodeOutline, } from "ionicons/icons";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { useEffect, useMemo, useRef, useState } from "react";
-import CopyMorphButton from "@/Components/CopyMorphButton";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectFavoriteSourceView, selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { CustomSelect } from "@/Components/CustomSelect";
 import { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
@@ -29,257 +27,10 @@ import { InputState } from "@/Pages/Send/types";
 import useDebounce from "@/Hooks/useDebounce";
 import { InputClassification, ParsedNprofileInput } from "@/lib/types/parse";
 import cn from "clsx";
-import { useQrScanner } from "@/lib/hooks/useQrScanner";
+import { useQrScanner } from "@/Hooks/useQrScanner";
 
 
 
-
-export const BackupKeysDialog = (
-	{
-		dismiss, privKey
-	}: {
-		dismiss: (data: undefined, role: "cancel" | "file" | "confirm") => void,
-		privKey: string
-	}
-) => {
-
-	const recoveryInputRef = useRef<HTMLInputElement>(null);
-
-	useEffect(() => {
-		if (recoveryInputRef.current) {
-			recoveryInputRef.current.value = privKey;
-			const event = new Event('input', { bubbles: true });
-			recoveryInputRef.current.dispatchEvent(event);
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [privKey])
-
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<IonToolbar>
-					<IonTitle>
-						<IonText className="text-high text-lg text-weight-high">
-							Backup Keys
-						</IonText>
-					</IonTitle>
-					<IonButtons slot="end">
-						<IonButton onClick={() => dismiss(undefined, "cancel")}><IonIcon icon={closeOutline} /></IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonHeader>
-
-			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium ion-text-wrap">
-					Save this key to your preferred password manager, you may use it to log in and sync across devices, or recover your node connections and settings if you get logged out.
-				</IonText>
-
-
-				<IonGrid style={{ margin: 0 }}>
-					<form
-						id="backup"
-						method="post"
-						onSubmit={(e) => e.preventDefault()}
-					>
-						<label
-							htmlFor="pm-username"
-							style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}
-						>
-							Username
-						</label>
-
-
-
-						<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
-							<IonCol style={{ flex: 1 }}>
-								<IonInput
-									fill="solid"
-									className={classNames(styles["password-input"], "filled-input")}
-									type="password"
-									readonly
-									value={privKey}
-								/>
-
-
-								<input
-									ref={recoveryInputRef}
-									id="shockwallet-nsec-p-m"
-									autoComplete="new-password"
-									type="password"
-									defaultValue=""
-									readOnly
-									style={{ display: "none" }}
-								/>
-							</IonCol>
-							<IonCol style={{ flex: 0 }}>
-								<CopyMorphButton fill="clear" value={privKey} />
-							</IonCol>
-						</IonRow>
-						<IonRow className="ion-justify-content-end">
-							<IonCol size="auto">
-								<IonButton type="submit" color="secondary">Save</IonButton>
-							</IonCol>
-						</IonRow>
-					</form>
-
-
-					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
-						<IonCol size="auto">
-							<IonButton color="secondary" onClick={() => dismiss(undefined, "file")}>
-								Download as file
-							</IonButton>
-						</IonCol>
-						<IonCol size="auto">
-							<IonButton onClick={() => dismiss(undefined, "confirm")}>
-								Done
-							</IonButton>
-						</IonCol>
-					</IonRow>
-				</IonGrid>
-
-			</div>
-		</>
-	);
-};
-
-export const DecryptFileDialog = (
-	{
-		dismiss
-	}: {
-		dismiss: (data: { passphrase: string } | null, role: "cancel" | "confirm") => void,
-	}) => {
-	const [passphrase, setPassphrase] = useState("");
-
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<IonToolbar>
-					<IonTitle>
-						<IonText className="text-high text-lg text-weight-high">
-							Decrypt backup file
-						</IonText>
-					</IonTitle>
-				</IonToolbar>
-			</IonHeader>
-
-			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium ion-text-wrap">
-					Input the passphrase for this backup file
-				</IonText>
-				<IonGrid>
-					<IonRow className="ion-margin-top" style={{ alignItems: "baseline" }}>
-						<IonCol style={{ flex: 1 }}>
-							<IonInput
-								fill="solid"
-								id="shockwallet-file-back-passphrase-entry"
-								className={classNames(styles["password-input"], "filled-input")}
-								type="password"
-								name="shockwallet-file-back-passphrase-entry"
-								value={passphrase}
-								onIonInput={e => setPassphrase(e.detail.value || "")}
-							/>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-end" style={{ gap: 12, marginTop: "2rem" }}>
-						<IonCol size="auto">
-							<IonButton fill="clear" color="medium" onClick={() => dismiss(null, "cancel")}>
-								Cancel
-							</IonButton>
-						</IonCol>
-						<IonCol size="auto">
-							<IonButton color="primary" disabled={!passphrase} onClick={() => dismiss({ passphrase }, "confirm")}>
-								Confrim
-							</IonButton>
-						</IonCol>
-					</IonRow>
-				</IonGrid>
-			</div>
-		</>
-	);
-};
-
-
-export const DownloadFileBackupDialog = ({ dismiss }: { dismiss: (data: { passphrase: string } | null, role: "cancel" | "confirm") => void }) => {
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-
-
-	const match = password.length && password === confirmPassword;
-
-	const handleConfirm = () => {
-		dismiss({ passphrase: password }, "confirm");
-	}
-
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<IonToolbar>
-					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
-							Encrypt File
-						</IonText>
-					</IonTitle>
-				</IonToolbar>
-			</IonHeader>
-
-			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium">
-					Add an encryption password to your backup file so that no unauthorized software can read it.
-				</IonText>
-				<IonGrid>
-					<IonRow className="ion-margin-top ion-nowrap ion-justify-content-center ion-align-items-center" >
-						<IonCol size="5" style={{ marginRight: "0.9rem" }}>
-							<IonInput
-								fill="solid"
-								className={classNames(styles["password-input"], "filled-input")}
-								type="password"
-								autocomplete="off"
-								value={password}
-								onIonInput={(e) => setPassword(e.detail.value || "")}
-
-							></IonInput>
-						</IonCol>
-						<IonCol size="5">
-							<IonInput
-								fill="solid"
-								className={classNames(styles["password-input"], "filled-input")}
-								type="password"
-								autocomplete="off"
-								value={confirmPassword}
-								onIonInput={(e) => setConfirmPassword(e.detail.value || "")}
-							></IonInput>
-						</IonCol>
-						<IonCol size="2">
-							<IonRow className="ion-justify-content-center">
-								<IonCol size="auto">
-									{
-										match && <IonIcon icon={checkmark} color="success" size="large" />
-									}
-
-								</IonCol>
-							</IonRow>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-justify-content-end" style={{ gap: "12px", marginTop: "2rem" }}>
-						<IonCol size="auto">
-							<IonButton fill="clear" color="medium" onClick={() => dismiss(null, "cancel")}>
-								Cancel
-							</IonButton>
-						</IonCol>
-						<IonCol size="auto">
-							<IonButton fill="clear" color="primary" disabled={!match} onClick={handleConfirm}>
-								Done
-							</IonButton>
-						</IonCol>
-					</IonRow>
-				</IonGrid>
-			</div>
-		</>
-	);
-};
 
 
 
@@ -300,7 +51,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
+						<IonText className="text-secondary text-lg text-weight-high">
 							Sweep LNURL-W to one of your sources
 						</IonText>
 					</IonTitle>
@@ -308,7 +59,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 			</IonHeader>
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
-				<IonText className="text-medium">
+				<IonText className="text-secondary">
 					Choose a source to sweep {formatSatoshi(lnurlwAmount)} sats to.
 				</IonText>
 				<IonGrid>
@@ -329,7 +80,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 											</IonAvatar>
 											<IonLabel style={{ width: "100%" }}>
 												<h2>{source.label}</h2>
-												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
+												<IonNote className="ion-text-no-wrap text-muted" style={{ display: "block" }}>
 													{source.type === SourceType.NPROFILE_SOURCE ? "Lightning.Pub Source" : "Lightning Address Source"}
 												</IonNote>
 											</IonLabel>
@@ -345,9 +96,9 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 									)
 								}}
 								renderSelected={(source) => (
-									<IonText className="text-medium">
+									<IonText className="text-secondary">
 										{source?.label || ''}
-										<IonNote className="text-low" style={{ display: 'block' }}>
+										<IonNote className="text-muted" style={{ display: 'block' }}>
 											{
 												source.type === SourceType.NPROFILE_SOURCE
 												&&
@@ -481,7 +232,7 @@ export const AddConnectionDialog = (
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>
-						<IonText className="text-medium text-lg text-weight-high">
+						<IonText className="text-secondary text-lg text-weight-high">
 							Add Node Connection
 						</IonText>
 					</IonTitle>
@@ -490,7 +241,7 @@ export const AddConnectionDialog = (
 
 			<div className={classNames(styles["wrapper"], "ion-padding")}>
 				<div className="flex flex-col">
-					<IonText className="text-low ion-text-wrap text-base">
+					<IonText className="text-muted ion-text-wrap text-base">
 						Add an nprofile associated with a Lightning.Pub instance
 					</IonText>
 					<div>

@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { FiatCurrency, IdentityDocV0 } from "./schema";
-import { bump, eqLww, mergeLww, newLww } from "../lww";
-import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/persist/scope";
-import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
+import { bump, eqLww, mergeLww, newLww } from "@/State/sync/lww";
+import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
 import type { RootState } from "@/State/store/store";
-import { selectScopedStrict } from "../../stricScopedSelector";
+import { selectScopedStrict } from "@/State/scope/stricScopedSelector";
 import { createMigrate } from "redux-persist";
+import { createEncryptedScopedStorage } from "@/storage/encryptedScopedStorage";
 
 
 export type IdentityState = {
@@ -163,14 +163,14 @@ const migrations = {
 }
 
 const persistKey = "_identity";
-export function getScopedIdentityReducer(identityPubkey: string) {
+export function getScopedIdentityReducer(identityPubkey: string, DataKey: CryptoKey) {
 	return makeScopedPersistedReducer(
 		identitySlice.reducer,
 		persistKey,
 		identityPubkey,
 		{
 			version: 2,
-			storage: IonicStorageAdapter,
+			storage: createEncryptedScopedStorage({ identityId: identityPubkey, sliceName: identitySlice.name, dataKey: DataKey }),
 			// @ts-expect-error redux-persist typing issue
 			migrate: createMigrate(migrations, { debug: false })
 		},

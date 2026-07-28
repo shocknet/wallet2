@@ -10,6 +10,7 @@ import { liveRequestsListenerSpec } from '../listeners/liveRequests/liveRequests
 import { publisherSpec } from '../listeners/publisher/publisher';
 import { pullerSpec } from '../listeners/puller/puller';
 import { pushEnrollmentSpec } from '../listeners/push/push';
+import { topicIndexSyncSpec } from '../listeners/topicIndexSync/topicIndexSync';
 
 
 
@@ -34,7 +35,8 @@ const specs = [
 	liveRequestsListenerSpec,
 	publisherSpec,
 	pullerSpec,
-	pushEnrollmentSpec
+	pushEnrollmentSpec,
+	topicIndexSyncSpec
 ]
 
 addHydrationListener(startAppListening);

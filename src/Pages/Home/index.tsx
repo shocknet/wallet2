@@ -3,6 +3,7 @@ import {
 	IonButton,
 	IonContent,
 	IonFooter,
+	IonHeader,
 	IonIcon,
 	IonPage,
 	IonRefresher,
@@ -18,14 +19,13 @@ import {
 } from "ionicons/icons";
 import { useHistory } from "react-router";
 import BalanceCard from "./BalanceCard";
-import HomeHeader from "@/Layout2/HomeHeader";
 import styles from "./styles/index.module.scss";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
 import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
 import { InputClassification } from "@/lib/types/parse";
-import { useQrScanner } from "@/lib/hooks/useQrScanner";
+import { useQrScanner } from "@/Hooks/useQrScanner";
 import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
 
@@ -35,15 +35,10 @@ import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/t
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { useAlert } from "@/lib/contexts/useAlert";
-
-import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
-import { initLocalNotifications } from "@/notifications/local/local-notifications";
-import { refreshPushRegistration } from "@/notifications/push/register";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
+import HomePageToolbar from "@/Layout2/HomePageToolbar";
 
 const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
-
-const NOTIF_PROMPT_SEEN_KEY = "notif_prompt_seen";
 
 
 const Home = () => {
@@ -145,52 +140,6 @@ const Home = () => {
 		};
 	}, []);
 
-	useIonViewDidEnter(() => {
-		const seen = localStorage.getItem(NOTIF_PROMPT_SEEN_KEY);
-		if (seen) return;
-
-		getNotificationsPermission().then((status) => {
-			if (status !== "prompt") return;
-			localStorage.setItem(NOTIF_PROMPT_SEEN_KEY, "1");
-			showAlert({
-				header: "Stay Updated",
-				message: "Get instant notifications for incoming payments and important account activity.",
-				buttons: [
-					{
-						text: "Not Now",
-						role: "cancel",
-					},
-					{
-						text: "Enable",
-						role: "confirm",
-					},
-				]
-			}).then(async ({ role }) => {
-				if (role !== "confirm") return;
-				try {
-					const perm = await requestNotificationsPermission();
-					if (perm !== "granted") {
-						console.log("[Home] Permission not granted:", perm);
-						return;
-					}
-					await refreshPushRegistration();
-					await initLocalNotifications();
-					showToast({
-						message: "Notifications enabled!",
-						color: "success",
-						duration: 2000
-					});
-				} catch (err) {
-					console.error("Failed to enable notifications", err);
-					showToast({
-						message: "Unable to enable notifications. You can try again in Settings.",
-						color: "warning",
-						duration: 4000
-					});
-				}
-			});
-		});
-	}, [showAlert, showToast]);
 
 	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
 	const [loadOperationModal, setLoadOperationModal] = useState(false);
@@ -271,9 +220,10 @@ const Home = () => {
 		<IonPage
 			className="ion-page-width"
 		>
-			<HomeHeader>
+			<IonHeader className="ion-no-border">
+				<HomePageToolbar />
 				<BalanceCard />
-			</HomeHeader>
+			</IonHeader>
 			<IonContent
 				scrollY={false}
 			>
@@ -304,13 +254,13 @@ const Home = () => {
 			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
 				<div className={styles["toolbar"]}>
 					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
+						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
 							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
 							Receive
 						</IonButton>
 					</div>
 					<div className={styles["button-container"]}>
-						<IonButton color="light" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
+						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
 							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
 							Send
 						</IonButton>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react"
+/* import { useCallback, useEffect, useRef } from "react"
 import { selectActiveSubs, selectEnabledSpends, useDispatch, useSelector } from "@/State/store/store"
 import { Subscription, SubscriptionPayment, addSubPayment, updateActiveSub } from "@/State/Slices/subscriptionsSlice"
 import { InputClassification } from "@/constants"
@@ -59,14 +59,7 @@ export const useSubscriptionsBackground = () => {
 			}
 			const invoice = await createLnurlInvoice(sats, sub.destionation);
 			const payRes = await handlePayInvoice(invoice, spendSource);
-			//const now = Date.now() / 1000
-			/* 			dispatch(setLatestOperation({
-							pub: parseNprofile(spendSource.pasteField).pubkey, operation: {
-								amount: sats, identifier: invoice, inbound: false, operationId: payRes.operation_id,
-								paidAtUnix: now, type: UserOperationType.OUTGOING_INVOICE, network_fee: payRes.network_fee, service_fee: payRes.service_fee,
-								confirmed: true, tx_hash: "", internal: false
-							}
-						})) */
+
 			const periodNumber = latestPayment ? latestPayment.periodNumber + 1 : 1
 			const periodStartUnix = latestPayment ? latestPayment.periodEndUnix : sub.subbedAtUnix
 			dispatch(addSubPayment({
@@ -150,3 +143,4 @@ export const useSubscriptionsBackground = () => {
 
 
 }
+ */

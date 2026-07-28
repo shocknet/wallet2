@@ -1,4 +1,4 @@
-import { SourceType } from "@/State/scoped/common";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { docsSelectors, metadataSelectors } from "../scoped/backups/sources/slice";
 import { RootState } from "../store/store";
 import { BEACON_STALE_OLDER_THAN } from "../scoped/backups/sources/state";

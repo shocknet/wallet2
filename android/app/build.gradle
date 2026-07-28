@@ -40,8 +40,8 @@ def getIntegerEnvVar(String key, int defaultValue) {
 
 
 android {
-    namespace "app.shockwallet"
-    compileSdk rootProject.ext.compileSdkVersion
+    namespace = "app.shockwallet"
+    compileSdk = rootProject.ext.compileSdkVersion
 
     defaultConfig {
 				applicationId getEnvVar("VITE_ANDROID_APPLICATION_ID", "app.shockwallet.my")

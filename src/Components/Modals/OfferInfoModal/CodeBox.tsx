@@ -1,7 +1,7 @@
 const CodeBox = ({ label, value }: { label: string; value: string | JSX.Element[] | null }) => (
 	<div className=" ion-padding" style={{ width: '100%' }}>
 		{
-			label && <div style={{ fontSize: '.75rem' }} className="text-low">{label}</div>
+			label && <div style={{ fontSize: '.75rem' }} className="text-muted">{label}</div>
 		}
 		<pre style={{
 			whiteSpace: 'pre-wrap',

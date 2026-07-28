@@ -267,7 +267,7 @@ const WebhookUrlBuilder = ({ rows, url, onValidityChange, forceSSL, token, chang
 	if (rawMode) {
 		return (
 			<IonList className={styles["edit-list"]} lines="none">
-				<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+				<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 					<IonLabel >Webhook URL</IonLabel>
 				</IonListHeader>
 				<IonItem>
@@ -316,7 +316,7 @@ const WebhookUrlBuilder = ({ rows, url, onValidityChange, forceSSL, token, chang
 
 	return (
 		<IonList className={styles["edit-list"]} lines="none">
-			<IonListHeader className="text-medium" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+			<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
 				<IonLabel >Webhook URL</IonLabel>
 			</IonListHeader>
 			<IonItem className="ion-margin-bottom">
@@ -337,7 +337,7 @@ const WebhookUrlBuilder = ({ rows, url, onValidityChange, forceSSL, token, chang
 							liveValidate(pieces);
 						}
 					}}
-					className="text-low"
+					className="text-muted"
 					style={{ fontWeight: "600", fontSize: "0.85rem" }}
 				>
 					Force SSL (https)

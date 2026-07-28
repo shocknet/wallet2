@@ -43,17 +43,17 @@ import { useToast } from '@/lib/contexts/useToast';
 import { InputClassification } from '@/lib/types/parse';
 import { Satoshi } from '@/lib/types/units';
 import { parseUserInputToSats } from '@/lib/units';
-import BackToolbar from '@/Layout2/BackToolbar';
 import AmountInput from '@/Components/AmountInput';
 import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
 import { OfferPriceType } from '@shocknet/clink-sdk';
-import { useQrScanner } from '@/lib/hooks/useQrScanner';
+import { useQrScanner } from '@/Hooks/useQrScanner';
 import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
 import { NprofileView, selectNprofileViews } from '@/State/scoped/backups/sources/selectors';
 import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
 import { RecipentInputHelperText } from '@/lib/jsxHelperts';
 import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
 import { SelectedSource, SourceSelectOption } from '@/Components/CustomSelect/commonSelects';
+import StackPageToolbar from '@/Layout2/StackPageToolbar';
 
 
 const hasBalance = (s: { maxWithdrawableSats?: number }) =>
@@ -411,9 +411,7 @@ const Send = () => {
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
-				<IonHeader className="ion-no-border">
-					<BackToolbar title="Send" />
-				</IonHeader>
+				<StackPageToolbar />
 			</IonHeader>
 			<IonContent className="ion-padding">
 				<IonGrid>
@@ -588,7 +586,7 @@ const Send = () => {
 					onDidDismiss={() => setPopovers({ ...popovers, reserve: false })}
 				>
 					<IonContent className="ion-padding">
-						<IonText className="text-medium">
+						<IonText className="text-secondary">
 							Lightning fees are based on the amount of sats you are
 							sending, and so you must have more sats than you amountInput.
 							To ensure high success rates and low overall fees, the node
@@ -661,9 +659,6 @@ const Send = () => {
 							Pay
 						</IonButton>
 					</IonButtons>
-
-
-
 				</IonToolbar>
 			</IonFooter>
 		</IonPage >

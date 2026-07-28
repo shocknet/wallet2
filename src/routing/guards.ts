@@ -1,4 +1,4 @@
-import { selectActiveIdentityId } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { selectAdminNprofileViews, selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
@@ -6,7 +6,7 @@ import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 export const loadedIdentityGuard: Guard = () => {
 	const boot = store.getState().appState.bootstrapped;
-	const id = selectActiveIdentityId(store.getState());
+	const id = selectActiveIdentity(store.getState())?.pubkey ?? null;
 	const ready = boot && !!id;
 	return {
 		allow: ready,

@@ -3,7 +3,6 @@ import { randomBytes } from "@noble/hashes/utils";
 import { bech32 } from 'bech32';
 import axios from "axios";
 import { decode } from "@gandlaf21/bolt11-decode";
-import { WALLET_CLIENT_KEY_STORAGE_KEY } from './Components/SanctumBox/helpers';
 import { nip19 } from 'nostr-tools'
 import { decodeBech32, OfferPointer } from '@shocknet/clink-sdk';
 const { decode: decodeNip19 } = nip19
@@ -49,7 +48,7 @@ export const options: any = {
 	very: "Very well.",
 	mine: "It's my node.",
 }
-export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY, SANCTUM_ACCESS_TOKEN_STORAGE_KEY, WALLET_CLIENT_KEY_STORAGE_KEY]
+export const ignoredStorageKeys = [DEVICE_ID_STORAGE_KEY, SANCTUM_ACCESS_TOKEN_STORAGE_KEY]
 
 function padZero(number: number) {
 	return number.toString().padStart(2, '0');
