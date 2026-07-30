@@ -250,6 +250,7 @@ function mergeLndPage(existing: LndAssetOperationsPage, incoming: LndAssetOperat
     return {
         has_more: incoming.has_more,
         next_index_offset: incoming.next_index_offset,
+        start_height: incoming.start_height ?? existing.start_height,
         operations: mergeOperations(existing.operations, incoming.operations),
     };
 }
@@ -661,6 +662,9 @@ export const AssetsAndLiab = () => {
         if (!provider?.tracked || fetchInFlightRef.current) return;
 
         const { tracked } = provider;
+        const txHasMore = tracked.incoming_tx.has_more || tracked.outgoing_tx.has_more;
+        const txIndexOffset = tracked.incoming_tx.next_index_offset ?? tracked.outgoing_tx.next_index_offset;
+        const txStartHeight = tracked.incoming_tx.start_height ?? tracked.outgoing_tx.start_height;
         const filter: LndProviderFilter = {
             pubkey,
             limit_invoices: OPERATIONS_PAGE_SIZE,
@@ -672,9 +676,11 @@ export const AssetsAndLiab = () => {
             ...(tracked.payments.has_more && tracked.payments.next_index_offset != null
                 ? { payment_index_offset: tracked.payments.next_index_offset }
                 : {}),
-            ...((tracked.incoming_tx.has_more || tracked.outgoing_tx.has_more)
-                && (tracked.incoming_tx.next_index_offset ?? tracked.outgoing_tx.next_index_offset) != null
-                ? { tx_index_offset: tracked.incoming_tx.next_index_offset ?? tracked.outgoing_tx.next_index_offset }
+            ...(txHasMore && txIndexOffset != null
+                ? { tx_index_offset: txIndexOffset }
+                : {}),
+            ...(txHasMore && txStartHeight != null
+                ? { tx_start_height: txStartHeight }
                 : {}),
         };
 
