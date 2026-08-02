@@ -58,7 +58,6 @@ export function GenerateNewKeyPage() {
 		if (recoveryInputRef.current) {
 			recoveryInputRef.current.value = generatedPair ? nip19.nsecEncode(privateKeyBytes) : "";
 			const event = new Event('input', { bubbles: true });
-			console.log("dispatching event", event);
 			recoveryInputRef.current.dispatchEvent(event);
 		}
 	}, [generatedPair, privateKeyBytes]);

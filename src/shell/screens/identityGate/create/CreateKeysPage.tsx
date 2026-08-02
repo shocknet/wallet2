@@ -1,5 +1,4 @@
 import {
-	IonBackButton,
 	IonButton,
 	IonButtons,
 	IonCard,
@@ -24,6 +23,7 @@ import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { GenerateNewKeyPage } from "./GenerateNewKeyPage";
 import { ImportNostrKeyPage } from "./ImportNostrKeyPage";
 import { enqueueBootstrapIfNoBackup } from "@/shell/pendingNav";
+import { CircledBackButton } from "@/Layout2/CircledBackButton";
 
 
 type Nip07Probe = "absent" | "unsupported" | "ready";
@@ -91,9 +91,7 @@ export function CreateKeysPage() {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonBackButton
-
-						/>
+						<CircledBackButton />
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>

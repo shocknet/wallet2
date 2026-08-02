@@ -12,13 +12,13 @@ import {
 
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
-import { IdentityGate } from "./screens/identityGate";
 import { GuardedRoute } from "@/routing/GuardedRoute";
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import FullSpinner from "@/Components/common/ui/fullSpinner";
 import { ReadyAppEffects } from "./ReadyAppEffects";
+import AddNewIdentity from "@/Pages/AddNewIdentity";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -163,7 +163,7 @@ export function ReadyApp({
 				<Route
 					exact
 					path="/profile/create"
-					component={IdentityGate}
+					component={AddNewIdentity}
 				/>
 				<Route exact path="/">
 					<Redirect to="/home" />
