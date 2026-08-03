@@ -41,6 +41,9 @@ const LinkedApp = lazy(() => import('@/Pages/LinkedApp'));
 const Offers = lazy(() => import('@/Pages/Offers'));
 const Stats = lazy(() => import("@/Pages/Stats"));
 const Management = lazy(() => import("@/Pages/Management"));
+const AmountFieldPlayground = import.meta.env.DEV
+	? lazy(() => import("@/Pages/Dev/AmountFieldPlayground"))
+	: null;
 
 
 
@@ -160,6 +163,13 @@ export function ReadyApp({
 					path="/profile"
 					component={IdentityOverviewPage}
 				/>
+				{AmountFieldPlayground ? (
+					<GuardedRoute
+						exact
+						path="/dev/amount-field"
+						component={AmountFieldPlayground}
+					/>
+				) : null}
 				<Route
 					exact
 					path="/profile/create"
