@@ -7,8 +7,19 @@ import {
 import {
 	Identity,
 	IdentityType,
-	identityTypeLabel,
 } from "@/State/identitiesRegistry/types";
+
+
+function identityTypeLabel(identityType: IdentityType): string {
+	switch (identityType) {
+		case IdentityType.LOCAL_KEY:
+			return "Local key";
+		case IdentityType.SANCTUM:
+			return "Sanctum";
+		case IdentityType.NIP07:
+			return "Browser extension";
+	}
+}
 
 function identityTypeIcon(type: IdentityType): string {
 	switch (type) {
@@ -43,7 +54,7 @@ export function IdentityTypeBadge({
 				className="text-sm"
 			/>
 			<IonLabel className="text-xs text-[var(--ion-color-primary)]">
-				{identityTypeLabel(identity)}
+				{identityTypeLabel(identity.type)}
 			</IonLabel>
 		</IonChip>
 	);

@@ -16,8 +16,9 @@ import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pendingNav";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
+import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
+
 
 export function CreateSanctumPage() {
 	const dispatch = useAppDispatch();

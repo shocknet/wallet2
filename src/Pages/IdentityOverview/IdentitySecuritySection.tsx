@@ -33,7 +33,7 @@ export function IdentitySecuritySection({ runtimeIdentity }: IdentitySecuritySec
 		}
 	}, [runtimeIdentity]);
 	return (
-		<section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
+		<section className="app-panel">
 			<h2 className="text-base font-semibold tracking-tight text-primary mb-2">
 				Security
 			</h2>

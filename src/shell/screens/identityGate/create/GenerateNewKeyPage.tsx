@@ -5,7 +5,7 @@ import { useToast } from "@/lib/contexts/useToast";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch } from "@/State/store/hooks";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pendingNav";
+import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 import { Capacitor } from "@capacitor/core";
 import {
 	IonHeader,

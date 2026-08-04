@@ -1,6 +1,6 @@
 import { selectActiveIdentity, selectTopicIndexFromRegistry } from "@/State/identitiesRegistry/slice";
 import { requestIdentityUnlock } from "@/shell/coordinator";
-import { materializePushIntentToPendingNav } from "@/shell/pendingNav";
+import { materializePushIntent } from "@/shell/pushIntent";
 import { selectPushIntent } from "@/shell/selectors";
 import { shellActions } from "@/shell/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
@@ -40,7 +40,7 @@ export function useHandleWarmPushTap() {
 		handledPushAtRef.current = pushIntent.receivedAtMs;
 
 		if (topicEntry.identityId === runtimeIdentity.pubkey) {
-			dispatch(materializePushIntentToPendingNav());
+			dispatch(materializePushIntent());
 			return;
 		}
 

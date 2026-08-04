@@ -53,7 +53,7 @@ export type NprofileView = SourceViewBase & {
 
 export type BeaconHealth = "warmingUp" | "stale" | "fresh";
 
-const computeBeaconHealth = (args: {
+export const computeBeaconHealth = (args: {
 	nowMs: number;
 	lastSeenAtMs: number;
 	probe?: { status: BeaconProbeStatus };
@@ -123,7 +123,10 @@ const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 
 const isDeleted = (d: SourceDocV0) => Boolean(d.deleted.value);
 
-
+export const selectBeaconProbeById = createSelector(
+	[beaconProbeSelectors.selectEntities, (_state: RootState, sourceId: string) => sourceId],
+	(entities, sourceId) => entities[sourceId]
+);
 
 export const selectSourceViews = createSelector(
 	[
@@ -172,6 +175,28 @@ export const selectSourceViewById = createSelector(
 		}
 	}
 )
+
+export const selectNprofileSourceViewById = createSelector(
+	[
+		docsSelectors.selectEntities,
+		metadataSelectors.selectEntities,
+		beaconProbeSelectors.selectEntities,
+		selectNowMs,
+		(_state: RootState, sourceId: string) => sourceId
+	],
+	(sourceEntities, metaEntities, beaconProbeEntities, nowMs, sourceId) => {
+		const e = sourceEntities[sourceId];
+		if (!e || e.draft.deleted.value || e.draft.type !== SourceType.NPROFILE_SOURCE) return null;
+
+		const d = e.draft;
+		return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs);
+	}
+)
+
+export const selectHealthyNprofileSourceViewById = createSelector(
+	[selectNprofileSourceViewById],
+	(view) => view?.beaconStale === "fresh" ? view : null
+);
 
 export const selectNprofileViews = createSelector(
 	[selectSourceViews],

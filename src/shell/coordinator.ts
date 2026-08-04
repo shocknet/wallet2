@@ -28,7 +28,7 @@ import type {
 import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities/errors";
 import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
-import { materializePushIntentToPendingNav } from "./pendingNav";
+import { materializePushIntent } from "./pushIntent";
 import dLogger from "@/Api/helpers/debugLog";
 import { createEphemeralIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
@@ -200,7 +200,7 @@ export const completeShellIdentityLoad = (
 		log.error("drain-pending-local-sources-failed", { error });
 	}
 
-	dispatch(materializePushIntentToPendingNav());
+	dispatch(materializePushIntent());
 	dispatch(shellActions.identitySessionCleared());
 };
 

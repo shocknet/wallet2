@@ -22,8 +22,8 @@ import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { GenerateNewKeyPage } from "./GenerateNewKeyPage";
 import { ImportNostrKeyPage } from "./ImportNostrKeyPage";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pendingNav";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
+import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 
 
 type Nip07Probe = "absent" | "unsupported" | "ready";

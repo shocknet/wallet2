@@ -13,6 +13,7 @@ import { appApi } from '../api/api';
 import { persistedAppStateReducer } from '../appState/slice';
 import { runTimeReducer } from '../runtime/slice';
 import { shellReducer } from '../../shell/slice';
+import { clinkRequestsReducer } from '../clinkRequests/slice';
 
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -34,4 +35,5 @@ export const staticReducers = combineSlices({
 	runtime: runTimeReducer,
 	[appApi.reducerPath]: appApi.reducer,
 	shell: shellReducer,
+	clinkRequests: clinkRequestsReducer,
 }).withLazyLoadedSlices<LazyLoadedSlices>();

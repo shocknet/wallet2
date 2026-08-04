@@ -5,20 +5,16 @@ import {
 	Redirect,
 	Route,
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
-import {
-	useAppSelector,
-} from "@/State/store/hooks";
-
+import { lazy } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { GuardedRoute } from "@/routing/GuardedRoute";
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
-import FullSpinner from "@/Components/common/ui/fullSpinner";
 import { ReadyAppEffects } from "./ReadyAppEffects";
 import AddNewIdentity from "@/Pages/AddNewIdentity";
+import AuthRequestsHost from "@/Components/Modals/AuthRequestsHost";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -44,12 +40,11 @@ const Management = lazy(() => import("@/Pages/Management"));
 const AmountFieldPlayground = import.meta.env.DEV
 	? lazy(() => import("@/Pages/Dev/AmountFieldPlayground"))
 	: null;
+const ClinkPlayground = import.meta.env.DEV
+	? lazy(() => import("@/Pages/Dev/ClinkPlayground"))
+	: null;
 
 
-
-const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequestModal"));
-const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
-const EditDebitModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.EditDebitModal })));
 
 
 
@@ -61,7 +56,7 @@ export function ReadyApp({
 
 	return (
 		<>
-			<ReactiveModals />
+			<AuthRequestsHost />
 			<ReadyAppEffects />
 			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
@@ -170,6 +165,13 @@ export function ReadyApp({
 						component={AmountFieldPlayground}
 					/>
 				) : null}
+				{ClinkPlayground ? (
+					<GuardedRoute
+						exact
+						path="/dev/clink"
+						component={ClinkPlayground}
+					/>
+				) : null}
 				<Route
 					exact
 					path="/profile/create"
@@ -186,35 +188,3 @@ export function ReadyApp({
 
 
 
-const ReactiveModals = () => {
-	const manageRequests = useAppSelector(state => state.modalsSlice.manageRequests);
-	const debitRequests = useAppSelector(state => state.modalsSlice.debitRequests);
-	const debitToEdit = useAppSelector(state => state.modalsSlice.editDebit);
-
-	return (
-		<>
-			{/* Modals */}
-			{
-				(manageRequests && manageRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<ManageRequestsModal />
-				</Suspense>
-			}
-			{
-				(debitRequests && debitRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<DebitRequestModal />
-				</Suspense>
-			}
-			{
-				debitToEdit
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<EditDebitModal />
-				</Suspense>
-			}
-		</>
-	)
-}

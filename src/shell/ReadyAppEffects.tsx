@@ -8,8 +8,7 @@ export const ReadyAppEffects = memo(function ReadyAppEffects() {
 	useSoftPushPermissionPrompt();
 	useWatchClipboard();
 	useHandleWarmPushTap();
-	useConsumePendingNav()
-
+	useConsumePendingNav();
 
 	return null;
 });
