@@ -51,7 +51,7 @@ export const PubSourceStatus = ({ pubkey, relays, passedBeacon }: PubSourceStatu
 					beaconData
 					&&
 					<>
-						<IonLabel>{beaconData.name}</IonLabel>
+						<IonLabel>{beaconData.data.name}</IonLabel>
 						{
 							beaconState === "stale"
 							&&

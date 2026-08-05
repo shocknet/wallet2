@@ -4,13 +4,13 @@ import { getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
 import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
-import { isAnyOf, ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
+import { ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
 import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 import { runtimeActions } from "@/State/runtime/slice";
 import { AppDispatch, RootState } from "@/State/store/store";
-import { isNprofile, justAdded } from "../predicates";
+import { nprofileJustAdded } from "../predicates";
 
 
 const STALE_TICK_MS = 0.7 * 60 * 1000;
@@ -55,7 +55,7 @@ const probeBeacon = (
 							listenerApi.dispatch(
 								sourcesActions.recordBeaconForSource({
 									sourceId: item.sourceId,
-									name: res.name,
+									data: res.data,
 									seenAtMs: res.beaconLastSeenAtMs,
 								}),
 							);
@@ -101,11 +101,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 		(add) =>
 			add({
 				predicate: (action, curr, prev) =>
-				(
-					isAnyOf(sourcesActions.applyRemoteSource, sourcesActions._createDraftDoc)(action) &&
-					isNprofile(curr, action.payload.sourceId) &&
-					justAdded(curr, prev, action.payload.sourceId)
-				),
+					nprofileJustAdded(action, curr, prev),
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
@@ -149,7 +145,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 					for (const view of views) {
 						if (!view.relays.length) continue;
-						if (nowMs - view.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN) { // Only take sources that are stale
+						if (nowMs - view.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN) { // Only take sources that are not fresh
 							toProbe.push({ sourceId: view.sourceId, lpk: view.lpk, relays: view.relays });
 						}
 					}
@@ -176,7 +172,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 					const unsub = subToBeacons(b => {
 						if (listenerApi.signal.aborted) return;
 
-						const { relayUrl, createdByPub: lpk, name, updatedAtUnix } = b;
+						const { relayUrl, createdByPub: lpk, data, updatedAtUnix } = b;
 						const seenAtMs = updatedAtUnix * 1_000;
 
 						const s = listenerApi.getState();
@@ -197,7 +193,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 							listenerApi.dispatch(
 								sourcesActions.recordBeaconForSource({
 									sourceId: m.id,
-									name,
+									data,
 									seenAtMs,
 								})
 							);
