@@ -1,32 +1,74 @@
-import { IonGrid, IonRow, IonCol, IonIcon, IonText } from "@ionic/react";
+import { IonIcon, IonText } from "@ionic/react";
 import { documentTextOutline } from "ionicons/icons";
+import cn from "clsx";
 
 interface EmptyStateProps {
-	message: string;
-	ionicon?: string
+	message?: string;
+	title?: string;
+	description?: string;
+	ionicon?: string;
+	hideIcon?: boolean;
+	variant?: "page" | "section";
+	className?: string;
 }
-const EmptyState = ({ message, ionicon }: EmptyStateProps) => (
 
-	<IonGrid className="ion-padding" style={{ height: "100%" }}>
-		<IonRow className="ion-justify-content-center ion-align-items-center" style={{ height: "100%" }}>
-			<IonCol size="12" className="ion-text-center">
+const EmptyState = ({
+	message,
+	title,
+	description,
+	ionicon,
+	hideIcon = false,
+	variant = "page",
+	className,
+}: EmptyStateProps) => {
+	const heading = title ?? message;
+	const isSection = variant === "section";
+
+	return (
+		<div
+			className={cn(
+				"flex w-full flex-col items-center justify-center text-center",
+				isSection ? "px-2 py-8" : "h-full px-4 py-10",
+				className,
+			)}
+		>
+			{!hideIcon ? (
 				<IonIcon
 					icon={ionicon || documentTextOutline}
-					size="large"
-					className="text-secondary"
-					style={{ fontSize: "4rem" }}
+					className={cn(
+						"text-faint",
+						isSection ? "text-[2.25rem]" : "text-[3.5rem]",
+					)}
+					aria-hidden
 				/>
-				<IonText className="text-secondary">
-					<h2
-						className="text-xl"
-						style={{ marginTop: "0.75rem", fontWeight: 500, lineHeight: "1.4" }}
+			) : null}
+
+			{heading ? (
+				<IonText>
+					<p
+						className={cn(
+							"m-0 max-w-[18rem] font-medium text-secondary",
+							hideIcon ? "" : isSection ? "mt-2.5" : "mt-3",
+							isSection ? "text-sm leading-5" : "text-base leading-6",
+						)}
 					>
-						{message}
-					</h2>
+						{heading}
+					</p>
 				</IonText>
-			</IonCol>
-		</IonRow>
-	</IonGrid>
-);
+			) : null}
+
+			{description ? (
+				<p
+					className={cn(
+						"m-0 mt-1.5 max-w-[18rem] text-muted",
+						isSection ? "text-xs leading-4" : "text-sm leading-5",
+					)}
+				>
+					{description}
+				</p>
+			) : null}
+		</div>
+	);
+};
 
 export default EmptyState;

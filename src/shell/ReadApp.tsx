@@ -33,16 +33,14 @@ const Contacts = lazy(() => import('@/Pages/Contacts'));
 const Invitations = lazy(() => import('@/Pages/Invitations'));
 const Notify = lazy(() => import('@/Pages/Notify'));
 const Metrics = lazy(() => import('@/Pages/Metrics'));
-const LinkedApp = lazy(() => import('@/Pages/LinkedApp'));
+const LinkedApps = lazy(() => import('@/Pages/LinkedApps'));
 const Offers = lazy(() => import('@/Pages/Offers'));
 const Stats = lazy(() => import("@/Pages/Stats"));
 const Management = lazy(() => import("@/Pages/Management"));
 const AmountFieldPlayground = import.meta.env.DEV
 	? lazy(() => import("@/Pages/Dev/AmountFieldPlayground"))
 	: null;
-const ClinkPlayground = import.meta.env.DEV
-	? lazy(() => import("@/Pages/Dev/ClinkPlayground"))
-	: null;
+const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 
 
 
@@ -144,8 +142,8 @@ export function ReadyApp({
 				<GuardedRoute
 					exact
 					path="/LApps"
-					component={LinkedApp}
-					layout={Layout}
+					component={LinkedApps}
+					guards={[atLeastOneNprofileSource]}
 				/>
 				<GuardedRoute
 					exact
@@ -165,13 +163,11 @@ export function ReadyApp({
 						component={AmountFieldPlayground}
 					/>
 				) : null}
-				{ClinkPlayground ? (
-					<GuardedRoute
-						exact
-						path="/dev/clink"
-						component={ClinkPlayground}
-					/>
-				) : null}
+				<GuardedRoute
+					exact
+					path="/dev/clink"
+					component={ClinkPlayground}
+				/>
 				<Route
 					exact
 					path="/profile/create"
