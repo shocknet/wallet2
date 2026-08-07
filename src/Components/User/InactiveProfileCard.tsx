@@ -9,6 +9,7 @@ import { truncateTextMiddle } from "@/lib/format";
 import { ProfilePicture } from "./ProfilePicture";
 import { resolveProfileDisplayName } from "./resolveProfileDisplayName";
 import { IdentityTypeBadge } from "@/Components/User/IdentityTypeBadge";
+import { useMemo } from "react";
 
 export function InactiveProfileCard({
 	identity,
@@ -19,9 +20,10 @@ export function InactiveProfileCard({
 	onClick?: () => void;
 	className?: string;
 }) {
+	const relays = useMemo(() => resolveIdentityRelays(identity), [identity]);
 	const { data: profile, isLoading } = useGetProfileQuery({
 		pubkey: identity.pubkey,
-		relays: resolveIdentityRelays(identity),
+		relays,
 	});
 
 	const displayName = resolveProfileDisplayName(profile);
@@ -41,7 +43,12 @@ export function InactiveProfileCard({
 				className,
 			].join(" ")}
 		>
-			<ProfilePicture identity={identity} size="sm" variant="flat" />
+			<ProfilePicture
+				pubkey={identity.pubkey}
+				relays={relays}
+				size="sm"
+				variant="flat"
+			/>
 
 			<div className="min-w-0 flex-1">
 				{isLoading ? (

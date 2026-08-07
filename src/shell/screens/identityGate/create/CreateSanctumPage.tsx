@@ -1,5 +1,4 @@
 import {
-	IonBackButton,
 	IonButtons,
 	IonContent,
 	IonFooter,
@@ -9,7 +8,6 @@ import {
 } from "@ionic/react";
 import { useRef } from "react";
 import type { TokensData } from "sanctum-sdk";
-import { chevronBackOutline } from "ionicons/icons";
 import { SanctumAuthWidget } from "@/Components/SanctumAuthWidget";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
@@ -18,7 +16,9 @@ import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pendingNav";
+import { CircledBackButton } from "@/Layout2/CircledBackButton";
+import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
+
 
 export function CreateSanctumPage() {
 	const dispatch = useAppDispatch();
@@ -60,7 +60,7 @@ export function CreateSanctumPage() {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonBackButton text="Back" icon={chevronBackOutline} />
+						<CircledBackButton />
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>

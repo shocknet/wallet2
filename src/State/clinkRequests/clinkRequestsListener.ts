@@ -1,0 +1,119 @@
+import { isAnyOf, ListenerEffectAPI } from "@reduxjs/toolkit";
+import { listenerKick } from "@/State/listeners/actions";
+import { nprofileBecameFresh, nprofileBecameStale, nprofileJustDeleted } from "@/State/listeners/predicates";
+import type { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
+import { selectNprofileSourceViewById, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import type { AppDispatch, RootState } from "@/State/store/store";
+import { clinkRequestsActions } from "@/State/clinkRequests/slice";
+import { SourceType } from "@/State/scoped/backups/sources/schema";
+import { selectPendingClinkRequestSession, selectPendingClinkRequestsForActiveIdentity } from "./selectors";
+
+
+
+
+
+function pruneOrphanedAClinkRequests(
+	listenerApi: ListenerEffectAPI<RootState, AppDispatch>
+): void {
+	const state = listenerApi.getState();
+	const requestsForIdentity = selectPendingClinkRequestsForActiveIdentity(state);
+
+	for (const request of requestsForIdentity) {
+		const source = selectNprofileSourceViewById(state, request.sourceId);
+
+		// remove request if its matching source has been deleted
+		if (!source) {
+			listenerApi.dispatch(clinkRequestsActions.removePendingClinkRequest({
+				requestId: request.request.request_id,
+			}));
+
+			// clear session if it was the request that was removed
+			if (selectPendingClinkRequestSession(state)?.request.request_id === request.request.request_id) {
+				listenerApi.dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
+			}
+		} else if (source.beaconStale !== "fresh") {
+			// clear session if it belongs to the now stale source
+			if (selectPendingClinkRequestSession(state)?.source.sourceId === source.sourceId) {
+				listenerApi.dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
+			}
+		}
+	}
+}
+
+
+function reconcilePendingClinkRequest(
+	listenerApi: ListenerEffectAPI<RootState, AppDispatch>,
+): void {
+	pruneOrphanedAClinkRequests(listenerApi);
+
+	const state = listenerApi.getState();
+	const session = selectPendingClinkRequestSession(state);
+
+	if (session) return;
+
+	const requests = selectPendingClinkRequestsForActiveIdentity(state);
+
+	// Prefer debits, then manages; skip entries whose source isn't claimable yet
+	const ordered = [
+		...requests.filter((request) => request.kind === "debit"),
+		...requests.filter((request) => request.kind === "manage"),
+	];
+
+	for (const next of ordered) {
+		const source = selectSourceViewById(state, next.sourceId);
+		if (
+			!source ||
+			source.type !== SourceType.NPROFILE_SOURCE ||
+			source.beaconStale !== "fresh"
+		) {
+			continue;
+		}
+
+		if (next.kind === "debit") {
+			listenerApi.dispatch(clinkRequestsActions.claimPendingClinkRequestSession({
+				kind: "debit",
+				request: next.request,
+				source,
+			}));
+			return;
+		}
+
+		listenerApi.dispatch(clinkRequestsActions.claimPendingClinkRequestSession({
+			kind: "manage",
+			request: next.request,
+			source,
+		}));
+		return;
+	}
+}
+
+
+
+export const pendingClinkRequestsListenerSpec: ListenerSpec = {
+	name: "pendingAuthRequests",
+	beforeUnload: ({ dispatch }) => {
+		dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
+	},
+	listeners: [
+		(add) =>
+			add({
+				predicate: (action, curr, prev) => (
+					isAnyOf(
+						clinkRequestsActions.enqueuePendingClinkRequest,
+						clinkRequestsActions.clearPendingClinkRequestSession,
+						listenerKick,
+					)(action)
+					||
+					nprofileBecameFresh(action, curr, prev) ||
+					nprofileBecameStale(action, curr, prev) ||
+					nprofileJustDeleted(action, curr, prev)
+				),
+				effect: async (_, listenerApi) => {
+					listenerApi.cancelActiveListeners();
+					await listenerApi.delay(15);
+
+					reconcilePendingClinkRequest(listenerApi);
+				},
+			}),
+	],
+};

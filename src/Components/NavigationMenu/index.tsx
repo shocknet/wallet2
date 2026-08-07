@@ -29,7 +29,7 @@ import {
 	starOutline,
 	swapHorizontalOutline,
 } from "ionicons/icons";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -43,6 +43,7 @@ import { exportDebugReport } from "@/lib/debugReportExport";
 import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
 import { ProfilePicture } from "@/Components/User/ProfilePicture";
 import { RuntimeIdentity } from "@/shell/types";
+import { resolveIdentityRelays } from "@/State/identitiesRegistry/types";
 
 interface AppBuildInfo {
 	appId: string;
@@ -122,6 +123,8 @@ export const NavigationMenu = memo(function NavigationMenu({
 		void setupAppBuildInfo();
 	}, []);
 
+	const relays = useMemo(() => resolveIdentityRelays(activeIdentity), [activeIdentity]);
+
 	return (
 		<>
 			<IonMenu type="overlay" contentId="main-content" side="end">
@@ -191,7 +194,8 @@ export const NavigationMenu = memo(function NavigationMenu({
 									aria-label="Open profile"
 								>
 									<ProfilePicture
-										identity={activeIdentity}
+										pubkey={activeIdentity.pubkey}
+										relays={relays}
 										size="sm"
 										variant="flat"
 										className="size-10"

@@ -1,17 +1,14 @@
 import { motion } from "framer-motion";
 import {
 	WALLET_AVATAR_HEIGHT,
-	useWalletAvatar,
 	useWalletWelcomeWordmark,
 } from "@/Assets/Images/wallet-avatar";
 
 const sizes = {
 	md: {
-		mark: "mt-0",
 		wordmark: "mt-4",
 	},
 	lg: {
-		mark: "mt-0",
 		wordmark: "mt-5",
 	},
 } as const;
@@ -26,10 +23,7 @@ export function ShockwalletHero({
 	className?: string;
 }) {
 	const dims = sizes[size];
-	const markSrc = useWalletAvatar();
 	const wordmarkSrc = useWalletWelcomeWordmark();
-	const markHeight =
-		size === "lg" ? WALLET_AVATAR_HEIGHT.hero : "clamp(2rem, 6vw, 2.75rem)";
 
 	return (
 		<motion.div
@@ -38,17 +32,6 @@ export function ShockwalletHero({
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
 		>
-			<div className={dims.mark}>
-				<img
-					src={markSrc}
-					alt=""
-					style={{
-						display: "block",
-						height: markHeight,
-						width: "auto",
-					}}
-				/>
-			</div>
 			<div className={dims.wordmark}>
 				<img
 					src={wordmarkSrc}

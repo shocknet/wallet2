@@ -1,4 +1,4 @@
-import { SATS_PER_BTC } from "./constants/units";
+import { MAX_SATS, SATS_PER_BTC } from "./constants/units";
 import { Bitcoin, MilliSatoshi, Satoshi } from "./types/units";
 
 
@@ -6,6 +6,15 @@ import { Bitcoin, MilliSatoshi, Satoshi } from "./types/units";
 
 const asBitcoin = (value: number): Bitcoin => value as Bitcoin;
 const asSatoshi = (value: number): Satoshi => value as Satoshi;
+
+
+export function satoshi(value: number): Satoshi {
+	const error = "Invalid satoshi amount";
+	if (!Number.isSafeInteger(value)) throw new Error(error);
+	if (value < 0) throw new Error(error);
+	if (value > MAX_SATS) throw new Error(error);
+	return value as Satoshi;
+}
 
 
 function btcToSats(btc: string): Satoshi {

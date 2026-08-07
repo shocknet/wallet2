@@ -22,6 +22,7 @@ export function ProfileCard({
 	variant = "flat",
 	className,
 }: ProfileCardProps) {
+	const relays = resolveIdentityRelays(identity);
 	const { data: profile, isLoading } = useGetProfileQuery({
 		pubkey: identity.pubkey,
 		relays: resolveIdentityRelays(identity),
@@ -69,7 +70,8 @@ export function ProfileCard({
 				].join(" ")}
 			>
 				<ProfilePicture
-					identity={identity}
+					pubkey={identity.pubkey}
+					relays={relays}
 					size="lg"
 					variant={elevated ? undefined : "flat"}
 				/>

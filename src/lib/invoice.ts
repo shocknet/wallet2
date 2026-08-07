@@ -29,7 +29,6 @@ export function decodeInvoice(invoice: string, expectedAmount?: Satoshi): Decode
 	const sats = msatsToSats(amountSection.value, "round");
 
 	if (expectedAmount !== undefined && sats !== expectedAmount) {
-		console.log({ expectedAmount, sats })
 		throw new Error("Amount mismatch");
 	}
 	return { amount: sats, description };

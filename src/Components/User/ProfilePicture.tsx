@@ -1,10 +1,5 @@
 import { IonSkeletonText } from "@ionic/react";
 import cn from "clsx";
-import {
-	Identity,
-	resolveIdentityRelays,
-} from "@/State/identitiesRegistry/types";
-import type { RuntimeIdentity } from "@/shell/types";
 import { useGetProfileQuery } from "@/State/api/api";
 
 const sizeClass = {
@@ -16,7 +11,8 @@ const sizeClass = {
 export type ProfilePictureSize = keyof typeof sizeClass;
 
 interface ProfilePictureProps {
-	identity: Identity | RuntimeIdentity;
+	pubkey: string;
+	relays: string[];
 	size?: ProfilePictureSize;
 	/** Flat: hairline border only — no ring glow or shadow. */
 	variant?: "default" | "flat";
@@ -28,16 +24,17 @@ function robohash(pubkey: string) {
 }
 
 export function ProfilePicture({
-	identity,
+	pubkey,
+	relays,
 	size = "md",
 	variant = "default",
 	className,
 }: ProfilePictureProps) {
 	const { data: profile, isLoading } = useGetProfileQuery({
-		pubkey: identity.pubkey,
-		relays: resolveIdentityRelays(identity),
+		pubkey,
+		relays,
 	});
-	const fallbackUrl = robohash(identity.pubkey);
+	const fallbackUrl = robohash(pubkey);
 	const pictureUrl = profile?.picture;
 
 	const isCompact = size === "sm";

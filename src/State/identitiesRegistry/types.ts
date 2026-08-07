@@ -8,17 +8,6 @@ export enum IdentityType {
 	NIP07 = "NIP07_IDENTITY"
 }
 
-export function identityTypeLabel(identity: { type: IdentityType }): string {
-	switch (identity.type) {
-		case IdentityType.LOCAL_KEY:
-			return "Local key";
-		case IdentityType.SANCTUM:
-			return "Sanctum";
-		case IdentityType.NIP07:
-			return "Browser extension";
-	}
-}
-
 
 export function resolveIdentityRelays(identity: {
 	type: IdentityType;

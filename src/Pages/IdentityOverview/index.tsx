@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-	IonBackButton,
 	IonButton,
 	IonButtons,
 	IonContent,
@@ -12,7 +11,6 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import {
-	chevronBackOutline,
 	saveOutline,
 	swapHorizontalOutline,
 } from "ionicons/icons";
@@ -33,6 +31,7 @@ import { useToast } from "@/lib/contexts/useToast";
 import { normalizeWsUrl } from "@/lib/url";
 import { ProfileCard } from "@/Components/User/ProfileCard";
 import { IdentitySecuritySection } from "./IdentitySecuritySection";
+import { CircledBackButton } from "@/Layout2/CircledBackButton";
 
 const sameSet = (a: string[], b: string[]) => {
 	if (a.length === 0 && b.length === 0) return true;
@@ -120,8 +119,7 @@ const IdentityOverviewPage = () => {
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonBackButton
-							icon={chevronBackOutline}
+						<CircledBackButton
 							defaultHref="/home"
 						/>
 					</IonButtons>
@@ -149,7 +147,7 @@ const IdentityOverviewPage = () => {
 						</div>
 					</section>
 					<IdentitySecuritySection runtimeIdentity={runtime} />
-					<section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
+					<section className="app-panel">
 						<div className="flex items-center justify-between gap-2 mb-2">
 							<h2 className="text-base font-semibold tracking-tight text-primary">
 								Backup / sync relays

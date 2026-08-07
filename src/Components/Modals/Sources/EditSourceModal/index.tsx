@@ -236,7 +236,16 @@ const Inner = ({
 						relays={original.relays}
 						passedBeacon={
 							original.beaconLastSeenAtMs !== 0
-								? { beaconLastSeenAtMs: original.beaconLastSeenAtMs, name: original.beaconName ?? "" }
+								? {
+									beaconLastSeenAtMs: original.beaconLastSeenAtMs,
+									data: {
+										type: "service",
+										name: original.beaconName ?? "",
+										avatarUrl: original.beaconAvatarUrl,
+										fees: original.beaconFees,
+										nextRelay: original.beaconNextRelay,
+									},
+								}
 								: undefined
 						}
 					/>

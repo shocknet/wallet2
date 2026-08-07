@@ -4,10 +4,13 @@ import classNames from "classnames";
 import { useRef, useState } from "react";
 import useClickOutside from "../../../Hooks/useClickOutside";
 import { Interval } from "../../../Pages/Automation";
-import { WalletIntervalEnum } from "../../Modals/DebitRequestModal/helpers";
 import { SourceTrustLevel } from "../../../globalTypes";
 
-
+enum WalletIntervalEnum {
+	DAY = "Days",
+	WEEK = "Weeks",
+	MONTH = "Months",
+}
 interface Props<T> {
 	setState: (data: T) => void;
 	otherOptions: T[];

@@ -5,20 +5,16 @@ import {
 	Redirect,
 	Route,
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
-import {
-	useAppSelector,
-} from "@/State/store/hooks";
-
+import { lazy } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
-import { IdentityGate } from "./screens/identityGate";
 import { GuardedRoute } from "@/routing/GuardedRoute";
 import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
-import FullSpinner from "@/Components/common/ui/fullSpinner";
 import { ReadyAppEffects } from "./ReadyAppEffects";
+import AddNewIdentity from "@/Pages/AddNewIdentity";
+import AuthRequestsHost from "@/Components/Modals/AuthRequestsHost";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -37,16 +33,16 @@ const Contacts = lazy(() => import('@/Pages/Contacts'));
 const Invitations = lazy(() => import('@/Pages/Invitations'));
 const Notify = lazy(() => import('@/Pages/Notify'));
 const Metrics = lazy(() => import('@/Pages/Metrics'));
-const LinkedApp = lazy(() => import('@/Pages/LinkedApp'));
+const LinkedApps = lazy(() => import('@/Pages/LinkedApps'));
 const Offers = lazy(() => import('@/Pages/Offers'));
 const Stats = lazy(() => import("@/Pages/Stats"));
 const Management = lazy(() => import("@/Pages/Management"));
+const AmountFieldPlayground = import.meta.env.DEV
+	? lazy(() => import("@/Pages/Dev/AmountFieldPlayground"))
+	: null;
+const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 
 
-
-const ManageRequestsModal = lazy(() => import("@/Components/Modals/ManageRequestModal"));
-const DebitRequestModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.DebitRequestModal })));
-const EditDebitModal = lazy(() => import("@/Components/Modals/DebitRequestModal").then(mod => ({ default: mod.EditDebitModal })));
 
 
 
@@ -58,7 +54,7 @@ export function ReadyApp({
 
 	return (
 		<>
-			<ReactiveModals />
+			<AuthRequestsHost />
 			<ReadyAppEffects />
 			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
@@ -146,8 +142,8 @@ export function ReadyApp({
 				<GuardedRoute
 					exact
 					path="/LApps"
-					component={LinkedApp}
-					layout={Layout}
+					component={LinkedApps}
+					guards={[atLeastOneNprofileSource]}
 				/>
 				<GuardedRoute
 					exact
@@ -160,10 +156,22 @@ export function ReadyApp({
 					path="/profile"
 					component={IdentityOverviewPage}
 				/>
+				{AmountFieldPlayground ? (
+					<GuardedRoute
+						exact
+						path="/dev/amount-field"
+						component={AmountFieldPlayground}
+					/>
+				) : null}
+				<GuardedRoute
+					exact
+					path="/dev/clink"
+					component={ClinkPlayground}
+				/>
 				<Route
 					exact
 					path="/profile/create"
-					component={IdentityGate}
+					component={AddNewIdentity}
 				/>
 				<Route exact path="/">
 					<Redirect to="/home" />
@@ -176,35 +184,3 @@ export function ReadyApp({
 
 
 
-const ReactiveModals = () => {
-	const manageRequests = useAppSelector(state => state.modalsSlice.manageRequests);
-	const debitRequests = useAppSelector(state => state.modalsSlice.debitRequests);
-	const debitToEdit = useAppSelector(state => state.modalsSlice.editDebit);
-
-	return (
-		<>
-			{/* Modals */}
-			{
-				(manageRequests && manageRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<ManageRequestsModal />
-				</Suspense>
-			}
-			{
-				(debitRequests && debitRequests.length > 0)
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<DebitRequestModal />
-				</Suspense>
-			}
-			{
-				debitToEdit
-				&&
-				<Suspense fallback={<FullSpinner />}>
-					<EditDebitModal />
-				</Suspense>
-			}
-		</>
-	)
-}

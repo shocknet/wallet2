@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+	.app-panel {
+		@apply rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4;
+	}
+}

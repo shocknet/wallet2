@@ -4,7 +4,6 @@ import CreateBridgeHttpClient, { BridgeHttpClient } from "./http"
 
 export default class Handler {
 	constructor(bridgeUrl: string, nostrHeader: string) {
-		console.log(bridgeUrl)
 		this.bridgeHttp = CreateBridgeHttpClient(bridgeUrl, nostrHeader);
 	}
 	bridgeHttp: BridgeHttpClient;

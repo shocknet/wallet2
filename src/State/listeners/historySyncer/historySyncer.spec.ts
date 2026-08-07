@@ -351,7 +351,7 @@ describe("historySyncer", () => {
 		// make first source non stale before loading identity
 		store.dispatch(sourcesActions.recordBeaconForSource({
 			sourceId: sources[0].id,
-			name: "source1-beacon",
+			data: { type: "service", name: "source1-beacon" },
 			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 3000
 		}));
 
@@ -361,7 +361,7 @@ describe("historySyncer", () => {
 		// non stale => non stale
 		store.dispatch(sourcesActions.recordBeaconForSource({
 			sourceId: sources[0].id,
-			name: "source1-beacon",
+			data: { type: "service", name: "source1-beacon" },
 			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 4000
 		}));
 
@@ -369,7 +369,7 @@ describe("historySyncer", () => {
 		// stale => non stale
 		store.dispatch(sourcesActions.recordBeaconForSource({
 			sourceId: sources[1].id,
-			name: "source2-beacon",
+			data: { type: "service", name: "source2-beacon" },
 			seenAtMs: artificalNowMs - BEACON_STALE_OLDER_THAN + 4000
 		}));
 

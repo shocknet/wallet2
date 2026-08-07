@@ -40,6 +40,7 @@ export function CustomSelect<T>({
 	label,
 	getIndex,
 	placeholder = 'Select...',
+	className = 'w-full',
 }: GenericSelectProps<T>) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -49,7 +50,7 @@ export function CustomSelect<T>({
 	};
 
 	return (
-		<div className="w-full">
+		<div className={className}>
 
 			{/* Select looking input to show the selected value and also trigger the select modal */}
 			<IonItem
@@ -62,7 +63,7 @@ export function CustomSelect<T>({
 					[--background:var(--ion-color-surface)]
 					[--border-color:var(--ion-background-color-step-500, gray)]
 					border-b
-					border-b-[var(--ion-background-color-step-500)]
+					border-b-[gray]
 					min-h-14
 				"
 			>

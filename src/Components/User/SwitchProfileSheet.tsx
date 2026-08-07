@@ -112,7 +112,7 @@ export function SwitchProfileSheet({
 			breakpoints={[0, 0.92, 1]}
 			expandToScroll={false}
 			handle
-			className="inactive-profile-sheet"
+			className="app-sheet-modal"
 		>
 			{selected ? (
 				<>

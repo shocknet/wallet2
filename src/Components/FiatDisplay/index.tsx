@@ -40,8 +40,8 @@ export const FiatDisplay = ({ sats, sign, className }: FiatDisplayProps) => {
 	if (!fiatAmount) return null;
 
 	return (
-		<IonNote className={cn("text-secondary", className)}>
-			{sign && <span>{sign}</span>}
+		<IonNote className={cn("text-muted text-xs", className)}>
+			{sign && <span className="pr-0.5">{sign}</span>}
 			{fiatAmount}
 		</IonNote>
 

@@ -112,7 +112,7 @@ describe("beaconWatcher", () => {
 
 			fetchBeaconDiscoveryMock.mockResolvedValue({
 				beaconLastSeenAtMs: 20_000,
-				name: "beacon",
+				data: { type: "service", name: "beacon" },
 			});
 
 			const [source] = generateSources(1);
@@ -148,11 +148,21 @@ describe("beaconWatcher", () => {
 			})
 
 			for (const src of sources) {
-				__emitBeacon?.({ createdByPub: src.lpk, name: "beacon", updatedAtUnix: 1_000, relayUrl: TEST_RELAY_URL });
+				__emitBeacon?.({
+					createdByPub: src.lpk,
+					updatedAtUnix: 1_000,
+					relayUrl: TEST_RELAY_URL,
+					data: { type: "service", name: "beacon" },
+				});
 			}
 
 			// one emit should update all sources of lpk "knownlpk"
-			__emitBeacon?.({ createdByPub: knownLpkSources[0].lpk, name: "known-lpk-beacon", updatedAtUnix: 2_000, relayUrl: TEST_RELAY_URL });
+			__emitBeacon?.({
+				createdByPub: knownLpkSources[0].lpk,
+				updatedAtUnix: 2_000,
+				relayUrl: TEST_RELAY_URL,
+				data: { type: "service", name: "known-lpk-beacon" },
+			});
 
 			await vi.waitFor(() => {
 				if (vi.mocked(getNostrClient).mock.calls.length !== 6) throw new Error("getNostrClient not called")
