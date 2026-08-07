@@ -687,12 +687,12 @@ ion-modal.wallet-modal {
 
 }
 
-ion-modal.inactive-profile-sheet {
+ion-modal.app-sheet-modal {
 	--border-radius: 16px 16px 0 0;
 	--background: var(--app-background);
 }
 
-ion-modal.inactive-profile-sheet ion-content {
+ion-modal.app-sheet-modal ion-content {
 	--background: var(--app-background);
 }
 
