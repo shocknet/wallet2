@@ -698,7 +698,6 @@ ion-modal.app-sheet-modal ion-content {
 
 
 
-
 ion-spinner {
 	width: 60px;
 	height: 60px;
@@ -795,14 +794,8 @@ ion-grid {
 
 
 .code-string {
-	font-size: 0.9rem;
-	color: var(--app-text-muted);
-	white-space: pre-wrap;
-	word-break: break-all;
 
 	font-family: JetBrains Mono, monospace;
-	padding: '8px';
-	margin: 0;
 }
 
 
