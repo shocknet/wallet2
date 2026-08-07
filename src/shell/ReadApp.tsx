@@ -37,9 +37,7 @@ const LinkedApps = lazy(() => import('@/Pages/LinkedApps'));
 const Offers = lazy(() => import('@/Pages/Offers'));
 const Stats = lazy(() => import("@/Pages/Stats"));
 const Management = lazy(() => import("@/Pages/Management"));
-const AmountFieldPlayground = import.meta.env.DEV
-	? lazy(() => import("@/Pages/Dev/AmountFieldPlayground"))
-	: null;
+const AmountFieldPlayground = lazy(() => import("@/Pages/Dev/AmountFieldPlayground"));
 const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 
 
@@ -156,13 +154,11 @@ export function ReadyApp({
 					path="/profile"
 					component={IdentityOverviewPage}
 				/>
-				{AmountFieldPlayground ? (
-					<GuardedRoute
-						exact
-						path="/dev/amount-field"
-						component={AmountFieldPlayground}
-					/>
-				) : null}
+				<GuardedRoute
+					exact
+					path="/dev/amount-field"
+					component={AmountFieldPlayground}
+				/>
 				<GuardedRoute
 					exact
 					path="/dev/clink"
