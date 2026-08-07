@@ -3,15 +3,16 @@ import { chevronBackOutline } from 'ionicons/icons';
 
 interface BackHeaderProps {
 	title?: string;
+	backHref?: string;
 }
 
-const MetricsSubPageToolbar: React.FC<BackHeaderProps> = ({ title }: BackHeaderProps) => {
+const MetricsSubPageToolbar: React.FC<BackHeaderProps> = ({ title, backHref = "/metrics" }: BackHeaderProps) => {
 
 	return (
 
 		<IonToolbar>
 			<IonButtons slot="start">
-				<IonButton routerLink="/metrics" routerDirection="back">
+				<IonButton routerLink={backHref} routerDirection="back">
 					<IonIcon icon={chevronBackOutline} />
 				</IonButton>
 			</IonButtons>
