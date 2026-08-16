@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import { identityLoaded } from "@/State/listeners/actions";
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
-import { IdentityType, RuntimeIdentityKeys } from "@/State/identitiesRegistry/types";
+import { IdentityType } from "@/State/identitiesRegistry/types";
 import { identitySlice } from "@/State/scoped/backups/identity/slice";
 import { sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/slice";
 import { topicIndexSyncSpec } from "./topicIndexSync";
 import { createTestSourceDoc } from "@tests/support/sourcesHelpers";
+import type { Satoshi } from "@/lib/types/units";
+import { RuntimeIdentityKeys } from "@/shell/types";
 
 const runtimeIdentity: RuntimeIdentityKeys = {
 	type: IdentityType.LOCAL_KEY,
@@ -46,7 +48,7 @@ describe("topicIndexSync listener", () => {
 		store.dispatch(identityLoaded({ identity: runtimeIdentity }));
 	}
 
-	it("indexes topic id when setTopicId fires for the active identity", () => {
+	it("indexes topic id when applyUserInfo fires with topicId for the active identity", () => {
 		const store = makeStore();
 		const sourceId = "source-1";
 		const topicId = "topic-1";
@@ -56,7 +58,15 @@ describe("topicIndexSync listener", () => {
 			sourceId,
 			draft: createTestSourceDoc(runtimeIdentity.pubkey, sourceId),
 		}));
-		store.dispatch(sourcesActions.setTopicId({ sourceId, topicId }));
+		store.dispatch(sourcesActions.applyUserInfo({
+			sourceId,
+			balance: 0 as Satoshi,
+			maxWithdrawable: 0 as Satoshi,
+			ndebit: "ndebit",
+			noffer: "noffer",
+			nmanage: "nmanage",
+			topicId,
+		}));
 
 		expect(store.getState().identitiesRegistry.topicIndexById[topicId]).toEqual({
 			identityId: runtimeIdentity.pubkey,
@@ -74,7 +84,15 @@ describe("topicIndexSync listener", () => {
 			sourceId,
 			draft: createTestSourceDoc(runtimeIdentity.pubkey, sourceId),
 		}));
-		store.dispatch(sourcesActions.setTopicId({ sourceId, topicId }));
+		store.dispatch(sourcesActions.applyUserInfo({
+			sourceId,
+			balance: 0 as Satoshi,
+			maxWithdrawable: 0 as Satoshi,
+			ndebit: "ndebit",
+			noffer: "noffer",
+			nmanage: "nmanage",
+			topicId,
+		}));
 
 		expect(store.getState().identitiesRegistry.topicIndexById[topicId]).toBeDefined();
 

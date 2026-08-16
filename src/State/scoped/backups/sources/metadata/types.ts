@@ -18,6 +18,8 @@ export type MetaForNprofile = {
 	maxWithdrable: Satoshi;
 	vanityName?: string;
 	ndebit?: string;
+	noffer?: string;
+	nmanage?: string;
 };
 
 

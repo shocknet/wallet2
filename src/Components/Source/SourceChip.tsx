@@ -1,11 +1,11 @@
 import { IonButton } from "@ionic/react";
 import cn from "clsx";
-import { Avatar } from "@/Components/Avatar";
+import { SourceAvatar } from "@/Components/Source/SourceAvatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 
 export type SourceChipProps = {
-	source: NprofileView;
+	source: SourceView;
 	onClick: () => void;
 	className?: string;
 };
@@ -31,12 +31,7 @@ export function SourceChip({ source, onClick, className }: SourceChipProps) {
 			)}
 		>
 			<span className="inline-flex max-w-full min-w-0 items-center gap-2 text-left">
-				<Avatar
-					id={source.sourceId}
-					avatarUrl={source.beaconAvatarUrl}
-					beacon={source.beaconStale}
-					size="sm"
-				/>
+				<SourceAvatar source={source} size="sm" />
 				<span className="min-w-0 truncate text-sm font-semibold tracking-tight text-primary">
 					{label}
 				</span>

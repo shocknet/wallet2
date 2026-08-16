@@ -53,6 +53,8 @@ export type NprofileView = SourceViewBase & {
 	adminToken: string | null;
 	vanityName?: string;
 	ndebit?: string;
+	noffer?: string;
+	nmanage?: string;
 };
 
 export type BeaconHealth = "warmingUp" | "stale" | "fresh";
@@ -96,6 +98,8 @@ const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata, probe: Be
 		maxWithdrawableSats: m.maxWithdrable,
 		isNDebitDiscoverable: d.is_ndebit_discoverable.value,
 		ndebit: m.ndebit,
+		noffer: m.noffer,
+		nmanage: m.nmanage,
 		vanityName: m.vanityName,
 		bridgeUrl: d.bridgeUrl.value,
 		beaconStale: computeBeaconHealth({

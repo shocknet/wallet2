@@ -99,6 +99,8 @@ describe("historySyncer", () => {
 			GetUserInfo: vi.fn().mockResolvedValue({
 				status: "OK",
 				ndebit: "ndebit-string",
+				noffer: "noffer1abc",
+				nmanage: "nmanage1abc",
 				balance: 40,
 				max_withdrawable: 30
 			}),
@@ -112,7 +114,7 @@ describe("historySyncer", () => {
 		store.dispatch(historyFetchSourceRequested({ sourceId: source.id, deferred }));
 
 		await vi.waitFor(() => {
-			if (getNostrClientMock.mock.calls.length === 0) throw new Error
+			if (getNostrClientMock.mock.calls.length === 0) throw new Error("getNostrClient not called")
 		})
 
 		expect(getNostrClientMock).toHaveBeenCalledTimes(2);
@@ -123,6 +125,9 @@ describe("historySyncer", () => {
 
 		expect(mAfter.balance).toEqual(40);
 		expect(mAfter.maxWithdrable).toEqual(30);
+		expect(mAfter.ndebit).toEqual("ndebit-string");
+		expect(mAfter.noffer).toEqual("noffer1abc");
+		expect(mAfter.nmanage).toEqual("nmanage1abc");
 	});
 
 

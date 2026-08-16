@@ -77,7 +77,7 @@ export function ReadyApp({
 					path="/Receive"
 					component={Receive}
 
-					guards={[atLeastOneSource]}
+
 				/>
 				<GuardedRoute
 					exact
@@ -141,7 +141,7 @@ export function ReadyApp({
 					exact
 					path="/LApps"
 					component={LinkedApps}
-					guards={[atLeastOneNprofileSource]}
+
 				/>
 				<GuardedRoute
 					exact

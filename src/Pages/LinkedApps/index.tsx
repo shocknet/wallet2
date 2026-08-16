@@ -2,23 +2,26 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	IonContent,
 	IonHeader,
+	IonIcon,
 	IonLabel,
 	IonPage,
+	IonPopover,
 	IonRefresher,
 	IonRefresherContent,
 	IonSegment,
 	IonSegmentButton,
 	IonSpinner,
-	IonText,
 	IonToggle,
 	type RefresherEventDetail,
 } from "@ionic/react";
+import { informationCircleOutline, walletOutline } from "ionicons/icons";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { DebitAuthItem } from "@/Components/Debit/DebitAuthItem";
 import EditDebitModal from "@/Components/Modals/EditDebitModal";
-import { SourceIdentityStrip } from "@/Components/Source/SourceIdentityStrip";
+import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
+import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import { SourceSelectSheet } from "@/Components/Source/SourceSelectSheet";
-import EmptyState from "@/Components/common/ui/emptyState";
+import EmptyState from "@/Components/common/ui/EmptyState";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 import { getDeviceId } from "@/constants";
 import { truncateTextMiddle } from "@/lib/format";
@@ -27,123 +30,148 @@ import { useGetDebitAuthorizationsQuery } from "@/State/api/api";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import {
 	type NprofileView,
-	selectHealthyNprofileViews,
+	selectNprofileViews,
 } from "@/State/scoped/backups/sources/selectors";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 
 type LinkedAppsTab = "approved" | "banned";
 
-function pickInitialSource(
+function pickDefaultLinkedAppsSource(
 	sources: NprofileView[],
-	favoriteSourceId: string | null | undefined,
-): NprofileView | null {
-	if (sources.length === 0) return null;
+	favoriteSourceId: string | null,
+): NprofileView {
 	const favorite = sources.find((s) => s.sourceId === favoriteSourceId);
-	return favorite ?? sources[0];
+	if (favorite) return favorite;
+	return sources[0];
 }
 
 export default function LinkedApps() {
-	const nprofiles = useAppSelector(selectHealthyNprofileViews);
-	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-
-	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(
-		() => pickInitialSource(nprofiles, favoriteSourceId)?.sourceId ?? null,
-	);
-	const [sheetOpen, setSheetOpen] = useState(false);
-
-	const selectedSource = useMemo(() => {
-		const stillThere = nprofiles.find((s) => s.sourceId === selectedSourceId);
-		if (stillThere) return stillThere;
-		return pickInitialSource(nprofiles, favoriteSourceId);
-	}, [nprofiles, selectedSourceId, favoriteSourceId]);
-
-	const sourceReady = selectedSource?.beaconStale === "fresh";
-	const { refetch } = useGetDebitAuthorizationsQuery(
-		{ sourceId: selectedSource?.sourceId ?? "" },
-		{ skip: !selectedSource || !sourceReady },
-	);
-
-	const handleRefresh = useCallback(
-		async (event: CustomEvent<RefresherEventDetail>) => {
-			try {
-				if (selectedSource && sourceReady) {
-					await refetch();
-				}
-			} finally {
-				event.detail.complete();
-			}
-		},
-		[refetch, selectedSource, sourceReady],
-	);
+	const nprofiles = useAppSelector(selectNprofileViews);
 
 	return (
 		<IonPage className="ion-page-width">
-			<IonHeader className="ion-no-border">
-				<RootPageToolbar title="Linked Apps" />
-			</IonHeader>
-
-			<IonContent className="ion-padding">
-				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-					<IonRefresherContent />
-				</IonRefresher>
-
-				{selectedSource ? (
-					<div className="mx-auto flex w-full max-w-md flex-col pb-10 pt-1">
-						<section className="overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--app-surface-muted)_45%,transparent)]">
-							<div className="px-4 pt-3">
-								<p className="m-0 text-xs font-medium uppercase tracking-wide text-muted">
-									Selected source
-								</p>
-							</div>
-							<SourceIdentityStrip
-								source={selectedSource}
-								onClick={() => setSheetOpen(true)}
-							/>
-							<div className="px-4 py-3">
-								<NdebitShare source={selectedSource} />
-							</div>
-						</section>
-
-						<section className="mt-8 flex min-h-[40%] flex-1 flex-col pt-6">
-							<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-								Linked apps
-							</p>
-							<LinkedAppsList source={selectedSource} />
-						</section>
-					</div>
-				) : (
-					<div className="flex h-[80%] w-full items-center justify-center">
-						<EmptyState
-							title="No Pub sources"
-							description="Add a Pub source to manage linked apps and debit access."
-						/>
-					</div>
-				)}
-
-				<SourceSelectSheet
-					isOpen={sheetOpen}
-					onDidDismiss={() => setSheetOpen(false)}
-					sources={nprofiles}
-					selectedSourceId={selectedSource?.sourceId ?? null}
-					onSelect={(source) => setSelectedSourceId(source.sourceId)}
-					title="Select source"
-				/>
-			</IonContent>
+			{nprofiles.length === 0 ? (
+				<LinkedAppsEmpty />
+			) : (
+				<LinkedAppsSourceGate sources={nprofiles} />
+			)}
 		</IonPage>
 	);
 }
 
+function LinkedAppsEmpty() {
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<RootPageToolbar title="Linked Apps" />
+			</IonHeader>
+			<IonContent className="ion-padding">
+				<EmptyState
+					title="No Pub sources"
+					description="Add a Pub source to manage its linked apps and debit access."
+					ionicon={walletOutline}
+				/>
+			</IonContent>
+		</>
+	);
+}
+
+function LinkedAppsSourceGate({ sources }: { sources: NprofileView[] }) {
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+	const [selectedSourceId, setSelectedSourceId] = useState(
+		() => pickDefaultLinkedAppsSource(sources, favoriteSourceId).sourceId,
+	);
+	const [sheetOpen, setSheetOpen] = useState(false);
+
+	useEffect(() => {
+		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
+			setSelectedSourceId(
+				pickDefaultLinkedAppsSource(sources, favoriteSourceId).sourceId,
+			);
+		}
+	}, [sources, selectedSourceId, favoriteSourceId]);
+
+	const selectedSource = useMemo(() => {
+		return sources.find((s) => s.sourceId === selectedSourceId) ??
+			pickDefaultLinkedAppsSource(sources, favoriteSourceId);
+	}, [sources, selectedSourceId, favoriteSourceId]);
+
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<RootPageToolbar title="Linked Apps" />
+			</IonHeader>
+			<IonContent className="ion-padding">
+				<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
+					<SourceSelectionView
+						source={selectedSource}
+						onClick={() => setSheetOpen(true)}
+						showBalance={false}
+					/>
+					<SourceReachabilityHint source={selectedSource} />
+					<LinkedAppsStage
+						key={selectedSource.sourceId}
+						source={selectedSource}
+					/>
+				</div>
+
+				<SourceSelectSheet
+					isOpen={sheetOpen}
+					onDidDismiss={() => setSheetOpen(false)}
+					selectedSourceId={selectedSourceId}
+					onSelect={(source) => setSelectedSourceId(source.sourceId)}
+					sources={sources}
+					title="Select source"
+					showBalance={false}
+				/>
+			</IonContent>
+		</>
+	);
+}
+
+
+function LinkedAppsStage({ source }: { source: NprofileView }) {
+	const { refetch } = useGetDebitAuthorizationsQuery({
+		sourceId: source.sourceId,
+	});
+
+	const handleRefresh = useCallback(
+		async (event: CustomEvent<RefresherEventDetail>) => {
+			try {
+				await refetch();
+			} finally {
+				event.detail.complete();
+			}
+		},
+		[refetch],
+	);
+
+	return (
+		<>
+			<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+				<IonRefresherContent />
+			</IonRefresher>
+
+			<div className="flex flex-1 flex-col gap-6">
+				<NdebitShare source={source} />
+
+				<section className="flex min-h-[40%] flex-1 flex-col">
+					<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
+						Linked apps
+					</p>
+					<LinkedAppsList source={source} />
+				</section>
+			</div>
+		</>
+	);
+}
 
 function NdebitShare({ source }: { source: NprofileView }) {
 	const dispatch = useAppDispatch();
 	const ndebit = source.ndebit?.trim() || "";
 	const vanityName = source.vanityName?.trim() || "";
-	const [expanded, setExpanded] = useState(false);
-
-	useEffect(() => {
-		setExpanded(false);
-	}, [source.sourceId, ndebit]);
+	const discoverInfoId = `ndebit-discover-${source.sourceId}`;
 
 	function setDiscoverable(checked: boolean) {
 		dispatch(
@@ -156,79 +184,80 @@ function NdebitShare({ source }: { source: NprofileView }) {
 	}
 
 	return (
-		<div>
-			<p className="m-0 text-xs font-medium text-faint">Debit string</p>
-			{ndebit ? (
-				<div className="mt-1.5 flex items-start gap-1">
-					<button
-						type="button"
-						onClick={() => setExpanded((v) => !v)}
-						aria-expanded={expanded}
-						aria-label={
-							expanded
-								? "Collapse debit string"
-								: "Expand debit string"
-						}
-						className="
-							min-w-0 flex-1 rounded-md border-0 bg-transparent p-0 text-left
-							font-mono text-sm leading-5 text-primary
-							transition-colors hover:text-[var(--ion-color-primary)]
-						"
-					>
-						{expanded ? (
-							<span className="break-all code-string">{ndebit}</span>
-						) : (
-							<span className="block truncate">
-								{truncateTextMiddle(ndebit, 18, 14, "…")}
-							</span>
-						)}
-						<span className="mt-1 block font-sans text-[0.7rem] font-medium text-faint">
-							{expanded ? "Tap to collapse" : "Tap to expand"}
+		<section
+			className="
+				flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl
+				bg-[var(--app-surface)] px-3 py-2 wallet-box-shadow
+			"
+		>
+			<div className="flex min-w-0 flex-1 items-center gap-1">
+				{ndebit ? (
+					<>
+						<span className="min-w-0 flex-1 truncate font-mono text-sm text-primary">
+							{truncateTextMiddle(ndebit, 18, 14, "…")}
 						</span>
-					</button>
-					<CopyMorphButton
-						value={ndebit}
-						fill="clear"
-						size="small"
-						shape="round"
-						className="m-0 shrink-0"
-						aria-label="Copy debit string"
-					/>
-				</div>
-			) : (
-				<p className="m-0 mt-1.5 text-sm text-muted">
-					Debit string not available yet for this source.
-				</p>
-			)}
+						<CopyMorphButton
+							value={ndebit}
+							fill="clear"
+							size="small"
+							shape="round"
+							className="m-0 shrink-0"
+							aria-label="Copy debit string"
+						/>
+					</>
+				) : (
+					<span className="truncate text-sm text-muted">
+						Debit string unavailable
+					</span>
+				)}
+			</div>
 
 			{vanityName ? (
-				<div className="mt-3">
+				<div className="ml-auto flex shrink-0 items-center gap-1.5">
 					<IonToggle
 						checked={source.isNDebitDiscoverable}
 						onIonChange={(e) => setDiscoverable(e.detail.checked)}
-						className="w-full"
+						className="m-0 min-h-0"
+						aria-label="Publicly discoverable"
 					>
-						<div className="pr-3">
-							<IonText className="block text-sm font-medium text-primary">
-								Make publicly discoverable
-							</IonText>
-							<p className="m-0 mt-0.5 text-xs text-muted">
-								Via Lightning Address ({vanityName})
-							</p>
-						</div>
+						<span className="whitespace-nowrap text-sm font-medium text-primary">
+							Discoverable
+						</span>
 					</IonToggle>
+					<button
+						type="button"
+						id={discoverInfoId}
+						aria-label="About public discoverability"
+						className="inline-flex shrink-0 appearance-none border-0 bg-transparent p-0 text-muted"
+					>
+						<IonIcon
+							icon={informationCircleOutline}
+							className="text-lg"
+							aria-hidden
+						/>
+					</button>
+					<IonPopover
+						trigger={discoverInfoId}
+						triggerAction="click"
+						side="bottom"
+						alignment="end"
+					>
+						<IonContent className="ion-padding">
+							<p className="m-0  text-sm leading-snug text-primary">
+								When on, apps can find this debit via your Lightning address.
+							</p>
+							<p className="m-0 text-wrap max-w-[16rem] text-xs leading-snug text-muted">
+								{vanityName}
+							</p>
+						</IonContent>
+					</IonPopover>
 				</div>
 			) : null}
-		</div>
+		</section>
 	);
 }
 
-function LinkedAppsList({
-	source,
-}: {
-	source: NprofileView;
-}) {
-	const sourceReady = source.beaconStale === "fresh";
+function LinkedAppsList({ source }: { source: NprofileView }) {
 	const [tab, setTab] = useState<LinkedAppsTab>("approved");
 	const [editing, setEditing] = useState<DebitAuthorization | null>(null);
 	const {
@@ -237,10 +266,7 @@ function LinkedAppsList({
 		isFetching,
 		isError,
 		error,
-	} = useGetDebitAuthorizationsQuery(
-		{ sourceId: source.sourceId },
-		{ skip: !sourceReady },
-	);
+	} = useGetDebitAuthorizationsQuery({ sourceId: source.sourceId });
 
 	useEffect(() => {
 		setTab("approved");
@@ -248,7 +274,10 @@ function LinkedAppsList({
 	}, [source.sourceId]);
 
 	const { approved, banned } = useMemo(() => {
-		const next = { approved: [] as typeof authorizations, banned: [] as typeof authorizations };
+		const next = {
+			approved: [] as typeof authorizations,
+			banned: [] as typeof authorizations,
+		};
 		for (const auth of authorizations) {
 			if (auth.authorized) next.approved.push(auth);
 			else next.banned.push(auth);
@@ -257,17 +286,6 @@ function LinkedAppsList({
 	}, [authorizations]);
 
 	const showing = tab === "approved" ? approved : banned;
-
-	if (!sourceReady) {
-		return (
-			<EmptyState
-				variant="section"
-				hideIcon
-				title="Source is connecting…"
-				description="Linked apps will load once this Pub is reachable."
-			/>
-		);
-	}
 
 	if (isLoading || (isFetching && authorizations.length === 0)) {
 		return (
@@ -302,6 +320,10 @@ function LinkedAppsList({
 					const value = e.detail.value;
 					if (value === "approved" || value === "banned") setTab(value);
 				}}
+				className="
+					wallet-box-shadow
+					p-1 [--background:var(--app-surface)]
+				"
 			>
 				<IonSegmentButton value="approved">
 					<IonLabel>Approved ({approved.length})</IonLabel>
@@ -315,9 +337,7 @@ function LinkedAppsList({
 				<EmptyState
 					variant="section"
 					title={
-						tab === "approved"
-							? "No linked apps yet"
-							: "No banned apps"
+						tab === "approved" ? "No linked apps yet" : "No banned apps"
 					}
 					description={
 						tab === "approved"

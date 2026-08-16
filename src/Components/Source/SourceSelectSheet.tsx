@@ -11,12 +11,18 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
-import { SourceItemView } from "@/Components/Source/SourceItemView";
-import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import {
-	SourceView,
-} from "@/State/scoped/backups/sources/selectors";
+	SourceItemView,
+	type SourceItemViewProps,
+} from "@/Components/Source/SourceItemView";
+import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
+
+type ItemDisplayProps = Pick<
+	SourceItemViewProps,
+	"showFavorite" | "showBalance" | "showBeacon" | "showSourceType"
+>;
 
 export type SourceSelectSheetProps = {
 	isOpen: boolean;
@@ -26,7 +32,7 @@ export type SourceSelectSheetProps = {
 	sources: SourceView[];
 	title?: string;
 	emptyMessage?: string;
-};
+} & ItemDisplayProps;
 
 function favoriteFirst(
 	sources: SourceView[],
@@ -48,9 +54,12 @@ export function SourceSelectSheet({
 	onSelect,
 	sources,
 	title = "Select source",
-	emptyMessage = "No Pub sources to show.",
+	emptyMessage = "No sources to show.",
+	showFavorite,
+	showBalance,
+	showBeacon,
+	showSourceType,
 }: SourceSelectSheetProps) {
-
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
 	const orderedSources = useMemo(
@@ -96,6 +105,10 @@ export function SourceSelectSheet({
 								source={source}
 								selected={selectedSourceId === source.sourceId}
 								onClick={() => handleSelect(source)}
+								showFavorite={showFavorite}
+								showBalance={showBalance}
+								showBeacon={showBeacon}
+								showSourceType={showSourceType}
 							/>
 						))}
 					</IonList>

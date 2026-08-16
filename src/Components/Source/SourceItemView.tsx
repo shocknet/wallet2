@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 import { IonIcon, IonItem } from "@ionic/react";
 import { checkmarkCircle, star, walletOutline } from "ionicons/icons";
 import cn from "clsx";
-import { Avatar } from "@/Components/Avatar";
-import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
+import { SourceAvatar } from "@/Components/Source/SourceAvatar";
+import {
+	sourceDisplayName,
+	sourceTypeLabel,
+} from "@/Components/Source/sourceDisplayName";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceType } from "@/State/scoped/backups/sources/schema";
-import type {
-	NprofileView,
-	SourceView,
-} from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import { formatSatoshi } from "@/lib/units";
 
@@ -19,11 +19,11 @@ export type SourceItemViewProps = {
 	showFavorite?: boolean;
 	showBalance?: boolean;
 	showBeacon?: boolean;
+	showSourceType?: boolean;
 	onClick?: () => void;
 	end?: ReactNode;
 	className?: string;
 };
-
 
 export function SourceItemView({
 	source,
@@ -31,6 +31,7 @@ export function SourceItemView({
 	showFavorite = true,
 	showBalance = true,
 	showBeacon = true,
+	showSourceType = false,
 	onClick,
 	end,
 	className,
@@ -39,10 +40,15 @@ export function SourceItemView({
 	const isFavorite = showFavorite && favoriteSourceId === source.sourceId;
 	const label = sourceDisplayName(source);
 	const interactive = typeof onClick === "function";
-	const nprofile =
-		source.type === SourceType.NPROFILE_SOURCE
-			? (source as NprofileView)
-			: null;
+	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
+
+	const detailParts: string[] = [];
+	if (showSourceType) detailParts.push(sourceTypeLabel(source));
+	if (showBalance && isNprofile) {
+		detailParts.push(`${formatSatoshi(source.maxWithdrawableSats)} sats`);
+	}
+	const detail = detailParts.join(" · ");
+	const showWalletIcon = showBalance && isNprofile && detail.length > 0;
 
 	const endSlot =
 		end !== undefined ? (
@@ -71,13 +77,7 @@ export function SourceItemView({
 			)}
 		>
 			<div slot="start" className="self-center" aria-hidden>
-				<Avatar
-					id={source.sourceId}
-					avatarUrl={nprofile?.beaconAvatarUrl}
-					beacon={
-						nprofile && showBeacon ? nprofile.beaconStale : undefined
-					}
-				/>
+				<SourceAvatar source={source} showBeacon={showBeacon} />
 			</div>
 
 			<div className="min-w-0 flex-1 py-2">
@@ -94,16 +94,16 @@ export function SourceItemView({
 						/>
 					) : null}
 				</div>
-				{nprofile && showBalance ? (
+				{detail ? (
 					<p className="m-0 mt-1 flex items-center gap-1.5 text-sm text-muted tabular-nums">
-						<IonIcon
-							icon={walletOutline}
-							className="shrink-0 text-[0.95rem] text-faint"
-							aria-hidden
-						/>
-						<span>
-							{formatSatoshi(nprofile.maxWithdrawableSats)} sats
-						</span>
+						{showWalletIcon ? (
+							<IonIcon
+								icon={walletOutline}
+								className="shrink-0 text-[0.95rem] text-faint"
+								aria-hidden
+							/>
+						) : null}
+						<span>{detail}</span>
 					</p>
 				) : null}
 			</div>

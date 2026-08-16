@@ -240,25 +240,25 @@ export const sourcesSlice = createSlice({
 			m.vanityName = a.payload.vanityName;
 
 		},
-		setNdebit(state, a: PayloadAction<{ sourceId: string; ndebit: string }>) {
+		applyUserInfo(state, a: PayloadAction<{
+			sourceId: string;
+			balance: Satoshi;
+			maxWithdrawable: Satoshi;
+			ndebit: string;
+			noffer: string;
+			nmanage: string;
+			topicId: string;
+		}>) {
 			const m = state.metadata.entities[a.payload.sourceId];
 			if (!m) return;
 
-			m.ndebit = a.payload.ndebit;
-
-		},
-		setTopicId(state, a: PayloadAction<{ sourceId: string; topicId: string }>) {
-			const m = state.metadata.entities[a.payload.sourceId];
-			if (!m) return;
-			m.topicId = a.payload.topicId;
-		},
-		setBalance(state, a: PayloadAction<{ sourceId: string; balance: { balance: Satoshi, maxWithdrawable: Satoshi } }>) {
-			const m = state.metadata.entities[a.payload.sourceId]
-			if (!m) return;
-
-			m.balance = a.payload.balance.balance;
-			m.maxWithdrable = a.payload.balance.maxWithdrawable
-
+			const { balance, maxWithdrawable, ndebit, noffer, nmanage, topicId } = a.payload;
+			m.balance = balance;
+			m.maxWithdrable = maxWithdrawable;
+			m.ndebit = ndebit;
+			m.noffer = noffer;
+			m.nmanage = nmanage;
+			m.topicId = topicId;
 		},
 		setBeaconStaleMs(state, a: PayloadAction<number>) {
 			state.metadata.beaconStaleMs = a.payload

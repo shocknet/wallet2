@@ -21,7 +21,6 @@
 	--ion-color-tertiary-shade: #6b3cbf;
 	--ion-color-tertiary-tint: #8757dd;
 
-	--wallet-box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* Light palette (semantic and surface */
@@ -103,6 +102,11 @@
 	--app-text-faint: #bcc4cc;
 
 
+	--wallet-box-shadow:
+		0 1px 3px 0 rgba(var(--app-box-shadow-color), 0.1),
+		0 1px 2px -1px rgba(var(--app-box-shadow-color), 0.1);
+
+
 }
 
 /* Dark palette (semantic and surface) */
@@ -179,6 +183,10 @@
 	--app-border: #3C3C3C;
 	--app-box-shadow-color: 0, 0, 0;
 
+	--wallet-box-shadow:
+		0 1px 0 0 rgba(255, 255, 255, 0.03),
+		0 1px 3px 0 rgba(var(--app-box-shadow-color), 0.28),
+		0 1px 2px -1px rgba(var(--app-box-shadow-color), 0.22);
 
 	--app-text-primary: #f4f7f9;
 	--app-text-primary-rgb: 244, 247, 249;
@@ -808,7 +816,7 @@ ion-grid {
 
 
 ion-popover.hinty-popover {
-	--box-shadow: var(--wallet-box-shadow-strong);
+	--box-shadow: var(--wallet-box-shadow);
 	--color: var(--app-text-secondary);
 	--width: fit-content;
 }
@@ -821,18 +829,6 @@ ion-popover.hinty-popover {
 	overflow: hidden;
 }
 
-ion-popover.custom-dropdown-popover {
-	--width: min(100vw - 96px, 350px);
-	--border-radius: 12px;
-	--box-shadow: var(--wallet-box-shadow);
-	-webkit-font-smoothing: antialiased;
-}
-
-@media screen and (min-width: 768px) {
-	ion-popover.custom-dropdown-popover {
-		--width: min(100vw - 96px, 500px);
-	}
-}
 
 
 .ion-content-no-header::part(scroll) {

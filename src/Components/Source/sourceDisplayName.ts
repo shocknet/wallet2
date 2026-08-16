@@ -7,3 +7,12 @@ export function sourceDisplayName(source: SourceView): string {
 	}
 	return source.label || source.sourceId;
 }
+
+export function sourceTypeLabel(source: SourceView): string {
+	switch (source.type) {
+		case SourceType.NPROFILE_SOURCE:
+			return "Pub";
+		case SourceType.LIGHTNING_ADDRESS_SOURCE:
+			return "Lightning address";
+	}
+}
