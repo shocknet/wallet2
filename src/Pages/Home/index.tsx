@@ -8,14 +8,14 @@ import {
 	IonPage,
 	IonRefresher,
 	IonRefresherContent,
+	IonToolbar,
 	RefresherEventDetail,
 	useIonRouter,
 	useIonViewDidEnter,
 } from "@ionic/react";
 import {
 	downloadOutline,
-	paperPlaneOutline,
-	qrCodeOutline
+	scanOutline,
 } from "ionicons/icons";
 import { useHistory } from "react-router";
 import BalanceCard from "./BalanceCard";
@@ -212,7 +212,12 @@ const Home = () => {
 		} catch {
 			/*  */
 		}
-	}
+	};
+
+
+	const [scrollParent, setScrollParent] = useState<HTMLElement | undefined>();
+
+
 
 
 
@@ -225,13 +230,14 @@ const Home = () => {
 				<BalanceCard />
 			</IonHeader>
 			<IonContent
-				scrollY={false}
+				fullscreen
+				ref={(el) => el?.getScrollElement().then((el) => setScrollParent(el))}
 			>
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
 				<Virtuoso
-					style={{ height: "100%" }}
+					customScrollParent={scrollParent}
 					data={operations}
 					defaultItemHeight={56}
 					itemContent={(_, op) => (
@@ -250,39 +256,90 @@ const Home = () => {
 						</div>
 					)}
 				/>
+				{
+					loadOperationModal &&
+					<Suspense fallback={null}>
+						<OperationModal
+							operation={selectedOperation}
+							isOpen={!!selectedOperation}
+							onClose={() => setSelectedOperation(null)}
+						/>
+					</Suspense>
+				}
 			</IonContent>
-			<IonFooter className={`ion-no-border ${styles["footer"]}`}>
-				<div className={styles["toolbar"]}>
-					<div className={styles["button-container"]}>
-						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-left"]}`} expand="full" routerLink="/receive" routerDirection="forward">
-							<IonIcon slot="start" icon={downloadOutline} ></IonIcon>
-							Receive
-						</IonButton>
-					</div>
-					<div className={styles["button-container"]}>
-						<IonButton color="surface" className={`${styles["toolbar-button"]} ${styles["toolbar-button-right"]}`} expand="full" routerLink="/send" routerDirection="forward">
-							<IonIcon slot="start" icon={paperPlaneOutline} ></IonIcon>
-							Send
-						</IonButton>
-					</div>
-					<IonButton color="primary" shape="round" className={styles["fab-button"]} onClick={openScan}>
-						<IonIcon slot="icon-only" icon={qrCodeOutline} />
-					</IonButton>
-				</div>
-			</IonFooter>
-			{
-				loadOperationModal &&
-				<Suspense fallback={null}>
-					<OperationModal
-						operation={selectedOperation}
-						isOpen={!!selectedOperation}
-						onClose={() => setSelectedOperation(null)}
-					/>
-				</Suspense>
-			}
-		</IonPage>
+			<IonFooter translucent className="ion-no-border">
+				<IonToolbar className="![--background:transparent]">
+					<div className="mx-3 relative flex h-[5.5rem] items-center">
+						<div
+							aria-hidden
+							className="
+								pointer-events-none absolute inset-x-0 bottom-0 z-0
+								h-[5.5rem]
+								bg-gradient-to-b from-transparent via-black/10 to-transparent
+								[mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
+								[-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
+							"
+						/>
+						<div
+							className="
+								relative flex h-[3rem] w-full items-center justify-between rounded-lg
+								bg-[var(--ion-color-dark)]
+							"
+						>
+							<IonButton
+								fill="clear"
+								routerLink="/receive"
+								routerDirection="forward"
+								className="
+									m-0 h-full min-h-0 flex-1 normal-case tracking-normal
+									text-[0.95rem] font-medium
+									[--color:var(--app-text-primary)]
+								"
+							>
+								<IonIcon slot="start" icon={downloadOutline} />
+								Receive
+							</IonButton>
 
-	)
+
+							<div className="w-24 shrink-0" aria-hidden />
+
+							<IonButton
+								fill="clear"
+								routerLink="/send"
+								routerDirection="forward"
+								className="
+									m-0 h-full min-h-0 flex-1 normal-case tracking-normal
+									text-[0.95rem] font-medium
+									[--color:var(--app-text-primary)]
+								"
+							>
+								<IonIcon
+									slot="start"
+									icon={downloadOutline}
+									className="-scale-y-100"
+								/>
+								Pay
+							</IonButton>
+						</div>
+						<IonButton
+							color="primary"
+							shape="round"
+							onClick={openScan}
+							aria-label="Scan"
+							className="
+								absolute left-1/2 top-1/2 z-[2] m-0
+								h-[5.5rem] w-[5.5rem] -translate-x-1/2 -translate-y-1/2
+								[--box-shadow:0_0_0_1px_rgba(var(--app-box-shadow-color),0.48)]
+								[&_ion-icon]:text-[2rem]
+							"
+						>
+							<IonIcon slot="icon-only" icon={scanOutline} />
+						</IonButton>
+					</div>
+				</IonToolbar>
+			</IonFooter>
+		</IonPage>
+	);
 }
 
 export default Home;
