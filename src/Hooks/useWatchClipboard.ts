@@ -6,10 +6,13 @@ import { addAsset } from "@/State/Slices/generatedAssets";
 import { useAlert } from "@/lib/contexts/useAlert";
 import { InputClassification } from "@/lib/types/parse";
 import { truncateTextMiddle } from "@/lib/format";
+import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useLocalStorage } from "@/Hooks/useLocalStorage/useLocalStorage";
 import { useWindowEvent } from "@/Hooks/useWindowEvent";
 import { selectIsActive } from "@/State/runtime/slice";
+import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
+import { navToSources } from "@/Pages/Sources/nav";
 
 const CLIPBOARD_THROTTLE_MS = 500;
 const FOCUS_SETTLE_DELAY_MS = 50;
@@ -25,58 +28,48 @@ export function useWatchClipboard() {
 		defaultValue: false,
 	});
 
-
 	const seenAssets = useAppSelector((state) => state.generatedAssets.assets);
 
 	const lastCheckTsRef = useRef(0);
 	const alertInFlightRef = useRef(false);
 	const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const navigateForClipboard = useEventCallback(
-		async (
-			value: string,
-			classification: InputClassification,
-			parseBitcoinInput: typeof import("@/lib/parse").parseBitcoinInput,
-		) => {
-			if (classification === InputClassification.NOFFER) {
-				history.push({ pathname: "/send", state: { input: value } });
-				return;
-			}
+	const remember = (asset: string) => {
+		dispatch(addAsset({ asset }));
+	};
 
+	const navigateForClipboard = useEventCallback(
+		async (value: string, classification: InputClassification) => {
 			const parsed = await parseBitcoinInput(value, classification);
 
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				history.push({
-					pathname: "/sources",
-					state: { parsedLnurlW: parsed },
-				});
+				navToSources(history, { parsedLnurlW: parsed });
 				return;
 			}
 
 			if (parsed.type === InputClassification.NPROFILE) {
-				history.push({
-					pathname: "/sources",
-					state: { parsedNprofile: parsed },
-				});
+				navToSources(history, { parsedNprofile: parsed });
 				return;
 			}
 
-			history.push({
-				pathname: "/send",
-				state: { input: parsed.data },
-			});
+			if (isSendParsedInput(parsed)) {
+				navToSend(history, { parsed });
+				return;
+			}
+
+			throw new Error(`Cannot send to ${parsed.type}`);
 		},
 	);
 
 	const checkClipboard = useEventCallback(async () => {
-		const now = Date.now();
-		if (now - lastCheckTsRef.current < CLIPBOARD_THROTTLE_MS) return;
-		lastCheckTsRef.current = now;
-
-
+		if (!isAppActive) return;
 		if (!document.hasFocus()) return;
 		if (document.visibilityState !== "visible") return;
 		if (alertInFlightRef.current) return;
+
+		const now = Date.now();
+		if (now - lastCheckTsRef.current < CLIPBOARD_THROTTLE_MS) return;
+		lastCheckTsRef.current = now;
 
 		let text = "";
 		try {
@@ -86,34 +79,32 @@ export function useWatchClipboard() {
 				text = value.trim();
 			}
 		} catch (err: unknown) {
-			const name = err && typeof err === "object" && "name" in err ? err.name : undefined;
-			if (name === "NotAllowedError" && !warned) {
-				showAlert({
-					header: "Clipboard Permission Denided",
+			const name =
+				err && typeof err === "object" && "name" in err ? err.name : undefined;
+			if (name !== "NotAllowedError" || warned) return;
+
+			alertInFlightRef.current = true;
+			setWarned(true);
+			try {
+				await showAlert({
+					header: "Clipboard access blocked",
 					message:
-						"Shockwallet reads your clipboard to prompt you to use data on your clipboard",
-					onDidPresent: () => setWarned(true),
+						"When you come back to the app, Shockwallet can read a copied invoice or address and offer to use it. Access is blocked in this browser. You can still paste into Pay.",
+					buttons: ["OK"],
 				});
+			} finally {
+				alertInFlightRef.current = false;
 			}
 			return;
 		}
 
 		if (!text) return;
 
-		let identifyBitcoinInput: typeof import("@/lib/parse").identifyBitcoinInput;
-		let parseBitcoinInput: typeof import("@/lib/parse").parseBitcoinInput;
-		try {
-			({ identifyBitcoinInput, parseBitcoinInput } = await import("@/lib/parse"));
-		} catch (err) {
-			console.error("Failed to lazy-load '@/lib/parse'", err);
-			return;
-		}
-
 		const { classification, value } = identifyBitcoinInput(text);
 		if (
 			!value ||
-			value.length === 0 ||
-			classification === InputClassification.UNKNOWN
+			classification === InputClassification.UNKNOWN ||
+			classification === InputClassification.BITCOIN_ADDRESS
 		) {
 			return;
 		}
@@ -122,35 +113,37 @@ export function useWatchClipboard() {
 		if (alertInFlightRef.current) return;
 
 		alertInFlightRef.current = true;
-
-		const { role } = await showAlert({
-			header: "Clipboard Detected",
-			subHeader: "Do you want to use the content from your clipboard?",
-			message: truncateTextMiddle(value, 20),
-			buttons: [
-				{ text: "No", role: "cancel" },
-				{ text: "Yes", role: "confirm" },
-			],
-		});
-
-		dispatch(addAsset({ asset: value }));
-		alertInFlightRef.current = false;
-
-		if (role !== "confirm") return;
-
 		try {
-			await navigateForClipboard(value, classification, parseBitcoinInput);
+			const { role } = await showAlert({
+				header: "Clipboard detected",
+				subHeader: "Use this from your clipboard?",
+				message: truncateTextMiddle(value, 20),
+				buttons: [
+					{ text: "No", role: "cancel" },
+					{ text: "Yes", role: "confirm" },
+				],
+			});
+
+			if (role !== "confirm") {
+				remember(value);
+				return;
+			}
+
+			await navigateForClipboard(value, classification);
+			remember(value);
 		} catch (err: unknown) {
 			console.error("Error parsing clipboard input:", err);
 			const message =
-				err && typeof err === "object" && "message" in err && typeof err.message === "string"
+				err instanceof Error
 					? err.message
-					: "Unknown error occurred while parsing clipboard input.";
-			showAlert({
+					: "Could not use the clipboard content.";
+			await showAlert({
 				header: "Error",
 				message,
 				buttons: ["OK"],
 			});
+		} finally {
+			alertInFlightRef.current = false;
 		}
 	});
 
@@ -178,9 +171,6 @@ export function useWatchClipboard() {
 			scheduleCheck();
 		}
 	});
-
-
-
 
 	useWindowEvent("focus", scheduleCheck);
 	useWindowEvent("visibilitychange", onVisibilityChange);

@@ -9,7 +9,7 @@ import { lazy } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { GuardedRoute } from "@/routing/GuardedRoute";
-import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
+import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { ReadyAppEffects } from "./ReadyAppEffects";
@@ -70,7 +70,6 @@ export function ReadyApp({
 					exact
 					path="/send"
 					component={Send}
-					guards={[atLeastOneNprofileSource]}
 				/>
 				<GuardedRoute
 					exact

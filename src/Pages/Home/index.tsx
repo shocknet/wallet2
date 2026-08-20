@@ -18,12 +18,15 @@ import {
 	scanOutline,
 } from "ionicons/icons";
 import { useHistory } from "react-router";
+import type { HomePageNavState } from "./nav";
+import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
+import { navToSources } from "@/Pages/Sources/nav";
 import BalanceCard from "./BalanceCard";
 import styles from "./styles/index.module.scss";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
-import { parseBitcoinInput as legacyParseBitcoinInput } from "../../constants";
+import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { InputClassification } from "@/lib/types/parse";
 import { useQrScanner } from "@/Hooks/useQrScanner";
 import { Virtuoso } from 'react-virtuoso'
@@ -42,7 +45,7 @@ const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal
 
 
 const Home = () => {
-	const history = useHistory();
+	const history = useHistory<HomePageNavState>();
 
 	const router = useIonRouter();
 	const dispatch = useAppDispatch();
@@ -76,7 +79,7 @@ const Home = () => {
 
 
 	useIonViewDidEnter(() => {
-		const { reason } = history.location.state as { reason?: string } || {}
+		const { reason } = history.location.state ?? {};
 
 		if (reason) {
 			history.replace(history.location.pathname + history.location.search);
@@ -103,7 +106,7 @@ const Home = () => {
 	}, [history.location.key]);
 
 	useIonViewDidEnter(() => {
-		const { notif_op_id, sourceId } = history.location.state as { notif_op_id?: string, sourceId?: string } || {}
+		const { notif_op_id, sourceId } = history.location.state ?? {};
 		if (!notif_op_id || !sourceId) return;
 		const key = makeKey(sourceId, notif_op_id);
 		console.log("[Home] Setting highlight key:", key);
@@ -121,11 +124,8 @@ const Home = () => {
 		}
 		if (highlightTimeoutRef.current) return;
 		const exists = operations.some(op => highlightOpKey === op.opKey);
-		console.log("[Home] Highlight key exists in operations:", exists, { highlightOpKey, operationCount: operations.length });
 		if (!exists) return;
-		console.log("[Home] Starting highlight timeout (3s)");
 		highlightTimeoutRef.current = window.setTimeout(() => {
-			console.log("[Home] Clearing highlight");
 			setHighlightOpKey(null);
 			highlightTimeoutRef.current = null;
 		}, 3000);
@@ -164,41 +164,28 @@ const Home = () => {
 			showToast({ message: "Empty input", color: "danger" });
 			return;
 		}
-		let identifyBitcoinInput;
-		let parseBitcoinInput;
-
-		try {
-			({ identifyBitcoinInput, parseBitcoinInput } = await import('@/lib/parse'));
-		} catch {
-			showToast({ message: "Failed to lazy-load '@/lib/parse'", color: "danger" });
-			return;
-		}
 		const { classification, value } = identifyBitcoinInput(input);
 
-		if (classification === InputClassification.UNKNOWN) {
-			showToast({ message: "Unknown Recipient", color: "danger" });
-			return;
-		}
 		try {
+			if (classification === InputClassification.UNKNOWN) {
+				throw new Error("Unknown input");
+			}
 			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				const legacyParsedLnurlW = await legacyParseBitcoinInput(input);
-				history.push({
-					pathname: "/sources",
-					state: legacyParsedLnurlW
-				})
+				navToSources(history, { parsedLnurlW: parsed });
 				return;
-			} else {
-				history.push({
-					pathname: "/send",
-					state: {
-						// pass the input string as opposed to parsed object because in the case of noffer it needs the selected source
-						input: parsed.data
-					}
-				})
 			}
-		} catch (err: any) {
-			showToast({ message: err?.message || "Unknown error occured", color: "danger" });
+			if (parsed.type === InputClassification.NPROFILE) {
+				navToSources(history, { parsedNprofile: parsed });
+				return;
+			}
+			if (isSendParsedInput(parsed)) {
+				navToSend(history, { parsed });
+				return;
+			}
+			throw new Error(`${parsed.type} not usuable`);
+		} catch (err: unknown) {
+			showToast({ message: err instanceof Error ? err.message : "Unknown error occured", color: "danger" });
 			return;
 		}
 	}, [history, showToast]);
@@ -343,3 +330,6 @@ const Home = () => {
 }
 
 export default Home;
+export { navToHome } from "./nav";
+export type { HomePageNavState } from "./nav";
+

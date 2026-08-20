@@ -5,18 +5,21 @@ export interface LightningAddress {
 	username: string
 	domain: string
 }
+
+export type LnurlPayMetadataArray = Array<[type: string, ...values: unknown[]]>;
 export interface LnurlPayServiceResponse {
 	tag: "payRequest";
 	callback: string;
 	fixed: boolean;       // whether min === max
 	min: Satoshi;         // in sats
 	max: Satoshi;         // in sats
-	domain?: string;
-	metadata: Array<Array<string>>;
-	identifier: string;
-	description: string;
-	image: string;
-	commentAllowed: number;
+	domain: string;
+	metadata: LnurlPayMetadataArray;
+	longDescription?: string;
+	identifier?: string;
+	description?: string;
+	image?: string;
+	commentAllowed?: number;
 	noffer?: OfferPointer;
 }
 export interface LnurlWithdrawServiceResponse {
@@ -25,7 +28,7 @@ export interface LnurlWithdrawServiceResponse {
 	k1: string;
 	min: Satoshi;    // in sats
 	max: Satoshi;    // in sats
-	domain?: string;
+	domain: string;
 	defaultDescription: string;
 }
 export type LnurlServiceResponse = LnurlPayServiceResponse | LnurlWithdrawServiceResponse;

@@ -1,4 +1,3 @@
-import type { Satoshi } from "@/lib/types/units";
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import {
 	emptyPayloads,
@@ -8,17 +7,14 @@ import {
 	type ReceiveMethodId,
 	type SourceReceivePayloads,
 } from "./helpers";
+import { ParsedInvoiceInput } from "@/lib/types/parse";
 
-export type ReceiveInvoice = {
-	bolt11: string;
-	amount: Satoshi;
-};
 
 export type ReceiveMethodsState = {
 	sourceId: string;
 	payloads: SourceReceivePayloads;
 	method: ReceiveMethodId | null;
-	invoice: ReceiveInvoice | null;
+	invoice: ParsedInvoiceInput | null;
 	invoiceLoading: boolean;
 };
 
@@ -31,7 +27,7 @@ export type ReceiveMethodsAction =
 	}
 	| { type: "selectMethod"; method: ReceiveMethodId }
 	| { type: "invoiceStart" }
-	| { type: "invoiceSuccess"; invoice: ReceiveInvoice }
+	| { type: "invoiceSuccess"; invoice: ParsedInvoiceInput }
 	| { type: "invoiceError" };
 
 const emptyStage: ReceiveMethodsState = {
@@ -96,7 +92,6 @@ export function receiveMethodsReducer(
 	}
 }
 
-/** Keep the user's pick when still valid; otherwise fall back to default. */
 function resolveMethod(
 	current: ReceiveMethodId | null,
 	payloads: SourceReceivePayloads,

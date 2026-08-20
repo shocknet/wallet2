@@ -1,8 +1,9 @@
 import axios from "axios";
 import { decodeUrlOrAddress, isUrl } from "./decode";
 import { isValidMSats, msatsToSats } from "../units";
-import { LnurlPayServiceResponse, LnurlServiceResponse, LnurlWithdrawServiceResponse } from "../types/lnurl";
-import { decodeNoffer } from "@/constants";
+import { LnurlPayMetadataArray, LnurlPayServiceResponse, LnurlServiceResponse, LnurlWithdrawServiceResponse } from "../types/lnurl";
+import { OfferPointer } from "@shocknet/clink-sdk";
+import { decodeNoffer } from "../decodeNoffer";
 
 
 const TAG_PAY_REQUEST = "payRequest";
@@ -42,8 +43,10 @@ const parseLnurlServiceResponse = (
 		return parseWithdrawRequest(data, url);
 	}
 	return null;
+}
 
-
+function isMetadataArray(metadata: unknown): metadata is LnurlPayMetadataArray {
+	return Array.isArray(metadata) && metadata.every(entry => Array.isArray(entry) && entry.length >= 2 && typeof entry[0] === "string");
 }
 
 function parsePayRequest(data: Record<string, unknown>, url: string): LnurlPayServiceResponse | null {
@@ -56,37 +59,58 @@ function parsePayRequest(data: Record<string, unknown>, url: string): LnurlPaySe
 	const min = msatsToSats(data.minSendable, "ceil");
 	const max = msatsToSats(data.maxSendable, "floor");
 
-	let metadata: Array<[string, string]> = [];
+	if (!data.metadata || typeof data.metadata !== "string") return null;
+
+	let parsedMetadata: unknown;
 	try {
-		metadata = JSON.parse(String(data.metadata ?? "")) as Array<[string, string]>;
+		parsedMetadata = JSON.parse(data.metadata);
 	} catch {
-		// ignore parse error => default to empty
+		return null;
 	}
 
-	// Extract optional fields from metadata
-	let image = "";
-	let description = "";
-	let identifier = "";
-	for (let i = 0; i < metadata.length; i++) {
-		const [type, value] = metadata[i];
+	if (!isMetadataArray(parsedMetadata)) return null;
+
+	let image: string | undefined;
+	let description: string | undefined;
+	let identifier: string | undefined;
+	let longDescription: string | undefined;
+
+
+	for (const entry of parsedMetadata) {
+		const [type, ...values] = entry;
+		const data = values[0];
 		switch (type) {
 			case "text/plain":
-				description = value;
+				if (typeof data !== "string") continue;
+				description = data
 				break;
 			case "text/identifier":
-				identifier = value;
+				if (typeof data !== "string") continue;
+				identifier = data;
+				break;
+			case "text/long-desc":
+				if (typeof data !== "string") continue;
+				longDescription = data;
 				break;
 			case "image/png;base64":
 			case "image/jpeg;base64":
-				image = `data:${type},${value}`;
+				if (typeof data !== "string") continue;
+				image = `data:${type},${data}`;
 				break;
 		}
 	}
 
+	if (description === undefined) return null; // text/plain is mandatory by the spec
+
+
 	// noffer
-	let nofferPointer = undefined
+	let nofferPointer: OfferPointer | undefined;
 	if (data.nip69 && typeof data.nip69 === "string") {
-		nofferPointer = decodeNoffer(data.nip69)
+		try {
+			nofferPointer = decodeNoffer(data.nip69)
+		} catch {
+			/* ignore parse error */
+		}
 	}
 
 	return {
@@ -96,7 +120,8 @@ function parsePayRequest(data: Record<string, unknown>, url: string): LnurlPaySe
 		min,
 		max,
 		domain: new URL(url).hostname,
-		metadata,
+		metadata: parsedMetadata,
+		longDescription,
 		identifier,
 		description,
 		image,

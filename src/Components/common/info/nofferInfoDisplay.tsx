@@ -1,6 +1,6 @@
 import { priceTypeToString } from "@/lib/noffer";
 import { ParsedNofferInput } from "@/lib/types/parse";
-import { formatSatoshi } from "@/lib/units";
+import { formatSatoshi, satoshi } from "@/lib/units";
 import { IonItem, IonLabel, IonList, IonNote, IonText } from "@ionic/react";
 
 
@@ -12,6 +12,8 @@ interface Props {
 
 
 const NofferInfoDisplay = ({ nofferData, inset, labelsColor }: Props) => {
+	const price = nofferData.noffer.price;
+
 	return (
 		<IonList inset={inset} className="secondary">
 			<IonItem>
@@ -22,13 +24,13 @@ const NofferInfoDisplay = ({ nofferData, inset, labelsColor }: Props) => {
 			</IonItem>
 			<IonItem>
 				<IonLabel color={labelsColor}>Price Type</IonLabel>
-				<IonText>{priceTypeToString(nofferData.priceType)}</IonText>
+				<IonText>{priceTypeToString(nofferData.noffer.priceType)}</IonText>
 			</IonItem>
 			{
-				nofferData.invoiceData && (
+				price != null && (
 					<IonItem>
 						<IonLabel color={labelsColor}>Price</IonLabel>
-						<IonText>{formatSatoshi(nofferData.invoiceData.amount!)} sats</IonText>
+						<IonText>{formatSatoshi(satoshi(price))} sats</IonText>
 					</IonItem>
 				)
 			}

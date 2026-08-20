@@ -17,8 +17,10 @@ import {
 import { add } from "ionicons/icons";
 import { useCallback, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { InputState } from "../Send/types";
-import { InputClassification, ParsedLnurlWithdrawInput, ParsedNprofileInput } from "@/lib/types/parse";
+import { InputState } from "@/Pages/Send/types";
+import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
+import { InputClassification, type ParsedLnurlWithdrawInput } from "@/lib/types/parse";
+import type { SourcesPageNavState } from "./nav";
 import { useToast } from "@/lib/contexts/useToast";
 import { SweepLnurlwDialog } from "@/Components/Modals/DialogeModals";
 import { Satoshi } from "@/lib/types/units";
@@ -26,13 +28,13 @@ import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-com
 import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
 import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { createNostrInvoice } from "@/Api/helpers";
-import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
+import { getInvoiceFromLnurlPay } from "@/lib/lnurl/pay";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 
 const SourcesPage = () => {
-	const history = useHistory();
+	const history = useHistory<SourcesPageNavState>();
 	const dispatch = useAppDispatch();
 	const sources = useAppSelector(selectSourceViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
@@ -89,45 +91,39 @@ const SourcesPage = () => {
 		if (token && lnAddress) {
 			setIntegrationData({ token, lnAddress })
 		}
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value: normalizedInput } = identifyBitcoinInput(
-					sourceString,
-					{
-						allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					setReceivedInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
-					return;
-				}
+		const { classification, value: normalizedInput } = identifyBitcoinInput(
+			sourceString,
+			{
+				allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
+			}
+		);
+		if (classification === InputClassification.UNKNOWN) {
+			setReceivedInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
+			return;
+		}
+		setReceivedInputState({
+			status: "loading",
+			inputValue: normalizedInput,
+			classification
+		});
+
+		void parseBitcoinInput(normalizedInput, classification)
+			.then(parsed => {
 				setReceivedInputState({
-					status: "loading",
+					status: "parsedOk",
 					inputValue: normalizedInput,
+					parsedData: parsed
+				});
+				setIsAddSourceOpen(true)
+			})
+			.catch((err: unknown) => {
+				setReceivedInputState({
+					status: "error",
+					inputValue: normalizedInput,
+					error: err instanceof Error ? err.message : "Failed to parse input",
 					classification
 				});
-
-				parseBitcoinInput(normalizedInput, classification)
-					.then(parsed => {
-						setReceivedInputState({
-							status: "parsedOk",
-							inputValue: normalizedInput,
-							parsedData: parsed
-						});
-						setIsAddSourceOpen(true)
-					})
-					.catch((err: any) => {
-						setReceivedInputState({
-							status: "error",
-							inputValue: normalizedInput,
-							error: err.message,
-							classification
-						});
-					})
-			})
-			.catch(() => {
-				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
+			});
 	}, [showToast]);
 
 	const handleLnurlWithdraw = useCallback(async (parsedLnurlW: ParsedLnurlWithdrawInput) => {
@@ -146,19 +142,20 @@ const SourcesPage = () => {
 					try {
 						if (selectedSource.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
 
-							const { pr } = await getInvoiceForLnurlPay({
+							const parsedInvoice = await getInvoiceFromLnurlPay({
 								lnUrlOrAddress: selectedSource.sourceId,
 								amountSats: amount,
 							});
-							invoice = pr;
+							invoice = parsedInvoice.data;
 						} else {
-							invoice = await createNostrInvoice({
+							const parsedInvoice = await createNostrInvoice({
 								pubkey: selectedSource.lpk,
 								relays: selectedSource.relays
 							},
 								selectedSource.keys,
 								amount,
 							);
+							invoice = parsedInvoice.data;
 						}
 						await requestLnurlWithdraw({
 							lnurl: parsedLnurlW.data,
@@ -183,8 +180,7 @@ const SourcesPage = () => {
 
 
 	useIonViewDidEnter(() => {
-		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {};
-		const { parsedNprofile } = history.location.state as { parsedNprofile?: ParsedNprofileInput } || {};
+		const { parsedLnurlW, parsedNprofile } = history.location.state;
 		const searchParams = new URLSearchParams(history.location.search);
 		if (parsedLnurlW) {
 			handleLnurlWithdraw(parsedLnurlW)
@@ -260,3 +256,6 @@ const SourcesPage = () => {
 }
 
 export default SourcesPage;
+export { navToSources } from "./nav";
+export type { SourcesPageNavState } from "./nav";
+

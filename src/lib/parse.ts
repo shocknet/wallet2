@@ -1,13 +1,11 @@
 
-import { createNofferInvoice, decodeNoffer } from "./noffer";
-import { InputClassification, ParsedInput, ParsedInvoiceInput, ParsedNofferInput } from "./types/parse";
+import { decodeNoffer } from "./decodeNoffer";
+import { InputClassification, ParsedInput } from "./types/parse";
 import { requestLnurlServiceParams } from "./lnurl/get";
 import { validateAddress } from "./address";
 import { decodeInvoice } from "./invoice";
-import type { NostrKeyPair } from "@/Api/nostrHandler";
 import type { Satoshi } from "./types/units";
-import { parseUserInputToSats } from "./units";
-import { nip19, OfferPriceType } from "@shocknet/clink-sdk";
+import { nip19 } from "@shocknet/clink-sdk";
 import {
 	LN_INVOICE_REGEX,
 	LNURL_REGEX,
@@ -90,7 +88,7 @@ const VALIDATORS: Validator[] = [
 	},
 ];
 
-// Function to identify input type through regex. Can disallow certain types of input using config.disallowed.
+/* Function to identify input type through regex. Can disallow certain types of input using config.disallowed */
 export function identifyBitcoinInput(incomingInput: string, config?: InputClassificationConfig): IdentifyResult {
 
 	const empty = { classification: InputClassification.UNKNOWN, value: "" };
@@ -126,24 +124,23 @@ export function identifyBitcoinInput(incomingInput: string, config?: InputClassi
 }
 
 
-export const parseInvoiceInput = (invoice: string, expectedAmount?: Satoshi): ParsedInvoiceInput => {
-
-	const { amount, description } = decodeInvoice(invoice, expectedAmount);
-
-	return {
-		type: InputClassification.LN_INVOICE,
-		data: invoice,
-		amount,
-		memo: description
-	};
-}
-// Takes input string and its previously determined InputClassification and returns a ParsedInput object.
-export async function parseBitcoinInput(incomingInput: string, matchedClassification: InputClassification, keyPair?: NostrKeyPair): Promise<ParsedInput> {
+/* Takes input string and its previously determined InputClassification and returns a ParsedInput object. */
+export async function parseBitcoinInput(
+	incomingInput: string,
+	matchedClassification: InputClassification,
+	expectedAmount?: Satoshi,
+): Promise<ParsedInput> {
 	const input = incomingInput.trim();
 
 	switch (matchedClassification) {
 		case InputClassification.LN_INVOICE: {
-			return parseInvoiceInput(input);
+			const { amount, description } = decodeInvoice(input, expectedAmount);
+			return {
+				type: InputClassification.LN_INVOICE,
+				data: input,
+				amount,
+				memo: description,
+			};
 		}
 		case InputClassification.LNURL_PAY: {
 			const lnurl = input;
@@ -164,7 +161,7 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 		}
 		case InputClassification.BITCOIN_ADDRESS: {
 			const address = input
-			validateAddress(address); // throws
+			validateAddress(address); // throws if invalid address
 
 			return {
 				type: InputClassification.BITCOIN_ADDRESS,
@@ -184,52 +181,12 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			}
 		}
 		case InputClassification.NOFFER: {
-			if (!keyPair) {
-				throw new Error("Not a pub spend source");
-			}
 			const noffer = input
 			const decoded = decodeNoffer(noffer);
-			const { price, priceType } = decoded;
-			const base: ParsedNofferInput = {
+			return {
 				type: InputClassification.NOFFER,
 				data: input,
 				noffer: decoded,
-				priceType: OfferPriceType.Spontaneous,
-			}
-
-			// Default to spontaneous if neither field exists
-			if (price === undefined && priceType === undefined) {
-				return base;
-			}
-
-			let parsedInvoice: ParsedInvoiceInput;
-			switch (priceType) {
-				case OfferPriceType.Fixed:
-				case OfferPriceType.Variable: {
-					// For Fixed and Variable, we want to get an invoice right away, so the user can see the amount before sending.
-					const invoice = await createNofferInvoice(decoded, keyPair);
-					if (typeof invoice !== "string") {
-						throw new Error(invoice.error);
-					}
-					const { classification, value } = identifyBitcoinInput(invoice);
-					if (classification !== InputClassification.LN_INVOICE) {
-						throw new Error("Invalid invoice from noffer");
-					}
-					parsedInvoice = parseInvoiceInput(value, parseUserInputToSats((price || 0).toString(), "sats"));
-
-
-					return {
-						...base,
-						priceType: priceType,
-						invoiceData: parsedInvoice
-					};
-				}
-
-
-				case OfferPriceType.Spontaneous:
-					return base;
-				default:
-					throw new Error("Invalid price type");
 			}
 		}
 		case InputClassification.NPROFILE: {
@@ -262,3 +219,55 @@ export async function parseBitcoinInput(incomingInput: string, matchedClassifica
 			return { type: InputClassification.UNKNOWN, data: input };
 	}
 }
+
+type ExpectedClassification = Exclude<InputClassification, InputClassification.UNKNOWN>;
+
+function identifyAllowedFor(expected: ExpectedClassification): InputClassification[] {
+	// Identify classifies all LNURL bech32 as pay; withdraw is decided at parse time.
+	if (expected === InputClassification.LNURL_WITHDRAW) {
+		return [InputClassification.LNURL_PAY];
+	}
+	return [expected];
+}
+
+/** Identify + parse a string that must be `expected`. Throws if it is not. */
+export async function parseAs<T extends ExpectedClassification>(
+	input: string,
+	expected: T,
+	expectedAmount?: T extends InputClassification.LN_INVOICE ? Satoshi : never,
+): Promise<Extract<ParsedInput, { type: T }>> {
+	const { classification, value } = identifyBitcoinInput(input, {
+		allowed: identifyAllowedFor(expected),
+	});
+	if (classification === InputClassification.UNKNOWN) {
+		throw new Error(`Not a ${expected}`);
+	}
+	// Identify maps every LNURL bech32 to pay; withdraw is only known after parse.
+	if (
+		classification !== expected &&
+		expected !== InputClassification.LNURL_WITHDRAW
+	) {
+		throw new Error(`Expected ${expected}, got ${classification}`);
+	}
+
+	// when we expect an invoice, we need an amount to check against decoded invoice's amount
+	if (classification === InputClassification.LN_INVOICE && !expectedAmount) {
+		throw new Error("Amount is required for LN invoice");
+	}
+
+	const parsed = await parseBitcoinInput(
+		value,
+		classification,
+		expected === InputClassification.LN_INVOICE ? expectedAmount : undefined,
+	);
+
+	// another check here because for lnurl, lnurlp vs lnurlw is determined at parse time
+	if (parsed.type !== expected) {
+		throw new Error(`Expected ${expected}, got ${parsed.type}`);
+	}
+
+	return parsed as Extract<ParsedInput, { type: T }>;
+}
+
+
+

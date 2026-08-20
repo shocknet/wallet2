@@ -1,6 +1,6 @@
 import { LnurlPayServiceResponse, LnurlWithdrawServiceResponse } from "./lnurl";
 import { Satoshi } from "./units";
-import { OfferPointer, OfferPriceType } from "@shocknet/clink-sdk";
+import { OfferPointer } from "@shocknet/clink-sdk";
 
 
 
@@ -38,7 +38,6 @@ export interface ParsedLnurlPayInput extends ParsedInputBase, LnurlPayServiceRes
 }
 export interface ParsedLightningAddressInput extends ParsedInputBase, LnurlPayServiceResponse {
 	type: InputClassification.LN_ADDRESS;
-	nofferPriceType?: OfferPriceType;
 }
 export interface ParsedLnurlWithdrawInput extends ParsedInputBase, LnurlWithdrawServiceResponse {
 	type: InputClassification.LNURL_WITHDRAW;
@@ -49,20 +48,7 @@ export interface ParsedBitcoinAddressInput extends ParsedInputBase {
 export type ParsedNofferInput = ParsedInputBase & {
 	type: InputClassification.NOFFER;
 	noffer: OfferPointer;
-} & (
-		| {
-			priceType: OfferPriceType.Fixed;
-			invoiceData: ParsedInvoiceInput;
-		}
-		| {
-			priceType: OfferPriceType.Variable;
-			invoiceData: ParsedInvoiceInput;
-		}
-		| {
-			priceType: OfferPriceType.Spontaneous;
-			invoiceData?: never;
-		}
-	)
+}
 export interface ParsedUnknownInput extends ParsedInputBase {
 	type: InputClassification.UNKNOWN;
 }

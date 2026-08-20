@@ -3,6 +3,7 @@ import { selectAdminNprofileViews, selectHealthyNprofileViews, selectNprofileVie
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import type { HomePageNavState } from "@/Pages/Home/nav";
 
 export const loadedIdentityGuard: Guard = () => {
 	const boot = store.getState().appState.bootstrapped;
@@ -22,7 +23,10 @@ export const atLeastOneNprofileSource: Guard = ({ props }) => {
 		allow: ok,
 		redirectTo: ok ? undefined : {
 			pathname: "/home",
-			state: { from: props.location, reason: "You don't have any nprofile sources. Add one first" },
+			state: {
+				from: props.location,
+				reason: "You don't have any nprofile sources. Add one first",
+			} satisfies HomePageNavState,
 		},
 		keySuffix: `sources:${ids.length}`,
 	};
@@ -35,7 +39,10 @@ export const atLeastOneSource: Guard = ({ props }) => {
 		allow: ok,
 		redirectTo: ok ? undefined : {
 			pathname: "/home",
-			state: { from: props.location, reason: "You don't have any sources. Add one first" },
+			state: {
+				from: props.location,
+				reason: "You don't have any sources. Add one first",
+			} satisfies HomePageNavState,
 		},
 		keySuffix: `sources:${ids.length}`,
 	};
@@ -48,7 +55,10 @@ export const atLeastOneHealthyNprofileSourceGuard: Guard = ({ props }) => {
 		allow: ok,
 		redirectTo: ok ? undefined : {
 			pathname: "/home",
-			state: { from: props.location, reason: "You don't have any nprofile sources. Add one first" },
+			state: {
+				from: props.location,
+				reason: "You don't have any nprofile sources. Add one first",
+			} satisfies HomePageNavState,
 		},
 		keySuffix: `sources:${ids.length}`,
 	};
@@ -61,7 +71,10 @@ export const atLeastOneAdminNprofileSourceGuard: Guard = ({ props }) => {
 		allow: ok,
 		redirectTo: ok ? undefined : {
 			pathname: "/home",
-			state: { from: props.location, reason: "You are not an administrator of any connected nodes." },
+			state: {
+				from: props.location,
+				reason: "You are not an administrator of any connected nodes.",
+			} satisfies HomePageNavState,
 		},
 		keySuffix: `sources:${ids.length}`,
 	};

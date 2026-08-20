@@ -49,6 +49,7 @@ import {
 } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import { useHistory, useLocation } from "react-router-dom";
+import { navToSources } from "@/Pages/Sources/nav";
 import {
 	createInvoiceForSource,
 	fetchRemotePayloads,
@@ -111,12 +112,7 @@ function ReceiveEmpty() {
 							color="primary"
 							className="[--border-radius:12px]"
 							expand="block"
-							onClick={() =>
-								history.push({
-									pathname: "/sources",
-									state: { from: location },
-								})
-							}
+							onClick={() => navToSources(history, { from: location })}
 						>
 							Go to sources
 						</IonButton>
@@ -240,10 +236,10 @@ function ReceiveStage({
 		(amount: Satoshi, memo: string, blind: boolean) => {
 			dispatchMethods({ type: "invoiceStart" });
 			void createInvoiceForSource(source, amount, memo, blind)
-				.then((bolt11) => {
+				.then((invoiceData) => {
 					dispatchMethods({
 						type: "invoiceSuccess",
-						invoice: { bolt11, amount },
+						invoice: invoiceData,
 					});
 				})
 				.catch((err: unknown) => {
@@ -337,7 +333,7 @@ function ReceiveStage({
 											label={m.label}
 											value={
 												m.id === "invoice"
-													? (invoice?.bolt11 ?? null)
+													? (invoice?.data ?? null)
 													: payloadForMethod(m.id, payloads)
 											}
 											prefix={

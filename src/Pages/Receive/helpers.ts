@@ -9,7 +9,8 @@ import {
 	getNostrBtcAddress,
 } from "@/Api/helpers";
 import type { Satoshi } from "@/lib/types/units";
-import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
+import { getInvoiceFromLnurlPay } from "@/lib/lnurl/pay";
+import { ParsedInvoiceInput } from "@/lib/types/parse";
 
 export function pickDefaultSource(
 	sources: SourceView[],
@@ -127,7 +128,7 @@ export async function createInvoiceForSource(
 	amount: Satoshi,
 	memo: string,
 	blind: boolean,
-): Promise<string> {
+): Promise<ParsedInvoiceInput> {
 	if (source.type === SourceType.NPROFILE_SOURCE) {
 		return createNostrInvoice(
 			{ pubkey: source.lpk, relays: source.relays },
@@ -138,6 +139,6 @@ export async function createInvoiceForSource(
 		);
 	}
 
-	const { pr } = await getInvoiceForLnurlPay({ lnUrlOrAddress: source.sourceId, amountSats: amount });
-	return pr;
+	return getInvoiceFromLnurlPay({ lnUrlOrAddress: source.sourceId, amountSats: amount });
+
 }

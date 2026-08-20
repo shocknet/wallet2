@@ -1,14 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { identifyBitcoinInput } from "@/lib/parse";
+import { identifyBitcoinInput, parseAs } from "@/lib/parse";
 import { InputClassification } from "@/lib/types/parse";
+import { satoshi } from "@/lib/units";
+
+const REAL_INVOICE = {
+	bolt11:
+		"lnbc4u1p5w8ap2pp5rkd7z4csjjezjdmgtw93q5ec7es9dzzadtdu9dv5prs77tymspkqdz9tddjyar90p6z7urvv95kug3vyq3ycnj42fxzqanfvysyc6t8dp6xu6twvuh8qatzyfw46cqzzsxqrrsssp5m8qmawwx4ry79rapsdl502m3lp46syc0pqtzy0eqfxcd9m69p3uq9qxpqysgqusfw8s507ngyphyfcha26sm9yu6vwz3fqu24dmhdwh62249g9uhhuhkdkrv84y0eldzteqlpgmudgsx5gqj2lj2s2fhevexdgz2r3mgq6as625",
+	amount: satoshi(400),
+};
 
 describe("identifyBitcoinInput function", () => {
 	describe("LN_INVOICE", () => {
 		it("LN_INVOICE: returns lowercased payload, no scheme", () => {
-			const inv = "lnbc4u1p5w8ap2pp5rkd7z4csjjezjdmgtw93q5ec7es9dzzadtdu9dv5prs77tymspkqdz9tddjyar90p6z7urvv95kug3vyq3ycnj42fxzqanfvysyc6t8dp6xu6twvuh8qatzyfw46cqzzsxqrrsssp5m8qmawwx4ry79rapsdl502m3lp46syc0pqtzy0eqfxcd9m69p3uq9qxpqysgqusfw8s507ngyphyfcha26sm9yu6vwz3fqu24dmhdwh62249g9uhhuhkdkrv84y0eldzteqlpgmudgsx5gqj2lj2s2fhevexdgz2r3mgq6as625"
-			const res = identifyBitcoinInput("LIGHTNING:" + inv);
+			const res = identifyBitcoinInput("LIGHTNING:" + REAL_INVOICE.bolt11);
 			expect(res.classification).toBe(InputClassification.LN_INVOICE);
-			expect(res.value).toBe(inv);
+			expect(res.value).toBe(REAL_INVOICE.bolt11);
 		});
 		it("LN_INVOICE: takes upper case, returns lowercased payload, no scheme", () => {
 			const inv = "lnbc1" + "q".repeat(10);
@@ -44,7 +50,6 @@ describe("identifyBitcoinInput function", () => {
 		const np = "nprofile1" + "s".repeat(20);
 		const token = "Admin.Token-42";
 		const res = identifyBitcoinInput("NoStR:" + np + ":" + token);
-		console.log(res)
 		expect(res.classification).toBe(InputClassification.NPROFILE);
 		expect(res.value).toBe(np + ":" + token);
 	});
@@ -89,5 +94,30 @@ describe("identifyBitcoinInput function", () => {
 	it("rejects Lightning Address with invalid domain underscore", () => {
 		const res = identifyBitcoinInput("lightning:foo@exa_mple.com");
 		expect(res.classification).toBe(InputClassification.UNKNOWN);
+	});
+});
+
+describe("parseAs", () => {
+	it("parses a lightning-prefixed invoice as LN_INVOICE", async () => {
+		const parsed = await parseAs(
+			"LIGHTNING:" + REAL_INVOICE.bolt11,
+			InputClassification.LN_INVOICE,
+			REAL_INVOICE.amount,
+		);
+		expect(parsed.type).toBe(InputClassification.LN_INVOICE);
+		expect(parsed.data).toBe(REAL_INVOICE.bolt11);
+		expect(parsed.amount).toBe(REAL_INVOICE.amount);
+	});
+
+	it("rejects a non-invoice when expecting LN_INVOICE", async () => {
+		await expect(
+			parseAs("lnurl1" + "p".repeat(12), InputClassification.LN_INVOICE),
+		).rejects.toThrow(`Not a ${InputClassification.LN_INVOICE}`);
+	});
+
+	it("rejects amount mismatch when expectedAmount is set", async () => {
+		await expect(
+			parseAs(REAL_INVOICE.bolt11, InputClassification.LN_INVOICE, satoshi(1)),
+		).rejects.toThrow("Amount mismatch");
 	});
 });

@@ -24,10 +24,11 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import useDebounce from "@/Hooks/useDebounce";
+import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { InputClassification, ParsedLightningAddressInput, ParsedNprofileInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
 import { InputState } from "@/Pages/Send/types";
-import { RecipentInputHelperText } from "@/lib/jsxHelperts";
+import { ParseStatusHint } from "@/Pages/Send/ParseStatusHint";
 import { RelayManager } from "@/Components/RelayManager";
 import CardishList from "@/Components/CardishList";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
@@ -115,44 +116,38 @@ const AddSourceStart = ({
 			setInputState({ status: "idle", inputValue: "" });
 			return;
 		}
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value: normalizedInput } = identifyBitcoinInput(
-					debouncedInput,
-					{
-						allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					setInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
-					return;
-				}
+		const { classification, value: normalizedInput } = identifyBitcoinInput(
+			debouncedInput,
+			{
+				allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
+			}
+		);
+		if (classification === InputClassification.UNKNOWN) {
+			setInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
+			return;
+		}
+		setInputState({
+			status: "loading",
+			inputValue: normalizedInput,
+			classification
+		});
+
+		void parseBitcoinInput(normalizedInput, classification)
+			.then(parsed => {
 				setInputState({
-					status: "loading",
+					status: "parsedOk",
 					inputValue: normalizedInput,
+					parsedData: parsed
+				});
+			})
+			.catch((err: unknown) => {
+				setInputState({
+					status: "error",
+					inputValue: normalizedInput,
+					error: err instanceof Error ? err.message : "Failed to parse input",
 					classification
 				});
-
-				parseBitcoinInput(normalizedInput, classification)
-					.then(parsed => {
-						setInputState({
-							status: "parsedOk",
-							inputValue: normalizedInput,
-							parsedData: parsed
-						});
-					})
-					.catch((err: any) => {
-						setInputState({
-							status: "error",
-							inputValue: normalizedInput,
-							error: err.message,
-							classification
-						});
-					})
-			})
-			.catch(() => {
-				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
+			});
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedInput]);
@@ -307,7 +302,7 @@ const AddSourceStart = ({
 					</IonButton>
 				</IonInput>
 				<div style={{ display: "flex", alignItems: "center", marginTop: 10, gap: 10 }}>
-					<RecipentInputHelperText inputState={inputState} />
+					<ParseStatusHint state={inputState} />
 				</div>
 
 

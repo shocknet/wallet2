@@ -26,6 +26,7 @@ import { formatSatoshi } from "@/lib/units";
 import { InputState } from "@/Pages/Send/types";
 import useDebounce from "@/Hooks/useDebounce";
 import { InputClassification, ParsedNprofileInput } from "@/lib/types/parse";
+import { parseAs } from "@/lib/parse";
 import cn from "clsx";
 import { useQrScanner } from "@/Hooks/useQrScanner";
 
@@ -155,44 +156,28 @@ export const AddConnectionDialog = (
 			setInputState({ status: "idle", inputValue: "" });
 			return;
 		}
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value: normalizedInput } = identifyBitcoinInput(
-					debouncedInput,
-					{
-						allowed: [InputClassification.NPROFILE]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					setInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
-					return;
-				}
+		const trimmed = debouncedInput.trim();
+		setInputState({
+			status: "loading",
+			inputValue: trimmed,
+			classification: InputClassification.NPROFILE,
+		});
+		void parseAs(trimmed, InputClassification.NPROFILE)
+			.then(parsed => {
 				setInputState({
-					status: "loading",
-					inputValue: normalizedInput,
-					classification
+					status: "parsedOk",
+					inputValue: parsed.data,
+					parsedData: parsed,
 				});
-
-				parseBitcoinInput(normalizedInput, classification)
-					.then(parsed => {
-						setInputState({
-							status: "parsedOk",
-							inputValue: normalizedInput,
-							parsedData: parsed
-						});
-					})
-					.catch((err: any) => {
-						setInputState({
-							status: "error",
-							inputValue: normalizedInput,
-							error: err.message,
-							classification
-						});
-					})
 			})
-			.catch(() => {
-				//showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
+			.catch((err: unknown) => {
+				setInputState({
+					status: "error",
+					inputValue: trimmed,
+					error: err instanceof Error ? err.message : "Failed to parse input",
+					classification: InputClassification.NPROFILE,
+				});
+			});
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedInput]);

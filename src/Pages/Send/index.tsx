@@ -1,670 +1,473 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	IonButton,
-	IonButtons,
-	IonCol,
 	IonContent,
-	IonFooter,
-	IonGrid,
 	IonHeader,
 	IonIcon,
 	IonInput,
-	IonItem,
-	IonLabel,
-	IonList,
-	IonListHeader,
-	IonModal,
-	IonNote,
 	IonPage,
-	IonPopover,
-	IonRow,
-	IonSpinner,
-	IonText,
-	IonToolbar,
+	useIonLoading,
 	useIonRouter,
-	useIonViewDidEnter,
-	useIonViewWillEnter
-} from '@ionic/react';
-import "./styles/index.css";
-import useDebounce from '../../Hooks/useDebounce';
-import { useHistory } from 'react-router';
+} from "@ionic/react";
 import {
-	logoBitcoin,
-	qrCodeOutline,
-	flash,
-	informationCircle,
 	globeOutline,
-	helpCircleOutline,
-	atCircleOutline,
-} from 'ionicons/icons';
-import { CustomSelect } from '@/Components/CustomSelect';
-import { InputState } from './types';
-import { useToast } from '@/lib/contexts/useToast';
-import { InputClassification } from '@/lib/types/parse';
-import { Satoshi } from '@/lib/types/units';
-import { parseUserInputToSats } from '@/lib/units';
-import AmountInput from '@/Components/AmountInput';
-import { useAmountInput } from '@/Components/AmountInput/useAmountInput';
-import { OfferPriceType } from '@shocknet/clink-sdk';
-import { useQrScanner } from '@/Hooks/useQrScanner';
-import { useAppDispatch, useAppSelector } from '@/State/store/hooks';
-import { NprofileView, selectNprofileViews } from '@/State/scoped/backups/sources/selectors';
-import { sendPaymentThunk } from '@/State/scoped/backups/sources/history/sendPaymentThunk';
-import { RecipentInputHelperText } from '@/lib/jsxHelperts';
-import { selectFavoriteSourceId } from '@/State/scoped/backups/identity/slice';
-import { SelectedSource, SourceSelectOption } from '@/Components/CustomSelect/commonSelects';
-import StackPageToolbar from '@/Layout2/StackPageToolbar';
+	qrCodeOutline,
+} from "ionicons/icons";
+import { useHistory } from "react-router";
+import {
+	AmountField,
+	type AmountFieldChange,
+} from "@/Components/AmountField";
+import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
+import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
+import { SourceSelectSheet } from "@/Components/Source/SourceSelectSheet";
+import EmptyState from "@/Components/common/ui/EmptyState";
+import { useQrScanner } from "@/Hooks/useQrScanner";
+import RootPageToolbar from "@/Layout2/RootPageToolbar";
+import { ParseStatusHint } from "./ParseStatusHint";
+import { useToast } from "@/lib/contexts/useToast";
+import { NofferRangeError } from "@/lib/noffer";
+import type { Satoshi } from "@/lib/types/units";
+import { satoshi } from "@/lib/units";
+import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
+import { resolveRecipientToInvoice } from "@/State/scoped/backups/sources/history/resolveToInvoice";
+import {
+	invoiceSourceFromParsed,
+	sendInvoicePayment,
+} from "@/State/scoped/backups/sources/history/sendInvoicePayment";
+import {
+	type NprofileView,
+	selectNprofileViews,
+} from "@/State/scoped/backups/sources/selectors";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import cn from "clsx";
+import { getAmountFieldIntent } from "./amountFieldIntent";
+import {
+	pickDefaultSource,
+	pickSourceCoveringAmount,
+} from "./helpers";
+import { useAskConfirmSend } from "./ConfirmSendModal";
+import { RecipientInfoCard } from "./RecipientInfoCard";
+import { RecipientTypesHint } from "./RecipientTypesHint";
+import { FeeReserveHint } from "./FeeReserveHint";
+import { useRecipientField } from "./useRecipientField";
+import type { AmountRange } from "./types";
+import type { SendPageNavState } from "./nav";
+import { navToSources } from "@/Pages/Sources/nav";
+import type { ParsedInvoiceInput } from "@/lib/types/parse";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
+export default function Send() {
+	const sources = useAppSelector(selectNprofileViews);
+	const { location } = useHistory();
+	const sendVisitKeyRef = useRef(location.key);
+	if (location.pathname === "/send") {
+		sendVisitKeyRef.current = location.key;
+	}
 
-const hasBalance = (s: { maxWithdrawableSats?: number }) =>
-	(s.maxWithdrawableSats ?? 0) > 0;
+	return (
+		<IonPage className="ion-page-width">
+			{sources.length === 0 ? (
+				<SendEmpty />
+			) : (
+				<SendSourceGate key={sendVisitKeyRef.current} sources={sources} />
+			)}
+		</IonPage>
+	);
+}
 
-
-
-const LnurlCard = lazy(() => import("./LnurlCard"));
-const InvoiceCard = lazy(() => import("./InvoiceCard"));
-const NofferCard = lazy(() => import("./NofferCard"));
-
-
-
-const Send = () => {
-	const router = useIonRouter();
+function SendEmpty() {
 	const history = useHistory();
 
-	const dispatch = useAppDispatch();
-	const { showToast } = useToast();
 
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<RootPageToolbar title="Pay" />
+			</IonHeader>
+			<IonContent className="ion-padding">
+				<EmptyState
+					title="No Pub sources"
+					description="Add a Pub to send payments from"
+					ionicon={globeOutline}
+					action={
+						<IonButton
+							color="primary"
+							className="[--border-radius:12px]"
+							expand="block"
+							onClick={() => navToSources(history, { from: history.location })}
+						>
+							Go to sources
+						</IonButton>
+					}
+				/>
+			</IonContent>
+		</>
+	);
+}
 
-	const nprofileViews = useAppSelector(selectNprofileViews);
+function SendSourceGate({ sources }: { sources: NprofileView[] }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-
-	const [selectedSourceId, setSelectedSourceId] = useState("");
-
+	const { showToast } = useToast();
+	const [selectedSourceId, setSelectedSourceId] = useState(
+		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
+	);
+	const [sheetOpen, setSheetOpen] = useState(false);
 
 	useEffect(() => {
-		setSelectedSourceId(prev => {
-			// keep current selection if it still exists
-			if (prev && nprofileViews.some(v => v.sourceId === prev)) return prev;
-
-			// otherwise pick a fresh default
-			if (favoriteSourceId) {
-				const fav = nprofileViews.find(v => v.sourceId === favoriteSourceId);
-				if (fav && hasBalance(fav)) return fav.sourceId;
-			}
-
-			const withBalance = nprofileViews.find(hasBalance);
-			if (withBalance) return withBalance.sourceId;
-
-			return nprofileViews[0].sourceId;
-		});
-	}, [nprofileViews, favoriteSourceId]);
+		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
+			setSelectedSourceId(
+				pickDefaultSource(sources, favoriteSourceId).sourceId,
+			);
+		}
+	}, [sources, selectedSourceId, favoriteSourceId]);
 
 	const selectedSource = useMemo(() => {
-		// primary: user's selection
-		const chosen = nprofileViews.find(v => v.sourceId === selectedSourceId);
-		if (chosen) return chosen;
+		return sources.find((s) => s.sourceId === selectedSourceId) ??
+			pickDefaultSource(sources, favoriteSourceId);
+	}, [sources, selectedSourceId, favoriteSourceId]);
 
-		// fallback (while state is being repaired / initial load)
-		return nprofileViews[0];
-	}, [nprofileViews, selectedSourceId]);
-
-
-	useIonViewWillEnter(() => {
-		amountInput.clearFixed();
-		setNote("");
-	})
-
-
-	// Recipient might be passed in location.state
-	useIonViewDidEnter(() => {
-
-		const { input: clip } = history.location.state as { input?: string } || {};
-		if (!clip) return;
-		clearRecipientError();
-
-		setRecipient(clip);
-
-		// replace the current history entry with identical URL but no state.
-		// this is because Ionic will not remove the state when navigating again to this page
-		history.replace(history.location.pathname + history.location.search);
-	}, [history.location.key]);
-
-
-
-
-
-
-
-	// Amount input ref, used to focus the input after a valid recipient is parsed, when applicable
-	const satsInputRef = useRef<HTMLIonInputElement>(null);
-	const amountInput = useAmountInput({
-		userBalance: selectedSource.maxWithdrawableSats,
-	})
-
-	const [note, setNote] = useState("");
-
-
-
-
-	// --- Recipient input ---
-	const [recipient, setRecipient] = useState("");
-	const debouncedRecepient = useDebounce(recipient, 800);
-	const [inputState, setInputState] = useState<InputState>({
-		status: "idle",
-		inputValue: ""
-	});
-
-	const inputStateChange = useCallback((newState: InputState) => {
-		setInputState(prevState => {
-			const recipientChanged = prevState.inputValue !== newState.inputValue;
-
-			if (
-				recipientChanged &&
-				prevState.status === "parsedOk" &&
-				(
-					prevState.parsedData.type === InputClassification.LN_INVOICE ||
-					(
-						prevState.parsedData.type === InputClassification.NOFFER &&
-						prevState.parsedData.priceType !== OfferPriceType.Spontaneous
-					)
-				)
-			) {
-				amountInput.clearFixed();
+	const switchToSourceCoveringAmount = useCallback(
+		(amount: Satoshi) => {
+			const better = pickSourceCoveringAmount(
+				sources,
+				amount,
+				favoriteSourceId,
+			);
+			if (better && better.sourceId !== selectedSourceId) {
+				setSelectedSourceId(better.sourceId);
+				showToast({
+					header: "Source switched",
+					message: `${sourceDisplayName(better)} can cover this amount.`,
+					color: "warning",
+					duration: 2000,
+				});
 			}
+		},
+		[sources, selectedSourceId, favoriteSourceId, showToast],
+	);
 
-			return newState;
-		});
-	}, [amountInput]);
+	return (
+		<>
+			<IonHeader className="ion-no-border">
+				<RootPageToolbar title="Pay" />
+			</IonHeader>
+			<IonContent className="ion-padding ion-content-no-footer">
+				<div className="mx-auto flex h-full min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
+					<div className="flex flex-col gap-2">
+						<SourceSelectionView
+							showTapToSwitch={false}
+							showBalance
+							source={selectedSource}
+							onClick={() => setSheetOpen(true)}
+						/>
+						<FeeReserveHint
+							sourceId={selectedSource.sourceId}
+							balanceSats={selectedSource.balanceSats}
+							availableSats={selectedSource.maxWithdrawableSats}
+							reserveSats={satoshi(
+								Math.max(
+									0,
+									selectedSource.balanceSats -
+									selectedSource.maxWithdrawableSats,
+								),
+							)}
+						/>
+						<SourceReachabilityHint source={selectedSource} />
+					</div>
+					<SendStage
+						source={selectedSource}
+						switchToSourceCoveringAmount={switchToSourceCoveringAmount}
+					/>
+				</div>
 
-	const [isTouched, setIsTouched] = useState(false);
-	// Recipient input ref, used to enforce removal of error class when input is changed
-	const inputRef = useRef<HTMLIonInputElement>(null);
+				<SourceSelectSheet
+					isOpen={sheetOpen}
+					onDidDismiss={() => setSheetOpen(false)}
+					selectedSourceId={selectedSourceId}
+					onSelect={(source) => setSelectedSourceId(source.sourceId)}
+					sources={sources}
+					title="Spend from"
+				/>
+			</IonContent>
+		</>
+	);
+}
 
-	const defaultLimits = useCallback(
-		() => ({
-			min: 1 as Satoshi,
-			max: selectedSource.maxWithdrawableSats || 0 as Satoshi,
-		}),
-		[selectedSource]
+
+function SendStage({
+	source,
+	switchToSourceCoveringAmount,
+}: {
+	source: NprofileView;
+	switchToSourceCoveringAmount: (amount: Satoshi) => void;
+}) {
+	const router = useIonRouter();
+	const history = useHistory<SendPageNavState>();
+	const dispatch = useAppDispatch();
+	const { showToast } = useToast();
+	const { scanSingleBarcode } = useQrScanner();
+
+	const { value: recipient, state: recipientState, onInput, commit } = useRecipientField();
+
+	useEffect(() => {
+		const location = history.location;
+		if (location.pathname !== "/send") return;
+		const parsed = location.state?.parsed;
+		if (!parsed) return;
+
+		commit(parsed);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [history.location.key, commit]);
+	const [nofferRange, setNofferRange] = useState<AmountRange | null>(null);
+
+	const [amountChange, setAmountChange] = useState<AmountFieldChange>({
+		sats: null,
+		error: undefined,
+	});
+	const [amountFieldKey, setAmountFieldKey] = useState(0);
+	const amountRef = useRef<HTMLIonInputElement>(null);
+
+	const parsedIdentity =
+		recipientState.status === "parsedOk" ? recipientState.inputValue : null;
+
+	useEffect(() => {
+		setNofferRange(null);
+	}, [parsedIdentity]);
+
+	const amountFieldIntent = useMemo(
+		() =>
+			getAmountFieldIntent(
+				recipientState.status === "parsedOk" ? recipientState.parsedData : null,
+				source.maxWithdrawableSats,
+				nofferRange,
+			),
+		[recipientState, source.maxWithdrawableSats, nofferRange],
 	);
 
 
 
 	useEffect(() => {
-		amountInput.setLimits(defaultLimits());
-		if (!debouncedRecepient.trim()) {
-			inputStateChange({ status: "idle", inputValue: "" });
-			return;
-		}
+		if (!amountFieldIntent.focusAmount || !parsedIdentity) return;
+		void amountRef.current?.setFocus();
+	}, [amountFieldIntent.focusAmount, parsedIdentity]);
 
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value } = identifyBitcoinInput(
-					debouncedRecepient,
-					{
-						disallowed: [InputClassification.BITCOIN_ADDRESS, InputClassification.NPROFILE]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					inputStateChange({ status: "error", inputValue: debouncedRecepient, classification, error: "Unidentified recipient" });
-					return;
-				}
-				inputStateChange({
-					status: "loading",
-					inputValue: value,
-					classification
-				});
-
-				parseBitcoinInput(value, classification, selectedSource.keys)
-					.then(parsed => {
-						if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-							inputStateChange({
-								error: "Lnurl cannot be a lnurl-withdraw",
-								status: "error",
-								inputValue: value,
-								classification: parsed.type
-							});
-							return;
-						}
-
-						if (parsed.type === InputClassification.LN_INVOICE) {
-							if (!parsed.amount) {
-								inputStateChange({
-									error: "Zero value invoices are not supported",
-									status: "error",
-									inputValue: value,
-									classification: parsed.type
-								});
-								return;
-							}
-
-							amountInput.setFixed(parsed.amount);
-
-							// If the invoice has a description, set it as the note
-							if (parsed.memo) {
-								setNote(parsed.memo);
-							}
-						}
-
-						// If it's a LNURL or LN address, set the limits
-						if (parsed.type === InputClassification.LNURL_PAY || parsed.type === InputClassification.LN_ADDRESS) {
-							amountInput.setLimits({
-								min: parsed.min,
-								max: Math.min(
-									parsed.max,
-									selectedSource.maxWithdrawableSats || 0 as Satoshi
-								) as Satoshi,
-							});
-
-							satsInputRef.current?.setFocus();
-
-						}
-
-						if (
-							parsed.type === InputClassification.BITCOIN_ADDRESS ||
-							(parsed.type === InputClassification.NOFFER &&
-								parsed.priceType === OfferPriceType.Spontaneous)
-						) {
-							satsInputRef.current?.setFocus();
-						}
-
-						// If it's a noffer with no spontaneous price type, set the amount from the invoice
-						if (parsed.type === InputClassification.NOFFER) {
-							if (parsed.priceType === OfferPriceType.Fixed || parsed.priceType === OfferPriceType.Variable) {
-								amountInput.setFixed(parsed.invoiceData.amount);
-							}
-						}
-						inputStateChange({
-							status: "parsedOk",
-							inputValue: value,
-							parsedData: parsed
-						});
-					})
-					.catch((err: any) => {
-						inputStateChange({
-							status: "error",
-							inputValue: value,
-							error: err.message,
-							classification
-						});
-					})
-			})
-			.catch(() => {
-				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
-
-
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [debouncedRecepient, selectedSource]);
-
-
-	// If the amount is fixed (invoice, fixed noffer, etc.),
-	// and the amount is greater than the max withdrawable of selected source,
-	// then find and change to a source that has enough balance.
-	// If there is no such source, do nothing.
 	useEffect(() => {
-		if (
-			amountInput.state.mode === "fixed" &&
-			amountInput.effectiveSats !== null &&
-			amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)
-		) {
-			const foundOneWithEnoughBalance = nprofileViews.find(s => (s.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats!);
-			if (foundOneWithEnoughBalance) {
-				setSelectedSourceId(foundOneWithEnoughBalance.sourceId);
-			}
+		const fixed = amountFieldIntent.fixedSats;
+		if (fixed == null) return;
+		if (source.maxWithdrawableSats >= fixed) return;
+		switchToSourceCoveringAmount(fixed);
+	}, [
+		amountFieldIntent.fixedSats,
+		source.maxWithdrawableSats,
+		switchToSourceCoveringAmount,
+	]);
+
+	const [isTouched, setIsTouched] = useState(false);
+	const recipientRef = useRef<HTMLIonInputElement>(null);
+	const reviewing = useRef(false);
+	const [presentLoading, dismissLoading] = useIonLoading();
+	const askConfirmSend = useAskConfirmSend();
+
+
+
+
+	const onRecipientInput = (value: string) => {
+		onInput(value);
+		if (recipientRef.current) {
+			recipientRef.current.classList.remove("ion-invalid");
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [amountInput])
+	};
 
-
-
-	const clearRecipientError = () => {
-		if (inputRef.current) {
-			inputRef.current.classList.remove("ion-invalid")
-		}
-	}
-
-	const onRecipientChange = (e: CustomEvent) => {
-		setRecipient(e.detail.value || "");
-		inputStateChange({ status: "idle", inputValue: "" });
-		clearRecipientError();
-	}
-
-
-
-
-
-	const { scanSingleBarcode } = useQrScanner();
 	const openScan = async () => {
-		const instruction = "Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address";
-
 		try {
-			const input = await scanSingleBarcode(instruction);
-			setRecipient(input);
+			const input = await scanSingleBarcode(
+				"Scan a Lightning Invoice, Noffer string, Lnurl, or Lightning Address",
+			);
+			commit(input);
 		} catch {
-			/*  */
+			/* dismissed */
 		}
-	}
+	};
+
+	const canPay =
+		recipientState.status === "parsedOk" &&
+		amountChange.sats != null &&
+		source.maxWithdrawableSats >= amountChange.sats;
 
 
+	const handleReviewPayment = async () => {
+		if (reviewing.current) return;
+		if (recipientState.status !== "parsedOk" || amountChange.sats == null) return;
 
-
-	const [popovers, setPopovers] = useState({
-		reserve: false,
-	})
-
-
-	// --- Handle Payment ---
-	const canPay = useMemo(() =>
-		inputState.status === "parsedOk" &&
-		amountInput.effectiveSats !== null &&
-		amountInput.effectiveSats !== 0 &&
-		(selectedSource.maxWithdrawableSats || 0 as Satoshi) >= amountInput.effectiveSats &&
-		selectedSource.beaconStale === "fresh"
-		, [inputState, amountInput.effectiveSats, selectedSource]);
-
-
-	const handlePayment = useCallback(async () => {
-		if (inputState.status !== "parsedOk") {
-
-			return;
-		}
-		if (amountInput.effectiveSats === null) {
-
-			return;
-		}
-		if (amountInput.effectiveSats > (selectedSource.maxWithdrawableSats || 0 as Satoshi)) {
-			return;
-		}
+		reviewing.current = true;
+		const parsed = recipientState.parsedData;
+		const amount = amountChange.sats;
+		const sourceId = source.sourceId;
 
 		try {
-			const res = await dispatch(sendPaymentThunk({
-				sourceId: selectedSource.sourceId,
-				parsedInput: inputState.parsedData,
-				amount: amountInput.effectiveSats,
-				note,
-				showToast
-			}));
-			if (
-				inputState.parsedData.type === InputClassification.NOFFER &&
-				inputState.parsedData.priceType === OfferPriceType.Spontaneous &&
-				res?.error && res.range
-			) {
-				amountInput.setLimits({
-					min: parseUserInputToSats(res.range.min.toString(), "sats"),
-					max: Math.min(parseUserInputToSats(res.range.max.toString(), "sats"), selectedSource.maxWithdrawableSats || 0 as Satoshi) as Satoshi
-
-				})
-
-				showToast({ message: "Noffer range updated, please try to send again now", color: "warning" });
-			} else {
-				router.goBack()
+			let invoice: ParsedInvoiceInput;
+			try {
+				await presentLoading({
+					message: "Preparing payment…",
+					backdropDismiss: false,
+					cssClass: "app-loading",
+				});
+				invoice = await resolveRecipientToInvoice({
+					parsed,
+					amount,
+					keys: source.keys,
+				});
+			} catch (err: unknown) {
+				if (err instanceof NofferRangeError) {
+					setNofferRange({
+						min: satoshi(err.range.min),
+						max: satoshi(err.range.max),
+					});
+					setAmountChange({ sats: null, error: undefined });
+					setAmountFieldKey((k) => k + 1);
+					showToast({
+						header: "Amount out of range",
+						message: "Limits updated — try again.",
+						color: "warning",
+					});
+				} else {
+					showToast({
+						header: "Invoice generation failed",
+						message: err instanceof Error ? err.message : "Could not generate an invoice",
+						color: "danger",
+					});
+				}
+				return;
+			} finally {
+				await dismissLoading();
 			}
-		} catch (err: any) {
-			showToast({ message: err?.message || "Payment failed", color: "danger" });
+
+			const confirmed = await askConfirmSend({
+				amount,
+				parsed,
+				source,
+				initialNote: invoice.memo,
+			});
+			if (!confirmed) return;
+
+			try {
+				dispatch(sendInvoicePayment({
+					sourceId,
+					parsedInvoice: invoice,
+					amount,
+					note: confirmed.note,
+					invoiceSource: invoiceSourceFromParsed(parsed),
+					showToast,
+				}));
+			} catch (err: unknown) {
+				showToast({
+					header: "Payment failed",
+					message: err instanceof Error ? err.message : "Could not send payment",
+					color: "danger",
+				});
+				return;
+			}
+
+			router.goBack();
+		} finally {
+			reviewing.current = false;
 		}
-
-	}, [amountInput, inputState, selectedSource, dispatch, router, showToast, note]);
-
+	};
 
 	return (
-		<IonPage className="ion-page-width">
-			<IonHeader className="ion-no-border">
-				<StackPageToolbar />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				<IonGrid>
-					<IonRow>
-						<IonCol size="12">
-							<AmountInput
-								ref={satsInputRef}
-								color="primary"
-								className="filled-input"
-								labelPlacement="stacked"
-								unit={amountInput.unit}
-								displayValue={amountInput.displayValue}
-								fill="solid"
-								mode="md"
-								limits={amountInput.limits}
-								isDisabled={amountInput.inputDisabled}
-								effectiveSats={amountInput.effectiveSats}
-								error={amountInput.error}
-								onType={amountInput.typeAmount}
-								onPressMax={amountInput.pressMax}
-								onToggleUnit={amountInput.toggleUnit}
+		<div className="flex min-h-0 flex-1 flex-col">
+			<div className="flex flex-col gap-4">
+				<AmountField
+					key={amountFieldKey}
+					ref={amountRef}
+					className="filled-input min-h-14"
+					fill="solid"
+					mode="md"
+					labelPlacement="stacked"
+					limits={amountFieldIntent.limits}
+					fixedSats={amountFieldIntent.fixedSats}
+					onChange={setAmountChange}
+				/>
+
+				<div className="flex flex-col gap-2">
+					<IonInput
+						ref={recipientRef}
+						className={cn(
+							"filled-input min-h-14",
+							recipientState.status === "error" && "ion-invalid",
+							isTouched && "ion-touched",
+						)}
+						label="Recipient"
+						labelPlacement="stacked"
+						fill="solid"
+						mode="md"
+						color="primary"
+						onIonBlur={() => setIsTouched(true)}
+						placeholder="Paste invoice, Noffer, LNURL, or Lightning address"
+						errorText={
+							recipientState.status === "error"
+								? recipientState.error
+								: undefined
+						}
+						value={recipient}
+						onIonInput={(e) => onRecipientInput(e.detail.value || "")}
+					>
+						<IonButton
+							slot="end"
+							fill="clear"
+							size="small"
+							color="medium"
+							className="m-0 !aspect-auto !min-h-8"
+							aria-label="scan"
+							onClick={() => void openScan()}
+						>
+							<IonIcon slot="icon-only" icon={qrCodeOutline} />
+						</IonButton>
+					</IonInput>
+					{recipientState.status === "loading" && (
+						<ParseStatusHint state={recipientState} />
+					)}
+					<div className="mt-4">
+						{recipientState.status === "parsedOk" ? (
+							<RecipientInfoCard
+								parsed={recipientState.parsedData}
+								nofferRange={nofferRange}
 							/>
-						</IonCol>
-					</IonRow>
-					<IonRow className="ion-margin-top">
-						<IonCol size="12">
-							<IonInput
-								ref={inputRef}
-								className={`
-									${inputState.status === "error" && 'ion-invalid'}
-									${isTouched && 'ion-touched'}
-									filled-input
-								`}
-
-								label="Recipient"
-								labelPlacement="stacked"
-								fill="solid"
-								mode="md"
-								color="primary"
-								onIonBlur={() => setIsTouched(true)}
-								placeholder="Paste invoice, Noffer string LNURL, Bitcoin address, or Lightning address"
-								errorText={inputState.status === "error" ? inputState.error : ""}
-								value={recipient}
-								onIonInput={onRecipientChange}
-							>
-								<IonButton size="small" fill="clear" slot="end" aria-label="scan" onClick={openScan}>
-									<IonIcon slot="icon-only" icon={qrCodeOutline} />
-								</IonButton>
-								<IonButton fill="clear" size="small" slot="end" aria-label="info" id="recipient-types-info">
-									<IonIcon slot="icon-only" icon={informationCircle} />
-								</IonButton>
-							</IonInput>
-						</IonCol>
-					</IonRow>
-
-					<IonRow>
-						<IonCol size="12">
-							<RecipentInputHelperText inputState={inputState} />
-						</IonCol>
-					</IonRow>
-
-
-					{/* Different input types cards */}
-					{
-						inputState.status === "parsedOk" && inputState.parsedData.type === InputClassification.LN_INVOICE && (
-							<IonRow>
-								<IonCol size="12">
-									<Suspense fallback={<IonSpinner />}>
-										<InvoiceCard invoiceData={inputState.parsedData} note={note} setNote={setNote} selectedSource={selectedSource} />
-									</Suspense>
-								</IonCol>
-							</IonRow>
-
-						)
-					}
-					{
-						(
-							inputState.status === "parsedOk"
-							&&
-							(
-								inputState.parsedData.type === InputClassification.LNURL_PAY ||
-								inputState.parsedData.type === InputClassification.LN_ADDRESS
-							)
-							&&
-							(
-								<IonRow>
-									<IonCol size="12">
-										{
-											<Suspense fallback={<IonSpinner />}>
-												<LnurlCard
-													lnurlData={inputState.parsedData}
-													setNote={setNote}
-													note={note}
-													selectedSource={selectedSource}
-												/>
-											</Suspense>
-										}
-									</IonCol>
-								</IonRow>
-							)
-						)
-					}
-
-					{
-						(
-							inputState.status === "parsedOk"
-							&&
-							(
-								inputState.parsedData.type === InputClassification.NOFFER
-							)
-							&&
-							(
-								<IonRow>
-									<IonCol size="12">
-										<Suspense fallback={<IonSpinner />}>
-											<NofferCard
-												nofferData={inputState.parsedData}
-												setNote={setNote}
-												note={note}
-											/>
-										</Suspense>
-									</IonCol>
-								</IonRow>
-							)
-						)
-					}
-					<IonRow className="ion-margin-top">
-						<IonCol size="12">
-							<IonText style={{ display: "block", marginBottom: "9px" }}>Spend From</IonText>
-							<CustomSelect<NprofileView>
-								items={nprofileViews}
-								selectedItem={selectedSource}
-								onSelect={(view) => setSelectedSourceId(view.sourceId)}
-								getIndex={(source) => source.sourceId}
-								title="Select Source"
-								subTitle="Select the source you want to spend from"
-								renderItem={(source) => (
-									<SourceSelectOption source={source} />
-								)}
-								renderSelected={(source) => (
-									<SelectedSource source={source} />
-								)}
-							>
-							</CustomSelect>
-
-						</IonCol>
-					</IonRow>
-					{
-						(selectedSource?.maxWithdrawableSats || 0 as Satoshi) > 0 && (
-							<IonRow className="ion-align-items-center ion-margin-top">
-								<IonCol size="auto" >
-									<IonText style={{ fontSize: "0.8rem" }} color="primary">
-										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-											Note: {(+(selectedSource?.balanceSats || 0 as Satoshi) - +(selectedSource?.maxWithdrawableSats || 0 as Satoshi)).toLocaleString()} sats of your balance is held in reserve for network fees.
-											<IonButton
-												fill="clear"
-												shape="round"
-												onClick={() => setPopovers({ ...popovers, reserve: true })}
-											>
-												<IonIcon icon={helpCircleOutline} slot="icon-only" />
-											</IonButton>
-										</span>
-									</IonText>
-								</IonCol>
-							</IonRow>
-						)
-					}
-				</IonGrid>
-
-				<IonPopover
-					isOpen={popovers.reserve}
-					onDidDismiss={() => setPopovers({ ...popovers, reserve: false })}
-				>
-					<IonContent className="ion-padding">
-						<IonText className="text-secondary">
-							Lightning fees are based on the amount of sats you are
-							sending, and so you must have more sats than you amountInput.
-							To ensure high success rates and low overall fees, the node
-							has defined a fee budget to hold as a fee reserve for sends.
-						</IonText>
-					</IonContent>
-				</IonPopover>
-
-				<IonModal
-					trigger="recipient-types-info"
-					className="dialog-modal"
-				>
-					<div className="wrapper">
-						<IonList inset className="secondary">
-							<IonListHeader>
-								<IonLabel>What Can You Enter?</IonLabel>
-							</IonListHeader>
-							<IonItem>
-								<IonIcon style={{ color: "orange" }} icon={flash} slot="start"></IonIcon>
-								<IonLabel>
-									<strong>Lightning Invoice</strong>
-									<IonNote>lnbc20m1pvjluezpp5qqqsyq...</IonNote>
-								</IonLabel>
-							</IonItem>
-							<IonItem>
-								<IonIcon style={{ color: "orange" }} icon={globeOutline} slot="start"></IonIcon>
-								<IonLabel>
-									<strong>LNURL</strong>
-									<IonNote>LNURL1dp68gurn8ghj7em9w...</IonNote>
-								</IonLabel>
-							</IonItem>
-							<IonItem>
-								<IonIcon style={{ color: "orange" }} icon={atCircleOutline} slot="start"></IonIcon>
-								<IonLabel>
-									<strong>Lightning Address</strong>
-									<IonNote>someone@somesite.com</IonNote>
-								</IonLabel>
-							</IonItem>
-
-							<IonItem>
-								<IonIcon style={{ color: "orange" }} icon={logoBitcoin} slot="start"></IonIcon>
-								<IonLabel>
-									<strong>Bitcoin address</strong>
-									<IonNote>bc1qar0srrr7xfkvy5l643...</IonNote>
-								</IonLabel>
-							</IonItem>
-							<IonItem>
-								<IonIcon style={{ color: "orange" }} icon="nostr" slot="start"></IonIcon>
-								<IonLabel>
-									<strong>Noffer string</strong>
-									<IonNote>noffer1qvqsyqjqvgunwc3j...</IonNote>
-								</IonLabel>
-							</IonItem>
-
-
-						</IonList>
+						) : (
+							<RecipientTypesHint />
+						)}
 					</div>
+				</div>
+			</div>
 
-				</IonModal>
-			</IonContent>
-			<IonFooter className="ion-no-border">
-				<IonToolbar>
-					<IonButtons slot="start" className="w-[48%]">
-						<IonButton fill="clear" expand="block" className="w-full" onClick={() => router.push("/home", "back", "pop")}>
-							Cancel
-						</IonButton>
-					</IonButtons>
-					<IonButtons slot="end" className="w-[48%]">
-						<IonButton color="primary" fill="solid" className="w-full" expand="block" disabled={!canPay} onClick={handlePayment}>
-							Pay
-						</IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonFooter>
-		</IonPage >
-	)
+			<div className="mt-auto flex gap-3 pt-6">
+				<IonButton
+					fill="clear"
+					expand="block"
+					className="m-0 flex-1 [--border-radius:12px] [--color:var(--app-text-primary)]"
+					onClick={() => router.goBack()}
+				>
+					Cancel
+				</IonButton>
+				<IonButton
+					color="primary"
+					fill="solid"
+					expand="block"
+					className="m-0 flex-1 [--border-radius:12px]"
+					disabled={!canPay}
+					onClick={() => void handleReviewPayment()}
+				>
+					Review payment
+				</IonButton>
+			</div>
+		</div>
+	);
 }
-
-
-
-export default Send;
