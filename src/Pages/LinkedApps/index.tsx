@@ -97,12 +97,31 @@ function LinkedAppsSourceGate({ sources }: { sources: SourceView[] }) {
 			pickDefaultLinkedAppsSource(sources, favoriteSourceId);
 	}, [sources, selectedSourceId, favoriteSourceId]);
 
+	const { refetch } = useGetDebitAuthorizationsQuery({
+		sourceId: selectedSource.sourceId,
+	});
+
+	const handleRefresh = useCallback(
+		async (event: CustomEvent<RefresherEventDetail>) => {
+			try {
+				await refetch();
+			} finally {
+				event.detail.complete();
+			}
+		},
+		[refetch],
+	);
+
 	return (
 		<>
 			<IonHeader className="ion-no-border">
 				<RootPageToolbar title="Linked Apps" />
 			</IonHeader>
 			<IonContent className="ion-padding">
+				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+					<IonRefresherContent />
+				</IonRefresher>
+
 				<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
 					<SourceSelectionView
 						source={selectedSource}
@@ -132,38 +151,17 @@ function LinkedAppsSourceGate({ sources }: { sources: SourceView[] }) {
 
 
 function LinkedAppsStage({ source }: { source: SourceView }) {
-	const { refetch } = useGetDebitAuthorizationsQuery({
-		sourceId: source.sourceId,
-	});
-
-	const handleRefresh = useCallback(
-		async (event: CustomEvent<RefresherEventDetail>) => {
-			try {
-				await refetch();
-			} finally {
-				event.detail.complete();
-			}
-		},
-		[refetch],
-	);
-
 	return (
-		<>
-			<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-				<IonRefresherContent />
-			</IonRefresher>
+		<div className="flex flex-1 flex-col gap-6">
+			<NdebitShare source={source} />
 
-			<div className="flex flex-1 flex-col gap-6">
-				<NdebitShare source={source} />
-
-				<section className="flex min-h-[40%] flex-1 flex-col">
-					<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-						Linked apps
-					</p>
-					<LinkedAppsList source={source} />
-				</section>
-			</div>
-		</>
+			<section className="flex min-h-[40%] flex-1 flex-col">
+				<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
+					Linked apps
+				</p>
+				<LinkedAppsList source={source} />
+			</section>
+		</div>
 	);
 }
 
