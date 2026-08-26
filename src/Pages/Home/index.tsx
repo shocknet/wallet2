@@ -2,13 +2,11 @@
 import {
 	IonButton,
 	IonContent,
-	IonFooter,
 	IonHeader,
 	IonIcon,
 	IonPage,
 	IonRefresher,
 	IonRefresherContent,
-	IonToolbar,
 	RefresherEventDetail,
 	useIonRouter,
 	useIonViewDidEnter,
@@ -202,12 +200,6 @@ const Home = () => {
 	};
 
 
-	const [scrollParent, setScrollParent] = useState<HTMLElement | undefined>();
-
-
-
-
-
 	return (
 		<IonPage
 			className="ion-page-width"
@@ -216,17 +208,17 @@ const Home = () => {
 				<HomePageToolbar />
 				<BalanceCard />
 			</IonHeader>
-			<IonContent
-				fullscreen
-				ref={(el) => el?.getScrollElement().then((el) => setScrollParent(el))}
-			>
+			<IonContent scrollY={false} className="ion-content-no-footer">
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
 				<Virtuoso
-					customScrollParent={scrollParent}
+					style={{ height: "100%" }}
 					data={operations}
 					defaultItemHeight={56}
+					components={{
+						Footer: () => <div className="h-[6rem]" aria-hidden />,
+					}}
 					itemContent={(_, op) => (
 						<div
 							key={op.operationId}
@@ -253,24 +245,29 @@ const Home = () => {
 						/>
 					</Suspense>
 				}
-			</IonContent>
-			<IonFooter translucent className="ion-no-border">
-				<IonToolbar className="![--background:transparent]">
-					<div className="mx-3 relative flex h-[5.5rem] items-center">
+				<div
+					slot="fixed"
+					className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3"
+				>
+
+					<div
+						aria-hidden
+						className="
+							pointer-events-none absolute inset-x-[-8%] bottom-[-1.25rem] z-0
+							h-60 blur-[1px]
+							bg-[radial-gradient(ellipse_88%_78%_at_50%_92%,rgba(var(--app-box-shadow-color),0.24)_0%,rgba(var(--app-box-shadow-color),0.12)_30%,rgba(var(--app-box-shadow-color),0.04)_55%,transparent_78%),linear-gradient(to_top,rgba(var(--app-box-shadow-color),0.13)_0%,rgba(var(--app-box-shadow-color),0.05)_42%,transparent_75%)]
+							dark:bg-[radial-gradient(ellipse_88%_78%_at_50%_92%,rgba(0,0,0,0.68)_0%,rgba(0,0,0,0.44)_26%,rgba(0,0,0,0.18)_52%,rgba(0,0,0,0.05)_72%,transparent_86%),linear-gradient(to_top,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.15)_38%,rgba(0,0,0,0.04)_68%,transparent_100%)]
+							[mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
+							[-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
+						"
+					/>
+					<div className="pointer-events-auto relative mx-0 flex h-[5.5rem] items-center">
 						<div
-							aria-hidden
 							className="
-								pointer-events-none absolute inset-x-0 bottom-0 z-0
-								h-[5.5rem]
-								bg-gradient-to-b from-transparent via-black/10 to-transparent
-								[mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
-								[-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
-							"
-						/>
-						<div
-							className="
-								relative flex h-[3rem] w-full items-center justify-between rounded-lg
-								bg-[var(--ion-color-dark)]
+								relative flex h-[3rem] w-full items-center justify-between rounded-full
+								bg-[var(--back-button-color)]
+								shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_24px_rgba(var(--app-box-shadow-color),0.14),0_2px_8px_rgba(var(--app-box-shadow-color),0.08)]
+								dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_12px_32px_rgba(0,0,0,0.4),0_2px_10px_rgba(0,0,0,0.25)]
 							"
 						>
 							<IonButton
@@ -286,7 +283,6 @@ const Home = () => {
 								<IonIcon slot="start" icon={downloadOutline} />
 								Receive
 							</IonButton>
-
 
 							<div className="w-24 shrink-0" aria-hidden />
 
@@ -316,15 +312,16 @@ const Home = () => {
 							className="
 								absolute left-1/2 top-1/2 z-[2] m-0
 								h-[5.5rem] w-[5.5rem] -translate-x-1/2 -translate-y-1/2
-								[--box-shadow:0_0_0_1px_rgba(var(--app-box-shadow-color),0.48)]
+								[--box-shadow:0_0_0_1px_rgba(var(--app-box-shadow-color),0.28),0_8px_22px_rgba(var(--app-box-shadow-color),0.16),0_0_28px_rgba(var(--app-box-shadow-color),0.08)]
+								dark:[--box-shadow:0_0_0_1px_rgba(var(--app-box-shadow-color),0.48),0_10px_28px_rgba(0,0,0,0.4),0_0_40px_rgba(0,0,0,0.22)]
 								[&_ion-icon]:text-[2rem]
 							"
 						>
 							<IonIcon slot="icon-only" icon={scanOutline} />
 						</IonButton>
 					</div>
-				</IonToolbar>
-			</IonFooter>
+				</div>
+			</IonContent>
 		</IonPage>
 	);
 }
