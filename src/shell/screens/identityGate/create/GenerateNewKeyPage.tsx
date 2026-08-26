@@ -192,7 +192,7 @@ export function GenerateNewKeyPage() {
 									expand="block"
 									onClick={handleDownloadFileBackup}
 								>
-									Downloads File Backup
+									Download File Backup
 								</IonButton>
 							</div>
 						</IonCardContent>
