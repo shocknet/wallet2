@@ -42,7 +42,6 @@ import { useToast } from "@/lib/contexts/useToast";
 import type { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import {
 	type SourceView,
 	selectSourceViews,
@@ -166,7 +165,6 @@ function ReceiveSourceGate({ sources }: { sources: SourceView[] }) {
 				onSelect={(source) => setSelectedSourceId(source.sourceId)}
 				sources={sources}
 				title="Receive into"
-				showSourceType
 			/>
 		</>
 	);
@@ -192,10 +190,6 @@ function ReceiveStage({
 	const amountInputRef = useRef<HTMLIonInputElement>(null);
 
 	useEffect(() => {
-		if (source.type !== SourceType.NPROFILE_SOURCE) {
-			return;
-		}
-
 		const sourceId = source.sourceId;
 		fetchRemotePayloads(source, (patch) => {
 			dispatchMethods({ type: "patch", sourceId, patch });
@@ -205,10 +199,7 @@ function ReceiveStage({
 	}, [source.sourceId]);
 
 
-	const metaNoffer =
-		source.type === SourceType.NPROFILE_SOURCE
-			? source.noffer?.trim()
-			: undefined;
+	const metaNoffer = source.noffer?.trim();
 
 	useEffect(() => {
 		if (!metaNoffer) return;

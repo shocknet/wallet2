@@ -81,9 +81,7 @@ export function ImportNostrKeyPage() {
 				}
 			}
 
-			await presentLoading({
-				message: "Creating profile...",
-			});
+			await presentLoading({ cssClass: "app-loading", message: "Creating profile...", });
 			try {
 				const { foundBackup, identityId } = await dispatch(
 					createIdentity({

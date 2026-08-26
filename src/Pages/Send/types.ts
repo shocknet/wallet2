@@ -34,9 +34,6 @@ export type RecipentParseState =
 	| ParsedOkState
 	| ErrorState;
 
-/** @deprecated Prefer RecipentParseState — kept for Sources / AddSource modal. */
-export type InputState = RecipentParseState;
-
 export type AmountRange = {
 	min: Satoshi;
 	max: Satoshi;

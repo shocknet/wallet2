@@ -25,7 +25,7 @@ import PeriodSelector from '@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { nip19 } from 'nostr-tools';
 import MetricsHeader from '@/Layout2/Metrics/metricsHeader';
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { PubUpgradeNotice } from "./PubUpgradeNotice";
 import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
@@ -78,7 +78,7 @@ const Dashboard = () => {
 
 
 
-	const admins = useAppSelector(selectAdminNprofileViews);
+	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const adminSource = useMemo(
 		() => admins.find(a => a.sourceId === selectedId),
@@ -116,7 +116,7 @@ const Dashboard = () => {
 		setLoading(true);
 
 		await dismissLoading();
-		await presentLoading("Fetching metrics...");
+		await presentLoading({ message: "Fetching metrics...", cssClass: "app-loading" });
 
 		try {
 			const client = await getNostrClient(

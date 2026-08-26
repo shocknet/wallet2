@@ -1,6 +1,6 @@
 import dLogger from "@/Api/helpers/debugLog";
 import { IdentityDocV0, IdentityDocV0Schema, migrateIdentityDocToCurrent } from "@/State/scoped/backups/identity/schema";
-import { migrateSourceDocToCurrent, SourceDocV0, SourceDocV0Schema } from "@/State/scoped/backups/sources/schema";
+import { migrateSourceDocToCurrent, SourceDocV0, SourceDocV0Schema, SourceType } from "@/State/scoped/backups/sources/schema";
 import { DocBase, DocBaseSchema } from "@/State/sync/docBase";
 
 
@@ -87,20 +87,26 @@ async function processRemoteSourceDoc(doc: DocBase): Promise<SourceDocV0 | null>
 		/* TODO: Mark the app as outdated */
 		log.error("remote doc version is ahead of us");
 		return null;
-	} else {
-		const docParseResult = await SourceDocV0Schema.safeParseAsync(migrationResult);
-		if (!docParseResult.success) {
-			log.error("failed parsing remote doc");
-			return null;
-		}
-
-		const { keys: _keys, admin_token: _admin_token, ...safeFields } = docParseResult.data;
-
-		log.info("parsed remote doc", {
-			data: { ...safeFields }
-		});
-		return docParseResult.data
 	}
+
+	const remoteType = (migrationResult as { type?: unknown }).type;
+	if (remoteType !== SourceType.NPROFILE_SOURCE) {
+		log.info("skipping non-nprofile remote source doc", { data: { type: remoteType } });
+		return null;
+	}
+
+	const docParseResult = await SourceDocV0Schema.safeParseAsync(migrationResult);
+	if (!docParseResult.success) {
+		log.error("failed parsing remote doc");
+		return null;
+	}
+
+	const { keys: _keys, admin_token: _admin_token, ...safeFields } = docParseResult.data;
+
+	log.info("parsed remote doc", {
+		data: { ...safeFields }
+	});
+	return docParseResult.data
 }
 export async function processRemoteDoc(doc: unknown): Promise<IdentityDocV0 | SourceDocV0 | null> {
 	const log = dLogger.withContext({

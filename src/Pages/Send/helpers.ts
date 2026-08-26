@@ -1,4 +1,4 @@
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import type { Satoshi } from "@/lib/types/units";
 import { InputClassification } from "@/lib/types/parse";
 
@@ -6,21 +6,21 @@ const hasBalance = (s: { maxWithdrawableSats?: number }) =>
 	(s.maxWithdrawableSats ?? 0) > 0;
 
 export function pickDefaultSource(
-	nprofileViews: NprofileView[],
+	sourceViews: SourceView[],
 	favoriteSourceId: string | null,
-): NprofileView {
-	const favorite = nprofileViews.find((s) => s.sourceId === favoriteSourceId);
+): SourceView {
+	const favorite = sourceViews.find((s) => s.sourceId === favoriteSourceId);
 	if (favorite && hasBalance(favorite)) return favorite;
-	const withBalance = nprofileViews.find(hasBalance);
+	const withBalance = sourceViews.find(hasBalance);
 	if (withBalance) return withBalance;
-	return nprofileViews[0];
+	return sourceViews[0];
 }
 
 export function pickSourceCoveringAmount(
-	sources: NprofileView[],
+	sources: SourceView[],
 	amount: Satoshi,
 	favoriteSourceId?: string | null,
-): NprofileView | null {
+): SourceView | null {
 	const covering = sources.filter((s) => s.maxWithdrawableSats >= amount);
 	if (covering.length === 0) return null;
 	const favorite = covering.find((s) => s.sourceId === favoriteSourceId);

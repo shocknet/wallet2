@@ -31,7 +31,7 @@ export function CreateSanctumPage() {
 			if (authHandledRef.current) return;
 			authHandledRef.current = true;
 			try {
-				await presentLoading({ message: "Creating profile…" });
+				await presentLoading({ cssClass: "app-loading", message: "Creating profile…" });
 				const { foundBackup, identityId } = await dispatch(
 					createIdentity({
 						type: IdentityType.SANCTUM,

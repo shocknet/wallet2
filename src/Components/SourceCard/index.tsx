@@ -1,6 +1,5 @@
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { useAppSelector } from "@/State/store/hooks";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
 import { star, walletOutline, personCircleOutline } from "ionicons/icons";
@@ -18,15 +17,8 @@ interface Props {
 const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
 
-
-
-
-
-	const label = source.type === SourceType.NPROFILE_SOURCE
-		? source.label || source.beaconName || "Unnamed source"
-		: source.label || source.sourceId;
+	const label = source.label || source.beaconName || "Unnamed source";
 
 
 	return (
@@ -41,18 +33,14 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 			<div slot="start" className="relative">
 
 				<IonIcon icon={personCircleOutline} className="text-6xl  block" />
-				{
-					isNprofile
-					&&
-					<div
-						className={cn(
-							"absolute w-3 h-3 rounded-full bottom-2 right-2",
-							source.beaconStale === "stale" && "bg-red-600",
-							source.beaconStale === "warmingUp" && "bg-orange-300",
-							source.beaconStale === "fresh" && "bg-green-500"
-						)}
-					/>
-				}
+				<div
+					className={cn(
+						"absolute w-3 h-3 rounded-full bottom-2 right-2",
+						source.beaconStale === "stale" && "bg-red-600",
+						source.beaconStale === "warmingUp" && "bg-orange-300",
+						source.beaconStale === "fresh" && "bg-green-500"
+					)}
+				/>
 
 			</div>
 			<IonLabel>
@@ -73,14 +61,10 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 					</IonRow>
 					<IonRow className="ion-nowrap ion-align-items-center ion-margin-top">
 						<IonCol className="ion-text-start" style={{ flex: "1 1 0", minWidth: 0 }}>
-							{
-								isNprofile
-								&&
-								<IonText className="text-secondary balance-row">
-									<IonIcon icon={walletOutline} />
-									{formatSatoshi(source.balanceSats ?? 0 as Satoshi)} sats
-								</IonText>
-							}
+							<IonText className="text-secondary balance-row">
+								<IonIcon icon={walletOutline} />
+								{formatSatoshi(source.balanceSats ?? 0 as Satoshi)} sats
+							</IonText>
 						</IonCol>
 					</IonRow>
 				</IonGrid>

@@ -299,7 +299,7 @@ export function applyMigratedSourceDocs(
 
 		dispatch(sourcesActions._createDraftDoc({ sourceId: source.source_id, draft: source }));
 
-		if (vanity_name && source.type === SourceType.NPROFILE_SOURCE) {
+		if (vanity_name) {
 			dispatch(sourcesActions.setVanityName({ sourceId: source.source_id, vanityName: vanity_name }));
 		}
 	}

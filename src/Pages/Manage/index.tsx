@@ -15,7 +15,7 @@ import { nip19 } from "nostr-tools";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 const Manage = () => {
@@ -35,7 +35,7 @@ const Manage = () => {
 	const [presentLoading, dismissLoading] = useIonLoading();
 
 
-	const admins = useAppSelector(selectAdminNprofileViews);
+	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const adminSource = useMemo(
 		() => admins.find(a => a.sourceId === selectedId),
@@ -77,7 +77,7 @@ const Manage = () => {
 		setIsRevealed(true);
 
 		await dismissLoading();
-		await presentLoading("Fetching seed...");
+		await presentLoading({ message: "Fetching seed...", cssClass: "app-loading" });
 
 		try {
 			const client = await getNostrClient(

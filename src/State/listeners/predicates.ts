@@ -1,6 +1,4 @@
 import { isAnyOf, type UnknownAction } from "@reduxjs/toolkit";
-
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import {
 	docsSelectors,
 	metadataSelectors,
@@ -25,11 +23,6 @@ export const beaconProbe = (state: RootState, sourceId: string) =>
 
 export const meta = (state: RootState, sourceId: string) =>
 	metadataSelectors.selectById(state, sourceId);
-
-export const isNprofile = (curr: RootState, sourceId: string) => {
-	const d = draft(curr, sourceId);
-	return !!d && d.type === SourceType.NPROFILE_SOURCE;
-};
 
 export const exists = (curr: RootState, sourceId: string) => {
 	const d = draft(curr, sourceId);
@@ -81,18 +74,9 @@ export const isPotentialSourceRemovalAction = isAnyOf(
 	sourcesActions.markDeleted,
 );
 
-export const nprofileJustAdded: ListenerPredicate = (action, curr, prev) =>
+export const sourceJustAdded: ListenerPredicate = (action, curr, prev) =>
 	isPotentialSourceUpsertAction(action)
-	&& isNprofile(curr, sourceIdOf(action))
 	&& justAdded(curr, prev, action.payload.sourceId);
-
-
-
-
-export const nprofileJustDeleted: ListenerPredicate = (action, curr, prev) =>
-	isPotentialSourceRemovalAction(action)
-	&& isNprofile(curr, sourceIdOf(action))
-	&& justDeleted(curr, prev, action.payload.sourceId);
 
 
 export const sourceJustDeleted: ListenerPredicate = (action, curr, prev) =>
@@ -100,12 +84,12 @@ export const sourceJustDeleted: ListenerPredicate = (action, curr, prev) =>
 	&& justDeleted(curr, prev, sourceIdOf(action));
 
 
-export const nprofileBecameFresh: ListenerPredicate = (action, curr, prev) =>
+export const sourceBecameFresh: ListenerPredicate = (action, curr, prev) =>
 	sourcesActions.recordBeaconForSource.match(action)
 	&& exists(curr, action.payload.sourceId)
 	&& becameFresh(curr, prev, action.payload.sourceId);
 
-export const nprofileBecameStale: ListenerPredicate = (action, curr, prev) =>
+export const sourceBecameStale: ListenerPredicate = (action, curr, prev) =>
 	sourcesActions.recordBeaconForSource.match(action)
 	&& exists(curr, action.payload.sourceId)
 	&& becameStale(curr, prev, action.payload.sourceId);

@@ -1,5 +1,5 @@
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
-import { selectAdminNprofileViews, selectHealthyNprofileViews, selectNprofileViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
@@ -15,22 +15,6 @@ export const loadedIdentityGuard: Guard = () => {
 		keySuffix: id ?? "anon",
 	};
 };
-
-export const atLeastOneNprofileSource: Guard = ({ props }) => {
-	const ids = selectNprofileViews(store.getState());
-	const ok = ids.length > 0;
-	return {
-		allow: ok,
-		redirectTo: ok ? undefined : {
-			pathname: "/home",
-			state: {
-				from: props.location,
-				reason: "You don't have any nprofile sources. Add one first",
-			} satisfies HomePageNavState,
-		},
-		keySuffix: `sources:${ids.length}`,
-	};
-}
 
 export const atLeastOneSource: Guard = ({ props }) => {
 	const ids = selectSourceViews(store.getState());
@@ -48,24 +32,8 @@ export const atLeastOneSource: Guard = ({ props }) => {
 	};
 }
 
-export const atLeastOneHealthyNprofileSourceGuard: Guard = ({ props }) => {
-	const ids = selectHealthyNprofileViews(store.getState());
-	const ok = ids.length > 0;
-	return {
-		allow: ok,
-		redirectTo: ok ? undefined : {
-			pathname: "/home",
-			state: {
-				from: props.location,
-				reason: "You don't have any nprofile sources. Add one first",
-			} satisfies HomePageNavState,
-		},
-		keySuffix: `sources:${ids.length}`,
-	};
-};
-
-export const atLeastOneAdminNprofileSourceGuard: Guard = ({ props }) => {
-	const ids = selectAdminNprofileViews(store.getState());
+export const atLeastOneAdminSourceGuard: Guard = ({ props }) => {
+	const ids = selectAdminSourceViews(store.getState());
 	const ok = ids.length > 0;
 	return {
 		allow: ok,
@@ -92,7 +60,7 @@ export const requireSelectedAdminSourceGuard: Guard = ({ props }) => {
 		};
 	}
 
-	const admins = selectAdminNprofileViews(state);
+	const admins = selectAdminSourceViews(state);
 	const exists = admins.some((a) => a.sourceId === selectedId);
 
 	if (!exists) {

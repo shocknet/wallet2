@@ -1,9 +1,8 @@
-import type { NprofileView, SourceView } from "@/State/scoped/backups/sources/selectors"
+import type { SourceView } from "@/State/scoped/backups/sources/selectors"
 import { IonAvatar, IonIcon, IonLabel, IonSkeletonText } from "@ionic/react"
 import { personCircle } from "ionicons/icons";
 import { useState } from "react";
 import cn from "clsx";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { formatSatoshi } from "@/lib/units";
 import { BeaconStatusLine } from "../BeaconStatusLine";
 
@@ -14,78 +13,50 @@ interface SelectSourceProps {
 export const SelectedSource = ({ source }: SelectSourceProps) => {
 	return (
 		<>
-			<SourceAvatar slot="start" avatarUrl={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} />
-			{
-				source.type === SourceType.NPROFILE_SOURCE
-					?
-					<SelectedNprofile source={source} />
-					:
-					<IonLabel >
-						<span className="text-lg text-secondary truncate">{source.label || source.sourceId}</span>
-					</IonLabel>
-			}
+			<SelectItemAvatar slot="start" avatarUrl={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} />
+			<IonLabel className="flex flex-col">
+				<span className="flex gap-1 justify-start items-center">
+					<span className="text-lg text-secondary truncate">
+						{source.label || source.beaconName || "Pub source"}
+					</span>
+					<span className="text-muted">•</span>
+					<span className="text-base text-muted">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
+				</span>
+
+				<BeaconStatusLine
+					state={source.beaconStale}
+					showWhenFresh={false}
+				/>
+			</IonLabel>
 		</>
 	);
 }
-
-const SelectedNprofile = ({ source }: { source: NprofileView }) => {
-	return (
-		<IonLabel className="flex flex-col">
-			<span className="flex gap-1 justify-start items-center">
-				<span className="text-lg text-secondary truncate">
-					{source.label || source.beaconName || "Pub source"}
-				</span>
-				<span className="text-muted">•</span>
-				<span className="text-base text-muted">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
-			</span>
-
-			<BeaconStatusLine
-				state={source.beaconStale}
-				showWhenFresh={false}
-			/>
-		</IonLabel>
-	);
-};
 
 
 
 export const SourceSelectOption = ({ source }: SelectSourceProps) => {
 	return (
 		<>
-			<SourceAvatar slot="start" avatarUrl={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} />
-			{
-				source.type === SourceType.NPROFILE_SOURCE
-					?
-					<NprofileSelectOption source={source} />
-					:
-					<IonLabel >
-						<span className="text-lg text-secondary truncate">{source.label || source.sourceId}</span>
-					</IonLabel>
-			}
+			<SelectItemAvatar slot="start" avatarUrl={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} />
+			<IonLabel className="flex flex-col">
+				<div className="text-lg text-secondary truncate">
+					{source.label || source.beaconName || "Pub source"}
+				</div>
+
+				<div className="text-base text-muted ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
+
+				<BeaconStatusLine state={source.beaconStale} />
+			</IonLabel>
 		</>
 	);
 }
 
-const NprofileSelectOption = ({ source }: { source: NprofileView }) => {
-	return (
-		<IonLabel className="flex flex-col">
-			<div className="text-lg text-secondary truncate">
-				{source.label || source.beaconName || "Pub source"}
-			</div>
-
-			<div className="text-base text-muted ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
-
-			<BeaconStatusLine state={source.beaconStale} />
-		</IonLabel>
-	);
-};
 
 
-
-interface SourceAvatarProps extends React.ComponentProps<typeof IonAvatar> {
+interface SelectItemAvatarProps extends React.ComponentProps<typeof IonAvatar> {
 	avatarUrl: string;
 }
-const SourceAvatar = ({ avatarUrl, ...props }: SourceAvatarProps) => {
+const SelectItemAvatar = ({ avatarUrl, ...props }: SelectItemAvatarProps) => {
 	const [loaded, setLoaded] = useState(false);
 	const [failed, setFailed] = useState(false);
 

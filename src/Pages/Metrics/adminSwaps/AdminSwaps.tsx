@@ -5,13 +5,13 @@ import { IonButton, IonContent, IonCard, IonCardContent, IonCardHeader, IonCardT
 import { flashOutline } from "ionicons/icons";
 import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
 import { useAppSelector } from "@/State/store/hooks";
-import { NprofileView, selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { SourceView, selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { fetcher } from "../fetcher";
 import TxSwaps from "./TxSwaps";
 import SubmarineSwaps from "./SubmarineSwaps";
 
-function BumpTxSection({ adminSource }: { adminSource: NprofileView | undefined }) {
+function BumpTxSection({ adminSource }: { adminSource: SourceView | undefined }) {
     const [txid, setTxid] = useState("");
     const [outputIndex, setOutputIndex] = useState("");
     const [satPerVbyte, setSatPerVbyte] = useState("");
@@ -30,7 +30,7 @@ function BumpTxSection({ adminSource }: { adminSource: NprofileView | undefined 
             { pubkey: adminSource.lpk, relays: adminSource.relays },
             adminSource.keys,
             {
-                onStart: async () => { await dismissLoading(); await presentLoading("Bumping tx..."); },
+                onStart: async () => { await dismissLoading(); await presentLoading({ message: "Bumping tx...", cssClass: "app-loading" }); },
                 onEnd: async () => { await dismissLoading(); },
                 onFail: (err) => { toast.error(err); },
             },
@@ -95,7 +95,7 @@ function BumpTxSection({ adminSource }: { adminSource: NprofileView | undefined 
 
 export default function AdminSwaps() {
     const [selectedView, setSelectedView] = useState("reverse");
-    const admins = useAppSelector(selectAdminNprofileViews);
+    const admins = useAppSelector(selectAdminSourceViews);
     const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
     const adminSource = useMemo(
         () => admins.find(a => a.sourceId === selectedId),

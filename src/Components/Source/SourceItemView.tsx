@@ -2,13 +2,9 @@ import type { ReactNode } from "react";
 import { IonIcon, IonItem } from "@ionic/react";
 import { checkmarkCircle, star, walletOutline } from "ionicons/icons";
 import cn from "clsx";
-import { SourceAvatar } from "@/Components/Source/SourceAvatar";
-import {
-	sourceDisplayName,
-	sourceTypeLabel,
-} from "@/Components/Source/sourceDisplayName";
+import { Avatar } from "@/Components/Avatar";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import { formatSatoshi } from "@/lib/units";
@@ -19,7 +15,6 @@ export type SourceItemViewProps = {
 	showFavorite?: boolean;
 	showBalance?: boolean;
 	showBeacon?: boolean;
-	showSourceType?: boolean;
 	onClick?: () => void;
 	end?: ReactNode;
 	className?: string;
@@ -31,7 +26,6 @@ export function SourceItemView({
 	showFavorite = true,
 	showBalance = true,
 	showBeacon = true,
-	showSourceType = false,
 	onClick,
 	end,
 	className,
@@ -40,15 +34,13 @@ export function SourceItemView({
 	const isFavorite = showFavorite && favoriteSourceId === source.sourceId;
 	const label = sourceDisplayName(source);
 	const interactive = typeof onClick === "function";
-	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
 
 	const detailParts: string[] = [];
-	if (showSourceType) detailParts.push(sourceTypeLabel(source));
-	if (showBalance && isNprofile) {
+	if (showBalance) {
 		detailParts.push(`${formatSatoshi(source.maxWithdrawableSats)} sats`);
 	}
 	const detail = detailParts.join(" · ");
-	const showWalletIcon = showBalance && isNprofile && detail.length > 0;
+	const showWalletIcon = showBalance && detail.length > 0;
 
 	const endSlot =
 		end !== undefined ? (
@@ -77,7 +69,11 @@ export function SourceItemView({
 			)}
 		>
 			<div slot="start" className="self-center" aria-hidden>
-				<SourceAvatar source={source} showBeacon={showBeacon} />
+				<Avatar
+					id={source.sourceId}
+					avatarUrl={source.beaconAvatarUrl}
+					beacon={showBeacon ? source.beaconStale : undefined}
+				/>
 			</div>
 
 			<div className="min-w-0 flex-1 py-2">

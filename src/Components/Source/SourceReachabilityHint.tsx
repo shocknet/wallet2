@@ -1,7 +1,6 @@
 import { IonContent, IonIcon, IonPopover, IonSpinner } from "@ionic/react";
 import { alertCircleOutline } from "ionicons/icons";
 import cn from "clsx";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import type {
 	BeaconHealth,
 	SourceView,
@@ -9,7 +8,7 @@ import type {
 import moment from "moment";
 
 export type SourceReachabilityHintProps = {
-	source: SourceView;
+	source: Pick<SourceView, "sourceId" | "beaconStale" | "beaconLastSeenAtMs">;
 	className?: string;
 };
 
@@ -34,8 +33,6 @@ export function SourceReachabilityHint({
 	source,
 	className,
 }: SourceReachabilityHintProps) {
-	if (source.type !== SourceType.NPROFILE_SOURCE) return null;
-
 	const { beaconStale, beaconLastSeenAtMs, sourceId } = source;
 	if (beaconStale === "fresh") return null;
 

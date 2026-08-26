@@ -18,7 +18,7 @@ import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 interface OfflineChannel {
@@ -51,7 +51,7 @@ const Channels = () => {
 	const [presentLoading, dismissLoading] = useIonLoading();
 
 
-	const admins = useAppSelector(selectAdminNprofileViews);
+	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const adminSource = useMemo(
 		() => admins.find((a) => a.sourceId === selectedId),
@@ -65,7 +65,7 @@ const Channels = () => {
 		setError(null);
 
 		await dismissLoading();
-		await presentLoading("Fetching channels...");
+		await presentLoading({ message: "Fetching channels...", cssClass: "app-loading" });
 
 		try {
 			const client = await getNostrClient(

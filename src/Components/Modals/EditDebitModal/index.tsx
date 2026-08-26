@@ -35,7 +35,7 @@ import {
 	withoutRuleType,
 } from "@/lib/debit/rules";
 import { appApi } from "@/State/api/api";
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch } from "@/State/store/hooks";
 
 const PANEL_CLASS = "app-panel bg-[var(--app-surface-muted)]";
@@ -69,7 +69,7 @@ function rulesSignature(rules: DebitRule[]): string {
 export type EditDebitModalProps = {
 	isOpen: boolean;
 	authorization: DebitAuthorization | null;
-	source: NprofileView;
+	source: SourceView;
 	onDidDismiss: () => void;
 };
 
@@ -79,7 +79,7 @@ function EditDebitApprovedBody({
 	onClose,
 }: {
 	authorization: DebitAuthorization;
-	source: NprofileView;
+	source: SourceView;
 	onClose: () => void;
 }) {
 	const dispatch = useAppDispatch();
@@ -413,7 +413,7 @@ function EditDebitBannedBody({
 	onClose,
 }: {
 	authorization: DebitAuthorization;
-	source: NprofileView;
+	source: SourceView;
 	onClose: () => void;
 }) {
 	const dispatch = useAppDispatch();

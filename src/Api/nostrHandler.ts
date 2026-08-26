@@ -754,10 +754,14 @@ export const getPool = () => (pool ??= new TransportPool());
 
 export const appTag = "shockwallet"
 
-export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag) => {
+export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag, maxWait?: number) => {
 	if (relays.length === 0) return null;
 
-	return getPool().get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] });
+	return getPool().get(
+		relays,
+		{ kinds: [30078], '#d': [dTag], authors: [pubkey] },
+		{ maxWait }
+	);
 }
 
 export type BeaconDiscoveryResult = {
@@ -775,8 +779,9 @@ function parseBeaconContent(content: string): BeaconData | null {
 	}
 }
 
+const BEACON_GET_MAX_WAIT = 8_000;
 export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Promise<BeaconDiscoveryResult> => {
-	const event = await getNip78Event(pubkey, relays, pubServiceTag)
+	const event = await getNip78Event(pubkey, relays, pubServiceTag, BEACON_GET_MAX_WAIT)
 	if (!event) {
 		return null
 	}

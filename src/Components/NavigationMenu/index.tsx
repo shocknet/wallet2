@@ -38,7 +38,7 @@ import {
 	useWalletWelcomeWordmark,
 } from "@/Assets/Images/wallet-avatar";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { exportDebugReport } from "@/lib/debugReportExport";
 import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
 import { ProfilePicture } from "@/Components/User/ProfilePicture";
@@ -91,8 +91,8 @@ export const NavigationMenu = memo(function NavigationMenu({
 }: NavigationMenuProps) {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null);
 	const [switchOpen, setSwitchOpen] = useState(false);
-	const healthyAdminSources = useAppSelector(selectAdminNprofileViews);
-	const hasAdminSources = healthyAdminSources.length > 0;
+	const adminSources = useAppSelector(selectAdminSourceViews);
+	const hasAdminSources = adminSources.length > 0;
 	const markSrc = useWalletAvatar();
 	const wordmarkSrc = useWalletWelcomeWordmark();
 

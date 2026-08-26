@@ -2,13 +2,12 @@ import { isAnyOf } from "@reduxjs/toolkit";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { listenerKick } from "@/State/listeners/actions";
 import { pushTokenUpdated } from "@/notifications/push/actions";
-import { selectNprofileViews, selectSourceViewById, NprofileView } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViews, selectSourceViewById, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { getNostrClient } from "@/Api/nostr";
 import { getDeviceId } from "@/constants";
 import type { RootState } from "@/State/store/store";
-import { becameFresh, exists, isFresh, isNprofile, justAdded } from "../predicates";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
+import { becameFresh, exists, isFresh, justAdded } from "../predicates";
 import dLogger from "@/Api/helpers/debugLog";
 import { selectPushStatus } from "@/State/runtime/slice";
 
@@ -20,7 +19,7 @@ function getPushToken(state: RootState) {
 	return pushStatus != null && pushStatus.status === "registered" ? pushStatus.token : null;
 }
 
-async function enrollTokenForSources(token: string, views: NprofileView[]) {
+async function enrollTokenForSources(token: string, views: SourceView[]) {
 	if (!views.length) {
 		return;
 	}
@@ -54,7 +53,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const token = getPushToken(state);
 					if (!token) return;
-					const sources = selectNprofileViews(state);
+					const sources = selectSourceViews(state);
 					await enrollTokenForSources(token, sources);
 				}
 			}),
@@ -67,7 +66,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const token = getPushToken(state);
 					if (!token) return;
-					const sources = selectNprofileViews(state);
+					const sources = selectSourceViews(state);
 					await enrollTokenForSources(action.payload.token, sources);
 				}
 			}),
@@ -79,7 +78,6 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					(
 						isAnyOf(sourcesActions.applyRemoteSource, sourcesActions._createDraftDoc)(action) &&
 						exists(curr, action.payload.sourceId) &&
-						isNprofile(curr, action.payload.sourceId) &&
 						justAdded(curr, prev, action.payload.sourceId) &&
 						isFresh(curr, action.payload.sourceId)
 					)
@@ -97,11 +95,6 @@ export const pushEnrollmentSpec: ListenerSpec = {
 
 					if (!source) {
 						console.warn(`[Push] Source ${sourceId} not found for enrollment`);
-						return;
-					}
-
-					if (source.type !== SourceType.NPROFILE_SOURCE) {
-						console.log(`[Push] Source ${source.label} is not an nprofile source, skipping enrollment`);
 						return;
 					}
 

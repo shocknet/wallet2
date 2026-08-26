@@ -4,13 +4,12 @@ import { Buffer } from "buffer";
 import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
 import { metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { NprofileView, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { isAnyOf, TaskAbortError, UnknownAction } from "@reduxjs/toolkit";
 import logger from "@/Api/helpers/logger";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { RootState } from "@/State/store/store";
-import { draft, exists, isNprofile, justAdded } from "../predicates";
-import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
+import { draft, exists, justAdded } from "../predicates";
 
 const { getToken } = nip98
 
@@ -27,12 +26,12 @@ export const bridgePredicate = (action: UnknownAction, curr: RootState, prev: Ro
 
 	const { sourceId } = action.payload;
 
-	if (!exists(curr, sourceId) || !isNprofile(curr, sourceId)) return false;
+	if (!exists(curr, sourceId)) return false;
 
 	const justCreated = justAdded(curr, prev, sourceId);
 
-	const dPrev = draft(prev, sourceId) as NprofileSourceDocV0;
-	const dCurr = draft(curr, sourceId) as NprofileSourceDocV0;
+	const dPrev = draft(prev, sourceId);
+	const dCurr = draft(curr, sourceId);
 
 
 	const bridgeUrlChanged = dPrev && dPrev.bridgeUrl.value !== dCurr.bridgeUrl.value;
@@ -55,8 +54,8 @@ export const bridgeListenerSpec: ListenerSpec = {
 					const source = selectSourceViewById(
 						listenerApi.getState(),
 						sourceId
-					) as NprofileView;
-
+					);
+					if (!source) return;
 
 					if (source.vanityName?.includes(LV_IDENTIFIER)) return; // if this source is from LVs integration, never change its vanityName
 

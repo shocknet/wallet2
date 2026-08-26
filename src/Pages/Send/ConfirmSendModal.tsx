@@ -8,20 +8,20 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { FiatDisplay } from "@/Components/FiatDisplay";
-import { SourceAvatar } from "@/Components/Source/SourceAvatar";
+import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { type ModalDismiss, useAskModal } from "@/Components/Modals/hooks/useAskModal";
 import { truncateTextMiddle } from "@/lib/format";
 import { InputClassification, type ParsedInput } from "@/lib/types/parse";
 import type { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 
 export type ConfirmSendModalOptions = {
 	parsed: ParsedInput;
 	amount: Satoshi;
 	initialNote?: string;
-	source: NprofileView;
+	source: SourceView;
 };
 
 export type ConfirmSendResult = {
@@ -72,7 +72,11 @@ function ConfirmSendModal({
 					<div className="flex items-center justify-between gap-3">
 						<p className="m-0 shrink-0 text-xs text-secondary">From</p>
 						<div className="flex min-w-0 items-center gap-2">
-							<SourceAvatar source={source} size="sm" showBeacon={false} />
+							<Avatar
+								id={source.sourceId}
+								avatarUrl={source.beaconAvatarUrl}
+								size="sm"
+							/>
 							<p className="m-0 truncate text-sm font-medium text-primary">
 								{sourceDisplayName(source)}
 							</p>

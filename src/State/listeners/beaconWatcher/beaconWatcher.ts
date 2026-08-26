@@ -1,16 +1,15 @@
 import { listenerKick } from "@/State/listeners/actions";
-import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViewById, selectSourceViews, selectSourceViewsByLpk } from "@/State/scoped/backups/sources/selectors";
 import { getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
-import { docsSelectors, metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
+import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
-import { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
 import { runtimeActions } from "@/State/runtime/slice";
 import { AppDispatch, RootState } from "@/State/store/store";
-import { nprofileJustAdded } from "../predicates";
+import { sourceJustAdded } from "../predicates";
 
 
 const STALE_TICK_MS = 0.7 * 60 * 1000;
@@ -101,18 +100,19 @@ export const beaconWatcherSpec: ListenerSpec = {
 		(add) =>
 			add({
 				predicate: (action, curr, prev) =>
-					nprofileJustAdded(action, curr, prev),
+					sourceJustAdded(action, curr, prev),
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
 
-					const d = docsSelectors.selectById(listenerApi.getState(), sourceId)?.draft as NprofileSourceDocV0;
+					const source = selectSourceViewById(listenerApi.getState(), sourceId);
+					if (!source) return;
 
 					const toProbe = [
 						{
 							sourceId,
-							lpk: d.lpk,
-							relays: Object.keys(d.relays).filter(u => d.relays[u]?.present)
+							lpk: source.lpk,
+							relays: source.relays
 						}
 					];
 
@@ -138,7 +138,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const nowMs = Date.now();
 
-					const views = selectNprofileViews(state);
+					const views = selectSourceViews(state);
 
 
 					const toProbe: { sourceId: string; lpk: string; relays: string[] }[] = [];
@@ -162,12 +162,12 @@ export const beaconWatcherSpec: ListenerSpec = {
 				effect: async (_, listenerApi) => {
 
 
-					const nprofiles = selectNprofileViews(listenerApi.getState());
+					const sources = selectSourceViews(listenerApi.getState());
 					/*
 						subToBeacons lives on the clientsCluster layer, however since some sources might be stale they may never
 						get to have a nostrClient, in which case we won't be able to listen for their beacons. So make sure all sources have a nostrClient.
 					*/
-					await Promise.allSettled(nprofiles.map(s => getNostrClient({ pubkey: s.lpk, relays: s.relays }, s.keys)));
+					await Promise.allSettled(sources.map(s => getNostrClient({ pubkey: s.lpk, relays: s.relays }, s.keys)));
 
 					const unsub = subToBeacons(b => {
 						if (listenerApi.signal.aborted) return;
@@ -176,28 +176,19 @@ export const beaconWatcherSpec: ListenerSpec = {
 						const seenAtMs = updatedAtUnix * 1_000;
 
 						const s = listenerApi.getState();
-						const metadata = metadataSelectors.selectAll(s);
+						const lpkSources = selectSourceViewsByLpk(s, lpk);
 
-
-						for (const m of metadata) {
-							if (m.lpk !== lpk) continue;
-
-
-							const source = s.scoped!.sources.docs.entities[m.id]?.draft as NprofileSourceDocV0 | undefined;
-							if (!source) continue;
-
+						for (const lpkSource of lpkSources) {
 							// Update only sources whose relay set includes the relay we heard this on
-							const relays = Object.keys(source.relays).filter(u => source.relays[u]?.present);
-							if (!relays.includes(relayUrl)) continue;
+							if (!lpkSource.relays.includes(relayUrl)) continue;
 
 							listenerApi.dispatch(
 								sourcesActions.recordBeaconForSource({
-									sourceId: m.id,
+									sourceId: lpkSource.sourceId,
 									data,
 									seenAtMs,
 								})
 							);
-
 						}
 					});
 
@@ -219,7 +210,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 							for (; ;) {
 								await forkApi.delay(STALE_TICK_MS);
 								const state = listenerApi.getState();
-								const views = selectNprofileViews(state);
+								const views = selectSourceViews(state);
 
 								const nowMs = Date.now();
 

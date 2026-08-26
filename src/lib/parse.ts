@@ -19,7 +19,7 @@ import { RelayBaseSchema } from "./urlZod";
 
 
 
-type InputClassificationConfig =
+export type InputClassificationConfig =
 	| { allowed: InputClassification[]; disallowed?: never }
 	| { disallowed: InputClassification[]; allowed?: never }
 	| undefined;

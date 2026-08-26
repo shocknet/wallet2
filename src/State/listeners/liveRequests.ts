@@ -1,16 +1,15 @@
 import { historyFetchSourceRequested, listenerKick } from "@/State/listeners/actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { NprofileView, selectHealthyNprofileViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { SourceView, selectSourceViewById, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { getClientById, getNostrClient } from "@/Api/nostr";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskResult } from "@reduxjs/toolkit";
 import { createDeferred } from "@/lib/deferred";
-import { nprofileBecameFresh, nprofileJustAdded, nprofileJustDeleted } from "./predicates";
+import { sourceBecameFresh, sourceJustAdded, sourceJustDeleted } from "./predicates";
 import { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
 import dLogger from "@/Api/helpers/debugLog";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 
 const logger = dLogger.withContext({ component: "liveRequestsListener" });
 
@@ -20,7 +19,7 @@ const GET_LIVE_DEBIT_REQUESTS_RPC_NAME = "GetLiveDebitRequests";
 const GET_LIVE_USER_OPERATIONS_RPC_NAME = "getLiveUserOperations";
 
 async function subscribeToStreams(
-	source: NprofileView,
+	source: SourceView,
 	listenerApi: ListenerEffectAPI<RootState, AppDispatch>,
 ) {
 	const sourceId = source.sourceId;
@@ -89,7 +88,7 @@ export const liveRequestsListenerSpec: ListenerSpec = {
 
 					const state = listenerApi.getState();
 
-					const sources = selectHealthyNprofileViews(state);
+					const sources = selectSourceViews(state);
 
 					for (const source of sources) {
 						subscribeToStreams(source, listenerApi);
@@ -100,7 +99,7 @@ export const liveRequestsListenerSpec: ListenerSpec = {
 		(add) =>
 			add({
 				predicate: (action, curr, prev) =>
-					nprofileJustDeleted(action, curr, prev),
+					sourceJustDeleted(action, curr, prev),
 				effect: async (action) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
@@ -114,15 +113,15 @@ export const liveRequestsListenerSpec: ListenerSpec = {
 			add({
 				predicate: (action, curr, prev) =>
 				(
-					nprofileBecameFresh(action, curr, prev) ||
-					nprofileJustAdded(action, curr, prev)
+					sourceBecameFresh(action, curr, prev) ||
+					sourceJustAdded(action, curr, prev)
 				),
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
 					const source = selectSourceViewById(listenerApi.getState(), sourceId);
 
-					if (!source || source.type !== SourceType.NPROFILE_SOURCE || source.beaconStale !== "fresh") {
+					if (!source || source.beaconStale !== "fresh") {
 						return;
 					}
 

@@ -1,15 +1,12 @@
 import type {
-	NprofileView,
 	SourceView,
 } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { getCache, setCache } from "@/lib/cache";
 import {
 	createNostrInvoice,
 	getNostrBtcAddress,
 } from "@/Api/helpers";
 import type { Satoshi } from "@/lib/types/units";
-import { getInvoiceFromLnurlPay } from "@/lib/lnurl/pay";
 import { ParsedInvoiceInput } from "@/lib/types/parse";
 
 export function pickDefaultSource(
@@ -56,12 +53,6 @@ export const emptyPayloads: SourceReceivePayloads = {
 };
 
 export function seedPayloads(source: SourceView): SourceReceivePayloads {
-	if (source.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
-		return {
-			...emptyPayloads,
-			lnAddress: source.sourceId.trim() || null,
-		};
-	}
 	return {
 		...emptyPayloads,
 		lnAddress: source.vanityName?.trim() || null,
@@ -71,7 +62,7 @@ export function seedPayloads(source: SourceView): SourceReceivePayloads {
 
 
 export function fetchRemotePayloads(
-	source: NprofileView,
+	source: SourceView,
 	onPatch: (patch: Partial<SourceReceivePayloads>) => void,
 ): void {
 	const nprofile = { pubkey: source.lpk, relays: source.relays };
@@ -129,16 +120,11 @@ export async function createInvoiceForSource(
 	memo: string,
 	blind: boolean,
 ): Promise<ParsedInvoiceInput> {
-	if (source.type === SourceType.NPROFILE_SOURCE) {
-		return createNostrInvoice(
-			{ pubkey: source.lpk, relays: source.relays },
-			source.keys,
-			amount,
-			memo,
-			blind,
-		);
-	}
-
-	return getInvoiceFromLnurlPay({ lnUrlOrAddress: source.sourceId, amountSats: amount });
-
+	return createNostrInvoice(
+		{ pubkey: source.lpk, relays: source.relays },
+		source.keys,
+		amount,
+		memo,
+		blind,
+	);
 }

@@ -2,7 +2,7 @@ import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
-import { meta, nprofileJustDeleted } from "../predicates";
+import { meta, sourceJustDeleted } from "../predicates";
 
 
 
@@ -14,6 +14,7 @@ export const topicIndexSyncSpec: ListenerSpec = {
 			actionCreator: sourcesActions.applyUserInfo,
 			effect: async (action, api) => {
 				const { sourceId, topicId } = action.payload;
+				if (!topicId) return;
 
 				const state = api.getState();
 				const activeIdentityId = selectActiveIdentity(state)!.pubkey;
@@ -28,7 +29,7 @@ export const topicIndexSyncSpec: ListenerSpec = {
 		// When a source is marked deleted or incoming remote backup deletes, remove its topic id from the index
 		(add) => add({
 			predicate: (action, curr, prev) =>
-				nprofileJustDeleted(action, curr, prev),
+				sourceJustDeleted(action, curr, prev),
 			effect: async (action, api) => {
 				const { sourceId } = action.payload as { sourceId: string };
 				const topicId = meta(api.getOriginalState(), sourceId)?.topicId;

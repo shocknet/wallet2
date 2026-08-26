@@ -7,7 +7,7 @@ import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCon
 import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector";
 import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { AdminOperationsList } from "./adminOperationDisplay";
 import { formatTableAmount } from "./metricsDataTable";
@@ -17,7 +17,7 @@ export default function Earnings() {
 
     const [period, setPeriod] = useState<Period>(Period.WEEK)
     const [offset, setOffset] = useState<number>(0)
-    const admins = useAppSelector(selectAdminNprofileViews);
+    const admins = useAppSelector(selectAdminSourceViews);
     const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
     const adminSource = useMemo(
         () => admins.find(a => a.sourceId === selectedId),
@@ -63,7 +63,7 @@ export default function Earnings() {
         setLoading(true);
 
         await dismissLoading();
-        await presentLoading("Fetching earnings...");
+        await presentLoading({ message: "Fetching earnings...", cssClass: "app-loading" });
 
         try {
             const client = await getNostrClient(

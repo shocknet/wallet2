@@ -21,7 +21,7 @@ import { useAppSelector } from "@/State/store/hooks";
 
 type ItemDisplayProps = Pick<
 	SourceItemViewProps,
-	"showFavorite" | "showBalance" | "showBeacon" | "showSourceType"
+	"showFavorite" | "showBalance" | "showBeacon"
 >;
 
 export type SourceSelectSheetProps = {
@@ -58,7 +58,6 @@ export function SourceSelectSheet({
 	showFavorite,
 	showBalance,
 	showBeacon,
-	showSourceType,
 }: SourceSelectSheetProps) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
@@ -108,7 +107,6 @@ export function SourceSelectSheet({
 								showFavorite={showFavorite}
 								showBalance={showBalance}
 								showBeacon={showBeacon}
-								showSourceType={showSourceType}
 							/>
 						))}
 					</IonList>

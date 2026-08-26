@@ -1,5 +1,4 @@
-import { LnAddrView, NprofileView, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
+import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import {
 	IonModal,
 	IonHeader,
@@ -79,7 +78,7 @@ const Inner = ({
 
 	const [label, setLabel] = useState<string>(source.label || "");
 	const [bridgeUrl, setBridgeUrl] =
-		useState<string>(source.type === SourceType.NPROFILE_SOURCE ? source.bridgeUrl || "" : "");
+		useState<string>(source.bridgeUrl || "");
 	const [finalBridgeUrl, setFinalBridgeUrl] = useState<string | null>(null);
 	const [isEditingRelays, setIsEditingRelays] = useState(false);
 	const [bridgeInputTouched, setBridgeInputTouched] = useState(false);
@@ -115,29 +114,20 @@ const Inner = ({
 		}
 	}, [debouncedBridgeUrl, bridgeInputTouched])
 
-	const [relays, setRelays] = useState<string[]>(
-		source.type === SourceType.NPROFILE_SOURCE ? source.relays : []
-	);
+	const [relays, setRelays] = useState<string[]>(source.relays);
 	const [isNDebitDiscoverable, setIsNDebitDiscoverable] = useState(
-		source.type === SourceType.NPROFILE_SOURCE ? source.isNDebitDiscoverable : false
+		source.isNDebitDiscoverable
 	);
 
 
 	const draft: SourceView = useMemo(() => {
-		if (original.type === SourceType.NPROFILE_SOURCE) {
-			return {
-				...original,
-				label,
-				bridgeUrl: finalBridgeUrl,
-				relays: relays,
-				isNDebitDiscoverable
-			} as NprofileView;
-		} else {
-			return {
-				...original,
-				label,
-			} as LnAddrView;
-		}
+		return {
+			...original,
+			label,
+			bridgeUrl: finalBridgeUrl,
+			relays: relays,
+			isNDebitDiscoverable
+		};
 	}, [original, label, finalBridgeUrl, relays, isNDebitDiscoverable]);
 
 
@@ -162,28 +152,22 @@ const Inner = ({
 					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, by }));
 					break;
 				case "bridgeUrl":
-					if (original.type === SourceType.NPROFILE_SOURCE) {
-						dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, by }));
-					}
+					dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, by }));
 					break;
 				case "relaySet":
-					if (original.type === SourceType.NPROFILE_SOURCE) {
-						dispatch(sourcesActions.setRelayPresence({
-							sourceId: original.sourceId,
-							relayUrl: op.relayUrl,
-							present: op.present,
-							by,
-						}));
-					}
+					dispatch(sourcesActions.setRelayPresence({
+						sourceId: original.sourceId,
+						relayUrl: op.relayUrl,
+						present: op.present,
+						by,
+					}));
 					break;
 				case "isNDebitDiscoverable":
-					if (original.type === SourceType.NPROFILE_SOURCE) {
-						dispatch(sourcesActions.updateisNDebitDiscoverable({
-							sourceId: original.sourceId,
-							isNdebitDiscoverable: op.discoverable,
-							by,
-						}));
-					}
+					dispatch(sourcesActions.updateisNDebitDiscoverable({
+						sourceId: original.sourceId,
+						isNdebitDiscoverable: op.discoverable,
+						by,
+					}));
 			}
 		}
 	}, [original, dispatch, draft])
@@ -228,28 +212,26 @@ const Inner = ({
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding">
-				{
-					original.type === SourceType.NPROFILE_SOURCE
-					&&
-					<PubSourceStatus
-						pubkey={original.lpk}
-						relays={original.relays}
-						passedBeacon={
-							original.beaconLastSeenAtMs !== 0
-								? {
-									beaconLastSeenAtMs: original.beaconLastSeenAtMs,
-									data: {
-										type: "service",
-										name: original.beaconName ?? "",
-										avatarUrl: original.beaconAvatarUrl,
-										fees: original.beaconFees,
-										nextRelay: original.beaconNextRelay,
-									},
-								}
-								: undefined
-						}
-					/>
-				}
+
+				<PubSourceStatus
+					pubkey={original.lpk}
+					relays={original.relays}
+					passedBeacon={
+						original.beaconLastSeenAtMs !== 0
+							? {
+								beaconLastSeenAtMs: original.beaconLastSeenAtMs,
+								data: {
+									type: "service",
+									name: original.beaconName ?? "",
+									avatarUrl: original.beaconAvatarUrl,
+									fees: original.beaconFees,
+									nextRelay: original.beaconNextRelay,
+								},
+							}
+							: undefined
+					}
+				/>
+
 				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
 					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
 
@@ -267,95 +249,85 @@ const Inner = ({
 
 						/>
 					</IonItem>
-					{
-						original.type === SourceType.NPROFILE_SOURCE
-						&&
-						<>
-							<IonItem>
-								<IonInput
-									color="primary"
-									label="Bridge URL"
-									labelPlacement="stacked"
-									inputmode="url"
-									placeholder={DEFAULT_BRIDGE_URL}
-									value={bridgeUrl}
-									ref={bridgeInputRef}
+					<IonItem>
+						<IonInput
+							color="primary"
+							label="Bridge URL"
+							labelPlacement="stacked"
+							inputmode="url"
+							placeholder={DEFAULT_BRIDGE_URL}
+							value={bridgeUrl}
+							ref={bridgeInputRef}
 
-									mode="md"
-									fill="outline"
-									className={classNames({
-										["ion-invalid"]: bridgeInputError,
-										["ion-touched"]: bridgeInputTouched,
-										["ion-margin-top"]: true,
+							mode="md"
+							fill="outline"
+							className={classNames({
+								["ion-invalid"]: bridgeInputError,
+								["ion-touched"]: bridgeInputTouched,
+								["ion-margin-top"]: true,
 
-									})}
-									style={{ "--padding-end": "50px" }}
-									errorText="Invalid URL"
-									onIonInput={onBridgeInputChange}
-									onIonBlur={onBridgeBlur}
-									helperText="Enter a valid http URL"
-								/>
-							</IonItem>
-							<IonItem lines="none" className="ion-margin-top">
-								<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
-									<IonText className="text-secondary">ndebit discoverable</IonText>
-								</IonToggle>
-							</IonItem>
-						</>
-					}
+							})}
+							style={{ "--padding-end": "50px" }}
+							errorText="Invalid URL"
+							onIonInput={onBridgeInputChange}
+							onIonBlur={onBridgeBlur}
+							helperText="Enter a valid http URL"
+						/>
+					</IonItem>
+					<IonItem lines="none" className="ion-margin-top">
+						<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
+							<IonText className="text-secondary">ndebit discoverable</IonText>
+						</IonToggle>
+					</IonItem>
 
 
 				</CardishList>
 
-				{
-					original.type === SourceType.NPROFILE_SOURCE
-					&&
-					<div>
-						<IonList
+				<div>
+					<IonList
 
-							lines="none"
-							style={{ borderRadius: "12px", marginTop: "0.5rem" }}
+						lines="none"
+						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
 
-						>
-							<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
-								<IonLabel >Relays</IonLabel>
-								{
-									isEditingRelays
-										?
-										<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
-											<IonIcon icon={closeOutline} slot="icon-only" />
-										</IonButton>
-										:
-										<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
-											Edit
-										</IonButton>
-								}
-							</IonListHeader>
+					>
+						<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+							<IonLabel >Relays</IonLabel>
 							{
 								isEditingRelays
-									? (
-										<>
-											<IonItem>
-												<IonLabel color="warning">
-													<IonText>
-														Your node should be listening on relays you add here
-													</IonText>
-												</IonLabel>
-											</IonItem>
-											<RelayManager relays={relays} setRelays={setRelays} />
-										</>
-									)
-									: relays.map(r => (
-										<IonItem key={r}>
-											<IonText className="text-secondary text-weight-medium" style={{ textDecoration: "underline" }}>
-												{r}
-											</IonText>
-										</IonItem>
-									))
+									?
+									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(false)}>
+										<IonIcon icon={closeOutline} slot="icon-only" />
+									</IonButton>
+									:
+									<IonButton style={{ marginRight: "0.5rem" }} onClick={() => setIsEditingRelays(true)}>
+										Edit
+									</IonButton>
 							}
-						</IonList>
-					</div>
-				}
+						</IonListHeader>
+						{
+							isEditingRelays
+								? (
+									<>
+										<IonItem>
+											<IonLabel color="warning">
+												<IonText>
+													Your node should be listening on relays you add here
+												</IonText>
+											</IonLabel>
+										</IonItem>
+										<RelayManager relays={relays} setRelays={setRelays} />
+									</>
+								)
+								: relays.map(r => (
+									<IonItem key={r}>
+										<IonText className="text-secondary text-weight-medium" style={{ textDecoration: "underline" }}>
+											{r}
+										</IonText>
+									</IonItem>
+								))
+						}
+					</IonList>
+				</div>
 
 
 			</IonContent>
@@ -419,21 +391,18 @@ const buildSourceChanges = (
 		ops.push({ kind: "label", value: draft.label || null });
 	}
 
-	if (original.type === SourceType.NPROFILE_SOURCE && draft.type === SourceType.NPROFILE_SOURCE) {
-		// bridgeUrl
-		if (changedStr(original.bridgeUrl, draft.bridgeUrl)) {
-			ops.push({ kind: "bridgeUrl", value: draft.bridgeUrl || null });
-		}
-
-		if (original.isNDebitDiscoverable !== draft.isNDebitDiscoverable) {
-			ops.push({ kind: "isNDebitDiscoverable", discoverable: draft.isNDebitDiscoverable });
-		}
-
-		// relays: original.relays is string[] in your SourceView;
-		const { added, removed } = diffSets(original.relays, draft.relays);
-		for (const r of added) ops.push({ kind: "relaySet", relayUrl: r, present: true });
-		for (const r of removed) ops.push({ kind: "relaySet", relayUrl: r, present: false });
+	if (changedStr(original.bridgeUrl, draft.bridgeUrl)) {
+		ops.push({ kind: "bridgeUrl", value: draft.bridgeUrl || null });
 	}
+
+	if (original.isNDebitDiscoverable !== draft.isNDebitDiscoverable) {
+		ops.push({ kind: "isNDebitDiscoverable", discoverable: draft.isNDebitDiscoverable });
+	}
+
+	// relays: original.relays is string[] in your SourceView;
+	const { added, removed } = diffSets(original.relays, draft.relays);
+	for (const r of added) ops.push({ kind: "relaySet", relayUrl: r, present: true });
+	for (const r of removed) ops.push({ kind: "relaySet", relayUrl: r, present: false });
 
 	return ops;
 }

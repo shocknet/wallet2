@@ -42,8 +42,8 @@ import {
 	sendInvoicePayment,
 } from "@/State/scoped/backups/sources/history/sendInvoicePayment";
 import {
-	type NprofileView,
-	selectNprofileViews,
+	type SourceView,
+	selectSourceViews,
 } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import cn from "clsx";
@@ -64,7 +64,7 @@ import type { ParsedInvoiceInput } from "@/lib/types/parse";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 export default function Send() {
-	const sources = useAppSelector(selectNprofileViews);
+	const sources = useAppSelector(selectSourceViews);
 	const { location } = useHistory();
 	const sendVisitKeyRef = useRef(location.key);
 	if (location.pathname === "/send") {
@@ -112,7 +112,7 @@ function SendEmpty() {
 	);
 }
 
-function SendSourceGate({ sources }: { sources: NprofileView[] }) {
+function SendSourceGate({ sources }: { sources: SourceView[] }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const { showToast } = useToast();
 	const [selectedSourceId, setSelectedSourceId] = useState(
@@ -205,7 +205,7 @@ function SendStage({
 	source,
 	switchToSourceCoveringAmount,
 }: {
-	source: NprofileView;
+	source: SourceView;
 	switchToSourceCoveringAmount: (amount: Satoshi) => void;
 }) {
 	const router = useIonRouter();

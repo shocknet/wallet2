@@ -1,6 +1,4 @@
 import type { AppThunk, RootState } from "@/State/store/store";
-import { docsSelectors } from "@/State/scoped/backups/sources/slice";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { selectActiveIdentity, selectTopicIndexFromRegistry } from "../State/identitiesRegistry/slice";
 import { shellActions } from "./slice";
 import {
@@ -13,22 +11,18 @@ import { nip44 } from "nostr-tools";
 import { hexToBytes } from "@noble/hashes/utils";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
 import { PendingClinkRequest } from "@/State/clinkRequests/types";
+import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 
 function resolveSourcePrivateKey(
 	state: RootState,
 	sourceId: string,
 ): string | null {
-	const sourceEntity = docsSelectors.selectById(state, sourceId);
-	if (!sourceEntity) {
+	const source = selectSourceViewById(state, sourceId)
+	if (!source) {
 		return null;
 	}
+	return source.keys.privateKey
 
-	const draft = sourceEntity.draft;
-	if (!draft || draft.type !== SourceType.NPROFILE_SOURCE) {
-		return null;
-	}
-
-	return draft.keys.privateKey;
 }
 
 /**

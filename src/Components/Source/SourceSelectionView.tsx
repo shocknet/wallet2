@@ -1,10 +1,9 @@
 import { IonButton, IonIcon } from "@ionic/react";
 import { caretDownSharp, walletOutline } from "ionicons/icons";
 import cn from "clsx";
-import { SourceAvatar } from "@/Components/Source/SourceAvatar";
+import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { formatSatoshi } from "@/lib/units";
 
 export type SourceSelectionViewProps = {
@@ -25,8 +24,6 @@ export function SourceSelectionView({
 	showCaret = true,
 }: SourceSelectionViewProps) {
 	const label = sourceDisplayName(source);
-	const isNprofile = source.type === SourceType.NPROFILE_SOURCE;
-	const showBalanceLine = showBalance && isNprofile;
 
 	return (
 		<IonButton
@@ -45,12 +42,17 @@ export function SourceSelectionView({
 			)}
 		>
 			<span className="flex w-full min-w-0 items-center gap-3 text-left">
-				<SourceAvatar source={source} size="md" />
+				<Avatar
+					id={source.sourceId}
+					avatarUrl={source.beaconAvatarUrl}
+					beacon={source.beaconStale}
+					size="md"
+				/>
 				<span className="min-w-0 flex-1">
 					<span className="block truncate text-base font-semibold tracking-tight text-primary">
 						{label}
 					</span>
-					{showBalanceLine ? (
+					{showBalance ? (
 						<span className="mt-0.5 flex items-center gap-1.5 text-sm font-normal normal-case text-muted tabular-nums">
 							<IonIcon
 								icon={walletOutline}

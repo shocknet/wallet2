@@ -3,7 +3,7 @@ import { IonPage, IonRouterOutlet, useIonViewWillEnter } from "@ionic/react";
 import { Route, RouteComponentProps } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 import { GuardedRoute } from "@/routing/GuardedRoute";
@@ -24,7 +24,7 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 
 
 	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminNprofileViews);
+	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 
 	// If selected source disappears (deleted etc), clear it.

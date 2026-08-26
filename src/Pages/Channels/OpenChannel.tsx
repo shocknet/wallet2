@@ -3,9 +3,9 @@ import { IonButton } from "@ionic/react";
 import { getNostrClient } from "@/Api/nostr";
 import PromptForActionModal, { ActionType } from "../../Components/Modals/PromptForActionModal";
 import { toast } from "react-toastify";
-import { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import { SourceView } from "@/State/scoped/backups/sources/selectors";
 
-export const OpenChannel = ({ adminSource }: { adminSource: NprofileView }) => {
+export const OpenChannel = ({ adminSource }: { adminSource: SourceView }) => {
 	const [openModal, setOpenModal] = useState<'addPeer' | 'openChannel' | ''>('');
 	const [peerUri, setPeerUri] = useState<string>('');
 	const [peerPubkey, setPeerPubkey] = useState<string>('');

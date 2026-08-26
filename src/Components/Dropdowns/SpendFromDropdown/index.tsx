@@ -2,12 +2,12 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import { useLightningPubLogo, LIGHTNING_PUB_MARK_HEIGHT } from "@/Assets/Images/lightning-pub";
-import { NprofileView } from '@/State/scoped/backups/sources/selectors';
+import { SourceView } from '@/State/scoped/backups/sources/selectors';
 
 type DropDownProps = {
-  values: NprofileView[];
-  value: NprofileView;
-  callback: Dispatch<SetStateAction<NprofileView>>;
+  values: SourceView[];
+  value: SourceView;
+  callback: Dispatch<SetStateAction<SourceView>>;
 };
 
 const SpendFromDropdown: React.FC<DropDownProps> = ({
@@ -96,7 +96,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
         }
         <div className="spend_from_dropdown" style={{ opacity: display, transition: "0.3s", overflow: "hidden" }}>
           {display === 1 && allValue.map(
-            (item: NprofileView) => {
+            (item: SourceView) => {
               const [sourcePub] = item.sourceId.split("-");
               return (
                 <div onClick={() => { selectOption(item.sourceId) }} className="spend_from_item" key={item.sourceId}>

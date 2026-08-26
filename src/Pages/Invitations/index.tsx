@@ -9,24 +9,24 @@ import { WALLET_URL } from "../../constants";
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { check, copyWhite } from "@/Assets/SvgIconLibrary";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectHealthySourceViews } from "@/State/scoped/backups/sources/selectors";
 import { nip19 } from "nostr-tools";
 import QrCode from "@/Components/QrCode";
 
 
 const Invitations = () => {
 	const dispatch = useDispatch();
-	const healthyNprofileSourceViews = useAppSelector(selectHealthyNprofileViews);
+	const healthySources = useAppSelector(selectHealthySourceViews);
 	const invitations = useAppSelector(state => state.oneTimeInviteLinkSlice);
 
 	const selectedSource = useMemo(() => {
-		const source = healthyNprofileSourceViews.find(p => !!p.adminToken)
+		const source = healthySources.find(p => !!p.adminToken)
 		if (!source) {
 			return null
 		}
 		return source;
 
-	}, [healthyNprofileSourceViews])
+	}, [healthySources])
 
 	useEffect(() => {
 		setUpLinks();
