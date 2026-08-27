@@ -1,4 +1,5 @@
 import type { SourceActualOperation, SourceOperation } from "@/State/scoped/backups/sources/history/types";
+import { isInFlightOutgoingInvoice } from "@/State/scoped/backups/sources/history/helpers";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonNote, IonRow, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { getOperationDisplayData } from "./getDisplayData";
@@ -119,7 +120,8 @@ function areEqual(prevProps: HistoryItemProps, nextProps: HistoryItemProps) {
 	if (prevProps.handleSelectOperation !== nextProps.handleSelectOperation) return false;
 
 
-	if ("optimistic" in prevProps.operation && prevProps.operation.optimistic) return false; // If prev is optimistic always rerender
+
+	if (isInFlightOutgoingInvoice(prevProps.operation)) return false;
 
 	const prev = prevProps.operation as SourceActualOperation;
 	const next = nextProps.operation as SourceActualOperation;
