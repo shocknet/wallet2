@@ -445,15 +445,12 @@ const migrations = {
 		}
 		if (dropIds.length === 0) return state;
 
-		for (const id of dropIds) {
-			delete state.docs.entities[id];
-			state.docs.ids = state.docs.ids.filter(id => id !== id);
-		}
+		for (const dropId of dropIds) {
+			delete state.docs.entities[dropId];
+			state.docs.ids = state.docs.ids.filter(id => id !== dropId);
 
-
-		if (state.history.bySource) {
-			for (const id of dropIds) {
-				delete state.history.bySource[id];
+			if (state.history.bySource) {
+				delete state.history.bySource[dropId];
 			}
 		}
 		return state;
