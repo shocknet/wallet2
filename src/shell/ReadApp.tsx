@@ -103,7 +103,6 @@ export function ReadyApp({
 					exact
 					path="/invitations"
 					component={Invitations}
-					layout={Layout}
 				/>
 				<GuardedRoute
 					exact
