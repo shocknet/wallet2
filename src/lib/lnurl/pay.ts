@@ -1,13 +1,8 @@
+import { parseAs } from "../parse";
 import { LnurlServiceResponse } from "../types/lnurl";
+import { InputClassification, type ParsedInvoiceInput } from "../types/parse";
 import { Satoshi } from "../types/units";
 import { getJson, requestLnurlServiceParams } from "./get";
-
-
-export interface LnurlPayInvoiceResponse {
-	pr: string;        // BOLT 11 invoice
-	successAction?: any;
-	disposable?: boolean;
-}
 
 interface GetInvoiceParams {
 	lnUrlOrAddress: string;
@@ -15,11 +10,11 @@ interface GetInvoiceParams {
 	passedParams?: LnurlServiceResponse;
 }
 
-export async function getInvoiceForLnurlPay({
+export async function getInvoiceFromLnurlPay({
 	lnUrlOrAddress,
 	amountSats,
 	passedParams,
-}: GetInvoiceParams): Promise<LnurlPayInvoiceResponse> {
+}: GetInvoiceParams): Promise<ParsedInvoiceInput> {
 	let params = passedParams;
 	if (!params) {
 		params = await requestLnurlServiceParams(lnUrlOrAddress);
@@ -29,27 +24,23 @@ export async function getInvoiceForLnurlPay({
 		throw new Error("Not a payRequest LNURL");
 	}
 
-	// 2. Check amount within min/max
 	if (amountSats < params.min || amountSats > params.max) {
 		throw new Error(
 			`Amount out of range. min=${params.min}, max=${params.max}`
 		);
 	}
 
-	// 3. Convert to msats
 	const msats = amountSats * 1000;
-
 
 	const url = new URL(params.callback);
 	url.searchParams.set("amount", msats.toString());
 
-
-	// 5. Call LNURL pay endpoint → returns { pr: <invoice>, successAction?, ... }
 	const data = await getJson({ url: url.toString() });
+	const { pr } = data;
 
-	if (!data.pr) {
+	if (!pr || typeof pr !== "string") {
 		throw new Error("Missing 'pr' field in LNURL pay response");
 	}
 
-	return data;
+	return parseAs(pr, InputClassification.LN_INVOICE, amountSats);
 }

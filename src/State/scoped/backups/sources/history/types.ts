@@ -6,7 +6,6 @@ import type { Satoshi } from "@/lib/types/units";
 export type OpKey = string; // `${sourceId}/${operationId}`
 
 
-/* All app source operations are a union type with deep type definitions */
 export interface SourceOperationBase {
 	opKey: OpKey;
 	sourceId: string;
@@ -29,36 +28,27 @@ export interface OptimisticOperationBase {
 }
 
 
-/* Invoice payments are done by either pub sources (receive or send) and lnurl w sources (send only) */
-type SourceOperationInvoiceBase = SourceOperationBase & {
+
+export type SourceOperationInvoice = SourceOperationBase & {
+	type: "INVOICE";
+	inbound: boolean;
+	serviceFee: number;
 	invoice: string;
 	invoiceMemo?: string;
 	invoiceSource?: ParsedNofferInput | ParsedLnurlPayInput | ParsedLightningAddressInput; // if the invoice was generated from one these we want to know that
-}
 
-export type SourceOperationInvoice =
-	| (SourceOperationInvoiceBase & { // Pub source
-		type: "INVOICE";
-		inbound: boolean;
-		serviceFee: number;
-	} & (
-			| {
-				internal: true;
-				networkFee?: never
-			}
-			| {
-				internal: false;
-				networkFee: number;
-			}
-		))
-	| (SourceOperationInvoiceBase & { // Lnurl w source
-		type: "LNURL_WITHDRAW";
-		inbound: false; // lnurl withdraws invoice payments are always outgoing
-		internal: false;
-		// we can't get info about the network fee from the lnurl w source
-		serviceFee?: never;
-		networkFee?: never;
-	})
+} & (
+		| {
+			internal: true;
+			networkFee?: never
+		}
+		| {
+			internal: false;
+			networkFee: number;
+		}
+	)
+
+
 
 
 
@@ -99,7 +89,6 @@ export type SourceOptimsiticOnChain = OptimisticOperationBase & {
 	type: "ON-CHAIN";
 	address: string;
 	inbound: false; // Optimistic operations are always outgoing
-
 } & (
 		// 1) Network request not done
 		| {
@@ -113,7 +102,7 @@ export type SourceOptimsiticOnChain = OptimisticOperationBase & {
 		// 2) Network request done => discovered internal => done
 		| {
 			internal: true;
-			status: "success"; // or "done", if you prefer
+			status: "success";
 			networkFee?: never;
 			serviceFee: number;
 			txHash?: never;

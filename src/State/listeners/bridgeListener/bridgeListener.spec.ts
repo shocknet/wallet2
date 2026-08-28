@@ -9,7 +9,6 @@ import { generateSources, GenSource, getPreloadedSourcesState, TEST_RELAY_URL } 
 import { addIdentityLifecycle } from "../lifecycle/lifecycle";
 import { identityLoaded, identityUnloaded } from "../actions";
 import { IdentityType, RuntimeIdentity } from "@/State/identitiesRegistry/types";
-import type { NprofileSourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { bridgeListenerSpec, bridgePredicate } from "./bridgeListener";
 
 import { getNostrClient } from "@/Api/nostr";
@@ -119,7 +118,7 @@ describe("bridgeListener integration", () => {
 
 
 		const d = store.getState().scoped.sources.docs.entities[sources[0].id]
-			.draft as NprofileSourceDocV0;
+			.draft;
 
 		// fake nostr client
 		const fakeClient = {
@@ -220,7 +219,7 @@ describe("bridgeListener integration", () => {
 		const lvAddress = "something@lightning.video";
 
 		const d = store.getState().scoped.sources.docs.entities[sources[0].id]
-			.draft as NprofileSourceDocV0;
+			.draft;
 
 		// force vanityName to look like lightning.video
 		store.dispatch(
@@ -275,7 +274,7 @@ describe("bridgeListener integration", () => {
 		const dispatchSpy = vi.spyOn(store, "dispatch");
 
 		const d1 = store.getState().scoped.sources.docs.entities[sources[0].id]
-			.draft as NprofileSourceDocV0;
+			.draft;
 
 		const fakeClient = {
 			GetUserInfo: vi.fn().mockResolvedValue({
@@ -320,7 +319,7 @@ describe("bridgeListener integration", () => {
 		const dispatchSpy = vi.spyOn(store, "dispatch");
 
 		const d = store.getState().scoped.sources.docs.entities[sources[0].id]
-			.draft as NprofileSourceDocV0;
+			.draft;
 
 		// fake nostr client
 		const fakeClient = {
@@ -376,6 +375,7 @@ describe("bridgeListener predicate", () => {
 	type Draft = {
 		type: SourceType;
 		bridgeUrl?: { value: string | null };
+		deleted: { value: boolean };
 	};
 
 	type SourceEntity = { draft: Draft };
@@ -404,13 +404,10 @@ describe("bridgeListener predicate", () => {
 		},
 	});
 
-	const nprofileDraft = (bridge: string | null): Draft => ({
+	const sourceDraft = (bridge: string | null): Draft => ({
 		type: SourceType.NPROFILE_SOURCE,
 		bridgeUrl: { value: bridge },
-	});
-
-	const lightningDraft = (): Draft => ({
-		type: SourceType.LIGHTNING_ADDRESS_SOURCE,
+		deleted: { value: false },
 	});
 
 	const bridgeAction = (
@@ -444,65 +441,44 @@ describe("bridgeListener predicate", () => {
 				sourceId,
 				vanityName: "x",
 			}),
-			prev: makeState({ [sourceId]: nprofileDraft("https://old.com") }),
-			curr: makeState({ [sourceId]: nprofileDraft("https://new.com") }),
+			prev: makeState({ [sourceId]: sourceDraft("https://old.com") }),
+			curr: makeState({ [sourceId]: sourceDraft("https://new.com") }),
 			expected: false,
 		},
 		{
 			name: "bridge action but curr source missing => false",
 			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: nprofileDraft("https://old.com") }),
+			prev: makeState({ [sourceId]: sourceDraft("https://old.com") }),
 			curr: makeState({}), // deleted
 			expected: false,
 		},
 		{
-			name: "new NPROFILE source via _createDraftDoc => true",
+			name: "new source via _createDraftDoc => true",
 			action: bridgeAction("create", sourceId),
 			prev: makeState({}),
-			curr: makeState({ [sourceId]: nprofileDraft("https://bridge.com") }),
+			curr: makeState({ [sourceId]: sourceDraft("https://bridge.com") }),
 			expected: true,
 		},
 		{
-			name: "new non-NPROFILE source => false",
-			action: bridgeAction("create", sourceId),
-			prev: makeState({}),
-			curr: makeState({ [sourceId]: lightningDraft() }),
-			expected: false,
-		},
-		{
-			name: "bridgeUrl changed on NPROFILE => true",
+			name: "bridgeUrl changed => true",
 			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: nprofileDraft("https://old.com") }),
-			curr: makeState({ [sourceId]: nprofileDraft("https://new.com") }),
+			prev: makeState({ [sourceId]: sourceDraft("https://old.com") }),
+			curr: makeState({ [sourceId]: sourceDraft("https://new.com") }),
 			expected: true,
 		},
 		{
-			name: "bridgeUrl unchanged on NPROFILE => false",
+			name: "bridgeUrl unchanged => false",
 			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: nprofileDraft("https://same.com") }),
-			curr: makeState({ [sourceId]: nprofileDraft("https://same.com") }),
+			prev: makeState({ [sourceId]: sourceDraft("https://same.com") }),
+			curr: makeState({ [sourceId]: sourceDraft("https://same.com") }),
 			expected: false,
 		},
 		{
 			name: "curr bridgeUrl empty => true",
 			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: nprofileDraft("https://old.com") }),
-			curr: makeState({ [sourceId]: nprofileDraft(null) }),
+			prev: makeState({ [sourceId]: sourceDraft("https://old.com") }),
+			curr: makeState({ [sourceId]: sourceDraft(null) }),
 			expected: true,
-		},
-		{
-			name: "prev type not NPROFILE, curr is NPROFILE => false (not justCreated and no bridgeChanged)",
-			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: lightningDraft() }),
-			curr: makeState({ [sourceId]: nprofileDraft("https://bridge.com") }),
-			expected: false,
-		},
-		{
-			name: "curr type not NPROFILE => false early",
-			action: bridgeAction("apply", sourceId),
-			prev: makeState({ [sourceId]: nprofileDraft("https://old.com") }),
-			curr: makeState({ [sourceId]: lightningDraft() }),
-			expected: false,
 		},
 	])("$name", ({ action, prev, curr, expected }) => {
 		const result = bridgePredicate(

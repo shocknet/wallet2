@@ -7,11 +7,9 @@ import { HttpBaseSchema } from "@/lib/urlZod";
 
 export enum SourceType {
 	NPROFILE_SOURCE = "NPROFILE_SOURCE",
-	LIGHTNING_ADDRESS_SOURCE = "LIGHTNING_ADDRESS_SOURCE",
+	LIGHTNING_ADDRESS_SOURCE = "LIGHTNING_ADDRESS_SOURCE", // not a source doc type; persist/parse still recognize old docs
 }
 
-
-const SourceTypeEnum = z.enum(SourceType)
 
 const CURRENT_SCHEMA_REV = 0;
 
@@ -22,43 +20,23 @@ const BridgeUrlSchema = z.union([
 ]);
 
 
-// Version 0
-const SourceDocBaseV0Schema = DocBaseSchema.safeExtend({
+export const SourceDocV0Schema = DocBaseSchema.safeExtend({
 	doc_type: z.literal("doc/shockwallet/source_"),
 	schema_rev: z.literal(0),
-	source_id: z.string().nonempty(),
 	label: LwwSchema(z.string().nullable()),
-	type: SourceTypeEnum,
-	deleted: LwwSchema(z.boolean())
-})
-export const SourceDocV0Schema = z.discriminatedUnion("type", [
-	SourceDocBaseV0Schema.safeExtend({
-		type: z.literal(SourceTypeEnum.enum.NPROFILE_SOURCE),
-		source_id: HexDashHexSchema,
-		lpk: HexKeySchema,
-		keys: NostrKeyPairSchema,
-		relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
-		is_ndebit_discoverable: LwwSchema(z.boolean()),
-		admin_token: LwwSchema(z.string().nullable()),
-		bridgeUrl: LwwSchema(BridgeUrlSchema)
+	deleted: LwwSchema(z.boolean()),
+	type: z.literal(SourceType.NPROFILE_SOURCE),
+	source_id: HexDashHexSchema,
+	lpk: HexKeySchema,
+	keys: NostrKeyPairSchema,
+	relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
+	is_ndebit_discoverable: LwwSchema(z.boolean()),
+	admin_token: LwwSchema(z.string().nullable()),
+	bridgeUrl: LwwSchema(BridgeUrlSchema)
 
-	}),
-	SourceDocBaseV0Schema.safeExtend({
-		type: z.literal(SourceTypeEnum.enum.LIGHTNING_ADDRESS_SOURCE),
-		source_id: z.email()
-	}),
-]);
+})
 
 export type SourceDocV0 = z.infer<typeof SourceDocV0Schema>;
-
-type ExtractSourceDocByType<TType extends SourceDocV0["type"]> =
-	Extract<SourceDocV0, { type: TType }>;
-
-export type NprofileSourceDocV0 =
-	ExtractSourceDocByType<SourceType.NPROFILE_SOURCE>;
-
-export type LightningAddressSourceDocV0 =
-	ExtractSourceDocByType<SourceType.LIGHTNING_ADDRESS_SOURCE>;
 
 
 
@@ -80,5 +58,3 @@ export function migrateSourceDocToCurrent<T extends DocBase>(doc: T): T | "AHEAD
 	}, doc)
 	return migratedDoc;
 }
-
-

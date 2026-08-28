@@ -73,9 +73,7 @@ export function GenerateNewKeyPage() {
 				userPassword = password;
 			}
 		}
-		await presentLoading({
-			message: "Creating identity...",
-		});
+		await presentLoading({ cssClass: "app-loading", message: "Creating identity...", });
 		try {
 			const { foundBackup, identityId } = await dispatch(createIdentity({
 				type: IdentityType.LOCAL_KEY,
@@ -194,7 +192,7 @@ export function GenerateNewKeyPage() {
 									expand="block"
 									onClick={handleDownloadFileBackup}
 								>
-									Downloads File Backup
+									Download File Backup
 								</IonButton>
 							</div>
 						</IonCardContent>

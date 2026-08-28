@@ -24,7 +24,7 @@ import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { flashOutline, linkOutline, personOutline } from "ionicons/icons";
 
@@ -35,7 +35,7 @@ export default function Routing() {
     const [offset, setOffset] = useState<number>(0)
 
 
-    const admins = useAppSelector(selectAdminNprofileViews);
+    const admins = useAppSelector(selectAdminSourceViews);
     const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
     const adminSource = useMemo(
         () => admins.find(a => a.sourceId === selectedId),
@@ -84,7 +84,7 @@ export default function Routing() {
         setLoading(true);
 
         await dismissLoading();
-        await presentLoading("Fetching routing...");
+        await presentLoading({ message: "Fetching routing...", cssClass: "app-loading" });
 
         try {
             const client = await getNostrClient(

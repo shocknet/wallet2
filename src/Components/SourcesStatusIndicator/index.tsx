@@ -1,12 +1,12 @@
-import { selectNprofileViews } from "@/State/scoped/backups/sources/selectors"
+import { selectSourceViews } from "@/State/scoped/backups/sources/selectors"
 import { useAppSelector } from "@/State/store/hooks"
 import { IonBadge, IonContent, IonIcon, IonPopover } from "@ionic/react";
 import { alertOutline } from "ionicons/icons";
 
 const SourcesStatusIndicator = () => {
-	const nprofiles = useAppSelector(selectNprofileViews);
+	const sources = useAppSelector(selectSourceViews);
 
-	const allDown = nprofiles.length > 0 && nprofiles.every(s => s.beaconStale === "stale");
+	const allDown = sources.length > 0 && sources.every(s => s.beaconStale === "stale");
 
 	if (!allDown) return null;
 

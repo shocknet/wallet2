@@ -19,6 +19,9 @@ export function useAskCreatePassword(
 		return new Promise<string | undefined>((resolve) => {
 			present({
 				cssClass: "wallet-modal dialog-modal",
+				backdropDismiss: false,
+				keyboardClose: false,
+				canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
 				onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
 					if (event.detail.role === "confirm") {
 						resolve(event.detail.data as string);

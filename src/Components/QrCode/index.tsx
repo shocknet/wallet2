@@ -52,7 +52,7 @@ const QrCode = memo(({ value, prefix, uppercase = true }: QrCodeProps) => {
 				<IonIcon
 					icon={copyOutline}
 					className={styles["copy-hint"]}
-					color="primary"
+					color="secondary"
 				/>
 				<div className={styles["qr-inner"]}>
 					<QRCodeSVG

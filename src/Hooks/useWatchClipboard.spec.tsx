@@ -11,23 +11,6 @@ function Harness() {
 
 vi.useFakeTimers();
 
-
-const appStateListeners: Array<(s: { isActive: boolean }) => void> = [];
-const mockRemove = vi.fn();
-
-vi.mock("@capacitor/app", () => {
-	return {
-		App: {
-			addListener: vi.fn((_event: string, cb: (s: { isActive: boolean }) => void) => {
-				appStateListeners.push(cb);
-				return Promise.resolve({
-					remove: mockRemove,
-				});
-			}),
-		},
-	};
-});
-
 const mockClipboardRead = vi.fn();
 vi.mock("@capacitor/clipboard", () => {
 	return {
@@ -65,7 +48,7 @@ vi.mock("@/lib/format", () => {
 
 // app state from redux selectors
 const mockDispatch = vi.fn();
-let mockBootstrapped = true;
+let mockIsActive = true;
 let mockSeenAssets: string[] = [];
 
 vi.mock("@/State/store/hooks", () => {
@@ -73,7 +56,7 @@ vi.mock("@/State/store/hooks", () => {
 		useAppDispatch: () => mockDispatch,
 		useAppSelector: (selectorFn: any) =>
 			selectorFn({
-				appState: { bootstrapped: mockBootstrapped },
+				runtime: { isActive: mockIsActive },
 				generatedAssets: { assets: mockSeenAssets },
 			}),
 	};
@@ -138,11 +121,9 @@ beforeEach(() => {
 	mockClipboardRead.mockReset();
 	mockIdentifyBitcoinInput.mockReset();
 	mockParseBitcoinInput.mockReset();
-	mockRemove.mockClear();
 	mockUpdateWarned.mockClear();
-	appStateListeners.length = 0;
 
-	mockBootstrapped = true;
+	mockIsActive = true;
 	mockSeenAssets = [];
 
 
@@ -192,7 +173,7 @@ describe("useWatchClipboard happy path", () => {
 		expect(mockShowAlert).toHaveBeenCalledTimes(1);
 
 		const alertConfig = mockShowAlert.mock.calls[0][0];
-		expect(alertConfig.header).toMatch(/Clipboard Detected/i);
+		expect(alertConfig.header).toMatch(/Clipboard detected/i);
 		expect(alertConfig.message).toBe(`TRUNC(${clipboardText})`);
 
 		// resolve alert "confirm"
@@ -267,8 +248,13 @@ describe("useWatchClipboard happy path", () => {
 		expect(mockPush).not.toHaveBeenCalled();
 	});
 
-	it("skips noffer parse and navigates to send — Send parses with selected source keys", async () => {
+	it("parses noffer and navigates to send with parsed input", async () => {
 		const noffer = "noffer1qqsrf5h4ya83jk8u6t9jgc76h6kalz3plp9vusjpm2ygqgalqhxgp9gpr9mhxue69uhhyetvv9ujumrfva58gmnfdenjuur4vgpp2ctywejkuar4wfhh2um5dae8gmmfwdjnqdsrqypqqudzmz";
+		const parsedNoffer = {
+			type: InputClassification.NOFFER,
+			data: noffer,
+			noffer: { offer: "abc", pubkey: "pk", relay: "wss://relay.example" },
+		};
 
 		mockClipboardRead.mockResolvedValue({
 			type: "text/plain",
@@ -279,6 +265,8 @@ describe("useWatchClipboard happy path", () => {
 			classification: InputClassification.NOFFER,
 			value: noffer,
 		});
+
+		mockParseBitcoinInput.mockResolvedValue(parsedNoffer);
 
 		const alertResult = Promise.resolve({ role: "confirm" });
 		mockShowAlert.mockReturnValue(alertResult);
@@ -295,17 +283,17 @@ describe("useWatchClipboard happy path", () => {
 			await Promise.resolve();
 		});
 
-		expect(mockParseBitcoinInput).not.toHaveBeenCalled();
+		expect(mockParseBitcoinInput).toHaveBeenCalledWith(noffer, InputClassification.NOFFER);
 		expect(mockPush).toHaveBeenCalledWith({
 			pathname: "/send",
-			state: { input: noffer },
+			state: { parsed: parsedNoffer },
 		});
 	});
 });
 
 describe("useWatchClipboard guards", () => {
-	it("does nothing if app is not bootstrapped", async () => {
-		mockBootstrapped = false;
+	it("does nothing if app is not active", async () => {
+		mockIsActive = false;
 
 		mockClipboardRead.mockResolvedValue({
 			type: "text/plain",
@@ -351,6 +339,28 @@ describe("useWatchClipboard guards", () => {
 		});
 
 		expect(mockShowAlert).not.toHaveBeenCalled();
+	});
+
+	it("does nothing if classification is a chain address", async () => {
+		mockClipboardRead.mockResolvedValue({
+			type: "text/plain",
+			value: "bc1qxyz",
+		});
+
+		mockIdentifyBitcoinInput.mockReturnValue({
+			classification: InputClassification.BITCOIN_ADDRESS,
+			value: "bc1qxyz",
+		});
+
+		renderHarness();
+
+		await act(async () => {
+			vi.advanceTimersByTime(60);
+			await Promise.resolve();
+		});
+
+		expect(mockShowAlert).not.toHaveBeenCalled();
+		expect(mockDispatch).not.toHaveBeenCalled();
 	});
 
 	it("does nothing if value was already seen", async () => {
@@ -401,8 +411,7 @@ describe("useWatchClipboard guards", () => {
 });
 
 describe("clipboard permission warning ('warned') behavior", () => {
-	it("on first NotAllowedError and warned=false: shows 'Clipboard Permission Denided' alert and sets warned=true via onDidPresent", async () => {
-		// start with warnedMockVal = false (default in beforeEach)
+	it("on first NotAllowedError and warned=false: shows clipboard access alert and sets warned=true", async () => {
 		mockClipboardRead.mockRejectedValue({ name: "NotAllowedError" });
 
 		const alertResult = Promise.resolve({ role: "cancel" });
@@ -415,19 +424,10 @@ describe("clipboard permission warning ('warned') behavior", () => {
 			await Promise.resolve();
 		});
 
-		// we should have shown the permission denied alert
 		expect(mockShowAlert).toHaveBeenCalledTimes(1);
 		const cfg = mockShowAlert.mock.calls[0][0];
-		expect(cfg.header).toMatch(/Clipboard Permission Denided/i);
-		expect(typeof cfg.onDidPresent).toBe("function");
-
-		// simulate Ionic alert actually presenting
-		cfg.onDidPresent();
-
-		// after presenting, we expect warned := true
+		expect(cfg.header).toMatch(/Clipboard access blocked/i);
 		expect(mockUpdateWarned).toHaveBeenCalledWith(true);
-
-		// we do NOT navigate or dispatch addAsset in this path
 		expect(mockPush).not.toHaveBeenCalled();
 		expect(mockDispatch).not.toHaveBeenCalled();
 	});
@@ -510,8 +510,8 @@ describe("clipboard permission warning ('warned') behavior", () => {
 	});
 });
 
-describe("useWatchClipboard appStateChange handling", () => {
-	it("listens to App.addListener('appStateChange') and re-checks clipboard on isActive=true", async () => {
+describe("useWatchClipboard app active handling", () => {
+	it("re-checks clipboard on window focus after the throttle", async () => {
 		const clipVal = "lnurl1resume";
 
 		mockClipboardRead.mockResolvedValue({
@@ -534,7 +534,6 @@ describe("useWatchClipboard appStateChange handling", () => {
 
 		renderHarness();
 
-		// initial mount run
 		await act(async () => {
 			vi.advanceTimersByTime(60);
 			await Promise.resolve();
@@ -542,17 +541,11 @@ describe("useWatchClipboard appStateChange handling", () => {
 
 		expect(mockShowAlert).toHaveBeenCalledTimes(1);
 
-		// finish first alert
-		await act(async () => {
-			vi.advanceTimersByTime(1000);
-		});
-
 		await act(async () => {
 			await alertResult;
 			await Promise.resolve();
 		});
 
-		// now simulate clipboard changed while backgrounded
 		const newVal = "lnbc2500fresh";
 		mockClipboardRead.mockResolvedValue({
 			type: "text/plain",
@@ -572,32 +565,19 @@ describe("useWatchClipboard appStateChange handling", () => {
 		const nextAlertResult = Promise.resolve({ role: "cancel" });
 		mockShowAlert.mockReturnValueOnce(nextAlertResult);
 
-		// app goes inactive then active again
 		await act(async () => {
-			for (const cb of appStateListeners) {
-				cb({ isActive: false });
-			}
-		});
-
-		await act(async () => {
-			for (const cb of appStateListeners) {
-				cb({ isActive: true });
-			}
+			vi.advanceTimersByTime(500);
+			window.dispatchEvent(new Event("focus"));
 			vi.advanceTimersByTime(60);
-		});
-
-		// wait for alert promise resolve
-		await nextAlertResult;
-		await Promise.resolve();
-
-		await act(async () => {
 			await Promise.resolve();
 		});
 
-		// second alert fired
-		expect(mockShowAlert).toHaveBeenCalledTimes(2);
+		await act(async () => {
+			await nextAlertResult;
+			await Promise.resolve();
+		});
 
-		// and we stored the asset
+		expect(mockShowAlert).toHaveBeenCalledTimes(2);
 		expect(mockDispatch).toHaveBeenCalledWith({
 			type: "generatedAssets/addAsset",
 			payload: { asset: "lnbc2500fresh" },

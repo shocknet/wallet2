@@ -33,7 +33,7 @@ import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import CodeBox from "./CodeBox";
 import OfferInvoiceItem from "@/Components/OfferInvoiceItem";
-import EmptyState from "@/Components/common/ui/emptyState";
+import EmptyState from "@/Components/common/ui/EmptyState";
 import moment from "moment";
 
 const backend = isPlatform("mobile") ? TouchBackend : HTML5Backend;
@@ -370,7 +370,7 @@ const OfferInfoModal = ({ isOpen, onClose, onSave, initialOffer, fetchOfferInvoi
 
 										) : invoices.length === 0 ? (
 											<div style={{ height: "18.7rem" }}>
-												<EmptyState message="This offer has no invoices yet" />
+												<EmptyState title="This offer has no invoices yet" />
 											</div>
 										) : (
 											invoices.map(i => (

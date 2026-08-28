@@ -11,7 +11,7 @@ import {
 import { RouteComponentProps } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews, type NprofileView } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 
 import { CustomSelect } from "@/Components/CustomSelect";
@@ -23,7 +23,7 @@ import StackPageToolbar from "@/Layout2/StackPageToolbar";
 
 export default function MetricsSelectSource({ history, location }: RouteComponentProps) {
 	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminNprofileViews);
+	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 
 	const [pendingId, setPendingId] = useState<string>("");
@@ -103,7 +103,7 @@ export default function MetricsSelectSource({ history, location }: RouteComponen
 		if (pending.beaconStale === "warmingUp") {
 			if (!loadingShownRef.current) {
 				loadingShownRef.current = true;
-				await presentLoading({ message: "Reconnecting…", backdropDismiss: false });
+				await presentLoading({ cssClass: "app-loading", message: "Reconnecting…", backdropDismiss: false });
 			}
 			return; // wait for beaconStale to change -> effect reruns
 		}
@@ -159,7 +159,7 @@ export default function MetricsSelectSource({ history, location }: RouteComponen
 
 			<IonContent className="ion-padding">
 				<div className="flex w-full sm:w-2/3 flex-col mx-auto justify-center items-stretch gap-4">
-					<CustomSelect<NprofileView>
+					<CustomSelect<SourceView>
 						items={admins}
 						selectedItem={pending}
 						onSelect={(v) => {

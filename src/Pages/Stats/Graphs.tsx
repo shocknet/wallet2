@@ -10,7 +10,7 @@ import { newWebRtcConnection } from "./webRTC";
 import { BundleDataPoint, fetchBundleStats, fetchErrors, fetchUsageStats, MetricsData } from "./statsApi";
 import { BundleGraph } from "./BundleGraph";
 import { ErrorsView } from "./ErrorsView";
-import { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import { SourceView } from "@/State/scoped/backups/sources/selectors";
 //import { MetricsData } from "./StatsGraph";
 type OfferItemType = {
     title: string;
@@ -28,7 +28,7 @@ type PagedData = Record<string, Record<string, Record<number, Types.UsageMetric[
     validate_in_nano?: boolean
 } */
 
-export const Graphs = ({ adminSource }: { adminSource: NprofileView }) => {
+export const Graphs = ({ adminSource }: { adminSource: SourceView }) => {
     const [apps, setApps] = useState<string[]>([])
     const [bundleData, setBundleData] = useState<MetricsData<BundleDataPoint>>()
     const [usageData, setUsageData] = useState<MetricsData<Types.UsageMetric>>()

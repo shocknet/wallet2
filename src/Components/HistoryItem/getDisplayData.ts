@@ -1,12 +1,13 @@
 import { InputClassification } from "@/lib/types/parse";
-import type { SourceOperation } from "@/State/history/types";
+import { isInFlightOutgoingInvoice } from "@/State/scoped/backups/sources/history/helpers";
+import type { SourceOperation } from "@/State/scoped/backups/sources/history/types";
 import { flashOutline, hourglass, linkOutline, radioOutline, trendingDownOutline, trendingUpOutline } from "ionicons/icons";
 import moment from "moment";
 
 
 export interface OperationDisplayData {
 	label: string | null;
-	date: string
+	date: string;
 	typeIcon: string;
 	typeIconColor: string;
 	directionIcon: string;
@@ -30,8 +31,7 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 
 
 	switch (operation.type) {
-		case "INVOICE":
-		case "LNURL_WITHDRAW": {
+		case "INVOICE": {
 			// For invoices the label is in priority order:
 			// 1. operation.memo
 			// 2. operation.invoiceMemo
@@ -67,26 +67,20 @@ export const getOperationDisplayData = (operation: SourceOperation): OperationDi
 
 	let date = moment(operation.paidAtUnix).fromNow();
 
-	if (operation.optimistic) {
-		switch (operation.type) {
-			case "INVOICE": {
+	// Optimistic sends and pending pub outgoing invoices (paidAtUnix === 0)
+	if (isInFlightOutgoingInvoice(operation)) {
+		typeIcon = radioOutline;
+		date = "Pending";
+	} else if (operation.optimistic && operation.type === "ON-CHAIN") {
+		switch (operation.status) {
+			case "broadcasting": {
 				typeIcon = radioOutline;
-				date = "Pending"
+				date = "Pending";
 				break;
 			}
-			case "ON-CHAIN": {
-				switch (operation.status) {
-					case "broadcasting": {
-						typeIcon = radioOutline;
-						date = "Pending";
-						break;
-					}
-					case "confirming": {
-						typeIcon = hourglass;
-						break;
-					}
-				}
-
+			case "confirming": {
+				typeIcon = hourglass;
+				break;
 			}
 		}
 	}

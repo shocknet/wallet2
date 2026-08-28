@@ -3,7 +3,6 @@ import {
 	IonContent,
 	IonButton,
 	useIonRouter,
-	useIonModal,
 	IonFooter,
 	useIonLoading,
 } from "@ionic/react";
@@ -12,13 +11,8 @@ import { walletOutline } from "ionicons/icons";
 import cn from "clsx";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
-import type { ParsedNprofileInput } from "@/lib/types/parse";
-import {
-	addBootstrapSource,
-	addNprofileSource,
-} from "@/State/scoped/backups/sources/thunks";
-import { AddConnectionDialog } from "@/Components/Modals/DialogeModals";
-import type { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
+import { addBootstrapSource } from "@/State/scoped/backups/sources/thunks";
+import { useAskAddSource } from "@/Pages/Sources/AddSourceModal";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { ScreenIntro } from "@/Components/common/ui/ScreenIntro";
 
@@ -79,81 +73,24 @@ export default function BootstrapSourcePage() {
 	const [selectedOption, setSelectedOption] =
 		useState<SelectedOption>(null);
 	const [busy, setBusy] = useState(false);
-
-	const [presentAdd, dismissAdd] = useIonModal(
-		<AddConnectionDialog
-			dismiss={(data, role) => dismissAdd(data, role)}
-		/>,
-	);
+	const askAddSource = useAskAddSource();
 
 	const goHome = useCallback(() => {
 		router.push("/home", "root", "replace");
 	}, [router]);
 
-	const handleAddNProfileSource = useCallback(
-		async (parsedNprofile: ParsedNprofileInput) => {
-			if (parsedNprofile.relays.length === 0) {
-				showToast({
-					color: "danger",
-					message: "This nprofile has no relays",
-				});
-				return;
-			}
-
-			setBusy(true);
-			await presentLoading({ message: "Connecting…" });
-			try {
-				const resultMessage = await dispatch(
-					addNprofileSource({
-						lpk: parsedNprofile.pubkey,
-						relays: parsedNprofile.relays,
-						adminEnrollToken: parsedNprofile.adminEnrollToken,
-						bridgeUrl: null,
-					}),
-				);
-				showToast({
-					color: "success",
-					message: resultMessage,
-				});
-				goHome();
-			} catch (err: unknown) {
-				showToast({
-					color: "danger",
-					message:
-						err instanceof Error
-							? err.message
-							: "Failed to add pub source",
-				});
-			} finally {
-				setBusy(false);
-				await dismissLoading();
-			}
-		},
-		[dispatch, dismissLoading, goHome, presentLoading, showToast],
-	);
-
 	const handleConnect = useCallback(async () => {
 		if (selectedOption === null || busy) return;
 
 		if (selectedOption === "connection") {
-			presentAdd({
-				onDidDismiss: (
-					event: CustomEvent<OverlayEventDetail>,
-				) => {
-					if (event.detail.role !== "confirm") return;
-					const parsed = event.detail.data
-						?.parsedNprofile as ParsedNprofileInput | undefined;
-					if (parsed) {
-						void handleAddNProfileSource(parsed);
-					}
-				},
-				cssClass: "dialog-modal wallet-modal",
+			void askAddSource({}).then((added) => {
+				if (added) goHome();
 			});
 			return;
 		}
 
 		setBusy(true);
-		await presentLoading({ message: "Setting up…" });
+		await presentLoading({ message: "Setting up…", cssClass: "app-loading" });
 		try {
 			await dispatch(addBootstrapSource());
 			goHome();
@@ -174,9 +111,8 @@ export default function BootstrapSourcePage() {
 		dispatch,
 		dismissLoading,
 		goHome,
-		handleAddNProfileSource,
-		presentAdd,
 		presentLoading,
+		askAddSource,
 		selectedOption,
 		showToast,
 	]);

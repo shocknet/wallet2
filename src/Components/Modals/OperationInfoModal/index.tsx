@@ -35,6 +35,7 @@ import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import SourceCard from "@/Components/SourceCard";
+import { isInFlightOutgoingInvoice } from "@/State/scoped/backups/sources/history/helpers";
 
 
 
@@ -73,7 +74,7 @@ const OperationModal = ({ isOpen, onClose, operation }: Props) => {
 				{
 					operation.type === "ON-CHAIN" ? (
 						<OnChainOperation operation={operation} />
-					) : (operation.type === "LNURL_WITHDRAW" || operation.type === "INVOICE") ? (
+					) : (operation.type === "INVOICE") ? (
 						<InvoiceOperation operation={operation} />
 					) : (operation.type === "USER_TO_USER") ? (
 						<UserToUserOperation operation={operation} />
@@ -231,13 +232,12 @@ const InvoiceOperation = ({ operation }: { operation: SourceOperationInvoice | S
 		let status: string | JSX.Element = "";
 		let serviceFee: number | null = null;
 		let networkFee: number | null = null;
-		if ("optimistic" in operation && operation.optimistic) {
+		if (isInFlightOutgoingInvoice(operation)) {
 			status = "Pending";
 		} else {
-			const isFromLnurlW = operation.type === "LNURL_WITHDRAW";
 			status = operation.internal ? "Completed (internal)" : "Completed";
-			serviceFee = isFromLnurlW ? null : operation.serviceFee;
-			networkFee = isFromLnurlW ? null : operation.internal ? null : operation.networkFee;
+			serviceFee = operation.serviceFee;
+			networkFee = operation.internal ? null : operation.networkFee;
 		}
 		return { status, serviceFee, networkFee };
 	}, [operation]);

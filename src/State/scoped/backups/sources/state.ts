@@ -78,7 +78,6 @@ export interface SourcesState {
 export const getIntialState = (): SourcesState => ({
 	docs: docsAdapter.getInitialState(),
 
-	// metadata and history are only for nprofile sources, as lightning address sources have no use for either
 	metadata: metadataAdapter.getInitialState({
 		beaconStaleMs: BEACON_STALE_OLDER_THAN,
 	}),

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, Mock } from "vitest";
-import { CLIENTS_RPC_SUBID, NostrKeyPair, RelaySession } from "./nostrHandler";
+import { BEACONS_SUBID, CLIENTS_RPC_SUBID, NostrKeyPair, RelaySession } from "./nostrHandler";
 import { createDeferred } from "@/lib/deferred";
 
 type Filter = any;
@@ -11,6 +11,10 @@ class FakeSub {
 	closed = false;
 
 	fire = vi.fn();
+	close = vi.fn((reason?: string) => {
+		this.closed = true;
+		return reason;
+	});
 	constructor(id: string, filters: Filter[]) {
 		this.id = id;
 		this.filters = filters;
@@ -41,6 +45,11 @@ const getPrepareSubscriptionRpcCall = (prepMock: Mock<(filters: Filter[], params
 const getPrepareSubscriptionRpcCallResult = (prepMock: Mock<(filters: Filter[], params: any) => FakeSub>) =>
 	prepMock.mock.results.find(
 		(r) => r.value?.id === CLIENTS_RPC_SUBID
+	)?.value as FakeSub;
+
+const getPrepareSubscriptionBeaconCallResult = (prepMock: Mock<(filters: Filter[], params: any) => FakeSub>) =>
+	prepMock.mock.results.find(
+		(r) => r.value?.id === BEACONS_SUBID
 	)?.value as FakeSub;
 
 const keys1: NostrKeyPair = { publicKey: "pub1", privateKey: "priv1" };
@@ -94,6 +103,50 @@ describe("RelaySession", () => {
 			// Fired once on create, once on update
 			expect(createdSub.fire).toHaveBeenCalledTimes(2);
 			expect(createdSub.filters[0]["#p"].sort()).toEqual(["pub1", "pub2"]);
+		});
+
+		it("no-ops when interests are already applied", async () => {
+			const relay = new FakeRelay();
+			const emitter = { emit: vi.fn() } as any;
+
+			const s = new RelaySession("wss://x", relay as any, emitter, new Set());
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+			const rpcSub = getPrepareSubscriptionRpcCallResult(relay.prepareSubscription);
+			const beaconSub = getPrepareSubscriptionBeaconCallResult(relay.prepareSubscription);
+			const prepCount = relay.prepareSubscription.mock.calls.length;
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+
+			expect(relay.prepareSubscription.mock.calls.length).toBe(prepCount);
+			expect(rpcSub.fire).toHaveBeenCalledTimes(1);
+			expect(beaconSub.fire).toHaveBeenCalledTimes(1);
+		});
+
+		it("updates beacon authors without recreating rpc when only lpk changes", async () => {
+			const relay = new FakeRelay();
+			const emitter = { emit: vi.fn() } as any;
+
+			const s = new RelaySession("wss://x", relay as any, emitter, new Set());
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+			const rpcSub = getPrepareSubscriptionRpcCallResult(relay.prepareSubscription);
+			const beaconSub = getPrepareSubscriptionBeaconCallResult(relay.prepareSubscription);
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkB");
+
+			const rpcPrepCalls = relay.prepareSubscription.mock.calls.filter(
+				(c) => c[1]?.id === CLIENTS_RPC_SUBID
+			);
+			const beaconPrepCalls = relay.prepareSubscription.mock.calls.filter(
+				(c) => c[1]?.id === BEACONS_SUBID
+			);
+			expect(rpcPrepCalls.length).toBe(1);
+			expect(beaconPrepCalls.length).toBe(1);
+
+			expect(rpcSub.fire).toHaveBeenCalledTimes(1);
+			expect(beaconSub.fire).toHaveBeenCalledTimes(2);
+			expect([...beaconSub.filters[0].authors].sort()).toEqual(["lpkA", "lpkB"]);
 		});
 
 		it("coalesces burst while connect is in-flight (sub includes both)", async () => {
@@ -248,7 +301,3 @@ describe("RelaySession", () => {
 		});
 	});
 });
-
-
-
-

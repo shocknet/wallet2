@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetcher } from "./fetcher";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminNprofileViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { useIonLoading, useIonRouter } from "@ionic/react";
 import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonIcon, IonPage, IonText } from "@ionic/react";
@@ -574,7 +574,7 @@ function LiquidityAssetCard({
 
 export const AssetsAndLiab = () => {
     const router = useIonRouter();
-    const admins = useAppSelector(selectAdminNprofileViews);
+    const admins = useAppSelector(selectAdminSourceViews);
     const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
     const adminSource = useMemo(
         () => admins.find(a => a.sourceId === selectedId),
@@ -622,7 +622,7 @@ export const AssetsAndLiab = () => {
                         if (showFullLoading) {
                             setLoading(true);
                             await dismissLoading();
-                            await presentLoading("Fetching assets and liabilities...");
+                            await presentLoading({ message: "Fetching assets and liabilities...", cssClass: "app-loading" });
                         }
                     },
                     onEnd: async () => {

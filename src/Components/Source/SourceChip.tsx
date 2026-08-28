@@ -1,11 +1,11 @@
 import { IonButton } from "@ionic/react";
 import cn from "clsx";
-import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { Avatar } from "../Avatar";
 
 export type SourceChipProps = {
-	source: NprofileView;
+	source: SourceView;
 	onClick: () => void;
 	className?: string;
 };

@@ -1,11 +1,10 @@
 import { isAnyOf, ListenerEffectAPI } from "@reduxjs/toolkit";
 import { listenerKick } from "@/State/listeners/actions";
-import { nprofileBecameFresh, nprofileBecameStale, nprofileJustDeleted } from "@/State/listeners/predicates";
+import { sourceBecameFresh, sourceBecameStale, sourceJustDeleted } from "@/State/listeners/predicates";
 import type { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
-import { selectNprofileSourceViewById, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { AppDispatch, RootState } from "@/State/store/store";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { selectPendingClinkRequestSession, selectPendingClinkRequestsForActiveIdentity } from "./selectors";
 
 
@@ -19,7 +18,7 @@ function pruneOrphanedAClinkRequests(
 	const requestsForIdentity = selectPendingClinkRequestsForActiveIdentity(state);
 
 	for (const request of requestsForIdentity) {
-		const source = selectNprofileSourceViewById(state, request.sourceId);
+		const source = selectSourceViewById(state, request.sourceId);
 
 		// remove request if its matching source has been deleted
 		if (!source) {
@@ -63,7 +62,6 @@ function reconcilePendingClinkRequest(
 		const source = selectSourceViewById(state, next.sourceId);
 		if (
 			!source ||
-			source.type !== SourceType.NPROFILE_SOURCE ||
 			source.beaconStale !== "fresh"
 		) {
 			continue;
@@ -104,9 +102,9 @@ export const pendingClinkRequestsListenerSpec: ListenerSpec = {
 						listenerKick,
 					)(action)
 					||
-					nprofileBecameFresh(action, curr, prev) ||
-					nprofileBecameStale(action, curr, prev) ||
-					nprofileJustDeleted(action, curr, prev)
+					sourceBecameFresh(action, curr, prev) ||
+					sourceBecameStale(action, curr, prev) ||
+					sourceJustDeleted(action, curr, prev)
 				),
 				effect: async (_, listenerApi) => {
 					listenerApi.cancelActiveListeners();

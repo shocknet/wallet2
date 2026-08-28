@@ -1,9 +1,8 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { beaconProbeSelectors, docsSelectors, metadataSelectors } from "./slice";
-import { SourceType } from "./schema";
 import { NostrKeyPair } from "@/lib/regex";
 import { Satoshi } from "@/lib/types/units";
-import { LightningAddressSourceDocV0, NprofileSourceDocV0, SourceDocV0 } from "./schema";
+import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { RootState } from "@/State/store/store";
@@ -27,15 +26,9 @@ export const selectLiveSourceEntities = createSelector(
 
 
 
-
-export type SourceViewBase = {
+export type SourceView = {
 	sourceId: string;
-	type: SourceType;
 	label: string | null;
-};
-
-export type NprofileView = SourceViewBase & {
-	type: SourceType.NPROFILE_SOURCE;
 	relays: string[];
 	beaconStale: BeaconHealth;
 	beaconLastSeenAtMs: number
@@ -53,6 +46,8 @@ export type NprofileView = SourceViewBase & {
 	adminToken: string | null;
 	vanityName?: string;
 	ndebit?: string;
+	noffer?: string;
+	nmanage?: string;
 };
 
 export type BeaconHealth = "warmingUp" | "stale" | "fresh";
@@ -72,22 +67,17 @@ export const computeBeaconHealth = (args: {
 
 	return "stale";
 }
-const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata, probe: BeaconProbeState | undefined, nowMs: number): NprofileView => {
+const createSourceView = (d: SourceDocV0, m: SourceMetadata, probe: BeaconProbeState | undefined, nowMs: number): SourceView => {
 	if (!m) {
-		throw new Error("No metadata for nprofile source. Something went wrong");
+		throw new Error("No metadata for source. Something went wrong");
 	}
-	const base: SourceViewBase = {
-		sourceId: d.source_id,
-		type: d.type,
-		label: d.label.value,
-	};
 
 	const relays = presentRelayUrls(d.relays);
 
 
 	return {
-		...base,
-		type: SourceType.NPROFILE_SOURCE,
+		sourceId: d.source_id,
+		label: d.label.value,
 		lpk: d.lpk,
 		topicId: m.topicId,
 		keys: d.keys,
@@ -96,6 +86,8 @@ const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata, probe: Be
 		maxWithdrawableSats: m.maxWithdrable,
 		isNDebitDiscoverable: d.is_ndebit_discoverable.value,
 		ndebit: m.ndebit,
+		noffer: m.noffer,
+		nmanage: m.nmanage,
 		vanityName: m.vanityName,
 		bridgeUrl: d.bridgeUrl.value,
 		beaconStale: computeBeaconHealth({
@@ -111,19 +103,6 @@ const createNprofileView = (d: NprofileSourceDocV0, m: SourceMetadata, probe: Be
 		adminToken: d.admin_token.value
 	};
 }
-
-const createLightningAddressView = (d: LightningAddressSourceDocV0): LnAddrView => {
-	return {
-		sourceId: d.source_id,
-		type: d.type,
-		label: d.label.value,
-	};
-}
-
-export type LnAddrView = SourceViewBase & { type: SourceType.LIGHTNING_ADDRESS_SOURCE };
-
-
-export type SourceView = NprofileView | LnAddrView;
 
 const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 	relays ? Object.keys(relays).filter(u => relays[u]?.present) : [];
@@ -149,13 +128,7 @@ export const selectSourceViews = createSelector(
 			const d = source.draft;
 			if (d.deleted.value) continue;
 
-			let view;
-			if (d.type === SourceType.NPROFILE_SOURCE) {
-				view = createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs)
-			} else {
-				view = createLightningAddressView(d)
-			}
-			out.push(view);
+			out.push(createSourceView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs));
 		}
 		return out;
 	}
@@ -175,80 +148,27 @@ export const selectSourceViewById = createSelector(
 		if (!e || e.draft.deleted.value) return null;
 
 		const d = e.draft;
-		if (d.type === SourceType.NPROFILE_SOURCE) {
-			return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs);
-		} else {
-			return createLightningAddressView(d);
-		}
+		return createSourceView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs);
 	}
 )
 
-export const selectNprofileSourceViewById = createSelector(
+export const selectSourceViewsByLpk = createSelector(
 	[
-		docsSelectors.selectEntities,
-		metadataSelectors.selectEntities,
-		beaconProbeSelectors.selectEntities,
-		selectNowMs,
-		(_state: RootState, sourceId: string) => sourceId
-	],
-	(sourceEntities, metaEntities, beaconProbeEntities, nowMs, sourceId) => {
-		const e = sourceEntities[sourceId];
-		if (!e || e.draft.deleted.value || e.draft.type !== SourceType.NPROFILE_SOURCE) return null;
-
-		const d = e.draft;
-		return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs);
-	}
-)
-
-export const selectHealthyNprofileSourceViewById = createSelector(
-	[selectNprofileSourceViewById],
-	(view) => view?.beaconStale === "fresh" ? view : null
-);
-
-export const selectNprofileViews = createSelector(
-	[selectSourceViews],
-	(views) => views.filter(v => v.type === SourceType.NPROFILE_SOURCE)
-);
-
-
-export const selectNprofileViewsByLpk = createSelector(
-	[
-		selectNprofileViews,
+		selectSourceViews,
 		(_state: RootState, lpk: string) => lpk
 	],
 	(views, lpk) => views.filter(v => v.lpk === lpk)
 );
 
-export const makeSelectNprofileViewsByLpk = () => {
-	const selectNprofileViewsByLpk = createSelector(
-		[
-			selectNprofileViews,
-			(_state: RootState, lpk: string) => lpk
-		],
-		(views, lpk) => views.filter(v => v.lpk === lpk)
-	);
-	return selectNprofileViewsByLpk
-}
 
 
-
-export const selectHealthyNprofileViews = createSelector(
-	[selectNprofileViews],
+export const selectHealthySourceViews = createSelector(
+	[selectSourceViews],
 	(views) => views.filter(v => v.beaconStale === "fresh")
 );
 
-export const selectAdminNprofileViews = createSelector(
-	[selectNprofileViews],
-	(views) => views.filter(v => !!v.adminToken)
-);
-
-export const selectInitialAdminNprofileView = createSelector(
-	[selectAdminNprofileViews],
-	(views) => views[0]
-)
-
-export const selectHealthyAdminNprofileViews = createSelector(
-	[selectHealthyNprofileViews],
+export const selectAdminSourceViews = createSelector(
+	[selectSourceViews],
 	(views) => views.filter(v => !!v.adminToken)
 );
 
@@ -267,11 +187,7 @@ export const selectFavoriteSourceView = createSelector(
 		if (!e || e.draft.deleted.value) return null;
 
 		const d = e.draft;
-		if (d.type === SourceType.NPROFILE_SOURCE) {
-			return createNprofileView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs)
-		} else {
-			return createLightningAddressView(d);
-		}
+		return createSourceView(d, metaEntities[d.source_id], beaconProbeEntities[d.source_id], nowMs)
 	}
 );
 
@@ -288,6 +204,3 @@ export const selectTotalBalance = createSelector(
 		return total as Satoshi;
 	}
 );
-
-
-

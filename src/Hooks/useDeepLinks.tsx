@@ -1,59 +1,56 @@
 import { useCallback, useEffect } from "react";
 import { App, URLOpenListenerEvent } from "@capacitor/app";
-import { InputClassification, ParsedLnurlWithdrawInput } from "@/lib/types/parse";
+import { InputClassification } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { shellActions } from "@/shell/slice";
-
-export type SourcesPageLocationState = {
-	sourceToAdd?: string;
-	integrationData?: {
-		token: string;
-		lnAddress: string;
-	};
-	inviteToken?: string;
-	lnurlWParsedData?: ParsedLnurlWithdrawInput;
-};
+import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
+import { isSendParsedInput, type SendPageNavState } from "@/Pages/Send/nav";
+import type { SourcesPageNavState } from "@/Pages/Sources/nav";
 
 export function useDeepLinks() {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 
-	const enqueueRoute = useCallback((path: string, state?: Record<string, unknown>) => {
+	const enqueueRoute = useCallback((path: string, state?: object) => {
 		dispatch(
 			shellActions.pendingNavSet({
 				kind: "route",
 				path,
-				state,
+				state: state as Record<string, unknown> | undefined,
 			}),
 		);
 	}, [dispatch]);
 
 	const parseDeepLink = useCallback(async (input: string) => {
-		try {
-			const { identifyBitcoinInput, parseBitcoinInput } = await import(
-				"@/lib/parse"
-			);
-			const { classification, value } = identifyBitcoinInput(input);
-			if (classification === InputClassification.UNKNOWN) {
-				showToast({ message: "Unknown input", color: "danger" });
-				return;
-			}
+		const { classification, value } = identifyBitcoinInput(input);
+		if (classification === InputClassification.UNKNOWN) {
+			throw new Error("Unknown input");
+		}
 
+		try {
 			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				enqueueRoute("/sources", { parsedLnurlW: parsed });
-			} else {
-				enqueueRoute("/send", {
-					// pass the input string as opposed to parsed object because in the case of noffer it needs the selected source
-					input: parsed.data,
-				});
+				const state: SourcesPageNavState = { parsedLnurlW: parsed };
+				enqueueRoute("/sources", state);
+				return;
 			}
+			if (parsed.type === InputClassification.NPROFILE) {
+				const state: SourcesPageNavState = { parsedNprofile: parsed };
+				enqueueRoute("/sources", state);
+				return;
+			}
+			if (isSendParsedInput(parsed)) {
+				const state: SendPageNavState = { parsed };
+				enqueueRoute("/send", state);
+				return;
+			}
+			throw new Error(`${parsed.type} not usuable`);
 		} catch (err: unknown) {
 			console.error("An error occured when parsing deep link ", input, err);
 			showToast({
 				header: "An error occured when parsing deeplink",
-				message: err instanceof Error ? err.message : "",
+				message: err instanceof Error ? err.message : "Error parsing deep link",
 				color: "danger",
 			});
 		}

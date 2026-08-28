@@ -201,7 +201,7 @@ function LocalKeySecuritySection({ runtimeIdentity }: { runtimeIdentity: Runtime
 
 				onClick={handleDownloadFileBackup}
 			>
-				Downloads File Backup
+				Download File Backup
 			</IonButton>
 		</>
 	)

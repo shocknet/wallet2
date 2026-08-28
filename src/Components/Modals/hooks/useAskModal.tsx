@@ -1,4 +1,5 @@
-import { useIonModal } from "@ionic/react";
+import { ModalOptions, useIonModal } from "@ionic/react";
+import { HookOverlayOptions } from "@ionic/react/dist/types/hooks/HookOverlayOptions";
 import { useCallback, useMemo, useRef } from "react";
 import type { ComponentType } from "react";
 
@@ -20,7 +21,7 @@ export function useAskModal<TOptions extends object, TResult>(
 	const modalRef = useRef(Modal);
 	modalRef.current = Modal;
 
-	const dismissRef = useRef<(data?: TResult | null, role?: string) => void>(() => {});
+	const dismissRef = useRef<(data?: TResult | null, role?: string) => void>(() => { });
 
 	const Host = useMemo(
 		() =>
@@ -38,10 +39,14 @@ export function useAskModal<TOptions extends object, TResult>(
 	dismissRef.current = dismissOverlay;
 
 	return useCallback(
-		(options: TOptions): Promise<TResult | null> =>
+		(
+			options: TOptions,
+			modalOptions?: Omit<ModalOptions, 'component' | 'componentProps'> & HookOverlayOptions
+		): Promise<TResult | null> =>
 			new Promise((resolve) => {
 				optionsRef.current = options;
 				present({
+					...modalOptions,
 					cssClass: modalClass,
 					onDidDismiss: (event) => {
 						resolve(

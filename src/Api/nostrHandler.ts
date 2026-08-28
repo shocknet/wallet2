@@ -477,8 +477,8 @@ export class RelaySession {
 
 		this.running = this.runActorLoop()
 			.catch((err) => {
+				// Surface to waiters only — don't leave an unhandled rejection on the actor promise.
 				this.rejectAllRpcWaiters(err);
-				throw err;
 			})
 			.finally(() => {
 				this.running = undefined;
@@ -570,29 +570,40 @@ export class RelaySession {
 
 
 
+	/**
+	 * Ensure a stable subscription id matches desired filters.
+	 * - live + !needsUpdate → no-op
+	 * - live + needsUpdate → mutate filters + fire() (same id)
+	 * - missing/closed → create (close any prior handle first)
+	 */
 	private ensureOrRefireSub(
 		subId: string,
 		makeFilters: () => Filter[],
-		makeParams: () => Partial<SubscriptionParams> & { id: string }
+		makeParams: () => Partial<SubscriptionParams> & { id: string },
+		needsUpdate: boolean,
 	) {
 		const stored = this.subs.get(subId);
-		const filters = makeFilters();
+		const live = stored?.sub && !stored.sub.closed ? stored.sub : undefined;
 
-		// If we have a live, open subscription: refire with updated filters if rpc version differs.
-		if (stored?.sub && !stored.sub.closed && this.rpcAppliedVersion !== this.rpcFilterVersion) {
-			if (stored.sub.lastEmitted) {
-				for (const f of filters) {
-					if (f.since !== undefined) f.since = Math.max(f.since, stored.sub.lastEmitted + 1);
-				}
-			}
-			stored.sub.filters = filters;
-			stored.sub.fire();
-			stored.filters = filters;
-			stored.lastEmitted = stored.sub.lastEmitted;
-			return stored.sub;
+		if (live && !needsUpdate) {
+			return live;
 		}
 
-		// Otherwise (first time, or after pause close): recreate.
+		const filters = makeFilters();
+
+		if (live && needsUpdate) {
+			if (live.lastEmitted) {
+				for (const f of filters) {
+					if (f.since !== undefined) f.since = Math.max(f.since, live.lastEmitted + 1);
+				}
+			}
+			live.filters = filters;
+			live.fire();
+			stored!.filters = filters;
+			stored!.lastEmitted = live.lastEmitted;
+			return live;
+		}
+
 		const params = makeParams();
 		params.id = subId;
 		const sub = this.relay.prepareSubscription(filters, params);
@@ -622,7 +633,8 @@ export class RelaySession {
 				onevent: (e) => void this.onIncomingEvent(e),
 				receivedEvent: (_, id) => this.handledEvents.add(id),
 				alreadyHaveEvent: (id) => this.handledEvents.has(id),
-			})
+			}),
+			this.rpcAppliedVersion !== this.rpcFilterVersion,
 		);
 		this.rpcAppliedVersion = this.rpcFilterVersion;
 		this.flushRpcWaiters();
@@ -640,7 +652,8 @@ export class RelaySession {
 				onevent: (e) => void this.onIncomingEvent(e),
 				receivedEvent: (_, id) => this.handledEvents.add(id),
 				alreadyHaveEvent: (id) => this.handledEvents.has(id),
-			})
+			}),
+			this.beaconAppliedVersion !== this.beaconFilterVersion,
 		);
 		this.beaconAppliedVersion = this.beaconFilterVersion;
 	}
@@ -754,10 +767,14 @@ export const getPool = () => (pool ??= new TransportPool());
 
 export const appTag = "shockwallet"
 
-export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag) => {
+export const getNip78Event = async (pubkey: string, relays: string[], dTag = appTag, maxWait?: number) => {
 	if (relays.length === 0) return null;
 
-	return getPool().get(relays, { kinds: [30078], '#d': [dTag], authors: [pubkey] });
+	return getPool().get(
+		relays,
+		{ kinds: [30078], '#d': [dTag], authors: [pubkey] },
+		{ maxWait }
+	);
 }
 
 export type BeaconDiscoveryResult = {
@@ -775,8 +792,9 @@ function parseBeaconContent(content: string): BeaconData | null {
 	}
 }
 
+const BEACON_GET_MAX_WAIT = 8_000;
 export const fetchBeaconDiscovery = async (pubkey: string, relays: string[]): Promise<BeaconDiscoveryResult> => {
-	const event = await getNip78Event(pubkey, relays, pubServiceTag)
+	const event = await getNip78Event(pubkey, relays, pubServiceTag, BEACON_GET_MAX_WAIT)
 	if (!event) {
 		return null
 	}

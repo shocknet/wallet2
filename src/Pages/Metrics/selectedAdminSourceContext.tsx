@@ -1,8 +1,8 @@
 import React, { createContext, useContext } from "react";
-import type { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 
 export type SelectedAdminSourceCtx = {
-	adminSource: NprofileView;
+	adminSource: SourceView;
 };
 
 const SelectedAdminSourceContext = createContext<SelectedAdminSourceCtx | undefined>(undefined);

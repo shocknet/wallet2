@@ -1,6 +1,5 @@
-import { FeeTier } from "@/lib/fees";
-import { InputClassification, ParsedInput, ParsedInvoiceInput, ParsedLightningAddressInput, ParsedLnurlPayInput, ParsedNofferInput } from "@/lib/types/parse";
-import { NprofileView } from "@/State/scoped/backups/sources/selectors";
+import { InputClassification, ParsedInput } from "@/lib/types/parse";
+import type { Satoshi } from "@/lib/types/units";
 
 interface IdleState {
 	status: "idle";
@@ -29,21 +28,14 @@ interface ErrorState {
 }
 
 // Recipient input states
-export type InputState =
+export type RecipentParseState =
 	| IdleState
 	| LoadingState
 	| ParsedOkState
 	| ErrorState;
 
+export type AmountRange = {
+	min: Satoshi;
+	max: Satoshi;
+};
 
-export interface CardProps {
-	selectedFeeTier: number;
-	setSelectedFeeTier: React.Dispatch<React.SetStateAction<number>>;
-	feeTiers: FeeTier[];
-	selectedSource: NprofileView
-	invoiceData: ParsedInvoiceInput;
-	lnurlData: ParsedLightningAddressInput | ParsedLnurlPayInput;
-	nofferData: ParsedNofferInput;
-	note: string;
-	setNote: React.Dispatch<React.SetStateAction<string>>;
-}

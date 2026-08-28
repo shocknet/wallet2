@@ -1,6 +1,4 @@
-import {
-	IonRouterOutlet,
-} from "@ionic/react";
+import { IonRouterOutlet } from "@ionic/react";
 import {
 	Redirect,
 	Route,
@@ -9,7 +7,7 @@ import { lazy } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { GuardedRoute } from "@/routing/GuardedRoute";
-import { atLeastOneAdminNprofileSourceGuard, atLeastOneNprofileSource, atLeastOneSource } from "@/routing/guards";
+import { atLeastOneAdminSourceGuard, atLeastOneSource } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { ReadyAppEffects } from "./ReadyAppEffects";
@@ -70,14 +68,13 @@ export function ReadyApp({
 					exact
 					path="/send"
 					component={Send}
-					guards={[atLeastOneNprofileSource]}
 				/>
 				<GuardedRoute
 					exact
 					path="/Receive"
 					component={Receive}
 
-					guards={[atLeastOneSource]}
+
 				/>
 				<GuardedRoute
 					exact
@@ -106,7 +103,6 @@ export function ReadyApp({
 					exact
 					path="/invitations"
 					component={Invitations}
-					layout={Layout}
 				/>
 				<GuardedRoute
 					exact
@@ -123,13 +119,13 @@ export function ReadyApp({
 				<GuardedRoute
 					path="/metrics"
 					component={Metrics}
-					guards={[atLeastOneAdminNprofileSourceGuard]}
+					guards={[atLeastOneAdminSourceGuard]}
 				/>
 				<GuardedRoute
 					exact
 					path="/offers"
 					component={Offers}
-					guards={[atLeastOneNprofileSource]}
+					guards={[atLeastOneSource]}
 				/>
 				<GuardedRoute
 					exact
@@ -141,13 +137,13 @@ export function ReadyApp({
 					exact
 					path="/LApps"
 					component={LinkedApps}
-					guards={[atLeastOneNprofileSource]}
+
 				/>
 				<GuardedRoute
 					exact
 					path="/swaps"
 					component={Swaps}
-					guards={[atLeastOneNprofileSource]}
+					guards={[atLeastOneSource]}
 				/>
 				<GuardedRoute
 					exact

@@ -1,7 +1,7 @@
-import AddSourceNavModal from "@/Components/Modals/Sources/AddSourceModal";
 import { EditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
+import { useAskAddSource } from "@/Pages/Sources/AddSourceModal";
 import SourceCard from "@/Components/SourceCard";
-import { selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
 	IonContent,
@@ -11,206 +11,119 @@ import {
 	IonIcon,
 	IonList,
 	IonPage,
-	useIonModal,
-	useIonViewDidEnter
 } from "@ionic/react";
 import { add } from "ionicons/icons";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { InputState } from "../Send/types";
-import { InputClassification, ParsedLnurlWithdrawInput, ParsedNprofileInput } from "@/lib/types/parse";
+import type { ParsedLnurlWithdrawInput } from "@/lib/types/parse";
+import type { SourcesPageNavState } from "./nav";
+import { resolveSourcesInbound } from "./inbound";
 import { useToast } from "@/lib/contexts/useToast";
-import { SweepLnurlwDialog } from "@/Components/Modals/DialogeModals";
-import { Satoshi } from "@/lib/types/units";
-import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
+import { useAskSweepLnurlw } from "./SweepLnurlwModal";
 import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
-import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { createNostrInvoice } from "@/Api/helpers";
-import { getInvoiceForLnurlPay } from "@/lib/lnurl/pay";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 
+
 const SourcesPage = () => {
-	const history = useHistory();
+	const history = useHistory<SourcesPageNavState>();
 	const dispatch = useAppDispatch();
 	const sources = useAppSelector(selectSourceViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+	const { showToast } = useToast();
+	const askSweepLnurlw = useAskSweepLnurlw();
+	const askAddSource = useAskAddSource();
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
-
-
-	const { showToast } = useToast();
-	const [lnurwAmount, setLnurlwAmount] = useState<Satoshi>(0 as Satoshi);
-
-	const [presentSweepLnurlw, dismissLnurlw] = useIonModal(
-		<SweepLnurlwDialog lnurlwAmount={lnurwAmount} dismiss={(data: { selectedSource: SourceView } | null, role: "cancel" | "confirm") => dismissLnurlw(data, role)} />
-	);
-
-
-
-
 
 	const selectedSource = useMemo(() => {
 		return sources.find(s => s.sourceId === selectedSourceId) ?? null
 	}, [selectedSourceId, sources])
 
-
-	const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
-
-	const onAddClose = useCallback(() => {
-		setIsAddSourceOpen(false)
-	}, []);
-
-	const [integrationData, setIntegrationData] = useState<{
-		token: string,
-		lnAddress: string
-	} | undefined>(undefined);
-	const [inviteToken, setInviteToken] = useState<string | undefined>(undefined);
-
-
-	const [receivedInputState, setReceivedInputState] = useState<InputState>({
-		status: "idle",
-		inputValue: ""
-	});
-
-	const handleSearchParams = useCallback((search: URLSearchParams) => {
-		const addressSearch = new URLSearchParams(search);
-		const sourceString = addressSearch.get("addSource");
-		if (!sourceString) {
+	const handleLnurlWithdraw = useCallback(async (parsedLnurlW: ParsedLnurlWithdrawInput) => {
+		if (sources.length === 0) {
+			showToast({ message: "Add a source first", color: "danger" });
 			return;
 		}
-		const token = addressSearch.get("token");
-		const lnAddress = addressSearch.get("lnAddress");
-		const invToken = addressSearch.get("inviteToken");
-		if (invToken) {
-			setInviteToken(invToken)
-		}
-		if (token && lnAddress) {
-			setIntegrationData({ token, lnAddress })
-		}
-		import("@/lib/parse")
-			.then(({ identifyBitcoinInput, parseBitcoinInput }) => {
-				const { classification, value: normalizedInput } = identifyBitcoinInput(
-					sourceString,
-					{
-						allowed: [InputClassification.NPROFILE, InputClassification.LN_ADDRESS]
-					}
-				);
-				if (classification === InputClassification.UNKNOWN) {
-					setReceivedInputState({ status: "error", inputValue: normalizedInput, classification, error: "Unidentified input" });
-					return;
-				}
-				setReceivedInputState({
-					status: "loading",
-					inputValue: normalizedInput,
-					classification
-				});
-
-				parseBitcoinInput(normalizedInput, classification)
-					.then(parsed => {
-						setReceivedInputState({
-							status: "parsedOk",
-							inputValue: normalizedInput,
-							parsedData: parsed
-						});
-						setIsAddSourceOpen(true)
-					})
-					.catch((err: any) => {
-						setReceivedInputState({
-							status: "error",
-							inputValue: normalizedInput,
-							error: err.message,
-							classification
-						});
-					})
-			})
-			.catch(() => {
-				showToast({ message: 'Failed to lazy-load "@/lib/parse"', color: "danger" })
-			})
-	}, [showToast]);
-
-	const handleLnurlWithdraw = useCallback(async (parsedLnurlW: ParsedLnurlWithdrawInput) => {
-		if (sources.length === 0) return;
 		if (parsedLnurlW.max <= 0) return;
-		const amount = parsedLnurlW.max
-		setLnurlwAmount(amount);
 
-		presentSweepLnurlw({
-			onDidDismiss: async (event: CustomEvent<OverlayEventDetail>) => {
-				if (event.detail.role === "cancel") return;
-				if (event.detail.role === "confirm") {
-
-					const selectedSource = event.detail.data.selectedSource as SourceView
-					let invoice = ""
-					try {
-						if (selectedSource.type === SourceType.LIGHTNING_ADDRESS_SOURCE) {
-
-							const { pr } = await getInvoiceForLnurlPay({
-								lnUrlOrAddress: selectedSource.sourceId,
-								amountSats: amount,
-							});
-							invoice = pr;
-						} else {
-							invoice = await createNostrInvoice({
-								pubkey: selectedSource.lpk,
-								relays: selectedSource.relays
-							},
-								selectedSource.keys,
-								amount,
-							);
-						}
-						await requestLnurlWithdraw({
-							lnurl: parsedLnurlW.data,
-							invoice,
-							amountSats: amount,
-
-						})
-					} catch (err: any) {
-						showToast({
-							message: err?.message || "An error occured while sweeping lnurl-w",
-							color: "danger"
-						});
-					}
-
-				}
+		const picked = await askSweepLnurlw(
+			{ amount: parsedLnurlW.max },
+			{
+				backdropDismiss: false,
+				keyboardClose: false,
+				canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
 			}
-		})
+		);
+		if (!picked) return;
 
-	}, [sources, presentSweepLnurlw, showToast]);
-
-
-
-
-	useIonViewDidEnter(() => {
-		const { parsedLnurlW } = history.location.state as { parsedLnurlW?: ParsedLnurlWithdrawInput } || {};
-		const { parsedNprofile } = history.location.state as { parsedNprofile?: ParsedNprofileInput } || {};
-		const searchParams = new URLSearchParams(history.location.search);
-		if (parsedLnurlW) {
-			handleLnurlWithdraw(parsedLnurlW)
-		} else if (parsedNprofile) {
-			setReceivedInputState({
-				status: "parsedOk",
-				parsedData: parsedNprofile,
-				inputValue: parsedNprofile.data
+		try {
+			const parsedInvoice = await createNostrInvoice(
+				{ pubkey: picked.selectedSource.lpk, relays: picked.selectedSource.relays },
+				picked.selectedSource.keys,
+				parsedLnurlW.max,
+			);
+			await requestLnurlWithdraw({
+				lnurl: parsedLnurlW.data,
+				invoice: parsedInvoice.data,
+				amountSats: parsedLnurlW.max,
 			});
-			setIsAddSourceOpen(true);
-		} else if (searchParams.size > 0) {
-			const searchParams = new URLSearchParams(history.location.search);
-			handleSearchParams(searchParams);
+		} catch (err: unknown) {
+			showToast({
+				message: err instanceof Error ? err.message : "An error occured while sweeping lnurl-w",
+				color: "danger",
+			});
 		}
+	}, [askSweepLnurlw, showToast, sources.length]);
 
+
+
+	useEffect(() => {
+		if (history.location.pathname !== "/sources") return;
+		const search = history.location.search;
+		const navState = history.location.state;
+		const hasInbound =
+			Boolean(search) ||
+			Boolean(navState?.parsedLnurlW) ||
+			Boolean(navState?.parsedNprofile);
+		if (!hasInbound) return;
 
 		history.replace(history.location.pathname);
+
+		void resolveSourcesInbound(search, navState).then((inbound) => {
+			switch (inbound.type) {
+				case "add":
+					void askAddSource(
+						{
+							initialNprofile: inbound.intent.nprofile,
+							integrationData: inbound.intent.integrationData,
+							invitationToken: inbound.intent.invitationToken,
+						},
+						{ // When opened from a link, don't allow dismissing the modal.
+							backdropDismiss: false,
+							keyboardClose: false,
+							canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
+						}
+					);
+					return;
+				case "sweep":
+					void handleLnurlWithdraw(inbound.lnurlw);
+					return;
+				case "invalid-nprofile":
+					showToast({ message: inbound.message, color: "danger" });
+					return;
+				case "none":
+					return;
+			}
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [history.location.key]);
 
 	const handleDelete = useCallback((sourceId: string) => {
 		dispatch(removeSource(sourceId));
 	}, [dispatch])
-
-	const handleClose = useCallback(() => {
-		setSelectedSourceId(null)
-	}, [])
 
 	const favoriteFirstSortedSources = useMemo(() => {
 		if (favoriteSourceId == null) return sources;
@@ -232,25 +145,17 @@ const SourcesPage = () => {
 			<IonContent className="ion-padding">
 				<EditSourceModal
 					source={selectedSource}
-					onClose={handleClose}
+					onClose={() => setSelectedSourceId(null)}
 					onDelete={handleDelete}
 					open={!!selectedSource}
-				/>
-				<AddSourceNavModal
-					receivedInputState={receivedInputState}
-					open={isAddSourceOpen}
-					onClose={onAddClose}
-					integrationData={integrationData}
-					invitationToken={inviteToken}
 				/>
 				<IonList lines="none" className="mt-6">
 					{
 						favoriteFirstSortedSources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
 					}
 				</IonList>
-
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">
-					<IonFabButton color="primary" onClick={() => setIsAddSourceOpen(true)}>
+					<IonFabButton color="primary" onClick={() => void askAddSource({})}>
 						<IonIcon icon={add}></IonIcon>
 					</IonFabButton>
 				</IonFab>
@@ -260,3 +165,5 @@ const SourcesPage = () => {
 }
 
 export default SourcesPage;
+export { navToSources } from "./nav";
+export type { SourcesPageNavState } from "./nav";
