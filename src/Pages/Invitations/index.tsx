@@ -11,8 +11,7 @@ import { check, copyWhite } from "@/Assets/SvgIconLibrary";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { nip19 } from "nostr-tools";
-
-
+import QrCode from "@/Components/QrCode";
 
 
 const Invitations = () => {
@@ -54,9 +53,6 @@ const Invitations = () => {
 		}
 	}
 
-	console.log(WALLET_URL, import.meta.env.VITE_WALLET_URL)
-
-
 	const copyToClip = async (text: string) => {
 		await Clipboard.write({
 			string: text,
@@ -96,25 +92,6 @@ const Invitations = () => {
 		subNode: selectedSource.label,
 	} : null;
 
-	/*   const oneTimeLinks: OneTimeLink[] = [
-			{
-				link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-				subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-				statu: "usable",
-			},
-			{
-				link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-				subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-				statu: "expired",
-			},
-			{
-				link: "shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123shockwallet.app/invite/nprofile123...",
-				subNode: "01/01/2024 16:20 | steakhouse tip | 5000 sats",
-				statu: "expired",
-			},
-		]; */
-
-
 	const oneTimeLinksRender = useMemo(() => {
 		return (
 			<div className="link-group">
@@ -123,28 +100,34 @@ const Invitations = () => {
 						const link = `${WALLET_URL}/sources?addSource=${nprofile}&inviteToken=${inv.inviteToken}`
 						return (
 							<div key={inv.inviteToken} className="content">
-								<div className="text">
-									<div className="link">{link}</div>
-									<div className="subNode">{selectedSource?.label}</div>
+								<div className="row">
+									<div className="text">
+										<div className="link">{link}</div>
+										<div className="subNode">{selectedSource?.label}</div>
+									</div>
+									<button
+										type="button"
+										onClick={() => copyToClip(link)}
+										className="iconButton"
+										disabled={inv.used}
+									>
+										{inv.used ? (
+											check()
+										) : (
+											<span>{copyWhite()}</span>
+										)}
+									</button>
 								</div>
-								<button
-									onClick={() => copyToClip(link)}
-									className="iconButton"
-									disabled={inv.used}
-								>
-									{inv.used ? (
-										check()
-									) : (
-										<span>{copyWhite()}</span>
-									)}
-								</button>
+								<div className="qr-wrap">
+									<QrCode value={link} uppercase={false} />
+								</div>
 							</div>
 						)
 					})
 				}
 			</div>
 		)
-	}, [invitations.invitations])
+	}, [invitations.invitations, nprofile, selectedSource])
 
 	return (
 		<div className="Invitations">
@@ -164,30 +147,34 @@ const Invitations = () => {
 							</div>
 						</div>
 						<button
+							type="button"
 							onClick={() => copyToClip(reusableLink.link)}
 							className="clipboard-copy"
 						>
 							{copyWhite()}COPY
 						</button>
+						<div className="qr-wrap">
+							<QrCode value={reusableLink.link} uppercase={false} />
+						</div>
 					</>
 				}
 			</div>
 			<div className="Invitations_One-Time-Links">
 				<div className="title">One-Time Links</div>
-				<div className="content">
-					<div className="Gift" style={{ fontSize: "12px", paddingTop: "50px", textAlign: "center" }}>
-						Gift links coming soon.
+				{reusableLink && (
+					<div className="create-row">
+						<button
+							type="button"
+							onClick={() => newInviteLink()}
+							className="clipboard-copy"
+						>
+							Create one-time link
+						</button>
 					</div>
-				</div>
+				)}
+				{oneTimeLinksRender}
+				<div className="gift-note">Gift links coming soon.</div>
 			</div>
-			{/* <div className="Invitations_reusableLink">
-        <button
-          onClick={() => newInviteLink()}
-          className="clipboard-copy"
-        >
-          {Icons.copyWhite()}Create New
-        </button>
-      </div> */}
 		</div>
 	);
 };

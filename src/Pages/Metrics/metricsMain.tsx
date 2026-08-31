@@ -357,7 +357,7 @@ const Dashboard = () => {
 								<div className={styles["between"]}>
 
 									<PeriodSelector period={period} offset={offset} setPeriod={setPeriod} resetOffset={() => setOffset(0)} prevOffset={prevOffset} nextOffset={nextOffset} />
-									<IonButton expand="block" fill="clear" color="light" routerLink="/metrics/manage" routerDirection="forward" className={classNames(styles["box"], styles["border"])}>
+									<IonButton expand="block" fill="clear" routerLink="/metrics/manage" routerDirection="forward" className={classNames(styles["box"], styles["border"], styles["dashboard-action-button"])}>
 										Manage
 									</IonButton>
 								</div>
@@ -488,12 +488,12 @@ const Dashboard = () => {
 								</div>
 							</div>
 							<div className={styles["section"]}>
-								<IonButton expand="block" fill="clear" color="light" routerLink="/metrics/swaps" routerDirection="forward" className={classNames(styles["box"], styles["border"])}>
+								<IonButton expand="block" fill="clear" routerLink="/metrics/swaps" routerDirection="forward" className={classNames(styles["box"], styles["border"], styles["dashboard-action-button"])}>
 									Swaps
 								</IonButton>
 							</div>
 							<div className={styles["section"]}>
-								<IonButton expand="block" fill="clear" color="light" routerLink="/metrics/assets-liabilities" routerDirection="forward" className={classNames(styles["box"], styles["border"])}>
+								<IonButton expand="block" fill="clear" routerLink="/metrics/assets-liabilities" routerDirection="forward" className={classNames(styles["box"], styles["border"], styles["dashboard-action-button"])}>
 									Assets & Liabilities
 								</IonButton>
 							</div>

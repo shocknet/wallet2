@@ -52,13 +52,22 @@
 
       & .avatar {
         display: flex;
-        gap: 5px;
+        gap: 8px;
         align-items: center;
+        min-width: 0;
         & > img {
           border-radius: 50%;
+          flex-shrink: 0;
+          width: 32px;
+          height: 32px;
+          object-fit: cover;
         }
         & > div {
           font-size: 12px;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
 
@@ -146,5 +155,19 @@
     font-style: italic;
     text-align: center;
     margin-block-end: 10px;
+  }
+
+  &_open-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-block: 8px 16px;
+
+    ion-button {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
   }
 }

@@ -273,6 +273,41 @@ describe("useWatchClipboard happy path", () => {
 		// but we did NOT navigate
 		expect(mockPush).not.toHaveBeenCalled();
 	});
+
+	it("skips noffer parse and navigates to send — Send parses with selected source keys", async () => {
+		const noffer = "noffer1qqsrf5h4ya83jk8u6t9jgc76h6kalz3plp9vusjpm2ygqgalqhxgp9gpr9mhxue69uhhyetvv9ujumrfva58gmnfdenjuur4vgpp2ctywejkuar4wfhh2um5dae8gmmfwdjnqdsrqypqqudzmz";
+
+		mockClipboardRead.mockResolvedValue({
+			type: "text/plain",
+			value: noffer,
+		});
+
+		mockIdentifyBitcoinInput.mockReturnValue({
+			classification: InputClassification.NOFFER,
+			value: noffer,
+		});
+
+		const alertResult = Promise.resolve({ role: "confirm" });
+		mockShowAlert.mockReturnValue(alertResult);
+
+		renderHarness();
+
+		await act(async () => {
+			vi.advanceTimersByTime(60);
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			await alertResult;
+			await Promise.resolve();
+		});
+
+		expect(mockParseBitcoinInput).not.toHaveBeenCalled();
+		expect(mockPush).toHaveBeenCalledWith({
+			pathname: "/send",
+			state: { input: noffer },
+		});
+	});
 });
 
 describe("useWatchClipboard guards", () => {
