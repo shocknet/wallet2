@@ -215,19 +215,13 @@ const Home = () => {
 				<Virtuoso
 					style={{ height: "100%" }}
 					data={operations}
-					defaultItemHeight={56}
 					components={{
 						Footer: () => <div className="h-[6rem]" aria-hidden />,
 					}}
 					itemContent={(_, op) => (
-						<div
-							key={op.operationId}
-							style={{
-								minHeight: 56,
-								padding: "0 1rem"
-							}}
-						>
+						<div className="px-4">
 							<HistoryItem
+								key={op.opKey}
 								operation={op}
 								className={op.opKey === highlightOpKey ? styles["highlight-row"] : undefined}
 								handleSelectOperation={handleSelectOperation}
