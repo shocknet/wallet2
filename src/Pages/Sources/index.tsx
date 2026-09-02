@@ -15,13 +15,9 @@ import {
 import { add } from "ionicons/icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
-import type { ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import type { SourcesPageNavState } from "./nav";
 import { resolveSourcesInbound } from "./inbound";
 import { useToast } from "@/lib/contexts/useToast";
-import { useAskSweepLnurlw } from "./SweepLnurlwModal";
-import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
-import { createNostrInvoice } from "@/Api/helpers";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
@@ -33,7 +29,6 @@ const SourcesPage = () => {
 	const sources = useAppSelector(selectSourceViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const { showToast } = useToast();
-	const askSweepLnurlw = useAskSweepLnurlw();
 	const askAddSource = useAskAddSource();
 
 	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -41,42 +36,6 @@ const SourcesPage = () => {
 	const selectedSource = useMemo(() => {
 		return sources.find(s => s.sourceId === selectedSourceId) ?? null
 	}, [selectedSourceId, sources])
-
-	const handleLnurlWithdraw = useCallback(async (parsedLnurlW: ParsedLnurlWithdrawInput) => {
-		if (sources.length === 0) {
-			showToast({ message: "Add a source first", color: "danger" });
-			return;
-		}
-		if (parsedLnurlW.max <= 0) return;
-
-		const picked = await askSweepLnurlw(
-			{ amount: parsedLnurlW.max },
-			{
-				backdropDismiss: false,
-				keyboardClose: false,
-				canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
-			}
-		);
-		if (!picked) return;
-
-		try {
-			const parsedInvoice = await createNostrInvoice(
-				{ pubkey: picked.selectedSource.lpk, relays: picked.selectedSource.relays },
-				picked.selectedSource.keys,
-				parsedLnurlW.max,
-			);
-			await requestLnurlWithdraw({
-				lnurl: parsedLnurlW.data,
-				invoice: parsedInvoice.data,
-				amountSats: parsedLnurlW.max,
-			});
-		} catch (err: unknown) {
-			showToast({
-				message: err instanceof Error ? err.message : "An error occured while sweeping lnurl-w",
-				color: "danger",
-			});
-		}
-	}, [askSweepLnurlw, showToast, sources.length]);
 
 
 
@@ -86,7 +45,6 @@ const SourcesPage = () => {
 		const navState = history.location.state;
 		const hasInbound =
 			Boolean(search) ||
-			Boolean(navState?.parsedLnurlW) ||
 			Boolean(navState?.parsedNprofile);
 		if (!hasInbound) return;
 
@@ -100,6 +58,7 @@ const SourcesPage = () => {
 							initialNprofile: inbound.intent.nprofile,
 							integrationData: inbound.intent.integrationData,
 							invitationToken: inbound.intent.invitationToken,
+							fromInviteUrl: inbound.intent.fromInviteUrl,
 						},
 						{ // When opened from a link, don't allow dismissing the modal.
 							backdropDismiss: false,
@@ -107,9 +66,6 @@ const SourcesPage = () => {
 							canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
 						}
 					);
-					return;
-				case "sweep":
-					void handleLnurlWithdraw(inbound.lnurlw);
 					return;
 				case "invalid-nprofile":
 					showToast({ message: inbound.message, color: "danger" });

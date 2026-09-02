@@ -1,11 +1,7 @@
 import type { History, Location } from "history";
-import type {
-	ParsedLnurlWithdrawInput,
-	ParsedNprofileInput,
-} from "@/lib/types/parse";
+import type { ParsedNprofileInput } from "@/lib/types/parse";
 
 export type SourcesPageNavState = {
-	parsedLnurlW?: ParsedLnurlWithdrawInput;
 	parsedNprofile?: ParsedNprofileInput;
 	from?: Location;
 };

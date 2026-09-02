@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { App, URLOpenListenerEvent } from "@capacitor/app";
-import { InputClassification } from "@/lib/types/parse";
+import { InputClassification, type ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { shellActions } from "@/shell/slice";
@@ -22,6 +22,15 @@ export function useDeepLinks() {
 		);
 	}, [dispatch]);
 
+	const enqueueSweepLnurlw = useCallback((parsed: ParsedLnurlWithdrawInput) => {
+		dispatch(
+			shellActions.pendingNavSet({
+				kind: "sweep-lnurlw",
+				parsed,
+			}),
+		);
+	}, [dispatch]);
+
 	const parseDeepLink = useCallback(async (input: string) => {
 		const { classification, value } = identifyBitcoinInput(input);
 		if (classification === InputClassification.UNKNOWN) {
@@ -31,8 +40,7 @@ export function useDeepLinks() {
 		try {
 			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				const state: SourcesPageNavState = { parsedLnurlW: parsed };
-				enqueueRoute("/sources", state);
+				enqueueSweepLnurlw(parsed);
 				return;
 			}
 			if (parsed.type === InputClassification.NPROFILE) {
@@ -54,7 +62,7 @@ export function useDeepLinks() {
 				color: "danger",
 			});
 		}
-	}, [showToast, enqueueRoute]);
+	}, [showToast, enqueueRoute, enqueueSweepLnurlw]);
 
 	useEffect(() => {
 		const listener = App.addListener(

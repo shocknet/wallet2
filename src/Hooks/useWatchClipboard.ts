@@ -13,6 +13,7 @@ import { selectIsActive } from "@/State/runtime/slice";
 import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
 import { navToSources } from "@/Pages/Sources/nav";
 import { useAskClipboardDetected } from "@/Components/Modals/ClipboardDetectedModal";
+import { useAskSweepLnurlw } from "@/Components/Modals/SweepLnurlwModal";
 
 const CLIPBOARD_THROTTLE_MS = 500;
 const FOCUS_SETTLE_DELAY_MS = 50;
@@ -20,6 +21,7 @@ const FOCUS_SETTLE_DELAY_MS = 50;
 export function useWatchClipboard() {
 	const { showAlert } = useAlert();
 	const askClipboardDetected = useAskClipboardDetected();
+	const askSweepLnurlw = useAskSweepLnurlw();
 	const dispatch = useAppDispatch();
 	const history = useHistory();
 	const isAppActive = useAppSelector(selectIsActive);
@@ -43,7 +45,7 @@ export function useWatchClipboard() {
 		const parsed = await parseBitcoinInput(value, classification);
 
 		if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-			navToSources(history, { parsedLnurlW: parsed });
+			await askSweepLnurlw(parsed);
 			return;
 		}
 
@@ -58,7 +60,7 @@ export function useWatchClipboard() {
 		}
 
 		throw new Error("No case for this input");
-	}, [history]);
+	}, [askSweepLnurlw, history]);
 
 	const checkClipboard = useEventCallback(async () => {
 		if (!isAppActive) return;
