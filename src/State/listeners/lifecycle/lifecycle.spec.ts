@@ -1,307 +1,202 @@
-import { describe, it, expect, vi } from "vitest";
-import { configureStore, createAction, createSlice, TaskAbortError, createListenerMiddleware } from "@reduxjs/toolkit";
-import { identityLoaded, identityUnloaded, listenerKick } from "../actions";
-import { IdentityType, type Identity } from "@/State/identitiesRegistry/types";
-import { createDeferred, Deferred } from "@/lib/deferred";
-import { addIdentityLifecycle, ListenerSpec } from "./lifecycle";
+import { describe, expect, it, vi } from "vitest";
+import { createAction, TaskAbortError } from "@reduxjs/toolkit";
+import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { identityUnloaded, listenerKick } from "../actions";
+import { createDeferred } from "@/lib/deferred";
+import { makeListenerStore } from "@tests/support/listenerStore";
+import type { ListenerSpec } from "./lifecycle";
 
+const ping = createAction("lifecycle/test-ping");
 
-
-
-const someActionA = createAction<{ deferred: Deferred<void> }>("@@@@someActionA");
-const someActionB = createAction<{ deferred: Deferred<void> }>("@@@@someActionB");
-const testAction = createAction("@@@test-action")
-
-const makeStore = (specs: ListenerSpec[]) => {
-	const nopSlice = createSlice({
-		name: "nop",
-		initialState: 0,
-		reducers: {},
-	});
-	const listenerMw = createListenerMiddleware();
-
-
-	const store = configureStore({
-		reducer: { nop: nopSlice.reducer },
-		middleware: gdm => gdm({ serializableCheck: { ignoredActions: [testAction.type, someActionA.type, someActionB.type] } }).prepend(listenerMw.middleware),
-	});
-	type AppStore = typeof store;
-	type RootState = ReturnType<AppStore["getState"]>;
-	type AppDispatch = AppStore["dispatch"];
-
-
-	const startAppListening = listenerMw.startListening.withTypes<
-		RootState,
-		AppDispatch
-	>();
-
-	// @ts-expect-error nevermind not the full store, just sources slice
-	addIdentityLifecycle(startAppListening, specs);
-
-	return { store }
-
+function openStore(specs: ListenerSpec[]) {
+	return makeListenerStore({ specs, loadIdentity: false }).store;
 }
 
-
-
-
-const identity: Identity = {
-	type: IdentityType.LOCAL_KEY,
-	label: "label",
-	createdAt: Date.now(),
-	pubkey: "hexhexhex",
-	privkey: "hexhexhex",
-	relays: ["wss://example.com"]
+function loadIdentity(store: ReturnType<typeof openStore>) {
+	store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
+		identity: TEST_RUNTIME_IDENTITY,
+	}));
 }
 
+async function unload(store: ReturnType<typeof openStore>) {
+	const done = createDeferred<void>();
+	store.dispatch(identityUnloaded({ deferred: done }));
+	await done;
+}
 
+function kickSpec(name: string, onKick = vi.fn()) {
+	const spec: ListenerSpec = {
+		name,
+		listeners: [
+			(add) =>
+				add({
+					actionCreator: listenerKick,
+					effect: onKick,
+				}),
+		],
+	};
+	return { spec, onKick };
+}
 
+describe("identity lifecycle", () => {
+	it("registers specs and kicks when the runtime identity is set", () => {
+		const { spec, onKick } = kickSpec("kicker");
+		const store = openStore([spec]);
 
-describe("middleware lifecycle", () => {
-	it("registers specs on identityLoaded, dispatches kick, and unsubscribes on identityUnloaded then resolves deferred", async () => {
-		const effectSpy = vi.fn();
+		expect(onKick).not.toHaveBeenCalled();
+		loadIdentity(store);
+		expect(onKick).toHaveBeenCalledTimes(1);
+	});
 
-		const spec: ListenerSpec = {
-			name: "beacons",
-			listeners: [
-				(add) =>
-					add({
-						actionCreator: listenerKick,
-						effect: effectSpy
-					})
-			]
-
-		};
-		const { store } = makeStore([spec]);
-
-
-		expect(effectSpy).toHaveBeenCalledTimes(0);
-
-		store.dispatch(identityLoaded({ identity }));
-
-		expect(effectSpy).toHaveBeenCalledTimes(1);
-
-
-		const d = createDeferred<void>();
-		const resolveSpy = vi.spyOn(d, "resolve");
-
-		expect(resolveSpy).toHaveBeenCalledTimes(0);
-
-		store.dispatch(identityUnloaded({ deferred: d }));
-
-
-		await d;
-		expect(resolveSpy).toHaveBeenCalledTimes(1);
-
+	it("does not kick again after the identity unloads", async () => {
+		const { spec, onKick } = kickSpec("kicker");
+		const store = openStore([spec]);
+		loadIdentity(store);
+		await unload(store);
 
 		store.dispatch(listenerKick());
-		expect(effectSpy).toHaveBeenCalledTimes(1);
+		expect(onKick).toHaveBeenCalledTimes(1);
 	});
 
-	it("re-subscribes after unload so a new identityLoaded registers again", async () => {
-		const effectSpy = vi.fn();
-		const spec: ListenerSpec = {
-			name: "listener",
-			listeners: [
-				(add) =>
-					add({
-						actionCreator: listenerKick,
-						effect: effectSpy
-					})
-			],
-		}
+	it("re-subscribes after unload so a new runtime identity kicks again", async () => {
+		const { spec, onKick } = kickSpec("kicker");
+		const store = openStore([spec]);
 
+		loadIdentity(store);
+		await unload(store);
+		loadIdentity(store);
 
-		const { store } = makeStore([spec]);
-
-
-		store.dispatch(identityLoaded({ identity }));
-		expect(effectSpy).toHaveBeenCalledTimes(1);
-
-		const d1 = createDeferred<void>();
-		store.dispatch(identityUnloaded({ deferred: d1 }));
-		await d1;
-
-
-		store.dispatch(identityLoaded({ identity }));
-		expect(effectSpy).toHaveBeenCalledTimes(2);
+		expect(onKick).toHaveBeenCalledTimes(2);
 	});
 
-	it("stores and calls unsubscribes for multiple specs", async () => {
-		const testAction = createAction("actionWeNeverDispatch")
+	it("does not register twice if the runtime identity is set again while still loaded", () => {
+		const { spec, onKick } = kickSpec("kicker");
+		const store = openStore([spec]);
 
-		let firstStarted = false;
-		let secondStarted = false;
-		let thirdStarted = false;
+		loadIdentity(store);
+		loadIdentity(store);
 
-		let firstWasCancelled = false;
-		let secondWasCancelled = false;
-		let thirdWasCancelled = false;
+		expect(onKick).toHaveBeenCalledTimes(1);
+	});
 
+	it("kicks every listener in every spec and cancels them on unload", async () => {
+		const cancelled = {
+			a: createDeferred<void>(),
+			b: createDeferred<void>(),
+			c: createDeferred<void>(),
+		};
 
+		const waitUntilCancelled = (key: keyof typeof cancelled) =>
+			(add: Parameters<ListenerSpec["listeners"][number]>[0]) =>
+				add({
+					actionCreator: listenerKick,
+					effect: async (_, listenerApi) => {
+						try {
+							await listenerApi.take(() => false);
+						} catch (err) {
+							if (err instanceof TaskAbortError) cancelled[key].resolve();
+						}
+					},
+				});
 
-		const specs: ListenerSpec[] = [
+		const store = openStore([
 			{
-				name: "listener1",
+				name: "one",
+				listeners: [waitUntilCancelled("a"), waitUntilCancelled("b")],
+			},
+			{
+				name: "two",
+				listeners: [waitUntilCancelled("c")],
+			},
+		]);
+
+		loadIdentity(store);
+		await unload(store);
+		await Promise.all([cancelled.a, cancelled.b, cancelled.c]);
+	});
+
+	it("runs beforeUnload while spec listeners are still active, then drops them", async () => {
+		let pings = 0;
+		const store = openStore([
+			{
+				name: "pinger",
 				listeners: [
 					(add) =>
 						add({
-							actionCreator: listenerKick,
-							effect: async (_, listenerApi) => {
-								firstStarted = true;
-								try {
-									await listenerApi.condition(testAction.match);
-								} catch (err) {
-									if (err instanceof TaskAbortError) {
-										firstWasCancelled = true
-									}
-								}
-							}
+							actionCreator: ping,
+							effect: () => {
+								pings += 1;
+							},
 						}),
-					(add) =>
-						add({
-							actionCreator: listenerKick,
-							effect: async (_, listenerApi) => {
-								secondStarted = true;
-								try {
-									await listenerApi.condition(testAction.match);
-								} catch (err) {
-									if (err instanceof TaskAbortError) {
-										secondWasCancelled = true
-									}
-								}
-							}
-						})
-				]
+				],
+				beforeUnload: ({ dispatch }) => {
+					dispatch(ping());
+				},
 			},
-			{
-				name: "listener2",
-				listeners: [
-					(add) =>
-						add({
-							actionCreator: listenerKick,
-							effect: async (_, listenerApi) => {
-								thirdStarted = true;
-								try {
-									await listenerApi.condition(testAction.match);
-								} catch (err) {
-									if (err instanceof TaskAbortError) {
-										thirdWasCancelled = true
-									}
-								}
-							}
-						})
-				]
-			}
-		];
-		const { store } = makeStore(specs);
+		]);
 
+		loadIdentity(store);
+		expect(pings).toBe(0);
 
+		await unload(store);
+		expect(pings).toBe(1);
 
-		store.dispatch(identityLoaded({ identity }));
-
-
-
-		expect(firstStarted).toBe(true);
-		expect(secondStarted).toBe(true);
-		expect(thirdStarted).toBe(true);
-
-
-		expect(firstWasCancelled).toBe(false);
-		expect(secondWasCancelled).toBe(false);
-		expect(thirdWasCancelled).toBe(false);
-
-
-		const d = createDeferred<void>();
-
-
-
-		store.dispatch(identityUnloaded({ deferred: d }));
-
-
-		await d;
+		store.dispatch(ping());
+		expect(pings).toBe(1);
 	});
 
-	it("awaits specs' beforeUnload if present before finishing cycle", async () => {
-		const deferredA = createDeferred<void>();
-		const deferredB = createDeferred<void>();
-		const dASpy = vi.spyOn(deferredA, "resolve");
-		const dBSpy = vi.spyOn(deferredB, "resolve");
-
-
-		let listener3Value = 0;
-
-		const specs: ListenerSpec[] = [
+	it("does not resolve identityUnloaded until beforeUnload finishes", async () => {
+		const gate = createDeferred<void>();
+		let beforeUnloadStarted = false;
+		const store = openStore([
 			{
-				name: "listener1",
-				listeners: [
-					(add) =>
-						add({
-							actionCreator: listenerKick,
-							effect: async (_, listenerApi) => {
-								const [action] = await listenerApi.take(someActionA.match);
-
-								action.payload.deferred.resolve();
-							}
-						})
-				],
-				beforeUnload: ({ dispatch }) => { dispatch(someActionA({ deferred: deferredA })); return deferredA }
-
+				name: "slow",
+				listeners: [],
+				beforeUnload: () => {
+					beforeUnloadStarted = true;
+					return gate;
+				},
 			},
+		]);
+
+		loadIdentity(store);
+
+		const done = createDeferred<void>();
+		const resolveSpy = vi.spyOn(done, "resolve");
+		store.dispatch(identityUnloaded({ deferred: done }));
+
+		await vi.waitFor(() => {
+			expect(beforeUnloadStarted).toBe(true);
+		});
+		expect(resolveSpy).not.toHaveBeenCalled();
+
+		gate.resolve();
+		await done;
+		expect(resolveSpy).toHaveBeenCalledTimes(1);
+	});
+
+	it("still finishes unload when a beforeUnload throws", async () => {
+		const { spec, onKick } = kickSpec("kicker");
+		const store = openStore([
 			{
-				name: "listener2",
-				listeners: [
-					(add) =>
-						add({
-							actionCreator: listenerKick,
-							effect: async (_, listenerApi) => {
-								const [action] = await listenerApi.take(someActionB.match);
-
-								action.payload.deferred.resolve();
-							}
-						})
-				],
-				beforeUnload: ({ dispatch }) => { dispatch(someActionB({ deferred: deferredB })); return deferredB }
+				...spec,
+				beforeUnload: async () => {
+					throw new Error("beforeUnload failed");
+				},
 			},
+		]);
 
-			{
-				name: "listener3",
-				listeners: [
-					(add) =>
-						add({
-							actionCreator: listenerKick,
-							effect: async () => {
-								listener3Value++
-							}
-						})
-				],
-				// no beforeUnload
-			},
+		loadIdentity(store);
+		await unload(store);
 
-		]
+		store.dispatch(listenerKick());
+		expect(onKick).toHaveBeenCalledTimes(1);
+	});
 
-		const { store } = makeStore(specs);
-
-
-		store.dispatch(identityLoaded({ identity }));
-
-
-
-
-
-
-		const d = createDeferred<void>();
-		store.dispatch(identityUnloaded({ deferred: d }));
-
-		expect(dASpy).toHaveBeenCalledTimes(0);
-		expect(dBSpy).toHaveBeenCalledTimes(0);
-		await d;
-		expect(dASpy).toHaveBeenCalledTimes(1);
-		expect(dBSpy).toHaveBeenCalledTimes(1);
-		expect(listener3Value).toEqual(1);
-
-
-
+	it("unloads with no specs", async () => {
+		const store = openStore([]);
+		loadIdentity(store);
+		await unload(store);
 	});
 });
-

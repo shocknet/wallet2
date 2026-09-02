@@ -87,16 +87,15 @@ export const pushEnrollmentSpec: ListenerSpec = {
 		(add) =>
 			add({
 				actionCreator: beaconsActions.recordBeacon,
-				effect: async (action, listenerApi) => {
+				effect: (action, listenerApi) => {
 					const curr = listenerApi.getState();
 					const token = getPushToken(curr);
 					if (!token) return;
 					const prev = listenerApi.getOriginalState();
-					for (const sourceId of sourceIdsThatBecameFresh(action.payload.lpk, curr, prev)) {
-						const source = selectSourceViewById(curr, sourceId);
-						if (!source) continue;
-						await enrollTokenForSources(token, [source]);
-					}
+					const views = sourceIdsThatBecameFresh(action.payload.lpk, curr, prev)
+						.map(id => selectSourceViewById(curr, id))
+						.filter((source): source is SourceView => source != null);
+					return enrollTokenForSources(token, views);
 				}
 			})
 

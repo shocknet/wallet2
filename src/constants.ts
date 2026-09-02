@@ -37,6 +37,11 @@ export const NOSTR_RELAYS = import.meta.env.VITE_NOSTR_RELAYS ? [import.meta.env
 export const OLD_NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
 export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION || "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
+export const BEACON_PUBLISH_INTERVAL_MS = 60 * 1000;
+export const BEACON_STALE_OLDER_THAN = 2 * BEACON_PUBLISH_INTERVAL_MS;
+export const BEACON_STALE_TICK_MS = BEACON_PUBLISH_INTERVAL_MS / 2;
+/** Collapse visibility flicker when listeners react to the app becoming active. */
+export const APP_ACTIVE_DEBOUNCE_MS = 300;
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";
 export const SANCTUM_URL = import.meta.env.VITE_SANCTUM_URL || "https://test-auth.shock.network"
 export const TIMESTAMP_STORAGE_KEY = "BACKUP_TIMESTAMP";

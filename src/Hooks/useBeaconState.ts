@@ -1,4 +1,4 @@
-import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
+import { BEACON_STALE_OLDER_THAN } from "@/constants";
 
 
 export const useBeaconState = (beaconLastSeenAtMs: number) => {

@@ -201,9 +201,7 @@ export const historySyncerSpec: ListenerSpec = {
 
 
 					const task = listenerApi.fork(async forkApi => {
-
-						inFlight.map(async o => {
-
+						await Promise.all(inFlight.map(async o => {
 							const sourceId = o.sourceId;
 							const invoice = o.invoice;
 							const state = listenerApi.getState();
@@ -215,13 +213,13 @@ export const historySyncerSpec: ListenerSpec = {
 
 
 							const source = selectSourceViewById(state, sourceId);
-							if (!source) return null;
+							if (!source) return;
 
 							try {
 								const client = await forkApi.pause(getNostrClient({ pubkey: source.lpk, relays: source.relays }, source.keys));
 								const res = await forkApi.pause(client.GetPaymentState({ invoice }));
 
-								if (res.status !== "OK" || forkApi.signal.aborted) return null;
+								if (res.status !== "OK" || forkApi.signal.aborted) return;
 								listenerApi.dispatch(
 									sourcesActions.ingestLive({
 										sourceId,
@@ -232,7 +230,7 @@ export const historySyncerSpec: ListenerSpec = {
 							} catch (err) {
 								log.error("failed", { error: err });
 							}
-						})
+						}));
 					});
 
 					await task.result;

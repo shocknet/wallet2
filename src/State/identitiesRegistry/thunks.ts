@@ -17,7 +17,7 @@ import { fetchNip78Event } from "./helpers/nostr";
 import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
 import { getScopedBeaconsPersistKey } from "@/State/scoped/beacons/slice";
 import { appApi } from "../api/api";
-import { identityLoaded, identityUnloaded } from "../listeners/actions";
+import { identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
 import { appStateActions } from "../appState/slice";
 import dLogger from "@/Api/helpers/debugLog";
@@ -163,7 +163,6 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: toIdentity }));
 		dispatch(identitiesRegistryActions.setLastActiveIdentityId({ pubkey: toIdentity.pubkey }));
 		dLogger.setIdentityContext({ identityPubkey: toIdentity.pubkey, identityType: toIdentity.type });
-		dispatch(identityLoaded({ identity: toIdentity }));
 
 	}
 }

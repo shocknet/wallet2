@@ -12,7 +12,7 @@ import dLogger from "@/Api/helpers/debugLog";
 
 
 
-const DEBOUNCE_MS = 900;
+export const DEBOUNCE_MS = 900;
 
 
 const isIdentityDirtying = isAnyOf(
@@ -25,6 +25,8 @@ const isSourceDirtying = isAnyOf(
 	sourcesActions._createDraftDoc,
 	sourcesActions.updateSourceLabel,
 	sourcesActions.updateBridgeUrl,
+	sourcesActions.updateAdminToken,
+	sourcesActions.updateisNDebitDiscoverable,
 	sourcesActions.markDeleted,
 	sourcesActions.setRelayPresence,
 	sourcesActions.applyRemoteSource,

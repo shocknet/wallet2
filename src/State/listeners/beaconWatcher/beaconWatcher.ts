@@ -5,16 +5,13 @@ import logger from "@/Api/helpers/logger";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
-import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/beacons/state";
+import { APP_ACTIVE_DEBOUNCE_MS, BEACON_STALE_OLDER_THAN, BEACON_STALE_TICK_MS } from "@/constants";
 import { runtimeActions } from "@/State/runtime/slice";
 import { AppDispatch, RootState } from "@/State/store/store";
 import { sourceJustAdded, sourceJustDeleted } from "../predicates";
 import { beaconsActions, beaconNodesSelectors } from "@/State/scoped/beacons/slice";
 import { canonicalRelayUrl } from "@/State/scoped/beacons/relays";
 import { beaconLookupKey } from "@/State/scoped/beacons/state";
-
-
-const STALE_TICK_MS = 0.7 * 60 * 1000;
 
 type RelayPair = { lpk: string; relay: string };
 
@@ -102,6 +99,23 @@ const dropOrphanBeaconNodes = (listenerApi: ListenerEffectAPI<RootState, AppDisp
 	if (orphanLpks.length) listenerApi.dispatch(beaconsActions.dropLpks({ lpks: orphanLpks }));
 };
 
+const probeStaleViews = async (listenerApi: ListenerEffectAPI<RootState, AppDispatch>) => {
+	dropOrphanBeaconNodes(listenerApi);
+
+	const state = listenerApi.getState();
+	const nowMs = Date.now();
+	const views = selectSourceViews(state);
+	const toProbe = pairsFromViews(
+		views.filter(view =>
+			view.relays.length
+			&& isLastSeenStale(view.beaconLastSeenAtMs, nowMs)
+		),
+	);
+
+	const task = probeBeacon(toProbe, listenerApi);
+	await task.result;
+};
+
 
 export const beaconWatcherSpec: ListenerSpec = {
 	name: "beaconWatcher",
@@ -136,31 +150,19 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 		(add) =>
 			add({
-				predicate: (action) => {
-					return listenerKick.match(action) || (runtimeActions.setAppActiveStatus.match(action) && action.payload.active)
-				},
+				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
-
-					listenerApi.cancelActiveListeners()
-
-					await listenerApi.delay(15);
-
-					dropOrphanBeaconNodes(listenerApi);
-
-					const state = listenerApi.getState();
-					const nowMs = Date.now();
-
-					const views = selectSourceViews(state);
-
-					const toProbe = pairsFromViews(
-						views.filter(view =>
-							view.relays.length
-							&& isLastSeenStale(view.beaconLastSeenAtMs, nowMs)
-						),
-					);
-
-					const task = probeBeacon(toProbe, listenerApi);
-					await task.result;
+					await probeStaleViews(listenerApi);
+				},
+			}),
+		(add) =>
+			add({
+				predicate: (action) =>
+					runtimeActions.setAppActiveStatus.match(action) && action.payload.active,
+				effect: async (_, listenerApi) => {
+					listenerApi.cancelActiveListeners();
+					await listenerApi.delay(APP_ACTIVE_DEBOUNCE_MS);
+					await probeStaleViews(listenerApi);
 				},
 			}),
 		(add) =>
@@ -208,7 +210,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 					const task = listenerApi.fork(async forkApi => {
 						try {
 							for (; ;) {
-								await forkApi.delay(STALE_TICK_MS);
+								await forkApi.delay(BEACON_STALE_TICK_MS);
 								const state = listenerApi.getState();
 								const views = selectSourceViews(state);
 

@@ -7,6 +7,8 @@ import type { AppDispatch, RootState } from "@/State/store/store";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
 import { selectPendingClinkRequestSession, selectPendingClinkRequestsForActiveIdentity } from "./selectors";
 
+export const RECONCILE_DELAY_MS = 15;
+
 
 
 
@@ -96,7 +98,7 @@ export const pendingClinkRequestsListenerSpec: ListenerSpec = {
 				),
 				effect: async (_, listenerApi) => {
 					listenerApi.cancelActiveListeners();
-					await listenerApi.delay(15);
+					await listenerApi.delay(RECONCILE_DELAY_MS);
 
 					reconcilePendingClinkRequest(listenerApi);
 				},
