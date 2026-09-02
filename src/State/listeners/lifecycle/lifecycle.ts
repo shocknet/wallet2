@@ -1,6 +1,7 @@
 
 import { type AppstartListening } from "@/State/store/listenerMiddleware";
-import { identityLoaded, identityUnloaded, listenerKick } from "../actions";
+import { identityUnloaded, listenerKick } from "../actions";
+import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
 import { addListener, type UnsubscribeListener } from "@reduxjs/toolkit";
 import type { AppDispatch, AppThunkDispatch, RootState } from "@/State/store/store";
 import dLogger from "@/Api/helpers/debugLog";
@@ -25,7 +26,7 @@ export const addIdentityLifecycle = (startAppListening: AppstartListening, specs
 
 
 	startAppListening({
-		actionCreator: identityLoaded,
+		actionCreator: identitiesRegistryActions.setActiveIdentityRuntime,
 		effect: async (_, listenerApi) => {
 			const log = dLogger.withContext({
 				procedure: "lifecycle api"

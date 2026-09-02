@@ -1,9 +1,7 @@
 import { createAction, TaskResult } from "@reduxjs/toolkit";
-import { RuntimeIdentity } from "../identitiesRegistry/types";
 import { Deferred } from "@/lib/deferred";
 
 
-export const identityLoaded = createAction<{ identity: RuntimeIdentity }>("identity/loaded");
 export const identityUnloaded = createAction<{ deferred: Deferred<void> }>("identity/unloaded");
 
 export const publisherFlushRequested = createAction<{ deferred: Deferred<void> }>("publisher/flush");

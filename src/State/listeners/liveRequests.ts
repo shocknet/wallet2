@@ -5,10 +5,11 @@ import { getClientById, getNostrClient } from "@/Api/nostr";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskResult } from "@reduxjs/toolkit";
 import { createDeferred } from "@/lib/deferred";
-import { sourceBecameFresh, sourceJustAdded, sourceJustDeleted } from "./predicates";
+import { sourceJustAdded, sourceJustDeleted, sourceIdsThatBecameFresh } from "./predicates";
 import { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
+import { beaconsActions } from "@/State/scoped/beacons/slice";
 import dLogger from "@/Api/helpers/debugLog";
 
 const logger = dLogger.withContext({ component: "liveRequestsListener" });
@@ -108,24 +109,30 @@ export const liveRequestsListenerSpec: ListenerSpec = {
 					getClientById(sourceId)?.removeStreamSub(GET_LIVE_USER_OPERATIONS_RPC_NAME);
 				}
 			}),
-		// When a source gets added, or becomes fresh
+		// When a source gets added
 		(add) =>
 			add({
-				predicate: (action, curr, prev) =>
-				(
-					sourceBecameFresh(action, curr, prev) ||
-					sourceJustAdded(action, curr, prev)
-				),
+				predicate: (action, curr, prev) => sourceJustAdded(action, curr, prev),
 				effect: async (action, listenerApi) => {
+
 					const { sourceId } = action.payload as { sourceId: string };
-
 					const source = selectSourceViewById(listenerApi.getState(), sourceId);
-
-					if (!source || source.beaconStale !== "fresh") {
-						return;
-					}
-
+					if (!source) return;
 					subscribeToStreams(source, listenerApi);
+				}
+			}),
+		// When sources become fresh
+		(add) =>
+			add({
+				actionCreator: beaconsActions.recordBeacon,
+				effect: async (action, listenerApi) => {
+					const curr = listenerApi.getState();
+					const prev = listenerApi.getOriginalState();
+					for (const sourceId of sourceIdsThatBecameFresh(action.payload.lpk, curr, prev)) {
+						const source = selectSourceViewById(curr, sourceId);
+						if (!source) continue;
+						subscribeToStreams(source, listenerApi);
+					}
 				}
 			}),
 	]

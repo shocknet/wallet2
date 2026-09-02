@@ -2,6 +2,7 @@ import { Action, combineSlices, Reducer } from "@reduxjs/toolkit";
 import { getScopedSourcesReducer } from "../scoped/backups/sources/slice";
 import { staticReducers } from "../store/staticReducers";
 import { getScopedIdentityReducer } from "../scoped/backups/identity/slice";
+import { getScopedBeaconsReducer } from "../scoped/beacons/slice";
 import type { AppThunkDispatch } from "../store/store";
 import { persistor } from "../store/store";
 
@@ -14,6 +15,7 @@ function buildScopedReducer(identityPubkey: string, DataKey: CryptoKey) {
 	return combineSlices({
 		identity: getScopedIdentityReducer(identityPubkey, DataKey),
 		sources: getScopedSourcesReducer(identityPubkey, DataKey),
+		beacons: getScopedBeaconsReducer(identityPubkey, DataKey),
 	});
 }
 

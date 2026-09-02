@@ -19,6 +19,7 @@ import { useHistory } from "react-router";
 import type { HomePageNavState } from "./nav";
 import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
 import { navToSources } from "@/Pages/Sources/nav";
+import { useAskSweepLnurlw } from "@/Components/Modals/SweepLnurlwModal";
 import BalanceCard from "./BalanceCard";
 import styles from "./styles/index.module.scss";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -50,6 +51,7 @@ const Home = () => {
 
 	const { showAlert } = useAlert();
 	const { showToast } = useToast();
+	const askSweepLnurlw = useAskSweepLnurlw();
 
 	const operations = useAppSelector(historySelectors.selectAll);
 	const [highlightOpKey, setHighlightOpKey] = useState<string | null>(null);
@@ -170,7 +172,7 @@ const Home = () => {
 			}
 			const parsed = await parseBitcoinInput(value, classification);
 			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				navToSources(history, { parsedLnurlW: parsed });
+				void askSweepLnurlw(parsed);
 				return;
 			}
 			if (parsed.type === InputClassification.NPROFILE) {
@@ -186,7 +188,7 @@ const Home = () => {
 			showToast({ message: err instanceof Error ? err.message : "Unknown error occured", color: "danger" });
 			return;
 		}
-	}, [history, showToast]);
+	}, [askSweepLnurlw, history, showToast]);
 
 
 	const { scanSingleBarcode } = useQrScanner();
@@ -215,19 +217,13 @@ const Home = () => {
 				<Virtuoso
 					style={{ height: "100%" }}
 					data={operations}
-					defaultItemHeight={56}
 					components={{
 						Footer: () => <div className="h-[6rem]" aria-hidden />,
 					}}
 					itemContent={(_, op) => (
-						<div
-							key={op.operationId}
-							style={{
-								minHeight: 56,
-								padding: "0 1rem"
-							}}
-						>
+						<div className="px-4">
 							<HistoryItem
+								key={op.opKey}
 								operation={op}
 								className={op.opKey === highlightOpKey ? styles["highlight-row"] : undefined}
 								handleSelectOperation={handleSelectOperation}

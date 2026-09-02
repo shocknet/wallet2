@@ -80,7 +80,6 @@ vi.mock("@/Api/helpers/debugLog", () => ({
 
 import { deleteIdentity, LAST_ACTIVE_IDENTITY_PUBKEY_KEY, switchIdentity } from "./thunks";
 import { identitiesRegistryActions } from "./slice";
-import { identityLoaded } from "../listeners/actions";
 
 describe("switchIdentity", () => {
 	const runtimeIdentity: RuntimeIdentity = {
@@ -153,7 +152,7 @@ describe("switchIdentity", () => {
 		expect(getIdentityNostrApiMock).toHaveBeenCalledTimes(1);
 		expect(injectNewScopedReducerMock).toHaveBeenCalledTimes(1);
 		expect(waitForRehydrateKeysMock).toHaveBeenCalledTimes(1);
-		expect(dispatched.some((a) => identityLoaded.match(a))).toBe(true);
+		expect(dispatched.some((a) => identitiesRegistryActions.setActiveIdentityRuntime.match(a))).toBe(true);
 		expect(localStorage.getItem("__shockwallet_lai_")).toBe("pub");
 	});
 

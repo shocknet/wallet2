@@ -4,6 +4,7 @@ import type { SourcesPageNavState } from "./nav";
 
 export type AddSourceIntent = {
 	nprofile: ParsedNprofileInput;
+	fromInviteUrl?: boolean;
 	integrationData?: {
 		token: string;
 		lnAddress: string;
@@ -13,7 +14,6 @@ export type AddSourceIntent = {
 
 export type SourcesInbound =
 	| { type: "add"; intent: AddSourceIntent }
-	| { type: "sweep"; lnurlw: NonNullable<SourcesPageNavState["parsedLnurlW"]> }
 	| { type: "invalid-nprofile"; message: string }
 	| { type: "none" };
 
@@ -24,9 +24,6 @@ export async function resolveSourcesInbound(
 	const fromUrl = await addIntentFromSearch(search);
 	if (fromUrl.type !== "none") return fromUrl;
 
-	if (state?.parsedLnurlW) {
-		return { type: "sweep", lnurlw: state.parsedLnurlW };
-	}
 	if (state?.parsedNprofile) {
 		return { type: "add", intent: { nprofile: state.parsedNprofile } };
 	}
@@ -48,7 +45,7 @@ async function addIntentFromSearch(search: string): Promise<SourcesInbound> {
 		};
 	}
 
-	return { type: "add", intent: exclusiveUrlExtra(nprofile, params) };
+	return { type: "add", intent: { ...exclusiveUrlExtra(nprofile, params), fromInviteUrl: true } };
 }
 
 function exclusiveUrlExtra(

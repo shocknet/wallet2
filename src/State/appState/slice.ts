@@ -32,6 +32,7 @@ const appStateSlice = createSlice({
 });
 
 export const appStateActions = appStateSlice.actions;
+export const appStateReducer = appStateSlice.reducer;
 
 const migrations = {
 	1: (state: AppState): AppState => {

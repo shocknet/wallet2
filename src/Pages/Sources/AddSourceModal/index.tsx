@@ -13,6 +13,7 @@ import { ReactNode } from "react";
 export type AddSourceModalOptions = {
 	integrationData?: SourceIntegrationData;
 	invitationToken?: string;
+	fromInviteUrl?: boolean;
 	initialNprofile?: ParsedNprofileInput | null;
 };
 
@@ -24,6 +25,7 @@ function AddSourceModal({
 	dismiss,
 	integrationData,
 	invitationToken,
+	fromInviteUrl,
 	initialNprofile,
 }: AddSourceModalProps) {
 
@@ -34,6 +36,7 @@ function AddSourceModal({
 				parsed={initialNprofile}
 				integrationData={integrationData}
 				invitationToken={invitationToken}
+				fromInviteUrl={fromInviteUrl}
 				dismiss={dismiss}
 			/>
 		);
@@ -54,11 +57,13 @@ function LockedNprofile({
 	parsed,
 	integrationData,
 	invitationToken,
+	fromInviteUrl,
 	dismiss,
 }: {
 	parsed: ParsedNprofileInput;
 	integrationData?: SourceIntegrationData;
 	invitationToken?: string;
+	fromInviteUrl?: boolean;
 	dismiss: ModalDismiss<true>;
 }) {
 	if (integrationData) {
@@ -73,17 +78,6 @@ function LockedNprofile({
 
 		);
 	}
-	if (invitationToken) {
-		return (
-			<Wrapper title="Join node invite">
-				<JoinNodeInviteCase
-					parsed={parsed}
-					dismiss={dismiss}
-					inviteToken={invitationToken}
-				/>
-			</Wrapper>
-		);
-	}
 	if (parsed.adminEnrollToken) {
 		return (
 			<Wrapper title="Connect as admin">
@@ -94,9 +88,22 @@ function LockedNprofile({
 			</Wrapper>
 		);
 	}
-	return <Wrapper title="Add source">
-		<AddNprofileCase parsed={parsed} dismiss={dismiss} />
-	</Wrapper>;
+	if (fromInviteUrl) {
+		return (
+			<Wrapper title="Join node invite">
+				<JoinNodeInviteCase
+					parsed={parsed}
+					dismiss={dismiss}
+					inviteToken={invitationToken}
+				/>
+			</Wrapper>
+		);
+	}
+	return (
+		<Wrapper title="Add source">
+			<AddNprofileCase parsed={parsed} dismiss={dismiss} />
+		</Wrapper>
+	);
 }
 
 

@@ -5,8 +5,8 @@ import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdenti
 import type { PendingNav } from "./pendingNavTypes";
 import { TokensData } from "sanctum-sdk";
 
-export type { PendingNav, RoutePendingNav } from "./pendingNavTypes";
-export { isRoutePendingNav } from "./pendingNavTypes";
+export type { PendingNav, RoutePendingNav, SweepLnurlwPendingNav } from "./pendingNavTypes";
+export { isRoutePendingNav, isSweepLnurlwPendingNav } from "./pendingNavTypes";
 
 export type { DeviceToIdentitiesMigrationFailure } from "./migrations/deviceToIdentities/errors";
 export type { DeviceToIdentitiesRepairAction } from "./migrations/deviceToIdentities/errors";

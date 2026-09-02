@@ -1,5 +1,5 @@
 import { IonButton, useIonLoading } from "@ionic/react";
-import { joinNodeWithInvite } from "@/State/scoped/backups/sources/thunks";
+import { addNprofileSource, joinNodeWithInvite } from "@/State/scoped/backups/sources/thunks";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { NodeCard } from "../common/NodeCard";
@@ -11,7 +11,7 @@ export function JoinNodeInviteCase({
 	parsed,
 	dismiss,
 	inviteToken,
-}: AddSourceCaseProps & { inviteToken: string }) {
+}: AddSourceCaseProps & { inviteToken?: string }) {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
 	const [presentLoading, dismissLoading] = useIonLoading();
@@ -19,11 +19,18 @@ export function JoinNodeInviteCase({
 	const handleJoin = async () => {
 		try {
 			await presentLoading({ cssClass: "app-loading", message: "Joining…", backdropDismiss: false });
-			await dispatch(joinNodeWithInvite({
-				lpk: parsed.pubkey,
-				relays: parsed.relays,
-				inviteToken,
-			}));
+			if (inviteToken) {
+				await dispatch(joinNodeWithInvite({
+					lpk: parsed.pubkey,
+					relays: parsed.relays,
+					inviteToken,
+				}));
+			} else {
+				dispatch(addNprofileSource({
+					lpk: parsed.pubkey,
+					relays: parsed.relays,
+				}));
+			}
 			showToast({ color: "success", message: "Joined node", icon: flashOutline });
 			dismiss(true, "confirm");
 		} catch (err: unknown) {

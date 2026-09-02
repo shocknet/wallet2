@@ -1,6 +1,5 @@
 import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
-import { identityLoaded } from "@/State/listeners/actions";
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
 import { IdentityType } from "@/State/identitiesRegistry/types";
@@ -45,7 +44,6 @@ function makeStore() {
 describe("topicIndexSync listener", () => {
 	function bootIdentity(store: ReturnType<typeof makeStore>) {
 		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: runtimeIdentity }));
-		store.dispatch(identityLoaded({ identity: runtimeIdentity }));
 	}
 
 	it("indexes topic id when applyUserInfo fires with topicId for the active identity", () => {

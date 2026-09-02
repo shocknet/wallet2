@@ -1,11 +1,13 @@
 import { isAnyOf, ListenerEffectAPI } from "@reduxjs/toolkit";
 import { listenerKick } from "@/State/listeners/actions";
-import { sourceBecameFresh, sourceBecameStale, sourceJustDeleted } from "@/State/listeners/predicates";
+import { sourceJustDeleted } from "@/State/listeners/predicates";
 import type { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { AppDispatch, RootState } from "@/State/store/store";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
 import { selectPendingClinkRequestSession, selectPendingClinkRequestsForActiveIdentity } from "./selectors";
+
+export const RECONCILE_DELAY_MS = 15;
 
 
 
@@ -30,11 +32,6 @@ function pruneOrphanedAClinkRequests(
 			if (selectPendingClinkRequestSession(state)?.request.request_id === request.request.request_id) {
 				listenerApi.dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
 			}
-		} else if (source.beaconStale !== "fresh") {
-			// clear session if it belongs to the now stale source
-			if (selectPendingClinkRequestSession(state)?.source.sourceId === source.sourceId) {
-				listenerApi.dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
-			}
 		}
 	}
 }
@@ -52,7 +49,7 @@ function reconcilePendingClinkRequest(
 
 	const requests = selectPendingClinkRequestsForActiveIdentity(state);
 
-	// Prefer debits, then manages; skip entries whose source isn't claimable yet
+	// Prefer debits, then manages; skip entries whose source is gone
 	const ordered = [
 		...requests.filter((request) => request.kind === "debit"),
 		...requests.filter((request) => request.kind === "manage"),
@@ -60,12 +57,7 @@ function reconcilePendingClinkRequest(
 
 	for (const next of ordered) {
 		const source = selectSourceViewById(state, next.sourceId);
-		if (
-			!source ||
-			source.beaconStale !== "fresh"
-		) {
-			continue;
-		}
+		if (!source) continue;
 
 		if (next.kind === "debit") {
 			listenerApi.dispatch(clinkRequestsActions.claimPendingClinkRequestSession({
@@ -102,13 +94,11 @@ export const pendingClinkRequestsListenerSpec: ListenerSpec = {
 						listenerKick,
 					)(action)
 					||
-					sourceBecameFresh(action, curr, prev) ||
-					sourceBecameStale(action, curr, prev) ||
 					sourceJustDeleted(action, curr, prev)
 				),
 				effect: async (_, listenerApi) => {
 					listenerApi.cancelActiveListeners();
-					await listenerApi.delay(15);
+					await listenerApi.delay(RECONCILE_DELAY_MS);
 
 					reconcilePendingClinkRequest(listenerApi);
 				},
