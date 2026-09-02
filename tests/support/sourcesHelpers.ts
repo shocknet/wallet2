@@ -37,7 +37,6 @@ export const createTestSourceDoc = (sourceLpk: string, sourceId: string): Source
 
 
 export const createTestSourceMetadata = (sourceLpk: string, sourceId: string): SourceMetadata => ({
-	lastSeenAtMs: 500_000,
 	balance: 0 as Satoshi,
 	maxWithdrable: 0 as Satoshi,
 	id: sourceId,
@@ -58,7 +57,6 @@ export type TestSource = {
 type HistoryState = SourcesState["history"];
 
 type GetStateOpts = {
-	beaconStaleMs?: number;
 	historyOverride?: Partial<HistoryState>;
 };
 
@@ -96,10 +94,8 @@ export const getPreloadedSourcesState = (
 		metadata: {
 			entities: metaEntities,
 			ids: [...ids],
-			beaconStaleMs: opts.beaconStaleMs ?? 150_000,
 		},
 		history: { ...historyDefault, ...(opts.historyOverride ?? {}) },
-		beaconProbe: { entities: {}, ids: [] }
 	};
 };
 

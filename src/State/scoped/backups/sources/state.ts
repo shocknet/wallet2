@@ -3,9 +3,7 @@ import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
 
-export const BEACON_STALE_OLDER_THAN = 3 * 60 * 1000;
-export const BEACON_SEMI_STALE_OLDER_THAN = 1 * 60 * 1000;
-
+export { BEACON_STALE_OLDER_THAN } from "@/State/scoped/beacons/state";
 
 export interface SourceDocEntity {
 	base?: SourceDocV0;
@@ -21,23 +19,14 @@ export const docsAdapter = createEntityAdapter<SourceDocEntity, string>({
 
 export type SourceDocsState = EntityState<SourceDocEntity, string>;
 
-
-
-
-
 export const metadataAdapter = createEntityAdapter<SourceMetadata, string>({
 	selectId: (m) => m.id,
 });
 
-export interface SourcesMetadataState extends EntityState<SourceMetadata, string> {
-	beaconStaleMs: number;
-}
-
-
-
+export type SourcesMetadataState = EntityState<SourceMetadata, string>;
 
 export type SourceHistoryIndex = {
-	ids: OpKey[];        // operation keys for this source
+	ids: OpKey[];
 	cursor: HistoryCursor;
 };
 
@@ -52,41 +41,18 @@ export const opsAdapter = createEntityAdapter<SourceOperation, OpKey>({
 	sortComparer: (a, b) => b.paidAtUnix - a.paidAtUnix,
 });
 
-export type BeaconProbeStatus = "idle" | "probing" | "done";
-
-export type BeaconProbeState = {
-	sourceId: string;
-	epoch: number;
-	status: BeaconProbeStatus;
-};
-
-export const beaconProbeAdapter = createEntityAdapter<BeaconProbeState, string>({
-	selectId: (b) => b.sourceId
-})
-
-export type SourcesBeaconProbe = EntityState<BeaconProbeState, string>;
-
-
-
 export interface SourcesState {
 	docs: SourceDocsState;
 	metadata: SourcesMetadataState;
 	history: HistoryState;
-	beaconProbe: SourcesBeaconProbe;
 }
 
 export const getIntialState = (): SourcesState => ({
 	docs: docsAdapter.getInitialState(),
-
-	metadata: metadataAdapter.getInitialState({
-		beaconStaleMs: BEACON_STALE_OLDER_THAN,
-	}),
+	metadata: metadataAdapter.getInitialState(),
 	history: {
 		ops: opsAdapter.getInitialState(),
 		bySource: {},
 		newPaymentsCount: 0
 	},
-	beaconProbe: beaconProbeAdapter.getInitialState()
 });
-
-

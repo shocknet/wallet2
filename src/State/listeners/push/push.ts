@@ -1,15 +1,14 @@
-import { isAnyOf } from "@reduxjs/toolkit";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { listenerKick } from "@/State/listeners/actions";
 import { pushTokenUpdated } from "@/notifications/push/actions";
 import { selectSourceViews, selectSourceViewById, SourceView } from "@/State/scoped/backups/sources/selectors";
-import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { getNostrClient } from "@/Api/nostr";
 import { getDeviceId } from "@/constants";
 import type { RootState } from "@/State/store/store";
-import { becameFresh, exists, isFresh, justAdded } from "../predicates";
+import { sourceIdsThatBecameFresh, sourceJustAdded } from "../predicates";
 import dLogger from "@/Api/helpers/debugLog";
 import { selectPushStatus } from "@/State/runtime/slice";
+import { beaconsActions } from "@/State/scoped/beacons/slice";
 
 
 const log = dLogger.withContext({ component: "push-enrollment" });
@@ -70,43 +69,36 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					await enrollTokenForSources(action.payload.token, sources);
 				}
 			}),
-		// when a new source is added, or became fresh, we need to enroll the token for the source
+		// when just added
 		(add) =>
 			add({
-				predicate: (action, curr, prev) =>
-				(
-					(
-						isAnyOf(sourcesActions.applyRemoteSource, sourcesActions._createDraftDoc)(action) &&
-						exists(curr, action.payload.sourceId) &&
-						justAdded(curr, prev, action.payload.sourceId) &&
-						isFresh(curr, action.payload.sourceId)
-					)
-					||
-					(
-						sourcesActions.recordBeaconForSource.match(action) &&
-						exists(curr, action.payload.sourceId) &&
-						becameFresh(curr, prev, action.payload.sourceId)
-					)
-				),
+				predicate: (action, curr, prev) => sourceJustAdded(action, curr, prev),
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 					const state = listenerApi.getState();
 					const source = selectSourceViewById(state, sourceId);
-
-					if (!source) {
-						console.warn(`[Push] Source ${sourceId} not found for enrollment`);
-						return;
-					}
-
+					if (!source) return;
 					const token = getPushToken(state);
-					if (!token) {
-						console.log("[Push] No cached token available for new source enrollment");
-						return;
-					}
-
-					console.log(`[Push] Enrolling token with new/fresh source: ${source.label}`);
+					if (!token) return;
 					await enrollTokenForSources(token, [source]);
 				}
 			}),
+		// when sources become fresh
+		(add) =>
+			add({
+				actionCreator: beaconsActions.recordBeacon,
+				effect: async (action, listenerApi) => {
+					const curr = listenerApi.getState();
+					const token = getPushToken(curr);
+					if (!token) return;
+					const prev = listenerApi.getOriginalState();
+					for (const sourceId of sourceIdsThatBecameFresh(action.payload.lpk, curr, prev)) {
+						const source = selectSourceViewById(curr, sourceId);
+						if (!source) continue;
+						await enrollTokenForSources(token, [source]);
+					}
+				}
+			})
+
 	]
 };

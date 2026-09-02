@@ -1,102 +1,111 @@
 import { listenerKick } from "@/State/listeners/actions";
-import { selectSourceViewById, selectSourceViews, selectSourceViewsByLpk } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViewById, selectSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
 import { getNostrClient, subToBeacons } from "@/Api/nostr";
 import logger from "@/Api/helpers/logger";
-import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { ListenerSpec } from "../lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskAbortError } from "@reduxjs/toolkit";
 import { fetchBeaconDiscovery } from "@/Api/nostrHandler";
-import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/backups/sources/state";
+import { BEACON_STALE_OLDER_THAN } from "@/State/scoped/beacons/state";
 import { runtimeActions } from "@/State/runtime/slice";
 import { AppDispatch, RootState } from "@/State/store/store";
-import { sourceJustAdded } from "../predicates";
+import { sourceJustAdded, sourceJustDeleted } from "../predicates";
+import { beaconsActions, beaconNodesSelectors } from "@/State/scoped/beacons/slice";
+import { canonicalRelayUrl } from "@/State/scoped/beacons/relays";
+import { beaconLookupKey } from "@/State/scoped/beacons/state";
 
 
 const STALE_TICK_MS = 0.7 * 60 * 1000;
 
+type RelayPair = { lpk: string; relay: string };
+
+const uniquePairs = (items: RelayPair[]) => {
+	const byKey = new Map<string, RelayPair>();
+	for (const item of items) {
+		byKey.set(beaconLookupKey(item.lpk, item.relay), item);
+	}
+	return [...byKey.values()];
+};
+
+const pairsFromViews = (views: SourceView[]) =>
+	uniquePairs(views.flatMap(v => v.relays.map(relay => ({ lpk: v.lpk, relay }))));
+
+const isLastSeenStale = (lastSeenAtMs: number, nowMs: number) =>
+	nowMs - lastSeenAtMs > BEACON_STALE_OLDER_THAN;
+
+const staleSourceIds = (views: SourceView[], nowMs: number) => {
+	const set = new Set<string>();
+	for (const v of views) {
+		if (isLastSeenStale(v.beaconLastSeenAtMs, nowMs)) set.add(v.sourceId);
+	}
+	return set;
+};
 
 const probeBeacon = (
-	toProbe: { sourceId: string; lpk: string; relays: string[] }[],
+	pairs: RelayPair[],
 	listenerApi: ListenerEffectAPI<RootState, AppDispatch>,
 ) => {
-
+	if (!pairs.length) {
+		return { result: Promise.resolve() };
+	}
 
 	const epoch = Date.now();
 
-	// Mark all sources to probe as warming up.
-	// i.e. not stale nor fresh
-	listenerApi.dispatch(
-		sourcesActions.startBeaconProbeForSources({
-			sourceIds: toProbe.map(x => x.sourceId),
-			epoch,
-		}),
-	);
+	listenerApi.dispatch(beaconsActions.startLookups({ pairs, epoch }));
 
+	const finishPair = (pair: RelayPair) => {
+		listenerApi.dispatch(beaconsActions.finishLookup({ ...pair, epoch }));
+	};
 
-	// Probe in parallel with a small concurrency cap.
-	// This is because relays cap subscriptions from a single connection
+	const finishAll = () => {
+		for (const pair of pairs) finishPair(pair);
+	};
 
 	const CONCURRENCY = 3;
 	let i = 0;
 
 	const task = listenerApi.fork(async forkApi => {
-		await Promise.allSettled(
-			new Array(CONCURRENCY).fill(0).map(async () => {
-				while (i < toProbe.length && !listenerApi.signal.aborted) {
-					const item = toProbe[i++];
+		try {
+			await Promise.allSettled(
+				new Array(CONCURRENCY).fill(0).map(async () => {
+					while (i < pairs.length && !listenerApi.signal.aborted) {
+						const pair = pairs[i++];
 
-					try {
-						const res = await forkApi.pause(fetchBeaconDiscovery(item.lpk, item.relays));
-
-
+						const res = await forkApi.pause(fetchBeaconDiscovery(pair.lpk, [pair.relay]));
 
 						if (res) {
 							listenerApi.dispatch(
-								sourcesActions.recordBeaconForSource({
-									sourceId: item.sourceId,
+								beaconsActions.recordBeacon({
+									lpk: pair.lpk,
+									relay: pair.relay,
 									data: res.data,
 									seenAtMs: res.beaconLastSeenAtMs,
 								}),
 							);
-
-							listenerApi.dispatch(
-								sourcesActions.finishBeaconProbeForSource({
-									sourceId: item.sourceId,
-									epoch,
-								}),
-							);
-						} else {
-							listenerApi.dispatch(
-								sourcesActions.finishBeaconProbeForSource({
-									sourceId: item.sourceId,
-									epoch,
-								}),
-							);
 						}
-					} catch (err) {
-						if (err instanceof TaskAbortError) return;
-
-						if (listenerApi.signal.aborted) return;
-						listenerApi.dispatch(
-							sourcesActions.finishBeaconProbeForSource({
-								sourceId: item.sourceId,
-								epoch,
-							}),
-						);
+						finishPair(pair);
 					}
-
-				}
-			})
-		)
+				})
+			);
+		} finally {
+			finishAll();
+		}
 	});
 	return task;
 }
+
+const dropOrphanBeaconNodes = (listenerApi: ListenerEffectAPI<RootState, AppDispatch>) => {
+	const state = listenerApi.getState();
+	const liveLpks = new Set(selectSourceViews(state).map(v => v.lpk));
+	const orphanLpks = beaconNodesSelectors.selectIds(state).filter(
+		(lpk) => !liveLpks.has(lpk),
+	);
+	if (orphanLpks.length) listenerApi.dispatch(beaconsActions.dropLpks({ lpks: orphanLpks }));
+};
 
 
 export const beaconWatcherSpec: ListenerSpec = {
 	name: "beaconWatcher",
 	listeners: [
-		// Source just newly added
 		(add) =>
 			add({
 				predicate: (action, curr, prev) =>
@@ -104,25 +113,27 @@ export const beaconWatcherSpec: ListenerSpec = {
 				effect: async (action, listenerApi) => {
 					const { sourceId } = action.payload as { sourceId: string };
 
-
 					const source = selectSourceViewById(listenerApi.getState(), sourceId);
 					if (!source) return;
 
-					const toProbe = [
-						{
-							sourceId,
-							lpk: source.lpk,
-							relays: source.relays
-						}
-					];
-
-					const task = probeBeacon(toProbe, listenerApi)
+					const task = probeBeacon(
+						pairsFromViews([source]),
+						listenerApi,
+					);
 
 					await task.result;
 				}
 			}),
 
-		// On app boot and app resume
+		(add) =>
+			add({
+				predicate: (action, curr, prev) =>
+					sourceJustDeleted(action, curr, prev),
+				effect: (_action, listenerApi) => {
+					dropOrphanBeaconNodes(listenerApi);
+				}
+			}),
+
 		(add) =>
 			add({
 				predicate: (action) => {
@@ -134,23 +145,19 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 					await listenerApi.delay(15);
 
+					dropOrphanBeaconNodes(listenerApi);
 
 					const state = listenerApi.getState();
 					const nowMs = Date.now();
 
 					const views = selectSourceViews(state);
 
-
-					const toProbe: { sourceId: string; lpk: string; relays: string[] }[] = [];
-
-					for (const view of views) {
-						if (!view.relays.length) continue;
-						if (nowMs - view.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN) { // Only take sources that are not fresh
-							toProbe.push({ sourceId: view.sourceId, lpk: view.lpk, relays: view.relays });
-						}
-					}
-
-					if (!toProbe.length) return;
+					const toProbe = pairsFromViews(
+						views.filter(view =>
+							view.relays.length
+							&& isLastSeenStale(view.beaconLastSeenAtMs, nowMs)
+						),
+					);
 
 					const task = probeBeacon(toProbe, listenerApi);
 					await task.result;
@@ -163,33 +170,25 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 
 					const sources = selectSourceViews(listenerApi.getState());
-					/*
-						subToBeacons lives on the clientsCluster layer, however since some sources might be stale they may never
-						get to have a nostrClient, in which case we won't be able to listen for their beacons. So make sure all sources have a nostrClient.
-					*/
+
+					// warm up sources that may not have registered a nostrClient yet
 					await Promise.allSettled(sources.map(s => getNostrClient({ pubkey: s.lpk, relays: s.relays }, s.keys)));
 
 					const unsub = subToBeacons(b => {
 						if (listenerApi.signal.aborted) return;
 
 						const { relayUrl, createdByPub: lpk, data, updatedAtUnix } = b;
-						const seenAtMs = updatedAtUnix * 1_000;
+						const relay = canonicalRelayUrl(relayUrl);
+						if (!relay) return;
 
-						const s = listenerApi.getState();
-						const lpkSources = selectSourceViewsByLpk(s, lpk);
-
-						for (const lpkSource of lpkSources) {
-							// Update only sources whose relay set includes the relay we heard this on
-							if (!lpkSource.relays.includes(relayUrl)) continue;
-
-							listenerApi.dispatch(
-								sourcesActions.recordBeaconForSource({
-									sourceId: lpkSource.sourceId,
-									data,
-									seenAtMs,
-								})
-							);
-						}
+						listenerApi.dispatch(
+							beaconsActions.recordBeacon({
+								lpk,
+								relay,
+								data,
+								seenAtMs: updatedAtUnix * 1_000,
+							})
+						);
 					});
 
 					try {
@@ -203,7 +202,8 @@ export const beaconWatcherSpec: ListenerSpec = {
 			add({
 				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
-					let prevStaleLpks = new Set<string>();
+					const viewsAtStart = selectSourceViews(listenerApi.getState());
+					let prevStaleIds = staleSourceIds(viewsAtStart, Date.now());
 
 					const task = listenerApi.fork(async forkApi => {
 						try {
@@ -214,28 +214,19 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 								const nowMs = Date.now();
 
-								const currentStaleLpks = new Set(
-									views
-										.filter(v => nowMs - v.beaconLastSeenAtMs > BEACON_STALE_OLDER_THAN)
-										.map(v => v.lpk)
+								const currentStaleIds = staleSourceIds(views, nowMs);
+								const newlyStaleViews = views.filter(v =>
+									v.relays.length
+									&& currentStaleIds.has(v.sourceId)
+									&& !prevStaleIds.has(v.sourceId)
 								);
 
-								const newlyStaleLpks: string[] = [];
-								currentStaleLpks.forEach(lpk => {
-									if (!prevStaleLpks.has(lpk)) {
-										newlyStaleLpks.push(lpk);
-									}
-								});
-
-								if (newlyStaleLpks.length) {
-									if (!forkApi.signal.aborted) {
-										listenerApi.dispatch(runtimeActions.clockTick({
-											nowMs
-										}));
-									}
+								if (newlyStaleViews.length && !forkApi.signal.aborted) {
+									listenerApi.dispatch(runtimeActions.clockTick({ nowMs }));
+									probeBeacon(pairsFromViews(newlyStaleViews), listenerApi);
 								}
 
-								prevStaleLpks = currentStaleLpks;
+								prevStaleIds = currentStaleIds;
 							}
 						} catch (err) {
 							if (err instanceof TaskAbortError) {

@@ -15,6 +15,7 @@ import type { RuntimeIdentity } from "@/shell/types";
 import { identityDocDtag } from "./helpers/processDocs";
 import { fetchNip78Event } from "./helpers/nostr";
 import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
+import { getScopedBeaconsPersistKey } from "@/State/scoped/beacons/slice";
 import { appApi } from "../api/api";
 import { identityLoaded, identityUnloaded } from "../listeners/actions";
 import { createDeferred } from "@/lib/deferred";
@@ -123,7 +124,11 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		await dispatch(unloadActiveIdentityIfPresent());
 
 		injectNewScopedReducer(toIdentity.pubkey, dispatch, unwrappedDataKey);
-		const keys = [getScopedIdentityPersistKey(toIdentity.pubkey), getScopedSourcesPersistKey(toIdentity.pubkey)];
+		const keys = [
+			getScopedIdentityPersistKey(toIdentity.pubkey),
+			getScopedSourcesPersistKey(toIdentity.pubkey),
+			getScopedBeaconsPersistKey(toIdentity.pubkey),
+		];
 		await waitForRehydrateKeys(keys); // Await redux persist rehydration of injected paths
 
 		const draft = selectIdentityDraft(getState());
