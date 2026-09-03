@@ -15,6 +15,7 @@ import Earnings from "./earnings";
 import Routing from "./routing";
 import Manage from "../Manage";
 import Channels from "../Channels";
+import Peers from "./Peers";
 import AdminSwaps from "./adminSwaps/AdminSwaps";
 import { AssetsAndLiab } from "./AssetsAndLiab";
 import UsersAdmin from "./UsersAdmin";
@@ -56,6 +57,7 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 				<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
+				<GuardedRoute path={`${match.url}/peers`} component={Peers} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute exact path={`${match.url}/users`} component={UsersAdmin} guards={[requireSelectedAdminSourceGuard]} />

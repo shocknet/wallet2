@@ -4,13 +4,11 @@ import { toast } from "react-toastify";
 import Toast from "../../Components/Toast";
 import { getNostrClient } from "@/Api/nostr";
 import {
-	IonContent,
-	IonHeader,
-	IonPage,
 	useIonRouter,
 	useIonLoading,
 } from "@ionic/react";
-import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
+import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
+import { DashErrorBanner } from "@/Pages/Metrics/DashErrorBanner";
 import { nip19 } from "nostr-tools";
 
 
@@ -138,17 +136,10 @@ const Manage = () => {
 		router.push("/metrics", "back")
 	}
 	return (
-		<IonPage className="ion-page-width">
-			<IonHeader className="ion-no-border">
-				<MetricsSubPageToolbar title="Manage" />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				{error && (
-					<div style={{ color: "red", padding: 12 }}>
-						<div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
-						<div style={{ opacity: 0.85 }}>{error}</div>
-					</div>
-				)}
+		<DashboardShell title="Manage">
+			{error && (
+				<DashErrorBanner message={error} />
+			)}
 
 				<div className="Manage">
 					<div className="Manage_settings">
@@ -267,7 +258,7 @@ const Manage = () => {
 							{isRevealed ? "Click to hide seed" : "Click to reveal seed"}
 						</div>
 					</div>
-					<button onClick={onDone} className="Manage_save">
+					<button onClick={onDone} className="dash-btn dash-btn-lined Manage_save">
 						Done
 					</button>
 					<div className="Manage_footer">
@@ -275,8 +266,7 @@ const Manage = () => {
 						{nip19.nprofileEncode({ pubkey: adminSource.lpk, relays: adminSource.relays })}
 					</div>
 				</div>
-			</IonContent>
-		</IonPage>
+		</DashboardShell>
 	);
 };
 

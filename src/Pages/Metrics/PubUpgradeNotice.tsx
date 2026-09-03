@@ -12,20 +12,11 @@ export function PubUpgradeNotice({
 	featureLabel = "the new dashboard",
 }: PubUpgradeNoticeProps) {
 	return (
-		<div
-			style={{
-				padding: 12,
-				marginBottom: 12,
-				background: "var(--ion-color-warning-tint)",
-				borderRadius: "8px",
-				color: "var(--ion-color-warning-shade)",
-				border: "1px solid var(--ion-color-warning)",
-			}}
-		>
-			<div style={{ fontWeight: 700, marginBottom: 8 }}>Pub update required</div>
-			<div style={{ marginBottom: onRecheck ? 12 : 0, opacity: 0.95 }}>
+		<div className="dash-callout" role="status">
+			<h6>Pub update required</h6>
+			<p>
 				This Pub does not support {featureLabel}. Upgrade Lightning.Pub, then check again.
-			</div>
+			</p>
 			{onRecheck && (
 				<IonButton size="small" onClick={onRecheck} disabled={checking}>
 					{checking ? "Checking..." : "Check again"}

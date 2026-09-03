@@ -8,19 +8,17 @@ import {
     IonCard,
     IonCardContent,
     IonCardHeader,
-    IonContent,
     IonLabel,
     IonItem,
     IonList,
     IonListHeader,
-    IonPage,
-    IonHeader,
     useIonLoading,
     useIonRouter,
     IonSkeletonText,
 } from "@ionic/react";
 import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector";
-import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
+import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
+import { DashErrorBanner } from "./DashErrorBanner";
 
 
 import { useAppSelector } from "@/State/store/hooks";
@@ -135,23 +133,14 @@ export default function Routing() {
 
 
 
-    return <IonPage className="ion-page-width">
-        <IonHeader className="ion-no-border">
-            <MetricsSubPageToolbar title="Routing" />
-        </IonHeader>
-
-        <IonContent className="ion-padding ion-content-no-footer">
+    return (
+        <DashboardShell title="Routing">
             {error && (
-                <div style={{ color: "red", padding: 12 }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
-                    <div style={{ opacity: 0.85, marginBottom: 12 }}>{error}</div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <IonButton onClick={() => void fetchMetrics()}>Retry</IonButton>
-                        <IonButton fill="outline" onClick={() => router.push("/metrics/select", "back")}>
-                            Change Source
-                        </IonButton>
-                    </div>
-                </div>
+                <DashErrorBanner
+                    message={error}
+                    onRetry={() => void fetchMetrics()}
+                    onChangeSource={() => router.push("/metrics/select", "back")}
+                />
             )}
 
             {!error && (
@@ -217,8 +206,8 @@ export default function Routing() {
                     </IonCard>
                 </>
             )}
-        </IonContent>
-    </IonPage>
+        </DashboardShell>
+    );
 }
 
 export const getUnixTimeRange = (period: Period, offset: number) => {

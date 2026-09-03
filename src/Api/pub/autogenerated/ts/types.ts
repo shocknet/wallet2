@@ -13,18 +13,18 @@ export type ProtoSocket<T> = {
 }
 export interface RequestLogger {}
 export type RequestContext = {
-    getIp: () => string
+    getIp: () => string | undefined
     getHeader: (name: string) => string | undefined
     setHeader: (name: string, value: string) => void
     clearCookie: (name: string) => void
-    getRequestLogger: () => RequestLogger
+    getRequestLogger: () => RequestLogger | undefined
     setRequestLogger: (log: RequestLogger) => void
 }
 export type AdminContext = {
     admin_id: string
 }
-export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AuthApp_Input | BanUser_Input | BumpTx_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetAdminInvoiceSwapQuotes_Input | GetAdminTransactionSwapQuotes_Input | GetAssetsAndLiabilities_Input | GetAssetsAndLiabilitiesV2_Input | GetInviteLinkState_Input | GetSeed_Input | GetUserOperationsFromAdmin_Input | GetUsersAdminInfo_Input | ListAdminInvoiceSwaps_Input | ListAdminTxSwaps_Input | ListChannels_Input | LndGetInfo_Input | OpenChannel_Input | PayAdminInvoiceSwap_Input | PayAdminTransactionSwap_Input | RefundAdminInvoiceSwap_Input | UpdateChannelPolicy_Input
-export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AuthApp_Output | BanUser_Output | BumpTx_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetAdminInvoiceSwapQuotes_Output | GetAdminTransactionSwapQuotes_Output | GetAssetsAndLiabilities_Output | GetAssetsAndLiabilitiesV2_Output | GetInviteLinkState_Output | GetSeed_Output | GetUserOperationsFromAdmin_Output | GetUsersAdminInfo_Output | ListAdminInvoiceSwaps_Output | ListAdminTxSwaps_Output | ListChannels_Output | LndGetInfo_Output | OpenChannel_Output | PayAdminInvoiceSwap_Output | PayAdminTransactionSwap_Output | RefundAdminInvoiceSwap_Output | UpdateChannelPolicy_Output
+export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AuthApp_Input | BanUser_Input | BumpTx_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetAdminInvoiceSwapQuotes_Input | GetAdminTransactionSwapQuotes_Input | GetAssetsAndLiabilities_Input | GetAssetsAndLiabilitiesV2_Input | GetInviteLinkState_Input | GetSeed_Input | GetUserOperationsFromAdmin_Input | GetUsersAdminInfo_Input | ListAdminInvoiceSwaps_Input | ListAdminTxSwaps_Input | ListChannels_Input | ListPeers_Input | ListUtxos_Input | LndGetInfo_Input | OpenChannel_Input | PayAdminInvoiceSwap_Input | PayAdminTransactionSwap_Input | RefundAdminInvoiceSwap_Input | UpdateChannelPolicy_Input
+export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AuthApp_Output | BanUser_Output | BumpTx_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetAdminInvoiceSwapQuotes_Output | GetAdminTransactionSwapQuotes_Output | GetAssetsAndLiabilities_Output | GetAssetsAndLiabilitiesV2_Output | GetInviteLinkState_Output | GetSeed_Output | GetUserOperationsFromAdmin_Output | GetUsersAdminInfo_Output | ListAdminInvoiceSwaps_Output | ListAdminTxSwaps_Output | ListChannels_Output | ListPeers_Output | ListUtxos_Output | LndGetInfo_Output | OpenChannel_Output | PayAdminInvoiceSwap_Output | PayAdminTransactionSwap_Output | RefundAdminInvoiceSwap_Output | UpdateChannelPolicy_Output
 export type AppContext = {
     app_id: string
 }
@@ -281,8 +281,14 @@ export type ListAdminTxSwaps_Output = ResultError | ({ status: 'OK' } & TxSwapsL
 export type ListChannels_Input = {rpcName:'ListChannels'}
 export type ListChannels_Output = ResultError | ({ status: 'OK' } & LndChannels)
 
+export type ListPeers_Input = {rpcName:'ListPeers'}
+export type ListPeers_Output = ResultError | ({ status: 'OK' } & LndPeers)
+
 export type ListTxSwaps_Input = {rpcName:'ListTxSwaps'}
 export type ListTxSwaps_Output = ResultError | ({ status: 'OK' } & TxSwapsList)
+
+export type ListUtxos_Input = {rpcName:'ListUtxos'}
+export type ListUtxos_Output = ResultError | ({ status: 'OK' } & LndUtxos)
 
 export type LndGetInfo_Input = {rpcName:'LndGetInfo', req: LndGetInfoRequest}
 export type LndGetInfo_Output = ResultError | ({ status: 'OK' } & LndGetInfoResponse)
@@ -449,7 +455,9 @@ export type ServerMethods = {
     ListAdminInvoiceSwaps?: (req: ListAdminInvoiceSwaps_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<InvoiceSwapsList>
     ListAdminTxSwaps?: (req: ListAdminTxSwaps_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
     ListChannels?: (req: ListChannels_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndChannels>
+    ListPeers?: (req: ListPeers_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndPeers>
     ListTxSwaps?: (req: ListTxSwaps_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
+    ListUtxos?: (req: ListUtxos_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndUtxos>
     LndGetInfo?: (req: LndGetInfo_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndGetInfoResponse>
     NewAddress?: (req: NewAddress_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<NewAddressResponse>
     NewInvoice?: (req: NewInvoice_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
@@ -2469,6 +2477,7 @@ export type InvoiceSwapQuote = {
     invoice: string
     invoice_amount_sats: number
     paid_at_unix: number
+    sat_per_v_byte: number
     service_fee_sats: number
     service_url: string
     swap_fee_sats: number
@@ -2485,6 +2494,7 @@ export type InvoiceSwapQuoteOptions = OptionsBaseMessage & {
     invoice_CustomCheck?: (v: string) => boolean
     invoice_amount_sats_CustomCheck?: (v: number) => boolean
     paid_at_unix_CustomCheck?: (v: number) => boolean
+    sat_per_v_byte_CustomCheck?: (v: number) => boolean
     service_fee_sats_CustomCheck?: (v: number) => boolean
     service_url_CustomCheck?: (v: string) => boolean
     swap_fee_sats_CustomCheck?: (v: number) => boolean
@@ -2513,6 +2523,9 @@ export const InvoiceSwapQuoteValidate = (o?: InvoiceSwapQuote, opts: InvoiceSwap
 
     if (typeof o.paid_at_unix !== 'number') return new Error(`${path}.paid_at_unix: is not a number`)
     if (opts.paid_at_unix_CustomCheck && !opts.paid_at_unix_CustomCheck(o.paid_at_unix)) return new Error(`${path}.paid_at_unix: custom check failed`)
+
+    if (typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
+    if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
 
     if (typeof o.service_fee_sats !== 'number') return new Error(`${path}.service_fee_sats: is not a number`)
     if (opts.service_fee_sats_CustomCheck && !opts.service_fee_sats_CustomCheck(o.service_fee_sats)) return new Error(`${path}.service_fee_sats: custom check failed`)
@@ -2560,11 +2573,14 @@ export const InvoiceSwapQuoteListValidate = (o?: InvoiceSwapQuoteList, opts: Inv
 
 export type InvoiceSwapRequest = {
     amount_sats: number
+    fees_req?: TxFeesReq
 }
-export const InvoiceSwapRequestOptionalFields: [] = []
+export type InvoiceSwapRequestOptionalField = 'fees_req'
+export const InvoiceSwapRequestOptionalFields: InvoiceSwapRequestOptionalField[] = ['fees_req']
 export type InvoiceSwapRequestOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
+    checkOptionalsAreSet?: InvoiceSwapRequestOptionalField[]
     amount_sats_CustomCheck?: (v: number) => boolean
+    fees_req_Options?: TxFeesReqOptions
 }
 export const InvoiceSwapRequestValidate = (o?: InvoiceSwapRequest, opts: InvoiceSwapRequestOptions = {}, path: string = 'InvoiceSwapRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -2572,6 +2588,12 @@ export const InvoiceSwapRequestValidate = (o?: InvoiceSwapRequest, opts: Invoice
 
     if (typeof o.amount_sats !== 'number') return new Error(`${path}.amount_sats: is not a number`)
     if (opts.amount_sats_CustomCheck && !opts.amount_sats_CustomCheck(o.amount_sats)) return new Error(`${path}.amount_sats: custom check failed`)
+
+    if (typeof o.fees_req === 'object' || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('fees_req')) {
+        const fees_reqErr = TxFeesReqValidate(o.fees_req, opts.fees_req_Options, `${path}.fees_req`)
+        if (fees_reqErr !== null) return fees_reqErr
+    }
+    
 
     return null
 }
@@ -2664,6 +2686,7 @@ export type LiquidityAssetOperationsPage = {
     has_more: boolean
     next_cursor?: OperationsCursor
     operations: AssetOperation[]
+    timeout: boolean
 }
 export type LiquidityAssetOperationsPageOptionalField = 'next_cursor'
 export const LiquidityAssetOperationsPageOptionalFields: LiquidityAssetOperationsPageOptionalField[] = ['next_cursor']
@@ -2673,6 +2696,7 @@ export type LiquidityAssetOperationsPageOptions = OptionsBaseMessage & {
     next_cursor_Options?: OperationsCursorOptions
     operations_ItemOptions?: AssetOperationOptions
     operations_CustomCheck?: (v: AssetOperation[]) => boolean
+    timeout_CustomCheck?: (v: boolean) => boolean
 }
 export const LiquidityAssetOperationsPageValidate = (o?: LiquidityAssetOperationsPage, opts: LiquidityAssetOperationsPageOptions = {}, path: string = 'LiquidityAssetOperationsPage::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -2693,6 +2717,9 @@ export const LiquidityAssetOperationsPageValidate = (o?: LiquidityAssetOperation
         if (operationsErr !== null) return operationsErr
     }
     if (opts.operations_CustomCheck && !opts.operations_CustomCheck(o.operations)) return new Error(`${path}.operations: custom check failed`)
+
+    if (typeof o.timeout !== 'boolean') return new Error(`${path}.timeout: is not a boolean`)
+    if (opts.timeout_CustomCheck && !opts.timeout_CustomCheck(o.timeout)) return new Error(`${path}.timeout: custom check failed`)
 
     return null
 }
@@ -3261,6 +3288,77 @@ export const LndNodeMetricsValidate = (o?: LndNodeMetrics, opts: LndNodeMetricsO
     return null
 }
 
+export type LndPeer = {
+    address: string
+    alias: string
+    has_channel: boolean
+    inbound: boolean
+    pubkey: string
+    sats_recv: number
+    sats_sent: number
+}
+export const LndPeerOptionalFields: [] = []
+export type LndPeerOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    address_CustomCheck?: (v: string) => boolean
+    alias_CustomCheck?: (v: string) => boolean
+    has_channel_CustomCheck?: (v: boolean) => boolean
+    inbound_CustomCheck?: (v: boolean) => boolean
+    pubkey_CustomCheck?: (v: string) => boolean
+    sats_recv_CustomCheck?: (v: number) => boolean
+    sats_sent_CustomCheck?: (v: number) => boolean
+}
+export const LndPeerValidate = (o?: LndPeer, opts: LndPeerOptions = {}, path: string = 'LndPeer::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.address !== 'string') return new Error(`${path}.address: is not a string`)
+    if (opts.address_CustomCheck && !opts.address_CustomCheck(o.address)) return new Error(`${path}.address: custom check failed`)
+
+    if (typeof o.alias !== 'string') return new Error(`${path}.alias: is not a string`)
+    if (opts.alias_CustomCheck && !opts.alias_CustomCheck(o.alias)) return new Error(`${path}.alias: custom check failed`)
+
+    if (typeof o.has_channel !== 'boolean') return new Error(`${path}.has_channel: is not a boolean`)
+    if (opts.has_channel_CustomCheck && !opts.has_channel_CustomCheck(o.has_channel)) return new Error(`${path}.has_channel: custom check failed`)
+
+    if (typeof o.inbound !== 'boolean') return new Error(`${path}.inbound: is not a boolean`)
+    if (opts.inbound_CustomCheck && !opts.inbound_CustomCheck(o.inbound)) return new Error(`${path}.inbound: custom check failed`)
+
+    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
+    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
+
+    if (typeof o.sats_recv !== 'number') return new Error(`${path}.sats_recv: is not a number`)
+    if (opts.sats_recv_CustomCheck && !opts.sats_recv_CustomCheck(o.sats_recv)) return new Error(`${path}.sats_recv: custom check failed`)
+
+    if (typeof o.sats_sent !== 'number') return new Error(`${path}.sats_sent: is not a number`)
+    if (opts.sats_sent_CustomCheck && !opts.sats_sent_CustomCheck(o.sats_sent)) return new Error(`${path}.sats_sent: custom check failed`)
+
+    return null
+}
+
+export type LndPeers = {
+    peers: LndPeer[]
+}
+export const LndPeersOptionalFields: [] = []
+export type LndPeersOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    peers_ItemOptions?: LndPeerOptions
+    peers_CustomCheck?: (v: LndPeer[]) => boolean
+}
+export const LndPeersValidate = (o?: LndPeers, opts: LndPeersOptions = {}, path: string = 'LndPeers::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.peers)) return new Error(`${path}.peers: is not an array`)
+    for (let index = 0; index < o.peers.length; index++) {
+        const peersErr = LndPeerValidate(o.peers[index], opts.peers_ItemOptions, `${path}.peers[${index}]`)
+        if (peersErr !== null) return peersErr
+    }
+    if (opts.peers_CustomCheck && !opts.peers_CustomCheck(o.peers)) return new Error(`${path}.peers: custom check failed`)
+
+    return null
+}
+
 export type LndProviderFilter = {
     invoice_index_offset?: number
     limit_invoices?: number
@@ -3332,6 +3430,67 @@ export const LndSeedValidate = (o?: LndSeed, opts: LndSeedOptions = {}, path: st
         if (typeof o.seed[index] !== 'string') return new Error(`${path}.seed[${index}]: is not a string`)
     }
     if (opts.seed_CustomCheck && !opts.seed_CustomCheck(o.seed)) return new Error(`${path}.seed: custom check failed`)
+
+    return null
+}
+
+export type LndUtxo = {
+    address: string
+    amount_sat: number
+    confirmations: number
+    output_index: number
+    txid: string
+}
+export const LndUtxoOptionalFields: [] = []
+export type LndUtxoOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    address_CustomCheck?: (v: string) => boolean
+    amount_sat_CustomCheck?: (v: number) => boolean
+    confirmations_CustomCheck?: (v: number) => boolean
+    output_index_CustomCheck?: (v: number) => boolean
+    txid_CustomCheck?: (v: string) => boolean
+}
+export const LndUtxoValidate = (o?: LndUtxo, opts: LndUtxoOptions = {}, path: string = 'LndUtxo::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.address !== 'string') return new Error(`${path}.address: is not a string`)
+    if (opts.address_CustomCheck && !opts.address_CustomCheck(o.address)) return new Error(`${path}.address: custom check failed`)
+
+    if (typeof o.amount_sat !== 'number') return new Error(`${path}.amount_sat: is not a number`)
+    if (opts.amount_sat_CustomCheck && !opts.amount_sat_CustomCheck(o.amount_sat)) return new Error(`${path}.amount_sat: custom check failed`)
+
+    if (typeof o.confirmations !== 'number') return new Error(`${path}.confirmations: is not a number`)
+    if (opts.confirmations_CustomCheck && !opts.confirmations_CustomCheck(o.confirmations)) return new Error(`${path}.confirmations: custom check failed`)
+
+    if (typeof o.output_index !== 'number') return new Error(`${path}.output_index: is not a number`)
+    if (opts.output_index_CustomCheck && !opts.output_index_CustomCheck(o.output_index)) return new Error(`${path}.output_index: custom check failed`)
+
+    if (typeof o.txid !== 'string') return new Error(`${path}.txid: is not a string`)
+    if (opts.txid_CustomCheck && !opts.txid_CustomCheck(o.txid)) return new Error(`${path}.txid: custom check failed`)
+
+    return null
+}
+
+export type LndUtxos = {
+    utxos: LndUtxo[]
+}
+export const LndUtxosOptionalFields: [] = []
+export type LndUtxosOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    utxos_ItemOptions?: LndUtxoOptions
+    utxos_CustomCheck?: (v: LndUtxo[]) => boolean
+}
+export const LndUtxosValidate = (o?: LndUtxos, opts: LndUtxosOptions = {}, path: string = 'LndUtxos::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.utxos)) return new Error(`${path}.utxos: is not an array`)
+    for (let index = 0; index < o.utxos.length; index++) {
+        const utxosErr = LndUtxoValidate(o.utxos[index], opts.utxos_ItemOptions, `${path}.utxos[${index}]`)
+        if (utxosErr !== null) return utxosErr
+    }
+    if (opts.utxos_CustomCheck && !opts.utxos_CustomCheck(o.utxos)) return new Error(`${path}.utxos: custom check failed`)
 
     return null
 }
@@ -4219,15 +4378,15 @@ export const PayAddressResponseValidate = (o?: PayAddressResponse, opts: PayAddr
 
 export type PayAdminInvoiceSwapRequest = {
     no_claim?: boolean
-    sat_per_v_byte: number
+    sat_per_v_byte?: number
     swap_operation_id: string
 }
-export type PayAdminInvoiceSwapRequestOptionalField = 'no_claim'
-export const PayAdminInvoiceSwapRequestOptionalFields: PayAdminInvoiceSwapRequestOptionalField[] = ['no_claim']
+export type PayAdminInvoiceSwapRequestOptionalField = 'no_claim' | 'sat_per_v_byte'
+export const PayAdminInvoiceSwapRequestOptionalFields: PayAdminInvoiceSwapRequestOptionalField[] = ['no_claim', 'sat_per_v_byte']
 export type PayAdminInvoiceSwapRequestOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: PayAdminInvoiceSwapRequestOptionalField[]
     no_claim_CustomCheck?: (v?: boolean) => boolean
-    sat_per_v_byte_CustomCheck?: (v: number) => boolean
+    sat_per_v_byte_CustomCheck?: (v?: number) => boolean
     swap_operation_id_CustomCheck?: (v: string) => boolean
 }
 export const PayAdminInvoiceSwapRequestValidate = (o?: PayAdminInvoiceSwapRequest, opts: PayAdminInvoiceSwapRequestOptions = {}, path: string = 'PayAdminInvoiceSwapRequest::root.'): Error | null => {
@@ -4237,7 +4396,7 @@ export const PayAdminInvoiceSwapRequestValidate = (o?: PayAdminInvoiceSwapReques
     if ((o.no_claim || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('no_claim')) && typeof o.no_claim !== 'boolean') return new Error(`${path}.no_claim: is not a boolean`)
     if (opts.no_claim_CustomCheck && !opts.no_claim_CustomCheck(o.no_claim)) return new Error(`${path}.no_claim: custom check failed`)
 
-    if (typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
+    if ((o.sat_per_v_byte || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('sat_per_v_byte')) && typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
     if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
 
     if (typeof o.swap_operation_id !== 'string') return new Error(`${path}.swap_operation_id: is not a string`)
@@ -5251,6 +5410,25 @@ export const TransactionSwapRequestValidate = (o?: TransactionSwapRequest, opts:
     return null
 }
 
+export type TxFeesReq = {
+    fees: TxFeesReq_fees
+}
+export const TxFeesReqOptionalFields: [] = []
+export type TxFeesReqOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    fees_Options?: TxFeesReq_feesOptions
+}
+export const TxFeesReqValidate = (o?: TxFeesReq, opts: TxFeesReqOptions = {}, path: string = 'TxFeesReq::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    const feesErr = TxFeesReq_feesValidate(o.fees, opts.fees_Options, `${path}.fees`)
+    if (feesErr !== null) return feesErr
+    
+
+    return null
+}
+
 export type TxSwapOperation = {
     address_paid?: string
     failure_reason?: string
@@ -6101,14 +6279,9 @@ export const enumCheckPushNotificationPayload_data_type = (e?: PushNotificationP
     for (const v in PushNotificationPayload_data_type) if (e === v) return true
     return false
 }
-
-export type PushNotificationPayload_data =
-    { type: PushNotificationPayload_data_type.DEBIT_AUTH_REQ, debit_auth_req: LiveDebitRequest } |
-    { type: PushNotificationPayload_data_type.MANAGE_AUTH_REQ, manage_auth_req: LiveManageRequest } |
-    { type: PushNotificationPayload_data_type.RECEIVED_OPERATION, received_operation: UserOperation } |
-    { type: PushNotificationPayload_data_type.SENT_OPERATION, sent_operation: UserOperation }
-
 export type PushNotificationPayload_data = 
+    {type:PushNotificationPayload_data_type.DEBIT_AUTH_REQ, debit_auth_req:LiveDebitRequest}|
+    {type:PushNotificationPayload_data_type.MANAGE_AUTH_REQ, manage_auth_req:LiveManageRequest}|
     {type:PushNotificationPayload_data_type.RECEIVED_OPERATION, received_operation:UserOperation}|
     {type:PushNotificationPayload_data_type.SENT_OPERATION, sent_operation:UserOperation}
 
@@ -6123,17 +6296,17 @@ export const PushNotificationPayload_dataValidate = (o?: PushNotificationPayload
     const stringType: string = o.type
     switch (o.type) {
         case PushNotificationPayload_data_type.DEBIT_AUTH_REQ:
-            const debit_auth_reqErr = LiveDebitRequestValidate(o.debit_auth_req, opts.debit_auth_req_Options, `${path}.debit_auth_req`)
-            if (debit_auth_reqErr !== null) return debit_auth_reqErr
+        const debit_auth_reqErr = LiveDebitRequestValidate(o.debit_auth_req, opts.debit_auth_req_Options, `${path}.debit_auth_req`)
+        if (debit_auth_reqErr !== null) return debit_auth_reqErr
+        
 
-
-            break
+        break
         case PushNotificationPayload_data_type.MANAGE_AUTH_REQ:
-            const manage_auth_reqErr = LiveManageRequestValidate(o.manage_auth_req, opts.manage_auth_req_Options, `${path}.manage_auth_req`)
-            if (manage_auth_reqErr !== null) return manage_auth_reqErr
+        const manage_auth_reqErr = LiveManageRequestValidate(o.manage_auth_req, opts.manage_auth_req_Options, `${path}.manage_auth_req`)
+        if (manage_auth_reqErr !== null) return manage_auth_reqErr
+        
 
-
-            break
+        break
         case PushNotificationPayload_data_type.RECEIVED_OPERATION:
         const received_operationErr = UserOperationValidate(o.received_operation, opts.received_operation_Options, `${path}.received_operation`)
         if (received_operationErr !== null) return received_operationErr
@@ -6144,6 +6317,41 @@ export const PushNotificationPayload_dataValidate = (o?: PushNotificationPayload
         const sent_operationErr = UserOperationValidate(o.sent_operation, opts.sent_operation_Options, `${path}.sent_operation`)
         if (sent_operationErr !== null) return sent_operationErr
         
+
+        break
+        default:
+            return new Error(path + ': unknown type '+ stringType)
+    }
+    return null
+}
+export enum TxFeesReq_fees_type {
+    SAT_PER_V_BYTE = 'sat_per_v_byte',
+    TARGET_CONF = 'target_conf',
+}
+export const enumCheckTxFeesReq_fees_type = (e?: TxFeesReq_fees_type): boolean => {
+    for (const v in TxFeesReq_fees_type) if (e === v) return true
+    return false
+}
+export type TxFeesReq_fees = 
+    {type:TxFeesReq_fees_type.SAT_PER_V_BYTE, sat_per_v_byte:number}|
+    {type:TxFeesReq_fees_type.TARGET_CONF, target_conf:number}
+
+export type TxFeesReq_feesOptions = {
+    sat_per_v_byte_CustomCheck?: (v: number) => boolean
+    target_conf_CustomCheck?: (v: number) => boolean
+}
+export const TxFeesReq_feesValidate = (o?: TxFeesReq_fees, opts:TxFeesReq_feesOptions = {}, path: string = 'TxFeesReq_fees::root.'): Error | null => {
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+    const stringType: string = o.type
+    switch (o.type) {
+        case TxFeesReq_fees_type.SAT_PER_V_BYTE:
+        if (typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
+        if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
+
+        break
+        case TxFeesReq_fees_type.TARGET_CONF:
+        if (typeof o.target_conf !== 'number') return new Error(`${path}.target_conf: is not a number`)
+        if (opts.target_conf_CustomCheck && !opts.target_conf_CustomCheck(o.target_conf)) return new Error(`${path}.target_conf: custom check failed`)
 
         break
         default:

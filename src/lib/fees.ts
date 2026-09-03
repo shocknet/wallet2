@@ -1,4 +1,5 @@
 import axios from "axios";
+import { defaultMempool } from "@/constants";
 
 export interface FeeTier {
 	rate: number;
@@ -7,6 +8,29 @@ export interface FeeTier {
 	key: "economy" | "average" | "fast";
 }
 
+
+export function resolveFeeUrl(url?: string | null): string {
+	const trimmed = (url || "").trim();
+	if (!trimmed) return defaultMempool;
+	try {
+		const parsed = new URL(trimmed);
+		if (!parsed.pathname || parsed.pathname === "/") {
+			parsed.pathname = "/api/v1/fees/recommended";
+			return parsed.toString();
+		}
+	} catch {
+		return defaultMempool;
+	}
+	return trimmed;
+}
+
+export function feeHostLabel(url: string): string {
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return "mempool";
+	}
+}
 
 export async function getFeeTiers(mempoolUrl: string): Promise<FeeTier[]> {
 	try {
