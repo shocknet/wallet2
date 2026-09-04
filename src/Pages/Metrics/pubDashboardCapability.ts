@@ -64,8 +64,9 @@ async function runProbe(source: ProbeSource): Promise<PubDashboardCapability> {
 	const reason = errorReason(res);
 	if (reason == null) return "supported";
 
-	// Baseline worked, so a missing/silent new RPC means the Pub is online but too old.
-	if (isMissingDashboardRpcError(reason) || isProbeSilentFailure(reason)) {
+	// Only a definite unknown-RPC is "Pub is too old". A timeout is a missed
+	// reply — Overview still uses the old metrics calls and must be allowed to run.
+	if (isMissingDashboardRpcError(reason)) {
 		return "needs_upgrade";
 	}
 	throw new Error(reason);

@@ -214,9 +214,9 @@ const Dashboard = () => {
 	}, [fetchMetrics]);
 
 	useEffect(() => {
-		if (checkingPubCapability || needsUpgrade) return;
+		if (needsUpgrade) return;
 		void fetchMetricsRef.current?.();
-	}, [checkingPubCapability, needsUpgrade, selectedId, period, offset]);
+	}, [needsUpgrade, selectedId, period, offset]);
 
 	const nextOffset = () => {
 		if (period === Period.ALL_TIME || offset >= 0) {

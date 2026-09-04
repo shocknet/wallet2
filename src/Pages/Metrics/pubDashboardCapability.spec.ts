@@ -26,6 +26,7 @@ describe("isMissingDashboardRpcError", () => {
 	it("ignores unrelated errors", () => {
 		expect(isMissingDashboardRpcError("admin token invalid")).toBe(false);
 		expect(isMissingDashboardRpcError("timeout")).toBe(false);
+		expect(isMissingDashboardRpcError("Request timed out")).toBe(false);
 		expect(isMissingDashboardRpcError("method: Health is not implemented")).toBe(false);
 	});
 });
