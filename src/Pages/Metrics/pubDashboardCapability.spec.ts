@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+	adminNodeSettingsNeedsUpgrade,
 	isMissingDashboardRpcError,
 	isProbeSilentFailure,
+	isStaleAdminNodeSettingsError,
 } from "./pubDashboardCapability";
 
 describe("isMissingDashboardRpcError", () => {
@@ -18,11 +20,13 @@ describe("isMissingDashboardRpcError", () => {
 		expect(isMissingDashboardRpcError("method: GetAssetsAndLiabilitiesV2 is not implemented")).toBe(true);
 		expect(isMissingDashboardRpcError("method: GetUsersAdminInfo is not implemented")).toBe(true);
 		expect(isMissingDashboardRpcError("method: GetUserOperationsFromAdmin is not implemented")).toBe(true);
+		expect(isMissingDashboardRpcError("method: GetAdminNodeSettings is not implemented")).toBe(true);
 	});
 
 	it("ignores unrelated errors", () => {
 		expect(isMissingDashboardRpcError("admin token invalid")).toBe(false);
 		expect(isMissingDashboardRpcError("timeout")).toBe(false);
+		expect(isMissingDashboardRpcError("Request timed out")).toBe(false);
 		expect(isMissingDashboardRpcError("method: Health is not implemented")).toBe(false);
 	});
 });
@@ -37,5 +41,37 @@ describe("isProbeSilentFailure", () => {
 	it("ignores auth and unrelated failures", () => {
 		expect(isProbeSilentFailure("admin token invalid")).toBe(false);
 		expect(isProbeSilentFailure("send failed")).toBe(false);
+	});
+});
+
+describe("isStaleAdminNodeSettingsError", () => {
+	it("detects missing lsp fields on an older settings payload", () => {
+		expect(isStaleAdminNodeSettingsError("AdminNodeSettings.lsp_channel_threshold: is not a number")).toBe(true);
+		expect(isStaleAdminNodeSettingsError("lsp_threshold_env_locked: is not a boolean")).toBe(true);
+	});
+
+	it("ignores unrelated settings errors", () => {
+		expect(isStaleAdminNodeSettingsError("admin token invalid")).toBe(false);
+	});
+});
+
+describe("adminNodeSettingsNeedsUpgrade", () => {
+	it("treats a timeout as upgrade only when LndGetInfo still works", async () => {
+		const up = await adminNodeSettingsNeedsUpgrade("Request timed out", {
+			LndGetInfo: async () => ({ status: "OK" }),
+		});
+		expect(up).toBe(true);
+
+		const down = await adminNodeSettingsNeedsUpgrade("Request timed out", {
+			LndGetInfo: async () => ({ status: "ERROR" }),
+		});
+		expect(down).toBe(false);
+	});
+
+	it("does not treat auth failure as an upgrade", async () => {
+		const up = await adminNodeSettingsNeedsUpgrade("admin token invalid", {
+			LndGetInfo: async () => ({ status: "OK" }),
+		});
+		expect(up).toBe(false);
 	});
 });

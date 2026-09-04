@@ -9,6 +9,7 @@ import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-p
 import { makeId } from "@/constants";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
 import { normalizeWsUrl } from "@/lib/url";
+import { acceptHotModule, persistHotData, readHotData } from "./hotSingleton";
 import {
 	BeaconData,
 	BeaconDataValidate,
@@ -358,11 +359,13 @@ function cloneFilters(fs: Filter[]) {
 	return fs.map(f => ({ ...f }));
 }
 
-function bumpSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
+/** Look back to lastEmitted on filters that already have since. Never add since (beacons). */
+function clampSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
 	if (lastEmitted === undefined) return;
 	const next = lastEmitted + 1;
 	for (const f of filters) {
-		if (f.since !== undefined && f.since < next) f.since = next;
+		if (f.since === undefined) continue;
+		if (f.since > next) f.since = next;
 	}
 }
 export type RelaysSettings = {
@@ -542,7 +545,7 @@ export class RelaySession {
 		const stored = [...this.subs.values()];
 		for (const s of stored) {
 			const newFilters = cloneFilters(s.filters);
-			bumpSinceFromLastEmitted(newFilters, s.lastEmitted);
+			clampSinceFromLastEmitted(newFilters, s.lastEmitted);
 
 			const sub = this.relay.prepareSubscription(newFilters, s.params);
 			s.sub = sub;
@@ -590,13 +593,10 @@ export class RelaySession {
 		}
 
 		const filters = makeFilters();
+		const lastEmitted = live?.lastEmitted ?? stored?.sub?.lastEmitted ?? stored?.lastEmitted;
+		clampSinceFromLastEmitted(filters, lastEmitted);
 
 		if (live && needsUpdate) {
-			if (live.lastEmitted) {
-				for (const f of filters) {
-					if (f.since !== undefined) f.since = Math.max(f.since, live.lastEmitted + 1);
-				}
-			}
 			live.filters = filters;
 			live.fire();
 			stored!.filters = filters;
@@ -612,7 +612,7 @@ export class RelaySession {
 			filters,
 			params,
 			sub,
-			lastEmitted: sub.lastEmitted,
+			lastEmitted: sub.lastEmitted ?? lastEmitted,
 		});
 
 		sub.fire();
@@ -624,14 +624,13 @@ export class RelaySession {
 		this.ensureOrRefireSub(
 			CLIENTS_RPC_SUBID,
 			() => [{
-				since: Math.floor(Date.now() / 1000),
+				since: Math.floor(Date.now() / 1000) - 30,
 				kinds: [...allowedKinds],
 				"#p": [...this.recipients.keys()],
 			}],
 			() => ({
 				id: CLIENTS_RPC_SUBID,
 				onevent: (e) => void this.onIncomingEvent(e),
-				receivedEvent: (_, id) => this.handledEvents.add(id),
 				alreadyHaveEvent: (id) => this.handledEvents.has(id),
 			}),
 			this.rpcAppliedVersion !== this.rpcFilterVersion,
@@ -650,7 +649,6 @@ export class RelaySession {
 			() => ({
 				id: BEACONS_SUBID,
 				onevent: (e) => void this.onIncomingEvent(e),
-				receivedEvent: (_, id) => this.handledEvents.add(id),
 				alreadyHaveEvent: (id) => this.handledEvents.has(id),
 			}),
 			this.beaconAppliedVersion !== this.beaconFilterVersion,
@@ -714,6 +712,7 @@ export class RelaySession {
 		if (e.kind === 30078) {
 			const data = parseBeaconContent(e.content);
 			if (data) {
+				this.markHandled(e.id);
 				this.emitter.emit("beacon", {
 					updatedAtUnix: e.created_at,
 					createdByPub: e.pubkey,
@@ -744,6 +743,7 @@ export class RelaySession {
 				plaintext = decryptData(decoded, getSharedSecret(privKey, e.pubkey));
 			}
 
+			this.markHandled(e.id);
 			this.emitter.emit("nostrEvent", {
 				id: e.id,
 				pub: e.pubkey,
@@ -755,15 +755,16 @@ export class RelaySession {
 			logger.warn("relay session decrypt/process failed", { relay: this.url, err });
 		}
 	}
+
+	private markHandled(id: string) {
+		this.handledEvents.add(id);
+	}
 }
 
-
-
-
-let pool: TransportPool | null = null;
+let pool: TransportPool | null = readHotData<TransportPool>("transportPool") ?? null;
 export const getPool = () => (pool ??= new TransportPool());
-
-
+persistHotData("transportPool", () => pool);
+acceptHotModule();
 
 export const appTag = "shockwallet"
 

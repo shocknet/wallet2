@@ -16,6 +16,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import "./theme/tailwind.css";
 import "./theme/variables.css";
+import "./theme/pub-dash.css";
 
 import { IonApp, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";

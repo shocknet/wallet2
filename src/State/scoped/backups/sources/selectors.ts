@@ -53,6 +53,17 @@ export type SourceView = {
 	nmanage?: string;
 };
 
+/** Fields needed to open a Pub client. Ignores beacon/balance churn. */
+export type AdminRpcSource = Pick<SourceView, "sourceId" | "lpk" | "keys" | "relays">;
+
+/** Stable across beacon-only updates so mounted pages do not repeat RPCs. */
+export const sourceRpcKey = (source: AdminRpcSource) => JSON.stringify([
+	source.sourceId,
+	source.lpk,
+	source.keys.publicKey,
+	source.relays,
+]);
+
 const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 	relays ? Object.keys(relays).filter(u => relays[u]?.present) : [];
 
@@ -171,6 +182,32 @@ export const selectHealthySourceViews = createSelector(
 export const selectAdminSourceViews = createSelector(
 	[selectSourceViews],
 	(views) => views.filter(v => !!v.adminToken)
+);
+
+/** Admin nodes for RPC. Docs only — does not change on beacon or balance ticks. */
+export const selectAdminRpcSources = createSelector(
+	[docsSelectors.selectAll],
+	(sourceEntities): AdminRpcSource[] => {
+		const out: AdminRpcSource[] = [];
+		for (const source of sourceEntities) {
+			const d = source.draft;
+			if (d.deleted.value || !d.admin_token.value) continue;
+			out.push({
+				sourceId: d.source_id,
+				lpk: d.lpk,
+				keys: d.keys,
+				relays: canonicalRelayUrls(presentRelayUrls(d.relays)),
+			});
+		}
+		return out;
+	},
+);
+
+export const selectSelectedAdminRpcSource = createSelector(
+	[selectAdminRpcSources, (s: RootState) => s.runtime.selectedMetricsAdminSourceId],
+	(sources, selectedId) => (
+		selectedId ? sources.find(s => s.sourceId === selectedId) ?? null : null
+	),
 );
 
 
