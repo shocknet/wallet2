@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
 import { SpendFrom } from '../../../globalTypes';
 import { useLightningPubLogo, LIGHTNING_PUB_MARK_HEIGHT } from "@/Assets/Images/lightning-pub";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { SourceView } from '@/State/scoped/backups/sources/selectors';
 
 type DropDownProps = {
@@ -85,7 +86,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
               <div className="spend_from_item_left">
                 <div className="spend_from_item_icon">{arrangeIcon(value.sourceId.split("-")[0])}</div>
                 <div className="spend_from_item_input">
-                  <div style={{ width: "130px" }}>{value.label}</div>
+                  <div style={{ width: "130px" }}>{sourceDisplayName(value)}</div>
                 </div>
               </div>
               <div className="spend_from_item_balance">{value.balanceSats}</div>
@@ -103,7 +104,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
                   <div className="spend_from_item_left">
                     <div className="spend_from_item_icon">{arrangeIcon(sourcePub)}</div>
                     <div className="spend_from_item_input">
-                      <div>{item.label}</div>
+                      <div>{sourceDisplayName(item)}</div>
                     </div>
                   </div>
                   <div className="spend_from_item_balance">{item.balanceSats}</div>
