@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildOverviewEvents, scidHeight, unixAtHeight, withPeerLabels } from "./overviewEvents";
+import { buildOverviewEvents, scidHeight, unixAtHeight } from "./overviewEvents";
 
 function chanIdAt(height: number): string {
 	return (BigInt(height) << 40n).toString();
@@ -128,26 +128,5 @@ describe("buildOverviewEvents", () => {
 		const unix = unixAtHeight(964500, blocks, now);
 		expect(unix).toBe(now - 500 * 600);
 		expect(unix).toBeLessThanOrEqual(now);
-	});
-});
-
-describe("withPeerLabels", () => {
-	it("uses the channels-list alias when metrics only has a pubkey", () => {
-		const pubkey = "02" + "ab".repeat(32);
-		const chanId = chanIdAt(964500);
-		const labeled = withPeerLabels(
-			[{ channel_id: chanId, label: pubkey }],
-			[{ channel_id: chanId, label: "ACINQ" }],
-		);
-		expect(labeled[0].label).toBe("ACINQ");
-		expect(buildOverviewEvents(
-			{
-				...graphs,
-				open_channels: labeled,
-				closed_channels: [],
-				root_ops: [],
-			},
-			month,
-		)[0].message).toBe("Channel opened · ACINQ");
 	});
 });

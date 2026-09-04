@@ -79,17 +79,6 @@ export function scidHeight(chanId: string): number {
 	}
 }
 
-export function withPeerLabels<T extends { channel_id: string; label: string }>(
-	channels: T[],
-	listed: { channel_id: string; label: string }[],
-): T[] {
-	const extra = new Map(listed.map((c) => [c.channel_id, c.label]))
-	return channels.map((c) => {
-		const label = firstAlias(extra.get(c.channel_id), c.label)
-		return label === c.label ? c : { ...c, label }
-	})
-}
-
 export function displayPeerName(label: string | undefined, channelId: string): string {
 	return firstAlias(label) || trimId(channelId)
 }

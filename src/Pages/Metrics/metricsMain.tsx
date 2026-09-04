@@ -1,6 +1,5 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import {
-	useIonLoading,
 	useIonRouter
 } from "@ionic/react";
 import { Chart as ChartJS, registerables, Legend, TooltipItem } from 'chart.js';
@@ -17,15 +16,15 @@ import { getUnixTimeRange } from './earnings';
 import PeriodSelector from '@/Components/Dropdowns/PeriodDropdown/PeriodSelector';
 import { nip19 } from 'nostr-tools';
 import { DashboardShell } from '@/Layout2/Metrics/DashboardShell';
-import { useAppSelector } from "@/State/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { PubUpgradeNotice } from "./PubUpgradeNotice";
 import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
 import { usePubDashboardCapability } from "./usePubDashboardCapability";
 import { DashErrorBanner } from "./DashErrorBanner";
 import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
-import { buildOverviewEvents, displayPeerName, OverviewEvent, withPeerLabels } from "./overviewEvents";
+import { buildOverviewEvents, displayPeerName, OverviewEvent } from "./overviewEvents";
 import { OverviewEventDialog } from "./OverviewEventDialog";
 import { alignBalanceSeries, axisRange, xBounds } from "./balanceSeries";
 
@@ -50,7 +49,6 @@ const EVENT_PAGE = 20
 const Dashboard = () => {
 	const router = useIonRouter();
 
-	const [loading, setLoading] = useState(true)
 	const [chainGraphData, setChainGraphData] = useState<Types.GraphPoint[]>([])
 	const [chansGraphData, setChansGraphData] = useState<Types.GraphPoint[]>([])
 	const [extGraphData, setExtGraphData] = useState<Types.GraphPoint[]>([])
@@ -67,10 +65,7 @@ const Dashboard = () => {
 	const isFetchingRef = useRef(false);
 	const fetchMetricsRef = useRef<(() => Promise<void>) | null>(null);
 
-	const [presentLoading, dismissLoading] = useIonLoading();
-
-
-
+	const dispatch = useAppDispatch();
 	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const mempoolUrl = useAppSelector((s) => s.prefs.mempoolUrl);
@@ -106,12 +101,6 @@ const Dashboard = () => {
 		isFetchingRef.current = true;
 		setError(null);
 
-
-		setLoading(true);
-
-		await dismissLoading();
-		await presentLoading({ message: "Fetching metrics...", cssClass: "app-loading" });
-
 		try {
 			const client = await getNostrClient(
 				{ pubkey: adminSource.lpk, relays: adminSource.relays },
@@ -121,12 +110,9 @@ const Dashboard = () => {
 			const periodRange = getUnixTimeRange(period, offset);
 
 
-			const [apps, lnd, listed] = await Promise.all([
-				client.GetAppsMetrics({ include_operations: false, ...periodRange }),
-				client.GetLndMetrics({ ...periodRange }),
-				client.ListChannels().catch(() => ({ status: "ERROR" as const, reason: "list failed" })),
-				fetchInfo(client),
-			]);
+			const apps = await client.GetAppsMetrics({ include_operations: false, ...periodRange })
+			const lnd = await client.GetLndMetrics({ ...periodRange })
+			await fetchInfo(client)
 
 			if (apps.status !== 'OK') {
 				setError(apps.reason || "App metrics failed");
@@ -137,6 +123,12 @@ const Dashboard = () => {
 				return;
 			}
 			const nodeStats = lnd.nodes[0]
+			if (selectedId) {
+				dispatch(runtimeActions.setOpenChannels({
+					sourceId: selectedId,
+					channels: nodeStats.open_channels,
+				}));
+			}
 			console.log({ lnd: nodeStats, apps: apps.apps })
 			const chain = nodeStats.chain_balance
 			const channels = nodeStats.channel_balance
@@ -176,8 +168,7 @@ const Dashboard = () => {
 			if (showExternal) {
 				setExtGraphData(external)
 			}
-			const listedChans = listed.status === "OK" ? listed.open_channels : []
-			const openChannels = withPeerLabels(nodeStats.open_channels, listedChans)
+			const openChannels = nodeStats.open_channels
 			const bestLocal = { n: "", v: 0 }
 			const bestRemote = { n: "", v: 0 }
 			for (const c of openChannels) {
@@ -218,19 +209,18 @@ const Dashboard = () => {
 			setError(e instanceof Error ? e.message : "Failed to fetch metrics");
 			toast.error(<Toast title="Metrics Error" message={`Failed to fetch metrics. ${e instanceof Error ? e.message : ""}`} />);
 		} finally {
-			setLoading(false);
-			await dismissLoading();
 			isFetchingRef.current = false;
 		}
-	}, [period, adminSource, offset, fetchInfo, dismissLoading, presentLoading,]);
+	}, [period, adminSource, offset, fetchInfo, dispatch, selectedId]);
 
 	useEffect(() => {
 		fetchMetricsRef.current = fetchMetrics;
 	}, [fetchMetrics]);
 
 	useEffect(() => {
+		if (checkingPubCapability || needsUpgrade) return;
 		void fetchMetricsRef.current?.();
-	}, [selectedId, period, offset]);
+	}, [checkingPubCapability, needsUpgrade, selectedId, period, offset]);
 
 	const nextOffset = () => {
 		if (period === Period.ALL_TIME || offset >= 0) {
@@ -272,8 +262,8 @@ const Dashboard = () => {
 				/>
 			)}
 
-			{!needsUpgrade && checkingPubCapability && (
-				<MetricsProbeSkeleton variant="banner" />
+			{!needsUpgrade && !error && !appsInfo && (
+				<MetricsProbeSkeleton variant="page" />
 			)}
 
 			{error && (

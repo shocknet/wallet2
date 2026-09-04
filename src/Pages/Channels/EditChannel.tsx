@@ -12,17 +12,23 @@ type PolicyModal = "show" | "edit" | "close" | "confirm";
 const COOP_WORD = "CLOSE";
 const FORCE_WORD = "FORCE";
 
+type EditChannelProps = {
+	adminSource: SourceView;
+	selectedChannel: Types.OpenChannel;
+	deselect: () => void;
+	startForce?: boolean;
+	onClosed?: () => void;
+	policyLoading?: boolean;
+};
+
 export const EditChannel = ({
 	adminSource,
 	selectedChannel,
 	deselect,
 	startForce = false,
-}: {
-	adminSource: SourceView;
-	selectedChannel: Types.OpenChannel;
-	deselect: () => void;
-	startForce?: boolean;
-}) => {
+	onClosed,
+	policyLoading = false,
+}: EditChannelProps) => {
 	const { averageRate, hostLabel, failed } = useMempoolFeeTiers();
 	const [modal, setModal] = useState<PolicyModal>(startForce ? "close" : "show");
 	const [busy, setBusy] = useState(false);
@@ -121,6 +127,7 @@ export const EditChannel = ({
 			}
 			toast.success(force ? "Force close broadcast" : "Channel closing");
 			deselect();
+			onClosed?.();
 		} finally {
 			setBusy(false);
 		}
@@ -261,7 +268,7 @@ export const EditChannel = ({
 						Close channel
 					</button>
 					<button type="button" className="dash-btn" onClick={() => setModal("edit")} disabled={!selectedChannel.policy}>
-						Edit policy
+						{policyLoading ? "Loading fees…" : "Edit policy"}
 					</button>
 				</>
 			}
@@ -281,7 +288,9 @@ export const EditChannel = ({
 					<PolicyRow label="Timelock delta" value={selectedChannel.policy.timelock_delta} />
 				</dl>
 			) : (
-				<p className="dash-field-hint">No policy on this channel.</p>
+				<p className="dash-field-hint">
+					{policyLoading ? "Loading fees…" : "No policy on this channel."}
+				</p>
 			)}
 		</DashDialog>
 	);

@@ -8,7 +8,7 @@ import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 import { DashErrorBanner } from "./DashErrorBanner";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { AdminOperationsList } from "./adminOperationDisplay";
 import { formatTableAmount } from "./metricsDataTable";
@@ -31,6 +31,7 @@ export default function Earnings() {
     const [error, setError] = useState<string | null>(null)
 
     const fetchGen = useRef(0);
+    const rpcKey = sourceRpcKey(adminSource);
 
     const fetchMetrics = useCallback(async () => {
         const gen = ++fetchGen.current;
@@ -60,7 +61,7 @@ export default function Earnings() {
         } finally {
             if (gen === fetchGen.current) setLoading(false);
         }
-    }, [adminSource, offset, period]);
+    }, [rpcKey, offset, period]);
 
     useEffect(() => {
         dismissAppLoading();

@@ -22,7 +22,7 @@ import { DashErrorBanner } from "./DashErrorBanner";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceViews, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { flashOutline, linkOutline, personOutline } from "ionicons/icons";
 
@@ -48,6 +48,7 @@ export default function Routing() {
     const [error, setError] = useState<string | null>(null);
 
     const [presentLoading, dismissLoading] = useIonLoading();
+    const rpcKey = sourceRpcKey(adminSource);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -62,7 +63,7 @@ export default function Routing() {
     }, [])
     useEffect(() => {
         fetchMetrics()
-    }, [period, offset, adminSource])
+    }, [period, offset, rpcKey])
     const nextOffset = () => {
         if (period === Period.ALL_TIME || offset >= 0) {
             return
@@ -92,10 +93,8 @@ export default function Routing() {
 
             const periodRange = getUnixTimeRange(period, offset);
 
-            const [lndFwMetrics, channelsRes] = await Promise.all([
-                client.GetLndForwardingMetrics({ ...periodRange }),
-                client.ListChannels()
-            ]);
+            const lndFwMetrics = await client.GetLndForwardingMetrics({ ...periodRange })
+            const channelsRes = await client.ListChannels()
 
 
             if (channelsRes.status !== 'OK') {

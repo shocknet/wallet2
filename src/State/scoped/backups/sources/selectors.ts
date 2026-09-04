@@ -53,6 +53,16 @@ export type SourceView = {
 	nmanage?: string;
 };
 
+/** Stable across beacon-only updates so mounted pages do not repeat RPCs. */
+export const sourceRpcKey = (
+	source: Pick<SourceView, "sourceId" | "lpk" | "keys" | "relays">,
+) => JSON.stringify([
+	source.sourceId,
+	source.lpk,
+	source.keys.publicKey,
+	source.relays,
+]);
+
 const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 	relays ? Object.keys(relays).filter(u => relays[u]?.present) : [];
 
