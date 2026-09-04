@@ -70,10 +70,12 @@ const subscribeToStreams = (
 					historyFetchSourceRequested({ sourceId, deferred: createDeferred<TaskResult<void>>() })
 				);
 			} else if (op.paidAtUnix < 0) {
-				sourcesActions.removeOptimistic({
-					sourceId,
-					operationId: op.identifier
-				})
+				listenerApi.dispatch(
+					sourcesActions.removeOptimistic({
+						sourceId,
+						operationId: op.identifier
+					})
+				);
 			}
 		}
 	});

@@ -238,10 +238,12 @@ export const historySyncerSpec: ListenerSpec = {
 										})
 									);
 								} else if (res.paid_at_unix < 0) {
-									sourcesActions.removeOptimistic({
-										sourceId,
-										operationId: invoice
-									});
+									listenerApi.dispatch(
+										sourcesActions.removeOptimistic({
+											sourceId,
+											operationId: invoice
+										})
+									);
 								}
 
 							} catch (err) {
