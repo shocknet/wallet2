@@ -179,6 +179,47 @@ describe("RelaySession", () => {
 
 			expect(sub.filters[0]["#p"].sort()).toEqual(["pub1", "pub2"]);
 		});
+		it("recreates a closed rpc sub from lastEmitted, not now", async () => {
+			const relay = new FakeRelay();
+			const emitter = { emit: vi.fn() } as any;
+
+			const s = new RelaySession("wss://x", relay as any, emitter, new Set());
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+			const rpcSub = getPrepareSubscriptionRpcCallResult(relay.prepareSubscription);
+			rpcSub.lastEmitted = 1_700_000_000;
+			rpcSub.closed = true;
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+
+			const rpcPrepCalls = relay.prepareSubscription.mock.calls.filter(
+				(c) => c[1]?.id === CLIENTS_RPC_SUBID
+			);
+			expect(rpcPrepCalls.length).toBe(2);
+			expect(rpcPrepCalls[1][0][0].since).toBe(1_700_000_001);
+		});
+
+		it("does not stamp since onto beacon filters after a beacon arrives", async () => {
+			const relay = new FakeRelay();
+			const emitter = { emit: vi.fn() } as any;
+
+			const s = new RelaySession("wss://x", relay as any, emitter, new Set());
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkA");
+			const beaconSub = getPrepareSubscriptionBeaconCallResult(relay.prepareSubscription);
+			beaconSub.lastEmitted = 1_700_000_000;
+			beaconSub.closed = true;
+
+			await s.ensureRpcReadyForRecipient(keys1, "lpkB");
+
+			const beaconPrepCalls = relay.prepareSubscription.mock.calls.filter(
+				(c) => c[1]?.id === BEACONS_SUBID
+			);
+			expect(beaconPrepCalls.length).toBe(2);
+			expect(beaconPrepCalls[1][0][0].since).toBeUndefined();
+			expect([...beaconPrepCalls[1][0][0].authors].sort()).toEqual(["lpkA", "lpkB"]);
+		});
+
 		it("rejects waiters if connect fails (no hangs)", async () => {
 			const relay = new FakeRelay();
 			const emitter = { emit: vi.fn() } as any;

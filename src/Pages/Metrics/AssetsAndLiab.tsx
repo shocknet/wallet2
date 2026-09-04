@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetcher } from "./fetcher";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedAdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { useIonRouter } from "@ionic/react";
 import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonIcon, IonText } from "@ionic/react";
@@ -578,12 +578,8 @@ function LiquidityAssetCard({
 
 export const AssetsAndLiab = () => {
     const router = useIonRouter();
-    const admins = useAppSelector(selectAdminSourceViews);
     const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-    const adminSource = useMemo(
-        () => admins.find(a => a.sourceId === selectedId),
-        [admins, selectedId]
-    );
+    const adminSource = useAppSelector(selectSelectedAdminRpcSource);
     const {
         needsUpgrade,
         checking: checkingPubCapability,

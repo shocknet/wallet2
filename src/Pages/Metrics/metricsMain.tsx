@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import {
 	useIonRouter
 } from "@ionic/react";
@@ -17,7 +17,7 @@ import PeriodSelector from '@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { nip19 } from 'nostr-tools';
 import { DashboardShell } from '@/Layout2/Metrics/DashboardShell';
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedAdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { PubUpgradeNotice } from "./PubUpgradeNotice";
 import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
@@ -66,13 +66,9 @@ const Dashboard = () => {
 	const fetchMetricsRef = useRef<(() => Promise<void>) | null>(null);
 
 	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const mempoolUrl = useAppSelector((s) => s.prefs.mempoolUrl);
-	const adminSource = useMemo(
-		() => admins.find(a => a.sourceId === selectedId),
-		[admins, selectedId]
-	)!;
+	const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 	const { needsUpgrade, checking: checkingPubCapability, recheck } =
 		usePubDashboardCapability(adminSource);
 
@@ -211,7 +207,7 @@ const Dashboard = () => {
 		} finally {
 			isFetchingRef.current = false;
 		}
-	}, [period, adminSource, offset, fetchInfo, dispatch, selectedId]);
+	}, [period, adminSource.sourceId, adminSource.lpk, adminSource.relays, adminSource.keys, offset, fetchInfo, dispatch, selectedId]);
 
 	useEffect(() => {
 		fetchMetricsRef.current = fetchMetrics;

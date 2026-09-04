@@ -12,7 +12,7 @@ import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 import { DashErrorBanner } from "@/Pages/Metrics/DashErrorBanner";
 import { usePubDashboardCapability } from "@/Pages/Metrics/usePubDashboardCapability";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import {
 	runtimeActions,
 	selectOpenChannelsForSource,
@@ -29,12 +29,8 @@ const Channels = () => {
 	const [loading, setLoading] = useState(true);
 	const [policyBusy, setPolicyBusy] = useState(false);
 
-	const admins = useAppSelector(selectAdminSourceViews);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-	const adminSource = useMemo(
-		() => admins.find((a) => a.sourceId === selectedId),
-		[admins, selectedId]
-	)!;
+	const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 	const rpcKey = sourceRpcKey(adminSource);
 	const cached = useAppSelector((s) => selectOpenChannelsForSource(s, selectedId));
 	const { checking: checkingPubCapability } = usePubDashboardCapability(adminSource);

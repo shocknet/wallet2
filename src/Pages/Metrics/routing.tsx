@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Period } from "../../Components/Dropdowns/LVDropdown"
 import { getNostrClient } from "@/Api/nostr"
 import { toast } from "react-toastify";
@@ -22,8 +22,7 @@ import { DashErrorBanner } from "./DashErrorBanner";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { flashOutline, linkOutline, personOutline } from "ionicons/icons";
 
 export default function Routing() {
@@ -33,12 +32,7 @@ export default function Routing() {
     const [offset, setOffset] = useState<number>(0)
 
 
-    const admins = useAppSelector(selectAdminSourceViews);
-    const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-    const adminSource = useMemo(
-        () => admins.find(a => a.sourceId === selectedId),
-        [admins, selectedId]
-    )!;
+    const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 
     const [fwMetrics, setFwMetrics] = useState<Types.LndForwardingMetrics>()
     const [channels, setChannels] = useState<Types.OpenChannel[]>([])

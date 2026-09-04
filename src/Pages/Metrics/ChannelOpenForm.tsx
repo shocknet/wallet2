@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import type { FeeTier } from "@/lib/fees";
 import { useMempoolFeeTiers } from "./useMempoolFeeTiers";
 import { connectPeer, openChannel, parseOpenPeer } from "./peerActions";
 
 type ChannelOpenFormProps = {
-	adminSource: SourceView;
+	adminSource: AdminRpcSource;
 	peerLocked?: string;
 	initialPeer?: string;
 	onOpened?: () => void;

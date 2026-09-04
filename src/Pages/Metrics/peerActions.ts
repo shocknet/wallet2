@@ -1,8 +1,8 @@
 import { getNostrClient } from "@/Api/nostr";
 import { parsePeerInput } from "@/lib/parsePeerUri";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 
-export async function adminClient(adminSource: SourceView) {
+export async function adminClient(adminSource: AdminRpcSource) {
 	return getNostrClient(
 		{ pubkey: adminSource.lpk, relays: adminSource.relays },
 		adminSource.keys
@@ -15,7 +15,7 @@ export function isAlreadyConnected(reason: string) {
 }
 
 export async function connectPeer(
-	adminSource: SourceView,
+	adminSource: AdminRpcSource,
 	peer: { pubkey: string; host: string; port: number }
 ): Promise<string | null> {
 	const client = await adminClient(adminSource);
@@ -27,7 +27,7 @@ export async function connectPeer(
 }
 
 export async function openChannel(
-	adminSource: SourceView,
+	adminSource: AdminRpcSource,
 	req: { node_pubkey: string; local_funding_amount: number; sat_per_v_byte: number }
 ): Promise<string | null> {
 	const client = await adminClient(adminSource);

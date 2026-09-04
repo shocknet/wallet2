@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Period } from "../../Components/Dropdowns/LVDropdown"
 import { getNostrClient } from "@/Api/nostr"
 import { toast } from "react-toastify";
@@ -8,8 +8,7 @@ import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 import { DashErrorBanner } from "./DashErrorBanner";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { AdminOperationsList } from "./adminOperationDisplay";
 import { formatTableAmount } from "./metricsDataTable";
 
@@ -18,12 +17,7 @@ export default function Earnings() {
 
     const [period, setPeriod] = useState<Period>(Period.WEEK)
     const [offset, setOffset] = useState<number>(0)
-    const admins = useAppSelector(selectAdminSourceViews);
-    const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-    const adminSource = useMemo(
-        () => admins.find(a => a.sourceId === selectedId),
-        [admins, selectedId]
-    )!;
+    const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 
     const [metrics, setMetrics] = useState<Types.AppsMetrics>()
     const [showingOps, setShowingOps] = useState("")

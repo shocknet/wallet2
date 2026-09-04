@@ -9,6 +9,7 @@ import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-p
 import { makeId } from "@/constants";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
 import { normalizeWsUrl } from "@/lib/url";
+import { acceptHotModule, persistHotData, readHotData } from "./hotSingleton";
 import {
 	BeaconData,
 	BeaconDataValidate,
@@ -365,6 +366,16 @@ function bumpSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
 		if (f.since !== undefined && f.since < next) f.since = next;
 	}
 }
+
+/** Look back to lastEmitted on filters that already have since. Never add since (beacons). */
+function clampSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
+	if (lastEmitted === undefined) return;
+	const next = lastEmitted + 1;
+	for (const f of filters) {
+		if (f.since === undefined) continue;
+		if (f.since > next) f.since = next;
+	}
+}
 export type RelaysSettings = {
 	relays: string[];
 	lpk: string;
@@ -590,13 +601,10 @@ export class RelaySession {
 		}
 
 		const filters = makeFilters();
+		const lastEmitted = live?.lastEmitted ?? stored?.sub?.lastEmitted ?? stored?.lastEmitted;
+		clampSinceFromLastEmitted(filters, lastEmitted);
 
 		if (live && needsUpdate) {
-			if (live.lastEmitted) {
-				for (const f of filters) {
-					if (f.since !== undefined) f.since = Math.max(f.since, live.lastEmitted + 1);
-				}
-			}
 			live.filters = filters;
 			live.fire();
 			stored!.filters = filters;
@@ -612,7 +620,7 @@ export class RelaySession {
 			filters,
 			params,
 			sub,
-			lastEmitted: sub.lastEmitted,
+			lastEmitted: sub.lastEmitted ?? lastEmitted,
 		});
 
 		sub.fire();
@@ -624,7 +632,7 @@ export class RelaySession {
 		this.ensureOrRefireSub(
 			CLIENTS_RPC_SUBID,
 			() => [{
-				since: Math.floor(Date.now() / 1000),
+				since: Math.floor(Date.now() / 1000) - 30,
 				kinds: [...allowedKinds],
 				"#p": [...this.recipients.keys()],
 			}],
@@ -757,13 +765,10 @@ export class RelaySession {
 	}
 }
 
-
-
-
-let pool: TransportPool | null = null;
+let pool: TransportPool | null = readHotData<TransportPool>("transportPool") ?? null;
 export const getPool = () => (pool ??= new TransportPool());
-
-
+persistHotData("transportPool", () => pool);
+acceptHotModule();
 
 export const appTag = "shockwallet"
 

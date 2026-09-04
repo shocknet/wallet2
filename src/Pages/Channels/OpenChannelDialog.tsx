@@ -1,5 +1,5 @@
 import { DashDialog } from "@/Layout2/Metrics/DashDialog";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { ChannelOpenForm } from "@/Pages/Metrics/ChannelOpenForm";
 
 export function OpenChannelDialog({
@@ -9,7 +9,7 @@ export function OpenChannelDialog({
 	onOpened,
 	peerLocked,
 }: {
-	adminSource: SourceView;
+	adminSource: AdminRpcSource;
 	open: boolean;
 	onClose: () => void;
 	onOpened?: () => void;

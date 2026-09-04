@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { sourceRpcKey, type SourceView } from "@/State/scoped/backups/sources/selectors";
+import { sourceRpcKey, type AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { runtimeActions } from "@/State/runtime/slice";
 import {
@@ -7,7 +7,7 @@ import {
 	type PubDashboardCapability,
 } from "./pubDashboardCapability";
 
-export function usePubDashboardCapability(adminSource: SourceView | null | undefined) {
+export function usePubDashboardCapability(adminSource: AdminRpcSource | null | undefined) {
 	const dispatch = useAppDispatch();
 	const sourceId = adminSource?.sourceId;
 	const capability = useAppSelector((s) => (

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { parsePeerUri } from "@/lib/parsePeerUri";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { connectPeer } from "./peerActions";
 
-export function AddPeerForm({ adminSource, onAdded }: { adminSource: SourceView; onAdded?: () => void }) {
+export function AddPeerForm({ adminSource, onAdded }: { adminSource: AdminRpcSource; onAdded?: () => void }) {
 	const [uri, setUri] = useState("");
 	const [busy, setBusy] = useState(false);
 

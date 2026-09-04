@@ -1,5 +1,5 @@
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
-import { selectAdminSourceViews, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminRpcSources, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
@@ -33,7 +33,7 @@ export const atLeastOneSource: Guard = ({ props }) => {
 }
 
 export const atLeastOneAdminSourceGuard: Guard = ({ props }) => {
-	const ids = selectAdminSourceViews(store.getState());
+	const ids = selectAdminRpcSources(store.getState());
 	const ok = ids.length > 0;
 	return {
 		allow: ok,
@@ -60,7 +60,7 @@ export const requireSelectedAdminSourceGuard: Guard = ({ props }) => {
 		};
 	}
 
-	const admins = selectAdminSourceViews(state);
+	const admins = selectAdminRpcSources(state);
 	const exists = admins.some((a) => a.sourceId === selectedId);
 
 	if (!exists) {
