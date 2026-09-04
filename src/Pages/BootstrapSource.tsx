@@ -6,12 +6,13 @@ import {
 	IonFooter,
 	useIonLoading,
 } from "@ionic/react";
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { walletOutline } from "ionicons/icons";
 import cn from "clsx";
-import { useAppDispatch } from "@/State/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { addBootstrapSource } from "@/State/scoped/backups/sources/thunks";
+import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { useAskAddSource } from "@/Pages/Sources/AddSourceModal";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { ScreenIntro } from "@/Components/common/ui/ScreenIntro";
@@ -69,6 +70,7 @@ export default function BootstrapSourcePage() {
 	const router = useIonRouter();
 	const { showToast } = useToast();
 	const dispatch = useAppDispatch();
+	const sourceCount = useAppSelector(selectSourceViews).length;
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const [selectedOption, setSelectedOption] =
 		useState<SelectedOption>(null);
@@ -79,13 +81,16 @@ export default function BootstrapSourcePage() {
 		router.push("/home", "root", "replace");
 	}, [router]);
 
+	useEffect(() => {
+		if (sourceCount === 0 || busy) return;
+		goHome();
+	}, [sourceCount, busy, goHome]);
+
 	const handleConnect = useCallback(async () => {
 		if (selectedOption === null || busy) return;
 
 		if (selectedOption === "connection") {
-			void askAddSource({}).then((added) => {
-				if (added) goHome();
-			});
+			void askAddSource({});
 			return;
 		}
 
@@ -93,7 +98,6 @@ export default function BootstrapSourcePage() {
 		await presentLoading({ message: "Setting up…", cssClass: "app-loading" });
 		try {
 			await dispatch(addBootstrapSource());
-			goHome();
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
@@ -103,14 +107,13 @@ export default function BootstrapSourcePage() {
 						: "Failed to add bootstrap source",
 			});
 		} finally {
-			setBusy(false);
 			await dismissLoading();
+			setBusy(false);
 		}
 	}, [
 		busy,
 		dispatch,
 		dismissLoading,
-		goHome,
 		presentLoading,
 		askAddSource,
 		selectedOption,
