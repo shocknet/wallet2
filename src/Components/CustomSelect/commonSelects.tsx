@@ -6,6 +6,7 @@ import cn from "clsx";
 import { SourceType } from "@/State/scoped/common";
 import { formatSatoshi } from "@/lib/units";
 import { BeaconStatusLine } from "../BeaconStatusLine";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 
 interface SelectSourceProps {
@@ -21,7 +22,7 @@ export const SelectedSource = ({ source }: SelectSourceProps) => {
 					<SelectedNprofile source={source} />
 					:
 					<IonLabel >
-						<span className="text-lg text-medium truncate">{source.label || source.sourceId}</span>
+						<span className="text-lg text-medium truncate">{sourceDisplayName(source)}</span>
 					</IonLabel>
 			}
 		</>
@@ -33,7 +34,7 @@ const SelectedNprofile = ({ source }: { source: NprofileView }) => {
 		<IonLabel className="flex flex-col">
 			<span className="flex gap-1 justify-start items-center">
 				<span className="text-lg text-medium truncate">
-					{source.label || source.beaconName || "Pub source"}
+					{sourceDisplayName(source)}
 				</span>
 				<span className="text-quiet">•</span>
 				<span className="text-base text-low">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
@@ -59,7 +60,7 @@ export const SourceSelectOption = ({ source }: SelectSourceProps) => {
 					<NprofileSelectOption source={source} />
 					:
 					<IonLabel >
-						<span className="text-lg text-medium truncate">{source.label || source.sourceId}</span>
+						<span className="text-lg text-medium truncate">{sourceDisplayName(source)}</span>
 					</IonLabel>
 			}
 		</>
@@ -70,7 +71,7 @@ const NprofileSelectOption = ({ source }: { source: NprofileView }) => {
 	return (
 		<IonLabel className="flex flex-col">
 			<div className="text-lg text-medium truncate">
-				{source.label || source.beaconName || "Pub source"}
+				{sourceDisplayName(source)}
 			</div>
 
 			<div className="text-base text-low ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
