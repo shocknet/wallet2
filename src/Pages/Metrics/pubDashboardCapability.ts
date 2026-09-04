@@ -20,8 +20,17 @@ export function isMissingDashboardRpcError(reason: string): boolean {
 	const mentionsNewRpc =
 		normalized.includes("getassetsandliabilitiesv2")
 		|| normalized.includes("getusersadmininfo")
-		|| normalized.includes("getuseroperationsfromadmin");
+		|| normalized.includes("getuseroperationsfromadmin")
+		|| normalized.includes("getadminnodesettings")
+		|| normalized.includes("updateadminnodesettings");
 	return mentionsNewRpc && normalized.includes("not implemented");
+}
+
+/** Older GetAdminNodeSettings payload is missing later fields. */
+export function isStaleAdminNodeSettingsError(reason: string): boolean {
+	const normalized = reason.toLowerCase();
+	return normalized.includes("lsp_channel_threshold")
+		|| normalized.includes("lsp_threshold_env_locked");
 }
 
 /** Old Pubs swallow unknown RPCs; the client only sees a timeout. Probe-scoped. */
@@ -61,6 +70,23 @@ async function runProbe(source: ProbeSource): Promise<PubDashboardCapability> {
 	}
 	throw new Error(reason);
 }
+
+type BaselineClient = {
+	LndGetInfo: (req: { nodeId: number }) => Promise<{ status: string }>;
+};
+
+/** True when Manage settings RPC is missing or old, and Pub itself is still up. */
+export const adminNodeSettingsNeedsUpgrade = async (
+	reason: string,
+	client: BaselineClient,
+): Promise<boolean> => {
+	if (isMissingDashboardRpcError(reason) || isStaleAdminNodeSettingsError(reason)) {
+		return true;
+	}
+	if (!isProbeSilentFailure(reason)) return false;
+	const baseline = await client.LndGetInfo({ nodeId: 0 });
+	return baseline.status === "OK";
+};
 
 /** Deduped probe. Caller owns caching (runtime slice). Throws on non-upgrade failures. */
 export function probePubDashboardCapability(
