@@ -11,7 +11,7 @@ export interface UseStorageOptions<T> {
 	/** Default value that will be set if value is not found in storage */
 	defaultValue?: T;
 
-	/** If set to true, value will be updated in useEffect after mount. Default value is true. */
+	/** If set to true, value will be updated in useEffect after mount. Default value is false. */
 	getInitialValueInEffect?: boolean;
 
 	/** Determines whether the value must be synced between browser tabs, `true` by default */
@@ -84,7 +84,7 @@ export function createStorage<T>(type: StorageType, hookName: string) {
 	return function useStorage({
 		key,
 		defaultValue,
-		getInitialValueInEffect = true,
+		getInitialValueInEffect = false,
 		sync = true,
 		deserialize = deserializeJSON,
 		serialize = (value: T) => serializeJSON(value, hookName),

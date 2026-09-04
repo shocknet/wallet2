@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useHistory } from "react-router-dom";
 import { useAlert } from "@/lib/contexts/useAlert";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -10,6 +11,7 @@ const SEEN_KEY = "notif_prompt_seen";
 
 export function useSoftPushPermissionPrompt() {
 	const dispatch = useAppDispatch();
+	const history = useHistory();
 	const { showAlert } = useAlert();
 	const { showToast } = useToast();
 
@@ -18,6 +20,9 @@ export function useSoftPushPermissionPrompt() {
 	const startedRef = useRef(false);
 
 	useEffect(() => {
+		if (history.location.pathname === "/bootstrap") {
+			return;
+		}
 		if (startedRef.current) {
 			return;
 		}
@@ -76,5 +81,5 @@ export function useSoftPushPermissionPrompt() {
 		return () => {
 			cancelled = true;
 		};
-	}, [dispatch, showAlert, showToast, seen, setSeen]);
+	}, [dispatch, showAlert, showToast, seen, setSeen, history.location.pathname]);
 }

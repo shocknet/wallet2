@@ -7,6 +7,7 @@ import "./styles/index.css";
 import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import cn from "clsx";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 
 interface Props {
@@ -18,7 +19,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
-	const label = source.label || source.beaconName || "Unnamed source";
+	const label = sourceDisplayName(source);
 
 
 	return (

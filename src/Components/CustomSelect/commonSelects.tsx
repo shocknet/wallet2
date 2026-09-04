@@ -5,6 +5,7 @@ import { useState } from "react";
 import cn from "clsx";
 import { formatSatoshi } from "@/lib/units";
 import { BeaconStatusLine } from "../BeaconStatusLine";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 
 interface SelectSourceProps {
@@ -17,7 +18,7 @@ export const SelectedSource = ({ source }: SelectSourceProps) => {
 			<IonLabel className="flex flex-col">
 				<span className="flex gap-1 justify-start items-center">
 					<span className="text-lg text-secondary truncate">
-						{source.label || source.beaconName || "Pub source"}
+						{sourceDisplayName(source)}
 					</span>
 					<span className="text-muted">•</span>
 					<span className="text-base text-muted">{formatSatoshi(source.maxWithdrawableSats)} sats</span>
@@ -40,7 +41,7 @@ export const SourceSelectOption = ({ source }: SelectSourceProps) => {
 			<SelectItemAvatar slot="start" avatarUrl={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} />
 			<IonLabel className="flex flex-col">
 				<div className="text-lg text-secondary truncate">
-					{source.label || source.beaconName || "Pub source"}
+					{sourceDisplayName(source)}
 				</div>
 
 				<div className="text-base text-muted ">{formatSatoshi(source.maxWithdrawableSats)} sats</div>
