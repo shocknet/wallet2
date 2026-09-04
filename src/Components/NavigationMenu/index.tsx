@@ -131,21 +131,11 @@ export const NavigationMenu = memo(function NavigationMenu({
 				<IonHeader className="ion-no-border">
 					<IonToolbar className="[--background:transparent]">
 						<IonTitle>
-							<div className="flex items-center gap-2.5 min-w-0">
-								<img
-									src={markSrc}
-									alt=""
-									className="shrink-0"
-									style={{
-										display: "block",
-										height: "1.75rem",
-										width: "auto",
-									}}
-								/>
+							<div className="flex w-full items-center justify-center min-w-0">
 								<img
 									src={wordmarkSrc}
 									alt="ShockWallet"
-									className="max-w-[8.5rem] opacity-90"
+									className="max-w-[10rem] opacity-90"
 									style={{
 										display: "block",
 										height: WALLET_AVATAR_HEIGHT.welcome,
