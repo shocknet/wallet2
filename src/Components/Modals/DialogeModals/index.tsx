@@ -25,6 +25,7 @@ import { SourceType } from "@/State/scoped/common";
 import { CustomSelect } from "@/Components/CustomSelect";
 import { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { InputState } from "@/Pages/Send/types";
 import useDebounce from "@/Hooks/useDebounce";
 import { InputClassification, ParsedNprofileInput } from "@/lib/types/parse";
@@ -328,7 +329,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 												<img src={`https://robohash.org/${source.sourceId}.png?bgset=bg1`} alt='Avatar' />
 											</IonAvatar>
 											<IonLabel style={{ width: "100%" }}>
-												<h2>{source.label}</h2>
+												<h2>{sourceDisplayName(source)}</h2>
 												<IonNote className="ion-text-no-wrap text-low" style={{ display: "block" }}>
 													{source.type === SourceType.NPROFILE_SOURCE ? "Lightning.Pub Source" : "Lightning Address Source"}
 												</IonNote>
@@ -346,7 +347,7 @@ export const SweepLnurlwDialog = ({ dismiss, lnurlwAmount }: { dismiss: (data: {
 								}}
 								renderSelected={(source) => (
 									<IonText className="text-medium">
-										{source?.label || ''}
+										{sourceDisplayName(source)}
 										<IonNote className="text-low" style={{ display: 'block' }}>
 											{
 												source.type === SourceType.NPROFILE_SOURCE

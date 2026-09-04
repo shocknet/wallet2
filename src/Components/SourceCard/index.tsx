@@ -8,6 +8,7 @@ import "./styles/index.css";
 import { formatSatoshi } from "@/lib/units";
 import { Satoshi } from "@/lib/types/units";
 import cn from "clsx";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 
 interface Props {
@@ -24,9 +25,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 
 
 
-	const label = source.type === SourceType.NPROFILE_SOURCE
-		? source.beaconName || source.label || "Unnamed source"
-		: source.label || source.sourceId;
+	const label = sourceDisplayName(source);
 
 
 	return (
@@ -36,7 +35,7 @@ const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
 			detail={false}
 			onClick={() => onPick(source)}
 
-			aria-label={`Open source ${source.label} `}
+			aria-label={`Open source ${label}`}
 		>
 			<div slot="start" className="relative">
 

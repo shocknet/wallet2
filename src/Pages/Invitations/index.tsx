@@ -9,6 +9,7 @@ import { WALLET_URL } from "../../constants";
 import { toggleLoading } from "../../State/Slices/loadingOverlay";
 import { check, copyWhite } from "@/Assets/SvgIconLibrary";
 import { useAppSelector } from "@/State/store/hooks";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { selectHealthyNprofileViews } from "@/State/scoped/backups/sources/selectors";
 import { nip19 } from "nostr-tools";
 import QrCode from "@/Components/QrCode";
@@ -89,7 +90,7 @@ const Invitations = () => {
 
 	const reusableLink = selectedSource ? {
 		link: `${WALLET_URL}/sources?addSource=${nprofile}`,
-		subNode: selectedSource.label,
+		subNode: sourceDisplayName(selectedSource),
 	} : null;
 
 	const oneTimeLinksRender = useMemo(() => {
@@ -103,7 +104,7 @@ const Invitations = () => {
 								<div className="row">
 									<div className="text">
 										<div className="link">{link}</div>
-										<div className="subNode">{selectedSource?.label}</div>
+										<div className="subNode">{selectedSource ? sourceDisplayName(selectedSource) : ""}</div>
 									</div>
 									<button
 										type="button"
