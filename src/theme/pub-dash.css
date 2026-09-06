@@ -723,14 +723,24 @@
 	position: relative;
 }
 
+.dash-chart-frame {
+	position: absolute;
+	inset: 12px 12px 8px;
+}
+
 .dash-chart canvas {
-	max-width: 100% !important;
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
 }
 
 @media (min-width: 800px) {
 	.dash-chart {
 		height: 280px;
 		padding: 16px;
+	}
+	.dash-chart-frame {
+		inset: 16px;
 	}
 }
 

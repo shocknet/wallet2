@@ -292,7 +292,9 @@ const Dashboard = () => {
 					</div>
 
 					<div className="dash-card dash-chart">
-						<Line {...balanceChart(chainGraphData, chansGraphData, chart)} />
+						<div className="dash-chart-frame">
+							<Line {...balanceChart(chainGraphData, chansGraphData, chart)} />
+						</div>
 					</div>
 
 					<span className="dash-section-tag">Highlights</span>
