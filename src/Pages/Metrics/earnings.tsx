@@ -8,7 +8,7 @@ import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 import { DashErrorBanner } from "./DashErrorBanner";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedAdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { AdminOperationsList } from "./adminOperationDisplay";
 import { formatTableAmount } from "./metricsDataTable";
 
@@ -20,17 +20,19 @@ export default function Earnings() {
     const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 
     const [metrics, setMetrics] = useState<Types.AppsMetrics>()
+    const [opsByApp, setOpsByApp] = useState<Record<string, Types.UserOperation[]>>({})
+    const [hasMoreByApp, setHasMoreByApp] = useState<Record<string, boolean>>({})
     const [showingOps, setShowingOps] = useState("")
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     const fetchGen = useRef(0);
-    const rpcKey = sourceRpcKey(adminSource);
-
     const fetchMetrics = useCallback(async () => {
         const gen = ++fetchGen.current;
         setError(null);
         setLoading(true);
+        setLoadingMore(null);
         try {
             const client = await getNostrClient(
                 { pubkey: adminSource.lpk, relays: adminSource.relays },
@@ -38,7 +40,7 @@ export default function Earnings() {
             );
             if (gen !== fetchGen.current) return;
             const periodRange = getUnixTimeRange(period, offset);
-            const res = await client.GetAppsMetrics({ ...periodRange, include_operations: true })
+            const res = await client.GetAppsMetrics({ ...periodRange, include_operations: true, bounded: true })
             if (gen !== fetchGen.current) return;
             if (res.status !== 'OK') {
                 setError(res.reason || "Failed to fetch earnings");
@@ -46,6 +48,8 @@ export default function Earnings() {
                 return;
             }
             setMetrics(res);
+            setOpsByApp(opsFromApps(res.apps));
+            setHasMoreByApp(hasMoreFromApps(res.apps));
         } catch (e) {
             if (gen !== fetchGen.current) return;
             console.error(e);
@@ -55,7 +59,47 @@ export default function Earnings() {
         } finally {
             if (gen === fetchGen.current) setLoading(false);
         }
-    }, [rpcKey, offset, period]);
+    }, [adminSource.keys, adminSource.lpk, adminSource.relays, offset, period]);
+
+    const loadMoreOps = useCallback(async (appId: string) => {
+        const gen = fetchGen.current
+        const loaded = opsByApp[appId] || []
+        const oldest = loaded[loaded.length - 1]
+        if (!oldest?.operationId || oldest.paidAtUnix <= 0 || loadingMore) return
+        setLoadingMore(appId)
+        try {
+            const client = await getNostrClient(
+                { pubkey: adminSource.lpk, relays: adminSource.relays },
+                adminSource.keys
+            );
+            if (gen !== fetchGen.current) return
+            const periodRange = getUnixTimeRange(period, offset);
+            const res = await client.GetAppsMetrics({
+                from_unix: periodRange?.from_unix,
+                to_unix: oldest.paidAtUnix,
+                include_operations: true,
+                bounded: true,
+                operations_app_id: appId,
+                operations_before_id: oldest.operationId,
+            })
+            if (gen !== fetchGen.current) return
+            if (res.status !== 'OK') {
+                toast.error(res.reason);
+                return;
+            }
+            const appPage = res.apps.find(a => a.app.id === appId)
+            const page = appPage?.operations || []
+            const merged = mergeOps(loaded, page)
+            setOpsByApp(prev => ({ ...prev, [appId]: merged }))
+            const hasMore = appPage?.operations_has_more ?? false
+            setHasMoreByApp(prev => ({ ...prev, [appId]: hasMore }))
+        } catch (e) {
+            console.error(e);
+            toast.error(e instanceof Error ? e.message : "Failed to load more operations");
+        } finally {
+            if (gen === fetchGen.current) setLoadingMore(null)
+        }
+    }, [adminSource, loadingMore, offset, opsByApp, period]);
 
     useEffect(() => {
         dismissAppLoading();
@@ -117,65 +161,22 @@ export default function Earnings() {
 
                     {metrics.apps
                         .filter((app) => app.app.id !== "unlinked")
-                        .map((app, i) => (
-                        <IonCard key={i} className="ion-margin-top">
+                        .map((app) => (
+                        <IonCard key={app.app.id} className="ion-margin-top">
                             <IonCardHeader>
                                 <IonCardTitle>{app.app.name}</IonCardTitle>
                             </IonCardHeader>
 
                             {!loading && (
-                                <IonCardContent>
-                                    <div
-                                        style={{
-                                            padding: "12px",
-                                            background: "var(--ion-color-light)",
-                                            borderRadius: "8px",
-                                            marginBottom: "12px",
-                                        }}
-                                    >
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                                            <IonText color="medium">Moved</IonText>
-                                            <IonText>
-                                                <strong>{formatTableAmount(app.received + app.spent)} sats</strong>
-                                            </IonText>
-                                        </div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                                            <IonText color="medium">Operations</IonText>
-                                            <IonText>
-                                                <strong>{app.operations.length}</strong>
-                                            </IonText>
-                                        </div>
-                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                            <IonText color="medium">Earned</IonText>
-                                            <IonText color="primary">
-                                                <strong>{formatTableAmount(app.fees)} sats</strong>
-                                            </IonText>
-                                        </div>
-                                    </div>
-
-                                    {app.operations.length > 0 && (
-                                        <>
-                                            {showingOps !== app.app.name ? (
-                                                <IonButton fill="outline" expand="block" onClick={() => setShowingOps(app.app.name)}>
-                                                    Show operations
-                                                </IonButton>
-                                            ) : (
-                                                <>
-                                                    <IonButton fill="outline" expand="block" onClick={() => setShowingOps("")}>
-                                                        Hide operations
-                                                    </IonButton>
-                                                    <div className="ion-margin-top">
-                                                        <AdminOperationsList operations={app.operations} />
-                                                    </div>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {app.operations.length === 0 && (
-                                        <IonText color="medium">No operations</IonText>
-                                    )}
-                                </IonCardContent>
+                                <EarningsAppCard
+                                    app={app}
+                                    operations={opsByApp[app.app.id] || []}
+                                    hasMore={!!hasMoreByApp[app.app.id]}
+                                    showing={showingOps === app.app.name}
+                                    loadingMore={loadingMore === app.app.id}
+                                    onToggle={() => setShowingOps(showingOps === app.app.name ? "" : app.app.name)}
+                                    onLoadMore={() => void loadMoreOps(app.app.id)}
+                                />
                             )}
                         </IonCard>
                     ))}
@@ -184,6 +185,89 @@ export default function Earnings() {
         </DashboardShell>
     );
 
+}
+
+function EarningsAppCard({
+    app,
+    operations,
+    hasMore,
+    showing,
+    loadingMore,
+    onToggle,
+    onLoadMore,
+}: {
+    app: Types.AppMetrics
+    operations: Types.UserOperation[]
+    hasMore: boolean
+    showing: boolean
+    loadingMore: boolean
+    onToggle: () => void
+    onLoadMore: () => void
+}) {
+    return (
+        <IonCardContent>
+            <div
+                style={{
+                    padding: "12px",
+                    background: "var(--ion-color-light)",
+                    borderRadius: "8px",
+                    marginBottom: "12px",
+                }}
+            >
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                    <IonText color="medium">Moved</IonText>
+                    <IonText>
+                        <strong>{formatTableAmount(app.received + app.spent)} sats</strong>
+                    </IonText>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                    <IonText color="medium">Operations</IonText>
+                    <IonText>
+                        <strong>{operationCount(app)}</strong>
+                    </IonText>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <IonText color="medium">Earned</IonText>
+                    <IonText color="primary">
+                        <strong>{formatTableAmount(app.fees)} sats</strong>
+                    </IonText>
+                </div>
+            </div>
+
+            {operationCount(app) > 0 && (
+                <>
+                    {!showing ? (
+                        <IonButton fill="outline" expand="block" onClick={onToggle}>
+                            Show operations
+                        </IonButton>
+                    ) : (
+                        <>
+                            <IonButton fill="outline" expand="block" onClick={onToggle}>
+                                Hide operations
+                            </IonButton>
+                            <div className="ion-margin-top">
+                                <AdminOperationsList operations={operations} />
+                            </div>
+                            {hasMore && (
+                                <IonButton
+                                    fill="clear"
+                                    expand="block"
+                                    disabled={loadingMore}
+                                    onClick={onLoadMore}
+                                >
+                                    {loadingMore ? "Loading…" : "Load more"}
+                                </IonButton>
+                            )}
+                        </>
+                    )}
+                </>
+            )}
+
+            {operationCount(app) === 0 && (
+                <IonText color="medium">No operations</IonText>
+            )}
+        </IonCardContent>
+    )
 }
 
 export const getUnixTimeRange = (period: Period, offset: number) => {
@@ -226,10 +310,35 @@ export const getUnixTimeRange = (period: Period, offset: number) => {
     return { from_unix, to_unix };
 }
 
+function operationCount(app: Types.AppMetrics) {
+    return app.operation_count ?? app.operations.length
+}
+
+function opsFromApps(apps: Types.AppMetrics[]) {
+    const out: Record<string, Types.UserOperation[]> = {}
+    for (const app of apps) {
+        out[app.app.id] = app.operations
+    }
+    return out
+}
+
+function hasMoreFromApps(apps: Types.AppMetrics[]) {
+    const out: Record<string, boolean> = {}
+    for (const app of apps) {
+        out[app.app.id] = app.operations_has_more ?? false
+    }
+    return out
+}
+
+function mergeOps(loaded: Types.UserOperation[], page: Types.UserOperation[]) {
+    const seen = new Set(loaded.map(op => op.operationId))
+    const extra = page.filter(op => op.operationId && !seen.has(op.operationId))
+    return [...loaded, ...extra]
+}
+
 function dismissAppLoading() {
     const el = document.querySelector("ion-loading")
     if (el && "dismiss" in el && typeof el.dismiss === "function") {
         void el.dismiss()
     }
 }
-

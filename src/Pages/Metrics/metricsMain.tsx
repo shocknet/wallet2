@@ -106,7 +106,7 @@ const Dashboard = () => {
 			const periodRange = getUnixTimeRange(period, offset);
 
 
-			const apps = await client.GetAppsMetrics({ include_operations: false, ...periodRange })
+			const apps = await client.GetAppsMetrics({ include_operations: false, bounded: true, ...periodRange })
 			const lnd = await client.GetLndMetrics({ ...periodRange })
 			await fetchInfo(client)
 
