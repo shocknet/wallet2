@@ -19,18 +19,22 @@ export function formatTableAmount(n: number): string {
 }
 
 const TABLE_SHELL: CSSProperties = {
-    borderRadius: "8px",
-    border: "1px solid rgba(var(--ion-color-medium-rgb), 0.18)",
+    borderRadius: "10px",
+    border: "1px solid var(--dash-border, var(--ion-border-color))",
     overflow: "hidden",
+    background: "var(--dash-surface, var(--ion-card-background))",
 };
 
 const TABLE_HEADER: CSSProperties = {
     display: "grid",
     gap: "6px",
     padding: "10px 12px",
-    fontSize: "0.75rem",
-    color: "var(--ion-color-medium)",
-    borderBottom: "1px solid var(--ion-color-medium-tint)",
+    fontSize: "10px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    fontFamily: "var(--dash-font-mono, monospace)",
+    color: "var(--dash-dim, var(--ion-color-medium))",
+    borderBottom: "1px solid var(--dash-border, var(--ion-border-color))",
 };
 
 const TABLE_ROW_BASE: CSSProperties = {

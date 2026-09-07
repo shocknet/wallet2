@@ -3,8 +3,12 @@ import { IonPage, IonRouterOutlet, useIonViewWillEnter } from "@ionic/react";
 import { Route, RouteComponentProps } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import {
+	selectAdminRpcSources,
+	selectAdminSourceViews,
+} from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import store from "@/State/store/store";
 
 import { GuardedRoute } from "@/routing/GuardedRoute";
 import { requireSelectedAdminSourceGuard } from "@/routing/guards";
@@ -15,32 +19,30 @@ import Earnings from "./earnings";
 import Routing from "./routing";
 import Manage from "../Manage";
 import Channels from "../Channels";
+import Peers from "./Peers";
 import AdminSwaps from "./adminSwaps/AdminSwaps";
 import { AssetsAndLiab } from "./AssetsAndLiab";
 import UsersAdmin from "./UsersAdmin";
 import UserOperationsAdmin from "./UserOperationsAdmin";
 
 const Metrics = ({ match, location, history }: RouteComponentProps) => {
-
-
 	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminSourceViews);
+	const adminIds = useAppSelector(selectAdminRpcSources);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 
-	// If selected source disappears (deleted etc), clear it.
 	useEffect(() => {
 		if (!selectedId) return;
-		const stillExists = admins.some((a) => a.sourceId === selectedId);
+		const stillExists = adminIds.some((a) => a.sourceId === selectedId);
 		if (!stillExists) dispatch(runtimeActions.clearSelectedMetricsAdminSourceId());
-	}, [admins, dispatch, selectedId]);
+	}, [adminIds, dispatch, selectedId]);
 
 	useIonViewWillEnter(() => {
-		// If we’re already on /metrics/select, don’t push again.
+		const state = store.getState();
+		const currentId = selectSelectedMetricsAdminSourceId(state);
 		if (location.pathname.startsWith("/metrics/select")) return;
-		if (!selectedId) return;
-		const sel = admins.find((a) => a.sourceId === selectedId);
+		if (!currentId) return;
+		const sel = selectAdminSourceViews(state).find((a) => a.sourceId === currentId);
 		if (!sel) return;
-		// Beacon is checked ONLY here (and on selection page).
 		if (sel.beaconStale === "warmingUp" || sel.beaconStale === "stale") {
 			history.replace("/metrics/select", { from: location });
 		}
@@ -56,6 +58,7 @@ const Metrics = ({ match, location, history }: RouteComponentProps) => {
 				<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
+				<GuardedRoute path={`${match.url}/peers`} component={Peers} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
 				<GuardedRoute exact path={`${match.url}/users`} component={UsersAdmin} guards={[requireSelectedAdminSourceGuard]} />

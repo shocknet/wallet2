@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Period } from "../../Components/Dropdowns/LVDropdown"
 import { getNostrClient } from "@/Api/nostr"
 import { toast } from "react-toastify";
@@ -8,24 +8,21 @@ import {
     IonCard,
     IonCardContent,
     IonCardHeader,
-    IonContent,
     IonLabel,
     IonItem,
     IonList,
     IonListHeader,
-    IonPage,
-    IonHeader,
     useIonLoading,
     useIonRouter,
     IonSkeletonText,
 } from "@ionic/react";
 import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector";
-import MetricsSubPageToolbar from "@/Layout2/Metrics/MetricsSubPageToolbar";
+import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
+import { DashErrorBanner } from "./DashErrorBanner";
 
 
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { flashOutline, linkOutline, personOutline } from "ionicons/icons";
 
 export default function Routing() {
@@ -35,12 +32,7 @@ export default function Routing() {
     const [offset, setOffset] = useState<number>(0)
 
 
-    const admins = useAppSelector(selectAdminSourceViews);
-    const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-    const adminSource = useMemo(
-        () => admins.find(a => a.sourceId === selectedId),
-        [admins, selectedId]
-    )!;
+    const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
 
     const [fwMetrics, setFwMetrics] = useState<Types.LndForwardingMetrics>()
     const [channels, setChannels] = useState<Types.OpenChannel[]>([])
@@ -50,6 +42,7 @@ export default function Routing() {
     const [error, setError] = useState<string | null>(null);
 
     const [presentLoading, dismissLoading] = useIonLoading();
+    const rpcKey = sourceRpcKey(adminSource);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -64,7 +57,7 @@ export default function Routing() {
     }, [])
     useEffect(() => {
         fetchMetrics()
-    }, [period, offset, adminSource])
+    }, [period, offset, rpcKey])
     const nextOffset = () => {
         if (period === Period.ALL_TIME || offset >= 0) {
             return
@@ -94,10 +87,8 @@ export default function Routing() {
 
             const periodRange = getUnixTimeRange(period, offset);
 
-            const [lndFwMetrics, channelsRes] = await Promise.all([
-                client.GetLndForwardingMetrics({ ...periodRange }),
-                client.ListChannels()
-            ]);
+            const lndFwMetrics = await client.GetLndForwardingMetrics({ ...periodRange })
+            const channelsRes = await client.ListChannels()
 
 
             if (channelsRes.status !== 'OK') {
@@ -135,23 +126,14 @@ export default function Routing() {
 
 
 
-    return <IonPage className="ion-page-width">
-        <IonHeader className="ion-no-border">
-            <MetricsSubPageToolbar title="Routing" />
-        </IonHeader>
-
-        <IonContent className="ion-padding ion-content-no-footer">
+    return (
+        <DashboardShell title="Routing">
             {error && (
-                <div style={{ color: "red", padding: 12 }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Something went wrong</div>
-                    <div style={{ opacity: 0.85, marginBottom: 12 }}>{error}</div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <IonButton onClick={() => void fetchMetrics()}>Retry</IonButton>
-                        <IonButton fill="outline" onClick={() => router.push("/metrics/select", "back")}>
-                            Change Source
-                        </IonButton>
-                    </div>
-                </div>
+                <DashErrorBanner
+                    message={error}
+                    onRetry={() => void fetchMetrics()}
+                    onChangeSource={() => router.push("/metrics/select", "back")}
+                />
             )}
 
             {!error && (
@@ -217,8 +199,8 @@ export default function Routing() {
                     </IonCard>
                 </>
             )}
-        </IonContent>
-    </IonPage>
+        </DashboardShell>
+    );
 }
 
 export const getUnixTimeRange = (period: Period, offset: number) => {

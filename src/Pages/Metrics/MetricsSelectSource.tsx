@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	IonButton,
-	IonContent,
-	IonHeader,
-	IonPage,
 	useIonAlert,
 	useIonLoading,
 	useIonViewWillEnter,
@@ -17,7 +14,7 @@ import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runt
 import { CustomSelect } from "@/Components/CustomSelect";
 import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
 import { useEventCallback } from "@/Hooks/useEventCallback";
-import StackPageToolbar from "@/Layout2/StackPageToolbar";
+import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 
 
 
@@ -152,13 +149,8 @@ export default function MetricsSelectSource({ history, location }: RouteComponen
 	}, [committing, pending?.beaconStale]);
 
 	return (
-		<IonPage className="ion-page-width">
-			<IonHeader className="ion-no-border">
-				<StackPageToolbar title="Select Admin Source" />
-			</IonHeader>
-
-			<IonContent className="ion-padding">
-				<div className="flex w-full sm:w-2/3 flex-col mx-auto justify-center items-stretch gap-4">
+		<DashboardShell title="Select source">
+			<div className="flex w-full sm:w-2/3 flex-col mx-auto justify-center items-stretch gap-4">
 					<CustomSelect<SourceView>
 						items={admins}
 						selectedItem={pending}
@@ -186,7 +178,6 @@ export default function MetricsSelectSource({ history, location }: RouteComponen
 						</div>
 					)}
 				</div>
-			</IonContent>
-		</IonPage>
+		</DashboardShell>
 	);
 }
