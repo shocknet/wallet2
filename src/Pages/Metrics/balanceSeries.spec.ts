@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alignBalanceSeries, axisRange, xBounds } from "./balanceSeries";
+import { alignBalanceSeries, axisRange, fillBlockGaps, pairAxisRanges } from "./balanceSeries";
 
 describe("alignBalanceSeries", () => {
 	it("does not apply a later balance to an earlier block", () => {
@@ -60,26 +60,48 @@ describe("axisRange", () => {
 		expect(range).toEqual({ min: 80_000, max: 120_000 });
 	});
 
-	it("does not stretch a one-sat wiggle across the whole chart", () => {
+	it("makes a few-hundred-sat channel move visible", () => {
 		const range = axisRange([
-			{ x: 1, y: 1_720_000 },
-			{ x: 2, y: 1_720_080 },
+			{ x: 1, y: 1_693_278 },
+			{ x: 2, y: 1_693_646 },
 		]);
 		const shown = range.max - range.min;
-		expect(shown).toBeGreaterThan(80_000);
-		expect((1_720_080 - 1_720_000) / shown).toBeLessThan(0.01);
+		expect((1_693_646 - 1_693_278) / shown).toBeGreaterThan(0.15);
 	});
 });
 
-describe("xBounds", () => {
-	it("pins the x axis to the first and last sample", () => {
-		expect(xBounds(
-			[{ x: 964806, y: 1 }, { x: 965250, y: 1 }],
-			[{ x: 964806, y: 10 }, { x: 965125, y: 50 }],
-		)).toEqual({ min: 964806, max: 965250 });
+describe("pairAxisRanges", () => {
+	it("puts two quiet series on different heights so they do not overlap", () => {
+		const chain = [{ x: 1, y: 100_000 }, { x: 2, y: 100_000 }]
+		const chans = [{ x: 1, y: 500_000 }, { x: 2, y: 500_000 }]
+		const ranges = pairAxisRanges(chain, chans)
+		const chainAt = (100_000 - ranges.chain.min) / (ranges.chain.max - ranges.chain.min)
+		const chansAt = (500_000 - ranges.chans.min) / (ranges.chans.max - ranges.chans.min)
+		expect(chainAt).toBeLessThan(0.45)
+		expect(chansAt).toBeGreaterThan(0.55)
+	});
+});
+
+describe("fillBlockGaps", () => {
+	it("holds the last balance across missing blocks", () => {
+		expect(fillBlockGaps([
+			{ x: 965852, y: 100 },
+			{ x: 965855, y: 140 },
+		])).toEqual([
+			{ x: 965852, y: 100 },
+			{ x: 965853, y: 100 },
+			{ x: 965854, y: 100 },
+			{ x: 965855, y: 140 },
+		]);
 	});
 
-	it("centers a single sample instead of clipping it at the edge", () => {
-		expect(xBounds([{ x: 965250, y: 1 }], [])).toEqual({ min: 965249, max: 965251 });
+	it("leaves a huge span alone so all-time does not explode", () => {
+		expect(fillBlockGaps([
+			{ x: 100, y: 1 },
+			{ x: 10_000, y: 2 },
+		])).toEqual([
+			{ x: 100, y: 1 },
+			{ x: 10_000, y: 2 },
+		]);
 	});
 });

@@ -14,21 +14,53 @@ export function axisRange(data: BalancePt[]): { min: number; max: number } {
 	const lo = Math.min(...ys)
 	const hi = Math.max(...ys)
 	const last = ys[ys.length - 1]
-	const level = Math.max(Math.abs(last), Math.abs(lo), Math.abs(hi), 1)
 	const span = hi - lo
-	if (span <= level * 0.025) {
+	if (span === 0) {
+		const level = Math.max(Math.abs(last), 1)
 		return padAround(last, Math.max(level * 0.2, 1_000))
 	}
-	const pad = Math.max(span * 0.12, level * 0.02, 1_000)
+	const pad = Math.max(span * 0.12, 1_000)
 	return { min: lo - pad, max: hi + pad }
 }
 
-export function xBounds(a: BalancePt[], b: BalancePt[]): { min: number; max: number } {
-	const xs = [...a, ...b].map((p) => p.x)
-	if (xs.length === 0) return { min: 0, max: 1 }
-	const min = Math.min(...xs)
-	const max = Math.max(...xs)
-	return max === min ? { min: min - 1, max: max + 1 } : { min, max }
+export function pairAxisRanges(chain: BalancePt[], chans: BalancePt[]): {
+	chain: { min: number; max: number }
+	chans: { min: number; max: number }
+} {
+	if (isFlat(chain) && isFlat(chans)) {
+		return { chain: placeLine(chain, 0.32), chans: placeLine(chans, 0.68) }
+	}
+	return { chain: axisRange(chain), chans: axisRange(chans) }
+}
+
+export function fillBlockGaps(pts: BalancePt[], maxSpan = 2500): BalancePt[] {
+	if (pts.length < 2) return pts
+	const sorted = [...pts].sort((a, b) => a.x - b.x)
+	const start = sorted[0].x
+	const end = sorted[sorted.length - 1].x
+	if (end - start > maxSpan) return sorted
+	const byX = new Map(sorted.map((p) => [p.x, p.y]))
+	const out: BalancePt[] = []
+	let y = sorted[0].y
+	for (let x = start; x <= end; x++) {
+		const next = byX.get(x)
+		if (next !== undefined) y = next
+		out.push({ x, y })
+	}
+	return out
+}
+
+function isFlat(data: BalancePt[]): boolean {
+	if (data.length === 0) return true
+	const ys = data.map((p) => p.y)
+	return Math.max(...ys) === Math.min(...ys)
+}
+
+function placeLine(data: BalancePt[], at: number): { min: number; max: number } {
+	const y = data[data.length - 1]?.y ?? 0
+	const level = Math.max(Math.abs(y), 1)
+	const span = Math.max(level * 0.4, 2_000)
+	return { min: y - at * span, max: y + (1 - at) * span }
 }
 
 function padAround(mid: number, pad: number): { min: number; max: number } {

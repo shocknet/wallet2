@@ -26,7 +26,7 @@ import { DashErrorBanner } from "./DashErrorBanner";
 import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
 import { buildOverviewEvents, displayPeerName, OverviewEvent } from "./overviewEvents";
 import { OverviewEventDialog } from "./OverviewEventDialog";
-import { alignBalanceSeries, axisRange, xBounds } from "./balanceSeries";
+import { alignBalanceSeries, fillBlockGaps, pairAxisRanges } from "./balanceSeries";
 
 type ChannelsInfo = {
 	offlineChannels: number
@@ -128,35 +128,11 @@ const Dashboard = () => {
 			const chain = nodeStats.chain_balance
 			const channels = nodeStats.channel_balance
 			const external = nodeStats.external_balance
-			const toMin = []
-			const toMax = []
-			if (chain.length > 0) {
-				toMin.push(chain[0].x)
-				toMax.push(chain[chain.length - 1].x)
-			}
-			if (channels.length > 0) {
-				toMin.push(channels[0].x)
-				toMax.push(channels[channels.length - 1].x)
-			}
-			if (external.length > 0) {
-				toMin.push(external[0].x)
-				toMax.push(external[external.length - 1].x)
-			}
-			const minBlock = Math.min(...toMin) || 0
-			const maxBlock = Math.max(...toMax) || 0
-			console.log({ minBlock, maxBlock })
-
-			if (chain.length > 0 && chain[chain.length - 1].x !== maxBlock) {
-				chain.push({ x: maxBlock, y: chain[chain.length - 1].y })
-			}
-
-			if (channels.length > 0 && channels[channels.length - 1].x !== maxBlock) {
-				channels.push({ x: maxBlock, y: channels[channels.length - 1].y })
-			}
-
-			if (external.length > 0 && external[external.length - 1].x !== maxBlock) {
-				external.push({ x: maxBlock, y: external[external.length - 1].y })
-			}
+			const maxBlock = latestBlock([chain, channels, external])
+			console.log({ maxBlock })
+			extendGraphToBlock(chain, maxBlock)
+			extendGraphToBlock(channels, maxBlock)
+			extendGraphToBlock(external, maxBlock)
 			setChansGraphData(channels)
 			setChainGraphData(chain)
 			const openChannels = nodeStats.open_channels
@@ -417,12 +393,17 @@ function balanceChart(
 	chart: ReturnType<typeof chartColors>,
 ) {
 	const aligned = alignBalanceSeries(asBalancePts(chain), asBalancePts(chans))
-	const xRange = xBounds(aligned.chain, aligned.chans)
+	const chainPts = fillBlockGaps(aligned.chain)
+	const chansPts = fillBlockGaps(aligned.chans)
+	const yRanges = pairAxisRanges(chainPts, chansPts)
+	const xs = [...chainPts, ...chansPts].map((p) => p.x)
+	const xMin = xs.length ? Math.min(...xs) : 0
+	const xMax = xs.length ? Math.max(...xs) : 1
 	return {
 		data: {
 			datasets: [
-				lineSeries("Chain", aligned.chain, chart.chain, "y"),
-				lineSeries("Channels", aligned.chans, chart.chans, "y1"),
+				lineSeries("Chain", chainPts, chart.chain, "y"),
+				lineSeries("Channels", chansPts, chart.chans, "y1"),
 			],
 		},
 		options: {
@@ -470,8 +451,8 @@ function balanceChart(
 				x: {
 					type: "linear" as const,
 					bounds: "data" as const,
-					min: xRange.min,
-					max: xRange.max,
+					min: xMin,
+					max: xMax === xMin ? xMax + 1 : xMax,
 					grid: { color: chart.grid },
 					ticks: {
 						color: chart.text,
@@ -481,14 +462,14 @@ function balanceChart(
 					border: { color: chart.grid },
 				},
 				y: {
-					...axisRange(aligned.chain),
+					...yRanges.chain,
 					position: "left" as const,
 					grid: { color: chart.grid },
 					ticks: { display: false },
 					border: { color: chart.grid },
 				},
 				y1: {
-					...axisRange(aligned.chans),
+					...yRanges.chans,
 					position: "right" as const,
 					grid: { drawOnChartArea: false },
 					ticks: { display: false },
@@ -503,7 +484,17 @@ function asBalancePts(pts: Types.GraphPoint[]) {
 	return pts.map((p) => ({ x: Number(p.x), y: Number(p.y) }))
 }
 
-function lineSeries(label: string, data: Types.GraphPoint[], color: string, yAxisID: "y" | "y1") {
+function latestBlock(series: Types.GraphPoint[][]) {
+	const xs = series.flat().map((p) => Number(p.x)).filter(Number.isFinite)
+	return xs.length ? Math.max(...xs) : 0
+}
+
+function extendGraphToBlock(pts: Types.GraphPoint[], maxBlock: number) {
+	if (pts.length === 0 || Number(pts[pts.length - 1].x) === maxBlock) return
+	pts.push({ x: maxBlock, y: pts[pts.length - 1].y })
+}
+
+function lineSeries(label: string, data: { x: number; y: number }[], color: string, yAxisID: "y" | "y1") {
 	return {
 		label,
 		data,
