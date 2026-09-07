@@ -23,16 +23,16 @@ export function axisRange(data: BalancePt[]): { min: number; max: number } {
 	return { min: lo - pad, max: hi + pad }
 }
 
-function padAround(mid: number, pad: number): { min: number; max: number } {
-	return { min: mid - pad, max: mid + pad }
-}
-
 export function xBounds(a: BalancePt[], b: BalancePt[]): { min: number; max: number } {
 	const xs = [...a, ...b].map((p) => p.x)
 	if (xs.length === 0) return { min: 0, max: 1 }
 	const min = Math.min(...xs)
 	const max = Math.max(...xs)
-	return { min, max: max === min ? min + 1 : max }
+	return max === min ? { min: min - 1, max: max + 1 } : { min, max }
+}
+
+function padAround(mid: number, pad: number): { min: number; max: number } {
+	return { min: mid - pad, max: mid + pad }
 }
 
 function uniqueXs(a: BalancePt[], b: BalancePt[]): number[] {

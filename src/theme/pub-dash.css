@@ -734,6 +734,15 @@
 	height: 100% !important;
 }
 
+.dash-chart-empty {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--dash-muted);
+	font-size: 13px;
+}
+
 @media (min-width: 800px) {
 	.dash-chart {
 		height: 280px;

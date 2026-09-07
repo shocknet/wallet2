@@ -78,4 +78,8 @@ describe("xBounds", () => {
 			[{ x: 964806, y: 10 }, { x: 965125, y: 50 }],
 		)).toEqual({ min: 964806, max: 965250 });
 	});
+
+	it("centers a single sample instead of clipping it at the edge", () => {
+		expect(xBounds([{ x: 965250, y: 1 }], [])).toEqual({ min: 965249, max: 965251 });
+	});
 });

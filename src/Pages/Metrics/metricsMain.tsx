@@ -51,7 +51,6 @@ const Dashboard = () => {
 
 	const [chainGraphData, setChainGraphData] = useState<Types.GraphPoint[]>([])
 	const [chansGraphData, setChansGraphData] = useState<Types.GraphPoint[]>([])
-	const [extGraphData, setExtGraphData] = useState<Types.GraphPoint[]>([])
 	const [channelsInfo, setChannelsInfo] = useState<ChannelsInfo>()
 	const [appsInfo, setAppsInfo] = useState<AppsInfo>()
 	const [period, setPeriod] = useState<Period>(Period.WEEK);
@@ -129,7 +128,6 @@ const Dashboard = () => {
 			const chain = nodeStats.chain_balance
 			const channels = nodeStats.channel_balance
 			const external = nodeStats.external_balance
-			const showExternal = external.length > 1
 			const toMin = []
 			const toMax = []
 			if (chain.length > 0) {
@@ -161,9 +159,6 @@ const Dashboard = () => {
 			}
 			setChansGraphData(channels)
 			setChainGraphData(chain)
-			if (showExternal) {
-				setExtGraphData(external)
-			}
 			const openChannels = nodeStats.open_channels
 			const bestLocal = { n: "", v: 0 }
 			const bestRemote = { n: "", v: 0 }
@@ -207,7 +202,7 @@ const Dashboard = () => {
 		} finally {
 			isFetchingRef.current = false;
 		}
-	}, [period, adminSource.sourceId, adminSource.lpk, adminSource.relays, adminSource.keys, offset, fetchInfo, dispatch, selectedId]);
+	}, [period, adminSource.lpk, adminSource.relays, adminSource.keys, offset, fetchInfo, dispatch, selectedId]);
 
 	useEffect(() => {
 		fetchMetricsRef.current = fetchMetrics;
@@ -292,9 +287,13 @@ const Dashboard = () => {
 					</div>
 
 					<div className="dash-card dash-chart">
-						<div className="dash-chart-frame">
-							<Line {...balanceChart(chainGraphData, chansGraphData, chart)} />
-						</div>
+						{chainGraphData.length === 0 && chansGraphData.length === 0 ? (
+							<div className="dash-chart-empty">No balance history yet</div>
+						) : (
+							<div className="dash-chart-frame">
+								<Line {...balanceChart(chainGraphData, chansGraphData, chart)} />
+							</div>
+						)}
 					</div>
 
 					<span className="dash-section-tag">Highlights</span>
@@ -417,7 +416,7 @@ function balanceChart(
 	chans: Types.GraphPoint[],
 	chart: ReturnType<typeof chartColors>,
 ) {
-	const aligned = alignBalanceSeries(chain, chans)
+	const aligned = alignBalanceSeries(asBalancePts(chain), asBalancePts(chans))
 	const xRange = xBounds(aligned.chain, aligned.chans)
 	return {
 		data: {
@@ -500,6 +499,10 @@ function balanceChart(
 	}
 }
 
+function asBalancePts(pts: Types.GraphPoint[]) {
+	return pts.map((p) => ({ x: Number(p.x), y: Number(p.y) }))
+}
+
 function lineSeries(label: string, data: Types.GraphPoint[], color: string, yAxisID: "y" | "y1") {
 	return {
 		label,
@@ -508,6 +511,7 @@ function lineSeries(label: string, data: Types.GraphPoint[], color: string, yAxi
 		backgroundColor: color,
 		pointBackgroundColor: color,
 		pointBorderColor: color,
+		pointRadius: data.length === 1 ? 2 : 0,
 		fill: false,
 		stepped: "after" as const,
 		yAxisID,
