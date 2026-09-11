@@ -1,14 +1,16 @@
 import { memo } from "react";
 import { useSoftPushPermissionPrompt } from "@/Hooks/readyAppHooks/useSoftPushPermissionPrompt";
-import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
 import { useHandleWarmPushTap } from "@/Hooks/useHandleWarmPushTap";
-import { useConsumePendingNav } from "@/Hooks/readyAppHooks/useConsumePendingNav";
+import { useAuthRequestsModal } from "@/Components/Modals/AuthRequestsHost";
+import { useWatchClipboard } from "@/Hooks/useWatchClipboard";
+import { useConsumePendingIntent } from "@/Hooks/readyAppHooks/useConsumePendingIntent";
 
 export const ReadyAppEffects = memo(function ReadyAppEffects() {
 	useSoftPushPermissionPrompt();
-	useWatchClipboard();
 	useHandleWarmPushTap();
-	useConsumePendingNav();
+	useAuthRequestsModal();
+	useWatchClipboard();
+	useConsumePendingIntent();
 
 	return null;
 });

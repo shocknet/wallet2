@@ -1,38 +1,70 @@
-import { IonButton, IonButtons, IonCheckbox, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonLabel, IonRow, IonTitle, IonToolbar } from "@ionic/react";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import AmountInput from "@/Components/AmountInput";
-import { Satoshi } from "@/lib/types/units";
-import { useAmountInput } from "@/Components/AmountInput/useAmountInput";
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from "react";
+import {
+	IonButton,
+	IonButtons,
+	IonCheckbox,
+	IonCol,
+	IonContent,
+	IonGrid,
+	IonHeader,
+	IonInput,
+	IonItem,
+	IonLabel,
+	IonRow,
+	IonTitle,
+	IonToolbar,
+} from "@ionic/react";
+import {
+	AmountField,
+	type AmountFieldChange,
+} from "@/Components/AmountField";
+import type { Satoshi } from "@/lib/types/units";
+import { useOverlayCoordinator, type Dismiss, type OverlayChoice } from "@/overlay";
 
+export type NewInvoiceResult = {
+	amount: Satoshi;
+	invoiceMemo: string;
+	blind: boolean;
+};
 
-interface NewInvoiceModalProps {
-	dismiss: (data: { amount: Satoshi, invoiceMemo: string, blind: boolean } | null, role?: string) => void;
-}
+type NewInvoiceModalProps = {
+	dismiss: Dismiss<OverlayChoice<NewInvoiceResult>>;
+};
 
-const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({ dismiss }: NewInvoiceModalProps, inputRef) => {
-	const amountInputRef = useRef<HTMLIonInputElement>(null);
+const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(function NewInvoiceModal({ dismiss }, inputRef) {
+	const amountRef = useRef<HTMLIonInputElement>(null);
+	useImperativeHandle(inputRef, () => amountRef.current as HTMLIonInputElement);
 
-	useImperativeHandle(inputRef, () => amountInputRef.current as HTMLIonInputElement);
-
-	const amountInput = useAmountInput({});
+	const [amountChange, setAmountChange] = useState<AmountFieldChange>({
+		sats: null,
+		error: undefined,
+	});
 	const [invoiceMemo, setInvoiceMemo] = useState("");
 	const [blind, setBlind] = useState(false);
 
+	const confirm = () => {
+		if (amountChange.sats === null) return;
+		dismiss({
+			role: "confirm",
+			data: {
+				amount: amountChange.sats,
+				invoiceMemo,
+				blind,
+			},
+		});
+	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (amountInput.effectiveSats !== null) {
-			dismiss({ amount: amountInput.effectiveSats, invoiceMemo, blind }, "confirm");
-		}
+		confirm();
 	};
-
 
 	return (
 		<>
 			<IonHeader>
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonButton onClick={() => dismiss(null, "cancel")}>
+						<IonButton onClick={() => dismiss({ role: "cancel" })}>
 							Cancel
 						</IonButton>
 					</IonButtons>
@@ -40,9 +72,9 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 					<IonButtons slot="end">
 						<IonButton
 							type="submit"
-							disabled={!amountInput.effectiveSats}
+							disabled={amountChange.sats === null}
 							color="primary"
-							onClick={handleSubmit}
+							onClick={confirm}
 							strong
 						>
 							Confirm
@@ -55,20 +87,11 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 					<IonGrid className="ion-margin-top">
 						<IonRow>
 							<IonCol>
-								<AmountInput
-									ref={amountInputRef}
+								<AmountField
+									ref={amountRef}
 									labelPlacement="floating"
-									unit={amountInput.unit}
-									displayValue={amountInput.displayValue}
-									limits={amountInput.limits}
-									isDisabled={amountInput.inputDisabled}
-									effectiveSats={amountInput.effectiveSats}
-									error={amountInput.error}
-									onType={amountInput.typeAmount}
-									onPressMax={amountInput.pressMax}
-									onToggleUnit={amountInput.toggleUnit}
-								>
-								</AmountInput>
+									onChange={setAmountChange}
+								/>
 							</IonCol>
 						</IonRow>
 						<IonRow>
@@ -102,13 +125,26 @@ const NewInvoiceModal = forwardRef<HTMLIonInputElement, NewInvoiceModalProps>(({
 							</IonCol>
 						</IonRow>
 					</IonGrid>
-					{/* Hidden submit button for Enter key support */}
 					<input type="submit" hidden />
 				</form>
 			</IonContent>
 		</>
 	);
-});
+},
+);
 
-NewInvoiceModal.displayName = "NewInvoiceModal";
-export default NewInvoiceModal;
+export function useNewInvoiceModal() {
+	const { present } = useOverlayCoordinator();
+	const amountInputRef = useRef<HTMLIonInputElement>(null);
+	return useCallback(() => {
+		return present<OverlayChoice<NewInvoiceResult>>(
+			(dismiss) => <NewInvoiceModal dismiss={dismiss} ref={amountInputRef} />,
+			{
+				cssClass: "wallet-modal",
+				onDidPresent: () => {
+					void amountInputRef.current?.setFocus();
+				},
+			},
+		);
+	}, [present]);
+}

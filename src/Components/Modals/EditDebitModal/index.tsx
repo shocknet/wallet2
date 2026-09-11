@@ -6,7 +6,6 @@ import {
 	IonFooter,
 	IonHeader,
 	IonIcon,
-	IonModal,
 	IonTitle,
 	IonToggle,
 	IonToolbar,
@@ -37,6 +36,7 @@ import {
 import { appApi } from "@/State/api/api";
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch } from "@/State/store/hooks";
+import { useOverlayCoordinator, type Dismiss, type OverlayChoice } from "@/overlay";
 
 const PANEL_CLASS = "app-panel bg-[var(--app-surface-muted)]";
 
@@ -66,11 +66,13 @@ function rulesSignature(rules: DebitRule[]): string {
 	return JSON.stringify(rules);
 }
 
-export type EditDebitModalProps = {
-	isOpen: boolean;
-	authorization: DebitAuthorization | null;
+export type EditDebitOptions = {
+	authorization: DebitAuthorization;
 	source: SourceView;
-	onDidDismiss: () => void;
+};
+
+type EditDebitModalProps = EditDebitOptions & {
+	dismiss: Dismiss<OverlayChoice>;
 };
 
 function EditDebitApprovedBody({
@@ -487,35 +489,34 @@ function EditDebitBannedBody({
 	);
 }
 
-export default function EditDebitModal({
-	isOpen,
+function EditDebitModal({
 	authorization,
 	source,
-	onDidDismiss,
+	dismiss,
 }: EditDebitModalProps) {
-	return (
-		<IonModal
-			className="wallet-modal"
-			isOpen={isOpen && authorization !== null}
-			onDidDismiss={onDidDismiss}
-		>
-			{authorization ? (
-				authorization.authorized ? (
-					<EditDebitApprovedBody
-						key={authorization.debit_id}
-						authorization={authorization}
-						source={source}
-						onClose={onDidDismiss}
-					/>
-				) : (
-					<EditDebitBannedBody
-						key={authorization.debit_id}
-						authorization={authorization}
-						source={source}
-						onClose={onDidDismiss}
-					/>
-				)
-			) : null}
-		</IonModal>
+	return authorization.authorized ? (
+		<EditDebitApprovedBody
+			key={authorization.debit_id}
+			authorization={authorization}
+			source={source}
+			onClose={() => dismiss({ role: "cancel" })}
+		/>
+	) : (
+		<EditDebitBannedBody
+			key={authorization.debit_id}
+			authorization={authorization}
+			source={source}
+			onClose={() => dismiss({ role: "cancel" })}
+		/>
 	);
+}
+
+export function useEditDebitModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((options: EditDebitOptions) => {
+		return present<OverlayChoice>(
+			(dismiss) => <EditDebitModal {...options} dismiss={dismiss} />,
+			{ cssClass: "wallet-modal" },
+		);
+	}, [present]);
 }

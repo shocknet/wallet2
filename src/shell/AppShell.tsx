@@ -5,7 +5,7 @@ import { SecureIdentitiesMigrationFailedScreen } from "./screens/SecureIdentitie
 import { SanctumReauthScreen } from "./screens/SanctumReauthScreen";
 import { LoadingIdentityScreen } from "./screens/LoadingIdentityScreen";
 import { IdentityLoadFailedScreen } from "./screens/IdentityLoadFailedScreen";
-import { ReadyApp } from "./ReadApp";
+import { LoadedIdentity } from "./LoadedIdentity";
 import { UnlockIdentityScreen } from "./screens/UnlockIdentityScreen";
 import { IdentityGate } from "./screens/identityGate";
 import { StartupScreen } from "./screens/StartupScreen";
@@ -72,7 +72,7 @@ export function AppShell() {
 
 		case "ready":
 			return (
-				<ReadyApp
+				<LoadedIdentity
 					runtimeIdentity={phase.runtimeIdentity}
 				/>
 			);

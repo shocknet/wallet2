@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { NodeCard } from "../common/NodeCard";
 import { selectSourceViewsByLpk } from "@/State/scoped/backups/sources/selectors";
 import type { ParsedNprofileInput } from "@/lib/types/parse";
-import type { ModalDismiss } from "@/Components/Modals/hooks/useAskModal";
+import type { Dismiss, OverlayChoice } from "@/overlay";
 
 export const connectAsAdminTitle = "Connect as admin";
 
@@ -19,7 +19,7 @@ export function ConnectAsAdminCase({
 	dismiss,
 }: {
 	parsed: ParsedNprofileWithAdmin;
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 }) {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
@@ -46,7 +46,7 @@ export function ConnectAsAdminCase({
 				message: "Connected as admin",
 				icon: shieldCheckmarkOutline,
 			});
-			dismiss(true, "confirm");
+			dismiss({ role: "confirm" });
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
@@ -54,7 +54,7 @@ export function ConnectAsAdminCase({
 				icon: alertCircleOutline,
 				message: err instanceof Error ? err.message : undefined,
 			});
-			dismiss(null, "cancel");
+			dismiss({ role: "cancel" });
 		} finally {
 			await dismissLoading();
 		}
@@ -73,7 +73,7 @@ export function ConnectAsAdminCase({
 					and node management. You can close this.
 				</p>
 				<div className="mt-12 flex justify-end gap-2">
-					<IonButton color="primary" onClick={() => dismiss(true, "confirm")}>
+					<IonButton color="primary" onClick={() => dismiss({ role: "confirm" })}>
 						Done
 					</IonButton>
 				</div>
@@ -92,7 +92,7 @@ export function ConnectAsAdminCase({
 				channels, and other operator tools for this node.
 			</p>
 			<div className="mt-12 flex justify-end gap-2">
-				<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
+				<IonButton color="medium" onClick={() => dismiss({ role: "cancel" })}>
 					Cancel
 				</IonButton>
 				<IonButton color="primary" onClick={() => void handleConnect()}>

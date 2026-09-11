@@ -35,9 +35,9 @@ export const selectPushIntent = (
 	state: RootState,
 ) => state.shell.pushIntent;
 
-export const selectPendingNav = (
+export const selectPendingIntent = (
 	state: RootState,
-) => state.shell.pendingNav;
+) => state.shell.pendingIntent;
 
 export const selectShellSnapshot = createSelector(
 	[

@@ -5,7 +5,6 @@ import { useToast } from "@/lib/contexts/useToast";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch } from "@/State/store/hooks";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 import { Capacitor } from "@capacitor/core";
 import {
 	IonHeader,
@@ -27,7 +26,7 @@ import { nip19 } from "nostr-tools";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { chevronBackOutline } from "ionicons/icons";
-import { useAskCreatePassword } from "@/Hooks/useAskCreatePassword";
+import { usePasswordCreationModal } from "@/Components/password/PasswordCreationModal";
 import { hexToBytes } from "@noble/hashes/utils";
 import { useDownloadFileBackup } from "@/Hooks/useDownloadFileBackup";
 
@@ -43,7 +42,7 @@ export function GenerateNewKeyPage() {
 
 	const privateKeyBytes = useMemo(() => hexToBytes(generatedPair.privateKey), [generatedPair]);
 	const pmUsername = useMemo(() => generatedPair ? makeIdentityPrivateKeyPmUsername(generatedPair.publicKey) : "", [generatedPair]);
-	const askCreatePassword = useAskCreatePassword(
+	const askCreatePassword = usePasswordCreationModal(
 		pmUsername,
 		"Create a password to secure your private key. You may skip this now and set it later in the profile settings.",
 		"Skip",
@@ -68,29 +67,27 @@ export function GenerateNewKeyPage() {
 		const isWeb = !Capacitor.isNativePlatform();
 		let userPassword: string | undefined = undefined
 		if (isWeb) {
-			const password = await askCreatePassword();
-			if (password) {
-				userPassword = password;
+			const result = await askCreatePassword();
+			if (result.role === "confirm") {
+				userPassword = result.data;
 			}
 		}
 		await presentLoading({ cssClass: "app-loading", message: "Creating identity...", });
 		try {
-			const { foundBackup, identityId } = await dispatch(createIdentity({
+			await dispatch(createIdentity({
 				type: IdentityType.LOCAL_KEY,
 				privkey: generatedPair.privateKey,
 				label: "New Nostr Key Identity",
 				relays: NOSTR_RELAYS,
 				userPassword: userPassword,
 			}));
-			dispatch(enqueueBootstrapIfNoBackup({ foundBackup, identityId }));
 		} catch (err: any) {
-			await dismissLoading();
 			showToast({
 				color: "warning",
 				message: err?.message || "An error occured when creating the identity",
 			});
 		} finally {
-			dismissLoading();
+			await dismissLoading();
 		}
 
 	}, [askCreatePassword, dispatch, presentLoading, dismissLoading, showToast, generatedPair]);

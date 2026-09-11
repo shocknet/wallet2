@@ -26,7 +26,7 @@ import {
 } from "@/Components/AmountField";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
-import { SourceSelectSheet } from "@/Components/Source/SourceSelectSheet";
+import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import EmptyState from "@/Components/common/ui/EmptyState";
 import { useQrScanner } from "@/Hooks/useQrScanner";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
@@ -52,7 +52,7 @@ import {
 	pickDefaultSource,
 	pickSourceCoveringAmount,
 } from "./helpers";
-import { useAskConfirmSend } from "./ConfirmSendModal";
+import { useConfirmSendModal } from "./ConfirmSendModal";
 import { RecipientInfoCard } from "./RecipientInfoCard";
 import { RecipientTypesHint } from "./RecipientTypesHint";
 import { FeeReserveHint } from "./FeeReserveHint";
@@ -118,7 +118,7 @@ function SendSourceGate({ sources }: { sources: SourceView[] }) {
 	const [selectedSourceId, setSelectedSourceId] = useState(
 		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
 	);
-	const [sheetOpen, setSheetOpen] = useState(false);
+	const sourceSelect = useSourceSelectModal();
 
 	useEffect(() => {
 		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
@@ -165,7 +165,15 @@ function SendSourceGate({ sources }: { sources: SourceView[] }) {
 							showTapToSwitch={false}
 							showBalance
 							source={selectedSource}
-							onClick={() => setSheetOpen(true)}
+							onClick={() => {
+								sourceSelect({
+									sources,
+									selectedSourceId,
+									title: "Spend from",
+								}).then((result) => {
+									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
+								});
+							}}
 						/>
 						<FeeReserveHint
 							sourceId={selectedSource.sourceId}
@@ -186,15 +194,6 @@ function SendSourceGate({ sources }: { sources: SourceView[] }) {
 						switchToSourceCoveringAmount={switchToSourceCoveringAmount}
 					/>
 				</div>
-
-				<SourceSelectSheet
-					isOpen={sheetOpen}
-					onDidDismiss={() => setSheetOpen(false)}
-					selectedSourceId={selectedSourceId}
-					onSelect={(source) => setSelectedSourceId(source.sourceId)}
-					sources={sources}
-					title="Spend from"
-				/>
 			</IonContent>
 		</>
 	);
@@ -274,7 +273,7 @@ function SendStage({
 	const recipientRef = useRef<HTMLIonInputElement>(null);
 	const reviewing = useRef(false);
 	const [presentLoading, dismissLoading] = useIonLoading();
-	const askConfirmSend = useAskConfirmSend();
+	const askConfirmSend = useConfirmSendModal();
 
 
 
@@ -287,14 +286,10 @@ function SendStage({
 	};
 
 	const openScan = async () => {
-		try {
-			const input = await scanSingleBarcode(
-				"Scan a Lightning Invoice, Noffer string, Lnurl, or Lightning Address",
-			);
-			commit(input);
-		} catch {
-			/* dismissed */
-		}
+		const input = await scanSingleBarcode(
+			"Scan a Lightning Invoice, Noffer string, Lnurl, or Lightning Address",
+		);
+		if (input.role === "confirm") commit(input.data);
 	};
 
 	const canPay =
@@ -356,14 +351,14 @@ function SendStage({
 				source,
 				initialNote: invoice.memo,
 			});
-			if (!confirmed) return;
+			if (confirmed.role !== "confirm") return;
 
 			try {
 				dispatch(sendInvoicePayment({
 					sourceId,
 					parsedInvoice: invoice,
 					amount,
-					note: confirmed.note,
+					note: confirmed.data.note,
 					invoiceSource: invoiceSourceFromParsed(parsed),
 					showToast,
 				}));
@@ -427,7 +422,7 @@ function SendStage({
 							color="medium"
 							className="m-0 !aspect-auto !min-h-8"
 							aria-label="scan"
-							onClick={() => void openScan()}
+							onClick={openScan}
 						>
 							<IonIcon slot="icon-only" icon={qrCodeOutline} />
 						</IonButton>

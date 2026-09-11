@@ -32,13 +32,13 @@ export function JoinNodeInviteCase({
 				}));
 			}
 			showToast({ color: "success", message: "Joined node", icon: flashOutline });
-			dismiss(true, "confirm");
+			dismiss({ role: "confirm" });
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
 				message: err instanceof Error ? err.message : "Failed to join node",
 			});
-			dismiss(null, "cancel");
+			dismiss({ role: "cancel" });
 		} finally {
 			await dismissLoading();
 		}
@@ -55,7 +55,7 @@ export function JoinNodeInviteCase({
 				you can send and receive on their Pub.
 			</p>
 			<div className="mt-12 flex justify-end gap-2">
-				<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
+				<IonButton color="medium" onClick={() => dismiss({ role: "cancel" })}>
 					Cancel
 				</IonButton>
 				<IonButton color="primary" onClick={() => void handleJoin()}>

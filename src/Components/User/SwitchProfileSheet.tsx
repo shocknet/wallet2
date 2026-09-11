@@ -6,11 +6,9 @@ import {
 	IonHeader,
 	IonIcon,
 	IonList,
-	IonModal,
 	IonSpinner,
 	IonTitle,
 	IonToolbar,
-	useIonRouter,
 } from "@ionic/react";
 import {
 	chevronBackOutline,
@@ -18,7 +16,7 @@ import {
 	lockOpenOutline,
 	trashOutline,
 } from "ionicons/icons";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { nip19 } from "nostr-tools";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
@@ -28,21 +26,35 @@ import { ProfileCard } from "@/Components/User/ProfileCard";
 import { InactiveProfileCard } from "@/Components/User/InactiveProfileCard";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { requestIdentityUnlock } from "@/shell/coordinator";
-import { useAskPromptDecision } from "@/Components/Modals/PromptDecision";
+import { useNestedPromptDangerModal } from "@/Components/prompt";
 import { useToast } from "@/lib/contexts/useToast";
+import {
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayOptions,
+	type OverlayResult,
+} from "@/overlay";
 
-// Picker + detail sheet for other profiles (excludes the active one)
-export function SwitchProfileSheet({
-	isOpen,
-	onDidDismiss,
+const sheetOverlay: OverlayOptions = {
+	cssClass: "app-sheet-modal",
+	initialBreakpoint: 0.92,
+	breakpoints: [0, 0.92, 1],
+	expandToScroll: false,
+	handle: true,
+};
+
+export type SwitchProfileResult =
+	| OverlayResult<"create">
+	| OverlayResult<"cancel">;
+
+function SwitchProfileSheet({
+	dismiss,
 }: {
-	isOpen: boolean;
-	onDidDismiss: () => void;
+	dismiss: Dismiss<SwitchProfileResult>;
 }) {
 	const dispatch = useAppDispatch();
-	const router = useIonRouter();
 	const { showToast } = useToast();
-	const presentPromptDecision = useAskPromptDecision();
+	const promptDanger = useNestedPromptDangerModal();
 	const activeIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	const all = useAppSelector(identitiesSelectors.selectAll);
 	const others = useMemo(
@@ -55,7 +67,7 @@ export function SwitchProfileSheet({
 	function handleDismiss() {
 		setSelected(null);
 		setBusy(null);
-		onDidDismiss();
+		dismiss({ role: "cancel" });
 	}
 
 	async function handleUnlock(identity: Identity) {
@@ -77,15 +89,13 @@ export function SwitchProfileSheet({
 	async function handleDelete(identity: Identity) {
 		if (busy || identity.pubkey === activeIdentityId) return;
 
-		const confirmed = await presentPromptDecision({
+		const confirmed = await promptDanger({
 			title: "Remove profile?",
 			description:
 				"This removes the profile from this device. If you do not have a backup, you may lose access to funds for this profile.",
 			confirmButtonLabel: "Remove",
-			confirmButtonColor: "danger",
-			denyButtonLabel: "Cancel",
 		});
-		if (!confirmed) return;
+		if (confirmed.role !== "confirm") return;
 
 		setBusy("delete");
 		try {
@@ -105,15 +115,7 @@ export function SwitchProfileSheet({
 	}
 
 	return (
-		<IonModal
-			isOpen={isOpen}
-			onDidDismiss={handleDismiss}
-			initialBreakpoint={0.92}
-			breakpoints={[0, 0.92, 1]}
-			expandToScroll={false}
-			handle
-			className="app-sheet-modal"
-		>
+		<>
 			{selected ? (
 				<>
 					<IonHeader className="ion-no-border">
@@ -263,14 +265,7 @@ export function SwitchProfileSheet({
 									size="large"
 									color="secondary"
 									className="[--border-radius:12px]"
-									onClick={() => {
-										handleDismiss();
-										router.push(
-											"/profile/create",
-											"forward",
-											"push",
-										);
-									}}
+									onClick={() => dismiss({ role: "create" })}
 								>
 									Add New Profile
 								</IonButton>
@@ -279,6 +274,16 @@ export function SwitchProfileSheet({
 					</IonFooter>
 				</>
 			)}
-		</IonModal>
+		</>
 	);
+}
+
+export function useSwitchProfileModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback(() => {
+		return present<SwitchProfileResult>(
+			(dismiss) => <SwitchProfileSheet dismiss={dismiss} />,
+			sheetOverlay,
+		);
+	}, [present]);
 }

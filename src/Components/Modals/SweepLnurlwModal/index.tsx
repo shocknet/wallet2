@@ -10,8 +10,14 @@ import { useCallback, useState } from "react";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectFavoriteSourceView, selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
-import { SourceSelectSheet } from "@/Components/Source/SourceSelectSheet";
-import { type ModalDismiss, useAskModal } from "@/Components/Modals/hooks/useAskModal";
+import { useNestedSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
+import {
+	allowOverlayRoles,
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayChoice,
+	type OverlayOptions,
+} from "@/overlay";
 import { formatSatoshi } from "@/lib/units";
 import type { ParsedLnurlWithdrawInput } from "@/lib/types/parse";
 import { createNostrInvoice } from "@/Api/helpers";
@@ -23,22 +29,22 @@ export type SweepLnurlwOptions = {
 };
 
 type SweepLnurlwDialogProps = SweepLnurlwOptions & {
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 };
 
 function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 	const sourceViews = useAppSelector(selectSourceViews);
 	const favoriteSourceView = useAppSelector(selectFavoriteSourceView);
 	const { showToast } = useToast();
+	const sourceSelect = useNestedSourceSelectModal();
 	const [presentLoading, dismissLoading] = useIonLoading();
-	const [selectedSource, setSelectedSource] = useState<SourceView | undefined>(
+	const [selectedSource, setSelectedSource] = useState<SourceView>(
 		() => favoriteSourceView ?? sourceViews[0],
 	);
-	const [sheetOpen, setSheetOpen] = useState(false);
 	const [busy, setBusy] = useState(false);
 
 	const handleSweep = async () => {
-		if (!selectedSource || busy) return;
+		if (busy) return;
 		setBusy(true);
 		try {
 			await presentLoading({ message: "Sweeping…", cssClass: "app-loading" });
@@ -53,7 +59,7 @@ function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 				amountSats: parsed.max,
 				passedParams: parsed,
 			});
-			dismiss(true, "confirm");
+			dismiss({ role: "confirm" });
 		} catch (err: unknown) {
 			showToast({
 				message: err instanceof Error ? err.message : "An error occured while sweeping lnurl-w",
@@ -81,68 +87,57 @@ function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 				<IonText className="text-muted">
 					Choose a source to sweep {formatSatoshi(parsed.max)} sats to.
 				</IonText>
-				{selectedSource ? (
-					<div className="mt-4">
-						<SourceSelectionView
-							source={selectedSource}
-							showTapToSwitch={false}
-							onClick={() => setSheetOpen(true)}
-							className="[--background:var(--app-surface-muted)]"
-						/>
-					</div>
-				) : null}
+				<div className="mt-4">
+					<SourceSelectionView
+						source={selectedSource}
+						showTapToSwitch={false}
+						onClick={() => {
+							sourceSelect({
+								sources: sourceViews,
+								selectedSourceId: selectedSource.sourceId,
+								title: "Sweep into",
+							}).then((result) => {
+								if (result.role === "confirm") setSelectedSource(result.data);
+							});
+						}}
+						className="[--background:var(--app-surface-muted)]"
+					/>
+				</div>
 				<div className="mt-12 flex justify-end gap-2">
 					<IonButton
 						color="medium"
 						disabled={busy}
-						onClick={() => dismiss(null, "cancel")}
+						onClick={() => dismiss({ role: "cancel" })}
 					>
 						Cancel
 					</IonButton>
 					<IonButton
 						color="primary"
-						disabled={!selectedSource || busy}
+						disabled={busy}
 						onClick={() => void handleSweep()}
 					>
 						Sweep
 					</IonButton>
 				</div>
 			</div>
-
-			<SourceSelectSheet
-				isOpen={sheetOpen}
-				onDidDismiss={() => setSheetOpen(false)}
-				selectedSourceId={selectedSource?.sourceId}
-				onSelect={setSelectedSource}
-				sources={sourceViews}
-				title="Sweep into"
-			/>
 		</>
 	);
 }
 
-export function useAskSweepLnurlw() {
-	const present = useAskModal<SweepLnurlwOptions, true>(
-		SweepLnurlwDialog,
-		"dialog-modal wallet-modal",
-	);
-	const sourceCount = useAppSelector(selectSourceViews).length;
-	const { showToast } = useToast();
+const sweepOverlay: OverlayOptions = {
+	cssClass: "dialog-modal wallet-modal",
+	backdropDismiss: false,
+	keyboardClose: false,
+	canDismiss: allowOverlayRoles("confirm", "cancel"),
+};
 
-	return useCallback(async (parsed: ParsedLnurlWithdrawInput) => {
-		if (sourceCount === 0) {
-			showToast({ message: "Add a source first", color: "danger" });
-			return;
-		}
-		if (parsed.max <= 0) return;
+export function useSweepLnurlwModal() {
+	const { tryPresent } = useOverlayCoordinator();
 
-		await present(
-			{ parsed },
-			{
-				backdropDismiss: false,
-				keyboardClose: false,
-				canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
-			},
+	return useCallback((parsed: ParsedLnurlWithdrawInput) => {
+		return tryPresent<OverlayChoice>(
+			(dismiss) => <SweepLnurlwDialog parsed={parsed} dismiss={dismiss} />,
+			sweepOverlay,
 		);
-	}, [present, showToast, sourceCount]);
+	}, [tryPresent]);
 }

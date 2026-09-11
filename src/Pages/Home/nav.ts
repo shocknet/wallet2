@@ -1,8 +1,6 @@
-import type { History, Location } from "history";
+import type { History } from "history";
 
 export type HomePageNavState = {
-	reason?: string;
-	from?: Location;
 	notif_op_id?: string;
 	sourceId?: string;
 };

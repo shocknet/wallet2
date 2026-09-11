@@ -17,7 +17,6 @@ import { useAppDispatch } from "@/State/store/hooks";
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 
 
 export function CreateSanctumPage() {
@@ -32,14 +31,13 @@ export function CreateSanctumPage() {
 			authHandledRef.current = true;
 			try {
 				await presentLoading({ cssClass: "app-loading", message: "Creating profile…" });
-				const { foundBackup, identityId } = await dispatch(
+				await dispatch(
 					createIdentity({
 						type: IdentityType.SANCTUM,
 						label: "New Sanctum Identity",
 						tokensData,
 					}),
 				);
-				dispatch(enqueueBootstrapIfNoBackup({ foundBackup, identityId }));
 			} catch (err: unknown) {
 				authHandledRef.current = false;
 				showToast({

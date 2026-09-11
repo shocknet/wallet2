@@ -1,4 +1,4 @@
-import type { ModalDismiss } from "@/Components/Modals/hooks/useAskModal";
+import type { Dismiss, OverlayChoice } from "@/overlay";
 import type { BeaconDiscovery } from "@/Hooks/useBeaconDiscovery";
 import type { ParsedNprofileInput } from "@/lib/types/parse";
 
@@ -13,5 +13,5 @@ export type AddSourceBeacon = BeaconDiscovery;
 
 export type AddSourceCaseProps = {
 	parsed: ParsedNprofileInput;
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 };

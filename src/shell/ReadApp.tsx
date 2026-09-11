@@ -2,17 +2,17 @@ import { IonRouterOutlet } from "@ionic/react";
 import {
 	Redirect,
 	Route,
+	useHistory,
 } from "react-router-dom";
-import { lazy } from "react";
+import { lazy, memo, useEffect } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { GuardedRoute } from "@/routing/GuardedRoute";
-import { atLeastOneAdminSourceGuard, atLeastOneSource } from "@/routing/guards";
+import { atLeastOneAdminSourceGuard } from "@/routing/guards";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { ReadyAppEffects } from "./ReadyAppEffects";
 import AddNewIdentity from "@/Pages/AddNewIdentity";
-import AuthRequestsHost from "@/Components/Modals/AuthRequestsHost";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -20,7 +20,6 @@ const Receive = lazy(() => import('@/Pages/Receive'));
 const Send = lazy(() => import('@/Pages/Send'));
 
 const SourcesPage = lazy(() => import("@/Pages/Sources"));
-const BootstrapSourcePage = lazy(() => import("@/Pages/BootstrapSource"));
 const IdentityOverviewPage = lazy(() => import("@/Pages/IdentityOverview"));
 
 
@@ -42,23 +41,24 @@ const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 
 
 
-export function ReadyApp({
+export const ReadyApp = memo(function ReadyApp({
 	runtimeIdentity,
 }: {
 	runtimeIdentity: RuntimeIdentity;
 }) {
+	const history = useHistory();
+
+	useEffect(() => {
+		if (history.location.pathname === "/profile/create") {
+			history.replace("/home");
+		}
+	}, [runtimeIdentity.pubkey, history]);
 
 	return (
 		<>
-			<AuthRequestsHost />
 			<ReadyAppEffects />
 			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
-				<GuardedRoute
-					exact
-					path="/bootstrap"
-					component={BootstrapSourcePage}
-				/>
 				<GuardedRoute
 					exact
 					path="/home"
@@ -125,7 +125,6 @@ export function ReadyApp({
 					exact
 					path="/offers"
 					component={Offers}
-					guards={[atLeastOneSource]}
 				/>
 				<GuardedRoute
 					exact
@@ -143,7 +142,6 @@ export function ReadyApp({
 					exact
 					path="/swaps"
 					component={Swaps}
-					guards={[atLeastOneSource]}
 				/>
 				<GuardedRoute
 					exact
@@ -171,7 +169,7 @@ export function ReadyApp({
 			</IonRouterOutlet>
 		</>
 	);
-}
+});
 
 
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	IonButton,
 	IonHeader,
@@ -10,7 +10,7 @@ import {
 import { FiatDisplay } from "@/Components/FiatDisplay";
 import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-import { type ModalDismiss, useAskModal } from "@/Components/Modals/hooks/useAskModal";
+import { OverlayOptions, useOverlayCoordinator, type Dismiss, type OverlayChoice } from "@/overlay";
 import { truncateTextMiddle } from "@/lib/format";
 import { InputClassification, type ParsedInput } from "@/lib/types/parse";
 import type { Satoshi } from "@/lib/types/units";
@@ -29,7 +29,7 @@ export type ConfirmSendResult = {
 };
 
 type ConfirmSendModalProps = ConfirmSendModalOptions & {
-	dismiss: ModalDismiss<ConfirmSendResult>;
+	dismiss: Dismiss<OverlayChoice<ConfirmSendResult>>;
 };
 
 function ConfirmSendModal({
@@ -111,7 +111,7 @@ function ConfirmSendModal({
 						color="primary"
 						expand="block"
 						className="m-0 [--border-radius:12px]"
-						onClick={() => dismiss({ note }, "confirm")}
+						onClick={() => dismiss({ role: "confirm", data: { note } })}
 					>
 						Pay {formatSatoshi(amount)} sats
 					</IonButton>
@@ -119,7 +119,7 @@ function ConfirmSendModal({
 						fill="clear"
 						expand="block"
 						className="m-0 [--border-radius:12px] [--color:var(--app-text-primary)]"
-						onClick={() => dismiss(null, "cancel")}
+						onClick={() => dismiss({ role: "cancel" })}
 					>
 						Back
 					</IonButton>
@@ -129,11 +129,21 @@ function ConfirmSendModal({
 	);
 }
 
-export function useAskConfirmSend() {
-	return useAskModal<ConfirmSendModalOptions, ConfirmSendResult>(
-		ConfirmSendModal,
-		"dialog-modal wallet-modal",
-	);
+const lockedConfirmSendOverlay: OverlayOptions = {
+	cssClass: "dialog-modal wallet-modal",
+	backdropDismiss: false,
+	keyboardClose: false,
+	canDismiss: (_data, role) => Promise.resolve(role === "confirm" || role === "cancel"),
+};
+
+export function useConfirmSendModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((options: ConfirmSendModalOptions) => {
+		return present<OverlayChoice<ConfirmSendResult>>(
+			(dismiss) => <ConfirmSendModal {...options} dismiss={dismiss} />,
+			lockedConfirmSendOverlay,
+		);
+	}, [present]);
 }
 
 function recipientSummary(parsed: ParsedInput): { label: string; detail?: string } {

@@ -1,30 +1,28 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { Clipboard } from "@capacitor/clipboard";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { addAsset } from "@/State/Slices/generatedAssets";
-import { useAlert } from "@/lib/contexts/useAlert";
 import { InputClassification } from "@/lib/types/parse";
-import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
 import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useLocalStorage } from "@/Hooks/useLocalStorage/useLocalStorage";
 import { useWindowEvent } from "@/Hooks/useWindowEvent";
 import { selectIsActive } from "@/State/runtime/slice";
-import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
-import { navToSources } from "@/Pages/Sources/nav";
-import { useAskClipboardDetected } from "@/Components/Modals/ClipboardDetectedModal";
-import { useAskSweepLnurlw } from "@/Components/Modals/SweepLnurlwModal";
+import { useClipboardDetectedModal } from "@/Components/Modals/ClipboardDetectedModal";
+import { usePromptNoticeModal } from "@/Components/prompt";
+import { resolveAppIntent } from "@/intents/resolve";
+import { identifyBitcoinInput } from "@/lib/parse";
 
 const CLIPBOARD_THROTTLE_MS = 500;
 const FOCUS_SETTLE_DELAY_MS = 50;
 
 export function useWatchClipboard() {
-	const { showAlert } = useAlert();
-	const askClipboardDetected = useAskClipboardDetected();
-	const askSweepLnurlw = useAskSweepLnurlw();
+	const showNotice = usePromptNoticeModal();
+	const askClipboardDetected = useClipboardDetectedModal();
 	const dispatch = useAppDispatch();
-	const history = useHistory();
 	const isAppActive = useAppSelector(selectIsActive);
+	const pendingIntent = useAppSelector((state) => state.shell.pendingIntent);
+	const pendingIntentRef = useRef(pendingIntent);
+	pendingIntentRef.current = pendingIntent;
 
 	const [warned, setWarned] = useLocalStorage({
 		key: "warned-clipboard-not-allowed",
@@ -41,33 +39,12 @@ export function useWatchClipboard() {
 		dispatch(addAsset({ asset }));
 	};
 
-	const navigateForClipboard = useCallback(async (value: string, classification: InputClassification) => {
-		const parsed = await parseBitcoinInput(value, classification);
-
-		if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-			await askSweepLnurlw(parsed);
-			return;
-		}
-
-		if (parsed.type === InputClassification.NPROFILE) {
-			navToSources(history, { parsedNprofile: parsed });
-			return;
-		}
-
-		if (isSendParsedInput(parsed)) {
-			navToSend(history, { parsed });
-			return;
-		}
-
-		throw new Error("No case for this input");
-	}, [askSweepLnurlw, history]);
-
 	const checkClipboard = useEventCallback(async () => {
 		if (!isAppActive) return;
-		if (history.location.pathname === "/bootstrap") return;
 		if (!document.hasFocus()) return;
 		if (document.visibilityState !== "visible") return;
 		if (alertInFlightRef.current) return;
+		if (pendingIntentRef.current) return;
 
 		const now = Date.now();
 		if (now - lastCheckTsRef.current < CLIPBOARD_THROTTLE_MS) return;
@@ -86,14 +63,15 @@ export function useWatchClipboard() {
 			if (name !== "NotAllowedError" || warned) return;
 
 			alertInFlightRef.current = true;
-			setWarned(true);
 			try {
-				await showAlert({
-					header: "Clipboard access blocked",
-					message:
-						"When you come back to the app, Shockwallet can read a copied invoice or address and offer to use it. Access is blocked in this browser.",
-					buttons: ["OK"],
+				const outcome = await showNotice({
+					title: "Clipboard access blocked",
+					description: "When you come back to the app, Shockwallet can read a copied invoice or address and offer to use it. Access is blocked in this browser.",
 				});
+				if (outcome.status === "skipped") {
+					return;
+				}
+				setWarned(true);
 			} finally {
 				alertInFlightRef.current = false;
 			}
@@ -107,24 +85,20 @@ export function useWatchClipboard() {
 
 		if (seenAssets.includes(value)) return;
 		if (alertInFlightRef.current) return;
+		if (pendingIntentRef.current) return;
 
 		alertInFlightRef.current = true;
 		try {
-			const confirmed = await askClipboardDetected(
-				{ value },
-				{
-					backdropDismiss: false,
-					keyboardClose: false,
-					canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
-				}
-			);
-
-			if (!confirmed) {
+			const outcome = await askClipboardDetected({ value });
+			if (outcome.status === "skipped") {
+				return;
+			}
+			if (outcome.value.role !== "confirm") {
 				remember(value);
 				return;
 			}
 
-			await navigateForClipboard(value, classification);
+			await dispatch(resolveAppIntent(value));
 			remember(value);
 		} catch (err: unknown) {
 			console.error("Error parsing clipboard input:", err);
@@ -132,10 +106,9 @@ export function useWatchClipboard() {
 				err instanceof Error
 					? err.message
 					: "Could not use the clipboard content.";
-			await showAlert({
-				header: "Error",
-				message,
-				buttons: ["OK"],
+			await showNotice({
+				title: "Error",
+				description: message,
 			});
 		} finally {
 			alertInFlightRef.current = false;

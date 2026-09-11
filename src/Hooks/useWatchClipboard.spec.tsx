@@ -1,120 +1,72 @@
-import { describe, it, beforeEach, expect, vi, afterEach } from "vitest";
-import { render, act } from "@testing-library/react";
-import { MemoryRouter as Router } from "react-router-dom";
+import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
+import { act, render } from "@testing-library/react";
 import { useWatchClipboard } from "./useWatchClipboard";
-import { InputClassification } from "../lib/types/parse";
+import { addAsset } from "@/State/Slices/generatedAssets";
+
+vi.useFakeTimers();
+
+const LNURL = "lnurl1" + "p".repeat(12);
+const INVOICE = "lnbc1" + "q".repeat(10);
+const BTC_ADDRESS = "bc1p" + "q".repeat(12);
 
 function Harness() {
 	useWatchClipboard();
 	return null;
 }
 
-vi.useFakeTimers();
-
 const mockClipboardRead = vi.fn();
-vi.mock("@capacitor/clipboard", () => {
-	return {
-		Clipboard: {
-			read: (...args: any[]) => mockClipboardRead(...args),
-		},
-	};
-});
+vi.mock("@capacitor/clipboard", () => ({
+	Clipboard: {
+		read: (...args: unknown[]) => mockClipboardRead(...args),
+	},
+}));
 
-const mockShowAlert = vi.fn();
-vi.mock("@/lib/contexts/useAlert", () => {
-	return {
-		useAlert: () => ({
-			showAlert: mockShowAlert,
-		}),
-	};
-});
-
-const mockPush = vi.fn();
-vi.mock("react-router-dom", async (orig) => {
-	const actual: any = await orig();
-	return {
-		...actual,
-		useHistory: () => ({
-			push: mockPush,
-		}),
-	};
-});
-
-vi.mock("@/lib/format", () => {
-	return {
-		truncateTextMiddle: (v: string, _n: number) => `TRUNC(${v})`,
-	};
-});
+const mockShowNotice = vi.fn();
+vi.mock("@/Components/prompt", () => ({
+	usePromptNoticeModal: () => mockShowNotice,
+}));
 
 const mockAskClipboardDetected = vi.fn();
-vi.mock("@/Components/Modals/ClipboardDetectedModal", () => {
-	return {
-		useAskClipboardDetected: () => mockAskClipboardDetected,
-	};
-});
+vi.mock("@/Components/Modals/ClipboardDetectedModal", () => ({
+	useClipboardDetectedModal: () => mockAskClipboardDetected,
+}));
 
-const mockAskSweepLnurlw = vi.fn();
-vi.mock("@/Components/Modals/SweepLnurlwModal", () => {
-	return {
-		useAskSweepLnurlw: () => mockAskSweepLnurlw,
-	};
-});
+const mockResolveAppIntent = vi.fn();
+vi.mock("@/intents/resolve", () => ({
+	resolveAppIntent: (raw: string) => mockResolveAppIntent(raw),
+}));
 
-// app state from redux selectors
 const mockDispatch = vi.fn();
 let mockIsActive = true;
 let mockSeenAssets: string[] = [];
+let mockPendingIntent: unknown = null;
 
-vi.mock("@/State/store/hooks", () => {
-	return {
-		useAppDispatch: () => mockDispatch,
-		useAppSelector: (selectorFn: any) =>
-			selectorFn({
-				runtime: { isActive: mockIsActive },
-				generatedAssets: { assets: mockSeenAssets },
-			}),
-	};
-});
-
-vi.mock("@/State/Slices/generatedAssets", () => {
-	return {
-		addAsset: ({ asset }: { asset: string }) => ({
-			type: "generatedAssets/addAsset",
-			payload: { asset },
+vi.mock("@/State/store/hooks", () => ({
+	useAppDispatch: () => mockDispatch,
+	useAppSelector: (selector: (state: unknown) => unknown) =>
+		selector({
+			runtime: { isActive: mockIsActive },
+			generatedAssets: { assets: mockSeenAssets },
+			shell: { pendingIntent: mockPendingIntent },
 		}),
-	};
+}));
+
+let warned = false;
+const mockSetWarned = vi.fn((next: boolean) => {
+	warned = next;
 });
+vi.mock("@/Hooks/useLocalStorage/useLocalStorage", () => ({
+	useLocalStorage: () => [warned, mockSetWarned] as const,
+}));
 
-
-const mockIdentifyBitcoinInput = vi.fn();
-const mockParseBitcoinInput = vi.fn();
-vi.mock("@/lib/parse", () => {
+function overlayDismissed(role: "confirm" | "cancel") {
 	return {
-		identifyBitcoinInput: (...args: any[]) =>
-			mockIdentifyBitcoinInput(...args),
-		parseBitcoinInput: (...args: any[]) =>
-			mockParseBitcoinInput(...args),
+		status: "dismissed" as const,
+		value: { role },
 	};
-});
-
-
-let warnedMockVal = false;
-const mockUpdateWarned = vi.fn();
-
-vi.mock("@/Hooks/useLocalStorage/useLocalStorage", () => {
-	return {
-		useLocalStorage: () => [warnedMockVal, mockUpdateWarned] as const,
-	};
-});
-
-
-function renderHarness() {
-	return render(
-		<Router>
-			<Harness />
-		</Router>
-	);
 }
+
+const skipped = { status: "skipped" as const };
 
 function mockForeground() {
 	Object.defineProperty(document, "hasFocus", {
@@ -127,27 +79,32 @@ function mockForeground() {
 	});
 }
 
+async function flushScheduledCheck() {
+	await act(async () => {
+		vi.advanceTimersByTime(50);
+	});
+	await act(async () => {
+		await Promise.resolve();
+		await Promise.resolve();
+	});
+}
 
 beforeEach(() => {
-	mockDispatch.mockClear();
-	mockShowAlert.mockClear();
-	mockPush.mockClear();
+	mockDispatch.mockReset();
+	mockShowNotice.mockReset();
 	mockAskClipboardDetected.mockReset();
-	mockAskSweepLnurlw.mockReset();
 	mockClipboardRead.mockReset();
-	mockIdentifyBitcoinInput.mockReset();
-	mockParseBitcoinInput.mockReset();
-	mockUpdateWarned.mockClear();
+	mockResolveAppIntent.mockReset();
+	mockSetWarned.mockClear();
 
-	mockAskClipboardDetected.mockResolvedValue(true);
-	mockAskSweepLnurlw.mockResolvedValue(undefined);
+	mockResolveAppIntent.mockReturnValue({ type: "intents/resolveAppIntent" });
+	mockAskClipboardDetected.mockResolvedValue(overlayDismissed("confirm"));
+	mockShowNotice.mockResolvedValue(overlayDismissed("confirm"));
 
 	mockIsActive = true;
 	mockSeenAssets = [];
-
-
-	warnedMockVal = false;
-
+	mockPendingIntent = null;
+	warned = false;
 	mockForeground();
 });
 
@@ -155,431 +112,224 @@ afterEach(() => {
 	vi.clearAllTimers();
 });
 
+describe("useWatchClipboard", () => {
+	it("asks about a recognized clipboard value, then resolves it and remembers it", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
 
+		render(<Harness />);
+		await flushScheduledCheck();
 
-describe("useWatchClipboard happy path", () => {
-	it("reads clipboard, confirms, and on confirm sweeps lnurl-w + dispatches addAsset", async () => {
-		const clipboardText = "lnurl1heylisten";
-		const parsedLnurlW = {
-			type: InputClassification.LNURL_WITHDRAW,
-			data: "withdraw-data",
-		};
+		expect(mockAskClipboardDetected).toHaveBeenCalledWith({ value: LNURL });
+		expect(mockResolveAppIntent).toHaveBeenCalledWith(LNURL);
+		expect(mockDispatch).toHaveBeenCalledWith({ type: "intents/resolveAppIntent" });
+		expect(mockDispatch).toHaveBeenCalledWith(addAsset({ asset: LNURL }));
+	});
 
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: clipboardText,
-		});
+	it("remembers a declined value without resolving an intent", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: INVOICE });
+		mockAskClipboardDetected.mockResolvedValue(overlayDismissed("cancel"));
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LNURL_WITHDRAW,
-			value: clipboardText,
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		mockParseBitcoinInput.mockResolvedValue(parsedLnurlW);
+		expect(mockAskClipboardDetected).toHaveBeenCalledWith({ value: INVOICE });
+		expect(mockResolveAppIntent).not.toHaveBeenCalled();
+		expect(mockDispatch).toHaveBeenCalledWith(addAsset({ asset: INVOICE }));
+	});
 
-		renderHarness();
+	it("does not remember or resolve when the clipboard ask is skipped", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
+		mockAskClipboardDetected.mockResolvedValue(skipped);
 
-		await act(async () => {
-			// let the initial throttle (50ms) fire
-			vi.advanceTimersByTime(60);
-			// let pending promises flush
-			await Promise.resolve();
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
 		expect(mockAskClipboardDetected).toHaveBeenCalledTimes(1);
-		expect(mockAskClipboardDetected.mock.calls[0][0]).toEqual({ value: clipboardText });
-
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		// addAsset dispatched
-		expect(mockDispatch).toHaveBeenCalledWith({
-			type: "generatedAssets/addAsset",
-			payload: { asset: clipboardText },
-		});
-
-		expect(mockAskSweepLnurlw).toHaveBeenCalledTimes(1);
-		expect(mockAskSweepLnurlw).toHaveBeenCalledWith(parsedLnurlW);
-		expect(mockPush).not.toHaveBeenCalled();
-
-		// because warnedMockVal started false, we should NOT have asked to reset warned
-		expect(mockUpdateWarned).not.toHaveBeenCalledWith(false);
+		expect(mockResolveAppIntent).not.toHaveBeenCalled();
+		expect(mockDispatch).not.toHaveBeenCalled();
 	});
 
-	it("reads clipboard, shows detect modal, and on cancel still dispatches addAsset but does not navigate", async () => {
-		const clipboardText = "lnbc2500nonsense";
-
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: clipboardText,
-		});
-
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LN_INVOICE,
-			value: clipboardText,
-		});
-
-		mockParseBitcoinInput.mockResolvedValue({
-			type: InputClassification.LN_INVOICE,
-			data: "decoded-invoice-here",
-		});
-
-		mockAskClipboardDetected.mockResolvedValue(null);
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		expect(mockAskClipboardDetected).toHaveBeenCalledTimes(1);
-
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		// addAsset still dispatched
-		expect(mockDispatch).toHaveBeenCalledWith({
-			type: "generatedAssets/addAsset",
-			payload: { asset: clipboardText },
-		});
-
-		// but we did NOT navigate
-		expect(mockPush).not.toHaveBeenCalled();
-		expect(mockAskSweepLnurlw).not.toHaveBeenCalled();
-	});
-
-	it("parses noffer and navigates to send with parsed input", async () => {
-		const noffer = "noffer1qqsrf5h4ya83jk8u6t9jgc76h6kalz3plp9vusjpm2ygqgalqhxgp9gpr9mhxue69uhhyetvv9ujumrfva58gmnfdenjuur4vgpp2ctywejkuar4wfhh2um5dae8gmmfwdjnqdsrqypqqudzmz";
-		const parsedNoffer = {
-			type: InputClassification.NOFFER,
-			data: noffer,
-			noffer: { offer: "abc", pubkey: "pk", relay: "wss://relay.example" },
-		};
-
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: noffer,
-		});
-
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.NOFFER,
-			value: noffer,
-		});
-
-		mockParseBitcoinInput.mockResolvedValue(parsedNoffer);
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		expect(mockParseBitcoinInput).toHaveBeenCalledWith(noffer, InputClassification.NOFFER);
-		expect(mockPush).toHaveBeenCalledWith({
-			pathname: "/send",
-			state: { parsed: parsedNoffer },
-		});
-	});
-});
-
-describe("useWatchClipboard guards", () => {
-	it("does nothing if app is not active", async () => {
+	it("does not read the clipboard when the app is inactive", async () => {
 		mockIsActive = false;
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
 
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: "lnurl1abc",
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LNURL_WITHDRAW,
-			value: "lnurl1abc",
-		});
-
-		const alertResult = Promise.resolve({ role: "confirm" });
-		mockShowAlert.mockReturnValue(alertResult);
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		expect(mockShowAlert).not.toHaveBeenCalled();
-		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
-		expect(mockDispatch).not.toHaveBeenCalled();
-		expect(mockPush).not.toHaveBeenCalled();
-	});
-
-	it("does nothing if classification is UNKNOWN", async () => {
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: "weirdstuff",
-		});
-
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.UNKNOWN,
-			value: "weirdstuff",
-		});
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		expect(mockShowAlert).not.toHaveBeenCalled();
+		expect(mockClipboardRead).not.toHaveBeenCalled();
 		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
 	});
 
-	it("does nothing if classification is a chain address", async () => {
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: "bc1qxyz",
-		});
+	it("does not read the clipboard when an intent is already queued", async () => {
+		mockPendingIntent = { kind: "add-source" };
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.UNKNOWN,
-			value: "bc1qxyz",
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		renderHarness();
+		expect(mockClipboardRead).not.toHaveBeenCalled();
+		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
+	});
+
+	it("does not ask after a pending intent arrives during Clipboard.read", async () => {
+		let finishRead: ((value: { type: string; value: string }) => void) | undefined;
+		mockClipboardRead.mockReturnValue(
+			new Promise((resolve) => {
+				finishRead = resolve;
+			}),
+		);
+
+		const view = render(<Harness />);
+		await act(async () => {
+			vi.advanceTimersByTime(50);
+		});
+		expect(mockClipboardRead).toHaveBeenCalledTimes(1);
+
+		mockPendingIntent = { kind: "send" };
+		view.rerender(<Harness />);
 
 		await act(async () => {
-			vi.advanceTimersByTime(60);
+			finishRead?.({ type: "text/plain", value: LNURL });
+			await Promise.resolve();
 			await Promise.resolve();
 		});
 
-		expect(mockIdentifyBitcoinInput).toHaveBeenCalledWith("bc1qxyz", {
-			disallowed: [InputClassification.BITCOIN_ADDRESS],
-		});
-		expect(mockShowAlert).not.toHaveBeenCalled();
+		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
+		expect(mockResolveAppIntent).not.toHaveBeenCalled();
+	});
+
+	it("ignores unrecognized clipboard text", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: "hello world" });
+
+		render(<Harness />);
+		await flushScheduledCheck();
+
 		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
 		expect(mockDispatch).not.toHaveBeenCalled();
 	});
 
-	it("does nothing if value was already seen", async () => {
-		const repeated = "lnurl1repeat";
-		mockSeenAssets = [repeated];
+	it("ignores bitcoin addresses", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: BTC_ADDRESS });
 
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: repeated,
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LN_INVOICE,
-			value: repeated,
-		});
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		expect(mockShowAlert).not.toHaveBeenCalled();
 		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
 		expect(mockDispatch).not.toHaveBeenCalled();
 	});
 
-	it("does nothing if Clipboard.read() throws a generic error (not NotAllowedError)", async () => {
+	it("does not ask about a value that was already seen", async () => {
+		mockSeenAssets = [LNURL];
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: `lightning:${LNURL}` });
+
+		render(<Harness />);
+		await flushScheduledCheck();
+
+		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
+		expect(mockDispatch).not.toHaveBeenCalled();
+	});
+
+	it("ignores clipboard errors other than NotAllowedError", async () => {
 		mockClipboardRead.mockRejectedValue(new Error("nope"));
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LN_INVOICE,
-			value: "lnurl",
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		// no alert, no dispatch, no nav
-		expect(mockShowAlert).not.toHaveBeenCalled();
+		expect(mockShowNotice).not.toHaveBeenCalled();
 		expect(mockAskClipboardDetected).not.toHaveBeenCalled();
-		expect(mockDispatch).not.toHaveBeenCalled();
-		expect(mockPush).not.toHaveBeenCalled();
 	});
-});
 
-describe("clipboard permission warning ('warned') behavior", () => {
-	it("on first NotAllowedError and warned=false: shows clipboard access alert and sets warned=true", async () => {
+	it("explains a blocked clipboard once, then sets warned", async () => {
 		mockClipboardRead.mockRejectedValue({ name: "NotAllowedError" });
 
-		const alertResult = Promise.resolve({ role: "cancel" });
-		mockShowAlert.mockReturnValue(alertResult);
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
+		expect(mockShowNotice).toHaveBeenCalledTimes(1);
+		expect(mockShowNotice.mock.calls[0][0]).toMatchObject({
+			title: "Clipboard access blocked",
 		});
-
-		expect(mockShowAlert).toHaveBeenCalledTimes(1);
-		const cfg = mockShowAlert.mock.calls[0][0];
-		expect(cfg.header).toMatch(/Clipboard access blocked/i);
-		expect(mockUpdateWarned).toHaveBeenCalledWith(true);
-		expect(mockPush).not.toHaveBeenCalled();
-		expect(mockDispatch).not.toHaveBeenCalled();
+		expect(mockSetWarned).toHaveBeenCalledWith(true);
 	});
 
-	it("on NotAllowedError and warned=true: does NOT show alert again", async () => {
-		// set warnedMockVal already true to simulate 'we already warned the user'
-		warnedMockVal = true;
+	it("does not set warned when the blocked-access notice is skipped", async () => {
+		mockClipboardRead.mockRejectedValue({ name: "NotAllowedError" });
+		mockShowNotice.mockResolvedValue(skipped);
 
+		render(<Harness />);
+		await flushScheduledCheck();
+
+		expect(mockShowNotice).toHaveBeenCalledTimes(1);
+		expect(mockSetWarned).not.toHaveBeenCalled();
+	});
+
+	it("does not explain a blocked clipboard again after warned", async () => {
+		warned = true;
 		mockClipboardRead.mockRejectedValue({ name: "NotAllowedError" });
 
-		renderHarness();
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		// no alert spam
-		expect(mockShowAlert).not.toHaveBeenCalled();
-
-		// no attempts to flip warned here, since read threw
-		expect(mockUpdateWarned).not.toHaveBeenCalled();
-
-		expect(mockPush).not.toHaveBeenCalled();
-		expect(mockDispatch).not.toHaveBeenCalled();
+		expect(mockShowNotice).not.toHaveBeenCalled();
+		expect(mockSetWarned).not.toHaveBeenCalled();
 	});
 
-	it("on successful Clipboard.read and warned=true: resets warned back to false", async () => {
-		// warned starts true
-		warnedMockVal = true;
+	it("clears warned after a successful clipboard read", async () => {
+		warned = true;
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
+		mockAskClipboardDetected.mockResolvedValue(overlayDismissed("cancel"));
 
-		const clipboardText = "lnbc_reset_warning";
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: clipboardText,
-		});
+		render(<Harness />);
+		await flushScheduledCheck();
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LN_INVOICE,
-			value: clipboardText,
-		});
-
-		mockParseBitcoinInput.mockResolvedValue({
-			type: InputClassification.LN_INVOICE,
-			data: "decoded-success-here",
-		});
-
-		// user cancels, doesn't matter; this path is to assert updateWarned(false)
-		mockAskClipboardDetected.mockResolvedValue(null);
-
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
-		// since warnedMockVal was true, we expect the hook to call updateWarned(false)
-		// right after a successful Clipboard.read
-		expect(mockUpdateWarned).toHaveBeenCalledWith(false);
-
+		expect(mockSetWarned).toHaveBeenCalledWith(false);
 		expect(mockAskClipboardDetected).toHaveBeenCalledTimes(1);
-
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		// addAsset was dispatched with the new asset
-		expect(mockDispatch).toHaveBeenCalledWith({
-			type: "generatedAssets/addAsset",
-			payload: { asset: clipboardText },
-		});
-
-		// in LN_INVOICE branch, confirm 'cancel' does not navigate
-		expect(mockPush).not.toHaveBeenCalled();
 	});
-});
 
-describe("useWatchClipboard app active handling", () => {
-	it("re-checks clipboard on window focus after the throttle", async () => {
-		const clipVal = "lnurl1resume";
-
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: clipVal,
+	it("shows a notice when resolving the clipboard value throws", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => { });
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
+		mockDispatch.mockImplementation((action: unknown) => {
+			if (
+				action &&
+				typeof action === "object" &&
+				"type" in action &&
+				action.type === "intents/resolveAppIntent"
+			) {
+				return Promise.reject(new Error("bad invoice"));
+			}
+			return action;
 		});
 
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LNURL_WITHDRAW,
-			value: clipVal,
+		render(<Harness />);
+		await flushScheduledCheck();
+
+		expect(mockShowNotice).toHaveBeenCalledWith({
+			title: "Error",
+			description: "bad invoice",
 		});
+		expect(mockDispatch).not.toHaveBeenCalledWith(addAsset({ asset: LNURL }));
+	});
 
-		mockParseBitcoinInput.mockResolvedValue({
-			type: InputClassification.LNURL_WITHDRAW,
-			data: "withdraw-data",
-		});
+	it("checks again on window focus after the throttle", async () => {
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: LNURL });
 
-		renderHarness();
-
-		await act(async () => {
-			vi.advanceTimersByTime(60);
-			await Promise.resolve();
-		});
-
+		render(<Harness />);
+		await flushScheduledCheck();
 		expect(mockAskClipboardDetected).toHaveBeenCalledTimes(1);
 
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		expect(mockAskSweepLnurlw).toHaveBeenCalledTimes(1);
-
-		const newVal = "lnbc2500fresh";
-		mockClipboardRead.mockResolvedValue({
-			type: "text/plain",
-			value: newVal,
-		});
-
-		mockIdentifyBitcoinInput.mockReturnValue({
-			classification: InputClassification.LN_INVOICE,
-			value: newVal,
-		});
-
-		mockParseBitcoinInput.mockResolvedValue({
-			type: InputClassification.LN_INVOICE,
-			data: "decoded-invoice-later",
-		});
-
-		mockAskClipboardDetected.mockResolvedValueOnce(null);
+		mockClipboardRead.mockResolvedValue({ type: "text/plain", value: INVOICE });
+		mockAskClipboardDetected.mockResolvedValue(overlayDismissed("cancel"));
 
 		await act(async () => {
 			vi.advanceTimersByTime(500);
 			window.dispatchEvent(new Event("focus"));
-			vi.advanceTimersByTime(60);
+			vi.advanceTimersByTime(50);
 			await Promise.resolve();
-		});
-
-		await act(async () => {
 			await Promise.resolve();
 		});
 
 		expect(mockAskClipboardDetected).toHaveBeenCalledTimes(2);
-		expect(mockDispatch).toHaveBeenCalledWith({
-			type: "generatedAssets/addAsset",
-			payload: { asset: "lnbc2500fresh" },
-		});
+		expect(mockAskClipboardDetected).toHaveBeenLastCalledWith({ value: INVOICE });
 	});
 });

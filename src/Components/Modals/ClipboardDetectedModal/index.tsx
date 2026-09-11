@@ -1,12 +1,18 @@
 import { IonButton, IonHeader, IonText, IonTitle, IonToolbar } from "@ionic/react";
-import { ModalDismiss, useAskModal } from "../hooks/useAskModal";
+import { useCallback } from "react";
+import {
+	allowOverlayRoles,
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayChoice,
+} from "@/overlay";
 
 export type ClipboardDetectedModalOptions = {
 	value: string;
 };
 
 type ClipboardDetectedModalProps = ClipboardDetectedModalOptions & {
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 };
 
 export function ClipboardDetectedModal({
@@ -38,10 +44,10 @@ export function ClipboardDetectedModal({
 					{value}
 				</p>
 				<div className="flex items-center justify-center gap-2">
-					<IonButton fill="clear" onClick={() => dismiss(null, "cancel")}>
+					<IonButton fill="clear" onClick={() => dismiss({ role: "cancel" })}>
 						No
 					</IonButton>
-					<IonButton onClick={() => dismiss(true, "confirm")}>
+					<IonButton onClick={() => dismiss({ role: "confirm" })}>
 						Yes
 					</IonButton>
 				</div>
@@ -50,9 +56,17 @@ export function ClipboardDetectedModal({
 	);
 }
 
-export function useAskClipboardDetected() {
-	return useAskModal<ClipboardDetectedModalOptions, true>(
-		ClipboardDetectedModal,
-		"dialog-modal wallet-modal",
-	);
+export function useClipboardDetectedModal() {
+	const { tryPresent } = useOverlayCoordinator();
+	return useCallback((options: ClipboardDetectedModalOptions) => {
+		return tryPresent<OverlayChoice>(
+			(dismiss) => <ClipboardDetectedModal {...options} dismiss={dismiss} />,
+			{
+				cssClass: "dialog-modal wallet-modal",
+				backdropDismiss: false,
+				keyboardClose: false,
+				canDismiss: allowOverlayRoles("confirm", "cancel"),
+			},
+		);
+	}, [tryPresent]);
 }

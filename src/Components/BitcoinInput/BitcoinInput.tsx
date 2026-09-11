@@ -19,7 +19,7 @@ import {
 } from "react";
 import cn from "clsx";
 import { useEventCallback } from "@/Hooks/useEventCallback";
-import { useQrScanner } from "@/Hooks/useQrScanner";
+import { useNestedQrScanner, useQrScanner } from "@/Hooks/useQrScanner";
 import { identifyBitcoinInput, InputClassificationConfig, parseBitcoinInput } from "@/lib/parse";
 import {
 	InputClassification,
@@ -56,6 +56,8 @@ export type BitcoinInputProps = {
 	className?: string;
 	label?: string;
 	placeholder?: string;
+	/** True when this field sits inside an overlay. Scan stacks on the parent dialog. */
+	nested?: boolean;
 	fill?: IonInputProps["fill"];
 	mode?: IonInputProps["mode"];
 	labelPlacement?: IonInputProps["labelPlacement"];
@@ -81,6 +83,7 @@ export const BitcoinInput = forwardRef<BitcoinInputHandle, BitcoinInputProps>(
 			className,
 			label,
 			placeholder,
+			nested = false,
 			fill,
 			mode: ionMode,
 			labelPlacement,
@@ -92,7 +95,9 @@ export const BitcoinInput = forwardRef<BitcoinInputHandle, BitcoinInputProps>(
 		const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 		const parseGen = useRef(0);
 		const [touched, setTouched] = useState(false);
-		const { scanSingleBarcode } = useQrScanner();
+		const pageScan = useQrScanner();
+		const nestedScan = useNestedQrScanner();
+		const { scanSingleBarcode } = nested ? nestedScan : pageScan;
 		const validateCallback = useEventCallback(validate);
 
 		const classify = useMemo(
@@ -252,12 +257,8 @@ export const BitcoinInput = forwardRef<BitcoinInputHandle, BitcoinInputProps>(
 		};
 
 		const openScan = async () => {
-			try {
-				const scanned = await scanSingleBarcode(scanInstruction);
-				commit(scanned);
-			} catch {
-				/* cancelled */
-			}
+			const scanned = await scanSingleBarcode(scanInstruction);
+			if (scanned.role === "confirm") commit(scanned.data);
 		};
 
 		return (

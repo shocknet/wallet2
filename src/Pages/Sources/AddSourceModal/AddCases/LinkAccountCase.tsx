@@ -32,13 +32,13 @@ export function LinkExistingAccountCase({
 				message: "The account has been linked to the wallet.",
 				icon: linkOutline,
 			});
-			dismiss(true, "confirm");
+			dismiss({ role: "confirm" });
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
 				message: err instanceof Error ? err.message : "Failed to open account",
 			});
-			dismiss(null, "cancel");
+			dismiss({ role: "cancel" });
 		} finally {
 			await dismissLoading();
 		}
@@ -58,7 +58,7 @@ export function LinkExistingAccountCase({
 			</p>
 
 			<div className="mt-12 flex justify-end gap-2">
-				<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
+				<IonButton color="medium" onClick={() => dismiss({ role: "cancel" })}>
 					Cancel
 				</IonButton>
 				<IonButton color="primary" onClick={handleLink}>

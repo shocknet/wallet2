@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import type { AppIntent } from "@/intents/types";
 import type {
 	MigrationFailure,
-	PendingNav,
 	PushIntent,
 	RuntimeIdentity,
 	ShellState,
@@ -20,7 +20,7 @@ const initialState: ShellState = {
 		kind: "none",
 	},
 	pushIntent: null,
-	pendingNav: null,
+	pendingIntent: null,
 };
 
 export const shellSlice = createSlice({
@@ -128,15 +128,20 @@ export const shellSlice = createSlice({
 			};
 		},
 
-		pendingNavSet(
+		pendingIntentSet(
 			state,
-			action: PayloadAction<PendingNav>,
+			action: PayloadAction<AppIntent>,
 		) {
-			state.pendingNav = action.payload;
+			state.pendingIntent = action.payload;
 		},
 
-		pendingNavCleared(state) {
-			state.pendingNav = null;
+		pendingIntentCleared(
+			state,
+			action: PayloadAction<{ id: string }>,
+		) {
+			if (state.pendingIntent?.id === action.payload.id) {
+				state.pendingIntent = null;
+			}
 		},
 	},
 });

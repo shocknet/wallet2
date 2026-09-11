@@ -1,7 +1,5 @@
-
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
-	IonModal,
 	IonHeader,
 	IonToolbar,
 	IonTitle,
@@ -12,76 +10,97 @@ import {
 	IonGrid,
 	IonRow,
 	IonCol,
-} from '@ionic/react';
-import { closeOutline } from 'ionicons/icons';
-import { useRef } from 'react';
+} from "@ionic/react";
+import { closeOutline } from "ionicons/icons";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, type RefObject } from "react";
+import {
+	useOverlayCoordinator,
+	usePromiseModal,
+	type Dismiss,
+	type OverlayOptions,
+	type OverlayResult,
+} from "@/overlay";
 
-interface PWAScannerModalProps {
+export type PwaScannerResult =
+	| OverlayResult<"confirm", string>
+	| OverlayResult<"error", string>
+	| OverlayResult<"cancel">;
+
+export type PwaScannerHandle = {
+	start: () => void;
+};
+
+type PWAScannerModalProps = {
 	instruction: string;
-	onResult: (txt: string) => void;
-	onCancel: () => void;
-	onError: (error: string) => void;
-	isOpen: boolean;
+	dismiss: Dismiss<PwaScannerResult>;
+};
+
+function scannerOverlay(scannerRef: RefObject<PwaScannerHandle | null>): OverlayOptions {
+	return {
+		cssClass: "wallet-modal",
+		onDidPresent: () => {
+			void scannerRef.current?.start();
+		},
+	};
 }
 
-const PWAScannerModal = ({ instruction, onResult, onCancel, onError, isOpen }: PWAScannerModalProps) => {
+export const PWAScannerModal = forwardRef<PwaScannerHandle, PWAScannerModalProps>(function PWAScannerModal({ instruction, dismiss }, ref) {
 	const regionRef = useRef<HTMLDivElement | null>(null);
 	const html5Ref = useRef<Html5Qrcode | null>(null);
 
+		const stopScanner = () => {
+			if (!html5Ref.current?.isScanning) return;
+			html5Ref.current.stop().catch(() => { });
+		};
 
-	const stopScanner = () => {
-		html5Ref.current?.stop().catch(() => { });
-	};
+		const handleDidPresent = async () => {
+			if (!regionRef.current) return;
 
-	const handleDidPresent = async () => {
-		if (!regionRef.current) return;
+			try {
+				if (!html5Ref.current) {
+					html5Ref.current = new Html5Qrcode(regionRef.current.id, {
+						formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+						verbose: false,
+					});
+				}
+				const html5 = html5Ref.current;
 
-		if (!html5Ref.current) {
-			const html5 = new Html5Qrcode(regionRef.current.id, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
-			html5Ref.current = html5;
-		}
-		const html5 = html5Ref.current;
-
-		try {
-			await html5.start(
-				{ facingMode: 'environment' },
-				{
-					fps: 4,
-					qrbox: (w, h) => {
-						const side = Math.floor(Math.min(w, h) / 2);
-						return { width: side, height: side };
+				await html5.start(
+					{ facingMode: "environment" },
+					{
+						fps: 4,
+						qrbox: (w, h) => {
+							const side = Math.floor(Math.min(w, h) / 2);
+							return { width: side, height: side };
+						},
 					},
-				},
-				(txt) => {
-					stopScanner();
-					onResult(txt);
-				},
-				/* onFailure – ignore */() => { }
-			);
-		} catch (err: any) {
-			console.error('html5-qrcode error:', err);
-			onError(err?.message || 'Error when starting scanner. Is camera permitted?');
-		}
-	};
+					(txt) => {
+						stopScanner();
+						dismiss({ role: "confirm", data: txt });
+					},
+					() => { },
+				);
+			} catch (err: unknown) {
+				const message = err instanceof Error
+					? err.message
+					: typeof err === "string"
+						? err
+						: "Error when starting scanner. Is camera permitted?";
+				dismiss({ role: "error", data: message });
+			}
+		};
 
-	const handleDismiss = () => {
-		stopScanner();
-		onCancel();
-	}
+	useImperativeHandle(ref, () => ({ start: () => { void handleDidPresent(); } }));
 
+	useEffect(() => () => { stopScanner(); }, []);
 
 	return (
-		<IonModal
-			isOpen={isOpen}
-			onDidDismiss={handleDismiss}
-			onDidPresent={handleDidPresent}
-			className="wallet-modal"
-		>
+		<>
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>Scan QR Code</IonTitle>
 					<IonButtons slot="end">
-						<IonButton color="primary" onClick={handleDismiss}>
+						<IonButton color="primary" onClick={() => dismiss({ role: "cancel" })}>
 							<IonIcon slot="icon-only" icon={closeOutline} />
 						</IonButton>
 					</IonButtons>
@@ -92,7 +111,7 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError, isOpen }: P
 				<IonGrid>
 					<IonRow>
 						<IonCol>
-							<p className="text-secondary" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: 600 }}>{instruction}</p>
+							<p className="text-secondary" style={{ textAlign: "center", marginBottom: "0.5rem", fontWeight: 600 }}>{instruction}</p>
 						</IonCol>
 					</IonRow>
 					<IonRow className="ion-justify-content-center ion-align-items-center">
@@ -100,15 +119,35 @@ const PWAScannerModal = ({ instruction, onResult, onCancel, onError, isOpen }: P
 							<div
 								id="qr-region"
 								ref={regionRef}
-
 							/>
 						</IonCol>
 					</IonRow>
 				</IonGrid>
 			</IonContent>
-		</IonModal>
+		</>
 	);
-};
+},
+);
 
+export function usePwaScannerModal() {
+	const { present } = useOverlayCoordinator();
+	const scannerRef = useRef<PwaScannerHandle>(null);
+	return useCallback(async (instruction = "Align the QR inside the frame") => {
+		return present<PwaScannerResult>(
+			(dismiss) => <PWAScannerModal ref={scannerRef} instruction={instruction} dismiss={dismiss} />,
+			scannerOverlay(scannerRef),
+		);
+	}, [present]);
+}
 
-export default PWAScannerModal;
+export function useNestedPwaScannerModal() {
+	const scannerRef = useRef<PwaScannerHandle>(null);
+	const presentNested = usePromiseModal<
+		{ instruction: string },
+		PwaScannerResult,
+		PwaScannerHandle
+	>(PWAScannerModal, scannerOverlay(scannerRef), scannerRef);
+	return useCallback(async (instruction = "Align the QR inside the frame") => {
+		return presentNested({ instruction });
+	}, [presentNested]);
+}

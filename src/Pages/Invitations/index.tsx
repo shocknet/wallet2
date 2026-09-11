@@ -206,7 +206,7 @@ function ReusableInviteLink({ source }: { source: SourceView }) {
 		[source.lpk, source.relays],
 	);
 
-	const link = `${WALLET_URL}/sources?addSource=${nprofile}`;
+	const link = `${WALLET_URL}/?addSource=${nprofile}`;
 
 	return (
 		<section className="flex flex-col gap-3">

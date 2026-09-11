@@ -26,8 +26,7 @@ import { AppShell } from "@/shell/AppShell";
 import { Provider } from "react-redux";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
 import { ToastProvider } from "./lib/contexts/useToast";
-import { ScannerProvider } from "./lib/contexts/pwaScannerProvider";
-import { AlertProvider } from "./lib/contexts/useAlert";
+import { OverlayCoordinator } from "./overlay";
 import { ToastContainer } from 'react-toastify';
 import { addIcons } from 'ionicons';
 import nostrSvg from "../icons/nostr.svg";
@@ -52,17 +51,15 @@ export default function App() {
 					}
 				>
 					<ToastProvider>
-						<ScannerProvider>
-							<AlertProvider>
-								<IonApp>
-									<IonReactRouter>
-										<ShellBootstrap />
-										<ShellEffects />
-										<AppShell />
-									</IonReactRouter>
-								</IonApp>
-							</AlertProvider>
-						</ScannerProvider>
+						<IonApp>
+							<IonReactRouter>
+								<OverlayCoordinator>
+									<ShellBootstrap />
+									<ShellEffects />
+									<AppShell />
+								</OverlayCoordinator>
+							</IonReactRouter>
+						</IonApp>
 					</ToastProvider>
 				</PersistGate>
 			</Provider>

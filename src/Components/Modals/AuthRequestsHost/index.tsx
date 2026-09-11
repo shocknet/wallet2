@@ -1,63 +1,101 @@
-import { useCallback, useRef } from "react";
-import { IonModal } from "@ionic/react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import ManageAuthRequest from "./Manage";
 import type { DebitDismissRole } from "./types";
 import DebitAuthRequest from "./Debit";
 import { selectPendingClinkRequestSession } from "@/State/clinkRequests/selectors";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
-
+import {
+	allowOverlayRoles,
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayResult,
+	type OverlayOptions,
+} from "@/overlay";
 
 export type { DebitDismissRole } from "./types";
 
-const DISMISS_ROLES: DebitDismissRole[] = ["allow", "deny", "ban", "dismiss"];
+const lockedAuthOverlay: OverlayOptions = {
+	cssClass: "wallet-modal",
+	backdropDismiss: false,
+	keyboardClose: false,
+	canDismiss: allowOverlayRoles("allow", "deny", "ban", "dismiss"),
+};
 
-/*
- * Host for debit / manage auth sessions.
- * clear session in onDidDismiss.
- */
-function AuthRequestsHost() {
-	const dispatch = useAppDispatch();
+function AuthRequestOverlay({
+	dismiss,
+}: {
+	dismiss: Dismiss<OverlayResult<DebitDismissRole>>;
+}) {
 	const session = useAppSelector(selectPendingClinkRequestSession);
-	const modalRef = useRef<HTMLIonModalElement>(null);
+	const dismissWithRole = useCallback(
+		async (role: DebitDismissRole) => {
+			dismiss({ role });
+		},
+		[dismiss],
+	);
 
-	const dismissWithRole = useCallback(async (role: DebitDismissRole) => {
-		await modalRef.current?.dismiss(null, role);
-	}, []);
+	if (!session) {
+		return null;
+	}
 
-	const canDismiss = useCallback(async (_data?: unknown, role?: string) => {
-		return DISMISS_ROLES.includes(role as DebitDismissRole);
-	}, []);
-
-	const handleDidDismiss = useCallback(() => {
-		dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
-	}, [dispatch]);
+	if (session.kind === "debit") {
+		return (
+			<DebitAuthRequest
+				key={`debit:${session.request.request_id}`}
+				session={session}
+				dismissWithRole={dismissWithRole}
+			/>
+		);
+	}
 
 	return (
-		<IonModal
-			ref={modalRef}
-			className="wallet-modal"
-			isOpen={session !== null}
-			backdropDismiss={false}
-			canDismiss={canDismiss}
-			onDidDismiss={handleDidDismiss}
-		>
-			{session?.kind === "debit" ? (
-				<DebitAuthRequest
-					key={`debit:${session.request.request_id}`}
-					session={session}
-					dismissWithRole={dismissWithRole}
-				/>
-			) : null}
-			{session?.kind === "manage" ? (
-				<ManageAuthRequest
-					key={`manage:${session.request.request_id}`}
-					session={session}
-					dismissWithRole={dismissWithRole}
-				/>
-			) : null}
-		</IonModal>
+		<ManageAuthRequest
+			key={`manage:${session.request.request_id}`}
+			session={session}
+			dismissWithRole={dismissWithRole}
+		/>
 	);
 }
 
-export default AuthRequestsHost;
+export function useAuthRequestsModal() {
+	const dispatch = useAppDispatch();
+	const session = useAppSelector(selectPendingClinkRequestSession);
+	const { tryPresent, occupied } = useOverlayCoordinator();
+	const presentingRef = useRef(false);
+	const dismissRef = useRef<Dismiss<OverlayResult<DebitDismissRole>> | null>(null);
+	const hasSession = session !== null;
+
+	useEffect(() => {
+		return () => {
+			dismissRef.current?.({ role: "dismiss" });
+		};
+	}, []);
+
+	useEffect(() => {
+		if (hasSession) return;
+		dismissRef.current?.({ role: "dismiss" });
+	}, [hasSession]);
+
+	useEffect(() => {
+		if (!hasSession || presentingRef.current || occupied) {
+			return;
+		}
+
+		presentingRef.current = true;
+		void tryPresent<OverlayResult<DebitDismissRole>>(
+			(dismiss) => {
+				dismissRef.current = dismiss;
+				return <AuthRequestOverlay dismiss={dismiss} />;
+			},
+			lockedAuthOverlay,
+		).then((outcome) => {
+			presentingRef.current = false;
+			dismissRef.current = null;
+			if (outcome.status === "skipped") {
+				return;
+			}
+			dispatch(clinkRequestsActions.clearPendingClinkRequestSession());
+		});
+	}, [hasSession, occupied, tryPresent, dispatch]);
+}

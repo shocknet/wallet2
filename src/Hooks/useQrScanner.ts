@@ -1,17 +1,21 @@
-import { useScanner } from '../lib/contexts/pwaScannerProvider';
-import { useToast } from '../lib/contexts/useToast';
-import { useCallback } from 'react';
-import { isPlatform } from '@ionic/react';
-import { BITCOIN_ADDRESS_BASE58_REGEX } from '../lib/regex';
+import { useCallback } from "react";
+import { BITCOIN_ADDRESS_BASE58_REGEX } from "../lib/regex";
+import { useToast } from "../lib/contexts/useToast";
+import {
+	useNestedPwaScannerModal,
+	usePwaScannerModal,
+	type PwaScannerResult,
+} from "@/Components/Modals/PWAScannerModal";
+import { Capacitor } from "@capacitor/core";
 
+export type QrScanResult = PwaScannerResult;
 
-// Native scanning function
 async function nativeScan(instruction: string): Promise<string> {
 	const {
 		CapacitorBarcodeScanner,
 		CapacitorBarcodeScannerAndroidScanningLibrary,
 		CapacitorBarcodeScannerCameraDirection,
-		CapacitorBarcodeScannerTypeHint
+		CapacitorBarcodeScannerTypeHint,
 	} = await import("@capacitor/barcode-scanner");
 
 	const result = await CapacitorBarcodeScanner.scanBarcode({
@@ -19,49 +23,77 @@ async function nativeScan(instruction: string): Promise<string> {
 		scanInstructions: " " + instruction,
 		cameraDirection: CapacitorBarcodeScannerCameraDirection.BACK,
 		android: {
-			scanningLibrary: CapacitorBarcodeScannerAndroidScanningLibrary.MLKIT
+			scanningLibrary: CapacitorBarcodeScannerAndroidScanningLibrary.MLKIT,
 		},
 		web: {
-			scannerFPS: 10
-		}
-
-	})
+			scannerFPS: 10,
+		},
+	});
 	return result.ScanResult;
 }
 
-// Main utility function
-export function useQrScanner() {
-	const { scanBarcode } = useScanner();
+function normalizeScanned(text: string): string {
+	if (!BITCOIN_ADDRESS_BASE58_REGEX.test(text)) {
+		return text.toLowerCase();
+	}
+	return text;
+}
+
+function isUserCancel(err: unknown): boolean {
+	const message =
+		err && typeof err === "object" && "message" in err && typeof err.message === "string"
+			? err.message
+			: "";
+	return /cancell?ed/i.test(message);
+}
+
+function errorMessage(err: unknown): string {
+	if (err instanceof Error) {
+		return err.message || "Error when scanning QR code";
+	}
+	return "Error when scanning QR code";
+}
+
+function useQrScannerWithWebScan(scanWeb: (instruction: string) => Promise<PwaScannerResult>) {
 	const { showToast } = useToast();
 
-	const scanSingleBarcode = useCallback(async (instruction: string): Promise<string> => {
-		let result = ""
+	const scanSingleBarcode = useCallback(async (instruction: string): Promise<QrScanResult> => {
+		let result: PwaScannerResult;
 		try {
-
-			if (isPlatform("hybrid")) {
-				result = await nativeScan(instruction);
+			if (Capacitor.isNativePlatform()) {
+				const scanned = await nativeScan(instruction);
+				result = { role: "confirm", data: scanned };
 			} else {
-				result = await scanBarcode(instruction);
+				result = await scanWeb(instruction);
 			}
-
-			/*
-			 * Only force lowercase when result scan is not a base58 btc address
-			 * Everything else is bech32 encoded and should be lowercased
-			*/
-			if (!BITCOIN_ADDRESS_BASE58_REGEX.test(result)) {
-				result = result.toLowerCase();
+		} catch (err: unknown) {
+			if (isUserCancel(err)) {
+				return { role: "cancel" };
 			}
-			return result;
-		} catch (err: any) {
-			if (err?.message && !err.message.includes("cancelled")) {
-				showToast({
-					message: err.message || "Error when scanning QR code",
-					color: "danger"
-				})
-			}
-			throw err;
+			result = { role: "error", data: errorMessage(err) };
 		}
-	}, [scanBarcode, showToast]);
+
+		if (result.role === "confirm") {
+			return { role: "confirm", data: normalizeScanned(result.data) };
+		}
+		if (result.role === "error") {
+			showToast({
+				message: result.data,
+				color: "danger",
+			});
+		}
+		return result;
+	}, [scanWeb, showToast]);
 
 	return { scanSingleBarcode };
+}
+
+/** Page-level scan. Takes the overlay slot. */
+export function useQrScanner() {
+	return useQrScannerWithWebScan(usePwaScannerModal());
+}
+
+/** Scan on top of an already-open dialog. */
+export function useNestedQrScanner() {
+	return useQrScannerWithWebScan(useNestedPwaScannerModal());
 }

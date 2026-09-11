@@ -10,10 +10,7 @@ import { Satoshi } from "@/lib/types/units";
 import { highlightUrlTemplate } from "../Modals/OfferInfoModal/WebhookBuilder/utils/jsxHelpers";
 import { copyToClipboard } from "@/State/thunks/copyToClipboard";
 import { useToast } from "@/lib/contexts/useToast";
-import { useAlert } from "@/lib/contexts/useAlert";
-
-
-
+import { usePromptDangerModal } from "@/Components/prompt";
 
 interface OfferItemProps {
 	offer: OfferConfig & { sourceId: string };
@@ -24,7 +21,7 @@ interface OfferItemProps {
 const OfferItem = ({ offer, handleSelectOffer, onDelete }: OfferItemProps) => {
 	const dispatch = useDispatch();
 	const { showToast } = useToast();
-	const { showAlert } = useAlert();
+	const promptDanger = usePromptDangerModal();
 
 
 	const handleItemClick = () => {
@@ -36,26 +33,13 @@ const OfferItem = ({ offer, handleSelectOffer, onDelete }: OfferItemProps) => {
 	}
 
 	const handleDelete = () => {
-		showAlert({
-			header: "Delete offer",
-			subHeader: "Are you sure you wish to delete this offer?",
-			message: "This action cannot be reversed!",
-			cssClass: "danger-alert",
-			buttons: [
-				{
-					text: "Cancel",
-					cssClass: "danger-alert-button-cancel",
-					role: "cancel",
-				},
-				{
-					text: "Delete",
-					cssClass: "danger-alert-button-confirm",
-					handler: () => {
-						onDelete(offer.offer_id);
-					}
-				},
-
-			]
+		promptDanger({
+			title: "Delete offer?",
+			description: "Are you sure you wish to delete this offer? This cannot be undone.",
+			confirmButtonLabel: "Delete",
+		}).then((confirmed) => {
+			if (confirmed.role !== "confirm") return;
+			onDelete(offer.offer_id);
 		});
 	};
 

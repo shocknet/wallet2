@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { IonButton } from "@ionic/react";
 import { BitcoinInput } from "@/Components/BitcoinInput/BitcoinInput";
 import { IDLE_STATE, type BitcoinInputState } from "@/Components/BitcoinInput/model";
 import { InputClassification, type ParsedNprofileInput } from "@/lib/types/parse";
-import type { ModalDismiss } from "@/Components/Modals/hooks/useAskModal";
+import type { Dismiss, OverlayChoice } from "@/overlay";
 import { AddNprofileCase } from "./AddCases/AddNprofileCase";
 import { ConnectAsAdminCase } from "./AddCases/ConnectAsAdminCase";
 
@@ -18,7 +19,7 @@ function nprofileFromDraft(state: BitcoinInputState): ParsedNprofileInput | null
 export function InputNprofileCase({
 	dismiss,
 }: {
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 }) {
 	const [draft, setDraft] = useState<BitcoinInputState>(IDLE_STATE);
 	const parsed = nprofileFromDraft(draft);
@@ -29,6 +30,7 @@ export function InputNprofileCase({
 				Paste a Lightning.Pub node&apos;s <strong className="text-secondary">nprofile</strong> to connect.
 			</p>
 			<BitcoinInput
+				nested
 				allowed={NPROFILE_ONLY}
 				unidentifiedError="Not an nprofile"
 				scanInstruction="Scan an nprofile"
@@ -49,7 +51,11 @@ export function InputNprofileCase({
 								/>
 							)
 							: <AddNprofileCase parsed={parsed} dismiss={dismiss} />
-						: null
+						: (
+							<IonButton fill="clear" onClick={() => dismiss({ role: "cancel" })}>
+								Cancel
+							</IonButton>
+						)
 				}
 			</div>
 		</>

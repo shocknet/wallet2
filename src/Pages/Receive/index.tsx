@@ -3,7 +3,6 @@ import {
 	useEffect,
 	useMemo,
 	useReducer,
-	useRef,
 	useState,
 	type ReactNode,
 } from "react";
@@ -21,9 +20,7 @@ import {
 	IonSegmentView,
 	IonSpinner,
 	IonToolbar,
-	useIonModal,
 } from "@ionic/react";
-import type { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
 import {
 	atCircleOutline,
 	flashOutline,
@@ -32,10 +29,10 @@ import {
 import QrCode from "@/Components/QrCode";
 import { FiatDisplay } from "@/Components/FiatDisplay";
 import EmptyState from "@/Components/common/ui/EmptyState";
-import NewInvoiceModal from "@/Components/Modals/NewInvoiceModal";
+import { useNewInvoiceModal } from "@/Components/Modals/NewInvoiceModal";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
-import { SourceSelectSheet } from "@/Components/Source/SourceSelectSheet";
+import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import StackPageToolbar from "@/Layout2/StackPageToolbar";
 import { truncateTextMiddle } from "@/lib/format";
 import { useToast } from "@/lib/contexts/useToast";
@@ -128,7 +125,7 @@ function ReceiveSourceGate({ sources }: { sources: SourceView[] }) {
 	const [selectedSourceId, setSelectedSourceId] = useState(
 		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
 	);
-	const [sheetOpen, setSheetOpen] = useState(false);
+	const sourceSelect = useSourceSelectModal();
 
 	useEffect(() => {
 		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
@@ -153,19 +150,19 @@ function ReceiveSourceGate({ sources }: { sources: SourceView[] }) {
 					<SourceSelectionView
 						source={selectedSource}
 						showTapToSwitch={false}
-						onClick={() => setSheetOpen(true)}
+						onClick={() => {
+							sourceSelect({
+								sources,
+								selectedSourceId,
+								title: "Receive into",
+							}).then((result) => {
+								if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
+							});
+						}}
 					/>
 					<SourceReachabilityHint source={selectedSource} />
 				</div>
 			</ReceiveStage>
-			<SourceSelectSheet
-				isOpen={sheetOpen}
-				onDidDismiss={() => setSheetOpen(false)}
-				selectedSourceId={selectedSourceId}
-				onSelect={(source) => setSelectedSourceId(source.sourceId)}
-				sources={sources}
-				title="Receive into"
-			/>
 		</>
 	);
 }
@@ -187,7 +184,7 @@ function ReceiveStage({
 	);
 	const { payloads, method, invoice, invoiceLoading } = methodsState;
 
-	const amountInputRef = useRef<HTMLIonInputElement>(null);
+	const askNewInvoice = useNewInvoiceModal();
 
 	useEffect(() => {
 		const sourceId = source.sourceId;
@@ -218,11 +215,6 @@ function ReceiveStage({
 		[payloads],
 	);
 
-	const [presentInvoiceModal, dismissInvoiceModal] = useIonModal(NewInvoiceModal, {
-		dismiss: (data: { amount: Satoshi, invoiceMemo: string, blind: boolean } | null, role?: string) => dismissInvoiceModal(data, role),
-		ref: amountInputRef,
-	});
-
 	const createInvoice = useCallback(
 		(amount: Satoshi, memo: string, blind: boolean) => {
 			dispatchMethods({ type: "invoiceStart" });
@@ -245,22 +237,11 @@ function ReceiveStage({
 		[source, showToast],
 	);
 
-	const openInvoiceModal = useCallback(() => {
-		presentInvoiceModal({
-			cssClass: "wallet-modal",
-			onDidPresent: () => {
-				amountInputRef.current?.setFocus();
-			},
-			onWillDismiss: (event: CustomEvent<OverlayEventDetail>) => {
-				if (event.detail.role !== "confirm") return;
-				const data = event.detail.data as
-					| { amount: Satoshi; invoiceMemo: string; blind: boolean }
-					| null;
-				if (!data) return;
-				createInvoice(data.amount, data.invoiceMemo, data.blind);
-			},
-		});
-	}, [presentInvoiceModal, createInvoice]);
+	const openInvoiceModal = useCallback(async () => {
+		const result = await askNewInvoice();
+		if (result.role !== "confirm") return;
+		createInvoice(result.data.amount, result.data.invoiceMemo, result.data.blind);
+	}, [askNewInvoice, createInvoice]);
 
 	const showInvoiceTab = method === "invoice" || invoice != null;
 

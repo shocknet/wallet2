@@ -1,6 +1,5 @@
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import {
-	IonModal,
 	IonHeader,
 	IonToolbar,
 	IonTitle,
@@ -27,50 +26,60 @@ import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_BRIDGE_URL, getDeviceId } from "@/constants";
-import { PubSourceStatus } from "../helpers";
+import { Avatar } from "@/Components/Avatar";
+import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import CardishList from "@/Components/CardishList";
 import { RelayManager } from "@/Components/RelayManager";
 import useDebounce from "@/Hooks/useDebounce";
-import { useConfirmDialog } from "@/Hooks/useConfirmDialog";
+import { useNestedPromptDangerModal } from "@/Components/prompt";
 import { normalizeHttpUrl } from "@/lib/url";
+import { useOverlayCoordinator, type Dismiss, type OverlayResult } from "@/overlay";
+import { removeSource } from "@/State/scoped/backups/sources/thunks";
 
-interface EditSourceModalProps {
-	open: boolean;
-	source: SourceView | null;
-	onClose: () => void;
-	onDelete: (id: string) => void;
-}
-export function EditSourceModal({ open, onClose, source, onDelete }: EditSourceModalProps) {
+export type EditSourceOptions = {
+	source: SourceView;
+};
 
+export type EditSourceResult =
+	| OverlayResult<"change">
+	| OverlayResult<"delete">
+	| OverlayResult<"cancel">;
 
+type EditSourceModalProps = EditSourceOptions & {
+	dismiss: Dismiss<EditSourceResult>;
+};
+
+function SourceIdentity({ source }: { source: SourceView }) {
+	const name = source.beaconName?.trim() || "Anonymous";
 
 	return (
-		<IonModal className="wallet-modal" isOpen={open} onDidDismiss={onClose}>
-			{source ? (
-				<Inner source={source} onClose={onClose} onDelete={onDelete} />
-			) : null}
-		</IonModal>
+		<div className="flex flex-col gap-2">
+			<div className="rounded-xl bg-[var(--app-surface-muted)] px-3 py-2">
+				<div className="flex items-center gap-2.5">
+					<Avatar
+						id={source.sourceId}
+						avatarUrl={source.beaconAvatarUrl}
+						size="sm"
+						beacon={source.beaconStale}
+					/>
+					<p className="m-0 min-w-0 flex-1 truncate text-sm font-semibold text-primary">
+						{name}
+					</p>
+				</div>
+				<p className="code-string m-0 mt-2 break-all text-[0.65rem] leading-4 text-muted">
+					{source.lpk}
+				</p>
+			</div>
+			<SourceReachabilityHint source={source} />
+		</div>
 	);
 }
 
-const Inner = ({
-	source,
-	onClose,
-	onDelete
-}: {
-	source: SourceView;
-	onClose: () => void;
-	onDelete: (id: string) => void;
-}) => {
+function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 	const dispatch = useAppDispatch();
 
-	const showConfirm = useConfirmDialog({
-		header: "Delete source",
-		message: "Are you sure you wish to delete this source from your profile?",
-		confirmText: "Delete",
-		danger: true
-	});
+	const promptDanger = useNestedPromptDangerModal();
 
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
@@ -170,7 +179,9 @@ const Inner = ({
 					}));
 			}
 		}
-	}, [original, dispatch, draft])
+
+		dismiss({ role: "change" });
+	}, [original, dispatch, draft, dismiss])
 
 	const isFavorite = source.sourceId === favoriteSourceId;
 
@@ -181,14 +192,16 @@ const Inner = ({
 	}, [source.sourceId, favoriteSourceId, dispatch]);
 
 	const handleDelete = useCallback(() => {
-		showConfirm().then(({ role }) => {
-			if (role === "confirm") {
-				onClose()
-				onDelete(source.sourceId);
-			}
-		})
-
-	}, [onDelete, onClose, source.sourceId, showConfirm]);
+		void promptDanger({
+			title: "Delete source?",
+			description: "Are you sure you wish to delete this source from your profile?",
+			confirmButtonLabel: "Delete",
+		}).then((confirmed) => {
+			if (confirmed.role !== "confirm") return;
+			dispatch(removeSource(source.sourceId));
+			dismiss({ role: "delete" });
+		});
+	}, [promptDanger, dispatch, dismiss, source.sourceId]);
 
 	const canSave = locallyDirty && !bridgeInputError;
 
@@ -206,31 +219,14 @@ const Inner = ({
 						<IonButton color="secondary" fill="clear" shape="round" onClick={makeFavorite}>
 							<IonIcon slot="icon-only" icon={isFavorite ? star : starOutline} />
 						</IonButton>
-						<IonButton onClick={onClose}><IonIcon icon={closeOutline} /></IonButton>
+						<IonButton onClick={() => dismiss({ role: "cancel" })}><IonIcon icon={closeOutline} /></IonButton>
 					</IonButtons>
 
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding">
 
-				<PubSourceStatus
-					pubkey={original.lpk}
-					relays={original.relays}
-					passedBeacon={
-						original.beaconLastSeenAtMs !== 0
-							? {
-								beaconLastSeenAtMs: original.beaconLastSeenAtMs,
-								data: {
-									type: "service",
-									name: original.beaconName ?? "",
-									avatarUrl: original.beaconAvatarUrl,
-									fees: original.beaconFees,
-									nextRelay: original.beaconNextRelay,
-								},
-							}
-							: undefined
-					}
-				/>
+				<SourceIdentity source={original} />
 
 				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
 					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
@@ -357,6 +353,16 @@ const Inner = ({
 			</IonFooter>
 		</>
 	)
+}
+
+export function useEditSourceModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((source: SourceView) => {
+		return present<EditSourceResult>(
+			(dismiss) => <EditSourceModal source={source} dismiss={dismiss} />,
+			{ cssClass: "wallet-modal" },
+		);
+	}, [present]);
 }
 
 

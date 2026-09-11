@@ -8,7 +8,6 @@ import {
 	IonRefresher,
 	IonRefresherContent,
 	RefresherEventDetail,
-	useIonRouter,
 	useIonViewDidEnter,
 } from "@ionic/react";
 import {
@@ -17,16 +16,12 @@ import {
 } from "ionicons/icons";
 import { useHistory } from "react-router";
 import type { HomePageNavState } from "./nav";
-import { navToSend, isSendParsedInput } from "@/Pages/Send/nav";
-import { navToSources } from "@/Pages/Sources/nav";
-import { useAskSweepLnurlw } from "@/Components/Modals/SweepLnurlwModal";
 import BalanceCard from "./BalanceCard";
 import styles from "./styles/index.module.scss";
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { App } from "@capacitor/app";
 import { useToast } from "@/lib/contexts/useToast";
-import { identifyBitcoinInput, parseBitcoinInput } from "@/lib/parse";
-import { InputClassification } from "@/lib/types/parse";
+import { resolveAppIntent } from "@/intents";
 import { useQrScanner } from "@/Hooks/useQrScanner";
 import { Virtuoso } from 'react-virtuoso'
 import HistoryItem from "@/Components/HistoryItem";
@@ -36,22 +31,17 @@ import { historySelectors } from "@/State/scoped/backups/sources/slice";
 import { fetchAllSourcesHistory } from "@/State/scoped/backups/sources/history/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { SourceOperation } from "@/State/scoped/backups/sources/history/types";
-import { useAlert } from "@/lib/contexts/useAlert";
+import { useOperationInfoModal } from "@/Components/Modals/OperationInfoModal";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 import HomePageToolbar from "@/Layout2/HomePageToolbar";
-
-const OperationModal = lazy(() => import("@/Components/Modals/OperationInfoModal"));
 
 
 const Home = () => {
 	const history = useHistory<HomePageNavState>();
-
-	const router = useIonRouter();
 	const dispatch = useAppDispatch();
 
-	const { showAlert } = useAlert();
 	const { showToast } = useToast();
-	const askSweepLnurlw = useAskSweepLnurlw();
+	const askOperationInfo = useOperationInfoModal();
 
 	const operations = useAppSelector(historySelectors.selectAll);
 	const [highlightOpKey, setHighlightOpKey] = useState<string | null>(null);
@@ -79,37 +69,9 @@ const Home = () => {
 
 
 	useIonViewDidEnter(() => {
-		const { reason } = history.location.state ?? {};
-
-		if (reason) {
-			history.replace(history.location.pathname + history.location.search);
-			showAlert({
-				header: "Cannot access",
-				message: reason,
-				buttons: [
-					{
-						text: "Cancel",
-						role: "cancel",
-
-					},
-					{
-						text: "Manage Connections",
-						role: "confirm",
-					},
-				]
-			}).then(({ role }) => {
-				if (role === "confirm") {
-					router.push("/sources", "forward");
-				}
-			})
-		}
-	}, [history.location.key]);
-
-	useIonViewDidEnter(() => {
 		const { notif_op_id, sourceId } = history.location.state ?? {};
 		if (!notif_op_id || !sourceId) return;
 		const key = makeKey(sourceId, notif_op_id);
-		console.log("[Home] Setting highlight key:", key);
 		setHighlightOpKey(key);
 		history.replace(history.location.pathname + history.location.search);
 	}, [history.location.key]);
@@ -141,16 +103,9 @@ const Home = () => {
 	}, []);
 
 
-	const [selectedOperation, setSelectedOperation] = useState<SourceOperation | null>(null);
-	const [loadOperationModal, setLoadOperationModal] = useState(false);
-
-
 	const handleSelectOperation = useCallback((operation: SourceOperation) => {
-		setSelectedOperation(operation);
-		if (!loadOperationModal) {
-			setLoadOperationModal(true);
-		}
-	}, [loadOperationModal]);
+		void askOperationInfo(operation);
+	}, [askOperationInfo]);
 
 
 	const handleRefresh = useCallback(async (event: CustomEvent<RefresherEventDetail>) => {
@@ -164,41 +119,18 @@ const Home = () => {
 			showToast({ message: "Empty input", color: "danger" });
 			return;
 		}
-		const { classification, value } = identifyBitcoinInput(input);
-
 		try {
-			if (classification === InputClassification.UNKNOWN) {
-				throw new Error("Unknown input");
-			}
-			const parsed = await parseBitcoinInput(value, classification);
-			if (parsed.type === InputClassification.LNURL_WITHDRAW) {
-				void askSweepLnurlw(parsed);
-				return;
-			}
-			if (parsed.type === InputClassification.NPROFILE) {
-				navToSources(history, { parsedNprofile: parsed });
-				return;
-			}
-			if (isSendParsedInput(parsed)) {
-				navToSend(history, { parsed });
-				return;
-			}
-			throw new Error(`${parsed.type} not usuable`);
+			await dispatch(resolveAppIntent(input));
 		} catch (err: unknown) {
 			showToast({ message: err instanceof Error ? err.message : "Unknown error occured", color: "danger" });
-			return;
 		}
-	}, [askSweepLnurlw, history, showToast]);
+	}, [dispatch, showToast]);
 
 
 	const { scanSingleBarcode } = useQrScanner();
 	const openScan = async () => {
-		try {
-			const scanned = await scanSingleBarcode("Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address");
-			handleScanned(scanned);
-		} catch {
-			/*  */
-		}
+		const scanned = await scanSingleBarcode("Scan a Lightning Invoice, Noffer string, Bitcoin Address, Lnurl, or Lightning Address");
+		if (scanned.role === "confirm") handleScanned(scanned.data);
 	};
 
 
@@ -231,16 +163,6 @@ const Home = () => {
 						</div>
 					)}
 				/>
-				{
-					loadOperationModal &&
-					<Suspense fallback={null}>
-						<OperationModal
-							operation={selectedOperation}
-							isOpen={!!selectedOperation}
-							onClose={() => setSelectedOperation(null)}
-						/>
-					</Suspense>
-				}
 				<div
 					slot="fixed"
 					className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-[var(--ion-safe-area-bottom,0px)]"

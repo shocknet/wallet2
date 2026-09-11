@@ -1,8 +1,8 @@
-import { EditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
-import { useAskAddSource } from "@/Pages/Sources/AddSourceModal";
+import { useEditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
+import { useAddSourceModal } from "@/Pages/Sources/AddSourceModal";
 import SourceCard from "@/Components/SourceCard";
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
-import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { selectSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
+import { useAppSelector } from "@/State/store/hooks";
 import {
 	IonContent,
 	IonFab,
@@ -13,73 +13,27 @@ import {
 	IonPage,
 } from "@ionic/react";
 import { add } from "ionicons/icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useHistory } from "react-router-dom";
-import type { SourcesPageNavState } from "./nav";
-import { resolveSourcesInbound } from "./inbound";
-import { useToast } from "@/lib/contexts/useToast";
-import { removeSource } from "@/State/scoped/backups/sources/thunks";
+import { useCallback, useMemo } from "react";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
+import { useToast } from "@/lib/contexts/useToast";
 
 
 const SourcesPage = () => {
-	const history = useHistory<SourcesPageNavState>();
-	const dispatch = useAppDispatch();
 	const sources = useAppSelector(selectSourceViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+	const askAddSource = useAddSourceModal();
+	const editSource = useEditSourceModal();
 	const { showToast } = useToast();
-	const askAddSource = useAskAddSource();
 
-	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
-
-	const selectedSource = useMemo(() => {
-		return sources.find(s => s.sourceId === selectedSourceId) ?? null
-	}, [selectedSourceId, sources])
-
-
-
-	useEffect(() => {
-		if (history.location.pathname !== "/sources") return;
-		const search = history.location.search;
-		const navState = history.location.state;
-		const hasInbound =
-			Boolean(search) ||
-			Boolean(navState?.parsedNprofile);
-		if (!hasInbound) return;
-
-		history.replace(history.location.pathname);
-
-		void resolveSourcesInbound(search, navState).then((inbound) => {
-			switch (inbound.type) {
-				case "add":
-					void askAddSource(
-						{
-							initialNprofile: inbound.intent.nprofile,
-							integrationData: inbound.intent.integrationData,
-							invitationToken: inbound.intent.invitationToken,
-							fromInviteUrl: inbound.intent.fromInviteUrl,
-						},
-						{ // When opened from a link, don't allow dismissing the modal.
-							backdropDismiss: false,
-							keyboardClose: false,
-							canDismiss: (_, role) => Promise.resolve(role === "confirm" || role === "cancel"),
-						}
-					);
-					return;
-				case "invalid-nprofile":
-					showToast({ message: inbound.message, color: "danger" });
-					return;
-				case "none":
-					return;
-			}
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [history.location.key]);
-
-	const handleDelete = useCallback((sourceId: string) => {
-		dispatch(removeSource(sourceId));
-	}, [dispatch])
+	const handleEditSource = useCallback(async (s: SourceView) => {
+		const result = await editSource(s);
+		if (result.role === "change") {
+			showToast({ color: "success", message: "Changes saved" });
+		} else if (result.role === "delete") {
+			showToast({ color: "success", message: "Source deleted successfully" });
+		}
+	}, [editSource, showToast]);
 
 	const favoriteFirstSortedSources = useMemo(() => {
 		if (favoriteSourceId == null) return sources;
@@ -99,15 +53,11 @@ const SourcesPage = () => {
 				<RootPageToolbar title="Node Connections" />
 			</IonHeader>
 			<IonContent className="ion-padding">
-				<EditSourceModal
-					source={selectedSource}
-					onClose={() => setSelectedSourceId(null)}
-					onDelete={handleDelete}
-					open={!!selectedSource}
-				/>
 				<IonList lines="none" className="mt-6">
 					{
-						favoriteFirstSortedSources.map(s => <SourceCard key={s.sourceId} source={s} onClick={() => setSelectedSourceId(s.sourceId)} />)
+						favoriteFirstSortedSources.map(s => (
+							<SourceCard key={s.sourceId} source={s} onClick={() => void handleEditSource(s)} />
+						))
 					}
 				</IonList>
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">

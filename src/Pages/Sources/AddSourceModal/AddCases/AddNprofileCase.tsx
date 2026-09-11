@@ -21,13 +21,13 @@ export function AddNprofileCase({ parsed, dismiss }: AddSourceCaseProps) {
 				relays: parsed.relays,
 			}));
 			showToast({ color: "success", message: "Source added" });
-			dismiss(true, "confirm");
+			dismiss({ role: "confirm" });
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
 				message: err instanceof Error ? err.message : "Failed to add pub source",
 			});
-			dismiss(null, "cancel");
+			dismiss({ role: "cancel" });
 		} finally {
 			await dismissLoading();
 		}
@@ -37,7 +37,7 @@ export function AddNprofileCase({ parsed, dismiss }: AddSourceCaseProps) {
 		<div className="flex flex-col gap-2">
 			<NodeCard parsed={parsed} />
 			<div className="mt-12 flex justify-end gap-2">
-				<IonButton color="medium" onClick={() => dismiss(null, "cancel")}>
+				<IonButton color="medium" onClick={() => dismiss({ role: "cancel" })}>
 					Cancel
 				</IonButton>
 				<IonButton color="primary" onClick={handleAdd}>

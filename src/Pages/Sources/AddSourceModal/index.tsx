@@ -1,4 +1,12 @@
-import { type ModalDismiss, useAskModal } from "@/Components/Modals/hooks/useAskModal";
+import { useCallback, type ReactNode } from "react";
+import { IonHeader, IonText, IonTitle, IonToolbar } from "@ionic/react";
+import {
+	allowOverlayRoles,
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayChoice,
+	type OverlayOptions,
+} from "@/overlay";
 import { InputNprofileCase } from "./InputNprofile";
 import type { ParsedNprofileInput } from "@/lib/types/parse";
 import { AddNprofileCase } from "./AddCases/AddNprofileCase";
@@ -6,8 +14,6 @@ import { ConnectAsAdminCase } from "./AddCases/ConnectAsAdminCase";
 import { JoinNodeInviteCase } from "./AddCases/JoinNodeInviteCase";
 import { LinkExistingAccountCase } from "./AddCases/LinkAccountCase";
 import type { SourceIntegrationData } from "./types";
-import { IonHeader, IonText, IonTitle, IonToolbar } from "@ionic/react";
-import { ReactNode } from "react";
 
 
 export type AddSourceModalOptions = {
@@ -18,7 +24,7 @@ export type AddSourceModalOptions = {
 };
 
 type AddSourceModalProps = AddSourceModalOptions & {
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 };
 
 function AddSourceModal({
@@ -64,7 +70,7 @@ function LockedNprofile({
 	integrationData?: SourceIntegrationData;
 	invitationToken?: string;
 	fromInviteUrl?: boolean;
-	dismiss: ModalDismiss<true>;
+	dismiss: Dismiss<OverlayChoice>;
 }) {
 	if (integrationData) {
 		return (
@@ -129,11 +135,30 @@ export function Wrapper({ children, title }: { children: ReactNode, title: strin
 
 
 
-export function useAskAddSource() {
-	return useAskModal<AddSourceModalOptions, true>(
-		AddSourceModal,
-		"dialog-modal wallet-modal",
-	);
+export function useAddSourceModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((options: AddSourceModalOptions = {}, overlay?: OverlayOptions) => {
+		return present<OverlayChoice>(
+			(dismiss) => <AddSourceModal {...options} dismiss={dismiss} />,
+			{ cssClass: "dialog-modal wallet-modal", ...overlay },
+		);
+	}, [present]);
+}
+
+const lockedAddSourceOverlay: OverlayOptions = {
+	backdropDismiss: false,
+	keyboardClose: false,
+	canDismiss: allowOverlayRoles("confirm", "cancel"),
+};
+
+export function useAddSourceIntentModal() {
+	const { tryPresent } = useOverlayCoordinator();
+	return useCallback((options: AddSourceModalOptions = {}) => {
+		return tryPresent<OverlayChoice>(
+			(dismiss) => <AddSourceModal {...options} dismiss={dismiss} />,
+			{ cssClass: "dialog-modal wallet-modal", ...lockedAddSourceOverlay },
+		);
+	}, [tryPresent]);
 }
 
 

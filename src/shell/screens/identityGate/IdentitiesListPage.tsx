@@ -7,18 +7,16 @@ import {
 	IonToolbar,
 } from "@ionic/react";
 import { peopleOutline } from "ionicons/icons";
-import { useState } from "react";
 import { useAppSelector } from "@/State/store/hooks";
 import { identitiesSelectors } from "@/State/identitiesRegistry/slice";
-import type { Identity } from "@/State/identitiesRegistry/types";
-import { InactiveProfileSheet } from "@/Components/User/InactiveProfileSheet";
+import { useInactiveProfileModal } from "@/Components/User/InactiveProfileSheet";
 import { InactiveProfileCard } from "@/Components/User/InactiveProfileCard";
 import { ScreenIntro } from "@/Components/common/ui/ScreenIntro";
 import { CreateMethodPage } from "./create/CreateMethodPage";
 
 export function IdentitiesListPage() {
 	const identities = useAppSelector(identitiesSelectors.selectAll);
-	const [sheetIdentity, setSheetIdentity] = useState<Identity | null>(null);
+	const askInactiveProfile = useInactiveProfileModal();
 
 	return (
 		<>
@@ -36,7 +34,7 @@ export function IdentitiesListPage() {
 								<InactiveProfileCard
 									key={identity.pubkey}
 									identity={identity}
-									onClick={() => setSheetIdentity(identity)}
+									onClick={() => askInactiveProfile({ identity })}
 								/>
 							))}
 						</IonList>
@@ -63,12 +61,6 @@ export function IdentitiesListPage() {
 					</div>
 				</IonToolbar>
 			</IonFooter>
-
-			<InactiveProfileSheet
-				identity={sheetIdentity}
-				isOpen={!!sheetIdentity}
-				onDidDismiss={() => setSheetIdentity(null)}
-			/>
 		</>
 	);
 }

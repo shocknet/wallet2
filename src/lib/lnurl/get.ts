@@ -139,10 +139,11 @@ function parseWithdrawRequest(data: Record<string, unknown>, url: string): Lnurl
 
 	if (!isValidMSats(data.minWithdrawable) || !isValidMSats(data.maxWithdrawable)) return null;
 	if (data.minWithdrawable > data.maxWithdrawable) return null;
+	if (data.maxWithdrawable <= 0) return null;
 
 	const min = msatsToSats(data.minWithdrawable, "ceil");
 	const max = msatsToSats(data.maxWithdrawable, "floor");
-
+	if (max <= 0) return null;
 
 	return {
 		tag: "withdrawRequest",

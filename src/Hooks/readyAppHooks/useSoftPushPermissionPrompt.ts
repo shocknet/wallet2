@@ -1,67 +1,47 @@
 import { useEffect, useRef } from "react";
-import { useHistory } from "react-router-dom";
-import { useAlert } from "@/lib/contexts/useAlert";
+import { useOverlayCoordinator } from "@/overlay";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
 import { getNotificationsPermission, requestNotificationsPermission } from "@/notifications/permission";
 import { useLocalStorage } from "../useLocalStorage/useLocalStorage";
 import { refreshPushRegistration } from "@/notifications/push/register";
+import { useTryPromptDecisionModal } from "@/Components/prompt/Decision";
 
 const SEEN_KEY = "notif_prompt_seen";
 
 export function useSoftPushPermissionPrompt() {
 	const dispatch = useAppDispatch();
-	const history = useHistory();
-	const { showAlert } = useAlert();
+	const askPushPermission = useTryPromptDecisionModal();
+	const { occupied } = useOverlayCoordinator();
 	const { showToast } = useToast();
-
 	const [seen, setSeen] = useLocalStorage({ key: SEEN_KEY, defaultValue: false });
-
 	const startedRef = useRef(false);
 
 	useEffect(() => {
-		if (history.location.pathname === "/bootstrap") {
-			return;
-		}
-		if (startedRef.current) {
-			return;
-		}
+		if (seen || occupied || startedRef.current) return;
 		startedRef.current = true;
 
-		let cancelled = false;
-
 		void (async () => {
-			if (seen) {
-				return;
-			}
-
 			const status = await getNotificationsPermission();
-			if (cancelled || status !== "prompt") {
+			if (status !== "prompt") return;
+
+			const outcome = await askPushPermission({
+				title: "Stay updated",
+				description: "Get instant notifications for incoming payments and important account activity.",
+				confirmButtonLabel: "Enable",
+				denyButtonLabel: "Not now",
+			});
+			if (outcome.status === "skipped") {
+				startedRef.current = false;
 				return;
 			}
 
 			setSeen(true);
-
-			const { role } = await showAlert({
-				header: "Stay Updated",
-				message:
-					"Get instant notifications for incoming payments and important account activity.",
-				buttons: [
-					{ text: "Not Now", role: "cancel" },
-					{ text: "Enable", role: "confirm" },
-				],
-			});
-
-			if (cancelled || role !== "confirm") {
-				return;
-			}
-
+			if (outcome.value.role !== "confirm") return;
 
 			try {
 				const perm = await requestNotificationsPermission();
-				if (perm !== "granted") {
-					return;
-				}
+				if (perm !== "granted") return;
 				await dispatch(refreshPushRegistration());
 				showToast({
 					message: "Notifications enabled!",
@@ -77,9 +57,5 @@ export function useSoftPushPermissionPrompt() {
 				});
 			}
 		})();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [dispatch, showAlert, showToast, seen, setSeen, history.location.pathname]);
+	}, [dispatch, askPushPermission, showToast, seen, setSeen, occupied]);
 }

@@ -4,54 +4,69 @@ import {
 	IonContent,
 	IonHeader,
 	IonIcon,
-	IonModal,
 	IonSpinner,
 	IonTitle,
 	IonToolbar,
 } from "@ionic/react";
 import { closeOutline, lockOpenOutline, trashOutline } from "ionicons/icons";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { nip19 } from "nostr-tools";
 import type { Identity } from "@/State/identitiesRegistry/types";
 import { deleteIdentity } from "@/State/identitiesRegistry/thunks";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { requestIdentityUnlock } from "@/shell/coordinator";
 import type { UnlockReason } from "@/shell/types";
-import { useAskPromptDecision } from "@/Components/Modals/PromptDecision";
+import { useNestedPromptDangerModal } from "@/Components/prompt";
 import { useToast } from "@/lib/contexts/useToast";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { ProfileCard } from "./ProfileCard";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
+import {
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayChoice,
+	type OverlayOptions,
+} from "@/overlay";
 
-export function InactiveProfileSheet({
-	identity,
-	isOpen,
-	onDidDismiss,
-	unlockReason = "user-selected",
-}: {
-	identity: Identity | null;
-	isOpen: boolean;
-	onDidDismiss: () => void;
+const sheetOverlay: OverlayOptions = {
+	cssClass: "app-sheet-modal",
+	initialBreakpoint: 0.92,
+	breakpoints: [0, 0.92, 1],
+	expandToScroll: false,
+	handle: true,
+};
+
+export type InactiveProfileOptions = {
+	identity: Identity;
 	unlockReason?: UnlockReason;
-}) {
+};
+
+type InactiveProfileSheetProps = InactiveProfileOptions & {
+	dismiss: Dismiss<OverlayChoice>;
+};
+
+function InactiveProfileSheet({
+	identity,
+	unlockReason = "user-selected",
+	dismiss,
+}: InactiveProfileSheetProps) {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
-	const presentPromptDecision = useAskPromptDecision();
+	const promptDanger = useNestedPromptDangerModal();
 	const activeIdentityId = useAppSelector(selectActiveIdentity)?.pubkey ?? null;
 	const [busy, setBusy] = useState<"unlock" | "delete" | null>(null);
 
-	const canDelete =
-		!!identity && identity.pubkey !== activeIdentityId;
-	const npub = identity ? nip19.npubEncode(identity.pubkey) : "";
+	const canDelete = identity.pubkey !== activeIdentityId;
+	const npub = nip19.npubEncode(identity.pubkey);
 	const unlockLabel = activeIdentityId
 		? "Switch to this profile"
 		: "Unlock";
 
 	async function handleUnlock() {
-		if (!identity || busy) return;
+		if (busy) return;
 		setBusy("unlock");
 		try {
-			onDidDismiss();
+			dismiss({ role: "cancel" });
 			dispatch(
 				requestIdentityUnlock({
 					identityId: identity.pubkey,
@@ -64,23 +79,21 @@ export function InactiveProfileSheet({
 	}
 
 	async function handleDelete() {
-		if (!identity || !canDelete || busy) return;
+		if (!canDelete || busy) return;
 
-		const confirmed = await presentPromptDecision({
+		const confirmed = await promptDanger({
 			title: "Remove profile?",
 			description:
 				"This removes the profile from this device. If you do not have a backup, you may lose access to funds for this profile.",
 			confirmButtonLabel: "Remove",
-			confirmButtonColor: "danger",
-			denyButtonLabel: "Cancel",
 		});
 
-		if (!confirmed) return;
+		if (confirmed.role !== "confirm") return;
 
 		setBusy("delete");
 		try {
 			await dispatch(deleteIdentity(identity.pubkey));
-			onDidDismiss();
+			dismiss({ role: "cancel" });
 		} catch (err: unknown) {
 			showToast({
 				color: "danger",
@@ -95,27 +108,17 @@ export function InactiveProfileSheet({
 	}
 
 	return (
-		<IonModal
-			isOpen={isOpen && !!identity}
-			onDidDismiss={onDidDismiss}
-			initialBreakpoint={0.92}
-			breakpoints={[0, 0.92, 1]}
-			expandToScroll={false}
-			handle
-			className="app-sheet-modal"
-		>
-			{identity ? (
-				<>
-					<IonHeader className="ion-no-border">
-						<IonToolbar>
-							<IonTitle>Profile</IonTitle>
-							<IonButtons slot="end">
-								<IonButton onClick={onDidDismiss}>
-									<IonIcon icon={closeOutline} slot="icon-only" />
-								</IonButton>
-							</IonButtons>
-						</IonToolbar>
-					</IonHeader>
+		<>
+			<IonHeader className="ion-no-border">
+				<IonToolbar>
+					<IonTitle>Profile</IonTitle>
+					<IonButtons slot="end">
+						<IonButton onClick={() => dismiss({ role: "cancel" })}>
+							<IonIcon icon={closeOutline} slot="icon-only" />
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+			</IonHeader>
 
 					<IonContent className="ion-padding" scrollY={false}>
 						<div className="mx-auto flex h-full w-full max-w-md flex-col">
@@ -190,8 +193,16 @@ export function InactiveProfileSheet({
 							</div>
 						</div>
 					</IonContent>
-				</>
-			) : null}
-		</IonModal>
+		</>
 	);
+}
+
+export function useInactiveProfileModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((options: InactiveProfileOptions) => {
+		return present<OverlayChoice>(
+			(dismiss) => <InactiveProfileSheet {...options} dismiss={dismiss} />,
+			sheetOverlay,
+		);
+	}, [present]);
 }

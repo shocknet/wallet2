@@ -23,7 +23,6 @@ import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { GenerateNewKeyPage } from "./GenerateNewKeyPage";
 import { ImportNostrKeyPage } from "./ImportNostrKeyPage";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 
 
 type Nip07Probe = "absent" | "unsupported" | "ready";
@@ -63,14 +62,13 @@ export function CreateKeysPage() {
 		if (nip07Probe !== "ready") return;
 		await presentLoading({ cssClass: "app-loading", message: "Creating profile...", });
 		try {
-			const { foundBackup, identityId } = await dispatch(
+			await dispatch(
 				createIdentity({
 					type: IdentityType.NIP07,
 					label: "Nostr extension",
 					relays: NOSTR_RELAYS.map(normalizeWsUrl),
 				}),
 			);
-			dispatch(enqueueBootstrapIfNoBackup({ foundBackup, identityId }));
 		} catch (err: unknown) {
 			showToast({
 				color: "warning",

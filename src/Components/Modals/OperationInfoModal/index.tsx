@@ -15,7 +15,6 @@ import {
 	IonItem,
 	IonLabel,
 	IonList,
-	IonModal,
 	IonNote,
 	IonPopover,
 	IonSpinner,
@@ -24,7 +23,8 @@ import {
 	IonTitle,
 	IonToolbar
 } from "@ionic/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useOverlayCoordinator, type Dismiss, type OverlayChoice } from "@/overlay";
 import styles from "./styles/index.module.scss";
 import classNames from "classnames";
 import { checkmark, closeOutline, copy, informationCircle, pencilOutline } from "ionicons/icons";
@@ -39,31 +39,24 @@ import { isInFlightOutgoingInvoice } from "@/State/scoped/backups/sources/histor
 
 
 
-interface Props {
-	isOpen: boolean;
-	onClose: () => void;
-	operation: SourceOperation | null;
-}
+export type OperationInfoOptions = {
+	operation: SourceOperation;
+};
 
+type OperationModalProps = OperationInfoOptions & {
+	dismiss: Dismiss<OverlayChoice>;
+};
 
-
-const OperationModal = ({ isOpen, onClose, operation }: Props) => {
-	if (!operation) return null;
-
+function OperationModal({ operation, dismiss }: OperationModalProps) {
 	return (
-		<IonModal
-			isOpen={isOpen}
-			onDidDismiss={onClose}
-			style={{ "--background": "var(--ion-color-secondary)" }}
-			className="wallet-modal"
-		>
+		<>
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>
 						Operation Info
 					</IonTitle>
 					<IonButtons slot="end">
-						<IonButton onClick={onClose} fill="clear">
+						<IonButton onClick={() => dismiss({ role: "cancel" })} fill="clear">
 							<IonIcon icon={closeOutline} slot="icon-only" />
 						</IonButton>
 					</IonButtons>
@@ -86,11 +79,21 @@ const OperationModal = ({ isOpen, onClose, operation }: Props) => {
 					<SourceSection sourceId={operation.sourceId} />
 				}
 			</IonContent>
-		</IonModal>
+		</>
 	)
 }
 
-export default OperationModal;
+export function useOperationInfoModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((operation: SourceOperation) => {
+		return present<OverlayChoice>(
+			(dismiss) => <OperationModal operation={operation} dismiss={dismiss} />,
+			{
+				cssClass: "wallet-modal",
+			},
+		);
+	}, [present]);
+}
 
 
 

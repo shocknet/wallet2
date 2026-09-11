@@ -3,8 +3,8 @@ import SectionDivider from "@/Components/common/ui/sectionDivider";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { NOSTR_RELAYS } from "@/constants";
-import { useAskCreatePassword } from "@/Hooks/useAskCreatePassword";
-import { useAskPassword } from "@/Hooks/useAskPassword";
+import { usePasswordCreationModal } from "@/Components/password/PasswordCreationModal";
+import { usePasswordInputModal } from "@/Components/password/PasswordInputModal";
 import { useToast } from "@/lib/contexts/useToast";
 import { importBackupFileText } from "@/lib/file-backup";
 import { makeIdentityPrivateKeyPmUsername } from "@/lib/pmParams";
@@ -15,7 +15,6 @@ import {
 import { createIdentity } from "@/State/identitiesRegistry/thunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch } from "@/State/store/hooks";
-import { enqueueBootstrapIfNoBackup } from "@/shell/pushIntent";
 import { Capacitor } from "@capacitor/core";
 import { hexToBytes } from "@noble/hashes/utils";
 import {
@@ -43,7 +42,7 @@ import {
 
 export function ImportNostrKeyPage() {
 	const dispatch = useAppDispatch();
-	const askInputPassword = useAskPassword(
+	const askInputPassword = usePasswordInputModal(
 		"shockwallet-backup-file",
 		"Enter the password for this backup file",
 	);
@@ -65,7 +64,7 @@ export function ImportNostrKeyPage() {
 		[privKey],
 	);
 
-	const askCreatePassword = useAskCreatePassword(
+	const askCreatePassword = usePasswordCreationModal(
 		pmUsername,
 		"Create a password to secure your private key. You may skip this now and set it later in the profile settings.",
 		"Skip",
@@ -75,15 +74,15 @@ export function ImportNostrKeyPage() {
 		async (key: string, _sources: SourceToMigrate[]) => {
 			let userPassword: string | undefined;
 			if (!Capacitor.isNativePlatform()) {
-				const password = await askCreatePassword();
-				if (password) {
-					userPassword = password;
+				const result = await askCreatePassword();
+				if (result.role === "confirm") {
+					userPassword = result.data;
 				}
 			}
 
 			await presentLoading({ cssClass: "app-loading", message: "Creating profile...", });
 			try {
-				const { foundBackup, identityId } = await dispatch(
+				await dispatch(
 					createIdentity({
 						type: IdentityType.LOCAL_KEY,
 						privkey: key,
@@ -92,7 +91,6 @@ export function ImportNostrKeyPage() {
 						userPassword,
 					}),
 				);
-				dispatch(enqueueBootstrapIfNoBackup({ foundBackup, identityId }));
 			} catch (err: unknown) {
 				showToast({
 					color: "warning",
@@ -133,8 +131,8 @@ export function ImportNostrKeyPage() {
 				return;
 			}
 
-			const password = await askInputPassword();
-			if (!password) {
+			const result = await askInputPassword();
+			if (result.role !== "confirm") {
 				e.target.value = "";
 				return;
 			}
@@ -143,7 +141,7 @@ export function ImportNostrKeyPage() {
 			let sources: SourceToMigrate[] = [];
 
 			try {
-				const res = await importBackupFileText(fileText, password);
+				const res = await importBackupFileText(fileText, result.data);
 				if (res.kind === "nsec") {
 					importedKey = res.nsec;
 				} else {

@@ -9,6 +9,7 @@ import {
 	IonText,
 	IonTitle,
 	IonToolbar,
+	useIonRouter,
 } from "@ionic/react";
 import {
 	saveOutline,
@@ -22,7 +23,7 @@ import {
 } from "@/State/identitiesRegistry/slice";
 import { setIdentityRelays } from "@/State/identitiesRegistry/identitySyncThunks";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
+import { useSwitchProfileModal } from "@/Components/User/SwitchProfileSheet";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
 import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
@@ -45,12 +46,13 @@ const sameSet = (a: string[], b: string[]) => {
 const IdentityOverviewPage = () => {
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
+	const router = useIonRouter();
+	const ShowProfileSheet = useSwitchProfileModal();
 	const runtime = useAppSelector(selectActiveIdentity);
 	const registryIdentity = useAppSelector((state) =>
 		runtime ? selectIdentityByPubkey(state, runtime.pubkey) : null,
 	);
 
-	const [switchOpen, setSwitchOpen] = useState(false);
 	const [editingRelays, setEditingRelays] = useState(false);
 	const [relays, setRelays] = useState<string[]>([]);
 
@@ -215,7 +217,13 @@ const IdentityOverviewPage = () => {
 							color="medium"
 							size="large"
 							className="[--border-radius:12px]"
-							onClick={() => setSwitchOpen(true)}
+							onClick={() => {
+								void ShowProfileSheet().then((result) => {
+									if (result.role === "create") {
+										router.push("/profile/create", "forward", "push");
+									}
+								});
+							}}
 						>
 							<IonIcon
 								slot="start"
@@ -226,11 +234,6 @@ const IdentityOverviewPage = () => {
 					</section>
 				</div>
 			</IonContent>
-
-			<SwitchProfileSheet
-				isOpen={switchOpen}
-				onDidDismiss={() => setSwitchOpen(false)}
-			/>
 		</IonPage>
 	);
 };

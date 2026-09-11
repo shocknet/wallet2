@@ -2,18 +2,20 @@ import {
 	IonPage,
 	IonContent,
 	IonButton,
-	useIonRouter,
 	IonFooter,
 	useIonLoading,
 } from "@ionic/react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { walletOutline } from "ionicons/icons";
 import cn from "clsx";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { addBootstrapSource } from "@/State/scoped/backups/sources/thunks";
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
-import { useAskAddSource } from "@/Pages/Sources/AddSourceModal";
+import { useAddSourceIntentModal } from "@/Pages/Sources/AddSourceModal";
+import { selectPendingIntent } from "@/shell/selectors";
+import { shellActions } from "@/shell/slice";
+import { isAddSourceIntent } from "@/intents/types";
+import { isDismissed, useOverlayCoordinator } from "@/overlay";
 import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { ScreenIntro } from "@/Components/common/ui/ScreenIntro";
 
@@ -66,31 +68,43 @@ function PlugIcon() {
 	);
 }
 
-export default function BootstrapSourcePage() {
-	const router = useIonRouter();
+export default function SourceBootstrapScreen() {
 	const { showToast } = useToast();
 	const dispatch = useAppDispatch();
-	const sourceCount = useAppSelector(selectSourceViews).length;
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const [selectedOption, setSelectedOption] =
 		useState<SelectedOption>(null);
 	const [busy, setBusy] = useState(false);
-	const askAddSource = useAskAddSource();
-
-	const goHome = useCallback(() => {
-		router.push("/home", "root", "replace");
-	}, [router]);
+	const askAddSource = useAddSourceIntentModal();
+	const { occupied } = useOverlayCoordinator();
+	const pendingIntent = useAppSelector(selectPendingIntent);
+	const presentingIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		if (sourceCount === 0 || busy) return;
-		goHome();
-	}, [sourceCount, busy, goHome]);
+		if (!pendingIntent || !isAddSourceIntent(pendingIntent)) return;
+		if (occupied) return;
+		if (presentingIdRef.current === pendingIntent.id) return;
+		presentingIdRef.current = pendingIntent.id;
+		const { id } = pendingIntent;
+		void askAddSource({
+			initialNprofile: pendingIntent.nprofile,
+			integrationData: pendingIntent.integrationData,
+			invitationToken: pendingIntent.invitationToken,
+			fromInviteUrl: pendingIntent.fromUrl,
+		}).then((outcome) => {
+			if (presentingIdRef.current === id) {
+				presentingIdRef.current = null;
+			}
+			if (!isDismissed(outcome)) return;
+			dispatch(shellActions.pendingIntentCleared({ id }));
+		});
+	}, [askAddSource, dispatch, occupied, pendingIntent]);
 
 	const handleConnect = useCallback(async () => {
 		if (selectedOption === null || busy) return;
 
 		if (selectedOption === "connection") {
-			void askAddSource({});
+			await askAddSource({});
 			return;
 		}
 
@@ -106,9 +120,9 @@ export default function BootstrapSourcePage() {
 						? err.message
 						: "Failed to add bootstrap source",
 			});
+			setBusy(false);
 		} finally {
 			await dismissLoading();
-			setBusy(false);
 		}
 	}, [
 		busy,
@@ -122,7 +136,7 @@ export default function BootstrapSourcePage() {
 
 	return (
 		<IonPage className="ion-page-width">
-			<IonContent className="ion-padding ion-content-only">
+			<IonContent className="ion-padding ion-content-no-header">
 				<div className="min-h-full flex flex-col gap-10 justify-center items-center w-full max-w-md mx-auto">
 					<ScreenIntro
 						icon={walletOutline}

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	IonButton,
 	IonButtons,
@@ -6,7 +6,6 @@ import {
 	IonHeader,
 	IonIcon,
 	IonList,
-	IonModal,
 	IonTitle,
 	IonToolbar,
 } from "@ionic/react";
@@ -18,21 +17,29 @@ import {
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
+import {
+	usePromiseModal,
+	useOverlayCoordinator,
+	type Dismiss,
+	type OverlayChoice,
+	type OverlayOptions,
+} from "@/overlay";
 
 type ItemDisplayProps = Pick<
 	SourceItemViewProps,
 	"showFavorite" | "showBalance" | "showBeacon"
 >;
 
-export type SourceSelectSheetProps = {
-	isOpen: boolean;
-	onDidDismiss: () => void;
+export type SourceSelectOptions = {
 	selectedSourceId?: string | null;
-	onSelect: (source: SourceView) => void;
 	sources: SourceView[];
 	title?: string;
 	emptyMessage?: string;
 } & ItemDisplayProps;
+
+type SourceSelectProps = SourceSelectOptions & {
+	dismiss: Dismiss<OverlayChoice<SourceView>>;
+};
 
 function favoriteFirst(
 	sources: SourceView[],
@@ -47,18 +54,16 @@ function favoriteFirst(
 	return copy;
 }
 
-export function SourceSelectSheet({
-	isOpen,
-	onDidDismiss,
+function SourceSelectSheet({
 	selectedSourceId = null,
-	onSelect,
 	sources,
 	title = "Select source",
 	emptyMessage = "No sources to show.",
 	showFavorite,
 	showBalance,
 	showBeacon,
-}: SourceSelectSheetProps) {
+	dismiss,
+}: SourceSelectProps) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
 	const orderedSources = useMemo(
@@ -66,26 +71,13 @@ export function SourceSelectSheet({
 		[sources, favoriteSourceId],
 	);
 
-	function handleSelect(source: SourceView) {
-		onSelect(source);
-		onDidDismiss();
-	}
-
 	return (
-		<IonModal
-			isOpen={isOpen}
-			onDidDismiss={onDidDismiss}
-			initialBreakpoint={0.92}
-			breakpoints={[0, 0.92, 1]}
-			expandToScroll={false}
-			handle
-			className="app-sheet-modal"
-		>
+		<>
 			<IonHeader className="ion-no-border">
 				<IonToolbar>
 					<IonTitle>{title}</IonTitle>
 					<IonButtons slot="end">
-						<IonButton onClick={onDidDismiss}>
+						<IonButton onClick={() => dismiss({ role: "cancel" })}>
 							<IonIcon icon={closeOutline} slot="icon-only" />
 						</IonButton>
 					</IonButtons>
@@ -103,7 +95,7 @@ export function SourceSelectSheet({
 								key={source.sourceId}
 								source={source}
 								selected={selectedSourceId === source.sourceId}
-								onClick={() => handleSelect(source)}
+								onClick={() => dismiss({ role: "confirm", data: source })}
 								showFavorite={showFavorite}
 								showBalance={showBalance}
 								showBeacon={showBeacon}
@@ -112,6 +104,31 @@ export function SourceSelectSheet({
 					</IonList>
 				)}
 			</IonContent>
-		</IonModal>
+		</>
+	);
+}
+
+const sourceSelectOverlay: OverlayOptions = {
+	cssClass: "app-sheet-modal",
+	initialBreakpoint: 0.92,
+	breakpoints: [0, 0.92, 1],
+	expandToScroll: false,
+	handle: true,
+};
+
+export function useSourceSelectModal() {
+	const { present } = useOverlayCoordinator();
+	return useCallback((options: SourceSelectOptions) => {
+		return present<OverlayChoice<SourceView>>(
+			(dismiss) => <SourceSelectSheet {...options} dismiss={dismiss} />,
+			sourceSelectOverlay,
+		);
+	}, [present]);
+}
+
+export function useNestedSourceSelectModal() {
+	return usePromiseModal<SourceSelectOptions, OverlayChoice<SourceView>>(
+		SourceSelectSheet,
+		sourceSelectOverlay,
 	);
 }

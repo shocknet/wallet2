@@ -27,7 +27,7 @@ import { unlockIdentity } from "@/State/identitiesRegistry/helpers/unlockIdentit
 import { useToast } from "@/lib/contexts/useToast";
 import { withDeviceAuth } from "@/lib/deviceAuth/guard";
 import { useDispatch } from "@/State/store/store";
-import { useAskPassword } from "@/Hooks/useAskPassword";
+import { usePasswordInputModal } from "@/Components/password/PasswordInputModal";
 import {
 	BiometryError,
 	BiometryErrorType,
@@ -63,7 +63,7 @@ function useUnlockDismissAction() {
 
 function InnerContent({ identity }: { identity: Identity }) {
 	const pmUsername = makeIdentityPrivateKeyPmUsername(identity.pubkey);
-	const askPassword = useAskPassword(
+	const askPassword = usePasswordInputModal(
 		pmUsername,
 		"Enter your password to unlock your profile",
 	);
@@ -85,12 +85,13 @@ function InnerContent({ identity }: { identity: Identity }) {
 		let password: string | undefined;
 
 		if (isUserPasswordProtected) {
-			password = await askPassword();
-			if (!password) {
+			const result = await askPassword();
+			if (result.role !== "confirm") {
 				if (!mounted.current) return;
 				setShowRetry(true);
 				return;
 			}
+			password = result.data;
 		}
 
 		try {

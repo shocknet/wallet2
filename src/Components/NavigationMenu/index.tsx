@@ -13,6 +13,7 @@ import {
 	IonMenuToggle,
 	IonTitle,
 	IonToolbar,
+	useIonRouter,
 } from "@ionic/react";
 import {
 	analyticsOutline,
@@ -34,13 +35,12 @@ import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import {
 	WALLET_AVATAR_HEIGHT,
-	useWalletAvatar,
 	useWalletWelcomeWordmark,
 } from "@/Assets/Images/wallet-avatar";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
 import { exportDebugReport } from "@/lib/debugReportExport";
-import { SwitchProfileSheet } from "@/Components/User/SwitchProfileSheet";
+import { useSwitchProfileModal } from "@/Components/User/SwitchProfileSheet";
 import { ProfilePicture } from "@/Components/User/ProfilePicture";
 import { RuntimeIdentity } from "@/shell/types";
 import { resolveIdentityRelays } from "@/State/identitiesRegistry/types";
@@ -90,10 +90,10 @@ export const NavigationMenu = memo(function NavigationMenu({
 	activeIdentity,
 }: NavigationMenuProps) {
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null);
-	const [switchOpen, setSwitchOpen] = useState(false);
+	const router = useIonRouter();
+	const ShowProfileSheet = useSwitchProfileModal();
 	const adminSources = useAppSelector(selectAdminSourceViews);
 	const hasAdminSources = adminSources.length > 0;
-	const markSrc = useWalletAvatar();
 	const wordmarkSrc = useWalletWelcomeWordmark();
 
 	useEffect(() => {
@@ -162,7 +162,13 @@ export const NavigationMenu = memo(function NavigationMenu({
 								<IonButton
 									fill="clear"
 									className="normal-case [--color:var(--app-text-secondary)]"
-									onClick={() => setSwitchOpen(true)}
+									onClick={() => {
+										ShowProfileSheet().then((result) => {
+											if (result.role === "create") {
+												router.push("/profile/create", "forward", "push");
+											}
+										});
+									}}
 								>
 									<IonIcon
 										slot="start"
@@ -288,11 +294,6 @@ export const NavigationMenu = memo(function NavigationMenu({
 					) : null}
 				</IonContent>
 			</IonMenu>
-
-			<SwitchProfileSheet
-				isOpen={switchOpen}
-				onDidDismiss={() => setSwitchOpen(false)}
-			/>
 		</>
 	);
 });
