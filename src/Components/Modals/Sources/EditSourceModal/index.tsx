@@ -51,7 +51,7 @@ type EditSourceModalProps = EditSourceOptions & {
 };
 
 function SourceIdentity({ source }: { source: SourceView }) {
-	const name = source.beaconName?.trim() || "Anonymous";
+	const name = source.beaconName?.trim() || "Unnamed node";
 
 	return (
 		<div className="flex flex-col gap-2">
