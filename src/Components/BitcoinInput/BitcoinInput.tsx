@@ -289,6 +289,7 @@ export const BitcoinInput = forwardRef<BitcoinInputHandle, BitcoinInputProps>(
 						fill="clear"
 						size="small"
 						color="medium"
+						className="m-0 !aspect-auto !min-h-8"
 						aria-label="scan"
 						onClick={() => void openScan()}
 						data-testid="bitcoin-input-scan"

@@ -9,26 +9,20 @@ import {
 	IonButton,
 	IonContent,
 	IonHeader,
-	IonIcon,
-	IonInput,
 	IonPage,
 	useIonLoading,
 	useIonRouter,
 } from "@ionic/react";
-import {
-	globeOutline,
-	qrCodeOutline,
-} from "ionicons/icons";
 import { useHistory } from "react-router";
 import {
 	AmountField,
 	type AmountFieldChange,
 } from "@/Components/AmountField";
+import { BitcoinInput, type BitcoinInputHandle } from "@/Components/BitcoinInput/BitcoinInput";
+import { IDLE_STATE, type BitcoinInputState } from "@/Components/BitcoinInput/model";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
-import EmptyState from "@/Components/common/ui/EmptyState";
-import { useQrScanner } from "@/Hooks/useQrScanner";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 import { ParseStatusHint } from "./ParseStatusHint";
 import { useToast } from "@/lib/contexts/useToast";
@@ -42,83 +36,63 @@ import {
 	sendInvoicePayment,
 } from "@/State/scoped/backups/sources/history/sendInvoicePayment";
 import {
-	type SourceView,
 	selectSourceViews,
 } from "@/State/scoped/backups/sources/selectors";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import cn from "clsx";
 import { getAmountFieldIntent } from "./amountFieldIntent";
 import {
 	pickDefaultSource,
 	pickSourceCoveringAmount,
+	SEND_DISALLOWED_CLASSIFICATIONS,
+	validateSendRecipient,
 } from "./helpers";
 import { useConfirmSendModal } from "./ConfirmSendModal";
 import { RecipientInfoCard } from "./RecipientInfoCard";
 import { RecipientTypesHint } from "./RecipientTypesHint";
 import { FeeReserveHint } from "./FeeReserveHint";
-import { useRecipientField } from "./useRecipientField";
 import type { AmountRange } from "./types";
-import type { SendPageNavState } from "./nav";
-import { navToSources } from "@/Pages/Sources/nav";
+import { isSendParsedInput, type SendPageNavState } from "./nav";
 import type { ParsedInvoiceInput } from "@/lib/types/parse";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 export default function Send() {
-	const sources = useAppSelector(selectSourceViews);
 	const { location } = useHistory();
-	const sendVisitKeyRef = useRef(location.key);
+	const visitKeyRef = useRef(location.key);
 	if (location.pathname === "/send") {
-		sendVisitKeyRef.current = location.key;
+		visitKeyRef.current = location.key;
 	}
 
 	return (
 		<IonPage className="ion-page-width">
-			{sources.length === 0 ? (
-				<SendEmpty />
-			) : (
-				<SendSourceGate key={sendVisitKeyRef.current} sources={sources} />
-			)}
+			<SendInner key={visitKeyRef.current} />
 		</IonPage>
 	);
 }
 
-function SendEmpty() {
-	const history = useHistory();
-
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<RootPageToolbar title="Pay" />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				<EmptyState
-					title="No Pub sources"
-					description="Add a Pub to send payments from"
-					ionicon={globeOutline}
-					action={
-						<IonButton
-							color="primary"
-							className="[--border-radius:12px]"
-							expand="block"
-							onClick={() => navToSources(history, { from: history.location })}
-						>
-							Go to sources
-						</IonButton>
-					}
-				/>
-			</IonContent>
-		</>
-	);
-}
-
-function SendSourceGate({ sources }: { sources: SourceView[] }) {
+function SendInner() {
+	const sources = useAppSelector(selectSourceViews);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const { showToast } = useToast();
+	const router = useIonRouter();
+	const history = useHistory<SendPageNavState>();
+	const dispatch = useAppDispatch();
+	const sourceSelect = useSourceSelectModal();
+	const recipientRef = useRef<BitcoinInputHandle>(null);
+	const amountRef = useRef<HTMLIonInputElement>(null);
+	const reviewing = useRef(false);
+	const [presentLoading, dismissLoading] = useIonLoading();
+	const askConfirmSend = useConfirmSendModal();
+
 	const [selectedSourceId, setSelectedSourceId] = useState(
 		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
 	);
-	const sourceSelect = useSourceSelectModal();
+	const [recipient, setRecipient] = useState<BitcoinInputState>(IDLE_STATE);
+	const [nofferRange, setNofferRange] = useState<AmountRange | null>(null);
+	const [amountChange, setAmountChange] = useState<AmountFieldChange>({
+		sats: null,
+		error: undefined,
+	});
+	const [amountFieldKey, setAmountFieldKey] = useState(0);
 
 	useEffect(() => {
 		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
@@ -128,10 +102,45 @@ function SendSourceGate({ sources }: { sources: SourceView[] }) {
 		}
 	}, [sources, selectedSourceId, favoriteSourceId]);
 
-	const selectedSource = useMemo(() => {
+	const source = useMemo(() => {
 		return sources.find((s) => s.sourceId === selectedSourceId) ??
 			pickDefaultSource(sources, favoriteSourceId);
 	}, [sources, selectedSourceId, favoriteSourceId]);
+
+	useEffect(() => {
+		const location = history.location;
+		if (location.pathname !== "/send") return;
+		const parsed = location.state?.parsed;
+		if (!parsed) return;
+
+		recipientRef.current?.commit(parsed);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [history.location.key]);
+
+	const parsed =
+		recipient.status === "ok" && isSendParsedInput(recipient.parsed)
+			? recipient.parsed
+			: null;
+	const parsedIdentity = parsed?.data ?? null;
+
+	useEffect(() => {
+		setNofferRange(null);
+	}, [parsedIdentity]);
+
+	const amountFieldIntent = useMemo(
+		() =>
+			getAmountFieldIntent(
+				parsed,
+				source.maxWithdrawableSats,
+				nofferRange,
+			),
+		[parsed, source.maxWithdrawableSats, nofferRange],
+	);
+
+	useEffect(() => {
+		if (!amountFieldIntent.focusAmount || !parsedIdentity) return;
+		void amountRef.current?.setFocus();
+	}, [amountFieldIntent.focusAmount, parsedIdentity]);
 
 	const switchToSourceCoveringAmount = useCallback(
 		(amount: Satoshi) => {
@@ -153,111 +162,6 @@ function SendSourceGate({ sources }: { sources: SourceView[] }) {
 		[sources, selectedSourceId, favoriteSourceId, showToast],
 	);
 
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<RootPageToolbar title="Pay" />
-			</IonHeader>
-			<IonContent className="ion-padding ion-content-no-footer">
-				<div className="mx-auto flex h-full min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
-					<div className="flex flex-col gap-2">
-						<SourceSelectionView
-							showTapToSwitch={false}
-							showBalance
-							source={selectedSource}
-							onClick={() => {
-								sourceSelect({
-									sources,
-									selectedSourceId,
-									title: "Spend from",
-								}).then((result) => {
-									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
-								});
-							}}
-						/>
-						<FeeReserveHint
-							sourceId={selectedSource.sourceId}
-							balanceSats={selectedSource.balanceSats}
-							availableSats={selectedSource.maxWithdrawableSats}
-							reserveSats={satoshi(
-								Math.max(
-									0,
-									selectedSource.balanceSats -
-									selectedSource.maxWithdrawableSats,
-								),
-							)}
-						/>
-						<SourceReachabilityHint source={selectedSource} />
-					</div>
-					<SendStage
-						source={selectedSource}
-						switchToSourceCoveringAmount={switchToSourceCoveringAmount}
-					/>
-				</div>
-			</IonContent>
-		</>
-	);
-}
-
-
-function SendStage({
-	source,
-	switchToSourceCoveringAmount,
-}: {
-	source: SourceView;
-	switchToSourceCoveringAmount: (amount: Satoshi) => void;
-}) {
-	const router = useIonRouter();
-	const history = useHistory<SendPageNavState>();
-	const dispatch = useAppDispatch();
-	const { showToast } = useToast();
-	const { scanSingleBarcode } = useQrScanner();
-
-	const { value: recipient, state: recipientState, onInput, commit } = useRecipientField();
-
-	useEffect(() => {
-		const location = history.location;
-		if (location.pathname !== "/send") return;
-		const parsed = location.state?.parsed;
-		if (!parsed) return;
-
-		commit(parsed);
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [history.location.key, commit]);
-	const [nofferRange, setNofferRange] = useState<AmountRange | null>(null);
-
-	const [amountChange, setAmountChange] = useState<AmountFieldChange>({
-		sats: null,
-		error: undefined,
-	});
-	const [amountFieldKey, setAmountFieldKey] = useState(0);
-	const amountRef = useRef<HTMLIonInputElement>(null);
-
-	const parsedIdentity =
-		recipientState.status === "parsedOk" ? recipientState.inputValue : null;
-
-	useEffect(() => {
-		setNofferRange(null);
-	}, [parsedIdentity]);
-
-	const amountFieldIntent = useMemo(
-		() =>
-			getAmountFieldIntent(
-				recipientState.status === "parsedOk" ? recipientState.parsedData : null,
-				source.maxWithdrawableSats,
-				nofferRange,
-			),
-		[recipientState, source.maxWithdrawableSats, nofferRange],
-	);
-
-
-
-	useEffect(() => {
-		if (!amountFieldIntent.focusAmount || !parsedIdentity) return;
-		void amountRef.current?.setFocus();
-	}, [amountFieldIntent.focusAmount, parsedIdentity]);
-
 	useEffect(() => {
 		const fixed = amountFieldIntent.fixedSats;
 		if (fixed == null) return;
@@ -269,41 +173,16 @@ function SendStage({
 		switchToSourceCoveringAmount,
 	]);
 
-	const [isTouched, setIsTouched] = useState(false);
-	const recipientRef = useRef<HTMLIonInputElement>(null);
-	const reviewing = useRef(false);
-	const [presentLoading, dismissLoading] = useIonLoading();
-	const askConfirmSend = useConfirmSendModal();
-
-
-
-
-	const onRecipientInput = (value: string) => {
-		onInput(value);
-		if (recipientRef.current) {
-			recipientRef.current.classList.remove("ion-invalid");
-		}
-	};
-
-	const openScan = async () => {
-		const input = await scanSingleBarcode(
-			"Scan a Lightning Invoice, Noffer string, Lnurl, or Lightning Address",
-		);
-		if (input.role === "confirm") commit(input.data);
-	};
-
 	const canPay =
-		recipientState.status === "parsedOk" &&
+		parsed !== null &&
 		amountChange.sats != null &&
 		source.maxWithdrawableSats >= amountChange.sats;
 
-
 	const handleReviewPayment = async () => {
 		if (reviewing.current) return;
-		if (recipientState.status !== "parsedOk" || amountChange.sats == null) return;
+		if (parsed === null || amountChange.sats == null) return;
 
 		reviewing.current = true;
-		const parsed = recipientState.parsedData;
 		const amount = amountChange.sats;
 		const sourceId = source.sourceId;
 
@@ -378,91 +257,109 @@ function SendStage({
 	};
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col">
-			<div className="flex flex-col gap-4">
-				<AmountField
-					key={amountFieldKey}
-					ref={amountRef}
-					className="filled-input min-h-14"
-					fill="solid"
-					mode="md"
-					labelPlacement="stacked"
-					limits={amountFieldIntent.limits}
-					fixedSats={amountFieldIntent.fixedSats}
-					onChange={setAmountChange}
-				/>
+		<>
+			<IonHeader className="ion-no-border">
+				<RootPageToolbar title="Pay" />
+			</IonHeader>
+			<IonContent className="ion-padding ion-content-no-footer">
+				<div className="mx-auto flex h-full min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
+					<div className="flex flex-col gap-2">
+						<SourceSelectionView
+							showTapToSwitch={false}
+							showBalance
+							source={source}
+							onClick={() => {
+								sourceSelect({
+									sources,
+									selectedSourceId,
+									title: "Spend from",
+								}).then((result) => {
+									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
+								});
+							}}
+						/>
+						<FeeReserveHint
+							sourceId={source.sourceId}
+							balanceSats={source.balanceSats}
+							availableSats={source.maxWithdrawableSats}
+							reserveSats={satoshi(
+								Math.max(
+									0,
+									source.balanceSats -
+									source.maxWithdrawableSats,
+								),
+							)}
+						/>
+						<SourceReachabilityHint source={source} />
+					</div>
 
-				<div className="flex flex-col gap-2">
-					<IonInput
-						ref={recipientRef}
-						className={cn(
-							"filled-input min-h-14",
-							recipientState.status === "error" && "ion-invalid",
-							isTouched && "ion-touched",
-						)}
-						label="Recipient"
-						labelPlacement="stacked"
-						fill="solid"
-						mode="md"
-						color="primary"
-						onIonBlur={() => setIsTouched(true)}
-						placeholder="Paste invoice, Noffer, LNURL, or Lightning address"
-						errorText={
-							recipientState.status === "error"
-								? recipientState.error
-								: undefined
-						}
-						value={recipient}
-						onIonInput={(e) => onRecipientInput(e.detail.value || "")}
-					>
-						<IonButton
-							slot="end"
-							fill="clear"
-							size="small"
-							color="medium"
-							className="m-0 !aspect-auto !min-h-8"
-							aria-label="scan"
-							onClick={openScan}
-						>
-							<IonIcon slot="icon-only" icon={qrCodeOutline} />
-						</IonButton>
-					</IonInput>
-					{recipientState.status === "loading" && (
-						<ParseStatusHint state={recipientState} />
-					)}
-					<div className="mt-4">
-						{recipientState.status === "parsedOk" ? (
-							<RecipientInfoCard
-								parsed={recipientState.parsedData}
-								nofferRange={nofferRange}
+					<div className="flex min-h-0 flex-1 flex-col">
+						<div className="flex flex-col gap-4">
+							<AmountField
+								key={amountFieldKey}
+								ref={amountRef}
+								className="filled-input min-h-14"
+								fill="solid"
+								mode="md"
+								labelPlacement="stacked"
+								limits={amountFieldIntent.limits}
+								fixedSats={amountFieldIntent.fixedSats}
+								onChange={setAmountChange}
 							/>
-						) : (
-							<RecipientTypesHint />
-						)}
+
+							<div className="flex flex-col gap-2">
+								<BitcoinInput
+									ref={recipientRef}
+									className="filled-input min-h-14"
+									label="Recipient"
+									labelPlacement="stacked"
+									fill="solid"
+									mode="md"
+									color="primary"
+									placeholder="Paste invoice, Noffer, LNURL, or Lightning address"
+									unidentifiedError="Unidentified recipient"
+									scanInstruction="Scan a Lightning Invoice, Noffer string, Lnurl, or Lightning Address"
+									disallowed={[...SEND_DISALLOWED_CLASSIFICATIONS]}
+									validate={validateSendRecipient}
+									onChange={setRecipient}
+								/>
+								<ParseStatusHint state={recipient} />
+								<div className="mt-4">
+									{parsed ? (
+										<RecipientInfoCard
+											parsed={parsed}
+											nofferRange={nofferRange}
+										/>
+									) : (
+										<RecipientTypesHint />
+									)}
+								</div>
+							</div>
+						</div>
+
+						<div className="mt-auto flex gap-3 pt-6">
+							<IonButton
+								fill="clear"
+								expand="block"
+								className="m-0 flex-1 [--border-radius:12px] [--color:var(--app-text-primary)]"
+								onClick={() => router.goBack()}
+							>
+								Cancel
+							</IonButton>
+							<IonButton
+								color="primary"
+								fill="solid"
+								expand="block"
+								className="m-0 flex-1 [--border-radius:12px]"
+								disabled={!canPay}
+								onClick={() => void handleReviewPayment()}
+							>
+								Review payment
+							</IonButton>
+						</div>
 					</div>
 				</div>
-			</div>
-
-			<div className="mt-auto flex gap-3 pt-6">
-				<IonButton
-					fill="clear"
-					expand="block"
-					className="m-0 flex-1 [--border-radius:12px] [--color:var(--app-text-primary)]"
-					onClick={() => router.goBack()}
-				>
-					Cancel
-				</IonButton>
-				<IonButton
-					color="primary"
-					fill="solid"
-					expand="block"
-					className="m-0 flex-1 [--border-radius:12px]"
-					disabled={!canPay}
-					onClick={() => void handleReviewPayment()}
-				>
-					Review payment
-				</IonButton>
-			</div>
-		</div>
+			</IonContent>
+		</>
 	);
 }

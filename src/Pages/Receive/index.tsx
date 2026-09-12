@@ -4,7 +4,6 @@ import {
 	useMemo,
 	useReducer,
 	useState,
-	type ReactNode,
 } from "react";
 import {
 	IonButton,
@@ -28,7 +27,6 @@ import {
 } from "ionicons/icons";
 import QrCode from "@/Components/QrCode";
 import { FiatDisplay } from "@/Components/FiatDisplay";
-import EmptyState from "@/Components/common/ui/EmptyState";
 import { useNewInvoiceModal } from "@/Components/Modals/NewInvoiceModal";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
@@ -40,12 +38,9 @@ import type { Satoshi } from "@/lib/types/units";
 import { formatSatoshi } from "@/lib/units";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import {
-	type SourceView,
 	selectSourceViews,
 } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
-import { useHistory, useLocation } from "react-router-dom";
-import { navToSources } from "@/Pages/Sources/nav";
 import {
 	createInvoiceForSource,
 	fetchRemotePayloads,
@@ -73,59 +68,19 @@ function methodIcon(id: ReceiveMethodId): string {
 }
 
 function segmentContentId(sourceId: string, methodId: ReceiveMethodId) {
-	return `recv2-${sourceId}-${methodId}`;
+	return `recv-${sourceId}-${methodId}`;
 }
 
-export default function Receive2() {
+export default function Receive() {
 	const sources = useAppSelector(selectSourceViews);
-
-	return (
-		<IonPage className="ion-page-width">
-			{sources.length === 0 ? (
-				<ReceiveEmpty />
-			) : (
-				<ReceiveSourceGate sources={sources} />
-			)}
-		</IonPage>
-	);
-}
-
-function ReceiveEmpty() {
-	const history = useHistory();
-	const location = useLocation();
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<StackPageToolbar title="Receive" />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				<EmptyState
-					title="No sources"
-					description="Add a source to receive payments"
-					action={
-						<IonButton
-							color="primary"
-							className="[--border-radius:12px]"
-							expand="block"
-							onClick={() => navToSources(history, { from: location })}
-						>
-							Go to sources
-						</IonButton>
-					}
-				/>
-			</IonContent>
-		</>
-	);
-}
-
-
-function ReceiveSourceGate({ sources }: { sources: SourceView[] }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+	const { showToast } = useToast();
+	const sourceSelect = useSourceSelectModal();
+	const askNewInvoice = useNewInvoiceModal();
+
 	const [selectedSourceId, setSelectedSourceId] = useState(
 		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
 	);
-	const sourceSelect = useSourceSelectModal();
 
 	useEffect(() => {
 		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
@@ -135,47 +90,10 @@ function ReceiveSourceGate({ sources }: { sources: SourceView[] }) {
 		}
 	}, [sources, selectedSourceId, favoriteSourceId]);
 
-	const selectedSource = useMemo(() => {
+	const source = useMemo(() => {
 		return sources.find((s) => s.sourceId === selectedSourceId) ??
 			pickDefaultSource(sources, favoriteSourceId);
 	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<StackPageToolbar title="Receive" />
-			</IonHeader>
-			<ReceiveStage key={selectedSource.sourceId} source={selectedSource}>
-				<div className="flex flex-col gap-2">
-					<SourceSelectionView
-						source={selectedSource}
-						showTapToSwitch={false}
-						onClick={() => {
-							sourceSelect({
-								sources,
-								selectedSourceId,
-								title: "Receive into",
-							}).then((result) => {
-								if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
-							});
-						}}
-					/>
-					<SourceReachabilityHint source={selectedSource} />
-				</div>
-			</ReceiveStage>
-		</>
-	);
-}
-
-
-function ReceiveStage({
-	source,
-	children,
-}: {
-	source: SourceView;
-	children: ReactNode;
-}) {
-	const { showToast } = useToast();
 
 	const [methodsState, dispatchMethods] = useReducer(
 		receiveMethodsReducer,
@@ -184,17 +102,17 @@ function ReceiveStage({
 	);
 	const { payloads, method, invoice, invoiceLoading } = methodsState;
 
-	const askNewInvoice = useNewInvoiceModal();
-
 	useEffect(() => {
+		if (methodsState.sourceId !== source.sourceId) {
+			dispatchMethods({ type: "reset", source });
+		}
 		const sourceId = source.sourceId;
 		fetchRemotePayloads(source, (patch) => {
 			dispatchMethods({ type: "patch", sourceId, patch });
 		});
-		// Remount on source switch via key; don't refetch on balance/beacon churn.
+		// Reset on source switch
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [source.sourceId]);
-
 
 	const metaNoffer = source.noffer?.trim();
 
@@ -261,10 +179,28 @@ function ReceiveStage({
 	const segmentOptionsKey = segmentOptions.map((o) => o.id).join("|");
 
 	return (
-		<>
+		<IonPage className="ion-page-width">
+			<IonHeader className="ion-no-border">
+				<StackPageToolbar title="Receive" />
+			</IonHeader>
 			<IonContent className="ion-padding">
 				<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pt-2">
-					{children}
+					<div className="flex flex-col gap-2">
+						<SourceSelectionView
+							source={source}
+							showTapToSwitch={false}
+							onClick={() => {
+								sourceSelect({
+									sources,
+									selectedSourceId,
+									title: "Receive into",
+								}).then((result) => {
+									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
+								});
+							}}
+						/>
+						<SourceReachabilityHint source={source} />
+					</div>
 					{segmentOptions.length > 0 && segmentValue ? (
 						<div key={segmentOptionsKey} className="flex flex-col">
 							<IonSegment
@@ -351,7 +287,7 @@ function ReceiveStage({
 					</div>
 				</IonToolbar>
 			</IonFooter>
-		</>
+		</IonPage>
 	);
 }
 

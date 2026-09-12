@@ -14,6 +14,7 @@ import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 
 import { staticReducers } from './staticReducers';
 import { listenerMiddleware } from './listenerMiddleware';
 import { appApi } from '../api/api';
+import '../api/offers';
 import { historyFetchAllRequested, historyFetchSourceRequested, identityUnloaded } from '../listeners/actions';
 
 

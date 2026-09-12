@@ -1,6 +1,8 @@
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import type { Satoshi } from "@/lib/types/units";
-import { InputClassification } from "@/lib/types/parse";
+import { InputClassification, type ParsedInput } from "@/lib/types/parse";
+import { OfferPriceType } from "@shocknet/clink-sdk";
+import { isSendParsedInput } from "./nav";
 
 const hasBalance = (s: { maxWithdrawableSats?: number }) =>
 	(s.maxWithdrawableSats ?? 0) > 0;
@@ -34,4 +36,23 @@ export const SEND_DISALLOWED_CLASSIFICATIONS = [
 	InputClassification.NPROFILE,
 ] as const;
 
+export function validateSendRecipient(parsed: ParsedInput): string | null {
+	if (parsed.type === InputClassification.LNURL_WITHDRAW) {
+		return "Lnurl cannot be a lnurl-withdraw";
+	}
+	if (parsed.type === InputClassification.LN_INVOICE && !parsed.amount) {
+		return "Zero value invoices are not supported";
+	}
+	if (
+		parsed.type === InputClassification.NOFFER &&
+		parsed.noffer.priceType !== OfferPriceType.Spontaneous &&
+		!parsed.noffer.price
+	) {
+		return "Invalid offer price for a fixed-price offer";
+	}
+	if (!isSendParsedInput(parsed)) {
+		return "Unsupported recipient";
+	}
+	return null;
+}
 

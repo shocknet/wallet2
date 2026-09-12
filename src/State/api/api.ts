@@ -14,6 +14,18 @@ import type { LnurlPayServiceResponse } from "@/lib/types/lnurl";
 
 const ONE_HOUR_SECONDS = 60 * 60;
 
+export type AppApiError = {
+	message: string;
+};
+
+export function appApiError(message: string): { error: AppApiError } {
+	return { error: { message } };
+}
+
+export function appApiCaughtError(err: unknown, fallback: string) {
+	return appApiError(err instanceof Error ? err.message : fallback);
+}
+
 export type GetDebitAuthorizationsArg = {
 	sourceId: string;
 };
@@ -24,8 +36,8 @@ function normalizeLnAddress(address: string): string {
 
 export const appApi = createApi({
 	reducerPath: "appApi",
-	baseQuery: fakeBaseQuery(),
-	tagTypes: ["DebitAuthorizations"],
+	baseQuery: fakeBaseQuery<AppApiError>(),
+	tagTypes: ["DebitAuthorizations", "Offers", "OfferInvoices"],
 	endpoints: (b) => ({
 		getProfile: b.query<NostrProfile | null, { pubkey: string; relays: string[] }>({
 			serializeQueryArgs: ({ queryArgs }) => ({
@@ -37,8 +49,7 @@ export const appApi = createApi({
 					const profile = await fetchProfile(pubkey, relays);
 					return { data: profile };
 				} catch (e: unknown) {
-					const message = e instanceof Error ? e.message : "failed";
-					return { error: { status: "CUSTOM_ERROR", error: message } };
+					return appApiCaughtError(e, "failed");
 				}
 			},
 		}),
@@ -49,28 +60,16 @@ export const appApi = createApi({
 			queryFn: async ({ address }) => {
 				const normalized = normalizeLnAddress(address);
 				if (!normalized) {
-					return {
-						error: {
-							status: "CUSTOM_ERROR",
-							error: "Missing lightning address",
-						},
-					};
+					return appApiError("Missing lightning address");
 				}
 				try {
 					const params = await requestLnurlServiceParams(normalized, true);
 					if (params.tag !== "payRequest") {
-						return {
-							error: {
-								status: "CUSTOM_ERROR",
-								error: "Expected LNURL payRequest",
-							},
-						};
+						return appApiError("Expected LNURL payRequest");
 					}
 					return { data: params };
 				} catch (e: unknown) {
-					const message =
-						e instanceof Error ? e.message : "Failed to fetch LNURL pay";
-					return { error: { status: "CUSTOM_ERROR", error: message } };
+					return appApiCaughtError(e, "Failed to fetch LNURL pay");
 				}
 			},
 		}),
@@ -81,8 +80,7 @@ export const appApi = createApi({
 					const verification = await verifyNip05Claim(pubkey, nip05);
 					return { data: verification };
 				} catch (e: unknown) {
-					const message = e instanceof Error ? e.message : "failed";
-					return { error: { status: "CUSTOM_ERROR", error: message } };
+					return appApiCaughtError(e, "failed");
 				}
 			},
 		}),
@@ -96,14 +94,7 @@ export const appApi = createApi({
 			queryFn: async ({ sourceId }, api) => {
 				const state = api.getState() as RootState;
 				const source = selectSourceViewById(state, sourceId);
-				if (!source) {
-					return {
-						error: {
-							status: "CUSTOM_ERROR",
-							error: "Source is not available",
-						},
-					};
-				}
+				if (!source) return appApiError("Source is not available");
 
 				try {
 					const client = await getNostrClient(
@@ -112,20 +103,13 @@ export const appApi = createApi({
 					);
 					const res = await client.GetDebitAuthorizations();
 					if (res.status !== "OK") {
-						return {
-							error: {
-								status: "CUSTOM_ERROR",
-								error: res.reason || "Could not load debit authorizations",
-							},
-						};
+						return appApiError(
+							res.reason || "Could not load debit authorizations",
+						);
 					}
 					return { data: res.debits };
 				} catch (e: unknown) {
-					const message =
-						e instanceof Error
-							? e.message
-							: "Could not load debit authorizations";
-					return { error: { status: "CUSTOM_ERROR", error: message } };
+					return appApiCaughtError(e, "Could not load debit authorizations");
 				}
 			},
 		}),

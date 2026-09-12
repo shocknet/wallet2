@@ -30,7 +30,7 @@ export type ReceiveMethodsAction =
 	| { type: "invoiceSuccess"; invoice: ParsedInvoiceInput }
 	| { type: "invoiceError" };
 
-const emptyStage: ReceiveMethodsState = {
+const emptyState: ReceiveMethodsState = {
 	sourceId: "",
 	payloads: emptyPayloads,
 	method: null,
@@ -41,7 +41,7 @@ const emptyStage: ReceiveMethodsState = {
 export function createInitialReceiveMethodsState(
 	source: SourceView,
 ): ReceiveMethodsState {
-	return receiveMethodsReducer(emptyStage, { type: "reset", source });
+	return receiveMethodsReducer(emptyState, { type: "reset", source });
 }
 
 export function receiveMethodsReducer(

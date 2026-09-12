@@ -23,7 +23,6 @@ export default function Swaps() {
     const [presentLoading, dismissLoading] = useIonLoading();
 
     const fetchSwaps = async () => {
-        if (!selectedView) return;
         setError(null);
         setLoading(true);
         try {
@@ -51,10 +50,9 @@ export default function Swaps() {
 
     useEffect(() => {
         fetchSwaps();
-    }, [selectedView?.sourceId ?? selectedView?.lpk]);
+    }, [selectedView.sourceId]);
 
     const requestQuote = async () => {
-        if (!selectedView) return;
         setError(null);
         try {
             await dismissLoading();
@@ -78,7 +76,6 @@ export default function Swaps() {
     };
 
     const doSwap = async (swapOpId: string) => {
-        if (!selectedView) return;
         if (!address?.trim()) {
             toast.error("Enter a destination address");
             return;

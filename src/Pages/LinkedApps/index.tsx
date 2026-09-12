@@ -14,7 +14,7 @@ import {
 	IonToggle,
 	type RefresherEventDetail,
 } from "@ionic/react";
-import { informationCircleOutline, walletOutline } from "ionicons/icons";
+import { informationCircleOutline } from "ionicons/icons";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { DebitAuthItem } from "@/Components/Debit/DebitAuthItem";
 import { useEditDebitModal } from "@/Components/Modals/EditDebitModal";
@@ -47,36 +47,6 @@ function pickDefaultLinkedAppsSource(
 
 export default function LinkedApps() {
 	const sources = useAppSelector(selectSourceViews);
-
-	return (
-		<IonPage className="ion-page-width">
-			{sources.length === 0 ? (
-				<LinkedAppsEmpty />
-			) : (
-				<LinkedAppsSourceGate sources={sources} />
-			)}
-		</IonPage>
-	);
-}
-
-function LinkedAppsEmpty() {
-	return (
-		<>
-			<IonHeader className="ion-no-border">
-				<RootPageToolbar title="Linked Apps" />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				<EmptyState
-					title="No Pub sources"
-					description="Add a Pub source to manage its linked apps and debit access."
-					ionicon={walletOutline}
-				/>
-			</IonContent>
-		</>
-	);
-}
-
-function LinkedAppsSourceGate({ sources }: { sources: SourceView[] }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const [selectedSourceId, setSelectedSourceId] = useState(
 		() => pickDefaultLinkedAppsSource(sources, favoriteSourceId).sourceId,
@@ -112,7 +82,7 @@ function LinkedAppsSourceGate({ sources }: { sources: SourceView[] }) {
 	);
 
 	return (
-		<>
+		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<RootPageToolbar title="Linked Apps" />
 			</IonHeader>
@@ -137,29 +107,16 @@ function LinkedAppsSourceGate({ sources }: { sources: SourceView[] }) {
 						showBalance={false}
 					/>
 					<SourceReachabilityHint source={selectedSource} />
-					<LinkedAppsStage
-						key={selectedSource.sourceId}
-						source={selectedSource}
-					/>
+					<NdebitShare source={selectedSource} />
+					<section className="flex min-h-[40%] flex-1 flex-col">
+						<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
+							Linked apps
+						</p>
+						<LinkedAppsList source={selectedSource} />
+					</section>
 				</div>
 			</IonContent>
-		</>
-	);
-}
-
-
-function LinkedAppsStage({ source }: { source: SourceView }) {
-	return (
-		<div className="flex flex-1 flex-col gap-6">
-			<NdebitShare source={source} />
-
-			<section className="flex min-h-[40%] flex-1 flex-col">
-				<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
-					Linked apps
-				</p>
-				<LinkedAppsList source={source} />
-			</section>
-		</div>
+		</IonPage>
 	);
 }
 
@@ -291,18 +248,11 @@ function LinkedAppsList({ source }: { source: SourceView }) {
 	}
 
 	if (isError) {
-		const message =
-			error &&
-				typeof error === "object" &&
-				"error" in error &&
-				typeof error.error === "string"
-				? error.error
-				: "Could not load linked apps";
 		return (
 			<EmptyState
 				variant="section"
 				title="Couldn't load linked apps"
-				description={message}
+				description={error?.message ?? "Could not load linked apps"}
 			/>
 		);
 	}
