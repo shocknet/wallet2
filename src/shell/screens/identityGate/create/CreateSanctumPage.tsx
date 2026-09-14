@@ -30,7 +30,7 @@ export function CreateSanctumPage() {
 			if (authHandledRef.current) return;
 			authHandledRef.current = true;
 			try {
-				await presentLoading({ cssClass: "app-loading", message: "Creating profile…" });
+				await presentLoading({ message: "Creating profile…" });
 				await dispatch(
 					createIdentity({
 						type: IdentityType.SANCTUM,

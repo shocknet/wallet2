@@ -622,7 +622,7 @@ export const AssetsAndLiab = () => {
                         if (showFullLoading) {
                             setLoading(true);
                             await dismissLoading();
-                            await presentLoading({ message: "Fetching assets and liabilities...", cssClass: "app-loading" });
+                            await presentLoading({ message: "Fetching assets and liabilities..." });
                         }
                     },
                     onEnd: async () => {

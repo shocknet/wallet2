@@ -60,7 +60,7 @@ export function CreateKeysPage() {
 
 	const handleUseNip07Extension = useCallback(async () => {
 		if (nip07Probe !== "ready") return;
-		await presentLoading({ cssClass: "app-loading", message: "Creating profile...", });
+		await presentLoading({ message: "Creating profile...", });
 		try {
 			await dispatch(
 				createIdentity({

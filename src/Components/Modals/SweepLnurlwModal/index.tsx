@@ -47,7 +47,7 @@ function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 		if (busy) return;
 		setBusy(true);
 		try {
-			await presentLoading({ message: "Sweeping…", cssClass: "app-loading" });
+			await presentLoading({ message: "Sweeping…" });
 			const parsedInvoice = await createNostrInvoice(
 				{ pubkey: selectedSource.lpk, relays: selectedSource.relays },
 				selectedSource.keys,

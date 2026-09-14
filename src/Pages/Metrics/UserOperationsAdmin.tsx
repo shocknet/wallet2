@@ -80,7 +80,7 @@ export default function UserOperationsAdmin({ match, location, history }: RouteC
                     } else {
                         setLoading(true);
                         await dismissLoading();
-                        await presentLoading({ message: "Fetching operations...", cssClass: "app-loading" });
+                        await presentLoading({ message: "Fetching operations..." });
                     }
                 },
                 onEnd: async () => {

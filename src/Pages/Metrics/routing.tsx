@@ -84,7 +84,7 @@ export default function Routing() {
         setLoading(true);
 
         await dismissLoading();
-        await presentLoading({ message: "Fetching routing...", cssClass: "app-loading" });
+        await presentLoading({ message: "Fetching routing..." });
 
         try {
             const client = await getNostrClient(

@@ -15,7 +15,7 @@ export function AddNprofileCase({ parsed, dismiss }: AddSourceCaseProps) {
 
 	const handleAdd = async () => {
 		try {
-			await presentLoading({ message: "Connecting…", cssClass: "app-loading" });
+			await presentLoading({ message: "Connecting…" });
 			dispatch(addNprofileSource({
 				lpk: parsed.pubkey,
 				relays: parsed.relays,

@@ -27,7 +27,7 @@ export default function Swaps() {
         setLoading(true);
         try {
             await dismissLoading();
-            await presentLoading({ message: "Fetching swaps...", cssClass: "app-loading" });
+            await presentLoading({ message: "Fetching swaps..." });
             const client = await getNostrClient({ pubkey: selectedView.lpk, relays: selectedView.relays }, selectedView.keys);
             const result = await client.ListTxSwaps();
             await dismissLoading();
@@ -56,7 +56,7 @@ export default function Swaps() {
         setError(null);
         try {
             await dismissLoading();
-            await presentLoading({ message: "Fetching quote...", cssClass: "app-loading" });
+            await presentLoading({ message: "Fetching quote..." });
             const client = await getNostrClient({ pubkey: selectedView.lpk, relays: selectedView.relays }, selectedView.keys);
             const quote = await client.GetTransactionSwapQuotes({ transaction_amount_sats: +amount });
             await dismissLoading();
@@ -83,7 +83,7 @@ export default function Swaps() {
         setError(null);
         try {
             await dismissLoading();
-            await presentLoading({ message: "Doing swap...", cssClass: "app-loading" });
+            await presentLoading({ message: "Doing swap..." });
             const client = await getNostrClient({ pubkey: selectedView.lpk, relays: selectedView.relays }, selectedView.keys);
             const res = await client.PayAddress({
                 address: address.trim(),

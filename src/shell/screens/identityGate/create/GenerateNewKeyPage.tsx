@@ -72,7 +72,7 @@ export function GenerateNewKeyPage() {
 				userPassword = result.data;
 			}
 		}
-		await presentLoading({ cssClass: "app-loading", message: "Creating identity...", });
+		await presentLoading({ message: "Creating identity...", });
 		try {
 			await dispatch(createIdentity({
 				type: IdentityType.LOCAL_KEY,

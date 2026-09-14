@@ -189,11 +189,7 @@ function SendInner() {
 		try {
 			let invoice: ParsedInvoiceInput;
 			try {
-				await presentLoading({
-					message: "Preparing payment…",
-					backdropDismiss: false,
-					cssClass: "app-loading",
-				});
+				await presentLoading({ message: "Preparing payment…" });
 				invoice = await resolveRecipientToInvoice({
 					parsed,
 					amount,

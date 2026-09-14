@@ -891,9 +891,8 @@ ion-datetime::part(datetime-title) {
 }
 
 
-ion-loading.app-loading {
-	--background: var(--app-surface-hover);
-	--spinner-color: var(--ion-color-secondary);
-
-	--color: var(--app-text-primary);
+ion-loading {
+	--background: var(--app-surface-hover) !important;
+	--spinner-color: var(--ion-color-secondary) !important;
+	color: var(--app-text-primary) !important;
 }

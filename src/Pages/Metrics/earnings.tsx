@@ -63,7 +63,7 @@ export default function Earnings() {
         setLoading(true);
 
         await dismissLoading();
-        await presentLoading({ message: "Fetching earnings...", cssClass: "app-loading" });
+        await presentLoading({ message: "Fetching earnings..." });
 
         try {
             const client = await getNostrClient(

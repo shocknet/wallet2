@@ -30,7 +30,7 @@ function BumpTxSection({ adminSource }: { adminSource: SourceView | undefined })
             { pubkey: adminSource.lpk, relays: adminSource.relays },
             adminSource.keys,
             {
-                onStart: async () => { await dismissLoading(); await presentLoading({ message: "Bumping tx...", cssClass: "app-loading" }); },
+                onStart: async () => { await dismissLoading(); await presentLoading({ message: "Bumping tx..." }); },
                 onEnd: async () => { await dismissLoading(); },
                 onFail: (err) => { toast.error(err); },
             },

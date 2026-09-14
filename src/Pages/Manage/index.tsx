@@ -77,7 +77,7 @@ const Manage = () => {
 		setIsRevealed(true);
 
 		await dismissLoading();
-		await presentLoading({ message: "Fetching seed...", cssClass: "app-loading" });
+		await presentLoading({ message: "Fetching seed..." });
 
 		try {
 			const client = await getNostrClient(

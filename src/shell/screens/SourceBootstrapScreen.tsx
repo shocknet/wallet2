@@ -109,7 +109,7 @@ export default function SourceBootstrapScreen() {
 		}
 
 		setBusy(true);
-		await presentLoading({ message: "Setting up…", cssClass: "app-loading" });
+		await presentLoading({ message: "Setting up…" });
 		try {
 			await dispatch(addBootstrapSource());
 		} catch (err: unknown) {

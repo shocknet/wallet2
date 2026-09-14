@@ -18,7 +18,7 @@ export function JoinNodeInviteCase({
 
 	const handleJoin = async () => {
 		try {
-			await presentLoading({ cssClass: "app-loading", message: "Joining…", backdropDismiss: false });
+			await presentLoading({ message: "Joining…" });
 			if (inviteToken) {
 				await dispatch(joinNodeWithInvite({
 					lpk: parsed.pubkey,

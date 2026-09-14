@@ -103,7 +103,7 @@ export default function MetricsSelectSource({ history, location }: RouteComponen
 		if (pending.beaconStale === "warmingUp") {
 			if (!loadingShownRef.current) {
 				loadingShownRef.current = true;
-				await presentLoading({ cssClass: "app-loading", message: "Reconnecting…", backdropDismiss: false });
+				await presentLoading({ message: "Reconnecting…" });
 			}
 			return; // wait for beaconStale to change -> effect reruns
 		}

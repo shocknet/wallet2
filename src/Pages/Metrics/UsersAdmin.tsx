@@ -72,7 +72,7 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
                     setError(null);
                     setLoading(true);
                     await dismissLoading();
-                    await presentLoading({ message: "Fetching users...", cssClass: "app-loading" });
+                    await presentLoading({ message: "Fetching users..." });
                 },
                 onEnd: async () => {
                     setLoading(false);

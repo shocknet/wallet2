@@ -29,7 +29,7 @@ export default function TxSwaps({ adminSource }: { adminSource: SourceView | und
     const fetch = <T extends readonly unknown[]>(funcs: FetcherFuncs<T>, loadingMessage: string) => {
         if (!adminSource) return;
         return fetcher({ pubkey: adminSource.lpk, relays: adminSource.relays }, adminSource.keys, {
-            onStart: async () => { setError(null); setLoading(true); await dismissLoading(); await presentLoading({ message: loadingMessage, cssClass: "app-loading" }); },
+            onStart: async () => { setError(null); setLoading(true); await dismissLoading(); await presentLoading({ message: loadingMessage }); },
             onEnd: async () => { setLoading(false); await dismissLoading(); },
             onFail: (error) => { setError(error); toast.error(error); },
         }, funcs)

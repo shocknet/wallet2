@@ -65,7 +65,7 @@ const Channels = () => {
 		setError(null);
 
 		await dismissLoading();
-		await presentLoading({ message: "Fetching channels...", cssClass: "app-loading" });
+		await presentLoading({ message: "Fetching channels..." });
 
 		try {
 			const client = await getNostrClient(

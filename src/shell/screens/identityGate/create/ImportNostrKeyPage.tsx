@@ -80,7 +80,7 @@ export function ImportNostrKeyPage() {
 				}
 			}
 
-			await presentLoading({ cssClass: "app-loading", message: "Creating profile...", });
+			await presentLoading({ message: "Creating profile...", });
 			try {
 				await dispatch(
 					createIdentity({

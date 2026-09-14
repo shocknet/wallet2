@@ -35,7 +35,7 @@ export function ConnectAsAdminCase({
 
 	const handleConnect = async () => {
 		try {
-			await presentLoading({ cssClass: "app-loading", message: "Connecting…", backdropDismiss: false });
+			await presentLoading({ message: "Connecting…" });
 			await dispatch(connectAsAdmin({
 				lpk: parsed.pubkey,
 				relays: parsed.relays,

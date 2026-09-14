@@ -116,7 +116,7 @@ const Dashboard = () => {
 		setLoading(true);
 
 		await dismissLoading();
-		await presentLoading({ message: "Fetching metrics...", cssClass: "app-loading" });
+		await presentLoading({ message: "Fetching metrics..." });
 
 		try {
 			const client = await getNostrClient(

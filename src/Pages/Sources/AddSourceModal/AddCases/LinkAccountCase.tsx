@@ -19,7 +19,7 @@ export function LinkExistingAccountCase({
 
 	const handleLink = async () => {
 		try {
-			await presentLoading({ cssClass: "app-loading", message: "Linking account…", backdropDismiss: false });
+			await presentLoading({ message: "Linking account…" });
 			await dispatch(linkExistingAccount({
 				lpk: parsed.pubkey,
 				relays: parsed.relays,
