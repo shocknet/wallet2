@@ -17,7 +17,6 @@ import PeriodSelector from '@/Components/Dropdowns/PeriodDropdown/PeriodSelector
 import { nip19 } from 'nostr-tools';
 import { DashboardShell } from '@/Layout2/Metrics/DashboardShell';
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectSelectedAdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import { PubUpgradeNotice } from "./PubUpgradeNotice";
 import { MetricsProbeSkeleton } from "./MetricsProbeSkeleton";
@@ -27,6 +26,7 @@ import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
 import { buildOverviewEvents, displayPeerName, OverviewEvent } from "./overviewEvents";
 import { OverviewEventDialog } from "./OverviewEventDialog";
 import { alignBalanceSeries, fillBlockGaps, pairAxisRanges } from "./balanceSeries";
+import { useDashboardSource } from './DashboardSourceContext';
 
 type ChannelsInfo = {
 	offlineChannels: number
@@ -67,7 +67,7 @@ const Dashboard = () => {
 	const dispatch = useAppDispatch();
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const mempoolUrl = useAppSelector((s) => s.prefs.mempoolUrl);
-	const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
+	const adminSource = useDashboardSource();
 	const { needsUpgrade, checking: checkingPubCapability, recheck } =
 		usePubDashboardCapability(adminSource);
 
@@ -237,7 +237,6 @@ const Dashboard = () => {
 				<DashErrorBanner
 					message={error}
 					onRetry={() => void fetchMetrics()}
-					onChangeSource={() => router.push("/metrics/select", "back")}
 				/>
 			)}
 

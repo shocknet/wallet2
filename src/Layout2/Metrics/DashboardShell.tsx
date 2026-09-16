@@ -10,8 +10,10 @@ import {
 	useLightningPubLogo,
 } from "@/Assets/Images/lightning-pub";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
+import { useDashboardSource, useDashboardSourceSwitch } from "@/Pages/Metrics/DashboardSourceContext";
 
 type DashboardShellProps = {
 	title: string;
@@ -152,21 +154,20 @@ function DashNavLinks() {
 }
 
 function DashSourceChip() {
-	const router = useIonRouter();
-	const admins = useAppSelector(selectAdminSourceViews);
-	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-	const source = admins.find((a) => a.sourceId === selectedId);
-	const name = source
-		? source.beaconName || source.label || source.vanityName || `pub ${source.lpk.slice(0, 8)}`
-		: "No source";
-	const warn = source?.beaconStale === "stale" || source?.beaconStale === "warmingUp";
+	const { open } = useDashboardSourceSwitch();
+	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId)!;
+	const source = useDashboardSource()
+	const name = sourceDisplayName(source);
+	const warn = source.beaconStale === "stale" || source.beaconStale === "warmingUp";
 
 	return (
 		<button
 			type="button"
 			className={`pub-dash-source-chip${warn ? " is-warn" : ""}`}
-			onClick={() => router.push("/metrics/select", "forward")}
+			onClick={open}
 			title={name}
+			aria-haspopup="dialog"
+			aria-label="Switch admin source"
 		>
 			<span className="pub-dash-source-dot" />
 			<span className="pub-dash-source-name">{name}</span>

@@ -2,7 +2,6 @@ import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { selectAdminRpcSources, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
 import type { Guard } from "./GuardedRoute";
 import store from "@/State/store/store";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
 import type { HomePageNavState } from "@/Pages/Home/nav";
 
 export const loadedIdentityGuard: Guard = () => {
@@ -46,33 +45,4 @@ export const atLeastOneAdminSourceGuard: Guard = ({ props }) => {
 		},
 		keySuffix: `sources:${ids.length}`,
 	};
-};
-
-export const requireSelectedAdminSourceGuard: Guard = ({ props }) => {
-	const state = store.getState();
-	const selectedId = selectSelectedMetricsAdminSourceId(state);
-
-	if (!selectedId) {
-		return {
-			allow: false,
-			redirectTo: { pathname: "/metrics/select", state: { from: props.location } },
-			keySuffix: "sel:none",
-		};
-	}
-
-	const admins = selectAdminRpcSources(state);
-	const exists = admins.some((a) => a.sourceId === selectedId);
-
-	if (!exists) {
-		return {
-			allow: false,
-			redirectTo: {
-				pathname: "/metrics/select",
-				state: { from: props.location, reason: "Selected source no longer exists" },
-			},
-			keySuffix: "sel:missing",
-		};
-	}
-
-	return { allow: true, keySuffix: `sel:${selectedId}` };
 };

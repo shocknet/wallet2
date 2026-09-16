@@ -13,7 +13,6 @@ import {
     IonList,
     IonListHeader,
     useIonLoading,
-    useIonRouter,
     IonSkeletonText,
 } from "@ionic/react";
 import PeriodSelector from "@/Components/Dropdowns/PeriodDropdown/PeriodSelector";
@@ -21,18 +20,16 @@ import { DashboardShell } from "@/Layout2/Metrics/DashboardShell";
 import { DashErrorBanner } from "./DashErrorBanner";
 
 
-import { useAppSelector } from "@/State/store/hooks";
-import { selectSelectedAdminRpcSource, sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
+import { useDashboardSource } from "./DashboardSourceContext";
+import { sourceRpcKey } from "@/State/scoped/backups/sources/selectors";
 import { flashOutline, linkOutline, personOutline } from "ionicons/icons";
 
 export default function Routing() {
-    const router = useIonRouter();
-
     const [period, setPeriod] = useState<Period>(Period.WEEK)
     const [offset, setOffset] = useState<number>(0)
 
 
-    const adminSource = useAppSelector(selectSelectedAdminRpcSource)!;
+    const adminSource = useDashboardSource();
 
     const [fwMetrics, setFwMetrics] = useState<Types.LndForwardingMetrics>()
     const [channels, setChannels] = useState<Types.OpenChannel[]>([])
@@ -132,7 +129,6 @@ export default function Routing() {
                 <DashErrorBanner
                     message={error}
                     onRetry={() => void fetchMetrics()}
-                    onChangeSource={() => router.push("/metrics/select", "back")}
                 />
             )}
 
