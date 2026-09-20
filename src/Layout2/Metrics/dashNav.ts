@@ -17,6 +17,8 @@ export type DashNavItem = {
 	exact?: boolean;
 };
 
+export const DASH_MENU_ID = "dash-rail";
+
 export const DASH_NAV: DashNavItem[] = [
 	{ href: "/metrics", label: "Overview", icon: statsChartOutline, exact: true },
 	{ href: "/metrics/channels", label: "Channels", icon: gitNetworkOutline },

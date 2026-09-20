@@ -1,25 +1,29 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
 import type { FeeTier } from "@/lib/fees";
+import { parsePeerInput } from "@/lib/parsePeerUri";
 import { useMempoolFeeTiers } from "./useMempoolFeeTiers";
-import { connectPeer, openChannel, parseOpenPeer } from "./peerActions";
+import { useDashboardSource } from "./DashboardSourceContext";
+import { useAddPeerMutation, useOpenChannelMutation } from "./pubDashApi";
+import type { AppApiError } from "@/State/api/api";
 
 type ChannelOpenFormProps = {
-	adminSource: AdminRpcSource;
 	peerLocked?: string;
 	initialPeer?: string;
 	onOpened?: () => void;
 };
 
-export function ChannelOpenForm({ adminSource, peerLocked, initialPeer = "", onOpened }: ChannelOpenFormProps) {
+export function ChannelOpenForm({ peerLocked, initialPeer = "", onOpened }: ChannelOpenFormProps) {
+	const { sourceId } = useDashboardSource();
 	const { tiers, averageRate, failed, hostLabel } = useMempoolFeeTiers();
 	const [peer, setPeer] = useState(peerLocked || initialPeer);
 	const [amount, setAmount] = useState("");
 	const [satsPerVByte, setSatsPerVByte] = useState("");
-	const [busy, setBusy] = useState(false);
 	const [feeTouched, setFeeTouched] = useState(false);
 	const [feeTierKey, setFeeTierKey] = useState<FeeTier["key"] | null>(null);
+	const [addPeer, addPeerState] = useAddPeerMutation();
+	const [openChannel, openChannelState] = useOpenChannelMutation();
+	const busy = addPeerState.isLoading || openChannelState.isLoading;
 
 	useEffect(() => {
 		if (peerLocked) setPeer(peerLocked);
@@ -32,7 +36,7 @@ export function ChannelOpenForm({ adminSource, peerLocked, initialPeer = "", onO
 	}, [averageRate, feeTouched]);
 
 	const onSubmit = async () => {
-		const parsed = parseOpenPeer(peer);
+		const parsed = parsePeerInput(peer);
 		if ("error" in parsed) {
 			toast.error(parsed.error);
 			return;
@@ -47,34 +51,27 @@ export function ChannelOpenForm({ adminSource, peerLocked, initialPeer = "", onO
 			toast.error("Enter sats per vbyte");
 			return;
 		}
-		setBusy(true);
 		try {
 			if (parsed.host && parsed.port != null) {
-				const peerErr = await connectPeer(adminSource, {
+				await addPeer({
+					sourceId,
 					pubkey: parsed.pubkey,
 					host: parsed.host,
 					port: parsed.port,
-				});
-				if (peerErr) {
-					toast.error(peerErr);
-					return;
-				}
+				}).unwrap();
 			}
-			const openErr = await openChannel(adminSource, {
+			await openChannel({
+				sourceId,
 				node_pubkey: parsed.pubkey,
 				local_funding_amount: funding,
 				sat_per_v_byte: fee,
-			});
-			if (openErr) {
-				toast.error(openErr);
-				return;
-			}
+			}).unwrap();
 			toast.success("Channel opening");
 			setAmount("");
 			if (!peerLocked) setPeer("");
 			onOpened?.();
-		} finally {
-			setBusy(false);
+		} catch (e) {
+			toast.error((e as AppApiError).message || "Could not open channel");
 		}
 	};
 

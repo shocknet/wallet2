@@ -400,12 +400,12 @@ export class NostrClient {
 	}
 
 
-	disconnectCalls(reason?: string) {
+	disconnectCalls(reason: string) {
 		for (const cb of this.clientCbs.values()) {
 			if (cb.type === "single") {
 				clearTimeout(cb.timeout);
 			}
-			cb.f({ status: "ERROR", reason: reason ?? "nostr connection timeout" });
+			cb.f({ status: "ERROR", reason });
 		}
 		this.latestResponseAtMillis = 0;
 		this.latestHealthReqAtMillis = 0;

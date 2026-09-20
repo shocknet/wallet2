@@ -1,6 +1,7 @@
 import { memo } from "react";
-import { IonPage, IonRouterOutlet } from "@ionic/react";
+import { IonPage, IonRouterOutlet, IonSplitPane } from "@ionic/react";
 import { Route, RouteComponentProps } from "react-router-dom";
+import { shallowEqual } from "react-redux";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
@@ -16,7 +17,7 @@ import AdminSwaps from "./adminSwaps/AdminSwaps";
 import { AssetsAndLiab } from "./AssetsAndLiab";
 import UsersAdmin from "./UsersAdmin";
 import UserOperationsAdmin from "./UserOperationsAdmin";
-import { shallowEqual } from "react-redux";
+import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
 
 const Metrics = ({ match }: RouteComponentProps) => {
 	const adminIds = useAppSelector(selectAdminSourceIds, shallowEqual);
@@ -26,7 +27,6 @@ const Metrics = ({ match }: RouteComponentProps) => {
 		: adminIds.length === 1
 			? adminIds[0]
 			: null;
-
 
 	if (!activeId) {
 		return <MetricsSelectSource />;
@@ -47,19 +47,23 @@ const MetricsPages = memo(function MetricsPages({
 	url: string;
 }) {
 	return (
-		<IonPage>
-			<IonRouterOutlet key={`metrics-subtree:${sourceId}`}>
-				<Route exact path={url} component={Dashboard} />
-				<Route path={`${url}/earnings`} component={Earnings} />
-				<Route path={`${url}/routing`} component={Routing} />
-				<Route path={`${url}/manage`} component={Manage} />
-				<Route path={`${url}/channels`} component={Channels} />
-				<Route path={`${url}/peers`} component={Peers} />
-				<Route path={`${url}/swaps`} component={AdminSwaps} />
-				<Route path={`${url}/assets-liabilities`} component={AssetsAndLiab} />
-				<Route exact path={`${url}/users`} component={UsersAdmin} />
-				<Route path={`${url}/users/:userId`} component={UserOperationsAdmin} />
-			</IonRouterOutlet>
+		<IonPage className="pub-dash">
+			<IonSplitPane className="pub-dash-split-pane" when="(min-width: 800px)" contentId="dash-main">
+				<DashRailMenu />
+				<IonRouterOutlet key={`dashboard-${sourceId}`} id="dash-main">
+					<Route exact path={url} component={Dashboard} />
+					<Route path={`${url}/earnings`} component={Earnings} />
+					<Route path={`${url}/routing`} component={Routing} />
+					<Route path={`${url}/manage`} component={Manage} />
+					<Route path={`${url}/channels`} component={Channels} />
+					<Route path={`${url}/peers`} component={Peers} />
+					<Route path={`${url}/swaps`} component={AdminSwaps} />
+					<Route path={`${url}/assets-liabilities`} component={AssetsAndLiab} />
+					<Route exact path={`${url}/users`} component={UsersAdmin} />
+					<Route path={`${url}/users/:userId`} component={UserOperationsAdmin} />
+				</IonRouterOutlet>
+
+			</IonSplitPane>
 		</IonPage>
 	);
 });

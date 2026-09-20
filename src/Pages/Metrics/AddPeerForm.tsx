@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { parsePeerUri } from "@/lib/parsePeerUri";
-import { AdminRpcSource } from "@/State/scoped/backups/sources/selectors";
-import { connectPeer } from "./peerActions";
+import type { AppApiError } from "@/State/api/api";
+import { useDashboardSource } from "./DashboardSourceContext";
+import { useAddPeerMutation } from "./pubDashApi";
 
-export function AddPeerForm({ adminSource, onAdded }: { adminSource: AdminRpcSource; onAdded?: () => void }) {
+export function AddPeerForm() {
+	const { sourceId } = useDashboardSource();
 	const [uri, setUri] = useState("");
-	const [busy, setBusy] = useState(false);
+	const [addPeer, { isLoading }] = useAddPeerMutation();
 
 	const onSubmit = async () => {
 		const parsed = parsePeerUri(uri);
@@ -14,18 +16,12 @@ export function AddPeerForm({ adminSource, onAdded }: { adminSource: AdminRpcSou
 			toast.error(parsed.error);
 			return;
 		}
-		setBusy(true);
 		try {
-			const err = await connectPeer(adminSource, parsed);
-			if (err) {
-				toast.error(err);
-				return;
-			}
+			await addPeer({ sourceId, ...parsed }).unwrap();
 			toast.success("Peer connected");
 			setUri("");
-			onAdded?.();
-		} finally {
-			setBusy(false);
+		} catch (e) {
+			toast.error((e as AppApiError).message || "Could not connect peer");
 		}
 	};
 
@@ -48,8 +44,8 @@ export function AddPeerForm({ adminSource, onAdded }: { adminSource: AdminRpcSou
 					onChange={(e) => setUri(e.target.value)}
 				/>
 			</div>
-			<button type="submit" className="dash-btn" disabled={busy}>
-				{busy ? "Connecting…" : "Connect"}
+			<button type="submit" className="dash-btn" disabled={isLoading}>
+				{isLoading ? "Connecting…" : "Connect"}
 			</button>
 		</form>
 	);

@@ -14,6 +14,20 @@ import type { LnurlPayServiceResponse } from "@/lib/types/lnurl";
 
 const ONE_HOUR_SECONDS = 60 * 60;
 
+export type AppApiError = {
+	message: string;
+};
+
+export type AppApiResult<T> = { data: T } | { error: AppApiError };
+
+export function appApiError(message: string): { error: AppApiError } {
+	return { error: { message } };
+}
+
+export function appApiCaughtError(err: unknown, fallback: string) {
+	return appApiError(err instanceof Error ? err.message : fallback);
+}
+
 export type GetDebitAuthorizationsArg = {
 	sourceId: string;
 };
@@ -25,7 +39,13 @@ function normalizeLnAddress(address: string): string {
 export const appApi = createApi({
 	reducerPath: "appApi",
 	baseQuery: fakeBaseQuery(),
-	tagTypes: ["DebitAuthorizations"],
+	tagTypes: [
+		"DebitAuthorizations", "LndInfo", "AppsMetrics",
+		"LndMetrics", "LndForwarding", "OpenChannels",
+		"LndPeers", "UsersAdmin", "InvoiceSwaps",
+		"TxSwaps", "UserOperations", "AssetsLiabilities",
+		"LndUtxos", "AdminNodeSettings"
+	],
 	endpoints: (b) => ({
 		getProfile: b.query<NostrProfile | null, { pubkey: string; relays: string[] }>({
 			serializeQueryArgs: ({ queryArgs }) => ({

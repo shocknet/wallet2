@@ -6,8 +6,7 @@ import {
 import { lazy } from "react";
 import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
-import { GuardedRoute } from "@/routing/GuardedRoute";
-import { atLeastOneAdminSourceGuard, atLeastOneSource } from "@/routing/guards";
+import { AppRoute } from "@/routing/AppRoute";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { ReadyAppEffects } from "./ReadyAppEffects";
@@ -54,108 +53,105 @@ export function ReadyApp({
 			<ReadyAppEffects />
 			<NavigationMenu activeIdentity={runtimeIdentity} />
 			<IonRouterOutlet id="main-content">
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/bootstrap"
 					component={BootstrapSourcePage}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/home"
 					component={Home}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/send"
 					component={Send}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/Receive"
 					component={Receive}
 
 
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/sources"
 					component={SourcesPage}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/automation"
 					component={Automation}
 
 					layout={Layout}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/prefs"
 					component={Prefs}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/contacts"
 					component={Contacts}
 					layout={Layout}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/invitations"
 					component={Invitations}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/notify"
 					component={Notify}
 					layout={Layout}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/management"
 					component={Management}
 					layout={Layout}
 				/>
-				<GuardedRoute
+				<AppRoute
 					path="/metrics"
 					component={Metrics}
-					guards={[atLeastOneAdminSourceGuard]}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/offers"
 					component={Offers}
-					guards={[atLeastOneSource]}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/Stats"
 					component={Stats}
 					layout={Layout}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/LApps"
 					component={LinkedApps}
 
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/swaps"
 					component={Swaps}
-					guards={[atLeastOneSource]}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/profile"
 					component={IdentityOverviewPage}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/dev/amount-field"
 					component={AmountFieldPlayground}
 				/>
-				<GuardedRoute
+				<AppRoute
 					exact
 					path="/dev/clink"
 					component={ClinkPlayground}

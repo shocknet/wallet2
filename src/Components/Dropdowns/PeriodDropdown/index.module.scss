@@ -19,3 +19,8 @@
         fill: #ff8a00 !important;
     }
 }
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
