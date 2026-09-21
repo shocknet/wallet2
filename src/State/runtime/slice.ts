@@ -3,17 +3,12 @@ import { RootState } from "../store/store";
 import { PushRegistrationResult } from "@/notifications/push/types";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
 
-
-
-
 interface RuntimeState {
 	nowMs: number;
 	isActive: boolean;
 	pushStatus: PushRegistrationResult | null;
 	deviceAuth: DeviceAuthStatus;
 	selectedMetricsAdminSourceId: string | null;
-	/** In-memory only; cleared on full reload (F5). */
-	pubDashboardCapabilityBySourceId: Record<string, "supported" | "needs_upgrade">;
 }
 
 const initialDeviceAuthStatus: DeviceAuthStatus = {
@@ -28,7 +23,6 @@ const initialState: RuntimeState = {
 
 
 	selectedMetricsAdminSourceId: null,
-	pubDashboardCapabilityBySourceId: {},
 	deviceAuth: initialDeviceAuthStatus
 }
 
@@ -63,12 +57,6 @@ const runtimeSlice = createSlice({
 		},
 		clearSelectedMetricsAdminSourceId: (state) => {
 			state.selectedMetricsAdminSourceId = null;
-		},
-		setPubDashboardCapability: (state, action: PayloadAction<{
-			sourceId: string;
-			capability: "supported" | "needs_upgrade";
-		}>) => {
-			state.pubDashboardCapabilityBySourceId[action.payload.sourceId] = action.payload.capability;
 		},
 	},
 });

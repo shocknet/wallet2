@@ -21,6 +21,13 @@ export const selectLiveSourceIds = createSelector(
 		.map(d => d.source_id)
 );
 
+export const selectAdminSourceIds = createSelector(
+	[docsSelectors.selectAll],
+	(entities) => entities
+		.filter(e => !isDeleted(e.draft) && e.draft.admin_token.value)
+		.map(e => e.draft.source_id)
+);
+
 
 export const selectLiveSourceEntities = createSelector(
 	[docsSelectors.selectAll],
@@ -153,6 +160,25 @@ export const selectSourceViewById = createSelector(
 	}
 )
 
+export const makeSelectSourceViewById = () => {
+	return createSelector(
+		[
+			docsSelectors.selectEntities,
+			metadataSelectors.selectEntities,
+			selectBeaconJoinState,
+			(_state: RootState, sourceId: string) => sourceId
+		],
+		(sourceEntities, metaEntities, beacon, sourceId) => {
+
+			const e = sourceEntities[sourceId];
+			if (!e || e.draft.deleted.value) return null;
+
+			const d = e.draft;
+			return createSourceView(d, metaEntities[d.source_id], beacon);
+		}
+	)
+};
+
 export const selectSourceViewsByLpk = createSelector(
 	[
 		selectSourceViews,
@@ -172,7 +198,6 @@ export const selectAdminSourceViews = createSelector(
 	[selectSourceViews],
 	(views) => views.filter(v => !!v.adminToken)
 );
-
 
 export const selectFavoriteSourceView = createSelector(
 	[
