@@ -64,6 +64,7 @@ export function useWatchClipboard() {
 
 	const checkClipboard = useEventCallback(async () => {
 		if (!isAppActive) return;
+		if (history.location.pathname === "/bootstrap") return;
 		if (!document.hasFocus()) return;
 		if (document.visibilityState !== "visible") return;
 		if (alertInFlightRef.current) return;

@@ -14,6 +14,7 @@ import { useHistory } from "react-router-dom";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import QrCode from "@/Components/QrCode";
 import { SourceItemView } from "@/Components/Source/SourceItemView";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import EmptyState from "@/Components/common/ui/EmptyState";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
@@ -183,7 +184,7 @@ function InvitationsInviteStep({
 							Admin node
 						</p>
 						<p className="m-0 mt-1 truncate text-base font-semibold text-primary">
-							{source.beaconName?.trim() || nip19.npubEncode(source.lpk)}
+							{sourceDisplayName(source)}
 						</p>
 					</div>
 

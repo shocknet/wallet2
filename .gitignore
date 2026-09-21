@@ -1,5 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+log.txt
 # dependencies
 /node_modules
 /.pnp
@@ -47,6 +47,7 @@ act
 event.json
 run.log
 
+/ios/App/App/GoogleService-Info.plist
 
 
 android/app/google-services.json
