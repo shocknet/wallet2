@@ -26,7 +26,7 @@ const TABLE_SHELL: CSSProperties = {
 
 const TABLE_HEADER: CSSProperties = {
     display: "grid",
-    gap: "6px",
+    gap: "12px",
     padding: "10px 12px",
     fontSize: "10px",
     letterSpacing: "0.12em",
@@ -38,7 +38,7 @@ const TABLE_HEADER: CSSProperties = {
 
 const TABLE_ROW_BASE: CSSProperties = {
     display: "grid",
-    gap: "6px",
+    gap: "12px",
     padding: "10px 12px",
     alignItems: "center",
     fontSize: "0.85rem",
@@ -58,18 +58,20 @@ export function MetricsTableEmpty({ message }: { message: string }) {
 export function MetricsDataTable({
     grid,
     minWidth = "480px",
+    gap = "12px",
     header,
     children,
 }: {
     grid: string;
     minWidth?: string;
+    gap?: string;
     header: ReactNode;
     children: ReactNode;
 }) {
     return (
         <div style={{ overflowX: "auto" }}>
             <div style={{ ...TABLE_SHELL, minWidth }}>
-                <div style={{ ...TABLE_HEADER, gridTemplateColumns: grid }}>{header}</div>
+                <div style={{ ...TABLE_HEADER, gap, gridTemplateColumns: grid }}>{header}</div>
                 {children}
             </div>
         </div>
@@ -79,11 +81,13 @@ export function MetricsDataTable({
 export function MetricsTableRow({
     grid,
     isLast,
+    gap = "12px",
     onClick,
     children,
 }: {
     grid: string;
     isLast: boolean;
+    gap?: string;
     onClick?: () => void;
     children: ReactNode;
 }) {
@@ -104,6 +108,7 @@ export function MetricsTableRow({
             }
             style={{
                 ...TABLE_ROW_BASE,
+                gap,
                 gridTemplateColumns: grid,
                 borderBottom: isLast ? undefined : TABLE_ROW_BORDER,
                 cursor: onClick ? "pointer" : undefined,

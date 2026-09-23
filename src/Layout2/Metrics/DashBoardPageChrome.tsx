@@ -9,7 +9,7 @@ import {
 	useIonRouter,
 } from "@ionic/react";
 import { useLocation } from "react-router-dom";
-import { homeOutline } from "ionicons/icons";
+import { arrowBackOutline, homeOutline } from "ionicons/icons";
 import { DASH_NAV, isDashNavActive } from "./dashNav";
 import {
 	LIGHTNING_PUB_MARK_HEIGHT,
@@ -45,16 +45,20 @@ export function DashBoardPageChrome({
 			<IonContent className="ion-content-only">
 				<div className="pub-dash-page-content">
 					<div className="pub-dash-heading">
-						<h1>{title}</h1>
 						{backHref && (
 							<button
 								type="button"
-								className="pub-dash-desktop-toolbar-back"
-								onClick={() => router.push(backHref, "back")}
+								className="pub-dash-back"
+								aria-label="Back"
+								onClick={() => {
+									if (router.canGoBack()) router.goBack()
+									else router.push(backHref, "back")
+								}}
 							>
-								Back
+								<IonIcon icon={arrowBackOutline} />
 							</button>
 						)}
+						<h1>{title}</h1>
 					</div>
 					{children}
 				</div>

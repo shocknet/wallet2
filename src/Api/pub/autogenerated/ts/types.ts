@@ -974,14 +974,17 @@ export const AppUserValidate = (o?: AppUser, opts: AppUserOptions = {}, path: st
 }
 
 export type AppUserAdminInfo = {
+    app_name?: string
     app_user_id: string
     has_callback_url: boolean
     has_topic_id: boolean
     npub: string
 }
-export const AppUserAdminInfoOptionalFields: [] = []
+export type AppUserAdminInfoOptionalField = 'app_name'
+export const AppUserAdminInfoOptionalFields: AppUserAdminInfoOptionalField[] = ['app_name']
 export type AppUserAdminInfoOptions = OptionsBaseMessage & {
-    checkOptionalsAreSet?: []
+    checkOptionalsAreSet?: AppUserAdminInfoOptionalField[]
+    app_name_CustomCheck?: (v?: string) => boolean
     app_user_id_CustomCheck?: (v: string) => boolean
     has_callback_url_CustomCheck?: (v: boolean) => boolean
     has_topic_id_CustomCheck?: (v: boolean) => boolean
@@ -990,6 +993,9 @@ export type AppUserAdminInfoOptions = OptionsBaseMessage & {
 export const AppUserAdminInfoValidate = (o?: AppUserAdminInfo, opts: AppUserAdminInfoOptions = {}, path: string = 'AppUserAdminInfo::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.app_name || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('app_name')) && typeof o.app_name !== 'string') return new Error(`${path}.app_name: is not a string`)
+    if (opts.app_name_CustomCheck && !opts.app_name_CustomCheck(o.app_name)) return new Error(`${path}.app_name: custom check failed`)
 
     if (typeof o.app_user_id !== 'string') return new Error(`${path}.app_user_id: is not a string`)
     if (opts.app_user_id_CustomCheck && !opts.app_user_id_CustomCheck(o.app_user_id)) return new Error(`${path}.app_user_id: custom check failed`)
@@ -5799,9 +5805,11 @@ export type UserAdminInfo = {
     locked: boolean
     owner_of_app_id?: string
     user_id: string
+    last_seen_at_unix?: number
+    is_node_admin?: boolean
 }
-export type UserAdminInfoOptionalField = 'owner_of_app_id'
-export const UserAdminInfoOptionalFields: UserAdminInfoOptionalField[] = ['owner_of_app_id']
+export type UserAdminInfoOptionalField = 'owner_of_app_id' | 'last_seen_at_unix' | 'is_node_admin'
+export const UserAdminInfoOptionalFields: UserAdminInfoOptionalField[] = ['owner_of_app_id', 'last_seen_at_unix', 'is_node_admin']
 export type UserAdminInfoOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: UserAdminInfoOptionalField[]
     app_users_ItemOptions?: AppUserAdminInfoOptions
@@ -5810,6 +5818,8 @@ export type UserAdminInfoOptions = OptionsBaseMessage & {
     locked_CustomCheck?: (v: boolean) => boolean
     owner_of_app_id_CustomCheck?: (v?: string) => boolean
     user_id_CustomCheck?: (v: string) => boolean
+    last_seen_at_unix_CustomCheck?: (v?: number) => boolean
+    is_node_admin_CustomCheck?: (v?: boolean) => boolean
 }
 export const UserAdminInfoValidate = (o?: UserAdminInfo, opts: UserAdminInfoOptions = {}, path: string = 'UserAdminInfo::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -5833,6 +5843,12 @@ export const UserAdminInfoValidate = (o?: UserAdminInfo, opts: UserAdminInfoOpti
 
     if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
     if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
+
+    if ((o.last_seen_at_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('last_seen_at_unix')) && typeof o.last_seen_at_unix !== 'number') return new Error(`${path}.last_seen_at_unix: is not a number`)
+    if (opts.last_seen_at_unix_CustomCheck && !opts.last_seen_at_unix_CustomCheck(o.last_seen_at_unix)) return new Error(`${path}.last_seen_at_unix: custom check failed`)
+
+    if ((o.is_node_admin || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('is_node_admin')) && typeof o.is_node_admin !== 'boolean') return new Error(`${path}.is_node_admin: is not a boolean`)
+    if (opts.is_node_admin_CustomCheck && !opts.is_node_admin_CustomCheck(o.is_node_admin)) return new Error(`${path}.is_node_admin: custom check failed`)
 
     return null
 }

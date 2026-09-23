@@ -212,9 +212,9 @@ ion-toolbar.pub-dash-mobile-nav {
 
 .pub-dash-heading {
 	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 16px;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 12px;
 	margin: 8px 0 24px;
 }
 
@@ -230,20 +230,97 @@ ion-toolbar.pub-dash-mobile-nav {
 	color: var(--dash-text);
 }
 
-.pub-dash-desktop-toolbar-back {
-	font-family: var(--dash-font-mono);
-	font-size: 10px;
-	letter-spacing: 0.15em;
-	text-transform: uppercase;
-	color: var(--dash-dim);
-	background: none;
-	border: none;
-	padding: 0;
+.pub-dash-back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	flex-shrink: 0;
+	border-radius: 8px;
+	border: 1px solid var(--dash-border);
+	background: transparent;
+	color: var(--dash-text);
 	cursor: pointer;
+	padding: 0;
 }
 
-.pub-dash-desktop-toolbar-back:hover {
+.pub-dash-back ion-icon {
+	font-size: 18px;
+}
+
+.pub-dash-back:hover {
+	border-color: var(--dash-muted);
+}
+
+.pub-dash .dash-table-meta {
+	margin: 0 0 14px;
+	font-size: 12px;
+	color: var(--dash-dim);
+}
+
+.pub-dash .dash-sort {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
+	color: inherit;
+}
+
+.pub-dash .dash-sort.is-right {
+	width: 100%;
+	justify-content: flex-end;
+}
+
+.pub-dash .dash-sort.is-active {
 	color: var(--dash-text);
+}
+
+.pub-dash .dash-user-cell,
+.pub-dash .dash-chips {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	min-width: 0;
+}
+
+.pub-dash .dash-user-id {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+.pub-dash .dash-chip {
+	display: inline-flex;
+	align-items: center;
+	height: 22px;
+	padding: 0 8px;
+	border-radius: 999px;
+	border: 1px solid var(--dash-border);
+	font-size: 12px;
+	line-height: 1;
+	color: var(--dash-text);
+	white-space: nowrap;
+}
+
+.pub-dash .dash-chip.is-owner,
+.pub-dash .dash-chip.is-admin {
+	color: var(--dash-a, var(--ion-color-primary));
+	border-color: color-mix(in srgb, var(--dash-a, var(--ion-color-primary)) 50%, var(--dash-border));
+}
+
+.pub-dash .dash-chip.is-locked {
+	color: var(--ion-color-danger);
+	border-color: var(--ion-color-danger);
 }
 
 .pub-dash-brand {

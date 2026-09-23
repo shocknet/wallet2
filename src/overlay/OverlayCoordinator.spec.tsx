@@ -66,6 +66,22 @@ describe("OverlayCoordinator", () => {
 		await expect(first).resolves.toEqual({ role: "confirm" });
 	});
 
+	it("keeps the coordinator available inside the presented overlay", async () => {
+		const { present } = renderCoordinator();
+		let dismissFirst: ConfirmDismiss | undefined;
+
+		const shown = present<OverlayResult<"confirm">>((dismiss) => {
+			dismissFirst = dismiss;
+			return <Probe onReady={() => { }} />;
+		});
+		await flush();
+
+		await act(async () => {
+			dismissFirst?.({ role: "confirm" });
+		});
+		await expect(shown).resolves.toEqual({ role: "confirm" });
+	});
+
 	it("present throws when the slot is occupied", async () => {
 		const { present, tryPresent } = renderCoordinator();
 		let dismissFirst: ConfirmDismiss | undefined;

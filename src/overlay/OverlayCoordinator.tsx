@@ -37,14 +37,17 @@ const SLOT_OCCUPIED = "useOverlayCoordinator.present: overlay slot is occupied";
 type OverlaySlotHostProps = {
 	presentationRef: MutableRefObject<Presentation | null>;
 	dismissRef: MutableRefObject<(data?: unknown, role?: string) => void>;
+	valueRef: MutableRefObject<OverlayCoordinatorValue | null>;
 };
 
 function OverlaySlotHost({
 	presentationRef,
 	dismissRef,
+	valueRef,
 }: OverlaySlotHostProps) {
 	const presentation = presentationRef.current;
-	if (!presentation) {
+	const coordinator = valueRef.current;
+	if (!presentation || !coordinator) {
 		return null;
 	}
 
@@ -55,7 +58,11 @@ function OverlaySlotHost({
 		dismissRef.current(result, overlayRole(result));
 	};
 
-	return <>{presentation.render(dismiss)}</>;
+	return (
+		<OverlayCoordinatorContext.Provider value={coordinator}>
+			{presentation.render(dismiss)}
+		</OverlayCoordinatorContext.Provider>
+	);
 }
 
 export function useOverlayCoordinator() {
@@ -69,10 +76,11 @@ export function useOverlayCoordinator() {
 export function OverlayCoordinator({ children }: { children: ReactNode }) {
 	const presentationRef = useRef<Presentation | null>(null);
 	const dismissRef = useRef<(data?: unknown, role?: string) => void>(() => { });
+	const valueRef = useRef<OverlayCoordinatorValue | null>(null);
 	const [occupied, setOccupied] = useState(false);
 
 	const hostProps = useMemo<OverlaySlotHostProps>(
-		() => ({ presentationRef, dismissRef }),
+		() => ({ presentationRef, dismissRef, valueRef }),
 		[],
 	);
 
@@ -136,6 +144,7 @@ export function OverlayCoordinator({ children }: { children: ReactNode }) {
 		() => ({ occupied, present, tryPresent }),
 		[occupied, present, tryPresent],
 	);
+	valueRef.current = value;
 
 	return (
 		<OverlayCoordinatorContext.Provider value={value}>
