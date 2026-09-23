@@ -16,7 +16,7 @@ import {
 	LIGHTNING_PUB_WORDMARK_HEIGHT,
 	useLightningPubLogo,
 } from "@/Assets/Images/lightning-pub";
-import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
+import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
 import { useDashboardSource, useDashboardSourceSwitch } from "@/Pages/Metrics/DashboardSourceContext";
 
 type DashBoardPageChromeProps = {
@@ -147,7 +147,7 @@ export function DashNavLinks() {
 export function DashSourceChip() {
 	const { open } = useDashboardSourceSwitch();
 	const source = useDashboardSource()
-	const name = sourceDisplayName(source);
+	const name = sourceNodeDisplayName(source);
 	const warn = source.beaconStale === "stale" || source.beaconStale === "warmingUp";
 
 	return (

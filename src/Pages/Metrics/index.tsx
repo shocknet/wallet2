@@ -18,6 +18,7 @@ import { AssetsAndLiab } from "./AssetsAndLiab";
 import UsersAdmin from "./UsersAdmin";
 import UserOperationsAdmin from "./UserOperationsAdmin";
 import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
+import Backups from "./Backups";
 
 const Metrics = ({ match }: RouteComponentProps) => {
 	const adminIds = useAppSelector(selectAdminSourceIds, shallowEqual);
@@ -59,6 +60,7 @@ const MetricsPages = memo(function MetricsPages({
 					<Route path={`${url}/peers`} component={Peers} />
 					<Route path={`${url}/swaps`} component={AdminSwaps} />
 					<Route path={`${url}/assets-liabilities`} component={AssetsAndLiab} />
+					<Route path={`${url}/backups`} component={Backups} />
 					<Route exact path={`${url}/users`} component={UsersAdmin} />
 					<Route path={`${url}/users/:userId`} component={UserOperationsAdmin} />
 				</IonRouterOutlet>

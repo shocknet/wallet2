@@ -2,9 +2,11 @@ import { IonContent, IonIcon, IonMenu, IonMenuToggle, useIonRouter } from "@ioni
 import { useLocation } from "react-router-dom";
 import { DashBrand, DashSourceChip } from "./DashBoardPageChrome";
 import { DASH_MENU_ID, DASH_NAV, isDashNavActive } from "./dashNav";
+import { useWalletAvatar } from "@/Assets/Images/wallet-avatar";
 
 export function DashRailMenu() {
 	const router = useIonRouter();
+	const walletAvatar = useWalletAvatar();
 	return (
 		<IonMenu menuId={DASH_MENU_ID} contentId="dash-main" className="pub-dash-rail-menu">
 			<IonContent>
@@ -22,7 +24,8 @@ export function DashRailMenu() {
 							className="pub-dash-wallet-btn"
 							onClick={() => router.push("/home", "root")}
 						>
-							ShockWallet
+							<img src={walletAvatar} alt="" aria-hidden />
+							Back to ShockWallet
 						</button>
 					</div>
 				</div>

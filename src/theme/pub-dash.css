@@ -487,6 +487,13 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 
 .pub-dash-wallet-btn:hover {
 	border-color: var(--dash-muted);
+	background: color-mix(in srgb, var(--dash-text) 6%, transparent);
+}
+
+.pub-dash-wallet-btn img {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
 }
 
 @media (min-width: 800px) {

@@ -1,4 +1,5 @@
 import {
+	cloudUploadOutline,
 	gitNetworkOutline,
 	globeOutline,
 	peopleOutline,
@@ -21,13 +22,14 @@ export const DASH_MENU_ID = "dash-rail";
 
 export const DASH_NAV: DashNavItem[] = [
 	{ href: "/dashboard", label: "Overview", icon: statsChartOutline, exact: true },
+	{ href: "/dashboard/assets-liabilities", label: "Assets", icon: walletOutline },
+	{ href: "/dashboard/backups", label: "Backups", icon: cloudUploadOutline },
 	{ href: "/dashboard/channels", label: "Channels", icon: gitNetworkOutline },
 	{ href: "/dashboard/peers", label: "Peers", icon: globeOutline },
 	{ href: "/dashboard/earnings", label: "Earnings", icon: trendingUpOutline },
 	{ href: "/dashboard/routing", label: "Routing", icon: swapHorizontalOutline },
 	{ href: "/dashboard/users", label: "Users", icon: peopleOutline },
 	{ href: "/dashboard/swaps", label: "Swaps", icon: repeatOutline },
-	{ href: "/dashboard/assets-liabilities", label: "Assets", icon: walletOutline },
 	{ href: "/dashboard/manage", label: "Manage", icon: settingsOutline },
 ];
 

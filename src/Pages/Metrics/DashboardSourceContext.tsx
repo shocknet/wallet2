@@ -8,7 +8,7 @@ import {
 	type SourceView,
 } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions } from "@/State/runtime/slice";
-import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
+import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
 import { BeaconStatusLine } from "@/Components/BeaconStatusLine";
 
 type DashboardSourceCtx = {
@@ -97,7 +97,7 @@ function DashSourceSwitchDialog({ onClose }: { onClose: () => void }) {
 						onClick={() => pick(admin.sourceId)}
 					>
 						<div className="dash-peer-item-main">
-							<div className="dash-peer-item-name">{sourceDisplayName(admin)}</div>
+							<div className="dash-peer-item-name">{sourceNodeDisplayName(admin)}</div>
 							<div className="dash-peer-item-sub">
 								<BeaconStatusLine state={admin.beaconStale} showWhenFresh />
 							</div>
