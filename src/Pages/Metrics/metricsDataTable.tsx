@@ -3,15 +3,14 @@ import type { CSSProperties, ReactNode } from "react";
 
 export function formatTableTs(unix: number): string {
     if (!unix) return "—";
-    const d = new Date(unix * 1000);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const day = pad(d.getDate());
-    const month = pad(d.getMonth() + 1);
-    const year = String(d.getFullYear()).slice(-2);
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    const seconds = pad(d.getSeconds());
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    return new Date(unix * 1000).toLocaleString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+    });
 }
 
 export function formatTableAmount(n: number): string {

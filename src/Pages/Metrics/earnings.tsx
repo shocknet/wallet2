@@ -23,10 +23,20 @@ function offsetFromSearch(): number {
 	return Number.isFinite(n) ? n : 0;
 }
 
+function appActivity(app: Types.AppMetrics): number {
+	return app.operation_count ?? app.operations.length
+}
+
+function earningsApps(apps: Types.AppMetrics[]): Types.AppMetrics[] {
+	return apps
+		.filter((app) => app.app.id !== "unlinked")
+		.sort((a, b) => appActivity(b) - appActivity(a) || (b.received + b.spent) - (a.received + a.spent))
+}
+
 export default function Earnings() {
 	const [period, setPeriod] = useState<Period>(periodFromSearch)
 	const [offset, setOffset] = useState<number>(offsetFromSearch)
-	const [showingOps, setShowingOps] = useState("")
+	const [showingOps, setShowingOps] = useState<string | null>(null)
 	const adminSource = useDashboardSource();
 	const sourceId = adminSource.sourceId;
 	const { data, error, isFetching, refetch } = useGetAppsMetricsQuery({
@@ -69,29 +79,70 @@ export default function Earnings() {
 					onRetry={() => void refetch()}
 				/>
 			) : (
-				<>
-					{data.apps
-						.filter((app) => app.app.id !== "unlinked")
-						.map((app) => (
-							<IonCard key={app.app.id} className="ion-margin-top">
-								<IonCardHeader>
-									<IonCardTitle>{app.app.name}</IonCardTitle>
-								</IonCardHeader>
-								<EarningsAppCard
-									app={app}
-									sourceId={sourceId}
-									period={period}
-									offset={offset}
-									showing={showingOps === app.app.name}
-									onToggle={() => setShowingOps(showingOps === app.app.name ? "" : app.app.name)}
-								/>
-							</IonCard>
-						))}
-				</>
+				<EarningsApps
+					apps={earningsApps(data.apps)}
+					sourceId={sourceId}
+					period={period}
+					offset={offset}
+					showingOps={showingOps}
+					setShowingOps={setShowingOps}
+				/>
 			)}
 		</DashBoardPageChrome>
 	);
 
+}
+
+function EarningsApps({
+	apps,
+	sourceId,
+	period,
+	offset,
+	showingOps,
+	setShowingOps,
+}: {
+	apps: Types.AppMetrics[]
+	sourceId: string
+	period: Period
+	offset: number
+	showingOps: string | null
+	setShowingOps: (appId: string | null) => void
+}) {
+	const openId = showingOps ?? apps.find((app) => appActivity(app) > 0)?.app.id ?? ""
+
+	return (
+		<>
+			{apps.map((app) => {
+				const open = openId === app.app.id
+				const hasOps = appActivity(app) > 0
+				return (
+					<IonCard key={app.app.id} className="ion-margin-top">
+						<IonCardHeader>
+							<div className="dash-app-head">
+								<IonCardTitle>{app.app.name}</IonCardTitle>
+								{hasOps && (
+									<button
+										type="button"
+										className="dash-ops-toggle"
+										onClick={() => setShowingOps(open ? "" : app.app.id)}
+									>
+										{open ? "Hide" : "Show operations"}
+									</button>
+								)}
+							</div>
+						</IonCardHeader>
+						<EarningsAppCard
+							app={app}
+							sourceId={sourceId}
+							period={period}
+							offset={offset}
+							showing={open}
+						/>
+					</IonCard>
+				)
+			})}
+		</>
+	)
 }
 
 function EarningsSkeleton() {
@@ -128,14 +179,12 @@ function EarningsAppCard({
 	period,
 	offset,
 	showing,
-	onToggle,
 }: {
 	app: Types.AppMetrics
 	sourceId: string
 	period: Period
 	offset: number
 	showing: boolean
-	onToggle: () => void
 }) {
 	const {
 		data,
@@ -183,43 +232,30 @@ function EarningsAppCard({
 				</div>
 			</div>
 
-			{count > 0 && (
+			{showing && count > 0 && (
 				<>
-					{!showing ? (
-						<IonButton fill="outline" expand="block" onClick={onToggle}>
-							Show operations
-						</IonButton>
-					) : (
+					{opsLoading ? (
 						<>
-							<IonButton fill="outline" expand="block" onClick={onToggle}>
-								Hide operations
-							</IonButton>
-							<div className="ion-margin-top">
-								{opsLoading ? (
-									<>
-										<IonSkeletonText animated style={{ width: "100%", height: 36, margin: 0 }} />
-										<IonSkeletonText animated style={{ width: "90%", height: 36, marginTop: 8 }} />
-									</>
-								) : !data ? (
-									<DashErrorBanner
-										message={(error as AppApiError | undefined)?.message || "Failed to load operations"}
-										onRetry={() => void refetch()}
-									/>
-								) : (
-									<AdminOperationsList operations={operations} />
-								)}
-							</div>
-							{hasNextPage && (
-								<IonButton
-									fill="clear"
-									expand="block"
-									disabled={isFetchingNextPage}
-									onClick={() => void fetchNextPage()}
-								>
-									{isFetchingNextPage ? "Loading…" : "Load more"}
-								</IonButton>
-							)}
+							<IonSkeletonText animated style={{ width: "100%", height: 36, margin: 0 }} />
+							<IonSkeletonText animated style={{ width: "90%", height: 36, marginTop: 8 }} />
 						</>
+					) : !data ? (
+						<DashErrorBanner
+							message={(error as AppApiError | undefined)?.message || "Failed to load operations"}
+							onRetry={() => void refetch()}
+						/>
+					) : (
+						<AdminOperationsList operations={operations} />
+					)}
+					{hasNextPage && (
+						<IonButton
+							fill="clear"
+							expand="block"
+							disabled={isFetchingNextPage}
+							onClick={() => void fetchNextPage()}
+						>
+							{isFetchingNextPage ? "Loading…" : "Load more"}
+						</IonButton>
 					)}
 				</>
 			)}

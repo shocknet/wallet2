@@ -9,7 +9,7 @@ import {
     MetricsTableRow,
 } from "./metricsDataTable";
 
-const OPERATIONS_GRID = "minmax(100px, 1.2fr) minmax(110px, 1.2fr) minmax(72px, 90px) minmax(72px, 90px)";
+const OPERATIONS_GRID = "24px minmax(88px, 0.8fr) minmax(128px, 1.4fr) minmax(148px, 1.1fr) minmax(72px, 0.7fr)";
 
 export function operationIconType(t: UserOperationType) {
     switch (t) {
@@ -67,32 +67,32 @@ export function AdminOperationsList({ operations }: { operations: UserOperation[
     return (
         <MetricsDataTable
             grid={OPERATIONS_GRID}
+            minWidth="640px"
             header={
                 <>
-                    <span>Op type</span>
+                    <span />
+                    <span>Amount</span>
+                    <span>Type</span>
                     <span>Date</span>
-                    <span style={{ textAlign: "right" }}>Amount</span>
-                    <span style={{ textAlign: "right" }}>Service fee</span>
+                    <span style={{ textAlign: "right" }}>Fee</span>
                 </>
             }
         >
             {sorted.map((op, i) => (
                 <MetricsTableRow key={op.operationId} grid={OPERATIONS_GRID} isLast={i === sorted.length - 1}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
-                        <IonIcon
-                            icon={operationIconType(op.type)}
-                            style={{ flexShrink: 0, color: operationIconColor(op.type), fontSize: "1rem" }}
-                            title={operationTypeLabel(op.type)}
-                        />
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {operationTypeLabel(op.type)}
-                        </span>
-                    </div>
+                    <IonIcon
+                        icon={operationIconType(op.type)}
+                        aria-hidden
+                        style={{ color: operationIconColor(op.type), fontSize: "1rem" }}
+                    />
+                    <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                        {formatTableAmount(op.amount)}
+                    </span>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {operationTypeLabel(op.type)}
+                    </span>
                     <span style={{ fontSize: "0.8rem" }}>
                         {formatTableTs(op.paidAtUnix)}
-                    </span>
-                    <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                        {formatTableAmount(op.amount)}
                     </span>
                     <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                         {formatTableAmount(op.service_fee)}
