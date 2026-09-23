@@ -1293,6 +1293,31 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	letter-spacing: 0.007em;
 }
 
+.pub-dash .dash-app-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.pub-dash .dash-ops-toggle {
+	flex-shrink: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	font-family: var(--dash-font-mono, monospace);
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dash-dim, var(--ion-color-medium));
+}
+
+.pub-dash .dash-ops-toggle:hover {
+	color: var(--dash-text, var(--ion-text-color));
+}
+
 .pub-dash ion-item {
 	--background: var(--dash-surface);
 	--color: var(--dash-text);
