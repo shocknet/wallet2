@@ -9,9 +9,10 @@ type Props = {
     resetOffset: () => void
     prevOffset: () => void
     nextOffset: () => void
+    disabled?: boolean
 }
-export default function PeriodSelector({ period, offset, setPeriod, resetOffset, prevOffset, nextOffset }: Props) {
-    return <div className={styles["section"]}>
+export default function PeriodSelector({ period, offset, setPeriod, resetOffset, prevOffset, nextOffset, disabled }: Props) {
+    return <div className={classNames(styles["section"], disabled && styles["disabled"])} aria-disabled={disabled}>
         <div className={styles["center"]}>
             <Dropdown<Period>
                 setState={(value) => { setPeriod(value); resetOffset() }}

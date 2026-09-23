@@ -1,68 +1,75 @@
-import { useEffect } from "react";
-import { IonPage, IonRouterOutlet, useIonViewWillEnter } from "@ionic/react";
-import { Route, RouteComponentProps } from "react-router-dom";
-
-import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
-import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
-
-import { GuardedRoute } from "@/routing/GuardedRoute";
-import { requireSelectedAdminSourceGuard } from "@/routing/guards";
-
+import { memo } from "react";
+import { IonPage, IonRouterOutlet, IonSplitPane } from "@ionic/react";
+import { Redirect, Route, RouteComponentProps } from "react-router-dom";
+import { shallowEqual } from "react-redux";
+import { useAppSelector } from "@/State/store/hooks";
+import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
+import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { SelectedAdminSourceProvider } from "./DashboardSourceContext";
 import MetricsSelectSource from "./MetricsSelectSource";
 import Dashboard from "./metricsMain";
 import Earnings from "./earnings";
 import Routing from "./routing";
 import Manage from "../Manage";
 import Channels from "../Channels";
+import Peers from "./Peers";
 import AdminSwaps from "./adminSwaps/AdminSwaps";
 import { AssetsAndLiab } from "./AssetsAndLiab";
 import UsersAdmin from "./UsersAdmin";
 import UserOperationsAdmin from "./UserOperationsAdmin";
+import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
 
-const Metrics = ({ match, location, history }: RouteComponentProps) => {
-
-
-	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminSourceViews);
+const Metrics = ({ match }: RouteComponentProps) => {
+	const adminIds = useAppSelector(selectAdminSourceIds, shallowEqual);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
+	const activeId = selectedId && adminIds.includes(selectedId)
+		? selectedId
+		: adminIds.length === 1
+			? adminIds[0]
+			: null;
 
-	// If selected source disappears (deleted etc), clear it.
-	useEffect(() => {
-		if (!selectedId) return;
-		const stillExists = admins.some((a) => a.sourceId === selectedId);
-		if (!stillExists) dispatch(runtimeActions.clearSelectedMetricsAdminSourceId());
-	}, [admins, dispatch, selectedId]);
+	if (adminIds.length === 0) {
+		return <Redirect to="/home" />;
+	}
 
-	useIonViewWillEnter(() => {
-		// If we’re already on /metrics/select, don’t push again.
-		if (location.pathname.startsWith("/metrics/select")) return;
-		if (!selectedId) return;
-		const sel = admins.find((a) => a.sourceId === selectedId);
-		if (!sel) return;
-		// Beacon is checked ONLY here (and on selection page).
-		if (sel.beaconStale === "warmingUp" || sel.beaconStale === "stale") {
-			history.replace("/metrics/select", { from: location });
-		}
-	});
+	if (!activeId) {
+		return <MetricsSelectSource />;
+	}
 
 	return (
-		<IonPage>
-			<IonRouterOutlet key={`metrics-subtree:${selectedId ?? "none"}`}>
-				<Route exact path={`${match.url}/select`} component={MetricsSelectSource} />
-
-				<GuardedRoute exact path={match.url} component={Dashboard} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/earnings`} component={Earnings} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/routing`} component={Routing} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/manage`} component={Manage} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/channels`} component={Channels} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/swaps`} component={AdminSwaps} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/assets-liabilities`} component={AssetsAndLiab} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute exact path={`${match.url}/users`} component={UsersAdmin} guards={[requireSelectedAdminSourceGuard]} />
-				<GuardedRoute path={`${match.url}/users/:userId`} component={UserOperationsAdmin} guards={[requireSelectedAdminSourceGuard]} />
-			</IonRouterOutlet>
-		</IonPage>
+		<SelectedAdminSourceProvider sourceId={activeId}>
+			<MetricsPages sourceId={activeId} url={match.url} />
+		</SelectedAdminSourceProvider>
 	);
 };
+
+const MetricsPages = memo(function MetricsPages({
+	sourceId,
+	url,
+}: {
+	sourceId: string;
+	url: string;
+}) {
+	return (
+		<IonPage className="pub-dash">
+			<IonSplitPane className="pub-dash-split-pane" when="(min-width: 800px)" contentId="dash-main">
+				<DashRailMenu />
+				<IonRouterOutlet key={`dashboard-${sourceId}`} id="dash-main">
+					<Route exact path={url} component={Dashboard} />
+					<Route path={`${url}/earnings`} component={Earnings} />
+					<Route path={`${url}/routing`} component={Routing} />
+					<Route path={`${url}/manage`} component={Manage} />
+					<Route path={`${url}/channels`} component={Channels} />
+					<Route path={`${url}/peers`} component={Peers} />
+					<Route path={`${url}/swaps`} component={AdminSwaps} />
+					<Route path={`${url}/assets-liabilities`} component={AssetsAndLiab} />
+					<Route exact path={`${url}/users`} component={UsersAdmin} />
+					<Route path={`${url}/users/:userId`} component={UserOperationsAdmin} />
+				</IonRouterOutlet>
+
+			</IonSplitPane>
+		</IonPage>
+	);
+});
 
 export default Metrics;

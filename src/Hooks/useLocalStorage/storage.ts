@@ -11,7 +11,7 @@ export interface UseStorageOptions<T> {
 	/** Default value that will be set if value is not found in storage */
 	defaultValue?: T;
 
-	/** If set to true, value will be updated in useEffect after mount. Default value is false. */
+	/** If set to true, value will be updated in useEffect after mount. Default is false (read storage on first render). */
 	getInitialValueInEffect?: boolean;
 
 	/** Determines whether the value must be synced between browser tabs, `true` by default */

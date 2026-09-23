@@ -18,6 +18,8 @@ export type AppApiError = {
 	message: string;
 };
 
+export type AppApiResult<T> = { data: T } | { error: AppApiError };
+
 export function appApiError(message: string): { error: AppApiError } {
 	return { error: { message } };
 }
@@ -37,7 +39,13 @@ function normalizeLnAddress(address: string): string {
 export const appApi = createApi({
 	reducerPath: "appApi",
 	baseQuery: fakeBaseQuery<AppApiError>(),
-	tagTypes: ["DebitAuthorizations", "Offers", "OfferInvoices"],
+	tagTypes: [
+		"DebitAuthorizations", "Offers", "OfferInvoices",
+		"LndInfo", "AppsMetrics", "LndMetrics", "LndForwarding",
+		"OpenChannels", "LndPeers", "UsersAdmin", "InvoiceSwaps",
+		"TxSwaps", "UserOperations", "AssetsLiabilities",
+		"LndUtxos", "AdminNodeSettings",
+	],
 	endpoints: (b) => ({
 		getProfile: b.query<NostrProfile | null, { pubkey: string; relays: string[] }>({
 			serializeQueryArgs: ({ queryArgs }) => ({
