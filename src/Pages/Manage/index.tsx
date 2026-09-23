@@ -250,7 +250,7 @@ const Manage = () => {
 			const ok = await persist(form);
 			if (!ok) return;
 		}
-		router.push("/metrics", "back");
+		router.push("/dashboard", "back");
 	};
 
 	return (

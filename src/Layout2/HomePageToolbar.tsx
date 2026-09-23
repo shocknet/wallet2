@@ -31,7 +31,7 @@ function HomePageToolbar({ title }: HomePageToolbarProps) {
 
 		if (clickCountRef.current >= 3) {
 			clickCountRef.current = 0;
-			router.push("/metrics", "forward");
+			router.push("/dashboard", "forward");
 			return;
 		}
 

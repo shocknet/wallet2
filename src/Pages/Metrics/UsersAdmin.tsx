@@ -48,7 +48,7 @@ export default function UsersAdmin({ history }: RouteComponentProps) {
 	const hasNext = !!data && skip + data.users.length < data.total;
 
 	const openUser = (user: UserAdminInfo) => {
-		history.push(`/metrics/users/${user.user_id}`, { user });
+		history.push(`/dashboard/users/${user.user_id}`, { user });
 	};
 
 	return (

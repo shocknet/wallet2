@@ -32,7 +32,7 @@ export default function MetricsSelectSource() {
 							onSelect={(v) => setPendingId(v.sourceId)}
 							getIndex={(s) => s.sourceId}
 							title="Select Source"
-							subTitle="Pick the admin source to use for metrics"
+							subTitle="Pick the admin source to use for the dashboard"
 							placeholder="Choose your admin source"
 							renderItem={(s) => <SourceSelectOption source={s} />}
 							renderSelected={(s) => <SelectedSource source={s} />}

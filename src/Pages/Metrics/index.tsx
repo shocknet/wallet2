@@ -5,7 +5,7 @@ import { shallowEqual } from "react-redux";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
-import { SelectedAdminSourceProvider } from "./DashboardSourceContext";
+import { activeAdminSourceId, SelectedAdminSourceProvider } from "./DashboardSourceContext";
 import MetricsSelectSource from "./MetricsSelectSource";
 import Dashboard from "./metricsMain";
 import Earnings from "./earnings";
@@ -22,11 +22,7 @@ import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
 const Metrics = ({ match }: RouteComponentProps) => {
 	const adminIds = useAppSelector(selectAdminSourceIds, shallowEqual);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-	const activeId = selectedId && adminIds.includes(selectedId)
-		? selectedId
-		: adminIds.length === 1
-			? adminIds[0]
-			: null;
+	const activeId = activeAdminSourceId(adminIds, selectedId);
 
 	if (adminIds.length === 0) {
 		return <Redirect to="/home" />;

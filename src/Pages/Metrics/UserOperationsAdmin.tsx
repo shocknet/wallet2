@@ -53,7 +53,7 @@ export default function UserOperationsAdmin({ match, location }: RouteComponentP
 	const loading = !data && (isFetching || !error);
 
 	return (
-		<DashBoardPageChrome title={`User ${trimId(userId)}`} backHref="/metrics/users">
+		<DashBoardPageChrome title={`User ${trimId(userId)}`} backHref="/dashboard/users">
 			{needsUpgrade ? (
 				<PubUpgradeNotice
 					featureLabel="Users admin"

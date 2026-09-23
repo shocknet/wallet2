@@ -20,15 +20,15 @@ export type DashNavItem = {
 export const DASH_MENU_ID = "dash-rail";
 
 export const DASH_NAV: DashNavItem[] = [
-	{ href: "/metrics", label: "Overview", icon: statsChartOutline, exact: true },
-	{ href: "/metrics/channels", label: "Channels", icon: gitNetworkOutline },
-	{ href: "/metrics/peers", label: "Peers", icon: globeOutline },
-	{ href: "/metrics/earnings", label: "Earnings", icon: trendingUpOutline },
-	{ href: "/metrics/routing", label: "Routing", icon: swapHorizontalOutline },
-	{ href: "/metrics/users", label: "Users", icon: peopleOutline },
-	{ href: "/metrics/swaps", label: "Swaps", icon: repeatOutline },
-	{ href: "/metrics/assets-liabilities", label: "Assets", icon: walletOutline },
-	{ href: "/metrics/manage", label: "Manage", icon: settingsOutline },
+	{ href: "/dashboard", label: "Overview", icon: statsChartOutline, exact: true },
+	{ href: "/dashboard/channels", label: "Channels", icon: gitNetworkOutline },
+	{ href: "/dashboard/peers", label: "Peers", icon: globeOutline },
+	{ href: "/dashboard/earnings", label: "Earnings", icon: trendingUpOutline },
+	{ href: "/dashboard/routing", label: "Routing", icon: swapHorizontalOutline },
+	{ href: "/dashboard/users", label: "Users", icon: peopleOutline },
+	{ href: "/dashboard/swaps", label: "Swaps", icon: repeatOutline },
+	{ href: "/dashboard/assets-liabilities", label: "Assets", icon: walletOutline },
+	{ href: "/dashboard/manage", label: "Manage", icon: settingsOutline },
 ];
 
 export function isDashNavActive(href: string, pathname: string, exact?: boolean): boolean {

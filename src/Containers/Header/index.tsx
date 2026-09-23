@@ -96,8 +96,8 @@ export const Header = () => {
 		let tripeClickTimer: NodeJS.Timeout;
 		if (logoClickCounter === 1) {
 			singleClickTimer = setTimeout(() => {
-				if (location.pathname.startsWith("/metrics")) {
-					router.push("/metrics");
+				if (location.pathname.startsWith("/dashboard")) {
+					router.push("/dashboard");
 				} else {
 					router.push("/");
 				}
@@ -105,7 +105,7 @@ export const Header = () => {
 			}, 500);
 		} else {
 			if (logoClickCounter === 3) {
-				router.push("/metrics");
+				router.push("/dashboard");
 			}
 			tripeClickTimer = setTimeout(() => {
 				setLogoClickCounter(0);
@@ -255,7 +255,7 @@ export const PubHeader = () => {
 			}, 500);
 		} else {
 			if (logoClickCounter === 3) {
-				router.push("/metrics");
+				router.push("/dashboard");
 			}
 			tripeClickTimer = setTimeout(() => {
 				setLogoClickCounter(0);

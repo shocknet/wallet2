@@ -77,7 +77,7 @@ const getMenuItems = (hasAdminSources: boolean) => {
 		items.push({
 			title: "Dashboard",
 			icon: analyticsOutline,
-			path: "/metrics",
+			path: "/dashboard",
 			color: "#c740c7",
 		});
 	}

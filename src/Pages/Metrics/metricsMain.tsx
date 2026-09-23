@@ -266,7 +266,7 @@ const OverviewLndKpis = memo(function OverviewLndKpis({
 	const c = view.channelsInfo;
 	return (
 		<>
-			<button type="button" className="dash-card is-clickable" onClick={() => router.push("/metrics/channels", "forward")}>
+			<button type="button" className="dash-card is-clickable" onClick={() => router.push("/dashboard/channels", "forward")}>
 				<p className="dash-kpi-label">Channels</p>
 				<p className="dash-kpi-value">
 					{c.onlineChannels + c.pendingChannels + c.offlineChannels + c.closingChannels}
@@ -294,7 +294,7 @@ const OverviewLndKpis = memo(function OverviewLndKpis({
 			<button
 				type="button"
 				className="dash-card is-clickable"
-				onClick={() => router.push("/metrics/routing?period=" + period + "&offset=" + offset)}
+				onClick={() => router.push("/dashboard/routing?period=" + period + "&offset=" + offset)}
 			>
 				<p className="dash-kpi-label">Routing</p>
 				<p className="dash-kpi-value">{formatFr(c.forwardedFees)} sats</p>
@@ -476,7 +476,7 @@ const OverviewEarned = memo(function OverviewEarned({
 		<button
 			type="button"
 			className="dash-card is-clickable"
-			onClick={() => router.push("/metrics/earnings?period=" + period + "&offset=" + offset, "forward")}
+			onClick={() => router.push("/dashboard/earnings?period=" + period + "&offset=" + offset, "forward")}
 		>
 			<p className="dash-kpi-label">Earned</p>
 			<p className="dash-kpi-value">{formatFr(earnedInPeriod)} sats</p>

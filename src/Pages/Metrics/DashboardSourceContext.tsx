@@ -27,6 +27,15 @@ function useDashboardSourceCtx(): DashboardSourceCtx {
 	return ctx;
 }
 
+export function activeAdminSourceId(
+	adminIds: string[],
+	selectedId: string | null,
+): string | null {
+	if (selectedId && adminIds.includes(selectedId)) return selectedId;
+	if (adminIds.length === 1) return adminIds[0];
+	return null;
+}
+
 export function useDashboardSource(): SourceView {
 	return useDashboardSourceCtx().source;
 }

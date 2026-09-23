@@ -116,8 +116,19 @@ export const ReadyApp = memo(function ReadyApp({
 					layout={Layout}
 				/>
 				<AppRoute
-					path="/metrics"
+					path="/dashboard"
 					component={Metrics}
+				/>
+				<Route
+					path="/metrics"
+					render={({ location }) => (
+						<Redirect
+							to={{
+								pathname: location.pathname.replace(/^\/metrics(?=\/|$)/, "/dashboard"),
+								search: location.search,
+							}}
+						/>
+					)}
 				/>
 				<AppRoute
 					exact
@@ -126,10 +137,13 @@ export const ReadyApp = memo(function ReadyApp({
 				/>
 				<AppRoute
 					exact
-					path="/Stats"
+					path="/telemetry"
 					component={Stats}
 					layout={Layout}
 				/>
+				<Route exact path="/Stats">
+					<Redirect to="/telemetry" />
+				</Route>
 				<AppRoute
 					exact
 					path="/LApps"

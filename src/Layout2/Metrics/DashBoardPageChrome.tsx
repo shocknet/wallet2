@@ -89,7 +89,7 @@ export function DashBrand({ showWordmark = false }: { showWordmark?: boolean }) 
 	const mark = useLightningPubLogo("mark");
 	const wordmark = useLightningPubLogo("full");
 	const onLogoClick = useDashLogoTaps(
-		useCallback(() => router.push("/metrics", "root"), [router]),
+		useCallback(() => router.push("/dashboard", "root"), [router]),
 		useCallback(() => router.push("/home", "back"), [router]),
 	);
 
