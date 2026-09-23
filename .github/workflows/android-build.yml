@@ -35,9 +35,10 @@ jobs:
           cache: 'npm'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           accept-android-sdk-licenses: true
+          packages: platform-tools
 
       - name: Install Android SDK packages
         run: |
