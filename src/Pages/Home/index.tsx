@@ -181,8 +181,7 @@ const Home = () => {
 					<div className="pointer-events-auto relative mx-0 flex h-[5.5rem] items-center">
 						<div
 							className="
-								relative flex h-[3rem] w-full items-center justify-between rounded-full
-								bg-[var(--back-button-color)]
+								relative flex h-[3rem] w-full items-center justify-between rounded-full bg-[var(--back-button-color)]
 								shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_24px_rgba(var(--app-box-shadow-color),0.14),0_2px_8px_rgba(var(--app-box-shadow-color),0.08)]
 								dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_12px_32px_rgba(0,0,0,0.4),0_2px_10px_rgba(0,0,0,0.25)]
 							"
