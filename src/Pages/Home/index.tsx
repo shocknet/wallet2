@@ -143,7 +143,6 @@ const Home = () => {
 				<BalanceCard />
 			</IonHeader>
 			<IonContent scrollY={false} className="ion-content-no-footer">
-				<div>see this</div>
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
@@ -220,7 +219,7 @@ const Home = () => {
 									icon={downloadOutline}
 									className="-scale-y-100"
 								/>
-								Payyyyy
+								Pay
 							</IonButton>
 						</div>
 						<IonButton

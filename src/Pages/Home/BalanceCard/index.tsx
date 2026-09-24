@@ -61,7 +61,6 @@ const BalanceCard = () => {
 			<IonRippleEffect></IonRippleEffect>
 			<IonText className="text-3xl font-bold text-[color:var(--ion-text-color-step-100)]">{displayBalance}</IonText>
 			<IonButton onClick={toggleUnit} fill="clear" className="ion-no-margin">{unit}</IonButton>
-			<div>hello test</div>
 			<IonNote className="text-secondary">
 
 				<FiatDisplay sign="~" className="text-secondary" sats={balance} />
