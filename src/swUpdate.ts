@@ -27,10 +27,7 @@ export function isUpdateReady() {
 	return ready;
 }
 
-// The plugin only reloads for updates it found at startup; hourly checks
-// find the rest, so reload when the new worker takes this page.
 export function applyUpdate() {
-	navigator.serviceWorker.addEventListener("controllerchange", reloadOnce, { once: true });
 	void refresh?.();
 }
 
