@@ -33,6 +33,7 @@ import { addIcons } from 'ionicons';
 import nostrSvg from "../icons/nostr.svg";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { ShellEffects } from './shell/ShellEffects';
+import { UpdateToast } from './Components/UpdateToast';
 
 addIcons({
 	nostr: nostrSvg,
@@ -60,6 +61,7 @@ export default function App() {
 									<AppShell />
 								</OverlayCoordinator>
 							</IonReactRouter>
+							<UpdateToast />
 						</IonApp>
 					</ToastProvider>
 				</PersistGate>

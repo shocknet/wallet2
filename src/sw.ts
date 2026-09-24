@@ -4,8 +4,11 @@ import { parseEnvelopeJsonString } from './notifications/push/helpers';
 
 declare let self: ServiceWorkerGlobalScope
 
-
-self.skipWaiting()
+// An update waits for the user to tap Refresh. Taking over on its own would
+// drop the files the open page already loaded.
+self.addEventListener('message', (event) => {
+	if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
 clientsClaim()
 
 cleanupOutdatedCaches()

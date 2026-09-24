@@ -24,7 +24,7 @@ export default defineConfig({
 		}),
 		VitePWA({
 			selfDestroying: isNativeBuild,
-			registerType: 'autoUpdate',
+			registerType: 'prompt',
 			injectRegister: false,
 			strategies: "injectManifest",
 			srcDir: "src",
