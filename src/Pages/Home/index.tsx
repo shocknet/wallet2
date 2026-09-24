@@ -220,7 +220,7 @@ const Home = () => {
 									icon={downloadOutline}
 									className="-scale-y-100"
 								/>
-								Payyyy
+								Payyyyy
 							</IonButton>
 						</div>
 						<IonButton
