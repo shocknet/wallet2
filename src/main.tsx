@@ -6,7 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { startPushCapture } from './notifications/push/capture';
 
 if (!Capacitor.isNativePlatform()) {
-	registerSW({ immediate: true })
+	registerSW({ immediate: true, onNeedReload() {} })
 }
 
 startPushCapture();
