@@ -996,6 +996,65 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	color: var(--dash-muted);
 }
 
+.dash-utxo {
+	border: 1px solid var(--dash-border);
+	border-radius: var(--dash-radius);
+	background: var(--dash-surface);
+	overflow: hidden;
+}
+
+.dash-utxo-row {
+	display: grid;
+	grid-template-columns: minmax(72px, 0.7fr) 64px minmax(0, 1.3fr) minmax(0, 1fr);
+	gap: 8px;
+	align-items: center;
+	padding: 5px 10px;
+	border-bottom: 1px solid color-mix(in srgb, var(--dash-border) 55%, transparent);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+.dash-utxo-row:last-child {
+	border-bottom: none;
+}
+
+.dash-utxo-row.is-head {
+	font-family: var(--dash-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dash-dim);
+}
+
+.dash-utxo-amt {
+	font-weight: 500;
+}
+
+.dash-utxo-conf {
+	color: var(--dash-dim);
+	text-align: right;
+}
+
+.dash-utxo-copy {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--dash-text);
+	font: inherit;
+	font-family: var(--dash-font-mono);
+	text-align: left;
+	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.dash-utxo-copy:hover {
+	color: var(--dash-a, var(--ion-color-primary));
+}
+
 .dash-peer-stack {
 	border: 1px solid var(--dash-border);
 	border-radius: var(--dash-radius);
