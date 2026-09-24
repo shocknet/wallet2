@@ -171,8 +171,7 @@ const Home = () => {
 					<div
 						aria-hidden
 						className="
-							pointer-events-none absolute inset-x-[-8%] bottom-[-1.25rem] z-0
-							h-60 blur-[1px]
+							pointer-events-none absolute inset-x-[-8%] bottom-[-1.25rem] z-0 h-60 blur-[1px]
 							bg-[radial-gradient(ellipse_88%_78%_at_50%_92%,rgba(var(--app-box-shadow-color),0.24)_0%,rgba(var(--app-box-shadow-color),0.12)_30%,rgba(var(--app-box-shadow-color),0.04)_55%,transparent_78%),linear-gradient(to_top,rgba(var(--app-box-shadow-color),0.13)_0%,rgba(var(--app-box-shadow-color),0.05)_42%,transparent_75%)]
 							dark:bg-[radial-gradient(ellipse_88%_78%_at_50%_92%,rgba(0,0,0,0.68)_0%,rgba(0,0,0,0.44)_26%,rgba(0,0,0,0.18)_52%,rgba(0,0,0,0.05)_72%,transparent_86%),linear-gradient(to_top,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.15)_38%,rgba(0,0,0,0.04)_68%,transparent_100%)]
 							[mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)]
