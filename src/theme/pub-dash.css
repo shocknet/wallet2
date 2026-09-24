@@ -1217,6 +1217,26 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--dash-a) 22%, transparent);
 }
 
+.dash-connect-hint {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dash-spin {
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+	border: 2px solid var(--dash-border);
+	border-top-color: var(--dash-a, var(--ion-color-primary));
+	border-radius: 50%;
+	animation: dash-spin 0.7s linear infinite;
+}
+
+@keyframes dash-spin {
+	to { transform: rotate(360deg); }
+}
+
 .dash-field-hint {
 	font-size: 12px;
 	color: var(--dash-muted);
