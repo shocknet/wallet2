@@ -143,7 +143,7 @@ const Home = () => {
 				<BalanceCard />
 			</IonHeader>
 			<IonContent scrollY={false} className="ion-content-no-footer">
-				<div>hello testt</div>
+				<div>see this</div>
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
