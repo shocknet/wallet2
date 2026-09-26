@@ -1,47 +1,47 @@
 import React from "react";
+import { IonApp } from "@ionic/react";
+import { ShellFailureLayout } from "@/shell/screens/ShellFailureLayout";
 
 interface ErrorBoundaryState {
-  hasError: boolean;
-  errorMSG: string;
+	errorMSG: string | null;
 }
 
-class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
-    constructor(props: any) {
-        super(props);
+class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
+	state: ErrorBoundaryState = { errorMSG: null };
 
-        this.state = { 
-          hasError: false,
-          errorMSG: ''
-        };
-    }
+	static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
+		return { errorMSG: String(error) };
+	}
 
-    componentDidCatch(error: any, errorInfo: any) {
-      console.log({ error, errorInfo });
-      this.setState({ hasError: true, errorMSG: error.toString() });
-    }
+	componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
+		console.log({ error, errorInfo });
+	}
 
-    GoBack = () => {
-      this.setState({ hasError: false });
-      window.history.back();
-    }
+	render() {
+		if (this.state.errorMSG === null) return this.props.children;
 
-    render() {
-      if (this.state.hasError) {
-          return (
-            <div className='error-page'>
-              <div>
-                  <button onClick={this.GoBack}>Go back</button>
-              </div>
-              <h2>Oops, something went wrong.</h2>
-              <br />
-              <p>{this.state.errorMSG}</p>
-              <button onClick={() => this.setState({ hasError: false })}>Send report</button>
-            </div>
-          )
-      }
-
-      return this.props.children;
-    }
+		return (
+			<IonApp>
+				<ShellFailureLayout
+					title="Something went wrong"
+					message="The app hit an unexpected error. Reloading usually fixes it."
+					meta={
+						<p className="font-mono text-xs text-faint break-words">
+							{this.state.errorMSG}
+						</p>
+					}
+					actions={[
+						{
+							key: "reload",
+							label: "Reload app",
+							primary: true,
+							onClick: () => window.location.reload(),
+						},
+					]}
+				/>
+			</IonApp>
+		);
+	}
 }
 
 export default ErrorBoundary;

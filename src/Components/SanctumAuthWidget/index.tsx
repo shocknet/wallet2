@@ -1,7 +1,7 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Browser } from "@capacitor/browser";
 import { Device } from "@capacitor/device";
-import { createSanctumDK, type TokensData } from "sanctum-sdk";
+import { createSanctumDK, type SanctumDK, type TokensData } from "sanctum-sdk";
 import { SANCTUM_URL } from "@/constants";
 import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
 
@@ -10,54 +10,67 @@ type SanctumAuthWidgetProps = {
 	className?: string;
 };
 
+function createWidgetSdk(): SanctumDK {
+	let tokensDataRef: TokensData | null = null;
+	return createSanctumDK({
+		url: SANCTUM_URL,
+		tokenDataAdapter: {
+			getTokenData: () => tokensDataRef,
+			setTokenData: (tokens) => {
+				tokensDataRef = tokens;
+			},
+			clearTokenData: () => {
+				tokensDataRef = null;
+			},
+		},
+		getClientKey: async () => (await Device.getId()).identifier,
+	});
+}
+
 export function SanctumAuthWidget({ onTokensUpdated, className }: SanctumAuthWidgetProps) {
 	const rawId = useId();
 	const containerId = `sanctum-auth-widget-${rawId.replace(/:/g, "-")}`;
 	const effectiveTheme = useEffectiveTheme();
-
+	const hostRef = useRef<HTMLDivElement>(null);
+	const sdkRef = useRef<SanctumDK | null>(null);
+	const onTokensUpdatedRef = useRef(onTokensUpdated);
+	const themeRef = useRef(effectiveTheme);
+	onTokensUpdatedRef.current = onTokensUpdated;
+	themeRef.current = effectiveTheme;
 
 	useEffect(() => {
-		let tokensDataRef: TokensData | null = null;
+		// The widget attaches a closed shadow root, which can never be removed,
+		// so every mount needs its own element.
+		const container = document.createElement("div");
+		container.id = containerId;
+		hostRef.current?.appendChild(container);
 
-		const sdk = createSanctumDK({
-			url: SANCTUM_URL,
-			tokenDataAdapter: {
-				getTokenData: () => tokensDataRef,
-				setTokenData: (tokens) => {
-					tokensDataRef = tokens;
-				},
-				clearTokenData: () => {
-					tokensDataRef = null;
-				},
-			},
-			getClientKey: async () => (await Device.getId()).identifier,
-		});
-
+		const sdk = createWidgetSdk();
 		const unsubTokens = sdk.events.onTokensUpdated((tokensData) => {
-			void onTokensUpdated(tokensData);
+			void onTokensUpdatedRef.current(tokensData);
 		});
-
 		sdk.widget.mount({
 			containerId,
-			theme: effectiveTheme,
+			theme: themeRef.current,
 			openAuthWindow: (url) => {
 				void Browser.open({ url });
 				return null;
 			},
 			showLogoutButton: false,
 		});
+		sdkRef.current = sdk;
 
 		return () => {
+			sdkRef.current = null;
 			unsubTokens();
-			sdk.widget.unmount();
 			void sdk.destroy();
+			container.remove();
 		};
-	}, [containerId, onTokensUpdated, effectiveTheme]);
+	}, [containerId]);
 
-	return (
-		<div
-			id={containerId}
-			className={className}
-		/>
-	);
+	useEffect(() => {
+		sdkRef.current?.widget.setTheme(effectiveTheme);
+	}, [effectiveTheme]);
+
+	return <div ref={hostRef} className={className} />;
 }
