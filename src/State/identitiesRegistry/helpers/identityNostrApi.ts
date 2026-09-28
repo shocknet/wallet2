@@ -12,30 +12,23 @@ import { selectActiveIdentity, selectActiveRuntimeSanctumTokensData } from "../s
 import {
 	clearIdentitySanctumTokensData,
 	markSanctumReauthRequired,
+	setIdentitySanctumTokensData,
 } from "../identitySyncThunks";
 import { type SanctumApi, type TokenDataAdapter } from "sanctum-sdk";
 import {
 	clearSanctumIdentitySdk,
 	getOrCreateSanctumIdentitySdk,
 } from "./sanctumIdentitySdkManager";
-import { ensureFreshSanctumTokens, saveSanctumTokens } from "./sanctumTokenSync";
 
 
-export function adaptSanctumDKApiToIdentityNostrApi(
-	api: SanctumApi,
-	ensureFreshTokens: () => Promise<void> = async () => { },
-): IdentityNostrApi {
-	const call = async <T>(fn: () => Promise<T>): Promise<T> => {
-		await ensureFreshTokens();
-		return fn();
-	};
+export function adaptSanctumDKApiToIdentityNostrApi(api: SanctumApi): IdentityNostrApi {
 	return {
-		getPublicKey: () => call(() => api.getPublicKey()),
-		getRelays: () => call(() => api.getRelays()),
-		encrypt: (pubkey, plaintext) => call(() => api.encrypt(plaintext, pubkey)),
-		decrypt: (pubkey, ciphertext) => call(() => api.decrypt(ciphertext, pubkey)),
+		getPublicKey: () => api.getPublicKey(),
+		getRelays: () => api.getRelays(),
+		encrypt: (pubkey, plaintext) => api.encrypt(plaintext, pubkey),
+		decrypt: (pubkey, ciphertext) => api.decrypt(ciphertext, pubkey),
 		signEvent: async (unsigned) => {
-			const signed = await call(() => api.signEvent(JSON.stringify(unsigned)));
+			const signed = await api.signEvent(JSON.stringify(unsigned));
 			return JSON.parse(signed) as Event;
 		},
 	};
@@ -120,10 +113,9 @@ function createEphemeralSanctumTokenAdapter(
 ): TokenDataAdapter {
 	return {
 		getTokenData: () => runtime.tokensData,
-		setTokenData: async (tokensData) => {
+		setTokenData: (tokensData) => {
 			runtime.tokensData = tokensData;
 			runtime.reauthReason = null;
-			await saveSanctumTokens(runtime.pubkey, tokensData);
 		},
 		clearTokenData: () => {
 			runtime.tokensData = null;
@@ -144,7 +136,9 @@ function createActiveSanctumTokenAdapter(pubkey: string): TokenDataAdapter {
 			}
 			return null;
 		},
-		setTokenData: (tokensData) => saveSanctumTokens(pubkey, tokensData),
+		setTokenData: async (tokensData) => {
+			await store.dispatch(setIdentitySanctumTokensData({ pubkey, tokensData }));
+		},
 		clearTokenData: async () => {
 			await store.dispatch(clearIdentitySanctumTokensData({ pubkey }));
 		},
@@ -161,20 +155,14 @@ async function verifySanctumPubkey(
 		tokenDataAdapter,
 		onReauthRequired,
 	});
-	const ensureFreshTokens = () => ensureFreshSanctumTokens({
-		pubkey,
-		adapter: tokenDataAdapter,
-		refresh: () => sdk.api.getPublicKey(),
-	});
 
-	await ensureFreshTokens();
 	const remoteKey = await sdk.api.getPublicKey();
 	if (remoteKey !== pubkey) {
 		clearSanctumIdentitySdk(pubkey);
 		throw new Error("Identity does not match this Sanctum profile");
 	}
 
-	return adaptSanctumDKApiToIdentityNostrApi(sdk.api, ensureFreshTokens);
+	return adaptSanctumDKApiToIdentityNostrApi(sdk.api);
 }
 
 async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNostrApi> {
@@ -192,8 +180,8 @@ async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNo
 }
 
 /**
- * Probe / unlock / create path: bind Sanctum tokens to the candidate RuntimeIdentity.
- * Only writes the registry to save rotated tokens. Clears any cached SDK first so an active adapter
+ * Probe / unlock / create path: bind Sanctum tokens to the candidate RuntimeIdentity only.
+ * Does not read or write the registry. Clears any cached SDK first so an active adapter
  * cannot leak into this phase.
  */
 export async function createEphemeralIdentityNostrApi(
