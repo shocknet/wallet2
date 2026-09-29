@@ -1,14 +1,12 @@
 import {
-	useCallback,
 	useEffect,
-	useMemo,
 	useReducer,
+	useRef,
 	useState,
 } from "react";
 import {
 	IonButton,
 	IonContent,
-	IonFooter,
 	IonHeader,
 	IonIcon,
 	IonLabel,
@@ -17,7 +15,6 @@ import {
 	IonSegmentButton,
 	IonSegmentContent,
 	IonSegmentView,
-	IonSpinner,
 	IonToolbar,
 } from "@ionic/react";
 import {
@@ -25,34 +22,38 @@ import {
 	flashOutline,
 	logoBitcoin,
 } from "ionicons/icons";
-import QrCode from "@/Components/QrCode";
-import { FiatDisplay } from "@/Components/FiatDisplay";
-import { useNewInvoiceModal } from "@/Components/Modals/NewInvoiceModal";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
-import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import StackPageToolbar from "@/Layout2/StackPageToolbar";
-import { truncateTextMiddle } from "@/lib/format";
-import { useToast } from "@/lib/contexts/useToast";
-import type { Satoshi } from "@/lib/types/units";
-import { formatSatoshi } from "@/lib/units";
-import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import {
-	selectSourceViews,
+	selectRequiredSourceViewById,
+	selectResolvedSourceId,
+	type SourceView,
 } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
+import { ChainPane } from "./ChainPane";
+import { InvoicePane, type InvoicePaneHandle } from "./InvoicePane";
+import { LnAddressPane } from "./LnAddressPane";
+import { NofferPane } from "./NofferPane";
+import "./receiveMethodTabs.css";
 import {
-	createInvoiceForSource,
 	fetchRemotePayloads,
-	METHOD_METAS,
-	payloadForMethod,
-	pickDefaultSource,
 	type ReceiveMethodId,
 } from "./helpers";
 import {
 	createInitialReceiveMethodsState,
 	receiveMethodsReducer,
 } from "./receiveMethodsReducer";
+
+type ReceiveSegment =
+	| { method: "invoice"; label: string }
+	| { method: "ln-address"; value: string; label: string }
+	| { method: "chain"; value: string; label: string }
+	| { method: "noffer"; value: string; label: string };
+
+function segmentContentId(sourceId: string, methodId: ReceiveMethodId) {
+	return `recv-${sourceId}-${methodId}`;
+}
 
 function methodIcon(id: ReceiveMethodId): string {
 	switch (id) {
@@ -67,293 +68,155 @@ function methodIcon(id: ReceiveMethodId): string {
 	}
 }
 
-function segmentContentId(sourceId: string, methodId: ReceiveMethodId) {
-	return `recv-${sourceId}-${methodId}`;
-}
-
 export default function Receive() {
-	const sources = useAppSelector(selectSourceViews);
-	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-	const { showToast } = useToast();
-	const sourceSelect = useSourceSelectModal();
-	const askNewInvoice = useNewInvoiceModal();
+	const [overrideSourceId, setOverrideSourceId] = useState<string | null>(null);
+	const source = useAppSelector(state => {
+		const id = selectResolvedSourceId(state, overrideSourceId);
+		return selectRequiredSourceViewById(state, id)
+	});
 
-	const [selectedSourceId, setSelectedSourceId] = useState(
-		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
-	);
-
-	useEffect(() => {
-		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
-			setSelectedSourceId(
-				pickDefaultSource(sources, favoriteSourceId).sourceId,
-			);
-		}
-	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	const source = useMemo(() => {
-		return sources.find((s) => s.sourceId === selectedSourceId) ??
-			pickDefaultSource(sources, favoriteSourceId);
-	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	const [methodsState, dispatchMethods] = useReducer(
-		receiveMethodsReducer,
-		source,
-		createInitialReceiveMethodsState,
-	);
-	const { payloads, method, invoice, invoiceLoading } = methodsState;
-
-	useEffect(() => {
-		if (methodsState.sourceId !== source.sourceId) {
-			dispatchMethods({ type: "reset", source });
-		}
-		const sourceId = source.sourceId;
-		fetchRemotePayloads(source, (patch) => {
-			dispatchMethods({ type: "patch", sourceId, patch });
-		});
-		// Reset on source switch
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [source.sourceId]);
-
-	const metaNoffer = source.noffer?.trim();
-
-	useEffect(() => {
-		if (!metaNoffer) return;
-		dispatchMethods({
-			type: "patch",
-			sourceId: source.sourceId,
-			patch: { noffer: metaNoffer },
-		});
-	}, [metaNoffer, source.sourceId]);
-
-	const availableMethods = useMemo(
-		() =>
-			METHOD_METAS.filter(
-				(m) => payloadForMethod(m.id, payloads) !== null,
-			),
-		[payloads],
-	);
-
-	const createInvoice = useCallback(
-		(amount: Satoshi, memo: string, blind: boolean) => {
-			dispatchMethods({ type: "invoiceStart" });
-			void createInvoiceForSource(source, amount, memo, blind)
-				.then((invoiceData) => {
-					dispatchMethods({
-						type: "invoiceSuccess",
-						invoice: invoiceData,
-					});
-				})
-				.catch((err: unknown) => {
-					showToast({
-						message:
-							err instanceof Error ? err.message : "Failed to create invoice",
-						color: "danger",
-					});
-					dispatchMethods({ type: "invoiceError" });
-				});
-		},
-		[source, showToast],
-	);
-
-	const openInvoiceModal = useCallback(async () => {
-		const result = await askNewInvoice();
-		if (result.role !== "confirm") return;
-		createInvoice(result.data.amount, result.data.invoiceMemo, result.data.blind);
-	}, [askNewInvoice, createInvoice]);
-
-	const showInvoiceTab = method === "invoice" || invoice != null;
-
-	const segmentOptions: { id: ReceiveMethodId; label: string }[] = [
-		...availableMethods.map((m) => ({ id: m.id, label: m.label })),
-		...(showInvoiceTab ? [{ id: "invoice" as const, label: "Invoice" }] : []),
-	];
-
-	const segmentValue: ReceiveMethodId | undefined =
-		method ?? segmentOptions[0]?.id;
-
-	const selectMethod = (next: ReceiveMethodId | undefined) => {
-		if (!next) return;
-		dispatchMethods({ type: "selectMethod", method: next });
-	};
-
-	const segmentOptionsKey = segmentOptions.map((o) => o.id).join("|");
 
 	return (
 		<IonPage className="ion-page-width">
 			<IonHeader className="ion-no-border">
 				<StackPageToolbar title="Receive" />
-			</IonHeader>
-			<IonContent className="ion-padding">
-				<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pt-2">
-					<div className="flex flex-col gap-2">
-						<SourceSelectionView
-							source={source}
-							showTapToSwitch={false}
-							onClick={() => {
-								sourceSelect({
-									sources,
-									selectedSourceId,
-									title: "Receive into",
-								}).then((result) => {
-									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
-								});
-							}}
-						/>
-						<SourceReachabilityHint source={source} />
-					</div>
-					{segmentOptions.length > 0 && segmentValue ? (
-						<div key={segmentOptionsKey} className="flex flex-col">
-							<IonSegment
-								value={segmentValue}
-								onIonChange={(ev) =>
-									selectMethod(ev.detail.value as ReceiveMethodId | undefined)
-								}
-								className="
-									rounded-xl  wallet-box-shadow
-									[--background:var(--app-surface)]
-								"
-							>
-								{segmentOptions.map((m) => (
-									<IonSegmentButton
-										key={m.id}
-										value={m.id}
-										layout="icon-top"
-										contentId={segmentContentId(source.sourceId, m.id)}
-										className="
-											[--background:var(--back-button-color)]
-											[--background-checked:var(--back-button-color)]
-										"
-									>
-										<IonIcon className="text-base" icon={methodIcon(m.id)} aria-hidden />
-										<IonLabel>{m.label}</IonLabel>
-									</IonSegmentButton>
-								))}
-							</IonSegment>
-
-							<IonSegmentView className="min-h-[20rem]">
-								{segmentOptions.map((m) => (
-									<IonSegmentContent
-										key={m.id}
-										id={segmentContentId(source.sourceId, m.id)}
-									>
-										<MethodPane
-											methodId={m.id}
-											label={m.label}
-											value={
-												m.id === "invoice"
-													? (invoice?.data ?? null)
-													: payloadForMethod(m.id, payloads)
-											}
-											prefix={
-												m.id === "invoice"
-													? "lightning"
-													: METHOD_METAS.find((meta) => meta.id === m.id)?.prefix
-											}
-											amountSats={
-												m.id === "invoice" && invoice ? invoice.amount : null
-											}
-											loading={m.id === "invoice" && invoiceLoading}
-										/>
-									</IonSegmentContent>
-								))}
-							</IonSegmentView>
-						</div>
-					) : (
-						<div className="flex min-h-[18rem] flex-1 flex-col items-center justify-center">
-							<p className="m-0 max-w-xs text-center text-sm text-muted">
-								No usable receive methods on this source yet. Create an invoice
-								instead.
-							</p>
-						</div>
-					)}
-				</div>
-			</IonContent>
-			<IonFooter className="ion-no-border">
 				<IonToolbar>
-					<div className="mx-auto w-full max-w-md">
-						<IonButton
-							expand="block"
-							color="primary"
-							size="large"
-							className="
-								[--border-radius:12px]
-
-							"
-							onClick={openInvoiceModal}
-							disabled={invoiceLoading}
-						>
-							{invoice ? "New invoice" : "Create invoice"}
-						</IonButton>
+					<div className="mx-auto flex w-full max-w-md flex-col gap-2 px-5 md:px-0">
+						<SourceSelectionView
+							sourceId={source.sourceId}
+							onSourceId={setOverrideSourceId}
+							title="Receive into"
+							showTapToSwitch={false}
+						/>
+						<SourceReachabilityHint sourceId={source.sourceId} />
 					</div>
 				</IonToolbar>
-			</IonFooter>
+			</IonHeader>
+			<ReceiveSource key={source.sourceId} source={source} />
 		</IonPage>
 	);
 }
 
-function displayPayload(methodId: ReceiveMethodId, value: string): string {
-	switch (methodId) {
-		case "invoice":
-			return truncateTextMiddle(value, 12, 12);
-		case "noffer":
-			return truncateTextMiddle(value, 12, 12);
-		case "chain":
-		case "ln-address":
-			return value;
+function ReceiveSource({ source }: { source: SourceView }) {
+	const invoicePaneRef = useRef<InvoicePaneHandle>(null);
+	const [state, dispatch] = useReducer(
+		receiveMethodsReducer,
+		source,
+		createInitialReceiveMethodsState,
+	);
+	const { have, selection } = state;
+
+	useEffect(() => {
+		fetchRemotePayloads(source, (patch) => {
+			dispatch({ type: "patch", patch });
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [source.sourceId]);
+
+	const metaNoffer = source.noffer?.trim();
+	const vanityName = source.vanityName?.trim();
+
+	useEffect(() => {
+		if (!metaNoffer && !vanityName) return;
+		dispatch({ type: "patch", patch: { noffer: metaNoffer, lnAddress: vanityName } });
+	}, [metaNoffer, vanityName]);
+
+	const segmentOptions: ReceiveSegment[] = [];
+	if (have.noffer) {
+		segmentOptions.push({ method: "noffer", value: have.noffer, label: "Noffer" });
 	}
-}
+	if (have.lnAddress) {
+		segmentOptions.push({ method: "ln-address", value: have.lnAddress, label: "LN address" });
+	}
+	segmentOptions.push({ method: "invoice", label: "Invoice" });
+	if (have.chain) {
+		segmentOptions.push({ method: "chain", value: have.chain, label: "Chain" });
+	}
 
-function MethodPane({
-	methodId,
-	label,
-	value,
-	prefix,
-	amountSats,
-	loading,
-}: {
-	methodId: ReceiveMethodId;
-	label: string;
-	value: string | null;
-	prefix?: string;
-	amountSats: Satoshi | null;
-	loading: boolean;
-}) {
-	const caption =
-		methodId === "invoice"
-			? "Lightning invoice"
-			: label;
 
-	const shown = value ? displayPayload(methodId, value) : "";
+
+	const selectMethod = (next: ReceiveMethodId) => {
+		dispatch({ type: "selectMethod", method: next });
+		if (next === "invoice" && selection !== "invoice") {
+			requestAnimationFrame(() => {
+				invoicePaneRef.current?.focusAmount();
+			});
+		}
+	};
+
+	const methodsKey = segmentOptions.map((m) => m.method).join(",");
 
 	return (
-		<div className="flex min-h-[18rem] rounded-t-none flex-col items-center justify-center gap-3 px-1 py-2">
-			{loading ? (
-				<IonSpinner name="crescent" />
-			) : value ? (
-				<>
-					<div className="w-full max-w-[22rem] sm:max-w-[24rem]">
-						<QrCode value={value} prefix={prefix} />
-					</div>
-					<p className="m-0 max-w-full break-all px-2 text-center text-sm leading-snug text-primary">
-						{shown}
-					</p>
-					{amountSats != null ? (
-						<p className="m-0 text-center text-sm text-muted">
-							{formatSatoshi(amountSats)} sats
-							{" · "}
-							<FiatDisplay sats={amountSats} />
-						</p>
-					) : null}
-					<p className="m-0 text-center text-sm text-muted">
-						{caption}
-						{" · tap QR to copy"}
-					</p>
-				</>
-			) : (
-				<p className="m-0 max-w-xs text-center text-sm text-muted">
-					Nothing to show for this method yet.
-				</p>
-			)}
-		</div>
+		<IonContent className="ion-padding">
+			<div className="flex h-full min-h-0 flex-col gap-4">
+				<div className="mx-auto w-full max-w-lg overflow-hidden rounded-xl wallet-box-shadow">
+					<IonSegment
+						key={methodsKey}
+						mode="ios"
+						value={selection}
+						className="receive-method-tabs"
+						onIonChange={(ev) => {
+							const value = ev.detail.value;
+							if (
+								typeof value !== "string" ||
+								!segmentOptions.some((m) => m.method === value)
+							) {
+								return;
+							}
+							selectMethod(value as ReceiveMethodId);
+						}}
+					>
+						{segmentOptions.map((m) => (
+							<IonSegmentButton
+								key={m.method}
+								mode="ios"
+								value={m.method}
+								layout="icon-top"
+								contentId={segmentContentId(source.sourceId, m.method)}
+							>
+								<IonIcon icon={methodIcon(m.method)} aria-hidden />
+								<IonLabel>{m.label}</IonLabel>
+							</IonSegmentButton>
+						))}
+					</IonSegment>
+				</div>
+				<IonSegmentView className="min-h-0 flex-1">
+					{segmentOptions.map((m) => (
+						<IonSegmentContent
+							key={m.method}
+							id={segmentContentId(source.sourceId, m.method)}
+							className="h-full"
+						>
+							{m.method === "ln-address" ? (
+								<LnAddressPane value={m.value} />
+							) : m.method === "chain" ? (
+								<ChainPane value={m.value} />
+							) : m.method === "noffer" ? (
+								<NofferPane value={m.value} />
+							) : (
+								<InvoicePane ref={invoicePaneRef} source={source} />
+							)}
+						</IonSegmentContent>
+					))}
+				</IonSegmentView>
+				{
+					selection !== "invoice" && (
+						<div className="mx-auto w-full max-w-md">
+
+							<IonButton
+								expand="block"
+								color="primary"
+								size="large"
+								className="[--border-radius:12px]"
+								onClick={() => selectMethod("invoice")}
+							>
+								Create invoice
+							</IonButton>
+						</div>
+					)
+				}
+			</div>
+		</IonContent>
+
 	);
 }

@@ -1,47 +1,33 @@
 import type { SourceView } from "@/State/scoped/backups/sources/selectors";
-import {
-	emptyPayloads,
-	payloadForMethod,
-	pickDefaultMethod,
-	seedPayloads,
-	type ReceiveMethodId,
-	type SourceReceivePayloads,
-} from "./helpers";
-import { ParsedInvoiceInput } from "@/lib/types/parse";
+import { RECEIVE_TAB_ORDER, type ReceiveMethodId } from "./helpers";
 
+export type ReceiveHave = {
+	lnAddress?: string;
+	chain?: string;
+	noffer?: string;
+};
 
 export type ReceiveMethodsState = {
-	sourceId: string;
-	payloads: SourceReceivePayloads;
-	method: ReceiveMethodId | null;
-	invoice: ParsedInvoiceInput | null;
-	invoiceLoading: boolean;
+	have: ReceiveHave;
+	selection: ReceiveMethodId;
 };
 
 export type ReceiveMethodsAction =
-	| { type: "reset"; source: SourceView }
-	| {
-		type: "patch";
-		sourceId: string;
-		patch: Partial<SourceReceivePayloads>;
-	}
-	| { type: "selectMethod"; method: ReceiveMethodId }
-	| { type: "invoiceStart" }
-	| { type: "invoiceSuccess"; invoice: ParsedInvoiceInput }
-	| { type: "invoiceError" };
-
-const emptyState: ReceiveMethodsState = {
-	sourceId: "",
-	payloads: emptyPayloads,
-	method: null,
-	invoice: null,
-	invoiceLoading: false,
-};
+	| { type: "patch"; patch: Partial<ReceiveHave> }
+	| { type: "selectMethod"; method: ReceiveMethodId };
 
 export function createInitialReceiveMethodsState(
 	source: SourceView,
 ): ReceiveMethodsState {
-	return receiveMethodsReducer(emptyState, { type: "reset", source });
+	const have: ReceiveHave = {
+		lnAddress: source.vanityName?.trim() || undefined,
+		noffer: source.noffer?.trim() || undefined,
+	};
+
+	return {
+		have,
+		selection: defaultSelection(have),
+	};
 }
 
 export function receiveMethodsReducer(
@@ -49,56 +35,49 @@ export function receiveMethodsReducer(
 	action: ReceiveMethodsAction,
 ): ReceiveMethodsState {
 	switch (action.type) {
-		case "reset": {
-			const payloads = seedPayloads(action.source);
+		case "patch":
 			return {
-				sourceId: action.source.sourceId,
-				payloads,
-				method: pickDefaultMethod(payloads),
-				invoice: null,
-				invoiceLoading: false,
+				...state,
+				have: applyPatch(state.have, action.patch),
 			};
+		case "selectMethod": {
+			const selection = selectionFor(action.method, state.have);
+			if (!selection) return state;
+			return { ...state, selection };
 		}
-		case "patch": {
-			if (action.sourceId !== state.sourceId) return state; // we switched away from this source; ignore the patch
-			const payloads = { ...state.payloads, ...action.patch };
-			return {
-				...state,
-				payloads,
-				method: resolveMethod(state.method, payloads),
-			};
-		}
-		case "selectMethod":
-			return { ...state, method: action.method };
-		case "invoiceStart":
-			return {
-				...state,
-				method: "invoice",
-				invoiceLoading: true,
-			};
-		case "invoiceSuccess":
-			return {
-				...state,
-				method: "invoice",
-				invoice: action.invoice,
-				invoiceLoading: false,
-			};
-		case "invoiceError":
-			return {
-				...state,
-				invoiceLoading: false,
-				method: pickDefaultMethod(state.payloads),
-			};
 	}
 }
 
-function resolveMethod(
-	current: ReceiveMethodId | null,
-	payloads: SourceReceivePayloads,
+function applyPatch(
+	have: ReceiveHave,
+	patch: Partial<ReceiveHave>,
+): ReceiveHave {
+	const next: ReceiveHave = { ...have };
+	if (patch.lnAddress) next.lnAddress = patch.lnAddress;
+	if (patch.chain) next.chain = patch.chain;
+	if (patch.noffer) next.noffer = patch.noffer;
+	return next;
+}
+
+function selectionFor(
+	method: ReceiveMethodId,
+	have: ReceiveHave,
 ): ReceiveMethodId | null {
-	if (current === "invoice") return "invoice";
-	if (current !== null && payloadForMethod(current, payloads) !== null) {
-		return current;
+	switch (method) {
+		case "invoice":
+			return "invoice";
+		case "ln-address":
+			return have.lnAddress ? method : null;
+		case "chain":
+			return have.chain ? method : null;
+		case "noffer":
+			return have.noffer ? method : null;
 	}
-	return pickDefaultMethod(payloads);
+}
+
+function defaultSelection(have: ReceiveHave): ReceiveMethodId {
+	for (const method of RECEIVE_TAB_ORDER) {
+		if (selectionFor(method, have)) return method;
+	}
+	return "invoice";
 }

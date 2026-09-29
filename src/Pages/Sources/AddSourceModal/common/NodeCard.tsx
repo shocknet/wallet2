@@ -1,6 +1,6 @@
 import { IonSkeletonText } from "@ionic/react";
 import { Avatar } from "@/Components/Avatar";
-import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
+import { BeaconReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import type { ParsedNprofileInput } from "@/lib/types/parse";
 import { useBeaconDiscovery } from "@/Hooks/useBeaconDiscovery";
 
@@ -53,12 +53,10 @@ export function NodeCard({ parsed }: { parsed: ParsedNprofileInput }) {
 			</div>
 
 			{lookingUp ? null : (
-				<SourceReachabilityHint
-					source={{
-						sourceId: parsed.pubkey,
-						beaconStale: beacon.health,
-						beaconLastSeenAtMs: beacon.lastSeenAtMs,
-					}}
+				<BeaconReachabilityHint
+					id={parsed.pubkey}
+					beaconStale={beacon.health}
+					beaconLastSeenAtMs={beacon.lastSeenAtMs}
 				/>
 			)}
 		</div>

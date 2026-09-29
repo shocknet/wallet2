@@ -229,3 +229,59 @@ export const selectTotalBalance = createSelector(
 		return total as Satoshi;
 	}
 );
+export const selectDefaultSourceId = createSelector(
+	[selectLiveSourceIds],
+	(sourceIds) => sourceIds[0]
+);
+
+export const selectResolvedSourceId = createSelector(
+	[
+		selectLiveSourceIds,
+
+		selectFavoriteSourceId,
+
+		(
+			_state: RootState,
+			overrideSourceId: string | null,
+		) => overrideSourceId,
+	],
+	(
+		sourceIds,
+		favoriteSourceId,
+		overrideSourceId,
+	): string => {
+		if (
+			overrideSourceId &&
+			sourceIds.includes(overrideSourceId)
+		) {
+			return overrideSourceId;
+		}
+
+		if (
+			favoriteSourceId &&
+			sourceIds.includes(favoriteSourceId)
+		) {
+			return favoriteSourceId;
+		}
+
+		return sourceIds[0];
+	},
+);
+export const selectRequiredSourceViewById = (
+	state: RootState,
+	sourceId: string,
+): SourceView => {
+	const source =
+		selectSourceViewById(
+			state,
+			sourceId,
+		);
+
+	if (!source) {
+		throw new Error(
+			`Expected live source view for ${sourceId}`,
+		);
+	}
+
+	return source;
+};

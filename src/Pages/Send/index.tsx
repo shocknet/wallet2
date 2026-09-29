@@ -22,7 +22,6 @@ import { BitcoinInput, type BitcoinInputHandle } from "@/Components/BitcoinInput
 import { IDLE_STATE, type BitcoinInputState } from "@/Components/BitcoinInput/model";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
-import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 import { ParseStatusHint } from "./ParseStatusHint";
 import { useToast } from "@/lib/contexts/useToast";
@@ -76,7 +75,6 @@ function SendInner() {
 	const router = useIonRouter();
 	const history = useHistory<SendPageNavState>();
 	const dispatch = useAppDispatch();
-	const sourceSelect = useSourceSelectModal();
 	const recipientRef = useRef<BitcoinInputHandle>(null);
 	const amountRef = useRef<HTMLIonInputElement>(null);
 	const reviewing = useRef(false);
@@ -261,18 +259,10 @@ function SendInner() {
 				<div className="mx-auto flex h-full min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
 					<div className="flex flex-col gap-2">
 						<SourceSelectionView
+							sourceId={source.sourceId}
+							onSourceId={setSelectedSourceId}
+							title="Spend from"
 							showTapToSwitch={false}
-							showBalance
-							source={source}
-							onClick={() => {
-								sourceSelect({
-									sources,
-									selectedSourceId,
-									title: "Spend from",
-								}).then((result) => {
-									if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
-								});
-							}}
 						/>
 						<FeeReserveHint
 							sourceId={source.sourceId}
@@ -286,7 +276,7 @@ function SendInner() {
 								),
 							)}
 						/>
-						<SourceReachabilityHint source={source} />
+						<SourceReachabilityHint sourceId={source.sourceId} />
 					</div>
 
 					<div className="flex min-h-0 flex-1 flex-col">

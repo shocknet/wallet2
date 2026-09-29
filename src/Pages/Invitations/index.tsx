@@ -188,7 +188,7 @@ function InvitationsInviteStep({
 						</p>
 					</div>
 
-					<SourceReachabilityHint source={source} />
+					<SourceReachabilityHint sourceId={source.sourceId} />
 					<ReusableInviteLink source={source} />
 				</div>
 			</IonContent>
