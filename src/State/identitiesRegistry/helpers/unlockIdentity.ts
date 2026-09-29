@@ -1,17 +1,9 @@
-import type { TokensData } from "sanctum-sdk";
 import { IdentityType, type Identity } from "../types";
 import {
 	resolveLocalPrivateKey,
-	resolveSanctumTokensData,
 	resolveWrappedDataKeyCiphertext,
 } from "./platformSecretStorage";
 import { RuntimeIdentity } from "@/shell/types";
-
-
-export type UnlockIdentityOptions = {
-	userPassword?: string;
-	sanctumTokensData?: TokensData;
-};
 
 
 /* returns runtime identity, which includes the secrets */
@@ -42,12 +34,10 @@ export async function unlockIdentity(
 		}
 		case IdentityType.SANCTUM: {
 			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
-			const tokensData = await resolveSanctumTokensData(identity);
 			return {
 				type: IdentityType.SANCTUM,
 				pubkey: identity.pubkey,
 				label: identity.label,
-				tokensData,
 				reauthReason: identity.reauthReason ?? null,
 				unlockedAtMs,
 				wrappedDataKeyCiphertext,

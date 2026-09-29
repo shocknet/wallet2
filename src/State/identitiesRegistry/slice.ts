@@ -11,10 +11,8 @@ import {
 	IdentityType,
 	type Identity,
 	type LocalPrivateKeyStorage,
-	type SanctumTokensStorage,
 } from "./types";
 import type { RuntimeIdentity } from "@/shell/types";
-import { TokensData } from "sanctum-sdk";
 
 
 
@@ -77,25 +75,15 @@ export const identitiesRegistrySlice = createSlice({
 			if (!e || e.type !== IdentityType.LOCAL_KEY) return;
 			e.localSecret = payload.localSecret;
 		},
-		setSanctumTokensStorage: (
-			state,
-			{ payload }: PayloadAction<{ pubkey: string; sanctumTokens: SanctumTokensStorage }>
-		) => {
-			const e = state.entities[payload.pubkey];
-			if (!e || e.type !== IdentityType.SANCTUM) return;
-			e.sanctumTokens = payload.sanctumTokens;
-			e.reauthReason = undefined;
-		},
-
 		markSanctumReauthRequired: (state, { payload }: PayloadAction<{ pubkey: string; reason?: string }>) => {
 			const e = state.entities[payload.pubkey];
 			if (!e || e.type !== IdentityType.SANCTUM) return;
 			e.reauthReason = payload.reason ?? "Session expired or invalid";
 		},
-		clearSanctumTokensData: (state, { payload }: PayloadAction<{ pubkey: string }>) => {
+		clearSanctumReauthRequired: (state, { payload }: PayloadAction<{ pubkey: string }>) => {
 			const e = state.entities[payload.pubkey];
 			if (!e || e.type !== IdentityType.SANCTUM) return;
-			e.sanctumTokens = undefined;
+			e.reauthReason = undefined;
 		},
 		setTopicIdIndex: (state, { payload }: PayloadAction<{ topicId: string; sourceId: string, identityId: string }>) => {
 			state.topicIndexById[payload.topicId] = { identityId: payload.identityId, sourceId: payload.sourceId };
@@ -149,24 +137,6 @@ export const identitiesRegistrySlice = createSlice({
 			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
 			state.active.wrappedDataKeyCiphertext = action.payload.wrappedDataKeyCiphertext;
 		},
-		/* Sanctum specific for tokens writes */
-		setActiveSanctumTokensData: (
-			state,
-			action: PayloadAction<{ pubkey: string; tokensData: TokensData }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.tokensData = action.payload.tokensData;
-			state.active.reauthReason = null;
-		},
-		clearActiveSanctumTokensData: (
-			state,
-			action: PayloadAction<{ pubkey: string }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.tokensData = null;
-		},
 		setActiveSanctumReauthRequired: (
 			state,
 			action: PayloadAction<{ pubkey: string; reason?: string | null }>
@@ -174,6 +144,14 @@ export const identitiesRegistrySlice = createSlice({
 			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
 			if (state.active.pubkey !== action.payload.pubkey) return;
 			state.active.reauthReason = action.payload.reason ?? "Session expired or invalid";
+		},
+		clearActiveSanctumReauthRequired: (
+			state,
+			action: PayloadAction<{ pubkey: string }>
+		) => {
+			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
+			if (state.active.pubkey !== action.payload.pubkey) return;
+			state.active.reauthReason = null;
 		},
 
 	},
@@ -233,10 +211,6 @@ export const selectActiveIdentity = (s: RootState) => s.identitiesRegistry.activ
 export const selectActiveRuntimeLocalPrivateKey = (s: RootState) =>
 	s.identitiesRegistry.active?.type === IdentityType.LOCAL_KEY
 		? s.identitiesRegistry.active.privateKey
-		: null;
-export const selectActiveRuntimeSanctumTokensData = (s: RootState) =>
-	s.identitiesRegistry.active?.type === IdentityType.SANCTUM
-		? s.identitiesRegistry.active.tokensData
 		: null;
 export const selectLastActiveIdentityId = (s: RootState) => s.identitiesRegistry.lastActiveIdentityId;
 

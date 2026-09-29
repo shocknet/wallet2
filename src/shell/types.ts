@@ -3,8 +3,6 @@ import type { Identity, IdentityExtension, IdentityKeys, IdentitySanctum } from 
 import type { DeviceToIdentitiesMigrationFailure } from "./migrations/deviceToIdentities";
 import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities";
 import type { AppIntent } from "@/intents/types";
-import { TokensData } from "sanctum-sdk";
-
 export type { DeviceToIdentitiesMigrationFailure } from "./migrations/deviceToIdentities/errors";
 export type { DeviceToIdentitiesRepairAction } from "./migrations/deviceToIdentities/errors";
 export type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities/errors";
@@ -26,7 +24,6 @@ export type RuntimeIdentityKeys =
 
 export type RuntimeIdentitySanctum =
 	RuntimeIdentityBase<IdentitySanctum> & {
-		tokensData: TokensData | null;
 		reauthReason: string | null;
 	};
 

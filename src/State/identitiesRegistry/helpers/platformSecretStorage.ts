@@ -1,11 +1,8 @@
 import { Capacitor } from "@capacitor/core";
-import type { TokensData } from "sanctum-sdk";
 import type {
 	Identity,
 	IdentityKeys,
-	IdentitySanctum,
 	LocalPrivateKeyStorage,
-	SanctumTokensStorage,
 	WrappedDataKeyStorage,
 } from "../types";
 import {
@@ -16,10 +13,8 @@ import {
 import { base64urlDecode, } from "@/lib/base64url";
 import {
 	getLocalPrivateKey,
-	getSanctumTokensData,
 	getWrappedDataKeyCiphertext,
 	setLocalPrivateKey,
-	setSanctumTokensData,
 	setWrappedDataKeyCiphertext,
 } from "./secureSecrets";
 
@@ -87,23 +82,6 @@ export async function toLocalPrivateKeyStorage(
 	}
 }
 
-export async function toSanctumTokensStorage(
-	identityId: string,
-	tokensData: TokensData
-): Promise<SanctumTokensStorage> {
-	if (Capacitor.isNativePlatform()) {
-		const sessionRef = await setSanctumTokensData(identityId, tokensData);
-		return {
-			storage: "secure_ref",
-			sessionRef,
-		};
-	}
-	return {
-		storage: "inline",
-		tokensData,
-	};
-}
-
 export async function resolveLocalPrivateKey(
 	identity: IdentityKeys,
 	args?: {
@@ -139,14 +117,4 @@ export async function resolveLocalPrivateKey(
 	}
 
 	return identity.localSecret.privateKey;
-}
-
-export async function resolveSanctumTokensData(
-	identity: IdentitySanctum
-): Promise<TokensData | null> {
-	if (!identity.sanctumTokens) return null;
-	if (identity.sanctumTokens.storage === "inline") {
-		return identity.sanctumTokens.tokensData;
-	}
-	return getSanctumTokensData(identity.sanctumTokens.sessionRef);
 }

@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { getPublicKey } from "nostr-tools";
 import { hexToBytes } from "@noble/hashes/utils";
-import { createSanctumDK } from "sanctum-sdk";
+import { createSanctumDK, type TokensData } from "sanctum-sdk";
 import {
 	exportAesGcmKey,
 	generateAesGcmKey,
@@ -14,17 +14,14 @@ import {
 	getNostrExtensionIdentityApi,
 } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { toWrappedDataKeyStorage } from "@/State/identitiesRegistry/helpers/platformSecretStorage";
-import {
-	setLocalPrivateKey,
-	setSanctumTokensData,
-} from "@/State/identitiesRegistry/helpers/secureSecrets";
+import { setLocalPrivateKey } from "@/State/identitiesRegistry/helpers/secureSecrets";
+import { writeSanctumTokens } from "@/State/identitiesRegistry/helpers/sanctumTokensStore";
 import {
 	IdentityType,
 	type Identity,
 	type IdentityExtension,
 	type IdentityKeys,
 	type IdentitySanctum,
-	type SanctumTokensStorage,
 } from "@/State/identitiesRegistry/types";
 import { DeviceToIdentitiesMigrationError } from "../deviceToIdentities/errors";
 import { upgradeLegacySanctumAccessToken } from "../deviceToIdentities/sanctumUpgrade";
@@ -140,7 +137,7 @@ async function migrateSanctumV0(
 		);
 	}
 
-	let tokensData;
+	let tokensData: TokensData | null = null;
 	try {
 		tokensData = await upgradeLegacySanctumAccessToken(identity.accessToken);
 	} catch (error) {
@@ -170,8 +167,12 @@ async function migrateSanctumV0(
 		url: SANCTUM_URL,
 		tokenDataAdapter: {
 			getTokenData: () => tokensData,
-			setTokenData: () => { },
-			clearTokenData: () => { },
+			setTokenData: (next) => {
+				tokensData = next;
+			},
+			clearTokenData: () => {
+				tokensData = null;
+			},
 		},
 	});
 
@@ -214,18 +215,14 @@ async function migrateSanctumV0(
 			dataKey,
 		});
 
-		const sanctumTokens: SanctumTokensStorage = Capacitor.isNativePlatform()
-			? {
-				storage: "secure_ref",
-				sessionRef: await setSanctumTokensData(
-					identity.pubkey,
-					tokensData,
-				),
-			}
-			: {
-				storage: "inline",
-				tokensData,
-			};
+		if (!tokensData) {
+			throw new SecureIdentitiesMigrationError(
+				"sanctum-token-missing",
+				"Sanctum session was cleared before it could be stored.",
+				identity.pubkey,
+			);
+		}
+		await writeSanctumTokens(identity.pubkey, tokensData);
 
 		const secureIdentity: IdentitySanctum = {
 			type: IdentityType.SANCTUM,
@@ -234,7 +231,6 @@ async function migrateSanctumV0(
 			createdAt: identity.createdAt,
 			lastUsedAt: identity.lastUsedAt,
 			wrappedDataKey,
-			sanctumTokens,
 		};
 
 		return { identity: secureIdentity, topics };

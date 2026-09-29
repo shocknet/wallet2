@@ -7,14 +7,15 @@ import {
 } from "./identityNostrApi";
 import {
 	toLocalPrivateKeyStorage,
-	toSanctumTokensStorage,
 	toWrappedDataKeyStorage,
 } from "./platformSecretStorage";
+import { writeSanctumTokens } from "./sanctumTokensStore";
 import { Identity, IdentityType } from "../types";
 import { createSanctumDK, type TokensData } from "sanctum-sdk";
 import { getPublicKey } from "nostr-tools";
 import { hexToBytes } from "@noble/hashes/utils";
 import { RuntimeIdentity } from "@/shell/types";
+import store from "@/State/store/store";
 
 export type CreateIdentityInput =
 	| { type: IdentityType.LOCAL_KEY; privkey: string; label: string; relays: string[]; userPassword?: string }
@@ -64,44 +65,57 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 			};
 		}
 		case IdentityType.SANCTUM: {
+			let tokensData: TokensData | null = input.tokensData;
 			const sdk = createSanctumDK({
 				url: SANCTUM_URL,
 				tokenDataAdapter: {
-					getTokenData: () => input.tokensData,
-					setTokenData: () => { },
-					clearTokenData: () => { },
+					getTokenData: () => tokensData,
+					setTokenData: (next) => {
+						tokensData = next;
+					},
+					clearTokenData: () => {
+						tokensData = null;
+					},
 				},
 			});
 
-			const pubkey = await sdk.api.getPublicKey();
-			const wrappedDataKeyCiphertext = await generateAndWrapDataKey(
-				pubkey,
-				adaptSanctumDKApiToIdentityNostrApi(sdk.api),
-			);
-			const [wrappedDataKey, sanctumTokens] = await Promise.all([
-				toWrappedDataKeyStorage(pubkey, wrappedDataKeyCiphertext),
-				toSanctumTokensStorage(pubkey, input.tokensData),
-			]);
+			try {
+				const pubkey = await sdk.api.getPublicKey();
+				if (store.getState().identitiesRegistry.entities[pubkey]) {
+					throw new Error("This identity already exists.");
+				}
+				const wrappedDataKeyCiphertext = await generateAndWrapDataKey(
+					pubkey,
+					adaptSanctumDKApiToIdentityNostrApi(sdk.api),
+				);
+				if (!tokensData) {
+					throw new Error("Sanctum session was cleared before the profile was created");
+				}
+				const [wrappedDataKey] = await Promise.all([
+					toWrappedDataKeyStorage(pubkey, wrappedDataKeyCiphertext),
+					writeSanctumTokens(pubkey, tokensData),
+				]);
 
-			return {
-				identity: {
-					type: IdentityType.SANCTUM,
-					pubkey,
-					label: input.label,
-					wrappedDataKey,
-					sanctumTokens,
-					createdAt: unlockedAtMs,
-				},
-				runtime: {
-					type: IdentityType.SANCTUM,
-					pubkey,
-					label: input.label,
-					tokensData: input.tokensData,
-					reauthReason: null,
-					unlockedAtMs,
-					wrappedDataKeyCiphertext,
-				},
-			};
+				return {
+					identity: {
+						type: IdentityType.SANCTUM,
+						pubkey,
+						label: input.label,
+						wrappedDataKey,
+						createdAt: unlockedAtMs,
+					},
+					runtime: {
+						type: IdentityType.SANCTUM,
+						pubkey,
+						label: input.label,
+						reauthReason: null,
+						unlockedAtMs,
+						wrappedDataKeyCiphertext,
+					},
+				};
+			} finally {
+				await sdk.destroy();
+			}
 		}
 		case IdentityType.NIP07: {
 			const nostrIdentityApi = await getNostrExtensionIdentityApi();
