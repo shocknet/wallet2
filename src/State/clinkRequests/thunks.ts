@@ -26,6 +26,17 @@ function invalidateDebitAuthorizations(
 	);
 }
 
+function invalidateManageAuthorizations(
+	dispatch: AppThunkDispatch,
+	sourceId: string,
+) {
+	dispatch(
+		appApi.util.invalidateTags([
+			{ type: "ManageAuthorizations", id: sourceId },
+		]),
+	);
+}
+
 
 
 export const denyPendingDebitRequest =
@@ -211,7 +222,7 @@ export const banPendingManageRequest =
 						reason: res.reason || "Could not ban this app",
 					};
 				}
-
+				invalidateManageAuthorizations(dispatch, session.source.sourceId);
 				return { ok: true };
 			} catch {
 				return { ok: false, reason: "Could not ban this app" };
@@ -253,6 +264,7 @@ export const authorizePendingManageRequest =
 						reason: res.reason || "Could not authorize manage request",
 					};
 				}
+				invalidateManageAuthorizations(dispatch, session.source.sourceId);
 				return { ok: true };
 			} catch {
 				return { ok: false, reason: "Could not authorize manage request" };

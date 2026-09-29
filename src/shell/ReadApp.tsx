@@ -113,7 +113,6 @@ export const ReadyApp = memo(function ReadyApp({
 					exact
 					path="/management"
 					component={Management}
-					layout={Layout}
 				/>
 				<AppRoute
 					path="/dashboard"
