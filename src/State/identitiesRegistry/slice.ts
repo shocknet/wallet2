@@ -4,8 +4,9 @@ import {
 	createSelector,
 } from "@reduxjs/toolkit";
 
-import { persistReducer } from "redux-persist";
+import { persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
+import { writeSanctumTokens } from "./helpers/sanctumTokensStore";
 import { RootState } from "../store/store";
 import {
 	IdentityType,
@@ -13,6 +14,7 @@ import {
 	type LocalPrivateKeyStorage,
 } from "./types";
 import type { RuntimeIdentity } from "@/shell/types";
+import type { TokensData } from "sanctum-sdk";
 
 
 
@@ -161,12 +163,52 @@ export const identitiesRegistryActions = identitiesRegistrySlice.actions;
 
 export const identitiesRegistryPersistKey = "_identities-registry";
 
+async function migrateSanctumTokensToDisk(
+	state: NonNullable<PersistedState> & IdentitiesState,
+) {
+	const entities = { ...state.entities };
+	for (const id of Object.keys(entities)) {
+		const identity = entities[id];
+		if (!identity || identity.type !== IdentityType.SANCTUM) continue;
+		if (!("sanctumTokens" in identity)) continue;
+
+		const tokens = identity.sanctumTokens;
+		if (
+			tokens &&
+			typeof tokens === "object" &&
+			"storage" in tokens &&
+			tokens.storage === "inline" &&
+			"tokensData" in tokens &&
+			tokens.tokensData
+		) {
+			try {
+				await writeSanctumTokens(identity.pubkey, tokens.tokensData as TokensData);
+			} catch {
+				// The session can be signed in again.
+			}
+		}
+
+		const { sanctumTokens: _sanctumTokens, ...rest } = identity;
+		entities[id] = rest;
+	}
+
+	return { ...state, entities };
+}
+
+const migrateIdentitiesRegistry: PersistMigrate = async (state, currentVersion) => {
+	if (!state) return undefined;
+	const inboundVersion = state._persist?.version ?? -1;
+	if (inboundVersion >= currentVersion) return state;
+	return migrateSanctumTokensToDisk(state as NonNullable<PersistedState> & IdentitiesState);
+};
+
 export const persistedIdentitiesRegistryReducer = persistReducer(
 	{
 		key: identitiesRegistryPersistKey,
 		storage: IonicStorageAdapter,
 		blacklist: ["active"],
-		version: 0
+		version: 1,
+		migrate: migrateIdentitiesRegistry,
 	},
 	identitiesRegistrySlice.reducer
 );
