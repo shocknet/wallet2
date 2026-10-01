@@ -26,6 +26,7 @@ import {
 	useGetOffersQuery,
 } from "@/State/api/offers";
 import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { AppAccessRow } from "./AppAccessRow";
 
 export default function Offers() {
 	const { showToast } = useToast();
@@ -99,6 +100,8 @@ export default function Offers() {
 						/>
 						<SourceReachabilityHint sourceId={sourceId} />
 					</div>
+
+					<AppAccessRow sourceId={sourceId} />
 
 					<section className="flex min-h-[40%] flex-1 flex-col">
 						<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">

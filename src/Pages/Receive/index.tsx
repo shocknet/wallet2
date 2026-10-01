@@ -33,11 +33,13 @@ import { NofferPane } from "./NofferPane";
 import "./receiveMethodTabs.css";
 import {
 	fetchRemotePayloads,
+	RECEIVE_TAB_ORDER,
 	type ReceiveMethodId,
 } from "./helpers";
 import {
 	createInitialReceiveMethodsState,
 	receiveMethodsReducer,
+	type ReceiveHave,
 } from "./receiveMethodsReducer";
 
 type ReceiveSegment =
@@ -48,6 +50,22 @@ type ReceiveSegment =
 
 function segmentContentId(sourceId: string, methodId: ReceiveMethodId) {
 	return `recv-${sourceId}-${methodId}`;
+}
+
+function receiveSegment(
+	method: ReceiveMethodId,
+	have: ReceiveHave,
+): ReceiveSegment | null {
+	switch (method) {
+		case "ln-address":
+			return have.lnAddress ? { method, value: have.lnAddress, label: "LN address" } : null;
+		case "noffer":
+			return have.noffer ? { method, value: have.noffer, label: "Noffer" } : null;
+		case "chain":
+			return have.chain ? { method, value: have.chain, label: "Chain" } : null;
+		case "invoice":
+			return { method, label: "Invoice" };
+	}
 }
 
 function methodIcon(id: ReceiveMethodId): string {
@@ -112,19 +130,9 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 		dispatch({ type: "patch", patch: { noffer: metaNoffer, lnAddress: vanityName } });
 	}, [metaNoffer, vanityName]);
 
-	const segmentOptions: ReceiveSegment[] = [];
-	if (have.noffer) {
-		segmentOptions.push({ method: "noffer", value: have.noffer, label: "Noffer" });
-	}
-	if (have.lnAddress) {
-		segmentOptions.push({ method: "ln-address", value: have.lnAddress, label: "LN address" });
-	}
-	segmentOptions.push({ method: "invoice", label: "Invoice" });
-	if (have.chain) {
-		segmentOptions.push({ method: "chain", value: have.chain, label: "Chain" });
-	}
-
-
+	const segmentOptions = RECEIVE_TAB_ORDER
+		.map((method) => receiveSegment(method, have))
+		.filter((segment): segment is ReceiveSegment => segment !== null);
 
 	const selectMethod = (next: ReceiveMethodId) => {
 		dispatch({ type: "selectMethod", method: next });

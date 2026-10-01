@@ -42,7 +42,7 @@ export function ManageAuthRequestView({
 
 						<p className="m-0 max-w-sm text-sm text-muted">
 							Allow lets this app create, update, and delete offers on this
-							source. You can revoke access later in Management.
+							source. You can revoke access later in Offers.
 						</p>
 					</div>
 				</div>
