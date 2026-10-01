@@ -1,6 +1,6 @@
 import { historyFetchSourceRequested, listenerKick } from "@/State/listeners/actions";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { SourceView, selectSourceViewById, selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { SourceView, readLiveSourceViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import { getClientById, getNostrClient } from "@/Api/nostr";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskResult } from "@reduxjs/toolkit";
@@ -89,7 +89,7 @@ export const liveRequestsListenerSpec: ListenerSpec = {
 
 					const state = listenerApi.getState();
 
-					const sources = selectSourceViews(state);
+					const sources = readLiveSourceViews(state);
 
 					for (const source of sources) {
 						subscribeToStreams(source, listenerApi);

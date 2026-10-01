@@ -1,5 +1,9 @@
-import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import type { Satoshi } from "@/lib/types/units";
+
+export type SpendableSource = {
+	sourceId: string;
+	maxWithdrawableSats: number;
+};
 import { InputClassification, type ParsedInput } from "@/lib/types/parse";
 import { OfferPriceType } from "@shocknet/clink-sdk";
 import { isSendParsedInput } from "./nav";
@@ -8,21 +12,21 @@ const hasBalance = (s: { maxWithdrawableSats?: number }) =>
 	(s.maxWithdrawableSats ?? 0) > 0;
 
 export function pickDefaultSource(
-	sourceViews: SourceView[],
+	sources: SpendableSource[],
 	favoriteSourceId: string | null,
-): SourceView {
-	const favorite = sourceViews.find((s) => s.sourceId === favoriteSourceId);
+): SpendableSource | undefined {
+	const favorite = sources.find((s) => s.sourceId === favoriteSourceId);
 	if (favorite && hasBalance(favorite)) return favorite;
-	const withBalance = sourceViews.find(hasBalance);
+	const withBalance = sources.find(hasBalance);
 	if (withBalance) return withBalance;
-	return sourceViews[0];
+	return sources[0];
 }
 
 export function pickSourceCoveringAmount(
-	sources: SourceView[],
+	sources: SpendableSource[],
 	amount: Satoshi,
 	favoriteSourceId?: string | null,
-): SourceView | null {
+): SpendableSource | null {
 	const covering = sources.filter((s) => s.maxWithdrawableSats >= amount);
 	if (covering.length === 0) return null;
 	const favorite = covering.find((s) => s.sourceId === favoriteSourceId);

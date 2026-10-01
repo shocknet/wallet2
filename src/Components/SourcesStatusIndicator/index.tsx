@@ -1,12 +1,10 @@
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors"
+import { selectAllLiveSourcesDown } from "@/State/scoped/backups/sources/selectors"
 import { useAppSelector } from "@/State/store/hooks"
 import { IonBadge, IonContent, IonIcon, IonPopover } from "@ionic/react";
 import { alertOutline } from "ionicons/icons";
 
 const SourcesStatusIndicator = () => {
-	const sources = useAppSelector(selectSourceViews);
-
-	const allDown = sources.length > 0 && sources.every(s => s.beaconStale === "stale");
+	const allDown = useAppSelector(selectAllLiveSourcesDown);
 
 	if (!allDown) return null;
 

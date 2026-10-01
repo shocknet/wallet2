@@ -1,5 +1,6 @@
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
+import type { SourceView } from "@/State/scoped/backups/sources/selectors";
+import { useSourceView } from "@/Hooks/useSourceView";
 import { useAppSelector } from "@/State/store/hooks";
 import { IonCol, IonGrid, IonIcon, IonItem, IonLabel, IonRow, IonText } from "@ionic/react";
 import { star, walletOutline, personCircleOutline } from "ionicons/icons";
@@ -11,15 +12,17 @@ import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 
 
 interface Props {
-	source: SourceView;
+	sourceId: string;
 	onClick: (s: SourceView) => void;
 	button?: boolean
 }
-const SourceCard = ({ source, onClick: onPick, button = true }: Props) => {
-
+const SourceCard = ({ sourceId, onClick: onPick, button = true }: Props) => {
+	const source = useSourceView(sourceId);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
+	if (!source) return null;
 	const label = sourceDisplayName(source);
+
 
 
 	return (

@@ -1,12 +1,9 @@
 import { IonContent, IonIcon, IonPopover, IonSpinner } from "@ionic/react";
 import { alertCircleOutline } from "ionicons/icons";
 import cn from "clsx";
-import {
-	selectSourceViewById,
-	type BeaconHealth,
-} from "@/State/scoped/backups/sources/selectors";
+import { type BeaconHealth } from "@/State/scoped/backups/sources/selectors";
+import { useSourceView } from "@/Hooks/useSourceView";
 import moment from "moment";
-import { useAppSelector } from "@/State/store/hooks";
 
 
 export type SourceReachabilityHintProps = {
@@ -42,7 +39,7 @@ export function SourceReachabilityHint({
 	sourceId,
 	className,
 }: SourceReachabilityHintProps) {
-	const source = useAppSelector(state => selectSourceViewById(state, sourceId));
+	const source = useSourceView(sourceId);
 	if (!source) return null;
 
 	return (

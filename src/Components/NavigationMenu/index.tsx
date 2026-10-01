@@ -39,7 +39,7 @@ import {
 	useWalletWelcomeWordmark,
 } from "@/Assets/Images/wallet-avatar";
 import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { exportDebugReport } from "@/lib/debugReportExport";
 import { useSwitchProfileModal } from "@/Components/User/SwitchProfileSheet";
 import { ProfilePicture } from "@/Components/User/ProfilePicture";
@@ -94,8 +94,8 @@ export const NavigationMenu = memo(function NavigationMenu({
 	const [appInfo, setAppInfo] = useState<AppBuildInfo | null>(null);
 	const router = useIonRouter();
 	const ShowProfileSheet = useSwitchProfileModal();
-	const adminSources = useAppSelector(selectAdminSourceViews);
-	const hasAdminSources = adminSources.length > 0;
+	const adminSourceIds = useAppSelector(selectAdminSourceIds);
+	const hasAdminSources = adminSourceIds.length > 0;
 	const wordmarkSrc = useWalletWelcomeWordmark();
 
 	useEffect(() => {

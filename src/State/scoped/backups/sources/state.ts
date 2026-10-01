@@ -3,7 +3,7 @@ import { SourceDocV0 } from "./schema";
 import { SourceMetadata } from "./metadata/types";
 import { HistoryCursor, OpKey, SourceOperation } from "./history/types";
 
-export { BEACON_STALE_OLDER_THAN } from "@/State/scoped/beacons/state";
+export { BEACON_STALE_OLDER_THAN } from "@/constants";
 
 export interface SourceDocEntity {
 	base?: SourceDocV0;

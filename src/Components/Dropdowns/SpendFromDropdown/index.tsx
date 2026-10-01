@@ -1,32 +1,52 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as icons from "../../../Assets/SvgIconLibrary";
-import { SpendFrom } from '../../../globalTypes';
 import { useLightningPubLogo, LIGHTNING_PUB_MARK_HEIGHT } from "@/Assets/Images/lightning-pub";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-import { SourceView } from '@/State/scoped/backups/sources/selectors';
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 
 type DropDownProps = {
-  values: SourceView[];
-  value: SourceView;
-  callback: Dispatch<SetStateAction<SourceView>>;
+  sourceIds: string[];
+  selectedSourceId: string;
+  onSelect: (sourceId: string) => void;
 };
 
+function SpendFromRow({
+  sourceId,
+  icon,
+  onSelect,
+}: {
+  sourceId: string;
+  icon: (value?: string, sourcePub?: string) => React.ReactNode;
+  onSelect?: (sourceId: string) => void;
+}) {
+  const source = useLiveSourceView(sourceId);
+  const [sourcePub] = source.sourceId.split("-");
+
+  return (
+    <div
+      onClick={onSelect ? () => onSelect(source.sourceId) : undefined}
+      className="spend_from_item"
+    >
+      <div className="spend_from_item_left">
+        <div className="spend_from_item_icon">{icon(onSelect ? sourcePub : source.sourceId.split("-")[0])}</div>
+        <div className="spend_from_item_input">
+          <div style={onSelect ? undefined : { width: "130px" }}>{sourceDisplayName(source)}</div>
+        </div>
+      </div>
+      <div className="spend_from_item_balance">{source.balanceSats}</div>
+    </div>
+  );
+}
+
 const SpendFromDropdown: React.FC<DropDownProps> = ({
-  values,
-  value,
-  callback,
+  sourceIds,
+  selectedSourceId,
+  onSelect,
 }: DropDownProps): JSX.Element => {
-  const [showDropDown, setShowDropDown] = useState<boolean>(false);
-  const [allValue, setAllValue] = useState(values);
+  const [showDropDown] = useState<boolean>(false);
   const [display, setDisplay] = useState(0);
   const [rotation, setRotation] = useState(0);
   const lpMarkSrc = useLightningPubLogo("mark");
-
-  useEffect(() => {
-    setShowDropDown(showDropDown);
-    const box = allValue.filter((e) => e.sourceId !== value.sourceId);
-    setAllValue(box);
-  }, [showDropDown]);
 
   const arrangeIcon = (value?: string, sourcePub?: string) => {
     switch (value) {
@@ -69,49 +89,27 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
     setRotation(rotation === 0 ? 90 : 0)
   }
 
-  const selectOption = (id?: string) => {
-    const selected = values.filter((e) => e.sourceId === id);
-    const remainValues = values.filter((e) => e.sourceId !== id);
-    setAllValue(remainValues);
-    dropdown();
-    callback(selected[0])
-  }
+  const otherIds = sourceIds.filter((id) => id !== selectedSourceId);
 
   return (
     <>
       <div className={showDropDown ? 'spend_from' : 'spend_from active'}>
-        {
-          value ?
-            (<div className="spend_from_item" key={value.sourceId}>
-              <div className="spend_from_item_left">
-                <div className="spend_from_item_icon">{arrangeIcon(value.sourceId.split("-")[0])}</div>
-                <div className="spend_from_item_input">
-                  <div style={{ width: "130px" }}>{sourceDisplayName(value)}</div>
-                </div>
-              </div>
-              <div className="spend_from_item_balance">{value.balanceSats}</div>
-            </div>)
-            :
-            <div>
-            </div>
+        {selectedSourceId
+          ? <SpendFromRow sourceId={selectedSourceId} icon={arrangeIcon} />
+          : <div></div>
         }
         <div className="spend_from_dropdown" style={{ opacity: display, transition: "0.3s", overflow: "hidden" }}>
-          {display === 1 && allValue.map(
-            (item: SourceView) => {
-              const [sourcePub] = item.sourceId.split("-");
-              return (
-                <div onClick={() => { selectOption(item.sourceId) }} className="spend_from_item" key={item.sourceId}>
-                  <div className="spend_from_item_left">
-                    <div className="spend_from_item_icon">{arrangeIcon(sourcePub)}</div>
-                    <div className="spend_from_item_input">
-                      <div>{sourceDisplayName(item)}</div>
-                    </div>
-                  </div>
-                  <div className="spend_from_item_balance">{item.balanceSats}</div>
-                </div>
-              );
-            }
-          )}
+          {display === 1 && otherIds.map((id) => (
+            <SpendFromRow
+              key={id}
+              sourceId={id}
+              icon={arrangeIcon}
+              onSelect={(picked) => {
+                onSelect(picked);
+                dropdown();
+              }}
+            />
+          ))}
         </div>
       </div>
       <button className="spend_from_toggle" onClick={dropdown} style={{ transform: `rotate(${rotation}deg)`, transition: "0.3s" }}>

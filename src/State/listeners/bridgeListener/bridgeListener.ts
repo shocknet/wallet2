@@ -4,7 +4,7 @@ import { Buffer } from "buffer";
 import { finalizeEvent, nip98 } from 'nostr-tools'
 import { extractDomainFromUrl } from "@/lib/domain";
 import { metadataSelectors, sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { selectSourceViewById, selectSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
+import { readLiveSourceViews, selectSourceViewById, type SourceView } from "@/State/scoped/backups/sources/selectors";
 import { isAnyOf, ListenerEffectAPI, TaskAbortError, UnknownAction } from "@reduxjs/toolkit";
 import logger from "@/Api/helpers/logger";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
@@ -122,7 +122,7 @@ export const bridgeListenerSpec: ListenerSpec = {
 			add({
 				actionCreator: listenerKick,
 				effect: async (_, listenerApi) => {
-					const toFetch = selectSourceViews(listenerApi.getState()).filter(
+					const toFetch = readLiveSourceViews(listenerApi.getState()).filter(
 						source => !source.vanityName,
 					);
 

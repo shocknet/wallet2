@@ -1,7 +1,7 @@
 import { useEditSourceModal } from "@/Components/Modals/Sources/EditSourceModal";
 import { useAddSourceModal } from "@/Pages/Sources/AddSourceModal";
 import SourceCard from "@/Components/SourceCard";
-import { selectSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
+import { selectLiveSourceIds, type SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import {
 	IonContent,
@@ -20,7 +20,7 @@ import { useToast } from "@/lib/contexts/useToast";
 
 
 const SourcesPage = () => {
-	const sources = useAppSelector(selectSourceViews);
+	const sourceIds = useAppSelector(selectLiveSourceIds);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const askAddSource = useAddSourceModal();
 	const editSource = useEditSourceModal();
@@ -35,17 +35,17 @@ const SourcesPage = () => {
 		}
 	}, [editSource, showToast]);
 
-	const favoriteFirstSortedSources = useMemo(() => {
-		if (favoriteSourceId == null) return sources;
+	const favoriteFirstSortedIds = useMemo(() => {
+		if (!favoriteSourceId) return sourceIds;
 
-		const i = sources.findIndex(s => s.sourceId === favoriteSourceId);
-		if (i <= 0) return sources;
+		const i = sourceIds.indexOf(favoriteSourceId);
+		if (i <= 0) return sourceIds;
 
-		const copy = [...sources];
+		const copy = sourceIds.slice();
 		const [fav] = copy.splice(i, 1);
 		copy.unshift(fav);
 		return copy;
-	}, [sources, favoriteSourceId])
+	}, [sourceIds, favoriteSourceId])
 
 	return (
 		<IonPage className="ion-page-width">
@@ -55,8 +55,8 @@ const SourcesPage = () => {
 			<IonContent className="ion-padding">
 				<IonList lines="none" className="mt-6">
 					{
-						favoriteFirstSortedSources.map(s => (
-							<SourceCard key={s.sourceId} source={s} onClick={() => void handleEditSource(s)} />
+						favoriteFirstSortedIds.map(id => (
+							<SourceCard key={id} sourceId={id} onClick={(s) => void handleEditSource(s)} />
 						))
 					}
 				</IonList>

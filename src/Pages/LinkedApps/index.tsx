@@ -20,55 +20,22 @@ import { DebitAuthItem } from "@/Components/Debit/DebitAuthItem";
 import { useEditDebitModal } from "@/Components/Modals/EditDebitModal";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
-import { useSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import EmptyState from "@/Components/common/ui/EmptyState";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 import { getDeviceId } from "@/constants";
 import { truncateTextMiddle } from "@/lib/format";
 import { useGetDebitAuthorizationsQuery } from "@/State/api/api";
-import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import {
-	type SourceView,
-	selectSourceViews,
-} from "@/State/scoped/backups/sources/selectors";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
+import { useAppDispatch } from "@/State/store/hooks";
+import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 
 type LinkedAppsTab = "approved" | "banned";
 
-function pickDefaultLinkedAppsSource(
-	sources: SourceView[],
-	favoriteSourceId: string | null,
-): SourceView {
-	const favorite = sources.find((s) => s.sourceId === favoriteSourceId);
-	if (favorite) return favorite;
-	return sources[0];
-}
-
 export default function LinkedApps() {
-	const sources = useAppSelector(selectSourceViews);
-	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-	const [selectedSourceId, setSelectedSourceId] = useState(
-		() => pickDefaultLinkedAppsSource(sources, favoriteSourceId).sourceId,
-	);
-	const sourceSelect = useSourceSelectModal();
+	const { sourceId, setOverrideSourceId } = useSourceSelection();
 
-	useEffect(() => {
-		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
-			setSelectedSourceId(
-				pickDefaultLinkedAppsSource(sources, favoriteSourceId).sourceId,
-			);
-		}
-	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	const selectedSource = useMemo(() => {
-		return sources.find((s) => s.sourceId === selectedSourceId) ??
-			pickDefaultLinkedAppsSource(sources, favoriteSourceId);
-	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	const { refetch } = useGetDebitAuthorizationsQuery({
-		sourceId: selectedSource.sourceId,
-	});
+	const { refetch } = useGetDebitAuthorizationsQuery({ sourceId });
 
 	const handleRefresh = useCallback(
 		async (event: CustomEvent<RefresherEventDetail>) => {
@@ -93,26 +60,18 @@ export default function LinkedApps() {
 
 				<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
 					<SourceSelectionView
-						source={selectedSource}
-						onClick={() => {
-							sourceSelect({
-								sources,
-								selectedSourceId,
-								title: "Select source",
-								showBalance: false,
-							}).then((result) => {
-								if (result.role === "confirm") setSelectedSourceId(result.data.sourceId);
-							});
-						}}
+						sourceId={sourceId}
+						onSourceId={setOverrideSourceId}
+						title="Select source"
 						showBalance={false}
 					/>
-					<SourceReachabilityHint source={selectedSource} />
-					<NdebitShare source={selectedSource} />
+					<SourceReachabilityHint sourceId={sourceId} />
+					<NdebitShare sourceId={sourceId} />
 					<section className="flex min-h-[40%] flex-1 flex-col">
 						<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
 							Linked apps
 						</p>
-						<LinkedAppsList source={selectedSource} />
+						<LinkedAppsList sourceId={sourceId} />
 					</section>
 				</div>
 			</IonContent>
@@ -120,7 +79,8 @@ export default function LinkedApps() {
 	);
 }
 
-function NdebitShare({ source }: { source: SourceView }) {
+function NdebitShare({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
 	const dispatch = useAppDispatch();
 	const ndebit = source.ndebit?.trim() || "";
 	const vanityName = source.vanityName?.trim() || "";
@@ -210,7 +170,8 @@ function NdebitShare({ source }: { source: SourceView }) {
 	);
 }
 
-function LinkedAppsList({ source }: { source: SourceView }) {
+function LinkedAppsList({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
 	const [tab, setTab] = useState<LinkedAppsTab>("approved");
 	const editDebit = useEditDebitModal();
 	const {

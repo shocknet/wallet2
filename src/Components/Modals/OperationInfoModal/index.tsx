@@ -32,8 +32,7 @@ import { InputClassification } from "@/lib/types/parse";
 import NofferInfoDisplay from "@/Components/common/info/nofferInfoDisplay";
 import LnurlInfoDisplay from "@/Components/common/info/lnurlInfoDisplay";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { useAppDispatch } from "@/State/store/hooks";
 import SourceCard from "@/Components/SourceCard";
 import { isInFlightOutgoingInvoice } from "@/State/scoped/backups/sources/history/helpers";
 
@@ -395,18 +394,12 @@ const UserToUserOperation = ({ operation }: { operation: SourceUserToUserOperati
 }
 
 const SourceSection = ({ sourceId }: { sourceId: string }) => {
-
-
-	const source = useAppSelector(state => selectSourceViewById(state, sourceId))
-
-	if (!source) return null
-
 	return (
 		<>
 			<SectionDivider title="Source" />
 
 			<IonList className="secondary" lines="none">
-				<SourceCard source={source} button={false} onClick={() => { }} />
+				<SourceCard sourceId={sourceId} button={false} onClick={() => { }} />
 
 			</IonList>
 		</>

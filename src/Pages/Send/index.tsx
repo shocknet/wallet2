@@ -34,9 +34,8 @@ import {
 	invoiceSourceFromParsed,
 	sendInvoicePayment,
 } from "@/State/scoped/backups/sources/history/sendInvoicePayment";
-import {
-	selectSourceViews,
-} from "@/State/scoped/backups/sources/selectors";
+import { selectLiveSourceBalances } from "@/State/scoped/backups/sources/selectors";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { getAmountFieldIntent } from "./amountFieldIntent";
 import {
@@ -52,8 +51,6 @@ import { FeeReserveHint } from "./FeeReserveHint";
 import type { AmountRange } from "./types";
 import { isSendParsedInput, type SendPageNavState } from "./nav";
 import type { ParsedInvoiceInput } from "@/lib/types/parse";
-import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-
 export default function Send() {
 	const { location } = useHistory();
 	const visitKeyRef = useRef(location.key);
@@ -69,7 +66,7 @@ export default function Send() {
 }
 
 function SendInner() {
-	const sources = useAppSelector(selectSourceViews);
+	const balances = useAppSelector(selectLiveSourceBalances);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const { showToast } = useToast();
 	const router = useIonRouter();
@@ -81,9 +78,7 @@ function SendInner() {
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const askConfirmSend = useConfirmSendModal();
 
-	const [selectedSourceId, setSelectedSourceId] = useState(
-		() => pickDefaultSource(sources, favoriteSourceId).sourceId,
-	);
+	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
 	const [recipient, setRecipient] = useState<BitcoinInputState>(IDLE_STATE);
 	const [nofferRange, setNofferRange] = useState<AmountRange | null>(null);
 	const [amountChange, setAmountChange] = useState<AmountFieldChange>({
@@ -92,18 +87,11 @@ function SendInner() {
 	});
 	const [amountFieldKey, setAmountFieldKey] = useState(0);
 
-	useEffect(() => {
-		if (!sources.some((s) => s.sourceId === selectedSourceId)) {
-			setSelectedSourceId(
-				pickDefaultSource(sources, favoriteSourceId).sourceId,
-			);
-		}
-	}, [sources, selectedSourceId, favoriteSourceId]);
-
-	const source = useMemo(() => {
-		return sources.find((s) => s.sourceId === selectedSourceId) ??
-			pickDefaultSource(sources, favoriteSourceId);
-	}, [sources, selectedSourceId, favoriteSourceId]);
+	const activeSourceId =
+		selectedSourceId && balances.some((s) => s.sourceId === selectedSourceId)
+			? selectedSourceId
+			: pickDefaultSource(balances, favoriteSourceId)?.sourceId ?? "";
+	const source = useLiveSourceView(activeSourceId);
 
 	useEffect(() => {
 		const location = history.location;
@@ -143,21 +131,21 @@ function SendInner() {
 	const switchToSourceCoveringAmount = useCallback(
 		(amount: Satoshi) => {
 			const better = pickSourceCoveringAmount(
-				sources,
+				balances,
 				amount,
 				favoriteSourceId,
 			);
-			if (better && better.sourceId !== selectedSourceId) {
+			if (better && better.sourceId !== activeSourceId) {
 				setSelectedSourceId(better.sourceId);
 				showToast({
 					header: "Source switched",
-					message: `${sourceDisplayName(better)} can cover this amount.`,
+					message: "Switched to a source that can cover this amount.",
 					color: "warning",
 					duration: 2000,
 				});
 			}
 		},
-		[sources, selectedSourceId, favoriteSourceId, showToast],
+		[balances, activeSourceId, favoriteSourceId, showToast],
 	);
 
 	useEffect(() => {
@@ -167,7 +155,7 @@ function SendInner() {
 		switchToSourceCoveringAmount(fixed);
 	}, [
 		amountFieldIntent.fixedSats,
-		source.maxWithdrawableSats,
+		source,
 		switchToSourceCoveringAmount,
 	]);
 

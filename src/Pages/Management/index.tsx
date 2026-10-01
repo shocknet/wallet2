@@ -36,22 +36,14 @@ import {
 	useGetProfileQuery,
 	useResetManageAuthorizationMutation,
 } from "@/State/api/api";
-import {
-	selectRequiredSourceViewById,
-	selectResolvedSourceId,
-	type SourceView,
-} from "@/State/scoped/backups/sources/selectors";
-import { useAppSelector } from "@/State/store/hooks";
+import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import cn from "clsx";
 
 type ManagementTab = "approved" | "banned";
 
 export default function Management() {
-	const [overrideSourceId, setOverrideSourceId] = useState<string | null>(null);
-	const source = useAppSelector(state => {
-		const id = selectResolvedSourceId(state, overrideSourceId);
-		return selectRequiredSourceViewById(state, id);
-	});
+	const { sourceId, setOverrideSourceId } = useSourceSelection();
 
 	return (
 		<IonPage className="ion-page-width">
@@ -60,25 +52,23 @@ export default function Management() {
 				<IonToolbar>
 					<div className="mx-auto flex w-full max-w-md flex-col gap-2 px-5 md:px-0">
 						<SourceSelectionView
-							sourceId={source.sourceId}
+							sourceId={sourceId}
 							onSourceId={setOverrideSourceId}
 							title="Select source"
 							showBalance={false}
 							showTapToSwitch={false}
 						/>
-						<SourceReachabilityHint sourceId={source.sourceId} />
+						<SourceReachabilityHint sourceId={sourceId} />
 					</div>
 				</IonToolbar>
 			</IonHeader>
-			<ManagementSource key={source.sourceId} source={source} />
+			<ManagementSource key={sourceId} sourceId={sourceId} />
 		</IonPage>
 	);
 }
 
-function ManagementSource({ source }: { source: SourceView }) {
-	const { refetch } = useGetManageAuthorizationsQuery({
-		sourceId: source.sourceId,
-	});
+function ManagementSource({ sourceId }: { sourceId: string }) {
+	const { refetch } = useGetManageAuthorizationsQuery({ sourceId });
 
 	const handleRefresh = useCallback(
 		async (event: CustomEvent<RefresherEventDetail>) => {
@@ -98,19 +88,20 @@ function ManagementSource({ source }: { source: SourceView }) {
 			</IonRefresher>
 
 			<div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 pb-8 pt-2">
-				<NmanageShare source={source} />
+				<NmanageShare sourceId={sourceId} />
 				<section className="flex min-h-[40%] flex-1 flex-col">
 					<p className="m-0 mb-3 text-xs font-medium uppercase tracking-wide text-muted">
 						Offer access
 					</p>
-					<ManageAuthList source={source} />
+					<ManageAuthList sourceId={sourceId} />
 				</section>
 			</div>
 		</IonContent>
 	);
 }
 
-function NmanageShare({ source }: { source: SourceView }) {
+function NmanageShare({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
 	const nmanage = source.nmanage?.trim() || "";
 
 	return (
@@ -145,7 +136,8 @@ function NmanageShare({ source }: { source: SourceView }) {
 	);
 }
 
-function ManageAuthList({ source }: { source: SourceView }) {
+function ManageAuthList({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
 	const { showToast } = useToast();
 	const promptDanger = usePromptDangerModal();
 	const [tab, setTab] = useState<ManagementTab>("approved");

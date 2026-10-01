@@ -7,11 +7,8 @@ import {
 	useIonLoading,
 } from "@ionic/react";
 import { useCallback, useState } from "react";
-import { useAppSelector } from "@/State/store/hooks";
-import {
-	selectRequiredSourceViewById,
-	selectResolvedSourceId,
-} from "@/State/scoped/backups/sources/selectors";
+import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import {
 	allowOverlayRoles,
@@ -36,11 +33,8 @@ type SweepLnurlwDialogProps = SweepLnurlwOptions & {
 };
 
 function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
-	const [overrideSourceId, setOverrideSourceId] = useState<string | null>(null);
-	const source = useAppSelector(state => {
-		const id = selectResolvedSourceId(state, overrideSourceId);
-		return selectRequiredSourceViewById(state, id);
-	});
+	const { sourceId, setOverrideSourceId } = useSourceSelection();
+	const source = useLiveSourceView(sourceId);
 
 	const { showToast } = useToast();
 	const [presentLoading, dismissLoading] = useIonLoading();

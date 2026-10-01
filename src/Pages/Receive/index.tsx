@@ -2,7 +2,6 @@ import {
 	useEffect,
 	useReducer,
 	useRef,
-	useState,
 } from "react";
 import {
 	IonButton,
@@ -25,12 +24,8 @@ import {
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import StackPageToolbar from "@/Layout2/StackPageToolbar";
-import {
-	selectRequiredSourceViewById,
-	selectResolvedSourceId,
-	type SourceView,
-} from "@/State/scoped/backups/sources/selectors";
-import { useAppSelector } from "@/State/store/hooks";
+import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { ChainPane } from "./ChainPane";
 import { InvoicePane, type InvoicePaneHandle } from "./InvoicePane";
 import { LnAddressPane } from "./LnAddressPane";
@@ -69,12 +64,7 @@ function methodIcon(id: ReceiveMethodId): string {
 }
 
 export default function Receive() {
-	const [overrideSourceId, setOverrideSourceId] = useState<string | null>(null);
-	const source = useAppSelector(state => {
-		const id = selectResolvedSourceId(state, overrideSourceId);
-		return selectRequiredSourceViewById(state, id)
-	});
-
+	const { sourceId, setOverrideSourceId } = useSourceSelection();
 
 	return (
 		<IonPage className="ion-page-width">
@@ -83,21 +73,22 @@ export default function Receive() {
 				<IonToolbar>
 					<div className="mx-auto flex w-full max-w-md flex-col gap-2 px-5 md:px-0">
 						<SourceSelectionView
-							sourceId={source.sourceId}
+							sourceId={sourceId}
 							onSourceId={setOverrideSourceId}
 							title="Receive into"
 							showTapToSwitch={false}
 						/>
-						<SourceReachabilityHint sourceId={source.sourceId} />
+						<SourceReachabilityHint sourceId={sourceId} />
 					</div>
 				</IonToolbar>
 			</IonHeader>
-			<ReceiveSource key={source.sourceId} source={source} />
+			<ReceiveSource key={sourceId} sourceId={sourceId} />
 		</IonPage>
 	);
 }
 
-function ReceiveSource({ source }: { source: SourceView }) {
+function ReceiveSource({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
 	const invoicePaneRef = useRef<InvoicePaneHandle>(null);
 	const [state, dispatch] = useReducer(
 		receiveMethodsReducer,

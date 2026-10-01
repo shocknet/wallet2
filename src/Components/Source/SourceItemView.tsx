@@ -5,12 +5,12 @@ import cn from "clsx";
 import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import type { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { formatSatoshi } from "@/lib/units";
 
 export type SourceItemViewProps = {
-	source: SourceView;
+	sourceId: string;
 	selected?: boolean;
 	showFavorite?: boolean;
 	showBalance?: boolean;
@@ -21,7 +21,7 @@ export type SourceItemViewProps = {
 };
 
 export function SourceItemView({
-	source,
+	sourceId,
 	selected = false,
 	showFavorite = true,
 	showBalance = true,
@@ -30,6 +30,7 @@ export function SourceItemView({
 	end,
 	className,
 }: SourceItemViewProps) {
+	const source = useLiveSourceView(sourceId);
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const isFavorite = showFavorite && favoriteSourceId === source.sourceId;
 	const label = sourceDisplayName(source);

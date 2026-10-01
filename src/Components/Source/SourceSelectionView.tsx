@@ -8,10 +8,8 @@ import {
 	useSourceSelectModal,
 } from "@/Components/Source/SourceSelectSheet";
 import { formatSatoshi } from "@/lib/units";
-import {
-	selectSourceViewById,
-	selectSourceViews,
-} from "@/State/scoped/backups/sources/selectors";
+import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { useAppSelector } from "@/State/store/hooks";
 
 export type SourceSelectionViewProps = {
@@ -35,12 +33,10 @@ export function SourceSelectionView({
 	showCaret = true,
 	nested = false,
 }: SourceSelectionViewProps) {
-	const source = useAppSelector((state) => selectSourceViewById(state, sourceId));
-	const sources = useAppSelector(selectSourceViews);
+	const source = useLiveSourceView(sourceId);
+	const sourceIds = useAppSelector(selectLiveSourceIds);
 	const openSheet = useSourceSelectModal();
 	const openNestedSheet = useNestedSourceSelectModal();
-
-	if (!source) return null;
 
 	const label = sourceDisplayName(source);
 	const open = nested ? openNestedSheet : openSheet;
@@ -51,13 +47,13 @@ export function SourceSelectionView({
 			fill="clear"
 			onClick={() => {
 				void open({
-					sources,
+					sourceIds,
 					selectedSourceId: sourceId,
 					title,
 					showBalance,
 				}).then((result) => {
 					if (result.role !== "confirm") return;
-					onSourceId(result.data.sourceId);
+					onSourceId(result.data);
 				});
 			}}
 			aria-label={`Change source, currently ${label}`}

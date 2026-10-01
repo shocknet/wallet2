@@ -1,22 +1,30 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { IonButton, IonContent, IonPage } from "@ionic/react";
 
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceViews, type SourceView } from "@/State/scoped/backups/sources/selectors";
+import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { runtimeActions } from "@/State/runtime/slice";
+import { useLiveSourceView, useSourceView } from "@/Hooks/useSourceView";
 
 import { CustomSelect } from "@/Components/CustomSelect";
 import { SelectedSource, SourceSelectOption } from "@/Components/CustomSelect/commonSelects";
 
+function AdminSourceOption({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
+	return <SourceSelectOption source={source} />;
+}
+
+function AdminSourceSelected({ sourceId }: { sourceId: string }) {
+	const source = useSourceView(sourceId);
+	if (!source) return null;
+	return <SelectedSource source={source} />;
+}
+
 export default function MetricsSelectSource() {
 	const dispatch = useAppDispatch();
-	const admins = useAppSelector(selectAdminSourceViews);
+	const adminIds = useAppSelector(selectAdminSourceIds);
 	const [pendingId, setPendingId] = useState("");
-
-	const pending = useMemo(
-		() => (pendingId ? admins.find((a) => a.sourceId === pendingId) : undefined),
-		[admins, pendingId]
-	);
+	const pending = useSourceView(pendingId);
 
 	return (
 		<IonPage data-product="lnpub">
@@ -26,16 +34,16 @@ export default function MetricsSelectSource() {
 						<h1>Select source</h1>
 					</div>
 					<div className="flex w-full sm:w-2/3 flex-col mx-auto justify-center items-stretch gap-4">
-						<CustomSelect<SourceView>
-							items={admins}
-							selectedItem={pending}
-							onSelect={(v) => setPendingId(v.sourceId)}
-							getIndex={(s) => s.sourceId}
+						<CustomSelect<string>
+							items={adminIds}
+							selectedItem={pendingId || undefined}
+							onSelect={setPendingId}
+							getIndex={(id) => id}
 							title="Select Source"
 							subTitle="Pick the admin source to use for the dashboard"
 							placeholder="Choose your admin source"
-							renderItem={(s) => <SourceSelectOption source={s} />}
-							renderSelected={(s) => <SelectedSource source={s} />}
+							renderItem={(id) => <AdminSourceOption sourceId={id} />}
+							renderSelected={(id) => <AdminSourceSelected sourceId={id} />}
 						/>
 
 						<IonButton
