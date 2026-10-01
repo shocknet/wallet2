@@ -43,17 +43,18 @@ setupIonicReact();
 
 export default function App() {
 	return (
-		<ErrorBoundary>
-			<Provider store={store}>
-				<PersistGate
-					loading={null}
-					persistor={persistor}
-					onBeforeLift={() =>
-						SplashScreen.hide()
-					}
-				>
-					<ToastProvider>
-						<IonApp>
+		<IonApp>
+			<ErrorBoundary>
+				<Provider store={store}>
+					<PersistGate
+						loading={null}
+						persistor={persistor}
+						onBeforeLift={() =>
+							SplashScreen.hide()
+						}
+					>
+						<ToastProvider>
+
 							<IonReactRouter>
 								<OverlayCoordinator>
 									<ShellBootstrap />
@@ -62,19 +63,19 @@ export default function App() {
 								</OverlayCoordinator>
 							</IonReactRouter>
 							<UpdateToast />
-						</IonApp>
-					</ToastProvider>
-				</PersistGate>
-			</Provider>
-			<ToastContainer
-				theme="colored"
-				position="top-center"
-				closeOnClick
-				pauseOnHover
-				autoClose={4000}
-				limit={2}
-				pauseOnFocusLoss={false}
-			/>
-		</ErrorBoundary>
+						</ToastProvider>
+					</PersistGate>
+				</Provider>
+				<ToastContainer
+					theme="colored"
+					position="top-center"
+					closeOnClick
+					pauseOnHover
+					autoClose={4000}
+					limit={2}
+					pauseOnFocusLoss={false}
+				/>
+			</ErrorBoundary>
+		</IonApp>
 	);
 }

@@ -6,7 +6,7 @@ import {
 	IonSpinner,
 	IonText,
 } from "@ionic/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { TokensData } from "sanctum-sdk";
 import { cloudOutline, swapHorizontalOutline } from "ionicons/icons";
 import { SanctumAuthWidget } from "@/Components/SanctumAuthWidget";
@@ -34,7 +34,7 @@ export function SanctumReauthScreen({
 		selectIdentityByPubkey(state, runtimeIdentity.pubkey),
 	);
 
-	async function handleTokensUpdated(tokens: TokensData) {
+	const handleTokensUpdated = useCallback(async (tokens: TokensData) => {
 		setSubmitting(true);
 
 		try {
@@ -42,7 +42,7 @@ export function SanctumReauthScreen({
 		} finally {
 			setSubmitting(false);
 		}
-	}
+	}, [dispatch])
 
 	return (
 		<IonPage className="ion-page-width">
