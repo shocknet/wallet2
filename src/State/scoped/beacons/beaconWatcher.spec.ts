@@ -20,6 +20,10 @@ import { getIntialState } from "@/State/scoped/backups/sources/state";
 import type { AppDispatch, RootState } from "@/State/store/store";
 import { newLww } from "@/State/sync/lww";
 import { createDeferred } from "@/lib/deferred";
+import {
+	beaconsStateOf,
+	createTestBeaconNode,
+} from "@tests/support/beaconsFixtures";
 import { TEST_CLOCK_BY, TEST_IDENTITY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
 import {
 	createTestSource,
@@ -34,11 +38,8 @@ import { beaconsSlice } from "./slice";
 import { canonicalRelayUrl, canonicalRelayUrls } from "./relays";
 import { makeSelectSourceBeaconJoin, type SourceBeaconJoin } from "./selectors";
 import {
-	beaconRelayNodeKey,
-	beaconRelayNodesAdapter,
 	beaconRelayStaleAtMs,
 	getInitialBeaconsState,
-	type BeaconRelayNode,
 	type BeaconsState,
 } from "./state";
 
@@ -73,37 +74,6 @@ function presentRelays(source: TestSource, extra: string[] = []) {
 		.filter(([, flag]) => flag.present)
 		.map(([url]) => url);
 	return canonicalRelayUrls([...urls, ...extra]);
-}
-
-function observedNode(opts: {
-	lpk: string;
-	relay: string;
-	lastSeenAtMs: number;
-	name?: string;
-	avatarUrl?: string;
-	fees?: BeaconRelayNode["fees"];
-	nextRelay?: string;
-}): BeaconRelayNode {
-	const relay = canonicalRelay(opts.relay);
-	return {
-		id: beaconRelayNodeKey(opts.lpk, relay),
-		lpk: opts.lpk,
-		relay,
-		lastSeenAtMs: opts.lastSeenAtMs,
-		name: opts.name,
-		avatarUrl: opts.avatarUrl,
-		fees: opts.fees,
-		nextRelay: opts.nextRelay,
-	};
-}
-
-function beaconsWith(...nodes: BeaconRelayNode[]): BeaconsState {
-	return {
-		nodes: beaconRelayNodesAdapter.setAll(
-			getInitialBeaconsState().nodes,
-			nodes,
-		),
-	};
 }
 
 function okDiscovery(over: {
@@ -269,7 +239,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -291,7 +261,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: 0,
@@ -374,7 +344,7 @@ describe("beaconWatcher", () => {
 		const other = createTestSource();
 		const store = openBeaconStore({
 			sources: [source, other],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -420,7 +390,7 @@ describe("beaconWatcher", () => {
 		);
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs,
@@ -481,11 +451,48 @@ describe("beaconWatcher", () => {
 		expect(join(store, source).health).toBe("stale");
 	});
 
+	it("still reprobes a stale source when another beacon arrives during the resume wait", async () => {
+		fetchBeaconDiscoveryMock.mockResolvedValue(null);
+		const [quiet, speaking] = createTestSources(2);
+		const store = openBeaconStore({ sources: [quiet, speaking] });
+		await flush();
+		expect(join(store, quiet).health).toBe("stale");
+		expect(join(store, speaking).health).toBe("stale");
+		fetchBeaconDiscoveryMock.mockClear();
+
+		store.dispatch(runtimeActions.setAppActiveStatus({ active: true }));
+		await flush();
+		expect(fetchBeaconDiscoveryMock).not.toHaveBeenCalled();
+
+		const earlyMs = 50;
+		await vi.advanceTimersByTimeAsync(earlyMs);
+		fireBeacon({
+			createdByPub: speaking.lpk,
+			data: { type: "service", name: "back" },
+		});
+		await flush();
+
+		expect(fetchBeaconDiscoveryMock).not.toHaveBeenCalled();
+		expect(join(store, speaking)).toMatchObject({
+			health: "fresh",
+			name: "back",
+		});
+
+		await vi.advanceTimersByTimeAsync(APP_ACTIVE_DEBOUNCE_MS - earlyMs);
+
+		expect(fetchBeaconDiscoveryMock).toHaveBeenCalledTimes(1);
+		expect(fetchBeaconDiscoveryMock).toHaveBeenCalledWith(
+			quiet.lpk,
+			[canonicalRelay()],
+		);
+		expect(join(store, quiet).health).toBe("stale");
+	});
+
 	it("probes a newly added relay and includes it in the source join", async () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -544,7 +551,7 @@ describe("beaconWatcher", () => {
 		const b = createTestSource({ lpk });
 		const store = openBeaconStore({
 			sources: [a, b],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -579,7 +586,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -683,15 +690,15 @@ describe("beaconWatcher", () => {
 		const fees = { serviceFeeBps: 50, serviceFeeFloor: 1 };
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(
-				observedNode({
+			beacons: beaconsStateOf(
+				createTestBeaconNode({
 					lpk: source.lpk,
 					relay: TEST_RELAY_URL,
 					lastSeenAtMs: NOW_MS - 5_000,
 					name: "older",
 					avatarUrl: "https://older.example/a.png",
 				}),
-				observedNode({
+				createTestBeaconNode({
 					lpk: source.lpk,
 					relay: OTHER_RELAY,
 					lastSeenAtMs: NOW_MS,
@@ -726,7 +733,7 @@ describe("beaconWatcher", () => {
 		});
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -837,7 +844,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -873,14 +880,14 @@ describe("beaconWatcher", () => {
 		});
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(
-				observedNode({
+			beacons: beaconsStateOf(
+				createTestBeaconNode({
 					lpk: source.lpk,
 					relay: TEST_RELAY_URL,
 					lastSeenAtMs: soonSeenAtMs,
 					name: "soon",
 				}),
-				observedNode({
+				createTestBeaconNode({
 					lpk: source.lpk,
 					relay: OTHER_RELAY,
 					lastSeenAtMs: laterSeenAtMs,
@@ -1048,7 +1055,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -1084,14 +1091,14 @@ describe("beaconWatcher", () => {
 		});
 		const store = openBeaconStore({
 			sources: [shared, other],
-			beacons: beaconsWith(
-				observedNode({
+			beacons: beaconsStateOf(
+				createTestBeaconNode({
 					lpk,
 					relay: TEST_RELAY_URL,
 					lastSeenAtMs: NOW_MS,
 					name: "shared",
 				}),
-				observedNode({
+				createTestBeaconNode({
 					lpk,
 					relay: OTHER_RELAY,
 					lastSeenAtMs: NOW_MS,
@@ -1130,7 +1137,7 @@ describe("beaconWatcher", () => {
 		const source = createTestSource();
 		const store = openBeaconStore({
 			sources: [source],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: source.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,
@@ -1186,7 +1193,7 @@ describe("beaconWatcher", () => {
 		const first = createTestSource();
 		const store = openBeaconStore({
 			sources: [first],
-			beacons: beaconsWith(observedNode({
+			beacons: beaconsStateOf(createTestBeaconNode({
 				lpk: first.lpk,
 				relay: TEST_RELAY_URL,
 				lastSeenAtMs: NOW_MS,

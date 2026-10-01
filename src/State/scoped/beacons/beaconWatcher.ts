@@ -1,4 +1,9 @@
-import { TaskAbortError, UnknownAction, type ListenerEffectAPI } from "@reduxjs/toolkit";
+import {
+	createAction,
+	TaskAbortError,
+	UnknownAction,
+	type ListenerEffectAPI,
+} from "@reduxjs/toolkit";
 
 import { listenerKick } from "@/State/listeners/actions";
 import type { ListenerSpec } from "../../listeners/lifecycle/lifecycle";
@@ -198,6 +203,9 @@ const isAppResume = (action: unknown) =>
 	action.payload.active;
 
 
+const reprobeStaleBeacons = createAction("@@beacons/reprobeStale");
+
+
 /*
  * recordBeacon is already a specific action, but we can be slightly more
  * precise and only reschedule when it actually changed this exact pair.
@@ -228,7 +236,7 @@ const shouldRunExpiryScheduler = (
 	prev: RootState,
 ) => {
 	if (listenerKick.match(action)) return true;
-	if (isAppResume(action)) return true;
+	if (reprobeStaleBeacons.match(action)) return true;
 
 	if (
 		sourceJustAdded(action, curr, prev) ||
@@ -382,6 +390,32 @@ export const beaconWatcherSpec: ListenerSpec = {
 
 
 		/*
+		 * On resume, retry lookups that already finished stale, after a short wait to debounce repeated resumes
+		 */
+		add =>
+			add({
+				predicate: action => isAppResume(action),
+
+				effect: async (_action, listenerApi) => {
+					listenerApi.cancelActiveListeners();
+
+					try {
+						await listenerApi.delay(APP_ACTIVE_DEBOUNCE_MS);
+						listenerApi.dispatch(reprobeStaleBeacons());
+					} catch (err) {
+						if (err instanceof TaskAbortError) return;
+
+						if (err instanceof Error) {
+							logger.error(
+								`[${beaconWatcherSpec.name}] resume reprobe error: ${err.message}`,
+							);
+						}
+					}
+				},
+			}),
+
+
+		/*
 		 * Scheduler for beacon freshness expiry.
 		 * Sleeps until the earliest next expiray.
 		 */
@@ -393,17 +427,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 					listenerApi.cancelActiveListeners();
 
 					try {
-						const resumed = isAppResume(action);
-
-						if (resumed) {
-							await listenerApi.delay(APP_ACTIVE_DEBOUNCE_MS);
-						}
-
-						/*
-						 * On resume, retry pairs whose previous lookup had
-						 * already completed stale.
-						 */
-						let reprobeDone = resumed;
+						let reprobeDone = reprobeStaleBeacons.match(action);
 
 						for (; ;) {
 							const targets = reconcileBeaconTargets(

@@ -311,12 +311,11 @@ describe("push enrollment", () => {
 			const client = useClient(mockClient());
 			const store = openPushStore({
 				sources: [source],
-				beacons: beaconsStateOf({
-					nodes: [createTestBeaconNode({
-						lpk: source.lpk,
-						relays: { [TEST_RELAY_URL]: { lastSeenAtMs: NOW_MS } },
-					})],
-				}),
+				beacons: beaconsStateOf(createTestBeaconNode({
+					lpk: source.lpk,
+					relay: TEST_RELAY_URL,
+					lastSeenAtMs: NOW_MS,
+				})),
 			});
 			await settle();
 			clearCalls(client);
