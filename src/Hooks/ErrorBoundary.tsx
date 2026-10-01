@@ -1,5 +1,4 @@
 import React from "react";
-import { IonApp } from "@ionic/react";
 import { ShellFailureLayout } from "@/shell/screens/ShellFailureLayout";
 
 interface ErrorBoundaryState {
@@ -21,25 +20,23 @@ class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBounda
 		if (this.state.errorMSG === null) return this.props.children;
 
 		return (
-			<IonApp>
-				<ShellFailureLayout
-					title="Something went wrong"
-					message="The app hit an unexpected error. Reloading usually fixes it."
-					meta={
-						<p className="font-mono text-xs text-faint break-words">
-							{this.state.errorMSG}
-						</p>
-					}
-					actions={[
-						{
-							key: "reload",
-							label: "Reload app",
-							primary: true,
-							onClick: () => window.location.reload(),
-						},
-					]}
-				/>
-			</IonApp>
+			<ShellFailureLayout
+				title="Something went wrong"
+				message="The app hit an unexpected error. Reloading usually fixes it."
+				meta={
+					<p className="font-mono text-xs text-faint break-words">
+						{this.state.errorMSG}
+					</p>
+				}
+				actions={[
+					{
+						key: "reload",
+						label: "Reload app",
+						primary: true,
+						onClick: () => window.location.reload(),
+					},
+				]}
+			/>
 		);
 	}
 }
