@@ -202,19 +202,15 @@ export const selectResolvedSourceId = createSelector(
 );
 
 
+// With several admin nodes the user must pick one; the favorite is only a pre-selection.
 export const selectResolvedAdminSourceId = createSelector(
 	[
 		selectAdminSourceIds,
-		selectFavoriteSourceId,
 		(_state: RootState, overrideSourceId: string | null) => overrideSourceId,
 	],
-	(adminIds, favoriteSourceId, overrideSourceId): string | null => {
+	(adminIds, overrideSourceId): string | null => {
 		if (overrideSourceId && adminIds.includes(overrideSourceId)) {
 			return overrideSourceId;
-		}
-
-		if (favoriteSourceId && adminIds.includes(favoriteSourceId)) {
-			return favoriteSourceId;
 		}
 
 		if (adminIds.length === 1) return adminIds[0];

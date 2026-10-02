@@ -74,7 +74,6 @@ function pickDefaultPendingId(
 	adminIds: string[],
 	favoriteSourceId: string | null,
 ): string | null {
-	if (adminIds.length === 1) return adminIds[0];
 	return favoriteSourceId && adminIds.includes(favoriteSourceId)
 		? favoriteSourceId
 		: null;
