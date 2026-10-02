@@ -136,11 +136,16 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 
 	const selectMethod = (next: ReceiveMethodId) => {
 		dispatch({ type: "selectMethod", method: next });
-		if (next === "invoice" && selection !== "invoice") {
-			requestAnimationFrame(() => {
-				invoicePaneRef.current?.focusAmount();
-			});
-		}
+	};
+
+	// Taps only: swiping the segment view fires ionChange too, and focusing mid-swipe pops the keyboard.
+	const openInvoice = () => {
+		const wasOnInvoice = selection === "invoice";
+		selectMethod("invoice");
+		if (wasOnInvoice) return;
+		requestAnimationFrame(() => {
+			invoicePaneRef.current?.focusAmount();
+		});
 	};
 
 	const methodsKey = segmentOptions.map((m) => m.method).join(",");
@@ -172,6 +177,7 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 								value={m.method}
 								layout="icon-top"
 								contentId={segmentContentId(source.sourceId, m.method)}
+								onClick={m.method === "invoice" ? openInvoice : undefined}
 							>
 								<IonIcon icon={methodIcon(m.method)} aria-hidden />
 								<IonLabel>{m.label}</IonLabel>
@@ -207,7 +213,7 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 								color="primary"
 								size="large"
 								className="[--border-radius:12px]"
-								onClick={() => selectMethod("invoice")}
+								onClick={openInvoice}
 							>
 								Create invoice
 							</IonButton>
