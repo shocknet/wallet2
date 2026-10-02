@@ -31,7 +31,7 @@ vi.mock("./helpers/datakey", () => ({
 }));
 
 vi.mock("./helpers/identityNostrApi", () => ({
-	createEphemeralIdentityNostrApi: getIdentityNostrApiMock,
+	getIdentityNostrApi: getIdentityNostrApiMock,
 	getActiveIdentityNostrApi: getIdentityNostrApiMock,
 }));
 

@@ -4,17 +4,17 @@ import {
 	createSelector,
 } from "@reduxjs/toolkit";
 
-import { persistReducer } from "redux-persist";
+import { persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
+import { readSanctumTokens, writeSanctumTokens } from "./helpers/sanctumTokensStore";
 import { RootState } from "../store/store";
 import {
 	IdentityType,
 	type Identity,
 	type LocalPrivateKeyStorage,
-	type SanctumTokensStorage,
 } from "./types";
 import type { RuntimeIdentity } from "@/shell/types";
-import { TokensData } from "sanctum-sdk";
+import type { TokensData } from "sanctum-sdk";
 
 
 
@@ -77,25 +77,15 @@ export const identitiesRegistrySlice = createSlice({
 			if (!e || e.type !== IdentityType.LOCAL_KEY) return;
 			e.localSecret = payload.localSecret;
 		},
-		setSanctumTokensStorage: (
-			state,
-			{ payload }: PayloadAction<{ pubkey: string; sanctumTokens: SanctumTokensStorage }>
-		) => {
-			const e = state.entities[payload.pubkey];
-			if (!e || e.type !== IdentityType.SANCTUM) return;
-			e.sanctumTokens = payload.sanctumTokens;
-			e.reauthReason = undefined;
-		},
-
 		markSanctumReauthRequired: (state, { payload }: PayloadAction<{ pubkey: string; reason?: string }>) => {
 			const e = state.entities[payload.pubkey];
 			if (!e || e.type !== IdentityType.SANCTUM) return;
 			e.reauthReason = payload.reason ?? "Session expired or invalid";
 		},
-		clearSanctumTokensData: (state, { payload }: PayloadAction<{ pubkey: string }>) => {
+		clearSanctumReauthRequired: (state, { payload }: PayloadAction<{ pubkey: string }>) => {
 			const e = state.entities[payload.pubkey];
 			if (!e || e.type !== IdentityType.SANCTUM) return;
-			e.sanctumTokens = undefined;
+			e.reauthReason = undefined;
 		},
 		setTopicIdIndex: (state, { payload }: PayloadAction<{ topicId: string; sourceId: string, identityId: string }>) => {
 			state.topicIndexById[payload.topicId] = { identityId: payload.identityId, sourceId: payload.sourceId };
@@ -149,24 +139,6 @@ export const identitiesRegistrySlice = createSlice({
 			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
 			state.active.wrappedDataKeyCiphertext = action.payload.wrappedDataKeyCiphertext;
 		},
-		/* Sanctum specific for tokens writes */
-		setActiveSanctumTokensData: (
-			state,
-			action: PayloadAction<{ pubkey: string; tokensData: TokensData }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.tokensData = action.payload.tokensData;
-			state.active.reauthReason = null;
-		},
-		clearActiveSanctumTokensData: (
-			state,
-			action: PayloadAction<{ pubkey: string }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.tokensData = null;
-		},
 		setActiveSanctumReauthRequired: (
 			state,
 			action: PayloadAction<{ pubkey: string; reason?: string | null }>
@@ -174,6 +146,14 @@ export const identitiesRegistrySlice = createSlice({
 			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
 			if (state.active.pubkey !== action.payload.pubkey) return;
 			state.active.reauthReason = action.payload.reason ?? "Session expired or invalid";
+		},
+		clearActiveSanctumReauthRequired: (
+			state,
+			action: PayloadAction<{ pubkey: string }>
+		) => {
+			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
+			if (state.active.pubkey !== action.payload.pubkey) return;
+			state.active.reauthReason = null;
 		},
 
 	},
@@ -183,12 +163,60 @@ export const identitiesRegistryActions = identitiesRegistrySlice.actions;
 
 export const identitiesRegistryPersistKey = "_identities-registry";
 
+// A tab still on the old build can re-save the old format after this migration ran,
+// so the old copy may be stale; overwriting a newer refresh token would end the session.
+async function keepNewerSanctumTokens(pubkey: string, legacy: TokensData) {
+	const onDisk = await readSanctumTokens(pubkey);
+	if (onDisk && onDisk.expires_at >= legacy.expires_at) return;
+	await writeSanctumTokens(pubkey, legacy);
+}
+
+async function migrateSanctumTokensToDisk(
+	state: NonNullable<PersistedState> & IdentitiesState,
+) {
+	const entities = { ...state.entities };
+	for (const id of Object.keys(entities)) {
+		const identity = entities[id];
+		if (!identity || identity.type !== IdentityType.SANCTUM) continue;
+		if (!("sanctumTokens" in identity)) continue;
+
+		const tokens = identity.sanctumTokens;
+		if (
+			tokens &&
+			typeof tokens === "object" &&
+			"storage" in tokens &&
+			tokens.storage === "inline" &&
+			"tokensData" in tokens &&
+			tokens.tokensData
+		) {
+			try {
+				await keepNewerSanctumTokens(identity.pubkey, tokens.tokensData as TokensData);
+			} catch {
+				// The session can be signed in again.
+			}
+		}
+
+		const { sanctumTokens: _sanctumTokens, ...rest } = identity;
+		entities[id] = rest;
+	}
+
+	return { ...state, entities };
+}
+
+const migrateIdentitiesRegistry: PersistMigrate = async (state, currentVersion) => {
+	if (!state) return undefined;
+	const inboundVersion = state._persist?.version ?? -1;
+	if (inboundVersion >= currentVersion) return state;
+	return migrateSanctumTokensToDisk(state as NonNullable<PersistedState> & IdentitiesState);
+};
+
 export const persistedIdentitiesRegistryReducer = persistReducer(
 	{
 		key: identitiesRegistryPersistKey,
 		storage: IonicStorageAdapter,
 		blacklist: ["active"],
-		version: 0
+		version: 1,
+		migrate: migrateIdentitiesRegistry,
 	},
 	identitiesRegistrySlice.reducer
 );
@@ -233,10 +261,6 @@ export const selectActiveIdentity = (s: RootState) => s.identitiesRegistry.activ
 export const selectActiveRuntimeLocalPrivateKey = (s: RootState) =>
 	s.identitiesRegistry.active?.type === IdentityType.LOCAL_KEY
 		? s.identitiesRegistry.active.privateKey
-		: null;
-export const selectActiveRuntimeSanctumTokensData = (s: RootState) =>
-	s.identitiesRegistry.active?.type === IdentityType.SANCTUM
-		? s.identitiesRegistry.active.tokensData
 		: null;
 export const selectLastActiveIdentityId = (s: RootState) => s.identitiesRegistry.lastActiveIdentityId;
 

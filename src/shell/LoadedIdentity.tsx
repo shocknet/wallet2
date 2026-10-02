@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/State/store/hooks";
-import { selectSourceViews } from "@/State/scoped/backups/sources/selectors";
+import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
 import type { RuntimeIdentity } from "./types";
 import { ReadyApp } from "./ReadApp";
 import SourceBootstrapScreen from "./screens/SourceBootstrapScreen";
@@ -10,7 +10,7 @@ export function LoadedIdentity({
 }: {
 	runtimeIdentity: RuntimeIdentity;
 }) {
-	const sourceCount = useAppSelector(selectSourceViews).length;
+	const sourceCount = useAppSelector(selectLiveSourceIds).length;
 
 	if (sourceCount === 0) {
 		return <SourceBootstrapScreen />;

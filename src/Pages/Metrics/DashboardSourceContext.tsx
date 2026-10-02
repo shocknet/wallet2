@@ -2,11 +2,10 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { DashDialog } from "@/Layout2/Metrics/DashDialog";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
-	makeSelectSourceViewById,
 	selectAdminSourceIds,
-	selectAdminSourceViews,
 	type SourceView,
 } from "@/State/scoped/backups/sources/selectors";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { runtimeActions } from "@/State/runtime/slice";
 import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
 import { BeaconStatusLine } from "@/Components/BeaconStatusLine";
@@ -55,16 +54,13 @@ export function SelectedAdminSourceProvider({
 	const [isSwitchDialogOpen, setIsSwitchDialogOpen] = useState(false);
 	const open = useCallback(() => setIsSwitchDialogOpen(true), []);
 	const close = useCallback(() => setIsSwitchDialogOpen(false), []);
-	const selectView = useMemo(makeSelectSourceViewById, []);
-	const source = useAppSelector((s) => selectView(s, sourceId));
+	const source = useLiveSourceView(sourceId);
 	const adminIds = useAppSelector(selectAdminSourceIds);
 	const canSwitch = adminIds.length > 1;
 	const value = useMemo(
-		() => (source ? { source, open, canSwitch } : null),
+		() => ({ source, open, canSwitch }),
 		[source, canSwitch, open],
 	);
-
-	if (!value) return null;
 
 	return (
 		<DashboardSourceContext.Provider value={value}>
@@ -77,7 +73,7 @@ export function SelectedAdminSourceProvider({
 function DashSourceSwitchDialog({ onClose }: { onClose: () => void }) {
 	const dispatch = useAppDispatch();
 	const selectedId = useDashboardSource().sourceId;
-	const admins = useAppSelector(selectAdminSourceViews);
+	const adminIds = useAppSelector(selectAdminSourceIds);
 
 	const pick = (sourceId: string) => {
 		if (sourceId !== selectedId) {
@@ -89,23 +85,43 @@ function DashSourceSwitchDialog({ onClose }: { onClose: () => void }) {
 	return (
 		<DashDialog title="Switch source" onClose={onClose}>
 			<div className="dash-peer-stack">
-				{admins.map((admin) => (
-					<button
-						key={admin.sourceId}
-						type="button"
-						className="dash-peer-item"
-						onClick={() => pick(admin.sourceId)}
-					>
-						<div className="dash-peer-item-main">
-							<div className="dash-peer-item-name">{sourceNodeDisplayName(admin)}</div>
-							<div className="dash-peer-item-sub">
-								<BeaconStatusLine state={admin.beaconStale} showWhenFresh />
-							</div>
-						</div>
-						{admin.sourceId === selectedId && <span className="dash-pill is-ok">current</span>}
-					</button>
+				{adminIds.map((id) => (
+					<DashSourceSwitchRow
+						key={id}
+						sourceId={id}
+						selected={id === selectedId}
+						onPick={pick}
+					/>
 				))}
 			</div>
 		</DashDialog>
+	);
+}
+
+function DashSourceSwitchRow({
+	sourceId,
+	selected,
+	onPick,
+}: {
+	sourceId: string;
+	selected: boolean;
+	onPick: (sourceId: string) => void;
+}) {
+	const source = useLiveSourceView(sourceId);
+
+	return (
+		<button
+			type="button"
+			className="dash-peer-item"
+			onClick={() => onPick(source.sourceId)}
+		>
+			<div className="dash-peer-item-main">
+				<div className="dash-peer-item-name">{sourceNodeDisplayName(source)}</div>
+				<div className="dash-peer-item-sub">
+					<BeaconStatusLine state={source.beaconStale} showWhenFresh />
+				</div>
+			</div>
+			{selected && <span className="dash-pill is-ok">current</span>}
+		</button>
 	);
 }

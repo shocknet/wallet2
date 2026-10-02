@@ -277,12 +277,9 @@ function SanctumSecuritySection({ runtimeIdentity }: { runtimeIdentity: RuntimeI
 						Sanctum session
 					</p>
 					<p className="mt-1 text-sm leading-6 text-muted">
-						{runtimeIdentity.tokensData
-							? "Signed in. If access expires, you will be asked to sign in again."
-							: "Session needs refresh. You will be prompted to sign in again when required."}
 						{runtimeIdentity.reauthReason
-							? ` (${runtimeIdentity.reauthReason})`
-							: ""}
+							? `Session needs refresh. You will be prompted to sign in again when required. (${runtimeIdentity.reauthReason})`
+							: "Signed in. If access expires, you will be asked to sign in again."}
 					</p>
 				</div>
 			</div>

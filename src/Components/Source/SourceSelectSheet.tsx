@@ -15,7 +15,6 @@ import {
 	type SourceItemViewProps,
 } from "@/Components/Source/SourceItemView";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import { SourceView } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import {
 	usePromiseModal,
@@ -32,23 +31,23 @@ type ItemDisplayProps = Pick<
 
 export type SourceSelectOptions = {
 	selectedSourceId?: string | null;
-	sources: SourceView[];
+	sourceIds: string[];
 	title?: string;
 	emptyMessage?: string;
 } & ItemDisplayProps;
 
 type SourceSelectProps = SourceSelectOptions & {
-	dismiss: Dismiss<OverlayChoice<SourceView>>;
+	dismiss: Dismiss<OverlayChoice<string>>;
 };
 
 function favoriteFirst(
-	sources: SourceView[],
+	sourceIds: string[],
 	favoriteSourceId: string | null | undefined,
-): SourceView[] {
-	if (favoriteSourceId == null) return sources;
-	const i = sources.findIndex((s) => s.sourceId === favoriteSourceId);
-	if (i <= 0) return sources;
-	const copy = [...sources];
+): string[] {
+	if (!favoriteSourceId) return sourceIds;
+	const i = sourceIds.indexOf(favoriteSourceId);
+	if (i <= 0) return sourceIds;
+	const copy = sourceIds.slice();
 	const [fav] = copy.splice(i, 1);
 	copy.unshift(fav);
 	return copy;
@@ -56,7 +55,7 @@ function favoriteFirst(
 
 function SourceSelectSheet({
 	selectedSourceId = null,
-	sources,
+	sourceIds,
 	title = "Select source",
 	emptyMessage = "No sources to show.",
 	showFavorite,
@@ -66,9 +65,9 @@ function SourceSelectSheet({
 }: SourceSelectProps) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 
-	const orderedSources = useMemo(
-		() => favoriteFirst(sources, favoriteSourceId),
-		[sources, favoriteSourceId],
+	const orderedSourceIds = useMemo(
+		() => favoriteFirst(sourceIds, favoriteSourceId),
+		[sourceIds, favoriteSourceId],
 	);
 
 	return (
@@ -84,18 +83,18 @@ function SourceSelectSheet({
 				</IonToolbar>
 			</IonHeader>
 			<IonContent>
-				{orderedSources.length === 0 ? (
+				{orderedSourceIds.length === 0 ? (
 					<p className="m-0 mt-8 px-4 text-center text-sm leading-6 text-muted">
 						{emptyMessage}
 					</p>
 				) : (
 					<IonList lines="full" className="bg-transparent pb-6">
-						{orderedSources.map((source) => (
+						{orderedSourceIds.map((id) => (
 							<SourceItemView
-								key={source.sourceId}
-								source={source}
-								selected={selectedSourceId === source.sourceId}
-								onClick={() => dismiss({ role: "confirm", data: source })}
+								key={id}
+								sourceId={id}
+								selected={selectedSourceId === id}
+								onClick={() => dismiss({ role: "confirm", data: id })}
 								showFavorite={showFavorite}
 								showBalance={showBalance}
 								showBeacon={showBeacon}
@@ -119,7 +118,7 @@ const sourceSelectOverlay: OverlayOptions = {
 export function useSourceSelectModal() {
 	const { present } = useOverlayCoordinator();
 	return useCallback((options: SourceSelectOptions) => {
-		return present<OverlayChoice<SourceView>>(
+		return present<OverlayChoice<string>>(
 			(dismiss) => <SourceSelectSheet {...options} dismiss={dismiss} />,
 			sourceSelectOverlay,
 		);
@@ -127,7 +126,7 @@ export function useSourceSelectModal() {
 }
 
 export function useNestedSourceSelectModal() {
-	return usePromiseModal<SourceSelectOptions, OverlayChoice<SourceView>>(
+	return usePromiseModal<SourceSelectOptions, OverlayChoice<string>>(
 		SourceSelectSheet,
 		sourceSelectOverlay,
 	);

@@ -1,8 +1,8 @@
 
 import { resetClientsCluster } from "@/Api/nostr";
 import {
-	createEphemeralIdentityNostrApi,
 	getActiveIdentityNostrApi,
+	getIdentityNostrApi,
 } from "./helpers/identityNostrApi";
 import { identitiesRegistryActions } from "./slice";
 import { persistor, type AppThunk } from "@/State/store/store";
@@ -35,11 +35,6 @@ import {
 	provisionIdentity,
 	type CreateIdentityInput,
 } from "./helpers/provisionIdentity";
-import {
-	markSanctumReauthRequired,
-	setIdentitySanctumTokensData,
-} from "./identitySyncThunks";
-import { toSanctumTokensStorage } from "./helpers/platformSecretStorage";
 
 
 
@@ -113,7 +108,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		const deviceId = getDeviceId();
 
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum session issues)
-		const identityNostrApi = await createEphemeralIdentityNostrApi(toIdentity);
+		const identityNostrApi = await getIdentityNostrApi(toIdentity);
 
 		const unwrappedDataKey = await unwrapDataKeyWithNip44({
 			pubkey: toIdentity.pubkey,
@@ -137,27 +132,6 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		if (draft === undefined) {
 			log.debug("init-identity-doc");
 			dispatch(identityActions.initIdentityDoc({ identity_pubkey: toIdentity.pubkey, by: deviceId }));
-		}
-
-		if (toIdentity.type === IdentityType.SANCTUM) {
-			if (toIdentity.tokensData) {
-				await dispatch(
-					setIdentitySanctumTokensData({
-						pubkey: toIdentity.pubkey,
-						tokensData: toIdentity.tokensData,
-					}),
-				);
-			}
-			if (toIdentity.reauthReason) {
-				dispatch(
-					markSanctumReauthRequired({
-						pubkey: toIdentity.pubkey,
-						reason: toIdentity.reauthReason,
-					}),
-				);
-			}
-			// Drop ephemeral SDK so ready callers build the store-backed adapter
-			clearSanctumIdentitySdk(toIdentity.pubkey);
 		}
 
 		dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: toIdentity }));
@@ -203,8 +177,7 @@ export const createIdentity = (
 ): AppThunk<Promise<{ foundBackup: boolean; identityId: string }>> => {
 	return async (dispatch, getState) => {
 		const provisioned = await provisionIdentity(input);
-		let { identity } = provisioned;
-		const { runtime: runtimeIdentity } = provisioned;
+		const { identity, runtime: runtimeIdentity } = provisioned;
 
 		const log = dLogger.withContext({
 			procedure: "create-identity",
@@ -215,21 +188,7 @@ export const createIdentity = (
 			throw new Error("This identity already exists.");
 		}
 
-		// Verify Nostr/Sanctum before writing the registry
-		await createEphemeralIdentityNostrApi(runtimeIdentity);
-		if (runtimeIdentity.type === IdentityType.SANCTUM) {
-			if (runtimeIdentity.tokensData && identity.type === IdentityType.SANCTUM) {
-				identity = {
-					...identity,
-					sanctumTokens: await toSanctumTokensStorage(
-						runtimeIdentity.pubkey,
-						runtimeIdentity.tokensData,
-					),
-					reauthReason: runtimeIdentity.reauthReason ?? undefined,
-				};
-			}
-			clearSanctumIdentitySdk(runtimeIdentity.pubkey);
-		}
+		await getIdentityNostrApi(runtimeIdentity);
 
 		dispatch(identitiesRegistryActions._createNewIdentity({ identity }));
 		dispatch(appStateActions.setAppBootstrapped());

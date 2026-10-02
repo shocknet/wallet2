@@ -9,8 +9,6 @@ describe("getNostrClient", () => {
 
 	it("Sends a request and resolves on onEvent", async () => {
 		const ctl = mockNostrLayer();
-
-
 		const { getNostrClient } = await import("@/Api/nostr");
 
 		const client = await getNostrClient(
@@ -18,21 +16,22 @@ describe("getNostrClient", () => {
 			{ publicKey: "lpk-1", privateKey: "sk" }
 		);
 
+		const pending = client.NewInvoice({ amountSats: 70, memo: "test" });
+		const frame = await ctl.sent();
 
-		const p = client.NewInvoice({ amountSats: 70, memo: "test" });
+		expect(frame).toMatchObject({
+			to: "pubdst-1",
+			relays: ["wss://r1"],
+			keys: { publicKey: "lpk-1" },
+			rpcName: "NewInvoice",
+			body: { amountSats: 70, memo: "test" },
+		});
 
-		await Promise.resolve(); // tick so fake relaysCluster pushes to frames
+		ctl.replyOk(frame, { invoice: "lnbcmock69" });
 
-
-		expect(ctl.frames).toHaveLength(1);
-		expect(ctl.frames[0].to).toBe("pubdst-1");
-		expect(ctl.frames[0].keys.publicKey).toBe("lpk-1");
-
-
-		ctl.replyLastOk({ invoice: "lnbcmock69" });
-
-		const res: any = await p;
-		expect(res.status).toBe("OK");
-		expect(res.invoice).toBe("lnbcmock69");
+		await expect(pending).resolves.toMatchObject({
+			status: "OK",
+			invoice: "lnbcmock69",
+		});
 	});
 });

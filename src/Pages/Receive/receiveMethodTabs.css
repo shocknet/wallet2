@@ -1,0 +1,103 @@
+.receive-method-tabs {
+	--background: var(--app-tabs);
+	min-height: 0;
+}
+
+.receive-method-tabs ion-segment-button {
+	--background: transparent;
+	--background-checked: transparent;
+	--background-hover: transparent;
+	--background-hover-opacity: 0;
+	--background-focused: transparent;
+	--background-focused-opacity: 0;
+	--color: var(--app-text-primary);
+	--color-checked: var(--ion-color-primary-contrast);
+	--color-hover: var(--app-text-primary);
+	--indicator-color: var(--ion-color-primary);
+	--indicator-height: 100%;
+	--indicator-box-shadow: none;
+	--border-radius: 12px;
+	--border-width: 1px;
+	--border-style: solid;
+	--border-color: var(--app-border);
+	--padding-top: 0;
+	--padding-bottom: 0;
+	--padding-start: 0;
+	--padding-end: 0;
+	margin: 0;
+	min-width: 0;
+	min-height: 0;
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: normal;
+	line-height: 1.25;
+	text-transform: none;
+}
+
+.receive-method-tabs ion-segment-button.segment-button-checked {
+	z-index: 1;
+}
+
+.receive-method-tabs ion-segment-button::part(native) {
+	border-radius: 12px;
+	padding: 8px 4px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	background: transparent;
+	opacity: 1;
+}
+
+.receive-method-tabs ion-segment-button::part(indicator) {
+	inset: 0;
+	padding: 0;
+}
+
+.receive-method-tabs ion-segment-button::part(indicator-background) {
+	height: 100%;
+	border-radius: 12px;
+	background: var(--ion-color-primary);
+	box-shadow: none;
+}
+
+.receive-method-tabs ion-segment-button::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 8px;
+	bottom: 8px;
+	width: 1px;
+	margin: 0;
+	border: 0;
+	background: var(--app-border);
+	opacity: 1;
+	pointer-events: none;
+	z-index: 4;
+}
+
+.receive-method-tabs ion-segment-button:first-of-type::before,
+.receive-method-tabs ion-segment-button.segment-button-checked::before,
+.receive-method-tabs ion-segment-button.segment-button-after-checked::before {
+	opacity: 0;
+}
+
+.receive-method-tabs ion-segment-button ion-icon {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	margin: 0;
+}
+
+.receive-method-tabs ion-segment-button ion-label {
+	margin: 0;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: normal;
+	line-height: 1.25;
+	text-transform: none;
+}
+

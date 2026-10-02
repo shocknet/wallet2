@@ -7,10 +7,9 @@ import {
 	useIonLoading,
 } from "@ionic/react";
 import { useCallback, useState } from "react";
-import { useAppSelector } from "@/State/store/hooks";
-import { selectFavoriteSourceView, selectSourceViews, SourceView } from "@/State/scoped/backups/sources/selectors";
+import { useSourceSelection } from "@/Hooks/useSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { SourceSelectionView } from "@/Components/Source/SourceSelectionView";
-import { useNestedSourceSelectModal } from "@/Components/Source/SourceSelectSheet";
 import {
 	allowOverlayRoles,
 	useOverlayCoordinator,
@@ -24,6 +23,7 @@ import { createNostrInvoice } from "@/Api/helpers";
 import { requestLnurlWithdraw } from "@/lib/lnurl/withdraw";
 import { useToast } from "@/lib/contexts/useToast";
 
+
 export type SweepLnurlwOptions = {
 	parsed: ParsedLnurlWithdrawInput;
 };
@@ -33,14 +33,12 @@ type SweepLnurlwDialogProps = SweepLnurlwOptions & {
 };
 
 function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
-	const sourceViews = useAppSelector(selectSourceViews);
-	const favoriteSourceView = useAppSelector(selectFavoriteSourceView);
+	const { sourceId, setOverrideSourceId } = useSourceSelection();
+	const source = useLiveSourceView(sourceId);
+
 	const { showToast } = useToast();
-	const sourceSelect = useNestedSourceSelectModal();
 	const [presentLoading, dismissLoading] = useIonLoading();
-	const [selectedSource, setSelectedSource] = useState<SourceView>(
-		() => favoriteSourceView ?? sourceViews[0],
-	);
+
 	const [busy, setBusy] = useState(false);
 
 	const handleSweep = async () => {
@@ -49,8 +47,8 @@ function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 		try {
 			await presentLoading({ message: "Sweeping…" });
 			const parsedInvoice = await createNostrInvoice(
-				{ pubkey: selectedSource.lpk, relays: selectedSource.relays },
-				selectedSource.keys,
+				{ pubkey: source.lpk, relays: source.relays },
+				source.keys,
 				parsed.max,
 			);
 			await requestLnurlWithdraw({
@@ -89,17 +87,11 @@ function SweepLnurlwDialog({ parsed, dismiss }: SweepLnurlwDialogProps) {
 				</IonText>
 				<div className="mt-4">
 					<SourceSelectionView
-						source={selectedSource}
+						sourceId={source.sourceId}
+						onSourceId={setOverrideSourceId}
+						title="Sweep into"
 						showTapToSwitch={false}
-						onClick={() => {
-							sourceSelect({
-								sources: sourceViews,
-								selectedSourceId: selectedSource.sourceId,
-								title: "Sweep into",
-							}).then((result) => {
-								if (result.role === "confirm") setSelectedSource(result.data);
-							});
-						}}
+						nested
 						className="[--background:var(--app-surface-muted)]"
 					/>
 				</div>

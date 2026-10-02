@@ -5,15 +5,16 @@ import { hexToBytes } from "@noble/hashes/utils";
 import { NOSTR_RELAYS } from "@/constants";
 import { normalizeWsUrl } from "@/lib/url";
 import { IdentityType } from "../types";
-import type { RuntimeIdentity, RuntimeIdentitySanctum } from "@/shell/types";
+import type { RuntimeIdentity } from "@/shell/types";
 import { getExtentionsWithRetries } from "@/lib/nip07Extension";
 import store from "@/State/store/store";
-import { selectActiveIdentity, selectActiveRuntimeSanctumTokensData } from "../slice";
+import { selectActiveIdentity } from "../slice";
+import { markSanctumReauthRequired } from "../identitySyncThunks";
 import {
-	clearIdentitySanctumTokensData,
-	markSanctumReauthRequired,
-	setIdentitySanctumTokensData,
-} from "../identitySyncThunks";
+	deleteSanctumTokens,
+	readSanctumTokens,
+	writeSanctumTokens,
+} from "./sanctumTokensStore";
 import { type SanctumApi, type TokenDataAdapter } from "sanctum-sdk";
 import {
 	clearSanctumIdentitySdk,
@@ -108,40 +109,11 @@ export async function getLocalKeysIdentityApi(keys: NostrKeyPair, relays: string
 	return api;
 }
 
-function createEphemeralSanctumTokenAdapter(
-	runtime: RuntimeIdentitySanctum,
-): TokenDataAdapter {
+function createSanctumTokenAdapter(pubkey: string): TokenDataAdapter {
 	return {
-		getTokenData: () => runtime.tokensData,
-		setTokenData: (tokensData) => {
-			runtime.tokensData = tokensData;
-			runtime.reauthReason = null;
-		},
-		clearTokenData: () => {
-			runtime.tokensData = null;
-		},
-	};
-}
-
-function createActiveSanctumTokenAdapter(pubkey: string): TokenDataAdapter {
-	return {
-		getTokenData: () => {
-			const state = store.getState();
-			const active = state.identitiesRegistry.active;
-			if (
-				active?.type === IdentityType.SANCTUM &&
-				active.pubkey === pubkey
-			) {
-				return selectActiveRuntimeSanctumTokensData(state);
-			}
-			return null;
-		},
-		setTokenData: async (tokensData) => {
-			await store.dispatch(setIdentitySanctumTokensData({ pubkey, tokensData }));
-		},
-		clearTokenData: async () => {
-			await store.dispatch(clearIdentitySanctumTokensData({ pubkey }));
-		},
+		getTokenData: () => readSanctumTokens(pubkey),
+		setTokenData: (tokensData) => writeSanctumTokens(pubkey, tokensData),
+		clearTokenData: () => deleteSanctumTokens(pubkey),
 	};
 }
 
@@ -180,49 +152,31 @@ async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNo
 }
 
 /**
- * Probe / unlock / create path: bind Sanctum tokens to the candidate RuntimeIdentity only.
- * Does not read or write the registry. Clears any cached SDK first so an active adapter
- * cannot leak into this phase.
+ * Sanctum tokens are read and written on disk for this pubkey.
+ * Create, unlock, and the ready app all use this same adapter.
  */
-export async function createEphemeralIdentityNostrApi(
+export async function getIdentityNostrApi(
 	identity: RuntimeIdentity,
 ): Promise<IdentityNostrApi> {
 	if (identity.type !== IdentityType.SANCTUM) {
 		return buildNonSanctumApi(identity);
 	}
 
-	clearSanctumIdentitySdk(identity.pubkey);
-
 	return verifySanctumPubkey(
 		identity.pubkey,
-		createEphemeralSanctumTokenAdapter(identity),
+		createSanctumTokenAdapter(identity.pubkey),
 		(reason) => {
-			identity.reauthReason = reason ?? "Session expired or invalid";
+			store.dispatch(
+				markSanctumReauthRequired({ pubkey: identity.pubkey, reason }),
+			);
 		},
 	);
 }
 
-/**
- * Ready path: Sanctum tokens come from `active` only (already unlocked).
- * Writes go through identitySyncThunks (registry + active).
- */
 export async function getActiveIdentityNostrApi(): Promise<IdentityNostrApi> {
 	const active = selectActiveIdentity(store.getState());
 	if (!active) {
 		throw new Error("No active identity");
 	}
-
-	if (active.type !== IdentityType.SANCTUM) {
-		return buildNonSanctumApi(active);
-	}
-
-	return verifySanctumPubkey(
-		active.pubkey,
-		createActiveSanctumTokenAdapter(active.pubkey),
-		(reason) => {
-			store.dispatch(
-				markSanctumReauthRequired({ pubkey: active.pubkey, reason }),
-			);
-		},
-	);
+	return getIdentityNostrApi(active);
 }

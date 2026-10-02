@@ -2,7 +2,7 @@ import { createListenerMiddleware } from '@reduxjs/toolkit'
 import type { RootState, AppDispatch } from './store'
 import { addHydrationListener } from '../identitiesRegistry/middleware/switcher';
 import { addIdentityLifecycle } from '../listeners/lifecycle/lifecycle';
-import { beaconWatcherSpec } from '../listeners/beaconWatcher/beaconWatcher';
+import { beaconWatcherSpec } from '../scoped/beacons/beaconWatcher';
 import { bridgeListenerSpec } from '../listeners/bridgeListener/bridgeListener';
 import { historySyncerSpec } from '../listeners/historySyncer/historySyncer';
 import { liveRequestsListenerSpec } from '../listeners/liveRequests';

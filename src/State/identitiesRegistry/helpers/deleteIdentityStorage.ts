@@ -5,9 +5,9 @@ import { getScopedBeaconsPersistKey } from "@/State/scoped/beacons/slice";
 import { removePendingV0Identity } from "@/shell/migrations/secureIdentities/pendingV0";
 import {
 	deleteLocalPrivateKey,
-	deleteSanctumSession,
 	deleteWrappedDataKeyCiphertext,
 } from "./secureSecrets";
+import { deleteSanctumTokens } from "./sanctumTokensStore";
 import { IdentityType, type Identity } from "../types";
 
 export async function deleteIdentityScopedPersist(pubkey: string): Promise<void> {
@@ -25,11 +25,8 @@ export async function deleteIdentitySecureSecrets(identity: Identity): Promise<v
 		await deleteLocalPrivateKey(identity.localSecret.localKeyRef);
 	}
 
-	if (
-		identity.type === IdentityType.SANCTUM &&
-		identity.sanctumTokens?.storage === "secure_ref"
-	) {
-		await deleteSanctumSession(identity.sanctumTokens.sessionRef);
+	if (identity.type === IdentityType.SANCTUM) {
+		await deleteSanctumTokens(identity.pubkey);
 	}
 }
 

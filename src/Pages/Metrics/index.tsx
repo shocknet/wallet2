@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { IonPage, IonRouterOutlet, IonSplitPane } from "@ionic/react";
 import { Redirect, Route, RouteComponentProps } from "react-router-dom";
-import { shallowEqual } from "react-redux";
 import { useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
@@ -21,7 +20,7 @@ import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
 import Backups from "./Backups";
 
 const Metrics = ({ match }: RouteComponentProps) => {
-	const adminIds = useAppSelector(selectAdminSourceIds, shallowEqual);
+	const adminIds = useAppSelector(selectAdminSourceIds);
 	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
 	const activeId = activeAdminSourceId(adminIds, selectedId);
 

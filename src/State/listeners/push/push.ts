@@ -1,7 +1,7 @@
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { listenerKick } from "@/State/listeners/actions";
 import { pushTokenUpdated } from "@/notifications/push/actions";
-import { selectSourceViews, selectSourceViewById, SourceView } from "@/State/scoped/backups/sources/selectors";
+import { readLiveSourceViews, selectSourceViewById, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { getNostrClient } from "@/Api/nostr";
 import { getDeviceId } from "@/constants";
 import type { RootState } from "@/State/store/store";
@@ -52,7 +52,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const token = getPushToken(state);
 					if (!token) return;
-					const sources = selectSourceViews(state);
+					const sources = readLiveSourceViews(state);
 					await enrollTokenForSources(token, sources);
 				}
 			}),
@@ -65,7 +65,7 @@ export const pushEnrollmentSpec: ListenerSpec = {
 					const state = listenerApi.getState();
 					const token = getPushToken(state);
 					if (!token) return;
-					const sources = selectSourceViews(state);
+					const sources = readLiveSourceViews(state);
 					await enrollTokenForSources(action.payload.token, sources);
 				}
 			}),

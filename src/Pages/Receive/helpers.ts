@@ -8,15 +8,7 @@ import {
 } from "@/Api/helpers";
 import type { Satoshi } from "@/lib/types/units";
 import { ParsedInvoiceInput } from "@/lib/types/parse";
-
-export function pickDefaultSource(
-	sources: SourceView[],
-	favoriteSourceId: string | null,
-): SourceView {
-	const favorite = sources.find((s) => s.sourceId === favoriteSourceId);
-	if (favorite) return favorite;
-	return sources[0];
-}
+import type { ReceiveHave } from "./receiveMethodsReducer";
 
 export type ReceiveMethodId =
 	| "ln-address"
@@ -24,46 +16,20 @@ export type ReceiveMethodId =
 	| "noffer"
 	| "invoice";
 
-export type ReceiveMethodMeta = {
-	id: Exclude<ReceiveMethodId, "invoice">;
-	label: string;
-	prefix?: string;
-};
-
-export const METHOD_METAS: ReceiveMethodMeta[] = [
-	{ id: "ln-address", label: "LN address", prefix: "lightning" },
-	{ id: "chain", label: "Chain", prefix: "bitcoin" },
-	{ id: "noffer", label: "Noffer" },
-];
+export const RECEIVE_TAB_ORDER = [
+	"ln-address",
+	"noffer",
+	"invoice",
+	"chain",
+] as const satisfies readonly ReceiveMethodId[];
 
 const CHAIN_CACHE = "r2_chain";
 
 const cacheKey = (sourceId: string, kind: string) => `${kind}_${sourceId}`;
 
-export type SourceReceivePayloads = {
-	lnAddress: string | null;
-	chain: string | null;
-	noffer: string | null;
-};
-
-export const emptyPayloads: SourceReceivePayloads = {
-	lnAddress: null,
-	chain: null,
-	noffer: null,
-};
-
-export function seedPayloads(source: SourceView): SourceReceivePayloads {
-	return {
-		...emptyPayloads,
-		lnAddress: source.vanityName?.trim() || null,
-		noffer: source.noffer?.trim() || null,
-	};
-}
-
-
 export function fetchRemotePayloads(
 	source: SourceView,
-	onPatch: (patch: Partial<SourceReceivePayloads>) => void,
+	onPatch: (patch: Partial<ReceiveHave>) => void,
 ): void {
 	const nprofile = { pubkey: source.lpk, relays: source.relays };
 
@@ -88,29 +54,6 @@ async function loadCached(
 		return value;
 	} catch {
 		return null;
-	}
-}
-
-export function pickDefaultMethod(
-	payloads: SourceReceivePayloads,
-): Exclude<ReceiveMethodId, "invoice"> | null {
-	if (payloads.lnAddress) return "ln-address";
-	if (payloads.noffer) return "noffer";
-	if (payloads.chain) return "chain";
-	return null;
-}
-
-export function payloadForMethod(
-	method: Exclude<ReceiveMethodId, "invoice">,
-	payloads: SourceReceivePayloads,
-): string | null {
-	switch (method) {
-		case "ln-address":
-			return payloads.lnAddress;
-		case "chain":
-			return payloads.chain;
-		case "noffer":
-			return payloads.noffer;
 	}
 }
 

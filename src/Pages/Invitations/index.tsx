@@ -23,20 +23,22 @@ import { WALLET_URL } from "@/constants";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import {
 	type SourceView,
-	selectAdminSourceViews,
+	selectAdminSourceIds,
 } from "@/State/scoped/backups/sources/selectors";
+import { useAdminSourceSelection } from "@/Hooks/useAdminSourceSelection";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { useAppSelector } from "@/State/store/hooks";
 import { navToSources } from "@/Pages/Sources/nav";
 
 export default function Invitations() {
-	const admins = useAppSelector(selectAdminSourceViews);
+	const adminIds = useAppSelector(selectAdminSourceIds);
 
 	return (
 		<IonPage className="ion-page-width">
-			{admins.length === 0 ? (
+			{adminIds.length === 0 ? (
 				<InvitationsNoAdmin />
 			) : (
-				<AdminSourceGate admins={admins} />
+				<AdminSourceGate adminIds={adminIds} />
 			)}
 		</IonPage>
 	);
@@ -69,61 +71,46 @@ function InvitationsNoAdmin() {
 }
 
 function pickDefaultPendingId(
-	admins: SourceView[],
+	adminIds: string[],
 	favoriteSourceId: string | null,
 ): string | null {
-	if (admins.length === 1) return admins[0].sourceId;
-	return admins.find((s) => s.sourceId === favoriteSourceId)?.sourceId ?? null;
+	if (adminIds.length === 1) return adminIds[0];
+	return favoriteSourceId && adminIds.includes(favoriteSourceId)
+		? favoriteSourceId
+		: null;
 }
 
-function AdminSourceGate({ admins }: { admins: SourceView[] }) {
-	const [sourceId, setSourceId] = useState<string | null>(() =>
-		admins.length === 1 ? admins[0].sourceId : null,
-	);
+function AdminSourceGate({ adminIds }: { adminIds: string[] }) {
+	const { sourceId, setOverrideSourceId } = useAdminSourceSelection();
 
-	useEffect(() => {
-		if (sourceId && !admins.some((a) => a.sourceId === sourceId)) {
-			setSourceId(admins.length === 1 ? admins[0].sourceId : null);
-			return;
-		}
-		if (!sourceId && admins.length === 1) {
-			setSourceId(admins[0].sourceId);
-		}
-	}, [admins, sourceId]);
-
-	const source = useMemo(
-		() => admins.find((a) => a.sourceId === sourceId) ?? null,
-		[admins, sourceId],
-	);
-
-	if (!source) {
+	if (!sourceId) {
 		return (
 			<AdminSelectStep
-				admins={admins}
-				onConfirm={setSourceId}
+				adminIds={adminIds}
+				onConfirm={setOverrideSourceId}
 			/>
 		);
 	}
 
-	return <InvitationsInviteStep source={source} />;
+	return <InvitationsInviteStep sourceId={sourceId} />;
 }
 
 function AdminSelectStep({
-	admins,
+	adminIds,
 	onConfirm,
 }: {
-	admins: SourceView[];
+	adminIds: string[];
 	onConfirm: (sourceId: string) => void;
 }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
 	const [pendingId, setPendingId] = useState<string | null>(() =>
-		pickDefaultPendingId(admins, favoriteSourceId),
+		pickDefaultPendingId(adminIds, favoriteSourceId),
 	);
 
 	useEffect(() => {
-		if (pendingId && admins.some((a) => a.sourceId === pendingId)) return;
-		setPendingId(pickDefaultPendingId(admins, favoriteSourceId));
-	}, [admins, pendingId, favoriteSourceId]);
+		if (pendingId && adminIds.includes(pendingId)) return;
+		setPendingId(pickDefaultPendingId(adminIds, favoriteSourceId));
+	}, [adminIds, pendingId, favoriteSourceId]);
 
 	return (
 		<>
@@ -136,12 +123,12 @@ function AdminSelectStep({
 						Choose which Pub node you want to invite people to.
 					</p>
 					<IonList lines="full" className="bg-transparent">
-						{admins.map((admin) => (
+						{adminIds.map((id) => (
 							<SourceItemView
-								key={admin.sourceId}
-								source={admin}
-								selected={pendingId === admin.sourceId}
-								onClick={() => setPendingId(admin.sourceId)}
+								key={id}
+								sourceId={id}
+								selected={pendingId === id}
+								onClick={() => setPendingId(id)}
 								showBalance={false}
 							/>
 						))}
@@ -167,11 +154,9 @@ function AdminSelectStep({
 	);
 }
 
-function InvitationsInviteStep({
-	source,
-}: {
-	source: SourceView;
-}) {
+function InvitationsInviteStep({ sourceId }: { sourceId: string }) {
+	const source = useLiveSourceView(sourceId);
+
 	return (
 		<>
 			<IonHeader className="ion-no-border">
@@ -188,7 +173,7 @@ function InvitationsInviteStep({
 						</p>
 					</div>
 
-					<SourceReachabilityHint source={source} />
+					<SourceReachabilityHint sourceId={source.sourceId} />
 					<ReusableInviteLink source={source} />
 				</div>
 			</IonContent>

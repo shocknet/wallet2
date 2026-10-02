@@ -5,7 +5,7 @@ import { SourceDocV0, SourceType } from "./schema"
 import { LwwFlag, newflag, newLww } from "../../../sync/lww"
 import { getDeviceId, NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "@/constants"
 import { generateNewKeyPair } from "@/Api/helpers"
-import { selectSourceViewsByLpk } from "./selectors"
+import { readLiveSourceViewsByLpk } from "./selectors"
 import { getNostrClient } from "@/Api/nostr"
 import type { NostrKeyPair } from "@/Api/nostrHandler"
 import { normalizeWsUrl } from "@/lib/url"
@@ -154,7 +154,7 @@ export const connectAsAdmin = ({
 	bridgeUrl,
 }: NprofileConnection & { adminEnrollToken: string }): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const deviceId = getDeviceId();
-	const sameLpk = selectSourceViewsByLpk(getState(), lpk);
+	const sameLpk = readLiveSourceViewsByLpk(getState(), lpk);
 	const existingAdmin = sameLpk.find((s) => !!s.adminToken);
 
 	// Already admin with this enroll token — nothing to do.

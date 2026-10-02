@@ -71,7 +71,7 @@ function SourceIdentity({ source }: { source: SourceView }) {
 					{source.lpk}
 				</p>
 			</div>
-			<SourceReachabilityHint source={source} />
+			<SourceReachabilityHint sourceId={source.sourceId} />
 		</div>
 	);
 }

@@ -1,5 +1,3 @@
-
-import type { TokensData } from "sanctum-sdk";
 import { AesGcmEnvelopeWithSalt } from "@/lib/aesGcm";
 
 export enum IdentityType {
@@ -36,10 +34,6 @@ export type LocalPrivateKeyStorage =
 		encryptedPrivkey: AesGcmEnvelopeWithSalt;
 	};
 
-export type SanctumTokensStorage =
-	| { storage: "secure_ref"; sessionRef: string }
-	| { storage: "inline"; tokensData: TokensData };
-
 export interface IdentityBase {
 	pubkey: string;
 	label: string;
@@ -63,9 +57,7 @@ export interface IdentityExtension extends IdentityBase {
 export interface IdentitySanctum extends IdentityBase {
 	type: IdentityType.SANCTUM;
 	wrappedDataKey: WrappedDataKeyStorage;
-	sanctumTokens?: SanctumTokensStorage;
 	reauthReason?: string;
-
 }
 
 export type Identity = IdentityKeys | IdentityExtension | IdentitySanctum;

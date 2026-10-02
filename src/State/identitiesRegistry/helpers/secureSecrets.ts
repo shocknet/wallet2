@@ -6,7 +6,7 @@ const SANCTUM_TOKENS_PREFIX = "identity/sanctum-tokens/";
 const WRAPPED_DATA_KEY_PREFIX = "identity/wrapped-data-key/";
 
 const makeLocalPrivkeyRef = (identityId: string) => `${LOCAL_PRIVKEY_PREFIX}${identityId}`;
-const makeSanctumSessionRef = (identityId: string) => `${SANCTUM_TOKENS_PREFIX}${identityId}`;
+export const sanctumTokensStorageKey = (identityId: string) => `${SANCTUM_TOKENS_PREFIX}${identityId}`;
 const makeWrappedDataKeyRef = (identityId: string) => `${WRAPPED_DATA_KEY_PREFIX}${identityId}`;
 
 async function setSecret(key: string, value: string): Promise<void> {
@@ -36,7 +36,7 @@ export async function deleteLocalPrivateKey(localKeyRef: string): Promise<void> 
 }
 
 export async function setSanctumTokensData(identityId: string, tokensData: TokensData) {
-	const ref = makeSanctumSessionRef(identityId);
+	const ref = sanctumTokensStorageKey(identityId);
 	await setSecret(ref, JSON.stringify(tokensData));
 	return ref;
 }

@@ -7,7 +7,7 @@ import {
 } from "../State/identitiesRegistry/types";
 import { switchIdentity } from "../State/identitiesRegistry/thunks";
 import { selectIdentities } from "../State/identitiesRegistry/slice";
-import { markSanctumReauthRequired, setIdentitySanctumTokensData } from "../State/identitiesRegistry/identitySyncThunks";
+import { clearSanctumReauthRequired } from "../State/identitiesRegistry/identitySyncThunks";
 import { shellActions } from "./slice";
 import { runShellMigrations } from "./migrations";
 import {
@@ -21,7 +21,6 @@ import {
 import type {
 	DeviceToIdentitiesRepairAction,
 	RuntimeIdentity,
-	RuntimeIdentitySanctum,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
 } from "./types";
@@ -30,8 +29,9 @@ import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
 import { materializePushIntent } from "./pushIntent";
 import dLogger from "@/Api/helpers/debugLog";
-import { createEphemeralIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
+import { readSanctumTokens, writeSanctumTokens } from "@/State/identitiesRegistry/helpers/sanctumTokensStore";
 
 
 
@@ -223,8 +223,9 @@ export const completeSanctumReauth =
 				return;
 			}
 
-			// this instance of runtimeIdentity comes from the store, so we need to make a copy to avoid mutating the store
-			const copy: RuntimeIdentitySanctum = { ...runtimeIdentity, tokensData, reauthReason: null };
+			await writeSanctumTokens(runtimeIdentity.pubkey, tokensData);
+			clearSanctumIdentitySdk(runtimeIdentity.pubkey);
+			const copy = { ...runtimeIdentity, reauthReason: null };
 			const verification = await dispatch(verifySanctumSession(copy));
 
 			if (!verification.ok) {
@@ -246,7 +247,15 @@ export const verifySanctumSession =
 				};
 			}
 
-			if (!runtimeIdentity.tokensData || runtimeIdentity.reauthReason) {
+			if (runtimeIdentity.reauthReason) {
+				return {
+					ok: false,
+					reason: runtimeIdentity.reauthReason,
+				};
+			}
+
+			const tokens = await readSanctumTokens(runtimeIdentity.pubkey);
+			if (!tokens) {
 				return {
 					ok: false,
 					reason: "Sanctum reauth required",
@@ -254,27 +263,8 @@ export const verifySanctumSession =
 			}
 
 			try {
-				await createEphemeralIdentityNostrApi(runtimeIdentity);
-
-				if (runtimeIdentity.tokensData) {
-					await dispatch(
-						setIdentitySanctumTokensData({
-							pubkey: runtimeIdentity.pubkey,
-							tokensData: runtimeIdentity.tokensData,
-						}),
-					);
-				}
-				if (runtimeIdentity.reauthReason) {
-					dispatch(
-						markSanctumReauthRequired({
-							pubkey: runtimeIdentity.pubkey,
-							reason: runtimeIdentity.reauthReason,
-						}),
-					);
-				}
-				// Drop ephemeral SDK so ready callers build the store-backed adapter
-				clearSanctumIdentitySdk(runtimeIdentity.pubkey);
-
+				await getIdentityNostrApi(runtimeIdentity);
+				dispatch(clearSanctumReauthRequired({ pubkey: runtimeIdentity.pubkey }));
 				return { ok: true };
 			} catch (error) {
 				return {

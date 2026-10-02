@@ -1,14 +1,20 @@
 import { IonContent, IonIcon, IonPopover, IonSpinner } from "@ionic/react";
 import { alertCircleOutline } from "ionicons/icons";
 import cn from "clsx";
-import type {
-	BeaconHealth,
-	SourceView,
-} from "@/State/scoped/backups/sources/selectors";
+import { type BeaconHealth } from "@/State/scoped/backups/sources/selectors";
+import { useSourceView } from "@/Hooks/useSourceView";
 import moment from "moment";
 
+
 export type SourceReachabilityHintProps = {
-	source: Pick<SourceView, "sourceId" | "beaconStale" | "beaconLastSeenAtMs">;
+	sourceId: string;
+	className?: string;
+};
+
+export type BeaconReachabilityHintProps = {
+	id: string;
+	beaconStale: BeaconHealth;
+	beaconLastSeenAtMs: number;
 	className?: string;
 };
 
@@ -30,15 +36,33 @@ function formatLastHeard(lastSeenAtMs: number): string | null {
 }
 
 export function SourceReachabilityHint({
-	source,
+	sourceId,
 	className,
 }: SourceReachabilityHintProps) {
-	const { beaconStale, beaconLastSeenAtMs, sourceId } = source;
+	const source = useSourceView(sourceId);
+	if (!source) return null;
+
+	return (
+		<BeaconReachabilityHint
+			id={source.sourceId}
+			beaconStale={source.beaconStale}
+			beaconLastSeenAtMs={source.beaconLastSeenAtMs}
+			className={className}
+		/>
+	);
+}
+
+/** A probed node that is not a saved source yet */
+export function BeaconReachabilityHint({
+	id,
+	beaconStale,
+	beaconLastSeenAtMs,
+	className,
+}: BeaconReachabilityHintProps) {
 	if (beaconStale === "fresh") return null;
 
-	const triggerId = `source-reachability-${sourceId}`;
+	const triggerId = `source-reachability-${id}`;
 	const lastHeard = formatLastHeard(beaconLastSeenAtMs);
-
 
 	return (
 		<div

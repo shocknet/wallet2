@@ -4,7 +4,7 @@ import { connectAsAdmin } from "@/State/scoped/backups/sources/thunks";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { NodeCard } from "../common/NodeCard";
-import { selectSourceViewsByLpk } from "@/State/scoped/backups/sources/selectors";
+import { selectExistingAdminTokenByLpk } from "@/State/scoped/backups/sources/selectors";
 import type { ParsedNprofileInput } from "@/lib/types/parse";
 import type { Dismiss, OverlayChoice } from "@/overlay";
 
@@ -26,12 +26,10 @@ export function ConnectAsAdminCase({
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const adminEnrollToken = parsed.adminEnrollToken;
 
-	const sourcesFromSameLpk = useAppSelector((state) =>
-		selectSourceViewsByLpk(state, parsed.pubkey),
+	const existingAdminToken = useAppSelector((state) =>
+		selectExistingAdminTokenByLpk(state, parsed.pubkey),
 	);
-	const existingAdmin = sourcesFromSameLpk.find((source) => !!source.adminToken);
-	const alreadyAdmin =
-		!!existingAdmin && existingAdmin.adminToken === adminEnrollToken;
+	const alreadyAdmin = existingAdminToken === adminEnrollToken;
 
 	const handleConnect = async () => {
 		try {

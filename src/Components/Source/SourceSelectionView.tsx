@@ -3,33 +3,59 @@ import { caretDownSharp, walletOutline } from "ionicons/icons";
 import cn from "clsx";
 import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
-import type { SourceView } from "@/State/scoped/backups/sources/selectors";
+import {
+	useNestedSourceSelectModal,
+	useSourceSelectModal,
+} from "@/Components/Source/SourceSelectSheet";
 import { formatSatoshi } from "@/lib/units";
+import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
+import { useLiveSourceView } from "@/Hooks/useSourceView";
+import { useAppSelector } from "@/State/store/hooks";
 
 export type SourceSelectionViewProps = {
-	source: SourceView;
-	onClick: () => void;
+	sourceId: string;
+	onSourceId: (sourceId: string) => void;
+	title?: string;
 	className?: string;
 	showBalance?: boolean;
 	showTapToSwitch?: boolean;
 	showCaret?: boolean;
+	nested?: boolean;
 };
 
 export function SourceSelectionView({
-	source,
-	onClick,
+	sourceId,
+	onSourceId,
+	title = "Select source",
 	className,
 	showBalance = true,
 	showTapToSwitch = true,
 	showCaret = true,
+	nested = false,
 }: SourceSelectionViewProps) {
+	const source = useLiveSourceView(sourceId);
+	const sourceIds = useAppSelector(selectLiveSourceIds);
+	const openSheet = useSourceSelectModal();
+	const openNestedSheet = useNestedSourceSelectModal();
+
 	const label = sourceDisplayName(source);
+	const open = nested ? openNestedSheet : openSheet;
 
 	return (
 		<IonButton
 			expand="block"
 			fill="clear"
-			onClick={onClick}
+			onClick={() => {
+				void open({
+					sourceIds,
+					selectedSourceId: sourceId,
+					title,
+					showBalance,
+				}).then((result) => {
+					if (result.role !== "confirm") return;
+					onSourceId(result.data);
+				});
+			}}
 			aria-label={`Change source, currently ${label}`}
 			className={cn(
 				"m-0 h-auto min-h-0 w-full normal-case tracking-normal",

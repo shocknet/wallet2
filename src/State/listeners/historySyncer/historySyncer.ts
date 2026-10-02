@@ -1,6 +1,6 @@
 import { getNostrClient } from "@/Api/nostr";
 import { historySelectors, selectCursorForSource, sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { selectSourceViews, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
+import { selectLiveSourceIds, selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { Satoshi } from "@/lib/types/units";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { historyFetchAllRequested, historyFetchSourceRequested, listenerKick } from "@/State/listeners/actions";
@@ -44,7 +44,7 @@ export const historySyncerSpec: ListenerSpec = {
 					}
 
 					const state = listenerApi.getState();
-					const view = selectSourceViews(state).find(v => v.sourceId === sourceId);
+					const view = selectSourceViewById(state, sourceId);
 					if (!view) {
 						log.error("Source not found");
 						throw new Error(`Source not found: ${sourceId}`);
@@ -128,12 +128,12 @@ export const historySyncerSpec: ListenerSpec = {
 			add({
 				actionCreator: historyFetchAllRequested,
 				effect: async (action, listenerApi) => {
-					const views = selectSourceViews(listenerApi.getState());
+					const sourceIds = selectLiveSourceIds(listenerApi.getState());
 					const promises = []
-					for (const v of views) {
+					for (const sourceId of sourceIds) {
 						const deferred = createDeferred<TaskResult<void>>();
 						promises.push(deferred);
-						listenerApi.dispatch(historyFetchSourceRequested({ sourceId: v.sourceId, deferred }));
+						listenerApi.dispatch(historyFetchSourceRequested({ sourceId, deferred }));
 					}
 					await Promise.allSettled(promises)
 					action.payload.deferred.resolve();
