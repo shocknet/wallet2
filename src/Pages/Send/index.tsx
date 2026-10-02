@@ -34,7 +34,13 @@ import {
 	invoiceSourceFromParsed,
 	sendInvoicePayment,
 } from "@/State/scoped/backups/sources/history/sendInvoicePayment";
-import { selectLiveSourceBalances } from "@/State/scoped/backups/sources/selectors";
+import {
+	selectLiveSourceBalances,
+	selectSourceViewById,
+} from "@/State/scoped/backups/sources/selectors";
+import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
+import type { RootState } from "@/State/store/store";
+import { useStore } from "react-redux";
 import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { getAmountFieldIntent } from "./amountFieldIntent";
@@ -72,6 +78,7 @@ function SendInner() {
 	const router = useIonRouter();
 	const history = useHistory<SendPageNavState>();
 	const dispatch = useAppDispatch();
+	const store = useStore<RootState>();
 	const recipientRef = useRef<BitcoinInputHandle>(null);
 	const amountRef = useRef<HTMLIonInputElement>(null);
 	const reviewing = useRef(false);
@@ -137,15 +144,18 @@ function SendInner() {
 			);
 			if (better && better.sourceId !== activeSourceId) {
 				setSelectedSourceId(better.sourceId);
+				const betterView = selectSourceViewById(store.getState(), better.sourceId);
 				showToast({
 					header: "Source switched",
-					message: "Switched to a source that can cover this amount.",
+					message: betterView
+						? `${sourceDisplayName(betterView)} can cover this amount.`
+						: "Switched to a source that can cover this amount.",
 					color: "warning",
 					duration: 2000,
 				});
 			}
 		},
-		[balances, activeSourceId, favoriteSourceId, showToast],
+		[balances, activeSourceId, favoriteSourceId, showToast, store],
 	);
 
 	useEffect(() => {

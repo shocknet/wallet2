@@ -130,8 +130,7 @@ export const InvoicePane = forwardRef<InvoicePaneHandle, { source: SourceView }>
 									id="invoice-blind-desc"
 									className="m-0 text-sm leading-snug text-muted"
 								>
-									Specify the last hops that a payment must take before delivering
-									the invoice in encrypted form.
+									Hides your node from the payer. Hard to scan as a QR code.
 								</p>
 							</div>
 

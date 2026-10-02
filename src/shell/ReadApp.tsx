@@ -32,7 +32,7 @@ const Metrics = lazy(() => import('@/Pages/Metrics'));
 const LinkedApps = lazy(() => import('@/Pages/LinkedApps'));
 const Offers = lazy(() => import('@/Pages/Offers'));
 const Stats = lazy(() => import("@/Pages/Stats"));
-const Management = lazy(() => import("@/Pages/Management"));
+const OffersAppAccess = lazy(() => import("@/Pages/Offers/AppAccess"));
 const AmountFieldPlayground = lazy(() => import("@/Pages/Dev/AmountFieldPlayground"));
 const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 
@@ -110,11 +110,6 @@ export const ReadyApp = memo(function ReadyApp({
 					layout={Layout}
 				/>
 				<AppRoute
-					exact
-					path="/management"
-					component={Management}
-				/>
-				<AppRoute
 					path="/dashboard"
 					component={Metrics}
 				/>
@@ -133,6 +128,11 @@ export const ReadyApp = memo(function ReadyApp({
 					exact
 					path="/offers"
 					component={Offers}
+				/>
+				<AppRoute
+					exact
+					path="/offers/:sourceId/access"
+					component={OffersAppAccess}
 				/>
 				<AppRoute
 					exact

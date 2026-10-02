@@ -17,8 +17,8 @@ export type ReceiveMethodId =
 	| "invoice";
 
 export const RECEIVE_TAB_ORDER = [
-	"noffer",
 	"ln-address",
+	"noffer",
 	"invoice",
 	"chain",
 ] as const satisfies readonly ReceiveMethodId[];
