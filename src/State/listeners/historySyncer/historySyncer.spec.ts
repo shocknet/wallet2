@@ -110,7 +110,6 @@ function openHistoryStore(opts: {
 		beacons: opts.beacons,
 		loadIdentity: false,
 	});
-	store.dispatch(runtimeActions.clockTick({ nowMs: NOW_MS }));
 	if (loadIdentity) {
 		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: TEST_RUNTIME_IDENTITY }));
 	}
@@ -122,6 +121,7 @@ function seeBeacon(lpk: string, relay = TEST_RELAY_URL, seenAtMs = NOW_MS) {
 		lpk,
 		relay,
 		seenAtMs,
+		observedAtMs: seenAtMs,
 		data: { type: "service", name: "node" },
 	});
 }

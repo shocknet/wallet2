@@ -330,6 +330,7 @@ export const beaconWatcherSpec: ListenerSpec = {
 					});
 
 					const finish = (pair: BeaconLookupCandidate) => {
+						if (listenerApi.signal.aborted) return;
 						listenerApi.dispatch(
 							beaconsActions.finishLookup({
 								id: pair.id,
@@ -351,9 +352,8 @@ export const beaconWatcherSpec: ListenerSpec = {
 									const pair = accepted[index++];
 
 									try {
-										const result = await fetchBeaconDiscovery(
-											pair.lpk,
-											[pair.relay],
+										const result = await listenerApi.pause(
+											fetchBeaconDiscovery(pair.lpk, [pair.relay]),
 										);
 
 										if (result) {

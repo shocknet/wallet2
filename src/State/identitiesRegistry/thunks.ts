@@ -25,6 +25,7 @@ import { unwrapDataKeyWithNip44 } from "./helpers/datakey";
 import { clearSanctumIdentitySdk } from "./helpers/sanctumIdentitySdkManager";
 import {
 	deleteIdentityPersistedData,
+	deleteLegacyBeaconsPersist,
 } from "./helpers/deleteIdentityStorage";
 import {
 	applyMigratedSourceDocs,
@@ -125,6 +126,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 			getScopedBeaconsPersistKey(toIdentity.pubkey),
 		];
 		await waitForRehydrateKeys(keys); // Await redux persist rehydration of injected paths
+		void deleteLegacyBeaconsPersist(toIdentity.pubkey).catch(() => { });
 
 		const draft = selectIdentityDraft(getState());
 

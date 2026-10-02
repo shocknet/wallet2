@@ -7,7 +7,6 @@ import { createDeferred } from "@/lib/deferred";
 import { newLww } from "@/State/sync/lww";
 import { identityUnloaded } from "@/State/listeners/actions";
 import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
-import { runtimeActions } from "@/State/runtime/slice";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { TEST_CLOCK_BY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
 import {
@@ -124,7 +123,6 @@ function openBridgeStore(opts: {
 		sources: opts.sources,
 		loadIdentity: false,
 	});
-	store.dispatch(runtimeActions.clockTick({ nowMs: NOW_MS }));
 	if (loadIdentity) {
 		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
 			identity: TEST_RUNTIME_IDENTITY,
