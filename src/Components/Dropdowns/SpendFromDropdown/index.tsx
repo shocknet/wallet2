@@ -28,7 +28,7 @@ function SpendFromRow({
       className="spend_from_item"
     >
       <div className="spend_from_item_left">
-        <div className="spend_from_item_icon">{icon(onSelect ? sourcePub : source.sourceId.split("-")[0])}</div>
+        <div className="spend_from_item_icon">{icon(sourcePub)}</div>
         <div className="spend_from_item_input">
           <div style={onSelect ? undefined : { width: "130px" }}>{sourceDisplayName(source)}</div>
         </div>
@@ -43,7 +43,6 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
   selectedSourceId,
   onSelect,
 }: DropDownProps): JSX.Element => {
-  const [showDropDown] = useState<boolean>(false);
   const [display, setDisplay] = useState(0);
   const [rotation, setRotation] = useState(0);
   const lpMarkSrc = useLightningPubLogo("mark");
@@ -93,7 +92,7 @@ const SpendFromDropdown: React.FC<DropDownProps> = ({
 
   return (
     <>
-      <div className={showDropDown ? 'spend_from' : 'spend_from active'}>
+      <div className="spend_from active">
         {selectedSourceId
           ? <SpendFromRow sourceId={selectedSourceId} icon={arrangeIcon} />
           : <div></div>
