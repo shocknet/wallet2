@@ -6,7 +6,7 @@ import {
 
 import { persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
-import { writeSanctumTokens } from "./helpers/sanctumTokensStore";
+import { readSanctumTokens, writeSanctumTokens } from "./helpers/sanctumTokensStore";
 import { RootState } from "../store/store";
 import {
 	IdentityType,
@@ -163,6 +163,14 @@ export const identitiesRegistryActions = identitiesRegistrySlice.actions;
 
 export const identitiesRegistryPersistKey = "_identities-registry";
 
+// A tab still on the old build can re-save the old format after this migration ran,
+// so the old copy may be stale; overwriting a newer refresh token would end the session.
+async function keepNewerSanctumTokens(pubkey: string, legacy: TokensData) {
+	const onDisk = await readSanctumTokens(pubkey);
+	if (onDisk && onDisk.expires_at >= legacy.expires_at) return;
+	await writeSanctumTokens(pubkey, legacy);
+}
+
 async function migrateSanctumTokensToDisk(
 	state: NonNullable<PersistedState> & IdentitiesState,
 ) {
@@ -182,7 +190,7 @@ async function migrateSanctumTokensToDisk(
 			tokens.tokensData
 		) {
 			try {
-				await writeSanctumTokens(identity.pubkey, tokens.tokensData as TokensData);
+				await keepNewerSanctumTokens(identity.pubkey, tokens.tokensData as TokensData);
 			} catch {
 				// The session can be signed in again.
 			}
