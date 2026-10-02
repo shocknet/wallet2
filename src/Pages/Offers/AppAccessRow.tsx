@@ -1,4 +1,4 @@
-import { IonItem, IonLabel, IonNote } from "@ionic/react";
+import { IonItem, IonLabel } from "@ionic/react";
 import { useGetManageAuthorizationsQuery } from "@/State/api/api";
 
 export const appAccessPath = (sourceId: string) => `/offers/${sourceId}/access`;
@@ -25,9 +25,9 @@ export function AppAccessRow({ sourceId }: { sourceId: string }) {
 				Apps that can manage your offers
 			</IonLabel>
 			{approvedCount !== undefined ? (
-				<IonNote slot="end" className="text-sm">
+				<div slot="end" className="text-sm text-muted">
 					{approvedCount}
-				</IonNote>
+				</div>
 			) : null}
 		</IonItem>
 	);
