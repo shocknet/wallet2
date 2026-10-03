@@ -15,7 +15,6 @@ import {
 	type SourceItemViewProps,
 } from "@/Components/Source/SourceItemView";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
-import { selectLiveSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { useAppSelector } from "@/State/store/hooks";
 import {
 	usePromiseModal,
@@ -65,15 +64,9 @@ function SourceSelectSheet({
 	dismiss,
 }: SourceSelectProps) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-	const liveSourceIds = useAppSelector(selectLiveSourceIds);
-
-	// sourceIds is fixed when the sheet opens; sync can delete a source while it is open.
 	const orderedSourceIds = useMemo(
-		() => favoriteFirst(
-			sourceIds.filter((id) => liveSourceIds.includes(id)),
-			favoriteSourceId,
-		),
-		[sourceIds, liveSourceIds, favoriteSourceId],
+		() => favoriteFirst(sourceIds, favoriteSourceId),
+		[sourceIds, favoriteSourceId],
 	);
 
 	return (
