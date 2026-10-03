@@ -1,5 +1,6 @@
 import {
 	forwardRef,
+	useEffect,
 	useImperativeHandle,
 	useRef,
 	useState,
@@ -42,7 +43,15 @@ export const InvoicePane = forwardRef<InvoicePaneHandle, { source: SourceView }>
 	const [invoiceMemo, setInvoiceMemo] = useState("");
 	const [blind, setBlind] = useState(false);
 	const amountRef = useRef<HTMLIonInputElement>(null);
+	const unmountedRef = useRef(false);
 	const formVisible = !invoice || replacing;
+
+	useEffect(() => {
+		unmountedRef.current = false;
+		return () => {
+			unmountedRef.current = true;
+		};
+	}, []);
 
 	useImperativeHandle(ref, () => ({
 		focusAmount: () => {
@@ -61,6 +70,8 @@ export const InvoicePane = forwardRef<InvoicePaneHandle, { source: SourceView }>
 			setInvoiceMemo("");
 			setBlind(false);
 		} catch (err: unknown) {
+			// The user switched source; this failure belongs to a pane they can no longer see.
+			if (unmountedRef.current) return;
 			showToast({
 				message: err instanceof Error ? err.message : "Failed to create invoice",
 				color: "danger",

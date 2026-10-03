@@ -6,8 +6,9 @@ import { Avatar } from "@/Components/Avatar";
 import { sourceDisplayName } from "@/Components/Source/sourceDisplayName";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import { useAppSelector } from "@/State/store/hooks";
-import { useLiveSourceView } from "@/Hooks/useSourceView";
+import { useSourceView } from "@/Hooks/useSourceView";
 import { formatSatoshi } from "@/lib/units";
+import { SourceView } from "@/State/scoped/backups/sources/selectors";
 
 export type SourceItemViewProps = {
 	sourceId: string;
@@ -30,9 +31,36 @@ export function SourceItemView({
 	end,
 	className,
 }: SourceItemViewProps) {
-	const source = useLiveSourceView(sourceId);
+	const source = useSourceView(sourceId);
+
+	if (!source) return null;
+	return <SourceItemViewInner
+		sourceId={sourceId}
+		source={source}
+		selected={selected}
+		showFavorite={showFavorite}
+		showBalance={showBalance}
+		showBeacon={showBeacon}
+		onClick={onClick}
+		end={end}
+		className={className}
+	/>;
+
+}
+
+function SourceItemViewInner({
+	sourceId,
+	selected,
+	showFavorite,
+	showBalance,
+	showBeacon,
+	onClick,
+	end,
+	className,
+	source,
+}: SourceItemViewProps & { source: SourceView }) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-	const isFavorite = showFavorite && favoriteSourceId === source.sourceId;
+	const isFavorite = showFavorite && favoriteSourceId === sourceId;
 	const label = sourceDisplayName(source);
 	const interactive = typeof onClick === "function";
 

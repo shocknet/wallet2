@@ -85,7 +85,10 @@ function SendInner() {
 	const [presentLoading, dismissLoading] = useIonLoading();
 	const askConfirmSend = useConfirmSendModal();
 
-	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+	// Picked once per visit so the source doesn't shift under the user if balances change mid-flow.
+	const [selectedSourceId, setSelectedSourceId] = useState<string | null>(
+		() => pickDefaultSource(balances, favoriteSourceId)?.sourceId ?? null,
+	);
 	const [recipient, setRecipient] = useState<BitcoinInputState>(IDLE_STATE);
 	const [nofferRange, setNofferRange] = useState<AmountRange | null>(null);
 	const [amountChange, setAmountChange] = useState<AmountFieldChange>({

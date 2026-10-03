@@ -64,7 +64,6 @@ function SourceSelectSheet({
 	dismiss,
 }: SourceSelectProps) {
 	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
-
 	const orderedSourceIds = useMemo(
 		() => favoriteFirst(sourceIds, favoriteSourceId),
 		[sourceIds, favoriteSourceId],

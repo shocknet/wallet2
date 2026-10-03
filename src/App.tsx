@@ -43,9 +43,9 @@ setupIonicReact();
 
 export default function App() {
 	return (
-		<IonApp>
-			<ErrorBoundary>
-				<Provider store={store}>
+		<Provider store={store}>
+			<IonApp>
+				<ErrorBoundary>
 					<PersistGate
 						loading={null}
 						persistor={persistor}
@@ -54,7 +54,6 @@ export default function App() {
 						}
 					>
 						<ToastProvider>
-
 							<IonReactRouter>
 								<OverlayCoordinator>
 									<ShellBootstrap />
@@ -64,18 +63,19 @@ export default function App() {
 							</IonReactRouter>
 							<UpdateToast />
 						</ToastProvider>
+						<ToastContainer
+							theme="colored"
+							position="top-center"
+							closeOnClick
+							pauseOnHover
+							autoClose={4000}
+							limit={2}
+							pauseOnFocusLoss={false}
+						/>
 					</PersistGate>
-				</Provider>
-				<ToastContainer
-					theme="colored"
-					position="top-center"
-					closeOnClick
-					pauseOnHover
-					autoClose={4000}
-					limit={2}
-					pauseOnFocusLoss={false}
-				/>
-			</ErrorBoundary>
-		</IonApp>
+				</ErrorBoundary>
+			</IonApp>
+
+		</Provider>
 	);
 }

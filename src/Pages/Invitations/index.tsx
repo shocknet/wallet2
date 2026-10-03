@@ -25,7 +25,7 @@ import {
 	type SourceView,
 	selectAdminSourceIds,
 } from "@/State/scoped/backups/sources/selectors";
-import { useAdminSourceSelection } from "@/Hooks/useAdminSourceSelection";
+import { useAdminSourceSelection } from "@/Hooks/useSourceSelection";
 import { useLiveSourceView } from "@/Hooks/useSourceView";
 import { useAppSelector } from "@/State/store/hooks";
 import { navToSources } from "@/Pages/Sources/nav";
@@ -74,7 +74,6 @@ function pickDefaultPendingId(
 	adminIds: string[],
 	favoriteSourceId: string | null,
 ): string | null {
-	if (adminIds.length === 1) return adminIds[0];
 	return favoriteSourceId && adminIds.includes(favoriteSourceId)
 		? favoriteSourceId
 		: null;

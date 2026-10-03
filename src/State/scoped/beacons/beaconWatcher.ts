@@ -329,31 +329,21 @@ export const beaconWatcherSpec: ListenerSpec = {
 						);
 					});
 
-					const finish = (pair: BeaconLookupCandidate) => {
-						listenerApi.dispatch(
-							beaconsActions.finishLookup({
-								id: pair.id,
-								epoch,
-							}),
-						);
-					};
-
 					const CONCURRENCY = 3;
 					let index = 0;
 
-					try {
-						await Promise.allSettled(
+					const task = listenerApi.fork(async forkApi => {
+						await Promise.all(
 							new Array(CONCURRENCY).fill(0).map(async () => {
 								while (
 									index < accepted.length &&
-									!listenerApi.signal.aborted
+									!forkApi.signal.aborted
 								) {
 									const pair = accepted[index++];
 
 									try {
-										const result = await fetchBeaconDiscovery(
-											pair.lpk,
-											[pair.relay],
+										const result = await forkApi.pause(
+											fetchBeaconDiscovery(pair.lpk, [pair.relay]),
 										);
 
 										if (result) {
@@ -369,22 +359,30 @@ export const beaconWatcherSpec: ListenerSpec = {
 											);
 										}
 									} catch (err) {
-										if (err instanceof TaskAbortError) throw err;
+										if (
+											err instanceof TaskAbortError ||
+											forkApi.signal.aborted
+										) {
+											return;
+										}
 
 										if (err instanceof Error) {
-											logger.error(
-												`[${beaconWatcherSpec.name}] probe ${pair.id}: ${err.message}`,
-											);
+											logger.error(`[${beaconWatcherSpec.name}] probe ${pair.id}: ${err.message}`);
 										}
-									} finally {
-										finish(pair);
 									}
+
+									listenerApi.dispatch(
+										beaconsActions.finishLookup({
+											id: pair.id,
+											epoch,
+										}),
+									);
 								}
 							}),
 						);
-					} finally {
-						for (const pair of accepted) finish(pair);
-					}
+					});
+
+					await task.result;
 				},
 			}),
 

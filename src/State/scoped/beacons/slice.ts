@@ -204,6 +204,8 @@ const beaconNodesPersistTransform = createTransform(
 
 
 const persistKey = "__beacons_v2";
+// Pre-v2 state shape; never rehydrated, only kept so the old blob can be deleted.
+const legacyPersistKey = "__beacons";
 
 
 export function getScopedBeaconsReducer(
@@ -236,6 +238,10 @@ export function getScopedBeaconsPersistKey(
 		persistKey,
 		identityPubkey,
 	);
+}
+
+export function getLegacyScopedBeaconsPersistKey(identityPubkey: string) {
+	return getPersistConfigKey(legacyPersistKey, identityPubkey);
 }
 
 

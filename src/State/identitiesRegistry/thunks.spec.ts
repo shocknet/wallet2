@@ -56,6 +56,7 @@ vi.mock("@/State/store/store", () => ({
 
 vi.mock("./helpers/deleteIdentityStorage", () => ({
 	deleteIdentityPersistedData: deleteIdentityPersistedDataMock,
+	deleteLegacyBeaconsPersist: vi.fn(async () => { }),
 }));
 
 vi.mock("@/Api/nostr", () => ({

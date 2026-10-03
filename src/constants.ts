@@ -39,7 +39,6 @@ export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION 
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";
 export const BEACON_PUBLISH_INTERVAL_MS = 60 * 1000;
 export const BEACON_STALE_OLDER_THAN = 2 * BEACON_PUBLISH_INTERVAL_MS;
-export const BEACON_STALE_TICK_MS = BEACON_PUBLISH_INTERVAL_MS / 2;
 /** Collapse visibility flicker when listeners react to the app becoming active. */
 export const APP_ACTIVE_DEBOUNCE_MS = 300;
 export const defaultMempool = "https://mempool.space/api/v1/fees/recommended";

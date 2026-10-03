@@ -4,7 +4,6 @@ import { PushRegistrationResult } from "@/notifications/push/types";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
 
 interface RuntimeState {
-	nowMs: number;
 	isActive: boolean;
 	pushStatus: PushRegistrationResult | null;
 	deviceAuth: DeviceAuthStatus;
@@ -17,7 +16,6 @@ const initialDeviceAuthStatus: DeviceAuthStatus = {
 };
 
 const initialState: RuntimeState = {
-	nowMs: Date.now(),
 	isActive: true,
 	pushStatus: null,
 
@@ -30,9 +28,6 @@ const runtimeSlice = createSlice({
 	name: "runtime",
 	initialState,
 	reducers: {
-		clockTick(state, action: PayloadAction<{ nowMs: number }>) {
-			state.nowMs = action.payload.nowMs;
-		},
 		/* lifecycle */
 		setAppActiveStatus: (state, action: PayloadAction<{ active: boolean }>) => {
 			state.isActive = action.payload.active;
@@ -61,7 +56,6 @@ const runtimeSlice = createSlice({
 	},
 });
 
-export const selectNowMs = (s: RootState) => s.runtime.nowMs;
 export const selectDeviceAuthStatus = (s: RootState) => s.runtime.deviceAuth;
 export const selectPushStatus = (s: RootState) => s.runtime.pushStatus;
 export const selectIsActive = (s: RootState) => s.runtime.isActive;
