@@ -79,7 +79,7 @@ function reconcilePendingClinkRequest(
 
 
 
-export const pendingClinkRequestsListenerSpec: ListenerSpec = {
+export const pendingClinkRequestsListenerSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "pendingAuthRequests",
 	beforeUnload: ({ dispatch }) => {
 		dispatch(clinkRequestsActions.clearPendingClinkRequestSession());

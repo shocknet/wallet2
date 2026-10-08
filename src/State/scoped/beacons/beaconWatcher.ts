@@ -250,7 +250,7 @@ const shouldRunExpiryScheduler = (
 };
 
 
-export const beaconWatcherSpec: ListenerSpec = {
+export const beaconWatcherSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "beaconWatcher",
 
 	listeners: [

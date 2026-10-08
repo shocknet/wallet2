@@ -1,7 +1,3 @@
-import { createListenerMiddleware } from '@reduxjs/toolkit'
-import type { RootState, AppDispatch } from './store'
-import { addHydrationListener } from '../identitiesRegistry/middleware/switcher';
-import { addIdentityLifecycle } from '../listeners/lifecycle/lifecycle';
 import { beaconWatcherSpec } from '../scoped/beacons/beaconWatcher';
 import { bridgeListenerSpec } from '../listeners/bridgeListener/bridgeListener';
 import { historySyncerSpec } from '../listeners/historySyncer/historySyncer';
@@ -12,22 +8,7 @@ import { pushEnrollmentSpec } from '../listeners/push/push';
 import { topicIndexSyncSpec } from '../listeners/topicIndexSync/topicIndexSync';
 import { pendingClinkRequestsListenerSpec } from '../clinkRequests/clinkRequestsListener';
 
-
-
-
-export const listenerMiddleware = createListenerMiddleware();
-
-export const startAppListening = listenerMiddleware.startListening.withTypes<
-	RootState,
-	AppDispatch
->();
-
-export type AppstartListening = typeof startAppListening;
-
-
-
-
-const specs = [
+export const listenerSpecs = [
 	beaconWatcherSpec,
 	bridgeListenerSpec,
 	historySyncerSpec,
@@ -37,8 +18,4 @@ const specs = [
 	pushEnrollmentSpec,
 	topicIndexSyncSpec,
 	pendingClinkRequestsListenerSpec
-]
-
-addHydrationListener(startAppListening);
-addIdentityLifecycle(startAppListening, specs);
-
+];

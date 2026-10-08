@@ -1,12 +1,13 @@
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { meta, sourceJustDeleted } from "../predicates";
 
 
 
-export const topicIndexSyncSpec: ListenerSpec = {
+export const topicIndexSyncSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "topic-index-sync",
 	listeners: [
 		// When a source's topic id is set from getUserInfo response, index it

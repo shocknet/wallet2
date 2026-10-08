@@ -130,7 +130,7 @@ function openBeaconStore(opts: {
 }
 
 function relaysInStore(store: BeaconStore, sourceId: string) {
-	const relays = docsSelectors.selectById(store.getState() as RootState, sourceId)?.draft.relays;
+	const relays = docsSelectors.selectById(store.getState() as unknown as RootState, sourceId)?.draft.relays;
 	const urls = relays
 		? Object.keys(relays).filter(url => relays[url]?.present)
 		: [];
@@ -143,7 +143,7 @@ function join(
 	relays = presentRelays(source),
 ): SourceBeaconJoin {
 	return makeSelectSourceBeaconJoin()(
-		store.getState() as RootState,
+		store.getState() as unknown as RootState,
 		source.lpk,
 		relays,
 	);
@@ -155,7 +155,7 @@ function holdJoin(
 	relays = presentRelays(source),
 ) {
 	const select = makeSelectSourceBeaconJoin();
-	return () => select(store.getState() as RootState, source.lpk, relays);
+	return () => select(store.getState() as unknown as RootState, source.lpk, relays);
 }
 
 function pendingDiscovery() {
@@ -358,7 +358,7 @@ describe("beaconWatcher", () => {
 		const sourceRelays = presentRelays(source);
 		const otherRelays = presentRelays(other);
 		const before = selectSource(
-			store.getState() as RootState,
+			store.getState() as unknown as RootState,
 			source.lpk,
 			sourceRelays,
 		);
@@ -368,7 +368,7 @@ describe("beaconWatcher", () => {
 			data: { type: "service", name: "other" },
 		});
 
-		const afterState = store.getState() as RootState;
+		const afterState = store.getState() as unknown as RootState;
 		expect(selectSource(afterState, source.lpk, sourceRelays)).toBe(before);
 		expect(selectOther(afterState, other.lpk, otherRelays)).toMatchObject({
 			health: "fresh",

@@ -1,6 +1,6 @@
 import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
-import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
+import { addIdentityLifecycle, type ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { identitySlice } from "@/State/scoped/backups/identity/slice";
@@ -36,8 +36,7 @@ function makeStore() {
 	type RootState = ReturnType<AppStore["getState"]>;
 	type AppDispatch = AppStore["dispatch"];
 	const startAppListening = listenerMw.startListening.withTypes<RootState, AppDispatch>();
-	// @ts-expect-error partial store setup is enough for listener tests
-	addIdentityLifecycle(startAppListening, [topicIndexSyncSpec]);
+	addIdentityLifecycle(startAppListening, [topicIndexSyncSpec] as unknown as readonly ListenerSpec<RootState, AppDispatch>[]);
 	return store;
 }
 

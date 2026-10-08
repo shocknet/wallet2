@@ -5,6 +5,7 @@ import { saveNip78Event, saveSourceDocEvent } from "@/State/identitiesRegistry/h
 import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { getSourceDocDtag, identityDocDtag } from "../../identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity, } from "@/State/identitiesRegistry/slice";
 import { publisherFlushRequested } from "../actions";
 import { createDeferred } from "@/lib/deferred";
@@ -36,7 +37,7 @@ const publishTasks = new Map<string, ForkedTask<void>>();
 const identityKey = "identity";
 
 
-export const publisherSpec: ListenerSpec = {
+export const publisherSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "publisher",
 	listeners: [
 		(add) =>

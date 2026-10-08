@@ -1,5 +1,6 @@
 import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice"
 import { addIdentityLifecycle, type ListenerSpec } from "@/State/listeners/lifecycle/lifecycle"
+import type { AppDispatch, RootState } from "@/State/store/store"
 import type { IdentityState } from "@/State/scoped/backups/identity/slice"
 import type { SourcesState } from "@/State/scoped/backups/sources/state"
 import type { BeaconsState } from "@/State/scoped/beacons/state"
@@ -12,7 +13,7 @@ import { sourcesStateOf, type TestSource } from "./sourcesHelpers"
 import { makeTestStore } from "./testStore"
 
 export type MakeListenerStoreOpts = {
-	specs: ListenerSpec[];
+	specs: readonly ListenerSpec<RootState, AppDispatch>[];
 	sources?: TestSource[] | SourcesState;
 	beacons?: BeaconsState;
 	identity?: IdentityState;

@@ -6,10 +6,11 @@ import { identityUnloaded, listenerKick } from "../actions";
 import { createDeferred } from "@/lib/deferred";
 import { makeListenerStore } from "@tests/support/listenerStore";
 import type { ListenerSpec } from "./lifecycle";
+import type { AppDispatch, RootState } from "@/State/store/store";
 
 const ping = createAction("lifecycle/test-ping");
 
-function openStore(specs: ListenerSpec[]) {
+function openStore(specs: readonly ListenerSpec<RootState, AppDispatch>[]) {
 	return makeListenerStore({ specs, loadIdentity: false }).store;
 }
 
@@ -26,7 +27,7 @@ async function unload(store: ReturnType<typeof openStore>) {
 }
 
 function kickSpec(name: string, onKick = vi.fn()) {
-	const spec: ListenerSpec = {
+	const spec: ListenerSpec<RootState, AppDispatch> = {
 		name,
 		listeners: [
 			(add) =>
@@ -88,7 +89,7 @@ describe("identity lifecycle", () => {
 		};
 
 		const waitUntilCancelled = (key: keyof typeof cancelled) =>
-			(add: Parameters<ListenerSpec["listeners"][number]>[0]) =>
+			(add: Parameters<ListenerSpec<RootState, AppDispatch>["listeners"][number]>[0]) =>
 				add({
 					actionCreator: listenerKick,
 					effect: async (_, listenerApi) => {

@@ -4,8 +4,7 @@ import {
 	createSelector,
 } from "@reduxjs/toolkit";
 
-import { persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
-import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
+import { Storage, persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
 import { readSanctumTokens, writeSanctumTokens } from "./helpers/sanctumTokensStore";
 import { RootState } from "../store/store";
 import {
@@ -210,16 +209,18 @@ const migrateIdentitiesRegistry: PersistMigrate = async (state, currentVersion) 
 	return migrateSanctumTokensToDisk(state as NonNullable<PersistedState> & IdentitiesState);
 };
 
-export const persistedIdentitiesRegistryReducer = persistReducer(
-	{
-		key: identitiesRegistryPersistKey,
-		storage: IonicStorageAdapter,
-		blacklist: ["active"],
-		version: 1,
-		migrate: migrateIdentitiesRegistry,
-	},
-	identitiesRegistrySlice.reducer
-);
+export function createIdentitiesRegistryReducer(storage: Storage) {
+	return persistReducer(
+		{
+			key: identitiesRegistryPersistKey,
+			storage: storage,
+			blacklist: ["active"],
+			version: 1,
+			migrate: migrateIdentitiesRegistry,
+		},
+		identitiesRegistrySlice.reducer
+	);
+}
 
 
 
