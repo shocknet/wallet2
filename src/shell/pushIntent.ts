@@ -28,6 +28,32 @@ function resolveSourcePrivateKey(
 }
 
 /**
+ * A failed or abandoned profile drops the stored push when that push names
+ * the same profile, or when its topic cannot be resolved. A push that names
+ * a different profile stays, so a later ready profile can still handle it.
+ */
+export function shouldClearPushIntent(
+	state: RootState,
+	identityId: string | null,
+): boolean {
+	const pushIntent = selectPushIntent(state);
+	if (!pushIntent) {
+		return false;
+	}
+	if (!identityId) {
+		return true;
+	}
+	const topicEntry = selectTopicIndexFromRegistry(
+		state,
+		pushIntent.envelope.topic_id,
+	);
+	if (!topicEntry) {
+		return true;
+	}
+	return topicEntry.identityId === identityId;
+}
+
+/**
  * When the active identity matches the push topic's identity and source keys
  * are available, decrypt the envelope into either an app intent or a
  * pending auth request, then clear push.

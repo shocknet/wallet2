@@ -20,6 +20,7 @@ import {
 } from "./migrations/secureIdentities";
 import type {
 	DeviceToIdentitiesRepairAction,
+	IdentitySessionStatus,
 	RuntimeIdentity,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
@@ -27,7 +28,7 @@ import type {
 import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities/errors";
 import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
-import { materializePushIntent } from "./pushIntent";
+import { materializePushIntent, shouldClearPushIntent } from "./pushIntent";
 import dLogger from "@/Api/helpers/debugLog";
 import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
@@ -156,15 +157,32 @@ export const requestIdentityUnlock =
 			);
 		};
 
-export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch) => {
+function identityIdFromSession(session: IdentitySessionStatus): string | null {
+	switch (session.kind) {
+		case "none":
+			return null;
+		case "sanctum-reauth":
+			return session.runtimeIdentity.pubkey;
+		case "unlock-requested":
+		case "loading":
+		case "load-failed":
+			return session.identityId;
+	}
+}
+
+export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch, getState) => {
+	const state = getState();
+	const identityId = identityIdFromSession(selectIdentitySession(state));
 	dispatch(shellActions.identitySessionCleared());
-	dispatch(shellActions.pushIntentCleared());
+	if (shouldClearPushIntent(state, identityId)) {
+		dispatch(shellActions.pushIntentCleared());
+	}
 };
 
 
 export const completeShellIdentityLoad = (
 	runtimeIdentity: RuntimeIdentity,
-): AppThunk<Promise<void>> => async (dispatch) => {
+): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const log = dLogger.withContext({
 		procedure: "complete-shell-identity-load",
 		data: { pubkey: runtimeIdentity.pubkey },
@@ -190,7 +208,9 @@ export const completeShellIdentityLoad = (
 				message,
 			}),
 		);
-		dispatch(shellActions.pushIntentCleared());
+		if (shouldClearPushIntent(getState(), runtimeIdentity.pubkey)) {
+			dispatch(shellActions.pushIntentCleared());
+		}
 		return;
 	}
 
