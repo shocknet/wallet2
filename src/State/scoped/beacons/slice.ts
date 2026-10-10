@@ -6,6 +6,7 @@ import {
 	getPersistConfigKey,
 	makeScopedPersistedReducer,
 } from "@/State/scope/buildPersistedScopedReducer";
+import { defineScopedModule } from "@/State/scope/scopedModule";
 
 import { createEncryptedScopedStorage } from "@/storage/encryptedScopedStorage";
 import type { RootState } from "@/State/store/store";
@@ -208,41 +209,30 @@ const persistKey = "__beacons_v2";
 const legacyPersistKey = "__beacons";
 
 
-export function getScopedBeaconsReducer(
-	identityPubkey: string,
-	DataKey: CryptoKey,
-) {
-	return makeScopedPersistedReducer(
+export function getLegacyScopedBeaconsPersistKey(identityPubkey: string) {
+	return getPersistConfigKey(legacyPersistKey, identityPubkey);
+}
+
+export const beaconsModule = defineScopedModule({
+	persistBaseKey: persistKey,
+	createReducer: ({ scopeId, dataKey, storage }) => makeScopedPersistedReducer(
 		beaconsSlice.reducer,
 		persistKey,
-		identityPubkey,
+		scopeId,
 		{
 			version: 0,
 			storage: createEncryptedScopedStorage({
-				identityId: identityPubkey,
+				scopeId,
 				sliceName: beaconsSlice.name,
-				dataKey: DataKey,
+				dataKey,
+				storage,
 			}),
 			transforms: [
 				beaconNodesPersistTransform,
 			],
 		},
-	);
-}
-
-
-export function getScopedBeaconsPersistKey(
-	identityPubkey: string,
-) {
-	return getPersistConfigKey(
-		persistKey,
-		identityPubkey,
-	);
-}
-
-export function getLegacyScopedBeaconsPersistKey(identityPubkey: string) {
-	return getPersistConfigKey(legacyPersistKey, identityPubkey);
-}
+	),
+});
 
 
 export const beaconsActions = beaconsSlice.actions;

@@ -1,10 +1,7 @@
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
-import { getScopedIdentityPersistKey } from "@/State/scoped/backups/identity/slice";
-import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
-import {
-	getLegacyScopedBeaconsPersistKey,
-	getScopedBeaconsPersistKey,
-} from "@/State/scoped/beacons/slice";
+import { identityModule } from "@/State/scoped/backups/identity/slice";
+import { sourcesModule } from "@/State/scoped/backups/sources/slice";
+import { beaconsModule, getLegacyScopedBeaconsPersistKey } from "@/State/scoped/beacons/slice";
 import { removePendingV0Identity } from "@/shell/migrations/secureIdentities/pendingV0";
 import {
 	deleteLocalPrivateKey,
@@ -14,9 +11,9 @@ import { deleteSanctumTokens } from "./sanctumTokensStore";
 import { IdentityType, type Identity } from "../types";
 
 export async function deleteIdentityScopedPersist(pubkey: string): Promise<void> {
-	await IonicStorageAdapter.removeItem(`persist:${getScopedIdentityPersistKey(pubkey)}`);
-	await IonicStorageAdapter.removeItem(`persist:${getScopedSourcesPersistKey(pubkey)}`);
-	await IonicStorageAdapter.removeItem(`persist:${getScopedBeaconsPersistKey(pubkey)}`);
+	await IonicStorageAdapter.removeItem(`persist:${identityModule.persistKey(pubkey)}`);
+	await IonicStorageAdapter.removeItem(`persist:${sourcesModule.persistKey(pubkey)}`);
+	await IonicStorageAdapter.removeItem(`persist:${beaconsModule.persistKey(pubkey)}`);
 	await deleteLegacyBeaconsPersist(pubkey);
 }
 

@@ -1,46 +1,27 @@
+import { Action, createListenerMiddleware, type ThunkAction, type ThunkDispatch } from "@reduxjs/toolkit";
+import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from "react-redux";
+import { appApi } from "../api/api";
+import "../api/offers";
+import { addIdentityLifecycle } from "../listeners/lifecycle/lifecycle";
+import { createScopedReducer } from "../scope/createScopedReducer";
+import { createStore } from "./createStore";
+import { listenerSpecs } from "./listenerMiddleware";
+import { createRootReducer } from "./staticReducers";
+import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
 
+const listenerMiddleware = createListenerMiddleware();
 
-import { Action, combineSlices, configureStore, createAction, createListenerMiddleware, createSelector, createSlice, ThunkAction, ThunkDispatch, TypedStartListening } from '@reduxjs/toolkit';
-import paySourcesReducer, { storageKey as paySourcesStorageKey, mergeLogic as paySourcesMergeLogic, PaySourceState } from '../Slices/paySourcesSlice';
-import spendSourcesReducer, { storageKey as spendSourcesStorageKey, mergeLogic as spendSourcesMergeLogic, SpendSourceState } from '../Slices/spendSourcesSlice';
-import prefsSlice, { storageKey as prefsStorageKey, mergeLogic as prefsMergeLogic } from '../Slices/prefsSlice';
-import addressbookSlice, { storageKey as addressbookStorageKey, mergeLogic as addressbookMergeLogic } from '../Slices/addressbookSlice';
-import notificationSlice, { storageKey as notificationStorageKey, mergeLogic as notificationMergeLogic } from '../Slices/notificationSlice';
-import subscriptionsSlice, { storageKey as subscriptionsStorageKey, mergeLogic as subscriptionsMergeLogic, Subscriptions } from '../Slices/subscriptionsSlice';
-import { useDispatch as originalUseDispatch, useSelector as originalUseSelector } from 'react-redux';
-import { createDynamicMiddleware } from "@reduxjs/toolkit/react";
-import type { BackupAction } from '../types';
-import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
-import { staticReducers } from './staticReducers';
-import { listenerMiddleware } from './listenerMiddleware';
-import { appApi } from '../api/api';
-import '../api/offers';
-import { historyFetchAllRequested, historyFetchSourceRequested, identityUnloaded } from '../listeners/actions';
-
-
-
-
-
-
-
-
-
-const store = configureStore({
-	reducer: staticReducers,
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware({
-			serializableCheck: {
-				ignoredActions: [FLUSH, PAUSE, PERSIST, REHYDRATE, PURGE, REGISTER, historyFetchAllRequested.type, historyFetchSourceRequested.type, identityUnloaded.type],
-			},
-		}).prepend(listenerMiddleware.middleware).concat(appApi.middleware)
+const created = createStore({
+	reducers: createRootReducer(IonicStorageAdapter),
+	createScopedReducer,
+	storage: IonicStorageAdapter,
+	prependMiddleware: [listenerMiddleware.middleware],
+	appendMiddleware: [appApi.middleware],
 });
 
-
-
-export const persistor = persistStore(store);
-
-
-
+export const store = created.store;
+export const persistor = created.persistor;
+export const mountScope = created.mountScope;
 
 export type AppStore = typeof store;
 export type RootState = ReturnType<AppStore["getState"]>;
@@ -52,35 +33,17 @@ export type AppThunk<T> = ThunkAction<
 	unknown,
 	Action
 >;
-export const useDispatch: () => AppDispatch = originalUseDispatch
+
+
+addIdentityLifecycle(
+	listenerMiddleware.startListening.withTypes<RootState, AppDispatch>(),
+	listenerSpecs,
+);
+
+export const useDispatch: () => AppDispatch = originalUseDispatch;
 export const useSelector = <TSelected = unknown>(
 	selector: (state: RootState) => TSelected,
 	equalityFn?: (left: TSelected, right: TSelected) => boolean
 ): TSelected => originalUseSelector<RootState, TSelected>(selector, equalityFn);
 
-
-
-
-
 export default store;
-export const findReducerMerger = (storageKey: string): ((l: string, r: string) => { data: string, actions: BackupAction[] }) | null => {
-	switch (storageKey) {
-		case paySourcesStorageKey:
-			return paySourcesMergeLogic
-		case spendSourcesStorageKey:
-			return spendSourcesMergeLogic
-		case prefsStorageKey:
-			return prefsMergeLogic
-		case addressbookStorageKey:
-			return addressbookMergeLogic
-		default:
-			return null
-	}
-}
-
-
-export const selectActiveSubs = createSelector(
-	(state: RootState) => state.subscriptions,
-	(subscriptions: Subscriptions) =>
-		subscriptions.activeSubs.filter(s => s.enabled)
-)

@@ -6,6 +6,7 @@ import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/id
 import { subscribeToNostrEvents } from "@/State/identitiesRegistry/helpers/nostr";
 import { identityDocDtag, processRemoteDoc } from "@/State/identitiesRegistry/helpers/processDocs";
 import { ListenerSpec } from "../lifecycle/lifecycle";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import dLogger from "@/Api/helpers/debugLog";
 
@@ -13,7 +14,7 @@ const log = dLogger.withContext({
 	procedure: "docs-puller"
 });
 
-export const pullerSpec: ListenerSpec = {
+export const pullerSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "puller",
 	listeners: [
 		(add) =>

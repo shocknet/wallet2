@@ -10,7 +10,7 @@ import { emptyCursor, getPaymentStateResponseToUserOperation, isInFlightOutgoing
 import { createDeferred } from "@/lib/deferred";
 import dLogger from "@/Api/helpers/debugLog";
 import { exists, sourceIdsThatBecameFresh, sourceJustAdded } from "../predicates";
-import { AppDispatch } from "@/State/store/store";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { runtimeActions } from "@/State/runtime/slice";
 import { beaconsActions } from "@/State/scoped/beacons/slice";
 
@@ -22,7 +22,7 @@ const startFetchForSource = (sourceId: string, dispatch: AppDispatch) => {
 	dispatch(historyFetchSourceRequested({ sourceId, deferred }));
 }
 
-export const historySyncerSpec: ListenerSpec = {
+export const historySyncerSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "historySyncer",
 	listeners: [
 		(add) =>

@@ -11,7 +11,6 @@ import { getInitialBeaconsState, type BeaconsState } from "@/State/scoped/beacon
 import { getIntialState, type SourcesState } from "@/State/scoped/backups/sources/state";
 import type { IdentityState } from "@/State/scoped/backups/identity/slice";
 import type { RootState, AppDispatch } from "@/State/store/store";
-import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import usdToBTCReducer from "@/State/Slices/usdToBTCSlice";
 import prefsSlice from "@/State/Slices/prefsSlice";
 import addressbookSlice from "@/State/Slices/addressbookSlice";
@@ -73,7 +72,7 @@ export function makeTestStore(opts: MakeTestStoreOpts = {}) {
 	const startAppListening = listenerMw.startListening.withTypes<
 		RootState,
 		AppDispatch
-	>() as AppstartListening;
+	>();
 
 	return { store, startAppListening };
 }
