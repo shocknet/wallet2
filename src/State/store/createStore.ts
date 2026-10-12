@@ -1,3 +1,4 @@
+
 import { configureStore, type Reducer, type ReducersMapObject } from "@reduxjs/toolkit";
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistStore, type Storage } from "redux-persist";
 import { historyFetchAllRequested, historyFetchSourceRequested, identityUnloaded } from "../listeners/actions";
@@ -5,7 +6,10 @@ import { createScopeHost, type ScopedReducerBundle } from "../scope/scopeHost";
 import type { ScopeSession } from "../scope/scopedModule";
 
 export type StoreExtra<Session extends ScopeSession = ScopeSession> = {
-	mountScope: (session: Session) => Promise<void>;
+	mountScope: (
+		session: Session,
+		options?: { beforeCommit?: () => Promise<void> | void },
+	) => Promise<void>;
 };
 
 function rootReducers<R extends ReducersMapObject, S extends Reducer>(
@@ -56,10 +60,11 @@ export function createStore<
 			}).prepend(...options.prependMiddleware).concat(...options.appendMiddleware),
 	});
 	const persistor = persistStore(store);
-	extra.mountScope = (session) => host.mount(
+	extra.mountScope = (session, options) => host.mount(
 		{ dispatch: (action) => store.dispatch(action as never) },
 		persistor,
 		session,
+		options,
 	);
 	return { store, persistor, mountScope: extra.mountScope };
 }

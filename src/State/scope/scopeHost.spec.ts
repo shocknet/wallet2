@@ -1,3 +1,4 @@
+
 import { combineReducers, createSlice, type PayloadAction, type Reducer, type ReducersMapObject } from "@reduxjs/toolkit";
 import { createMigrate, persistReducer, REHYDRATE, type Storage } from "redux-persist";
 import { describe, expect, it, vi } from "vitest";
@@ -72,7 +73,10 @@ function openScope(options?: {
 	return {
 		storage,
 		...created,
-		mountScope: (scopeId: string) => created.mountScope({ scopeId, dataKey }),
+		mountScope: (
+			scopeId: string,
+			options?: { beforeCommit?: () => Promise<void> | void },
+		) => created.mountScope({ scopeId, dataKey }, options),
 	};
 }
 
@@ -265,8 +269,51 @@ describe("scope host", () => {
 		expect(mountedScope(store.getState().scoped).labels.name).toBe("");
 	});
 
+	it("runs beforeCommit while the current scope is still published", async () => {
+		const { store, mountScope } = openScope();
+		await mountScope("alice");
+		store.dispatch(setText("hello"));
+		let published = "";
+		await mountScope("bob", {
+			beforeCommit: () => {
+				published = mountedScope(store.getState().scoped).notes.text;
+			},
+		});
+		expect(published).toBe("hello");
+		expect(mountedScope(store.getState().scoped).notes.text).toBe("");
+	});
+
+	it("skips beforeCommit when the next scope cannot rehydrate", async () => {
+		const storage = memoryStorage();
+		const { store, mountScope } = openScope({ storage });
+		await mountScope("alice");
+		store.dispatch(setText("hello"));
+		await storage.setItem(scopedStorageKey("notes", "bob"), "not-json");
+		const beforeCommit = vi.fn();
+
+		await expect(mountScope("bob", { beforeCommit })).rejects.toBeInstanceOf(ScopeRestoreError);
+
+		expect(beforeCommit).not.toHaveBeenCalled();
+		expect(mountedScope(store.getState().scoped).notes.text).toBe("hello");
+	});
+
+	it("keeps the current scope when beforeCommit throws", async () => {
+		const { store, mountScope } = openScope();
+		await mountScope("alice");
+		store.dispatch(setText("hello"));
+
+		await expect(mountScope("bob", {
+			beforeCommit: () => {
+				throw new Error("unload failed");
+			},
+		})).rejects.toThrow(/unload failed/);
+
+		expect(mountedScope(store.getState().scoped).notes.text).toBe("hello");
+	});
+
 	it("rejects an empty scope id", async () => {
 		const { mountScope } = openScope();
 		await expect(mountScope(" ")).rejects.toThrow(/scope id/);
 	});
 });
+

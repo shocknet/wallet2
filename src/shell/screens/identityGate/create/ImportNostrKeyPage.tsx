@@ -12,7 +12,7 @@ import {
 	getSourcesFromLegacyFileBackup,
 	type SourceToMigrate,
 } from "@/shell/migrations/deviceToIdentities/legacySources";
-import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { createAndRequestIdentityLoad } from "@/shell/coordinator";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch } from "@/State/store/hooks";
 import { Capacitor } from "@capacitor/core";
@@ -83,7 +83,7 @@ export function ImportNostrKeyPage() {
 			await presentLoading({ message: "Creating profile...", });
 			try {
 				await dispatch(
-					createIdentity({
+					createAndRequestIdentityLoad({
 						type: IdentityType.LOCAL_KEY,
 						privkey: key,
 						label: "New Nostr Key Identity",

@@ -3,13 +3,19 @@ import dLogger from "@/Api/helpers/debugLog";
 import { getDeviceId } from "@/constants";
 import { createDeferred } from "@/lib/deferred";
 import { identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
-import type { AppThunk } from "@/State/store/store";
+import type { AppThunk, AppThunkDispatch, RootState } from "@/State/store/store";
 import type { ScopedRuntimeIdentity } from "@/shell/types";
+import {
+	applyMigratedSourceDocs,
+	getSourcesFromLegacyRemoteBackup,
+	migrateLegacySourcesToDocs,
+} from "@/shell/migrations/deviceToIdentities/legacySources";
 import { appApi } from "../../api/api";
 import { identityUnloaded } from "../../listeners/actions";
 import { unwrapDataKeyWithNip44 } from "../helpers/datakey";
-
-import { getIdentityNostrApi } from "../helpers/identityNostrApi";
+import { getActiveIdentityNostrApi, getIdentityNostrApi } from "../helpers/identityNostrApi";
+import { fetchNip78Event } from "../helpers/nostr";
+import { identityDocDtag } from "../helpers/processDocs";
 import { clearSanctumIdentitySdk } from "../helpers/sanctumIdentitySdkManager";
 import { identitiesRegistryActions, selectActiveIdentity } from "../slice";
 import { resolveWrappedDataKeyCiphertext } from "../helpers/platformSecretStorage";
@@ -72,8 +78,6 @@ export const switchIdentity = (toIdentity: ScopedRuntimeIdentity): AppThunk<Prom
 			throw new Error("Identity does not exist");
 		}
 
-		const deviceId = getDeviceId();
-
 		// Will throw if identity isn"t healthy (nostr extension issues, sanctum session issues)
 		const identityNostrApi = await getIdentityNostrApi(toIdentity);
 
@@ -83,24 +87,50 @@ export const switchIdentity = (toIdentity: ScopedRuntimeIdentity): AppThunk<Prom
 			wrappedDataKeyCiphertext: await resolveWrappedDataKeyCiphertext(fromRegistry),
 		});
 
-
 		await mountScope({
 			scopeId: toIdentity.pubkey,
 			dataKey: unwrappedDataKey,
 			runtimeIdentity: toIdentity,
+		}, {
+			beforeCommit: () => dispatch(tearDownCurrentIdentity()),
 		});
-		void deleteLegacyBeaconsPersist(toIdentity.pubkey).catch(() => { });
 
-		const draft = selectIdentityDraft(getState());
 
-		// If no identity doc yet, init it. If a remote version comes they will converge naturally
-		if (draft === undefined) {
-			log.debug("init-identity-doc");
-			dispatch(identityActions.initIdentityDoc({ identity_pubkey: toIdentity.pubkey, by: deviceId }));
-		}
+		await reconcileMissingIdentityDoc(dispatch, getState, log);
 
 		dispatch(identitiesRegistryActions.setLastActiveIdentityId({ pubkey: toIdentity.pubkey }));
 		dLogger.setIdentityContext({ identityPubkey: toIdentity.pubkey, identityType: toIdentity.type });
 
 	}
 }
+
+async function reconcileMissingIdentityDoc(
+	dispatch: AppThunkDispatch,
+	getState: () => RootState,
+	log: ReturnType<typeof dLogger.withContext>,
+) {
+	if (selectIdentityDraft(getState()) !== undefined) return;
+
+	try {
+		const identityApi = await getActiveIdentityNostrApi(getState);
+		const identityDoc = await fetchNip78Event(identityApi, identityDocDtag);
+		if (identityDoc) {
+			log.info("found-remote-identity-doc");
+		} else {
+			const remoteLegacySources = await getSourcesFromLegacyRemoteBackup(identityApi);
+			const legacySourceDocs = migrateLegacySourcesToDocs(remoteLegacySources);
+			if (legacySourceDocs.length) {
+				log.info("importing-legacy-sources", { data: { count: legacySourceDocs.length } });
+				applyMigratedSourceDocs(dispatch, legacySourceDocs);
+			}
+		}
+	} catch (error) {
+		log.error("identity-doc-lookup-failed", { error });
+	}
+
+	const pubkey = getState().scoped?.runtimeIdentity.pubkey;
+	if (!pubkey || selectIdentityDraft(getState()) !== undefined) return;
+	log.debug("init-identity-doc");
+	dispatch(identityActions.initIdentityDoc({ identity_pubkey: pubkey, by: getDeviceId() }));
+}
+

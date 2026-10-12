@@ -105,7 +105,12 @@ export function createScopeHost<Session extends ScopeSession, R extends Reducer>
 		});
 	}
 
-	async function mountInternal(store: HostStore, persistor: Persistor, session: Session) {
+	async function mountInternal(
+		store: HostStore,
+		persistor: Persistor,
+		session: Session,
+		options?: { beforeCommit?: () => Promise<void> | void },
+	) {
 		if (session.scopeId.trim() === "") throw new Error("A scope id is required");
 		if (session.scopeId === activeScopeId) return;
 		if (activeReducer) await persistor.flush().catch(() => { });
@@ -114,14 +119,21 @@ export function createScopeHost<Session extends ScopeSession, R extends Reducer>
 		const staged = await boot(scoped.reducer, scoped.persistKeys);
 		if (staged.failures.length > 0) throw new ScopeRestoreError(staged.failures);
 
+		await options?.beforeCommit?.();
+
 		activeReducer = scoped.reducer;
 		pendingCommit = staged.state;
 		activeScopeId = session.scopeId;
 		store.dispatch(scopeCommitted());
 	}
 
-	function mount(store: HostStore, persistor: Persistor, session: Session) {
-		const run = queue.then(() => mountInternal(store, persistor, session));
+	function mount(
+		store: HostStore,
+		persistor: Persistor,
+		session: Session,
+		options?: { beforeCommit?: () => Promise<void> | void },
+	) {
+		const run = queue.then(() => mountInternal(store, persistor, session, options));
 		queue = run.then(() => undefined, () => undefined);
 		return run;
 	}

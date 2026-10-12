@@ -2,7 +2,7 @@ import { generateNewKeyPair } from "@/Api/helpers";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
 import { NOSTR_RELAYS } from "@/constants";
 import { useToast } from "@/lib/contexts/useToast";
-import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { createAndRequestIdentityLoad } from "@/shell/coordinator";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch } from "@/State/store/hooks";
 import { Capacitor } from "@capacitor/core";
@@ -74,7 +74,7 @@ export function GenerateNewKeyPage() {
 		}
 		await presentLoading({ message: "Creating identity...", });
 		try {
-			await dispatch(createIdentity({
+			await dispatch(createAndRequestIdentityLoad({
 				type: IdentityType.LOCAL_KEY,
 				privkey: generatedPair.privateKey,
 				label: "New Nostr Key Identity",

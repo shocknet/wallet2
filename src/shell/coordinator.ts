@@ -5,7 +5,7 @@ import { type TokensData } from "sanctum-sdk";
 import {
 	IdentityType,
 } from "../State/identitiesRegistry/types";
-import { switchIdentity } from "../State/identitiesRegistry/thunks";
+import { createIdentity, switchIdentity, type CreateIdentityInput } from "../State/identitiesRegistry/thunks";
 import { selectIdentities } from "../State/identitiesRegistry/slice";
 import { clearSanctumReauthRequired } from "../State/identitiesRegistry/identitySyncThunks";
 import { shellActions } from "./slice";
@@ -180,6 +180,13 @@ export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch, getState) =
 	}
 };
 
+
+export const createAndRequestIdentityLoad = (
+	input: CreateIdentityInput,
+): AppThunk<Promise<void>> => async (dispatch) => {
+	const runtimeIdentity = await dispatch(createIdentity(input));
+	await dispatch(completeShellIdentityLoad(runtimeIdentity));
+};
 
 export const completeShellIdentityLoad = (
 	runtimeIdentity: ScopedRuntimeIdentity,

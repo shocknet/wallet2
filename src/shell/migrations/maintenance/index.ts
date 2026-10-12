@@ -19,10 +19,6 @@ const maintenanceTasks = [
 	{ name: "obsolete-scoped-persist", run: removeObsoleteScopedPersist },
 ];
 
-/**
- * Runs every boot after the data migrations. Add storage removal and other
- * side effects here. A failed task is logged and the rest still run.
- */
 export const runMaintenanceMigration = (): AppThunk<Promise<void>> => async () => {
 	for (const task of maintenanceTasks) {
 		try {

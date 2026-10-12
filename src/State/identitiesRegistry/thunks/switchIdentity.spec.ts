@@ -11,6 +11,7 @@ import type { AppThunkDispatch } from "@/State/store/store";
 import { memoryStorage } from "@tests/support/memoryStorage";
 import { generateAndWrapDataKey } from "../helpers/datakey";
 import { getLocalKeysIdentityApi } from "../helpers/identityNostrApi";
+import { identityDocDtag } from "../helpers/processDocs";
 import { identitiesRegistryActions, identitiesRegistrySlice, selectActiveIdentity } from "../slice";
 import { IdentityType, type IdentityKeys } from "../types";
 import { switchIdentity } from "./switchIdentity";
@@ -18,7 +19,11 @@ import { switchIdentity } from "./switchIdentity";
 const mocks = vi.hoisted(() => ({
 	resetClientsCluster: vi.fn(async () => undefined),
 	clearSanctumIdentitySdk: vi.fn((_pubkey: string) => undefined),
-
+	getNip78Event: vi.fn(async (
+		_pubkey: string,
+		_relays: string[],
+		_dTag?: string,
+	): Promise<{ content: string } | null> => null),
 }));
 
 vi.mock("@/State/store/store", () => ({
@@ -28,6 +33,15 @@ vi.mock("@/State/store/store", () => ({
 vi.mock("@/Api/nostr", () => ({
 	resetClientsCluster: () => mocks.resetClientsCluster(),
 }));
+
+vi.mock("@/Api/nostrHandler", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@/Api/nostrHandler")>();
+	return {
+		...actual,
+		getNip78Event: (pubkey: string, relayUrls: string[], dTag?: string) =>
+			mocks.getNip78Event(pubkey, relayUrls, dTag),
+	};
+});
 
 vi.mock("../helpers/sanctumIdentitySdkManager", () => ({
 	clearSanctumIdentitySdk: (pubkey: string) => mocks.clearSanctumIdentitySdk(pubkey),
@@ -118,6 +132,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	mocks.getNip78Event.mockResolvedValue(null);
 });
 
 describe("switchIdentity", () => {
@@ -130,7 +145,6 @@ describe("switchIdentity", () => {
 		expect(wallet.session()).toEqual(alice.runtime);
 		expect(wallet.registry().lastActiveIdentityId).toBe(alice.runtime.pubkey);
 		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
-		expect(mocks.deleteLegacyBeaconsPersist).toHaveBeenCalledWith(alice.runtime.pubkey);
 	});
 
 	it("does not tear down when nothing was active", async () => {
@@ -173,6 +187,10 @@ describe("switchIdentity", () => {
 		const wallet = createWallet([alice, bob]);
 		await wallet.switchTo(alice);
 		vi.clearAllMocks();
+		mocks.resetClientsCluster.mockImplementation(async () => {
+			expect(wallet.active()).toEqual(alice.registry);
+			expect(wallet.session()).toEqual(alice.runtime);
+		});
 
 		await wallet.switchTo(bob);
 
@@ -187,4 +205,40 @@ describe("switchIdentity", () => {
 		expect(wallet.registry().lastActiveIdentityId).toBe(bob.runtime.pubkey);
 		expect(wallet.draft()?.identity_pubkey).toBe(bob.runtime.pubkey);
 	});
+
+	it("writes a local identity doc when the remote doc is missing", async () => {
+		const wallet = createWallet([alice]);
+
+		await wallet.switchTo(alice);
+
+		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
+		expect(mocks.getNip78Event).toHaveBeenCalledWith(alice.runtime.pubkey, alice.runtime.relays, identityDocDtag);
+	});
+
+	it("writes a local identity doc when a remote identity doc exists", async () => {
+		const api = await getLocalKeysIdentityApi(
+			{ publicKey: alice.runtime.pubkey, privateKey: alice.runtime.privateKey },
+			alice.runtime.relays,
+		);
+		const content = await api.encrypt(alice.runtime.pubkey, "{\"doc\":true}");
+		mocks.getNip78Event.mockImplementation(async (_pubkey, _relayUrls, dTag) => (
+			dTag === identityDocDtag ? { content } : null
+		));
+		const wallet = createWallet([alice]);
+
+		await wallet.switchTo(alice);
+
+		expect(mocks.getNip78Event).toHaveBeenCalledTimes(1);
+		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
+	});
+
+	it("writes a local identity doc when the relay lookup fails", async () => {
+		mocks.getNip78Event.mockRejectedValue(new Error("relay down"));
+		const wallet = createWallet([alice]);
+
+		await wallet.switchTo(alice);
+
+		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
+	});
 });
+
