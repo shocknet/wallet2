@@ -26,7 +26,7 @@ import { ShellBootstrap } from "@/shell/ShellBootstrap";
 import { AppShell } from "@/shell/AppShell";
 import { Provider } from "react-redux";
 import ErrorBoundary from "./Hooks/ErrorBoundary";
-import { ToastProvider } from "./lib/contexts/useToast";
+import { ToastOutlet, ToastProvider } from "./lib/contexts/useToast";
 import { OverlayCoordinator } from "./overlay";
 import { ToastContainer } from 'react-toastify';
 import { addIcons } from 'ionicons';
@@ -44,16 +44,17 @@ setupIonicReact();
 export default function App() {
 	return (
 		<Provider store={store}>
-			<IonApp>
-				<ErrorBoundary>
-					<PersistGate
-						loading={null}
-						persistor={persistor}
-						onBeforeLift={() =>
-							SplashScreen.hide()
-						}
-					>
-						<ToastProvider>
+			<ToastProvider>
+				<IonApp>
+					<ErrorBoundary>
+						<PersistGate
+							loading={null}
+							persistor={persistor}
+							onBeforeLift={() =>
+								SplashScreen.hide()
+							}
+						>
+							<ToastOutlet />
 							<IonReactRouter>
 								<OverlayCoordinator>
 									<ShellBootstrap />
@@ -62,20 +63,19 @@ export default function App() {
 								</OverlayCoordinator>
 							</IonReactRouter>
 							<UpdateToast />
-						</ToastProvider>
-						<ToastContainer
-							theme="colored"
-							position="top-center"
-							closeOnClick
-							pauseOnHover
-							autoClose={4000}
-							limit={2}
-							pauseOnFocusLoss={false}
-						/>
-					</PersistGate>
-				</ErrorBoundary>
-			</IonApp>
-
+							<ToastContainer
+								theme="colored"
+								position="top-center"
+								closeOnClick
+								pauseOnHover
+								autoClose={4000}
+								limit={2}
+								pauseOnFocusLoss={false}
+							/>
+						</PersistGate>
+					</ErrorBoundary>
+				</IonApp>
+			</ToastProvider>
 		</Provider>
 	);
 }
