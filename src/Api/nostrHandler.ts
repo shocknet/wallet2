@@ -586,7 +586,13 @@ export class RelaySession {
 		needsUpdate: boolean,
 	) {
 		const stored = this.subs.get(subId);
-		const live = stored?.sub && !stored.sub.closed ? stored.sub : undefined;
+
+		const live =
+			stored?.sub &&
+				!stored.sub.closed &&
+				this.relay.openSubs.get(subId) === stored.sub
+				? stored.sub
+				: undefined;
 
 		if (live && !needsUpdate) {
 			return live;
