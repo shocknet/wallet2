@@ -8,7 +8,7 @@ import type { ScopedRuntimeIdentity } from "@/shell/types";
 import { appApi } from "../../api/api";
 import { identityUnloaded } from "../../listeners/actions";
 import { unwrapDataKeyWithNip44 } from "../helpers/datakey";
-import { deleteLegacyBeaconsPersist } from "../helpers/deleteIdentityStorage";
+
 import { getIdentityNostrApi } from "../helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "../helpers/sanctumIdentitySdkManager";
 import { identitiesRegistryActions, selectActiveIdentity } from "../slice";
@@ -83,7 +83,6 @@ export const switchIdentity = (toIdentity: ScopedRuntimeIdentity): AppThunk<Prom
 			wrappedDataKeyCiphertext: await resolveWrappedDataKeyCiphertext(fromRegistry),
 		});
 
-		await dispatch(tearDownCurrentIdentity());
 
 		await mountScope({
 			scopeId: toIdentity.pubkey,

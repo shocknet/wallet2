@@ -21,7 +21,6 @@ const relays = ["wss://relay.example"];
 const mocks = vi.hoisted(() => ({
 	resetClientsCluster: vi.fn(async () => undefined),
 	clearSanctumIdentitySdk: vi.fn((_pubkey: string) => undefined),
-	deleteLegacyBeaconsPersist: vi.fn(async (_pubkey: string) => undefined),
 	getNip78Event: vi.fn(async (
 		_pubkey: string,
 		_relays: string[],
@@ -47,10 +46,6 @@ vi.mock("../helpers/sanctumIdentitySdkManager", () => ({
 	getOrCreateSanctumIdentitySdk: () => {
 		throw new Error("sanctum is not used in this spec");
 	},
-}));
-
-vi.mock("../helpers/deleteIdentityStorage", () => ({
-	deleteLegacyBeaconsPersist: (pubkey: string) => mocks.deleteLegacyBeaconsPersist(pubkey),
 }));
 
 function localKey(label: string) {

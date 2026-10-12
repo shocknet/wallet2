@@ -18,7 +18,7 @@ import { switchIdentity } from "./switchIdentity";
 const mocks = vi.hoisted(() => ({
 	resetClientsCluster: vi.fn(async () => undefined),
 	clearSanctumIdentitySdk: vi.fn((_pubkey: string) => undefined),
-	deleteLegacyBeaconsPersist: vi.fn(async (_pubkey: string) => undefined),
+
 }));
 
 vi.mock("@/State/store/store", () => ({
@@ -36,9 +36,7 @@ vi.mock("../helpers/sanctumIdentitySdkManager", () => ({
 	},
 }));
 
-vi.mock("../helpers/deleteIdentityStorage", () => ({
-	deleteLegacyBeaconsPersist: (pubkey: string) => mocks.deleteLegacyBeaconsPersist(pubkey),
-}));
+
 
 type LocalIdentity = {
 	registry: IdentityKeys;
@@ -154,7 +152,7 @@ describe("switchIdentity", () => {
 		expect(wallet.active()).toEqual(alice.registry);
 		expect(wallet.session()).toEqual(alice.runtime);
 		expect(mocks.resetClientsCluster).not.toHaveBeenCalled();
-		expect(mocks.deleteLegacyBeaconsPersist).not.toHaveBeenCalled();
+
 	});
 
 	it("rejects an identity that is not in the registry", async () => {
@@ -180,7 +178,7 @@ describe("switchIdentity", () => {
 
 		expect(mocks.resetClientsCluster).toHaveBeenCalledTimes(1);
 		expect(mocks.clearSanctumIdentitySdk).not.toHaveBeenCalled();
-		expect(mocks.deleteLegacyBeaconsPersist).toHaveBeenCalledWith(bob.runtime.pubkey);
+
 		expect(wallet.active()).toEqual(bob.registry);
 		expect(wallet.session()).toMatchObject({
 			pubkey: bob.runtime.pubkey,
