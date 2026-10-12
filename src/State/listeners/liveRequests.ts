@@ -6,7 +6,7 @@ import { ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { ListenerEffectAPI, TaskResult } from "@reduxjs/toolkit";
 import { createDeferred } from "@/lib/deferred";
 import { sourceJustAdded, sourceJustDeleted, sourceIdsThatBecameFresh } from "./predicates";
-import { AppDispatch, RootState } from "@/State/store/store";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { clinkRequestsActions } from "@/State/clinkRequests/slice";
 import { beaconsActions } from "@/State/scoped/beacons/slice";
@@ -78,7 +78,7 @@ async function subscribeToStreams(
 }
 
 
-export const liveRequestsListenerSpec: ListenerSpec = {
+export const liveRequestsListenerSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "liveRequestsListener",
 	listeners: [
 		// When identity loads subscribe all healthy sources to streams

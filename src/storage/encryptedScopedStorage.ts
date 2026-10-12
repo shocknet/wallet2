@@ -1,15 +1,16 @@
-import IonicStorageAdapter from "./redux-persist-ionic-storage-adapter";
 import { decryptStringAesGcm, encryptStringAesGcm, isAesGcmEnvelope } from "@/lib/aesGcm";
 import type { Storage } from "redux-persist";
 
 export function createEncryptedScopedStorage(args: {
-	identityId: string;
+	scopeId: string;
 	sliceName: string;
 	dataKey: CryptoKey;
+	storage: Storage;
 }): Storage {
+	const { storage } = args;
 	return {
 		getItem: async (key: string) => {
-			const raw = await IonicStorageAdapter.getItem(key);
+			const raw = await storage.getItem(key);
 			if (!raw) return null;
 
 			const envelope = JSON.parse(raw);
@@ -19,7 +20,7 @@ export function createEncryptedScopedStorage(args: {
 			const plaintext = await decryptStringAesGcm({
 				key: args.dataKey,
 				envelope,
-				expectedAad: { identityId: args.identityId, sliceName: args.sliceName },
+				expectedAad: { identityId: args.scopeId, sliceName: args.sliceName },
 			});
 
 			return plaintext;
@@ -28,12 +29,12 @@ export function createEncryptedScopedStorage(args: {
 			const envelope = await encryptStringAesGcm({
 				key: args.dataKey,
 				plaintext: value,
-				aad: { identityId: args.identityId, sliceName: args.sliceName },
+				aad: { identityId: args.scopeId, sliceName: args.sliceName },
 			});
-			await IonicStorageAdapter.setItem(key, JSON.stringify(envelope));
+			await storage.setItem(key, JSON.stringify(envelope));
 		},
 		removeItem: async (key: string) => {
-			await IonicStorageAdapter.removeItem(key);
+			await storage.removeItem(key);
 		},
 	};
 }

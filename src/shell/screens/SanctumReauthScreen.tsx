@@ -13,7 +13,7 @@ import { SanctumAuthWidget } from "@/Components/SanctumAuthWidget";
 import { ProfileCard } from "@/Components/User/ProfileCard";
 import { selectIdentityByPubkey } from "@/State/identitiesRegistry/slice";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
-import type { RuntimeIdentity } from "../types";
+import type { ScopedRuntimeIdentitySanctum } from "../types";
 import {
 	cancelIdentityUnlock,
 	completeSanctumReauth,
@@ -24,7 +24,7 @@ export function SanctumReauthScreen({
 	reason,
 	error,
 }: {
-	runtimeIdentity: RuntimeIdentity;
+	runtimeIdentity: ScopedRuntimeIdentitySanctum;
 	reason?: string;
 	error?: string;
 }) {
@@ -86,7 +86,7 @@ export function SanctumReauthScreen({
 						</div>
 					) : (
 						<p className="mb-6 text-sm text-secondary text-center">
-							{runtimeIdentity.label || "Sanctum profile"}
+							Sanctum profile
 						</p>
 					)}
 

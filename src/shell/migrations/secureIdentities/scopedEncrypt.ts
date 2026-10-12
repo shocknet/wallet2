@@ -3,8 +3,8 @@ import {
 	isAesGcmEnvelope,
 } from "@/lib/aesGcm";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
-import { getScopedIdentityPersistKey } from "@/State/scoped/backups/identity/slice";
-import { getScopedSourcesPersistKey } from "@/State/scoped/backups/sources/slice";
+import { identityModule } from "@/State/scoped/backups/identity/slice";
+import { sourcesModule } from "@/State/scoped/backups/sources/slice";
 import type { SourcesState } from "@/State/scoped/backups/sources/state";
 import { SecureIdentitiesMigrationError } from "./errors";
 
@@ -42,8 +42,8 @@ async function encryptScopedSlice(args: {
 }): Promise<void> {
 	const persistKey =
 		args.sliceName === "identity"
-			? `persist:${getScopedIdentityPersistKey(args.identityId)}`
-			: `persist:${getScopedSourcesPersistKey(args.identityId)}`;
+			? `persist:${identityModule.persistKey(args.identityId)}`
+			: `persist:${sourcesModule.persistKey(args.identityId)}`;
 
 	const raw = await IonicStorageAdapter.getItem(persistKey);
 	if (!raw) {
@@ -75,7 +75,7 @@ export async function readTopicIdsFromPlaintextSources(
 	pubkey: string,
 ): Promise<{ topicId: string; sourceId: string }[]> {
 	const sourcesSliceSerialized = await IonicStorageAdapter.getItem(
-		`persist:${getScopedSourcesPersistKey(pubkey)}`,
+		`persist:${sourcesModule.persistKey(pubkey)}`,
 	);
 	if (!sourcesSliceSerialized) {
 		return [];

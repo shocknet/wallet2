@@ -42,8 +42,8 @@ import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
 import { exportDebugReport } from "@/lib/debugReportExport";
 import { useSwitchProfileModal } from "@/Components/User/SwitchProfileSheet";
 import { ProfilePicture } from "@/Components/User/ProfilePicture";
-import { RuntimeIdentity } from "@/shell/types";
 import { resolveIdentityRelays } from "@/State/identitiesRegistry/types";
+import { ScopedRuntimeIdentity } from "@/shell/types";
 
 interface AppBuildInfo {
 	appId: string;
@@ -84,7 +84,7 @@ const getMenuItems = (hasAdminSources: boolean) => {
 	return items;
 };
 interface NavigationMenuProps {
-	activeIdentity: RuntimeIdentity;
+	activeIdentity: ScopedRuntimeIdentity;
 }
 export const NavigationMenu = memo(function NavigationMenu({
 	activeIdentity,

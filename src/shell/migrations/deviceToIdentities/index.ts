@@ -14,8 +14,8 @@ import {
 	type SourceToMigrate,
 } from "./legacySources";
 import { generateNewKeyPair } from "@/Api/helpers";
-import { createIdentity, type CreateIdentityInput } from "@/State/identitiesRegistry/thunks";
-import { identitiesSelectors } from "@/State/identitiesRegistry/slice";
+import { createIdentity, switchIdentity, type CreateIdentityInput } from "@/State/identitiesRegistry/thunks";
+import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { normalizeWsUrl } from "@/lib/url";
 import { getSanctumAccessToken } from "@/Api/sanctum";
@@ -102,7 +102,7 @@ export const drainPendingDeviceToIdentitiesLocalSources = (): AppThunk<
 		return;
 	}
 
-	if (!getState().identitiesRegistry.active) {
+	if (!selectActiveIdentity(getState())) {
 		return;
 	}
 
@@ -139,6 +139,7 @@ async function migrateLegacyDeviceToIdentity(
 				const keyPair = generateNewKeyPair();
 				await dispatchCreateIdentity(
 					dispatch,
+					getState,
 					{
 						type: IdentityType.LOCAL_KEY,
 						privkey: keyPair.privateKey,
@@ -170,6 +171,7 @@ async function migrateLegacyDeviceToIdentity(
 				await upgradeLegacySanctumAccessToken(legacyAccessToken);
 			await dispatchCreateIdentity(
 				dispatch,
+				getState,
 				{
 					type: IdentityType.SANCTUM,
 					label: "My Sanctum Identity",
@@ -189,6 +191,7 @@ async function migrateLegacyDeviceToIdentity(
 			await verifyExtensionForMigration();
 			await dispatchCreateIdentity(
 				dispatch,
+				getState,
 				{
 					type: IdentityType.NIP07,
 					label: "My Nostr Extension Identity",
@@ -258,11 +261,16 @@ function getLegacyBackupKind(
 
 async function dispatchCreateIdentity(
 	dispatch: AppThunkDispatch,
+	getState: () => RootState,
 	input: CreateIdentityInput,
 	legacyKind: LegacyBackupKind,
 ): Promise<void> {
 	try {
-		await dispatch(createIdentity(input));
+		const runtime = await dispatch(createIdentity(input));
+		await dispatch(switchIdentity(runtime));
+		if (selectActiveIdentity(getState())?.pubkey !== runtime.pubkey) {
+			throw new Error("Identity was created but is not active");
+		}
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		throw new DeviceToIdentitiesMigrationError(
@@ -284,7 +292,7 @@ function absorbLocalLegacySources(
 		return;
 	}
 
-	if (!getState().identitiesRegistry.active) {
+	if (!selectActiveIdentity(getState())) {
 		throw new DeviceToIdentitiesMigrationError(
 			"legacy-sources-absorb-failed",
 			"Identity was created but is not active; cannot import legacy sources.",

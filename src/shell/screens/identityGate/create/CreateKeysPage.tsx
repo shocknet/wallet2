@@ -12,7 +12,7 @@ import {
 } from "@ionic/react";
 import { useCallback, useEffect, useState } from "react";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { createAndRequestIdentityLoad } from "@/shell/coordinator";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
 import { normalizeWsUrl } from "@/lib/url";
@@ -63,7 +63,7 @@ export function CreateKeysPage() {
 		await presentLoading({ message: "Creating profile...", });
 		try {
 			await dispatch(
-				createIdentity({
+				createAndRequestIdentityLoad({
 					type: IdentityType.NIP07,
 					label: "Nostr extension",
 					relays: NOSTR_RELAYS.map(normalizeWsUrl),

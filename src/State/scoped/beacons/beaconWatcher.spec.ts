@@ -14,6 +14,7 @@ import { APP_ACTIVE_DEBOUNCE_MS, BEACON_STALE_OLDER_THAN } from "@/constants";
 import { identityUnloaded } from "@/State/listeners/actions";
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { runtimeActions, runTimeReducer } from "@/State/runtime/slice";
 import { docsSelectors, sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/slice";
 import { getIntialState } from "@/State/scoped/backups/sources/state";
@@ -24,7 +25,7 @@ import {
 	beaconsStateOf,
 	createTestBeaconNode,
 } from "@tests/support/beaconsFixtures";
-import { TEST_CLOCK_BY, TEST_IDENTITY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { TEST_CLOCK_BY, TEST_IDENTITY } from "@tests/support/identityFixtures";
 import {
 	createTestSource,
 	createTestSources,
@@ -122,15 +123,13 @@ function openBeaconStore(opts: {
 		identity: TEST_IDENTITY,
 	}));
 	if (opts.loadIdentity !== false) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-			identity: TEST_RUNTIME_IDENTITY,
-		}));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }
 
 function relaysInStore(store: BeaconStore, sourceId: string) {
-	const relays = docsSelectors.selectById(store.getState() as RootState, sourceId)?.draft.relays;
+	const relays = docsSelectors.selectById(store.getState() as unknown as RootState, sourceId)?.draft.relays;
 	const urls = relays
 		? Object.keys(relays).filter(url => relays[url]?.present)
 		: [];
@@ -143,7 +142,7 @@ function join(
 	relays = presentRelays(source),
 ): SourceBeaconJoin {
 	return makeSelectSourceBeaconJoin()(
-		store.getState() as RootState,
+		store.getState() as unknown as RootState,
 		source.lpk,
 		relays,
 	);
@@ -155,7 +154,7 @@ function holdJoin(
 	relays = presentRelays(source),
 ) {
 	const select = makeSelectSourceBeaconJoin();
-	return () => select(store.getState() as RootState, source.lpk, relays);
+	return () => select(store.getState() as unknown as RootState, source.lpk, relays);
 }
 
 function pendingDiscovery() {
@@ -358,7 +357,7 @@ describe("beaconWatcher", () => {
 		const sourceRelays = presentRelays(source);
 		const otherRelays = presentRelays(other);
 		const before = selectSource(
-			store.getState() as RootState,
+			store.getState() as unknown as RootState,
 			source.lpk,
 			sourceRelays,
 		);
@@ -368,7 +367,7 @@ describe("beaconWatcher", () => {
 			data: { type: "service", name: "other" },
 		});
 
-		const afterState = store.getState() as RootState;
+		const afterState = store.getState() as unknown as RootState;
 		expect(selectSource(afterState, source.lpk, sourceRelays)).toBe(before);
 		expect(selectOther(afterState, other.lpk, otherRelays)).toMatchObject({
 			health: "fresh",

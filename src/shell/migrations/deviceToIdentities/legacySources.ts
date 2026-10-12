@@ -9,7 +9,7 @@ import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { docsSelectors } from "@/State/scoped/backups/sources/slice";
 import type { AppThunkDispatch, RootState } from "@/State/store/store";
-import { findReducerMerger } from "@/State/store/store";
+import { findReducerMerger } from "@/State/store/reducerMergers";
 import {
 	applyMigrations,
 	getStateAndVersion,

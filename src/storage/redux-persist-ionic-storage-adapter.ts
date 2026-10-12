@@ -20,7 +20,11 @@ const IonicStorageAdapter = {
 	removeItem: async (key: string): Promise<void> => {
 		await storageReady;
 		await ionicStorage.remove(key);
-	}
+	},
+	keys: async (): Promise<string[]> => {
+		await storageReady;
+		return ionicStorage.keys();
+	},
 }
 
 export default IonicStorageAdapter;

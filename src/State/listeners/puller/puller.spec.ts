@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDeferred } from "@/lib/deferred";
 import { identityUnloaded } from "@/State/listeners/actions";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import {
 	getActiveIdentityNostrApi,
 	type IdentityNostrApi,
@@ -12,7 +12,6 @@ import { SourceType } from "@/State/scoped/backups/sources/schema";
 import {
 	createTestIdentityDoc,
 	TEST_IDENTITY_PUBKEY,
-	TEST_RUNTIME_IDENTITY,
 } from "@tests/support/identityFixtures";
 import { createTestSource, createTestSources, type TestSource } from "@tests/support/sourcesHelpers";
 import { makeListenerStore } from "@tests/support/listenerStore";
@@ -51,9 +50,7 @@ function openPullerStoreSync(opts: {
 		loadIdentity: false,
 	});
 	if (loadIdentity) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-			identity: TEST_RUNTIME_IDENTITY,
-		}));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }
@@ -153,9 +150,7 @@ describe("puller", () => {
 			await unload(store);
 			expect(subscribeMock).toHaveBeenCalledTimes(1);
 
-			store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-				identity: TEST_RUNTIME_IDENTITY,
-			}));
+			store.dispatch(scopeCommitted());
 			await flush();
 
 			expect(subscribeMock).toHaveBeenCalledTimes(2);

@@ -4,6 +4,7 @@ import { usePressBackAgainToExit } from "@/Hooks/useBackAgainToExit";
 import { useRegisterRootLifecycle } from "@/Hooks/useRegisterRootLifecycle";
 import { useDeviceAuthRuntime } from "@/Hooks/useDeviceAuthRuntime";
 import { useDeepLinks } from "@/intents/useDeepLinks";
+import { useUpdateToast } from "./useUpdateToast";
 
 export const ShellEffects = memo(function ShellEffects() {
 	useRegisterRootLifecycle();
@@ -11,6 +12,7 @@ export const ShellEffects = memo(function ShellEffects() {
 	usePressBackAgainToExit();
 	useTheme();
 	useDeepLinks();
+	useUpdateToast();
 
 	return null;
 });

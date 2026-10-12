@@ -14,7 +14,7 @@ import { DisclaimerFooter } from "@/Components/common/info/disclaimerFooter";
 import { useEventCallback } from "@/Hooks/useEventCallback";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
-import { createIdentity } from "@/State/identitiesRegistry/thunks";
+import { createAndRequestIdentityLoad } from "@/shell/coordinator";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
 
@@ -32,7 +32,7 @@ export function CreateSanctumPage() {
 			try {
 				await presentLoading({ message: "Creating profile…" });
 				await dispatch(
-					createIdentity({
+					createAndRequestIdentityLoad({
 						type: IdentityType.SANCTUM,
 						label: "New Sanctum Identity",
 						tokensData,

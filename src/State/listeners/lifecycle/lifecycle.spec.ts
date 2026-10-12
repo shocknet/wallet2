@@ -1,22 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAction, TaskAbortError } from "@reduxjs/toolkit";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
-import { TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { identityUnloaded, listenerKick } from "../actions";
 import { createDeferred } from "@/lib/deferred";
 import { makeListenerStore } from "@tests/support/listenerStore";
 import type { ListenerSpec } from "./lifecycle";
+import type { AppDispatch, RootState } from "@/State/store/store";
 
 const ping = createAction("lifecycle/test-ping");
 
-function openStore(specs: ListenerSpec[]) {
+function openStore(specs: readonly ListenerSpec<RootState, AppDispatch>[]) {
 	return makeListenerStore({ specs, loadIdentity: false }).store;
 }
 
 function loadIdentity(store: ReturnType<typeof openStore>) {
-	store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-		identity: TEST_RUNTIME_IDENTITY,
-	}));
+	store.dispatch(scopeCommitted());
 }
 
 async function unload(store: ReturnType<typeof openStore>) {
@@ -26,7 +24,7 @@ async function unload(store: ReturnType<typeof openStore>) {
 }
 
 function kickSpec(name: string, onKick = vi.fn()) {
-	const spec: ListenerSpec = {
+	const spec: ListenerSpec<RootState, AppDispatch> = {
 		name,
 		listeners: [
 			(add) =>
@@ -88,7 +86,7 @@ describe("identity lifecycle", () => {
 		};
 
 		const waitUntilCancelled = (key: keyof typeof cancelled) =>
-			(add: Parameters<ListenerSpec["listeners"][number]>[0]) =>
+			(add: Parameters<ListenerSpec<RootState, AppDispatch>["listeners"][number]>[0]) =>
 				add({
 					actionCreator: listenerKick,
 					effect: async (_, listenerApi) => {

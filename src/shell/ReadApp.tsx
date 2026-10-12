@@ -5,13 +5,13 @@ import {
 	useHistory,
 } from "react-router-dom";
 import { lazy, memo, useEffect } from "react";
-import { RuntimeIdentity } from "./types";
 import { NavigationMenu } from "@/Components/NavigationMenu";
 import { AppRoute } from "@/routing/AppRoute";
 import { Layout } from "@/Layout";
 import Swaps from '@/Pages/Swaps';
 import { ReadyAppEffects } from "./ReadyAppEffects";
 import AddNewIdentity from "@/Pages/AddNewIdentity";
+import { ScopedRuntimeIdentity } from "./types";
 
 
 const Home = lazy(() => import('@/Pages/Home'));
@@ -43,7 +43,7 @@ const ClinkPlayground = lazy(() => import("@/Pages/Dev/ClinkPlayground"));
 export const ReadyApp = memo(function ReadyApp({
 	runtimeIdentity,
 }: {
-	runtimeIdentity: RuntimeIdentity;
+	runtimeIdentity: ScopedRuntimeIdentity;
 }) {
 	const history = useHistory();
 

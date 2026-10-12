@@ -1,8 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { bump, bumpFlag, eqFlags, eqLww, mergeLww, mergeRelayFlags, } from "../../../sync/lww";
 import { SourceType, type SourceDocV0 } from "./schema";
-import { RootState } from "@/State/store/store";
-import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
+import type { RootState } from "@/State/store/store";
+import { makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
+import { defineScopedModule } from "@/State/scope/scopedModule";
 import { selectScopedStrict } from "../../../scope/stricScopedSelector";
 import { docsAdapter, getIntialState, metadataAdapter, opsAdapter, SourcesMetadataState, SourcesState } from "./state";
 import { addOptimisticOperation, breakKey, emptyCursor, ensureHistoryIndex, makeKey, removeOptimisticOperation, sortSourceHistory, upsertUserOperation } from "./history/helpers";
@@ -411,23 +412,25 @@ const migrations = {
 	}
 }
 const persistKey = "__sources";
-export function getScopedSourcesReducer(identityPubkey: string, DataKey: CryptoKey) {
-	return makeScopedPersistedReducer(
-		sourcesSlice.reducer,
-		persistKey,
-		identityPubkey,
-		{
-			version: 4,
-			storage: createEncryptedScopedStorage({ identityId: identityPubkey, sliceName: sourcesSlice.name, dataKey: DataKey }),
-			// @ts-expect-error redux-persist typing issue
-			migrate: createMigrate(migrations)
-		}
-	);
-}
 
-export function getScopedSourcesPersistKey(identityPubkey: string) {
-	return getPersistConfigKey(persistKey, identityPubkey);
-}
+
+
+
+export const sourcesModule = defineScopedModule({
+	persistBaseKey: persistKey,
+	createReducer: ({ scopeId, dataKey, storage }) =>
+		makeScopedPersistedReducer(
+			sourcesSlice.reducer,
+			persistKey,
+			scopeId,
+			{
+				version: 4,
+				storage: createEncryptedScopedStorage({ scopeId, sliceName: sourcesSlice.name, dataKey, storage }),
+				// @ts-expect-error redux-persist typing issue
+				migrate: createMigrate(migrations)
+			}
+		)
+});
 
 
 export const sourcesActions = sourcesSlice.actions;

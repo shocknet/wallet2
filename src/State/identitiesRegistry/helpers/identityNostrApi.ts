@@ -5,10 +5,8 @@ import { hexToBytes } from "@noble/hashes/utils";
 import { NOSTR_RELAYS } from "@/constants";
 import { normalizeWsUrl } from "@/lib/url";
 import { IdentityType } from "../types";
-import type { RuntimeIdentity } from "@/shell/types";
 import { getExtentionsWithRetries } from "@/lib/nip07Extension";
-import store from "@/State/store/store";
-import { selectActiveIdentity } from "../slice";
+import store, { type RootState } from "@/State/store/store";
 import { markSanctumReauthRequired } from "../identitySyncThunks";
 import {
 	deleteSanctumTokens,
@@ -20,6 +18,7 @@ import {
 	clearSanctumIdentitySdk,
 	getOrCreateSanctumIdentitySdk,
 } from "./sanctumIdentitySdkManager";
+import { ScopedRuntimeIdentity } from "@/shell/types";
 
 
 export function adaptSanctumDKApiToIdentityNostrApi(api: SanctumApi): IdentityNostrApi {
@@ -137,7 +136,7 @@ async function verifySanctumPubkey(
 	return adaptSanctumDKApiToIdentityNostrApi(sdk.api);
 }
 
-async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNostrApi> {
+async function buildNonSanctumApi(identity: ScopedRuntimeIdentity): Promise<IdentityNostrApi> {
 	switch (identity.type) {
 		case IdentityType.NIP07:
 			return getNostrExtensionIdentityApi(identity.pubkey, identity.relays);
@@ -151,12 +150,13 @@ async function buildNonSanctumApi(identity: RuntimeIdentity): Promise<IdentityNo
 	}
 }
 
+
 /**
  * Sanctum tokens are read and written on disk for this pubkey.
  * Create, unlock, and the ready app all use this same adapter.
  */
 export async function getIdentityNostrApi(
-	identity: RuntimeIdentity,
+	identity: ScopedRuntimeIdentity,
 ): Promise<IdentityNostrApi> {
 	if (identity.type !== IdentityType.SANCTUM) {
 		return buildNonSanctumApi(identity);
@@ -173,10 +173,10 @@ export async function getIdentityNostrApi(
 	);
 }
 
-export async function getActiveIdentityNostrApi(): Promise<IdentityNostrApi> {
-	const active = selectActiveIdentity(store.getState());
-	if (!active) {
+export async function getActiveIdentityNostrApi(getState: () => RootState): Promise<IdentityNostrApi> {
+	const runtimeIdentity = getState().scoped?.runtimeIdentity;
+	if (!runtimeIdentity) {
 		throw new Error("No active identity");
 	}
-	return getIdentityNostrApi(active);
+	return getIdentityNostrApi(runtimeIdentity);
 }

@@ -1,4 +1,5 @@
-import type { AppstartListening } from "@/State/store/listenerMiddleware";
+import type { TypedStartListening } from "@reduxjs/toolkit";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { REHYDRATE } from "redux-persist";
 
 const waiters = new Map<string, Array<() => void>>();
@@ -11,7 +12,7 @@ export async function waitForRehydrateKeys(keys: string[]) {
 	}));
 	return Promise.all(promises);
 }
-export const addHydrationListener = (startAppListening: AppstartListening) => {
+export const addHydrationListener = (startAppListening: TypedStartListening<RootState, AppDispatch>) => {
 	startAppListening({
 		type: REHYDRATE,
 		effect: async (action) => {

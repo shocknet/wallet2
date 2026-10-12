@@ -1,5 +1,7 @@
 import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice"
+import { scopeCommitted } from "@/State/scope/scopeHost"
 import { addIdentityLifecycle, type ListenerSpec } from "@/State/listeners/lifecycle/lifecycle"
+import type { AppDispatch, RootState } from "@/State/store/store"
 import type { IdentityState } from "@/State/scoped/backups/identity/slice"
 import type { SourcesState } from "@/State/scoped/backups/sources/state"
 import type { BeaconsState } from "@/State/scoped/beacons/state"
@@ -12,7 +14,7 @@ import { sourcesStateOf, type TestSource } from "./sourcesHelpers"
 import { makeTestStore } from "./testStore"
 
 export type MakeListenerStoreOpts = {
-	specs: ListenerSpec[];
+	specs: readonly ListenerSpec<RootState, AppDispatch>[];
 	sources?: TestSource[] | SourcesState;
 	beacons?: BeaconsState;
 	identity?: IdentityState;
@@ -41,6 +43,7 @@ export function makeListenerStore(opts: MakeListenerStoreOpts) {
 			identity,
 			sources,
 			beacons: opts.beacons,
+			runtimeIdentity: TEST_RUNTIME_IDENTITY,
 		},
 	});
 
@@ -49,7 +52,7 @@ export function makeListenerStore(opts: MakeListenerStoreOpts) {
 	store.dispatch(identitiesRegistryActions._createNewIdentity({ identity: TEST_IDENTITY }));
 
 	if (opts.loadIdentity) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: TEST_RUNTIME_IDENTITY }));
+		store.dispatch(scopeCommitted());
 	}
 
 	return { store, startAppListening };

@@ -1,41 +1,66 @@
 import { SANCTUM_URL } from "@/constants";
-import { generateAndWrapDataKey } from "./datakey";
+import dLogger from "@/Api/helpers/debugLog";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
+import type { AppThunk, RootState } from "@/State/store/store";
+import { hexToBytes } from "@noble/hashes/utils";
+import { getPublicKey } from "nostr-tools";
+import { createSanctumDK, type TokensData } from "sanctum-sdk";
+import { appStateActions } from "../../appState/slice";
+import { generateAndWrapDataKey } from "../helpers/datakey";
 import {
 	adaptSanctumDKApiToIdentityNostrApi,
+	getIdentityNostrApi,
 	getLocalKeysIdentityApi,
 	getNostrExtensionIdentityApi,
-} from "./identityNostrApi";
+} from "../helpers/identityNostrApi";
 import {
 	toLocalPrivateKeyStorage,
 	toWrappedDataKeyStorage,
-} from "./platformSecretStorage";
-import { writeSanctumTokens } from "./sanctumTokensStore";
-import { Identity, IdentityType } from "../types";
-import { createSanctumDK, type TokensData } from "sanctum-sdk";
-import { getPublicKey } from "nostr-tools";
-import { hexToBytes } from "@noble/hashes/utils";
-import { RuntimeIdentity } from "@/shell/types";
-import store from "@/State/store/store";
+} from "../helpers/platformSecretStorage";
+import { writeSanctumTokens } from "../helpers/sanctumTokensStore";
+import { identitiesRegistryActions } from "../slice";
+import { IdentityType, type Identity } from "../types";
 
 export type CreateIdentityInput =
 	| { type: IdentityType.LOCAL_KEY; privkey: string; label: string; relays: string[]; userPassword?: string }
 	| { type: IdentityType.SANCTUM; tokensData: TokensData; label: string }
 	| { type: IdentityType.NIP07; label: string; relays: string[] };
 
-export type ProvisionedIdentity = {
-	identity: Identity;
-	runtime: RuntimeIdentity;
+export const createIdentity = (
+	input: CreateIdentityInput,
+): AppThunk<Promise<ScopedRuntimeIdentity>> => {
+	return async (dispatch, getState) => {
+		const unlockedAtMs = Date.now();
+		const { identity, runtime } = await buildIdentity(input, getState, unlockedAtMs);
+
+		const log = dLogger.withContext({
+			procedure: "create-identity",
+			data: { pubkey: identity.pubkey, identityType: identity.type },
+		});
+		if (getState().identitiesRegistry.entities[identity.pubkey]) {
+			log.error("identity-already-exists");
+			throw new Error("This identity already exists.");
+		}
+
+		await getIdentityNostrApi(runtime);
+
+		dispatch(identitiesRegistryActions._createNewIdentity({ identity }));
+		dispatch(appStateActions.setAppBootstrapped());
+		return runtime;
+	};
 };
 
-export async function provisionIdentity(input: CreateIdentityInput): Promise<ProvisionedIdentity> {
-	const unlockedAtMs = Date.now();
-
+async function buildIdentity(
+	input: CreateIdentityInput,
+	getState: () => RootState,
+	unlockedAtMs: number,
+): Promise<{ identity: Identity; runtime: ScopedRuntimeIdentity }> {
 	switch (input.type) {
 		case IdentityType.LOCAL_KEY: {
 			const pubkey = getPublicKey(hexToBytes(input.privkey));
 			const nostrApi = await getLocalKeysIdentityApi(
 				{ publicKey: pubkey, privateKey: input.privkey },
-				input.relays
+				input.relays,
 			);
 			const wrappedDataKeyCiphertext = await generateAndWrapDataKey(pubkey, nostrApi);
 			const [wrappedDataKey, localSecret] = await Promise.all([
@@ -56,11 +81,9 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 				runtime: {
 					type: IdentityType.LOCAL_KEY,
 					pubkey,
-					label: input.label,
-					relays: input.relays,
 					privateKey: input.privkey,
+					relays: input.relays,
 					unlockedAtMs,
-					wrappedDataKeyCiphertext,
 				},
 			};
 		}
@@ -81,7 +104,12 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 
 			try {
 				const pubkey = await sdk.api.getPublicKey();
-				if (store.getState().identitiesRegistry.entities[pubkey]) {
+
+				/*
+				* Existing identity check before writing the sanctum tokens.
+				* This is to prevent overwriting an existing identity's sanctum tokens.
+				*/
+				if (getState().identitiesRegistry.entities[pubkey]) {
 					throw new Error("This identity already exists.");
 				}
 				const wrappedDataKeyCiphertext = await generateAndWrapDataKey(
@@ -107,10 +135,7 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 					runtime: {
 						type: IdentityType.SANCTUM,
 						pubkey,
-						label: input.label,
-						reauthReason: null,
 						unlockedAtMs,
-						wrappedDataKeyCiphertext,
 					},
 				};
 			} finally {
@@ -135,10 +160,8 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 				runtime: {
 					type: IdentityType.NIP07,
 					pubkey,
-					label: input.label,
-					relays: input.relays,
 					unlockedAtMs,
-					wrappedDataKeyCiphertext,
+					relays: input.relays,
 				},
 			};
 		}

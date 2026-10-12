@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { FiatCurrency, IdentityDocV0 } from "./schema";
 import { bump, eqLww, mergeLww, newLww } from "@/State/sync/lww";
-import { getPersistConfigKey, makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
+import { makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
+import { defineScopedModule } from "@/State/scope/scopedModule";
 import type { RootState } from "@/State/store/store";
 import { selectScopedStrict } from "@/State/scope/stricScopedSelector";
 import { createMigrate } from "redux-persist";
@@ -163,23 +164,24 @@ const migrations = {
 }
 
 const persistKey = "_identity";
-export function getScopedIdentityReducer(identityPubkey: string, DataKey: CryptoKey) {
-	return makeScopedPersistedReducer(
-		identitySlice.reducer,
-		persistKey,
-		identityPubkey,
-		{
-			version: 2,
-			storage: createEncryptedScopedStorage({ identityId: identityPubkey, sliceName: identitySlice.name, dataKey: DataKey }),
-			// @ts-expect-error redux-persist typing issue
-			migrate: createMigrate(migrations, { debug: false })
-		},
-	);
-}
 
-export function getScopedIdentityPersistKey(identityPubkey: string) {
-	return getPersistConfigKey(persistKey, identityPubkey);
-}
+
+export const identityModule = defineScopedModule({
+	persistBaseKey: persistKey,
+	createReducer: ({ scopeId, dataKey, storage }) =>
+		makeScopedPersistedReducer(
+			identitySlice.reducer,
+			persistKey,
+			scopeId,
+			{
+				version: 2,
+				storage: createEncryptedScopedStorage({ scopeId, sliceName: identitySlice.name, dataKey, storage }),
+				// @ts-expect-error redux-persist typing issue
+				migrate: createMigrate(migrations, { debug: false })
+			},
+		)
+	,
+});
 
 
 

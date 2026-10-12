@@ -7,6 +7,7 @@ import {
 	runSecureIdentitiesMigration,
 	type SecureIdentitiesMigrationFailure,
 } from "./migrations/secureIdentities";
+import { runMaintenanceMigration } from "./migrations/maintenance";
 import type { MigrationFailure } from "./types";
 
 export type MigrationResult =
@@ -24,6 +25,8 @@ export const runShellMigrations =
 		if (!secureIdentitiesResult.ok) {
 			return secureIdentitiesResult;
 		}
+
+		await dispatch(runMaintenanceMigration());
 
 		return { ok: true };
 	};

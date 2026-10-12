@@ -5,7 +5,7 @@ import { type TokensData } from "sanctum-sdk";
 import {
 	IdentityType,
 } from "../State/identitiesRegistry/types";
-import { switchIdentity } from "../State/identitiesRegistry/thunks";
+import { createIdentity, switchIdentity, type CreateIdentityInput } from "../State/identitiesRegistry/thunks";
 import { selectIdentities } from "../State/identitiesRegistry/slice";
 import { clearSanctumReauthRequired } from "../State/identitiesRegistry/identitySyncThunks";
 import { shellActions } from "./slice";
@@ -20,14 +20,15 @@ import {
 } from "./migrations/secureIdentities";
 import type {
 	DeviceToIdentitiesRepairAction,
-	RuntimeIdentity,
+	IdentitySessionStatus,
+	ScopedRuntimeIdentity,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
 } from "./types";
 import type { SecureIdentitiesMigrationFailure } from "./migrations/secureIdentities/errors";
 import { selectIdentitySession } from "./selectors";
 import { resolveStartupIdentityTarget } from "./resolveStartupIdentity";
-import { materializePushIntent } from "./pushIntent";
+import { materializePushIntent, shouldClearPushIntent } from "./pushIntent";
 import dLogger from "@/Api/helpers/debugLog";
 import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
@@ -123,13 +124,14 @@ const continueAfterMigrationSuccess =
 	};
 
 export const proceedAfterIdentityUnlocked = (
-	runtimeIdentity: RuntimeIdentity,
+	runtimeIdentity: ScopedRuntimeIdentity,
 ): AppThunk<Promise<void>> => async (dispatch) => {
 	const verification = await dispatch(verifySanctumSession(
 		runtimeIdentity,
 	));
 
 	if (!verification.ok) {
+		if (runtimeIdentity.type !== IdentityType.SANCTUM) return;
 		dispatch(
 			shellActions.sanctumReauthRequired({
 				runtimeIdentity,
@@ -156,15 +158,39 @@ export const requestIdentityUnlock =
 			);
 		};
 
-export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch) => {
+function identityIdFromSession(session: IdentitySessionStatus): string | null {
+	switch (session.kind) {
+		case "none":
+			return null;
+		case "sanctum-reauth":
+			return session.runtimeIdentity.pubkey;
+		case "unlock-requested":
+		case "loading":
+		case "load-failed":
+			return session.identityId;
+	}
+}
+
+export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch, getState) => {
+	const state = getState();
+	const identityId = identityIdFromSession(selectIdentitySession(state));
 	dispatch(shellActions.identitySessionCleared());
-	dispatch(shellActions.pushIntentCleared());
+	if (shouldClearPushIntent(state, identityId)) {
+		dispatch(shellActions.pushIntentCleared());
+	}
 };
 
 
-export const completeShellIdentityLoad = (
-	runtimeIdentity: RuntimeIdentity,
+export const createAndRequestIdentityLoad = (
+	input: CreateIdentityInput,
 ): AppThunk<Promise<void>> => async (dispatch) => {
+	const runtimeIdentity = await dispatch(createIdentity(input));
+	await dispatch(completeShellIdentityLoad(runtimeIdentity));
+};
+
+export const completeShellIdentityLoad = (
+	runtimeIdentity: ScopedRuntimeIdentity,
+): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const log = dLogger.withContext({
 		procedure: "complete-shell-identity-load",
 		data: { pubkey: runtimeIdentity.pubkey },
@@ -190,7 +216,9 @@ export const completeShellIdentityLoad = (
 				message,
 			}),
 		);
-		dispatch(shellActions.pushIntentCleared());
+		if (shouldClearPushIntent(getState(), runtimeIdentity.pubkey)) {
+			dispatch(shellActions.pushIntentCleared());
+		}
 		return;
 	}
 
@@ -225,32 +253,42 @@ export const completeSanctumReauth =
 
 			await writeSanctumTokens(runtimeIdentity.pubkey, tokensData);
 			clearSanctumIdentitySdk(runtimeIdentity.pubkey);
-			const copy = { ...runtimeIdentity, reauthReason: null };
-			const verification = await dispatch(verifySanctumSession(copy));
+			const verification = await dispatch(verifySanctumSession(runtimeIdentity, { acceptFreshTokens: true }));
 
 			if (!verification.ok) {
 				throw new Error(verification.reason); // should never happen
 			}
 
 
-			await dispatch(completeShellIdentityLoad(copy));
+			await dispatch(completeShellIdentityLoad(runtimeIdentity));
 		};
 
 
 
-export const verifySanctumSession =
-	(runtimeIdentity: RuntimeIdentity): AppThunk<Promise<{ ok: true } | { ok: false; reason: string }>> =>
-		async (dispatch) => {
+const verifySanctumSession =
+	(
+		runtimeIdentity: ScopedRuntimeIdentity,
+		options?: { acceptFreshTokens?: boolean },
+	): AppThunk<Promise<{ ok: true } | { ok: false; reason: string }>> =>
+		async (dispatch, getState) => {
 			if (runtimeIdentity.type !== IdentityType.SANCTUM) {
 				return {
 					ok: true,
 				};
 			}
 
-			if (runtimeIdentity.reauthReason) {
+			const identity = getState().identitiesRegistry.entities[runtimeIdentity.pubkey];
+			if (!identity || identity.type !== IdentityType.SANCTUM) {
 				return {
 					ok: false,
-					reason: runtimeIdentity.reauthReason,
+					reason: "Sanctum profile is missing",
+				};
+			}
+
+			if (!options?.acceptFreshTokens && identity.reauthReason) {
+				return {
+					ok: false,
+					reason: identity.reauthReason,
 				};
 			}
 

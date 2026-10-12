@@ -1,4 +1,4 @@
-import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, createListenerMiddleware, type Action } from "@reduxjs/toolkit";
 import { appApi } from "@/State/api/api";
 import { appStateReducer } from "@/State/appState/slice";
 import { identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
@@ -11,7 +11,6 @@ import { getInitialBeaconsState, type BeaconsState } from "@/State/scoped/beacon
 import { getIntialState, type SourcesState } from "@/State/scoped/backups/sources/state";
 import type { IdentityState } from "@/State/scoped/backups/identity/slice";
 import type { RootState, AppDispatch } from "@/State/store/store";
-import type { AppstartListening } from "@/State/store/listenerMiddleware";
 import usdToBTCReducer from "@/State/Slices/usdToBTCSlice";
 import prefsSlice from "@/State/Slices/prefsSlice";
 import addressbookSlice from "@/State/Slices/addressbookSlice";
@@ -21,11 +20,13 @@ import loadingOverlay from "@/State/Slices/loadingOverlay";
 import subscriptionsSlice from "@/State/Slices/subscriptionsSlice";
 import oneTimeInviteLinkSlice from "@/State/Slices/oneTimeInviteLinkSlice";
 import { shellReducer } from "@/shell/slice";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 
 export type TestScopedState = {
 	identity: IdentityState;
 	sources: SourcesState;
 	beacons: BeaconsState;
+	runtimeIdentity: ScopedRuntimeIdentity | null;
 };
 
 export type MakeTestStoreOpts = {
@@ -39,6 +40,7 @@ export function makeTestStore(opts: MakeTestStoreOpts = {}) {
 		identity: opts.scoped?.identity ?? identitySlice.getInitialState(),
 		sources: opts.scoped?.sources ?? getIntialState(),
 		beacons: opts.scoped?.beacons ?? getInitialBeaconsState(),
+		runtimeIdentity: opts.scoped?.runtimeIdentity ?? null,
 	};
 
 	const store = configureStore({
@@ -61,6 +63,7 @@ export function makeTestStore(opts: MakeTestStoreOpts = {}) {
 				identity: identitySlice.reducer,
 				sources: sourcesSlice.reducer,
 				beacons: beaconsSlice.reducer,
+				runtimeIdentity: (state: ScopedRuntimeIdentity | null = null, _action: Action) => state,
 			}),
 		},
 		preloadedState: { scoped },
@@ -73,7 +76,7 @@ export function makeTestStore(opts: MakeTestStoreOpts = {}) {
 	const startAppListening = listenerMw.startListening.withTypes<
 		RootState,
 		AppDispatch
-	>() as AppstartListening;
+	>();
 
 	return { store, startAppListening };
 }

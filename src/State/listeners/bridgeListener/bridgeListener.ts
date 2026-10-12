@@ -9,7 +9,7 @@ import { isAnyOf, ListenerEffectAPI, TaskAbortError, UnknownAction } from "@redu
 import logger from "@/Api/helpers/logger";
 import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { listenerKick } from "../actions";
-import { AppDispatch, RootState } from "@/State/store/store";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { draft, exists, justAdded } from "../predicates";
 
 const { getToken } = nip98
@@ -100,7 +100,7 @@ const fetchVanityForSource = (
 }
 
 
-export const bridgeListenerSpec: ListenerSpec = {
+export const bridgeListenerSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "bridgeListener",
 	listeners: [
 		(add) =>

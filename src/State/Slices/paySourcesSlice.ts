@@ -3,12 +3,11 @@ import { PayTo, SourceTrustLevel } from '../../globalTypes';
 import { getDiffAsActionDispatch, mergeArrayValues } from './dataMerge';
 import loadInitialState, { MigrationFunction, getStateAndVersion, applyMigrations } from './migrations';
 import { decodeNprofile } from '../../constants';
-import { getNostrPrivateKey, parseNprofile } from '@/lib/nprofile';
+import { getNostrPrivateKey } from '@/lib/nprofile';
 import { getPublicKey } from 'nostr-tools';
 import { BackupAction } from '../types';
 import { nip19 } from 'nostr-tools'
 import { Buffer } from 'buffer';
-import { saveMultipleKeys } from '../indexedDB';
 import { syncRedux } from '../thunks/syncRedux';
 
 const { nprofileEncode: encodeNprofile } = nip19
@@ -186,12 +185,6 @@ const update = (value: PaySourceState) => {
 
 
 export const initialState: PaySourceState = loadInitialState(storageKey, JSON.stringify({ sources: {}, order: [] }), migrations, update);
-const HAS_SENT_KEYS_TO_NOTIFICATIONS = 'has_sent_keys_to_notifications'
-if (!localStorage.getItem(HAS_SENT_KEYS_TO_NOTIFICATIONS)) {
-	localStorage.setItem(HAS_SENT_KEYS_TO_NOTIFICATIONS, 'true')
-	const req = Object.values(initialState.sources).filter(s => s.keys && s.pubSource).map(s => ({ keys: s.keys, appNpub: parseNprofile(s.pasteField).pubkey }))
-	saveMultipleKeys(req)
-}
 
 
 

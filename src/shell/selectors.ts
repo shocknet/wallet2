@@ -2,7 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/State/store/store";
 import type { ShellSnapshot } from "./types";
 import { resolveShellPhase } from "./resolveShellPhase";
-import { selectActiveIdentity, selectIdentities } from "@/State/identitiesRegistry/slice";
+import { selectActiveIdentityRuntime, selectIdentities } from "@/State/identitiesRegistry/slice";
 
 
 export const selectIdentityCount = createSelector(
@@ -45,7 +45,7 @@ export const selectShellSnapshot = createSelector(
 		selectStartupStatus,
 		selectIdentitySession,
 		selectIdentityCount,
-		selectActiveIdentity
+		selectActiveIdentityRuntime
 	],
 	(
 		migration,

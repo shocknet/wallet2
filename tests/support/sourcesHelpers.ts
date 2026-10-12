@@ -96,10 +96,6 @@ export function createTestSources(count: number, opts: CreateTestSourceOpts = {}
 	}));
 }
 
-/** @deprecated use createTestSource().doc */
-export const createTestSourceDoc = (sourceLpk: string, sourceId: string): SourceDocV0 =>
-	createTestSource({ lpk: sourceLpk, id: sourceId }).doc;
-
 type HistoryState = SourcesState["history"];
 
 type GetStateOpts = {

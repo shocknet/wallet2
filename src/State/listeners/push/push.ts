@@ -4,7 +4,7 @@ import { pushTokenUpdated } from "@/notifications/push/actions";
 import { readLiveSourceViews, selectSourceViewById, SourceView } from "@/State/scoped/backups/sources/selectors";
 import { getNostrClient } from "@/Api/nostr";
 import { getDeviceId } from "@/constants";
-import type { RootState } from "@/State/store/store";
+import type { AppDispatch, RootState } from "@/State/store/store";
 import { sourceIdsThatBecameFresh, sourceJustAdded } from "../predicates";
 import dLogger from "@/Api/helpers/debugLog";
 import { selectPushStatus } from "@/State/runtime/slice";
@@ -40,7 +40,7 @@ async function enrollTokenForSources(token: string, views: SourceView[]) {
 	}
 }
 
-export const pushEnrollmentSpec: ListenerSpec = {
+export const pushEnrollmentSpec: ListenerSpec<RootState, AppDispatch> = {
 	name: "push-enrollment",
 	listeners: [
 		// When the listener is kicked, we need to enroll the token for all sources
