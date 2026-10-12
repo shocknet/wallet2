@@ -4,7 +4,7 @@ import type { AppIntent } from "@/intents/types";
 import type {
 	MigrationFailure,
 	PushIntent,
-	RuntimeIdentity,
+	ScopedRuntimeIdentitySanctum,
 	ShellState,
 	UnlockReason,
 } from "./types";
@@ -91,7 +91,7 @@ export const shellSlice = createSlice({
 		sanctumReauthRequired(
 			state,
 			action: PayloadAction<{
-				runtimeIdentity: RuntimeIdentity;
+				runtimeIdentity: ScopedRuntimeIdentitySanctum;
 				reason?: string;
 			}>,
 		) {

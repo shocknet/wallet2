@@ -3,7 +3,6 @@ import {
 	EntityState,
 	createSelector,
 } from "@reduxjs/toolkit";
-
 import { Storage, persistReducer, type PersistMigrate, type PersistedState } from "redux-persist";
 import { readSanctumTokens, writeSanctumTokens } from "./helpers/sanctumTokensStore";
 import { RootState } from "../store/store";
@@ -12,8 +11,8 @@ import {
 	type Identity,
 	type LocalPrivateKeyStorage,
 } from "./types";
-import type { RuntimeIdentity } from "@/shell/types";
 import type { TokensData } from "sanctum-sdk";
+import { ScopedRuntimeIdentity } from "@/shell/types";
 
 
 
@@ -28,14 +27,12 @@ export type TopicIndexEntry = {
 };
 export interface IdentitiesState extends EntityState<Identity, string> {
 	topicIndexById: Record<string, TopicIndexEntry>;
-	active: RuntimeIdentity | null;
 	lastActiveIdentityId: string | null;
 }
 
 
 const initialState: IdentitiesState = identitiesAdapter.getInitialState({
 	topicIndexById: {},
-	active: null,
 	lastActiveIdentityId: null,
 })
 
@@ -109,52 +106,6 @@ export const identitiesRegistrySlice = createSlice({
 
 
 
-		/* Active identity */
-		setActiveIdentityRuntime: (state, action: PayloadAction<{ identity: RuntimeIdentity }>) => {
-			state.active = action.payload.identity;
-		},
-		clearActiveIdentityRuntime: (state) => {
-			state.active = null;
-		},
-		updateActiveIdentityRelays: (
-			state,
-			action: PayloadAction<{ pubkey: string; relays: string[] }>
-		) => {
-			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
-			if (state.active.type === IdentityType.SANCTUM) return;
-			state.active.relays = action.payload.relays;
-		},
-		updateActiveIdentityLabel: (
-			state,
-			action: PayloadAction<{ pubkey: string; label: string }>
-		) => {
-			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
-			state.active.label = action.payload.label;
-		},
-		setActiveWrappedDataKeyCiphertext: (
-			state,
-			action: PayloadAction<{ pubkey: string; wrappedDataKeyCiphertext: string }>
-		) => {
-			if (!state.active || state.active.pubkey !== action.payload.pubkey) return;
-			state.active.wrappedDataKeyCiphertext = action.payload.wrappedDataKeyCiphertext;
-		},
-		setActiveSanctumReauthRequired: (
-			state,
-			action: PayloadAction<{ pubkey: string; reason?: string | null }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.reauthReason = action.payload.reason ?? "Session expired or invalid";
-		},
-		clearActiveSanctumReauthRequired: (
-			state,
-			action: PayloadAction<{ pubkey: string }>
-		) => {
-			if (!state.active || state.active.type !== IdentityType.SANCTUM) return;
-			if (state.active.pubkey !== action.payload.pubkey) return;
-			state.active.reauthReason = null;
-		},
-
 	},
 });
 
@@ -214,7 +165,6 @@ export function createIdentitiesRegistryReducer(storage: Storage) {
 		{
 			key: identitiesRegistryPersistKey,
 			storage: storage,
-			blacklist: ["active"],
 			version: 1,
 			migrate: migrateIdentitiesRegistry,
 		},
@@ -258,11 +208,35 @@ export const selectTopicResolutionFromRegistry = createSelector(
 
 
 
-export const selectActiveIdentity = (s: RootState) => s.identitiesRegistry.active;
-export const selectActiveRuntimeLocalPrivateKey = (s: RootState) =>
-	s.identitiesRegistry.active?.type === IdentityType.LOCAL_KEY
-		? s.identitiesRegistry.active.privateKey
-		: null;
+export class MountedIdentityMissingError extends Error {
+	readonly identityId: string;
+
+	constructor(identityId: string, detail: string) {
+		super(`Mounted identity ${identityId} ${detail}`);
+		this.name = "MountedIdentityMissingError";
+		this.identityId = identityId;
+	}
+}
+
+export const selectActiveIdentity = (s: RootState): Identity | null => {
+	if (s.scoped == null) return null;
+	const runtimeIdentity = s.scoped.runtimeIdentity;
+	const entity = s.identitiesRegistry.entities[runtimeIdentity.pubkey];
+	if (!entity) {
+		throw new MountedIdentityMissingError(runtimeIdentity.pubkey, "is missing from the registry");
+	}
+	if (entity.type !== runtimeIdentity.type) {
+		throw new MountedIdentityMissingError(runtimeIdentity.pubkey, "does not match the registry entry");
+	}
+	return entity;
+};
+
+export const selectActiveIdentityRuntime = (s: RootState): ScopedRuntimeIdentity | null => {
+	if (s.scoped == null) return null;
+	const runtimeIdentity = s.scoped.runtimeIdentity;
+	return runtimeIdentity;
+};
+
 export const selectLastActiveIdentityId = (s: RootState) => s.identitiesRegistry.lastActiveIdentityId;
 
 export const selectTopicIndexFromRegistry = (s: RootState, topicId: string) => s.identitiesRegistry.topicIndexById[topicId] ?? null;

@@ -17,7 +17,7 @@ export type { CreateIdentityInput };
 
 export const createIdentity = (
 	input: CreateIdentityInput,
-): AppThunk<Promise<{ foundBackup: boolean; identityId: string }>> => {
+): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 		const provisioned = await provisionIdentity(input);
 		const { identity, runtime: runtimeIdentity } = provisioned;
@@ -38,24 +38,29 @@ export const createIdentity = (
 
 		await dispatch(switchIdentity(runtimeIdentity));
 
-		const identityApi = await getActiveIdentityNostrApi();
+		const identityApi = await getActiveIdentityNostrApi(getState);
 
 		const identityDoc = await fetchNip78Event(identityApi, identityDocDtag);
 
+		/*
+		* This identity already exists on the network.
+		* So this is just a restore.
+		*/
 		if (identityDoc) {
 			log.info("found-remote-identity-doc");
-			return { foundBackup: true, identityId: runtimeIdentity.pubkey };
+			return;
 		}
 
+		/*
+		* This identity does not exist on the network.
+		* We need to see if it's a legacy identity and import its legacy backups if so.
+		*/
 		const remoteLegacySources = await getSourcesFromLegacyRemoteBackup(identityApi);
 		const legacySourceDocs = migrateLegacySourcesToDocs(remoteLegacySources);
 
 		if (legacySourceDocs.length) {
 			log.info("importing-legacy-sources", { data: { count: legacySourceDocs.length } });
 			applyMigratedSourceDocs(dispatch, legacySourceDocs);
-			return { foundBackup: true, identityId: runtimeIdentity.pubkey };
 		}
-
-		return { foundBackup: false, identityId: runtimeIdentity.pubkey };
 	};
 };

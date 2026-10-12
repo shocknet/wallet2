@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDeferred } from "@/lib/deferred";
 import { identityUnloaded, publisherFlushRequested } from "@/State/listeners/actions";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import {
 	getActiveIdentityNostrApi,
 	type IdentityNostrApi,
@@ -10,7 +10,7 @@ import { saveNip78Event, saveSourceDocEvent } from "@/State/identitiesRegistry/h
 import { getSourceDocDtag, identityDocDtag } from "@/State/identitiesRegistry/helpers/processDocs";
 import { identityActions } from "@/State/scoped/backups/identity/slice";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { TEST_CLOCK_BY, TEST_IDENTITY_PUBKEY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { TEST_CLOCK_BY, TEST_IDENTITY_PUBKEY } from "@tests/support/identityFixtures";
 import { createTestSource, createTestSources, type TestSource } from "@tests/support/sourcesHelpers";
 import { makeListenerStore } from "@tests/support/listenerStore";
 import { publisherSpec, DEBOUNCE_MS } from "./publisher";
@@ -51,9 +51,7 @@ function openPublisherStore(opts: {
 		loadIdentity: false,
 	});
 	if (loadIdentity) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-			identity: TEST_RUNTIME_IDENTITY,
-		}));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }

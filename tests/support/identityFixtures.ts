@@ -1,6 +1,6 @@
 import { newLww } from "@/State/sync/lww"
 import { IdentityType, type IdentityKeys } from "@/State/identitiesRegistry/types"
-import type { RuntimeIdentityKeys } from "@/shell/types"
+import type { ScopedRuntimeIdentity } from "@/shell/types"
 import { IdentityDocV0 } from "@/State/scoped/backups/identity/schema"
 import { IdentityState } from "@/State/scoped/backups/identity/slice"
 
@@ -22,14 +22,12 @@ export const TEST_IDENTITY: IdentityKeys = {
 	localSecret: { storage: "inline", privateKey: TEST_IDENTITY_PRIVATE_KEY },
 };
 
-export const TEST_RUNTIME_IDENTITY: RuntimeIdentityKeys = {
+export const TEST_RUNTIME_IDENTITY: ScopedRuntimeIdentity = {
 	type: IdentityType.LOCAL_KEY,
-	label: TEST_IDENTITY_LABEL,
-	unlockedAtMs: 1,
 	pubkey: TEST_IDENTITY_PUBKEY,
 	privateKey: TEST_IDENTITY_PRIVATE_KEY,
 	relays: TEST_IDENTITY_RELAYS,
-	wrappedDataKeyCiphertext: TEST_WRAPPED_DATA_KEY_CIPHERTEXT,
+	unlockedAtMs: 1,
 };
 
 export const createTestIdentityDoc = (

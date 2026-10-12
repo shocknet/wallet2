@@ -14,6 +14,7 @@ import { APP_ACTIVE_DEBOUNCE_MS, BEACON_STALE_OLDER_THAN } from "@/constants";
 import { identityUnloaded } from "@/State/listeners/actions";
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { runtimeActions, runTimeReducer } from "@/State/runtime/slice";
 import { docsSelectors, sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/slice";
 import { getIntialState } from "@/State/scoped/backups/sources/state";
@@ -24,7 +25,7 @@ import {
 	beaconsStateOf,
 	createTestBeaconNode,
 } from "@tests/support/beaconsFixtures";
-import { TEST_CLOCK_BY, TEST_IDENTITY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { TEST_CLOCK_BY, TEST_IDENTITY } from "@tests/support/identityFixtures";
 import {
 	createTestSource,
 	createTestSources,
@@ -122,9 +123,7 @@ function openBeaconStore(opts: {
 		identity: TEST_IDENTITY,
 	}));
 	if (opts.loadIdentity !== false) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-			identity: TEST_RUNTIME_IDENTITY,
-		}));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }

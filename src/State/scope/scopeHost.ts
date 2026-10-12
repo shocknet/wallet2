@@ -1,8 +1,12 @@
-import type { Reducer } from "@reduxjs/toolkit";
+import { createAction, type Reducer } from "@reduxjs/toolkit";
 import { PERSIST, REHYDRATE, type Persistor, type Storage } from "redux-persist";
-import type { ScopedReducerContext } from "./scopedModule";
 
-const SCOPE_COMMIT = "@@scope/commit";
+
+export type ScopeSession = {
+	scopeId: string;
+};
+
+export const scopeCommitted = createAction("@@scope/commit");
 
 export type ScopedReducerBundle<R extends Reducer> = {
 	reducer: R;
@@ -41,8 +45,8 @@ type BootReport = {
 };
 
 
-export function createScopeHost<R extends Reducer>(
-	createScopedReducer: (context: ScopedReducerContext) => ScopedReducerBundle<R>,
+export function createScopeHost<Session extends ScopeSession, R extends Reducer>(
+	createScopedReducer: (context: Session & { storage: Storage }) => ScopedReducerBundle<R>,
 	storage: Storage,
 ) {
 	type ScopedState = ReturnType<R>;
@@ -53,7 +57,7 @@ export function createScopeHost<R extends Reducer>(
 	let queue: Promise<void> = Promise.resolve();
 
 	const reducer: Reducer<ScopedHostState> = (state = null, action) => {
-		if (action.type === SCOPE_COMMIT) return pendingCommit;
+		if (scopeCommitted.match(action)) return pendingCommit;
 		if (!activeReducer || state === null) return state ?? null;
 		return activeReducer(state, action);
 	};
@@ -101,28 +105,26 @@ export function createScopeHost<R extends Reducer>(
 		});
 	}
 
-	async function mountInternal(store: HostStore, persistor: Persistor, scopeId: string, dataKey: CryptoKey) {
-		if (scopeId.trim() === "") throw new Error("A scope id is required");
-		if (scopeId === activeScopeId) return;
+	async function mountInternal(store: HostStore, persistor: Persistor, session: Session) {
+		if (session.scopeId.trim() === "") throw new Error("A scope id is required");
+		if (session.scopeId === activeScopeId) return;
 		if (activeReducer) await persistor.flush().catch(() => { });
 
-		const scoped = createScopedReducer({ scopeId, dataKey, storage });
+		const scoped = createScopedReducer({ ...session, storage });
 		const staged = await boot(scoped.reducer, scoped.persistKeys);
 		if (staged.failures.length > 0) throw new ScopeRestoreError(staged.failures);
 
 		activeReducer = scoped.reducer;
 		pendingCommit = staged.state;
-		activeScopeId = scopeId;
-		store.dispatch({ type: SCOPE_COMMIT });
+		activeScopeId = session.scopeId;
+		store.dispatch(scopeCommitted());
 	}
 
-	function mount(store: HostStore, persistor: Persistor, scopeId: string, dataKey: CryptoKey) {
-		const run = queue.then(() => mountInternal(store, persistor, scopeId, dataKey));
+	function mount(store: HostStore, persistor: Persistor, session: Session) {
+		const run = queue.then(() => mountInternal(store, persistor, session));
 		queue = run.then(() => undefined, () => undefined);
 		return run;
 	}
 
 	return { reducer, mount };
 }
-
-export type ScopeHost<R extends Reducer = Reducer> = ReturnType<typeof createScopeHost<R>>;

@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAction, TaskAbortError } from "@reduxjs/toolkit";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
-import { TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { identityUnloaded, listenerKick } from "../actions";
 import { createDeferred } from "@/lib/deferred";
 import { makeListenerStore } from "@tests/support/listenerStore";
@@ -15,9 +14,7 @@ function openStore(specs: readonly ListenerSpec<RootState, AppDispatch>[]) {
 }
 
 function loadIdentity(store: ReturnType<typeof openStore>) {
-	store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-		identity: TEST_RUNTIME_IDENTITY,
-	}));
+	store.dispatch(scopeCommitted());
 }
 
 async function unload(store: ReturnType<typeof openStore>) {

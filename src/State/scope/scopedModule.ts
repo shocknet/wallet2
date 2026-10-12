@@ -3,10 +3,10 @@ import { KEY_PREFIX, type Storage } from "redux-persist";
 
 export type ScopeSession = {
 	scopeId: string;
-	dataKey: CryptoKey;
 };
 
 export type ScopedReducerContext = ScopeSession & {
+	dataKey: CryptoKey;
 	storage: Storage;
 };
 

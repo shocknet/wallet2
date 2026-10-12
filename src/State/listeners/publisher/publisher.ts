@@ -63,7 +63,7 @@ export const publisherSpec: ListenerSpec<RootState, AppDispatch> = {
 					const state = listenerApi.getState();
 					const identity = selectActiveIdentity(state)!;
 
-					const identityApi = await getActiveIdentityNostrApi();
+					const identityApi = await getActiveIdentityNostrApi(listenerApi.getState);
 
 					const d = docsSelectors.selectById(listenerApi.getState(), sourceId).draft;
 
@@ -111,7 +111,7 @@ export const publisherSpec: ListenerSpec<RootState, AppDispatch> = {
 
 					const state = listenerApi.getState();
 
-					const identityApi = await getActiveIdentityNostrApi();
+					const identityApi = await getActiveIdentityNostrApi(listenerApi.getState);
 					const draft = selectIdentityDraft(state)!;
 
 

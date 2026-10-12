@@ -3,11 +3,11 @@ import { getNostrClient, type Client } from "@/Api/nostr";
 import { createDeferred } from "@/lib/deferred";
 import { newLww } from "@/State/sync/lww";
 import { identityUnloaded } from "@/State/listeners/actions";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { runtimeActions } from "@/State/runtime/slice";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { beaconsActions } from "@/State/scoped/beacons/slice";
-import { TEST_CLOCK_BY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { TEST_CLOCK_BY } from "@tests/support/identityFixtures";
 import {
 	beaconsStateOf,
 	createTestBeaconNode,
@@ -73,9 +73,7 @@ function openPushStore(opts: {
 		}));
 	}
 	if (loadIdentity) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({
-			identity: TEST_RUNTIME_IDENTITY,
-		}));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }

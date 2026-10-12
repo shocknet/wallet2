@@ -1,23 +1,32 @@
-import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, createListenerMiddleware, type Action } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
 import { addIdentityLifecycle, type ListenerSpec } from "@/State/listeners/lifecycle/lifecycle";
 import { identitiesRegistryActions, identitiesRegistrySlice } from "@/State/identitiesRegistry/slice";
-import { IdentityType } from "@/State/identitiesRegistry/types";
+import { IdentityType, type IdentityKeys } from "@/State/identitiesRegistry/types";
 import { identitySlice } from "@/State/scoped/backups/identity/slice";
 import { sourcesActions, sourcesSlice } from "@/State/scoped/backups/sources/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 import { topicIndexSyncSpec } from "./topicIndexSync";
-import { createTestSourceDoc } from "@tests/support/sourcesHelpers";
+import { createTestSource } from "@tests/support/sourcesHelpers";
 import type { Satoshi } from "@/lib/types/units";
-import { RuntimeIdentityKeys } from "@/shell/types";
 
-const runtimeIdentity: RuntimeIdentityKeys = {
+const pubkey = "hexhexhex";
+const runtimeIdentity: ScopedRuntimeIdentity = {
 	type: IdentityType.LOCAL_KEY,
-	label: "label",
-	unlockedAtMs: Date.now(),
-	pubkey: "hexhexhex",
+	pubkey,
 	privateKey: "hexhexhex",
 	relays: ["wss://example.com"],
-	wrappedDataKeyCiphertext: "cipher",
+	unlockedAtMs: 1,
+};
+const registryIdentity: IdentityKeys = {
+	type: IdentityType.LOCAL_KEY,
+	pubkey,
+	label: "label",
+	createdAt: 1,
+	relays: ["wss://example.com"],
+	wrappedDataKey: { storage: "inline", wrappedDataKeyCiphertext: "cipher" },
+	localSecret: { storage: "inline", privateKey: "hexhexhex" },
 };
 
 function makeStore() {
@@ -28,6 +37,7 @@ function makeStore() {
 			scoped: combineReducers({
 				identity: identitySlice.reducer,
 				sources: sourcesSlice.reducer,
+				runtimeIdentity: (state: ScopedRuntimeIdentity = runtimeIdentity, _action: Action) => state,
 			}),
 		},
 		middleware: (gdm) => gdm({ serializableCheck: false }).prepend(listenerMw.middleware),
@@ -42,7 +52,8 @@ function makeStore() {
 
 describe("topicIndexSync listener", () => {
 	function bootIdentity(store: ReturnType<typeof makeStore>) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: runtimeIdentity }));
+		store.dispatch(identitiesRegistryActions._createNewIdentity({ identity: registryIdentity }));
+		store.dispatch(scopeCommitted());
 	}
 
 	it("indexes topic id when applyUserInfo fires with topicId for the active identity", () => {
@@ -53,7 +64,7 @@ describe("topicIndexSync listener", () => {
 		bootIdentity(store);
 		store.dispatch(sourcesActions._createDraftDoc({
 			sourceId,
-			draft: createTestSourceDoc(runtimeIdentity.pubkey, sourceId),
+			draft: createTestSource({ lpk: pubkey, id: sourceId }).doc,
 		}));
 		store.dispatch(sourcesActions.applyUserInfo({
 			sourceId,
@@ -66,7 +77,7 @@ describe("topicIndexSync listener", () => {
 		}));
 
 		expect(store.getState().identitiesRegistry.topicIndexById[topicId]).toEqual({
-			identityId: runtimeIdentity.pubkey,
+			identityId: pubkey,
 			sourceId,
 		});
 	});
@@ -79,7 +90,7 @@ describe("topicIndexSync listener", () => {
 		bootIdentity(store);
 		store.dispatch(sourcesActions._createDraftDoc({
 			sourceId,
-			draft: createTestSourceDoc(runtimeIdentity.pubkey, sourceId),
+			draft: createTestSource({ lpk: pubkey, id: sourceId }).doc,
 		}));
 		store.dispatch(sourcesActions.applyUserInfo({
 			sourceId,

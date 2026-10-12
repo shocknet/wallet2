@@ -15,7 +15,7 @@ import {
 } from "./legacySources";
 import { generateNewKeyPair } from "@/Api/helpers";
 import { createIdentity, type CreateIdentityInput } from "@/State/identitiesRegistry/thunks";
-import { identitiesSelectors } from "@/State/identitiesRegistry/slice";
+import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { IdentityType } from "@/State/identitiesRegistry/types";
 import { normalizeWsUrl } from "@/lib/url";
 import { getSanctumAccessToken } from "@/Api/sanctum";
@@ -102,7 +102,7 @@ export const drainPendingDeviceToIdentitiesLocalSources = (): AppThunk<
 		return;
 	}
 
-	if (!getState().identitiesRegistry.active) {
+	if (!selectActiveIdentity(getState())) {
 		return;
 	}
 
@@ -284,7 +284,7 @@ function absorbLocalLegacySources(
 		return;
 	}
 
-	if (!getState().identitiesRegistry.active) {
+	if (!selectActiveIdentity(getState())) {
 		throw new DeviceToIdentitiesMigrationError(
 			"legacy-sources-absorb-failed",
 			"Identity was created but is not active; cannot import legacy sources.",

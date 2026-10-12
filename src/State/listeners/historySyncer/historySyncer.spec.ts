@@ -9,13 +9,13 @@ import {
 	historyFetchSourceRequested,
 	identityUnloaded,
 } from "@/State/listeners/actions";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import { runtimeActions } from "@/State/runtime/slice";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { makeKey } from "@/State/scoped/backups/sources/history/helpers";
 import type { Satoshi } from "@/lib/types/units";
 import { beaconsActions } from "@/State/scoped/beacons/slice";
-import { TEST_CLOCK_BY, TEST_RUNTIME_IDENTITY } from "@tests/support/identityFixtures";
+import { TEST_CLOCK_BY } from "@tests/support/identityFixtures";
 import { makeOpsPage } from "@tests/support/historyFixtures";
 import {
 	createTestSource,
@@ -111,7 +111,7 @@ function openHistoryStore(opts: {
 		loadIdentity: false,
 	});
 	if (loadIdentity) {
-		store.dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: TEST_RUNTIME_IDENTITY }));
+		store.dispatch(scopeCommitted());
 	}
 	return store;
 }

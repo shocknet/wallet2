@@ -21,7 +21,7 @@ import {
 import type {
 	DeviceToIdentitiesRepairAction,
 	IdentitySessionStatus,
-	RuntimeIdentity,
+	ScopedRuntimeIdentity,
 	SecureIdentitiesRepairAction,
 	UnlockReason,
 } from "./types";
@@ -124,13 +124,14 @@ const continueAfterMigrationSuccess =
 	};
 
 export const proceedAfterIdentityUnlocked = (
-	runtimeIdentity: RuntimeIdentity,
+	runtimeIdentity: ScopedRuntimeIdentity,
 ): AppThunk<Promise<void>> => async (dispatch) => {
 	const verification = await dispatch(verifySanctumSession(
 		runtimeIdentity,
 	));
 
 	if (!verification.ok) {
+		if (runtimeIdentity.type !== IdentityType.SANCTUM) return;
 		dispatch(
 			shellActions.sanctumReauthRequired({
 				runtimeIdentity,
@@ -181,7 +182,7 @@ export const cancelIdentityUnlock = (): AppThunk<void> => (dispatch, getState) =
 
 
 export const completeShellIdentityLoad = (
-	runtimeIdentity: RuntimeIdentity,
+	runtimeIdentity: ScopedRuntimeIdentity,
 ): AppThunk<Promise<void>> => async (dispatch, getState) => {
 	const log = dLogger.withContext({
 		procedure: "complete-shell-identity-load",
@@ -245,32 +246,42 @@ export const completeSanctumReauth =
 
 			await writeSanctumTokens(runtimeIdentity.pubkey, tokensData);
 			clearSanctumIdentitySdk(runtimeIdentity.pubkey);
-			const copy = { ...runtimeIdentity, reauthReason: null };
-			const verification = await dispatch(verifySanctumSession(copy));
+			const verification = await dispatch(verifySanctumSession(runtimeIdentity, { acceptFreshTokens: true }));
 
 			if (!verification.ok) {
 				throw new Error(verification.reason); // should never happen
 			}
 
 
-			await dispatch(completeShellIdentityLoad(copy));
+			await dispatch(completeShellIdentityLoad(runtimeIdentity));
 		};
 
 
 
-export const verifySanctumSession =
-	(runtimeIdentity: RuntimeIdentity): AppThunk<Promise<{ ok: true } | { ok: false; reason: string }>> =>
-		async (dispatch) => {
+const verifySanctumSession =
+	(
+		runtimeIdentity: ScopedRuntimeIdentity,
+		options?: { acceptFreshTokens?: boolean },
+	): AppThunk<Promise<{ ok: true } | { ok: false; reason: string }>> =>
+		async (dispatch, getState) => {
 			if (runtimeIdentity.type !== IdentityType.SANCTUM) {
 				return {
 					ok: true,
 				};
 			}
 
-			if (runtimeIdentity.reauthReason) {
+			const identity = getState().identitiesRegistry.entities[runtimeIdentity.pubkey];
+			if (!identity || identity.type !== IdentityType.SANCTUM) {
 				return {
 					ok: false,
-					reason: runtimeIdentity.reauthReason,
+					reason: "Sanctum profile is missing",
+				};
+			}
+
+			if (!options?.acceptFreshTokens && identity.reauthReason) {
+				return {
+					ok: false,
+					reason: identity.reauthReason,
 				};
 			}
 

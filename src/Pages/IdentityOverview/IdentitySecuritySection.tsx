@@ -5,10 +5,10 @@ import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
 import { useEncryptWithPassword } from "@/Hooks/useEncryptWithPassword";
 import { useToast } from "@/lib/contexts/useToast";
 import { makeIdentityPrivateKeyPmUsername } from "@/lib/pmParams";
-import { RuntimeIdentity, RuntimeIdentityExtension, RuntimeIdentityKeys, RuntimeIdentitySanctum } from "@/shell/types";
+import { ScopedRuntimeIdentity, ScopedRuntimeIdentityExtension, ScopedRuntimeIdentityKeys, ScopedRuntimeIdentitySanctum } from "@/shell/types";
 import { getSanctumIdentitySdk } from "@/State/identitiesRegistry/helpers/sanctumIdentitySdkManager";
-import { identitiesRegistryActions, selectIdentityByPubkey } from "@/State/identitiesRegistry/slice";
-import { IdentityKeys, IdentityType } from "@/State/identitiesRegistry/types";
+import { identitiesRegistryActions, selectActiveIdentity, selectIdentityByPubkey } from "@/State/identitiesRegistry/slice";
+import { IdentityKeys, IdentitySanctum, IdentityType } from "@/State/identitiesRegistry/types";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { Capacitor } from "@capacitor/core";
 import { IonButton, IonChip, IonIcon, IonInput, IonLabel } from "@ionic/react";
@@ -18,7 +18,7 @@ import { nip19 } from "nostr-tools";
 import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 
 interface IdentitySecuritySectionProps {
-	runtimeIdentity: RuntimeIdentity;
+	runtimeIdentity: ScopedRuntimeIdentity;
 }
 export function IdentitySecuritySection({ runtimeIdentity }: IdentitySecuritySectionProps) {
 
@@ -44,7 +44,7 @@ export function IdentitySecuritySection({ runtimeIdentity }: IdentitySecuritySec
 }
 
 
-function LocalKeySecuritySection({ runtimeIdentity }: { runtimeIdentity: RuntimeIdentityKeys }) {
+function LocalKeySecuritySection({ runtimeIdentity }: { runtimeIdentity: ScopedRuntimeIdentityKeys }) {
 	const registryIdentity = useAppSelector((state) => selectIdentityByPubkey(state, runtimeIdentity.pubkey))! as IdentityKeys;
 	const dispatch = useAppDispatch();
 	const { showToast } = useToast();
@@ -212,7 +212,7 @@ function LocalKeySecuritySection({ runtimeIdentity }: { runtimeIdentity: Runtime
 }
 
 
-function Nip07SecuritySection({ runtimeIdentity: _runtimeIdentity }: { runtimeIdentity: RuntimeIdentityExtension }) {
+function Nip07SecuritySection({ runtimeIdentity: _runtimeIdentity }: { runtimeIdentity: ScopedRuntimeIdentityExtension }) {
 	return (
 		<div className="flex items-start gap-3">
 			<div
@@ -240,9 +240,11 @@ function Nip07SecuritySection({ runtimeIdentity: _runtimeIdentity }: { runtimeId
 }
 
 
-function SanctumSecuritySection({ runtimeIdentity }: { runtimeIdentity: RuntimeIdentitySanctum }) {
+function SanctumSecuritySection({ runtimeIdentity }: { runtimeIdentity: ScopedRuntimeIdentitySanctum }) {
 	const id = useId();
 	const effectiveTheme = useEffectiveTheme();
+
+	const registryIdentity = useAppSelector(selectActiveIdentity) as IdentitySanctum;
 
 
 	useEffect(() => {
@@ -277,8 +279,8 @@ function SanctumSecuritySection({ runtimeIdentity }: { runtimeIdentity: RuntimeI
 						Sanctum session
 					</p>
 					<p className="mt-1 text-sm leading-6 text-muted">
-						{runtimeIdentity.reauthReason
-							? `Session needs refresh. You will be prompted to sign in again when required. (${runtimeIdentity.reauthReason})`
+						{registryIdentity.reauthReason
+							? `Session needs refresh. You will be prompted to sign in again when required. (${registryIdentity.reauthReason})`
 							: "Signed in. If access expires, you will be asked to sign in again."}
 					</p>
 				</div>

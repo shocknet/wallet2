@@ -28,7 +28,7 @@ export const pullerSpec: ListenerSpec<RootState, AppDispatch> = {
 					const identity = selectActiveIdentity(state)!;
 					const pubkey = identity.pubkey;
 
-					const identityApi = await getActiveIdentityNostrApi();
+					const identityApi = await getActiveIdentityNostrApi(listenerApi.getState);
 
 					const filters: Filter[] = [
 						{ kinds: [30078], authors: [pubkey], "#d": [identityDocDtag] },

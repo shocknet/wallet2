@@ -18,7 +18,7 @@ import {
 import { nip19 } from "nostr-tools";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import {
-	selectActiveIdentity,
+	selectActiveIdentityRuntime,
 	selectIdentityByPubkey,
 } from "@/State/identitiesRegistry/slice";
 import { setIdentityRelays } from "@/State/identitiesRegistry/identitySyncThunks";
@@ -26,7 +26,7 @@ import { IdentityType } from "@/State/identitiesRegistry/types";
 import { useSwitchProfileModal } from "@/Components/User/SwitchProfileSheet";
 import CopyMorphButton from "@/Components/CopyMorphButton";
 import { RelayManager } from "@/Components/RelayManager";
-import { getActiveIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
+import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 
 import { useToast } from "@/lib/contexts/useToast";
 import { normalizeWsUrl } from "@/lib/url";
@@ -48,7 +48,7 @@ const IdentityOverviewPage = () => {
 	const { showToast } = useToast();
 	const router = useIonRouter();
 	const ShowProfileSheet = useSwitchProfileModal();
-	const runtime = useAppSelector(selectActiveIdentity);
+	const runtime = useAppSelector(selectActiveIdentityRuntime);
 	const registryIdentity = useAppSelector((state) =>
 		runtime ? selectIdentityByPubkey(state, runtime.pubkey) : null,
 	);
@@ -59,7 +59,7 @@ const IdentityOverviewPage = () => {
 	useEffect(() => {
 		if (!runtime) return;
 		if (runtime.type === IdentityType.SANCTUM) {
-			void getActiveIdentityNostrApi()
+			void getIdentityNostrApi(runtime)
 				.then((api) => api.getRelays())
 				.then((r) => {
 					setRelays(Object.keys(r).map(normalizeWsUrl));

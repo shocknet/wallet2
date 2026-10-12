@@ -1,23 +1,15 @@
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 import { IdentityType, type Identity } from "../types";
-import {
-	resolveLocalPrivateKey,
-	resolveWrappedDataKeyCiphertext,
-} from "./platformSecretStorage";
-import { RuntimeIdentity } from "@/shell/types";
+import { resolveLocalPrivateKey } from "./platformSecretStorage";
 
 
 /* returns runtime identity, which includes the secrets */
 export async function unlockIdentity(
 	identity: Identity,
 	userPassword?: string
-): Promise<RuntimeIdentity> {
-
-
-	const unlockedAtMs = Date.now();
-
+): Promise<ScopedRuntimeIdentity> {
 	switch (identity.type) {
 		case IdentityType.LOCAL_KEY: {
-			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
 			const privateKey = await resolveLocalPrivateKey(identity, { userPassword });
 			if (!privateKey) {
 				throw new Error(`Unable to resolve local private key, password is incorrect`);
@@ -25,35 +17,23 @@ export async function unlockIdentity(
 			return {
 				type: IdentityType.LOCAL_KEY,
 				pubkey: identity.pubkey,
-				label: identity.label,
-				relays: identity.relays,
 				privateKey,
-				unlockedAtMs,
-				wrappedDataKeyCiphertext,
+				relays: identity.relays,
+				unlockedAtMs: Date.now(),
 			};
 		}
-		case IdentityType.SANCTUM: {
-			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
+		case IdentityType.SANCTUM:
 			return {
 				type: IdentityType.SANCTUM,
 				pubkey: identity.pubkey,
-				label: identity.label,
-				reauthReason: identity.reauthReason ?? null,
-				unlockedAtMs,
-				wrappedDataKeyCiphertext,
+				unlockedAtMs: Date.now(),
 			};
-		}
-		case IdentityType.NIP07: {
-			const wrappedDataKeyCiphertext = await resolveWrappedDataKeyCiphertext(identity);
+		case IdentityType.NIP07:
 			return {
 				type: IdentityType.NIP07,
 				pubkey: identity.pubkey,
 				relays: identity.relays,
-				label: identity.label,
-				unlockedAtMs,
-				wrappedDataKeyCiphertext,
+				unlockedAtMs: Date.now(),
 			};
-		}
 	}
 }
-

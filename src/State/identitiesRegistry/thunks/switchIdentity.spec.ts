@@ -1,31 +1,21 @@
-import { combineReducers, createListenerMiddleware } from "@reduxjs/toolkit";
+import { combineReducers, createListenerMiddleware, type Action } from "@reduxjs/toolkit";
 import { bytesToHex } from "@noble/hashes/utils";
 import { generateSecretKey, getPublicKey } from "nostr-tools";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { addIdentityLifecycle } from "@/State/listeners/lifecycle/lifecycle";
 import { identityModule } from "@/State/scoped/backups/identity/slice";
+import { type AppScopedReducerContext } from "@/State/scope/createScopedReducer";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 import { createStore } from "@/State/store/createStore";
 import type { AppThunkDispatch } from "@/State/store/store";
-import type { RuntimeIdentityKeys } from "@/shell/types";
 import { memoryStorage } from "@tests/support/memoryStorage";
 import { generateAndWrapDataKey } from "../helpers/datakey";
 import { getLocalKeysIdentityApi } from "../helpers/identityNostrApi";
-import { identitiesRegistryActions, identitiesRegistrySlice } from "../slice";
+import { identitiesRegistryActions, identitiesRegistrySlice, selectActiveIdentity } from "../slice";
 import { IdentityType, type IdentityKeys } from "../types";
 import { switchIdentity } from "./switchIdentity";
 
-// nostr-tools' nip44 rejects jsdom's TextEncoder output (a Uint8Array from another realm).
-vi.hoisted(() => {
-	const NativeTextEncoder = globalThis.TextEncoder;
-	globalThis.TextEncoder = class extends NativeTextEncoder {
-		encode(input?: string) {
-			return new Uint8Array(super.encode(input));
-		}
-	} as typeof TextEncoder;
-});
-
 const mocks = vi.hoisted(() => ({
-	mountScope: async (_session: { scopeId: string; dataKey: CryptoKey }): Promise<void> => undefined,
 	resetClientsCluster: vi.fn(async () => undefined),
 	clearSanctumIdentitySdk: vi.fn((_pubkey: string) => undefined),
 	deleteLegacyBeaconsPersist: vi.fn(async (_pubkey: string) => undefined),
@@ -33,7 +23,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/State/store/store", () => ({
 	default: {},
-	mountScope: (session: { scopeId: string; dataKey: CryptoKey }) => mocks.mountScope(session),
 }));
 
 vi.mock("@/Api/nostr", () => ({
@@ -51,7 +40,10 @@ vi.mock("../helpers/deleteIdentityStorage", () => ({
 	deleteLegacyBeaconsPersist: (pubkey: string) => mocks.deleteLegacyBeaconsPersist(pubkey),
 }));
 
-type LocalIdentity = { registry: IdentityKeys; runtime: RuntimeIdentityKeys };
+type LocalIdentity = {
+	registry: IdentityKeys;
+	runtime: Extract<ScopedRuntimeIdentity, { type: IdentityType.LOCAL_KEY }>;
+};
 
 async function createLocalIdentity(label: string): Promise<LocalIdentity> {
 	const secretKey = generateSecretKey();
@@ -73,21 +65,25 @@ async function createLocalIdentity(label: string): Promise<LocalIdentity> {
 		runtime: {
 			type: IdentityType.LOCAL_KEY,
 			pubkey,
-			label,
-			unlockedAtMs: 1,
-			relays,
 			privateKey,
-			wrappedDataKeyCiphertext,
+			relays,
+			unlockedAtMs: 1,
 		},
 	};
 }
 
 function createWallet(identities: LocalIdentity[]) {
 	const listenerMiddleware = createListenerMiddleware();
-	const { store, mountScope } = createStore({
+	const { store } = createStore({
 		reducers: { identitiesRegistry: identitiesRegistrySlice.reducer },
-		createScopedReducer: (context) => ({
-			reducer: combineReducers({ identity: identityModule.createReducer(context) }),
+		createScopedReducer: (context: AppScopedReducerContext) => ({
+			reducer: combineReducers({
+				identity: identityModule.createReducer(context),
+				runtimeIdentity: (
+					state: ScopedRuntimeIdentity = context.runtimeIdentity,
+					_action: Action,
+				) => state,
+			}),
 			persistKeys: [identityModule.persistKey(context.scopeId)],
 		}),
 		storage: memoryStorage(),
@@ -98,7 +94,6 @@ function createWallet(identities: LocalIdentity[]) {
 		listenerMiddleware.startListening.withTypes<ReturnType<typeof store.getState>, typeof store.dispatch>(),
 		[],
 	);
-	mocks.mountScope = mountScope;
 	for (const identity of identities) {
 		store.dispatch(identitiesRegistryActions._createNewIdentity({ identity: identity.registry }));
 	}
@@ -109,6 +104,8 @@ function createWallet(identities: LocalIdentity[]) {
 	return {
 		switchTo: (identity: LocalIdentity) => dispatch(switchIdentity(identity.runtime)),
 		registry: () => store.getState().identitiesRegistry,
+		active: () => selectActiveIdentity(store.getState() as never),
+		session: () => store.getState().scoped?.runtimeIdentity,
 		draft: () => store.getState().scoped?.identity.draft,
 	};
 }
@@ -131,7 +128,8 @@ describe("switchIdentity", () => {
 
 		await wallet.switchTo(alice);
 
-		expect(wallet.registry().active).toEqual(alice.runtime);
+		expect(wallet.active()).toEqual(alice.registry);
+		expect(wallet.session()).toEqual(alice.runtime);
 		expect(wallet.registry().lastActiveIdentityId).toBe(alice.runtime.pubkey);
 		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
 		expect(mocks.deleteLegacyBeaconsPersist).toHaveBeenCalledWith(alice.runtime.pubkey);
@@ -153,7 +151,8 @@ describe("switchIdentity", () => {
 
 		await wallet.switchTo(alice);
 
-		expect(wallet.registry().active).toEqual(alice.runtime);
+		expect(wallet.active()).toEqual(alice.registry);
+		expect(wallet.session()).toEqual(alice.runtime);
 		expect(mocks.resetClientsCluster).not.toHaveBeenCalled();
 		expect(mocks.deleteLegacyBeaconsPersist).not.toHaveBeenCalled();
 	});
@@ -165,7 +164,8 @@ describe("switchIdentity", () => {
 
 		await expect(wallet.switchTo(bob)).rejects.toThrow(/does not exist/);
 
-		expect(wallet.registry().active).toEqual(alice.runtime);
+		expect(wallet.active()).toEqual(alice.registry);
+		expect(wallet.session()).toEqual(alice.runtime);
 		expect(wallet.registry().lastActiveIdentityId).toBe(alice.runtime.pubkey);
 		expect(wallet.draft()?.identity_pubkey).toBe(alice.runtime.pubkey);
 		expect(mocks.resetClientsCluster).not.toHaveBeenCalled();
@@ -181,7 +181,11 @@ describe("switchIdentity", () => {
 		expect(mocks.resetClientsCluster).toHaveBeenCalledTimes(1);
 		expect(mocks.clearSanctumIdentitySdk).not.toHaveBeenCalled();
 		expect(mocks.deleteLegacyBeaconsPersist).toHaveBeenCalledWith(bob.runtime.pubkey);
-		expect(wallet.registry().active).toEqual(bob.runtime);
+		expect(wallet.active()).toEqual(bob.registry);
+		expect(wallet.session()).toMatchObject({
+			pubkey: bob.runtime.pubkey,
+			privateKey: bob.runtime.privateKey,
+		});
 		expect(wallet.registry().lastActiveIdentityId).toBe(bob.runtime.pubkey);
 		expect(wallet.draft()?.identity_pubkey).toBe(bob.runtime.pubkey);
 	});

@@ -14,7 +14,7 @@ import { Identity, IdentityType } from "../types";
 import { createSanctumDK, type TokensData } from "sanctum-sdk";
 import { getPublicKey } from "nostr-tools";
 import { hexToBytes } from "@noble/hashes/utils";
-import { RuntimeIdentity } from "@/shell/types";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 import store from "@/State/store/store";
 
 export type CreateIdentityInput =
@@ -24,7 +24,7 @@ export type CreateIdentityInput =
 
 export type ProvisionedIdentity = {
 	identity: Identity;
-	runtime: RuntimeIdentity;
+	runtime: ScopedRuntimeIdentity;
 };
 
 export async function provisionIdentity(input: CreateIdentityInput): Promise<ProvisionedIdentity> {
@@ -56,11 +56,9 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 				runtime: {
 					type: IdentityType.LOCAL_KEY,
 					pubkey,
-					label: input.label,
-					relays: input.relays,
 					privateKey: input.privkey,
-					unlockedAtMs,
-					wrappedDataKeyCiphertext,
+					relays: input.relays,
+					unlockedAtMs
 				},
 			};
 		}
@@ -81,6 +79,11 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 
 			try {
 				const pubkey = await sdk.api.getPublicKey();
+
+				/*
+				* Existing identity check before writing the sanctum tokens.
+				* This is to prevent overwriting an existing identity's sanctum tokens.
+				*/
 				if (store.getState().identitiesRegistry.entities[pubkey]) {
 					throw new Error("This identity already exists.");
 				}
@@ -107,10 +110,7 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 					runtime: {
 						type: IdentityType.SANCTUM,
 						pubkey,
-						label: input.label,
-						reauthReason: null,
-						unlockedAtMs,
-						wrappedDataKeyCiphertext,
+						unlockedAtMs
 					},
 				};
 			} finally {
@@ -135,10 +135,8 @@ export async function provisionIdentity(input: CreateIdentityInput): Promise<Pro
 				runtime: {
 					type: IdentityType.NIP07,
 					pubkey,
-					label: input.label,
-					relays: input.relays,
 					unlockedAtMs,
-					wrappedDataKeyCiphertext,
+					relays: input.relays,
 				},
 			};
 		}

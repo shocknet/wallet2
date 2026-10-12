@@ -3,8 +3,8 @@ import { useDispatch as originalUseDispatch, useSelector as originalUseSelector 
 import { appApi } from "../api/api";
 import "../api/offers";
 import { addIdentityLifecycle } from "../listeners/lifecycle/lifecycle";
-import { createScopedReducer } from "../scope/createScopedReducer";
-import { createStore } from "./createStore";
+import { createScopedReducer, type AppScopeSession } from "../scope/createScopedReducer";
+import { createStore, type StoreExtra } from "./createStore";
 import { listenerSpecs } from "./listenerMiddleware";
 import { createRootReducer } from "./staticReducers";
 import IonicStorageAdapter from "@/storage/redux-persist-ionic-storage-adapter";
@@ -26,11 +26,11 @@ export const mountScope = created.mountScope;
 export type AppStore = typeof store;
 export type RootState = ReturnType<AppStore["getState"]>;
 export type AppDispatch = AppStore["dispatch"];
-export type AppThunkDispatch = ThunkDispatch<RootState, unknown, Action>;
+export type AppThunkDispatch = ThunkDispatch<RootState, StoreExtra<AppScopeSession>, Action>;
 export type AppThunk<T> = ThunkAction<
 	T,
 	RootState,
-	unknown,
+	StoreExtra<AppScopeSession>,
 	Action
 >;
 

@@ -3,21 +3,22 @@ import dLogger from "@/Api/helpers/debugLog";
 import { getDeviceId } from "@/constants";
 import { createDeferred } from "@/lib/deferred";
 import { identityActions, selectIdentityDraft } from "@/State/scoped/backups/identity/slice";
-import { mountScope, type AppThunk } from "@/State/store/store";
-import type { RuntimeIdentity } from "@/shell/types";
+import type { AppThunk } from "@/State/store/store";
+import type { ScopedRuntimeIdentity } from "@/shell/types";
 import { appApi } from "../../api/api";
 import { identityUnloaded } from "../../listeners/actions";
 import { unwrapDataKeyWithNip44 } from "../helpers/datakey";
 import { deleteLegacyBeaconsPersist } from "../helpers/deleteIdentityStorage";
 import { getIdentityNostrApi } from "../helpers/identityNostrApi";
 import { clearSanctumIdentitySdk } from "../helpers/sanctumIdentitySdkManager";
-import { identitiesRegistryActions } from "../slice";
+import { identitiesRegistryActions, selectActiveIdentity } from "../slice";
+import { resolveWrappedDataKeyCiphertext } from "../helpers/platformSecretStorage";
 import { IdentityType } from "../types";
 
 export const tearDownCurrentIdentity = (): AppThunk<Promise<void>> => {
 	return async (dispatch, getState) => {
 		const state = getState();
-		const currentIdentity = state.identitiesRegistry.active
+		const currentIdentity = selectActiveIdentity(state);
 
 		if (!currentIdentity || !state.scoped) {
 			return;
@@ -30,8 +31,6 @@ export const tearDownCurrentIdentity = (): AppThunk<Promise<void>> => {
 		log.info("started");
 
 		dispatch(appApi.util.resetApiState());
-
-		dispatch(identitiesRegistryActions.clearActiveIdentityRuntime());
 		dLogger.removeIdentityContext();
 
 		const deferred = createDeferred<void>();
@@ -48,8 +47,8 @@ export const tearDownCurrentIdentity = (): AppThunk<Promise<void>> => {
 	};
 };
 
-export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<void>> => {
-	return async (dispatch, getState) => {
+export const switchIdentity = (toIdentity: ScopedRuntimeIdentity): AppThunk<Promise<void>> => {
+	return async (dispatch, getState, { mountScope }) => {
 
 		const log = dLogger.withContext({
 			procedure: "switch-identity",
@@ -59,7 +58,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		log.info("started");
 
 		const state = getState();
-		const currentIdentity = state.identitiesRegistry.active;
+		const currentIdentity = selectActiveIdentity(state);
 
 
 		if (currentIdentity?.pubkey === toIdentity.pubkey) {
@@ -68,7 +67,7 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		}
 
 		const fromRegistry = state.identitiesRegistry.entities[toIdentity.pubkey]
-		if (!fromRegistry) {
+		if (!fromRegistry || fromRegistry.type !== toIdentity.type) {
 			log.error("switch-to-nonexisting-identity");
 			throw new Error("Identity does not exist");
 		}
@@ -81,12 +80,16 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 		const unwrappedDataKey = await unwrapDataKeyWithNip44({
 			pubkey: toIdentity.pubkey,
 			api: identityNostrApi,
-			wrappedDataKeyCiphertext: toIdentity.wrappedDataKeyCiphertext,
+			wrappedDataKeyCiphertext: await resolveWrappedDataKeyCiphertext(fromRegistry),
 		});
 
 		await dispatch(tearDownCurrentIdentity());
 
-		await mountScope({ scopeId: toIdentity.pubkey, dataKey: unwrappedDataKey });
+		await mountScope({
+			scopeId: toIdentity.pubkey,
+			dataKey: unwrappedDataKey,
+			runtimeIdentity: toIdentity,
+		});
 		void deleteLegacyBeaconsPersist(toIdentity.pubkey).catch(() => { });
 
 		const draft = selectIdentityDraft(getState());
@@ -97,7 +100,6 @@ export const switchIdentity = (toIdentity: RuntimeIdentity): AppThunk<Promise<vo
 			dispatch(identityActions.initIdentityDoc({ identity_pubkey: toIdentity.pubkey, by: deviceId }));
 		}
 
-		dispatch(identitiesRegistryActions.setActiveIdentityRuntime({ identity: toIdentity }));
 		dispatch(identitiesRegistryActions.setLastActiveIdentityId({ pubkey: toIdentity.pubkey }));
 		dLogger.setIdentityContext({ identityPubkey: toIdentity.pubkey, identityType: toIdentity.type });
 

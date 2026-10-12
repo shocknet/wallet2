@@ -1,5 +1,5 @@
 import { identityUnloaded, listenerKick } from "../actions";
-import { identitiesRegistryActions } from "@/State/identitiesRegistry/slice";
+import { scopeCommitted } from "@/State/scope/scopeHost";
 import {
 	addListener,
 	type Dispatch,
@@ -34,7 +34,7 @@ export const addIdentityLifecycle = <
 	let activeUnsubs: Array<UnsubscribeListener> = [];
 
 	startListening({
-		actionCreator: identitiesRegistryActions.setActiveIdentityRuntime,
+		actionCreator: scopeCommitted,
 		effect: async (_, listenerApi) => {
 			const log = dLogger.withContext({
 				procedure: "lifecycle api"

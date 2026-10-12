@@ -1,13 +1,15 @@
 import { combineReducers, createSlice, type PayloadAction, type Reducer, type ReducersMapObject } from "@reduxjs/toolkit";
-import { createMigrate, persistReducer, REHYDRATE } from "redux-persist";
+import { createMigrate, persistReducer, REHYDRATE, type Storage } from "redux-persist";
 import { describe, expect, it, vi } from "vitest";
 import { makeScopedPersistedReducer } from "./buildPersistedScopedReducer";
 import { memoryStorage, type MemoryStorage } from "@tests/support/memoryStorage";
 import { createStore } from "../store/createStore";
 import { ScopeRestoreError } from "./scopeHost";
-import { defineScopedModule, scopedPersistKey, scopedStorageKey, type ScopedReducerContext } from "./scopedModule";
+import { defineScopedModule, scopedPersistKey, scopedStorageKey, type ScopeSession, type ScopedReducerContext } from "./scopedModule";
 
 const dataKey = {} as CryptoKey;
+
+type HostSpecSession = ScopeSession & { dataKey: CryptoKey };
 
 const notesSlice = createSlice({
 	name: "notes",
@@ -49,15 +51,20 @@ function openScope(options?: {
 	const storage = options?.storage ?? memoryStorage();
 	const notes = testModule("notes", notesSlice.reducer, storage);
 	const labels = testModule("labels", labelsSlice.reducer, storage);
-	const created = createStore({
-		reducers: options?.reducers ?? {},
-		createScopedReducer: options?.createScopedReducer ?? ((context) => ({
+	const fallback = options?.createScopedReducer;
+	function createScopedReducer(context: HostSpecSession & { storage: Storage }) {
+		if (fallback) return fallback(context);
+		return {
 			reducer: combineReducers({
 				notes: notes.createReducer(context),
 				labels: labels.createReducer(context),
 			}),
 			persistKeys: [notes.persistKey(context.scopeId), labels.persistKey(context.scopeId)],
-		})),
+		};
+	}
+	const created = createStore({
+		reducers: options?.reducers ?? {},
+		createScopedReducer,
 		storage,
 		prependMiddleware: [],
 		appendMiddleware: [],
