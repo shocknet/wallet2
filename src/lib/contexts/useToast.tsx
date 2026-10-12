@@ -1,11 +1,15 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { IonToast, type ToastOptions } from "@ionic/react";
 
-export type ShowToast = (options: ToastOptions) => void;
+export type ShowToastOptions = ToastOptions & {
+	onDidDismiss?: () => void;
+};
+
+export type ShowToast = (options: ShowToastOptions) => void;
 
 interface ToastContextValue {
 	showToast: ShowToast;
-	toastOptions: ToastOptions | null;
+	toastOptions: ShowToastOptions | null;
 	dismissToast: () => void;
 }
 
@@ -37,14 +41,18 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
 export function ToastOutlet() {
 	const { toastOptions, dismissToast } = useToast();
+	const { onDidDismiss, ...toastProps } = toastOptions ?? {};
 
 	return (
 		<IonToast
 			isOpen={!!toastOptions?.message}
-			onDidDismiss={dismissToast}
-			{...toastOptions}
 			duration={5000}
 			position="bottom"
+			{...toastProps}
+			onDidDismiss={() => {
+				onDidDismiss?.();
+				dismissToast();
+			}}
 		/>
 	);
 }
