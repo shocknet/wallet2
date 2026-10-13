@@ -12,8 +12,6 @@ import {
 	IonPage,
 	IonSegment,
 	IonSegmentButton,
-	IonSegmentContent,
-	IonSegmentView,
 	IonToolbar,
 } from "@ionic/react";
 import {
@@ -47,10 +45,6 @@ type ReceiveSegment =
 	| { method: "ln-address"; value: string; label: string }
 	| { method: "chain"; value: string; label: string }
 	| { method: "noffer"; value: string; label: string };
-
-function segmentContentId(sourceId: string, methodId: ReceiveMethodId) {
-	return `recv-${sourceId}-${methodId}`;
-}
 
 function receiveSegment(
 	method: ReceiveMethodId,
@@ -138,7 +132,7 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 		dispatch({ type: "selectMethod", method: next });
 	};
 
-	// Taps only: swiping the segment view fires ionChange too, and focusing mid-swipe pops the keyboard.
+	// Focus on tap. Dragging the segment also fires ionChange, and focusing mid-gesture pops the keyboard.
 	const openInvoice = () => {
 		const wasOnInvoice = selection === "invoice";
 		selectMethod("invoice");
@@ -149,6 +143,7 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 	};
 
 	const methodsKey = segmentOptions.map((m) => m.method).join(",");
+	const selected = segmentOptions.find((m) => m.method === selection);
 
 	return (
 		<IonContent className="ion-padding">
@@ -176,7 +171,6 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 								mode="ios"
 								value={m.method}
 								layout="icon-top"
-								contentId={segmentContentId(source.sourceId, m.method)}
 								onClick={m.method === "invoice" ? openInvoice : undefined}
 							>
 								<IonIcon icon={methodIcon(m.method)} aria-hidden />
@@ -185,25 +179,17 @@ function ReceiveSource({ sourceId }: { sourceId: string }) {
 						))}
 					</IonSegment>
 				</div>
-				<IonSegmentView className="min-h-0 flex-1">
-					{segmentOptions.map((m) => (
-						<IonSegmentContent
-							key={m.method}
-							id={segmentContentId(source.sourceId, m.method)}
-							className="h-full"
-						>
-							{m.method === "ln-address" ? (
-								<LnAddressPane value={m.value} />
-							) : m.method === "chain" ? (
-								<ChainPane value={m.value} />
-							) : m.method === "noffer" ? (
-								<NofferPane value={m.value} />
-							) : (
-								<InvoicePane ref={invoicePaneRef} source={source} />
-							)}
-						</IonSegmentContent>
-					))}
-				</IonSegmentView>
+				<div className="min-h-0 flex-1">
+					{selected?.method === "ln-address" ? (
+						<LnAddressPane value={selected.value} />
+					) : selected?.method === "chain" ? (
+						<ChainPane value={selected.value} />
+					) : selected?.method === "noffer" ? (
+						<NofferPane value={selected.value} />
+					) : selected?.method === "invoice" ? (
+						<InvoicePane ref={invoicePaneRef} source={source} />
+					) : null}
+				</div>
 				{
 					selection !== "invoice" && (
 						<div className="mx-auto w-full max-w-md">
