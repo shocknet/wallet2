@@ -645,9 +645,15 @@ export class Subscription {
 
 		// only now we start counting the eoseTimeout
 		this.eoseTimeoutHandle = setTimeout(() => {
-			this.eoseTimeoutHandle = undefined
-			this.onEoseTimeout?.()
-		}, this.eoseTimeout)
+			this.eoseTimeoutHandle = undefined;
+
+			if (this.onEoseTimeout) {
+				this.onEoseTimeout();
+			} else {
+				this.receivedEose();
+			}
+		}, this.eoseTimeout);
+
 	}
 
 	public disarm() {
