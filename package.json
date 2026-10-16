@@ -108,6 +108,7 @@
 		"@types/secp256k1": "^4.0.3",
 		"@types/sortablejs": "^1.15.2",
 		"@types/styled-components": "^5.1.26",
+		"@types/ws": "^8.18.2",
 		"@typescript-eslint/eslint-plugin": "^8.3.0",
 		"@typescript-eslint/parser": "^8.3.0",
 		"@vitejs/plugin-legacy": "^6.1.1",
