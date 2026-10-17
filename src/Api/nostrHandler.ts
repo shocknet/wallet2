@@ -1,12 +1,12 @@
-import { Event, Filter, finalizeEvent, nip04, Relay, SimplePool, UnsignedEvent } from "nostr-tools";
-import { Subscription, SubscriptionParams } from "nostr-tools/lib/types/abstract-relay";
+import { Event, EventTemplate, Filter, finalizeEvent, nip04, UnsignedEvent, VerifiedEvent, verifyEvent } from "nostr-tools";
+import { AbstractSimplePool } from "nostr-tools/lib/types/pool";
+import { AbstractRelay, SubscriptionParams, type Subscription as RelaySubscription } from "./AbstractRelay";
 export const pubServiceTag = "Lightning.Pub"
 import { Buffer } from 'buffer';
 import dLogger from "./helpers/debugLog";
 import { decodePayload, decryptData, encodePayload, encryptData, getSharedSecret } from "./nip44v1";
 import logger from "./helpers/logger";
 import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-pool";
-import { makeId } from "@/constants";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
 import { normalizeWsUrl } from "@/lib/url";
 import { acceptHotModule, persistHotData, readHotData } from "./hotSingleton";
@@ -37,18 +37,23 @@ export type NostrEvent = {
 
 export class TransportPool {
 	private sessions = new Map<string, RelaySession>();
+	private nativePaused = false;
+	private deadlines = new Set<PausableDeadline>();
+	private poolGen = 1;
 
 	readonly events = new TypedEmitter<HubEvents>();
 
 	private handledEvents = new Set<string>();
 
-	private log = dLogger.withContext({ component: "nostr-pool" });
+	private log = dLogger.withContext({ component: "transport-pool" });
 
 	constructor() { }
 
 	reset() {
+		this.poolGen++;
+		for (const deadline of [...this.deadlines]) deadline.expire();
 		this.sessions.values().forEach(sess => {
-			sess.close();
+			sess.dispose();
 		});
 
 		this.sessions.clear();
@@ -64,8 +69,8 @@ export class TransportPool {
 
 		let sess = this.sessions.get(url);
 		if (!sess) {
-			const relay = new Relay(url);
-			sess = new RelaySession(url, relay, this.events, this.handledEvents);
+			sess = RelaySession.open(url, this.events, this.handledEvents);
+			if (this.nativePaused) sess.onNativeBackground();
 			this.sessions.set(url, sess);
 		}
 
@@ -73,17 +78,17 @@ export class TransportPool {
 	}
 
 
-	/**
-	 * Purely registers interests (idempotent)
-	 * Calls sess.applyInerests() to schedule side effects (connect + subs)
-	 * Waits until ANY relay reaches readyOnce (EOSE once)
-	 */
+	/*
+	* used by get nostrClient
+	* ensures that at least one relay is connected and has an eosed rpc subscription
+	* ready to receive ephemeral rpc responses
+	*/
 	async syncRelays(settings: RelaysSettings) {
 		const { relays, keys, lpk } = settings;
 
 		const sessions = relays.map(r => this.ensureRelaySession(r));
 
-		const waits = sessions.map(sess => sess.ensureRpcReadyForRecipient(keys, lpk));
+		const waits = sessions.map(sess => sess.ensureReady(keys, lpk));
 
 		try {
 			await Promise.any(waits);
@@ -92,15 +97,25 @@ export class TransportPool {
 		}
 	}
 
-	pause() {
+	onNativeBackground() {
+		this.nativePaused = true;
+		for (const deadline of this.deadlines) deadline.pause();
 		this.sessions.values().forEach((sess) => {
-			sess.pause();
+			sess.onNativeBackground();
 		});
 	}
 
-	resume() {
+	onNativeForeground() {
+		this.nativePaused = false;
 		this.sessions.values().forEach(sess => {
-			sess.resume();
+			sess.onNativeForeground();
+		});
+		for (const deadline of this.deadlines) deadline.resume();
+	}
+
+	onWebForeground() {
+		this.sessions.values().forEach(sess => {
+			sess.onWebForeground();
 		});
 	}
 
@@ -113,6 +128,7 @@ export class TransportPool {
 	getActiveRelays(): string[] {
 		return [...this.sessions.values()].filter((s) => s.isConnected()).map((s) => s.url);
 	}
+
 
 
 	subscribe(relays: string[], filter: Filter, params: SubscribeManyParams): SubCloser {
@@ -130,15 +146,12 @@ export class TransportPool {
 
 
 	subscribeMany(relays: string[], filters: Filter[], params: SubscribeManyParams): SubCloser {
-
 		const request: { url: string; filter: Filter }[] = [];
 		for (let i = 0; i < relays.length; i++) {
 			const url = normalizeWsUrl(relays[i]);
-
 			for (let f = 0; f < filters.length; f++) {
 				request.push({ url, filter: filters[f] });
 			}
-
 		}
 
 		return this.subscribeMap(request, params)
@@ -146,6 +159,7 @@ export class TransportPool {
 
 
 	private subscribeMap(requests: { url: string; filter: Filter }[], params: SubscribeManyParams): SubCloser {
+		const gen = this.poolGen;
 		const grouped = new Map<string, Filter[]>()
 		for (const req of requests) {
 			const { url, filter } = req
@@ -156,11 +170,22 @@ export class TransportPool {
 
 
 		const _knownIds = new Set<string>()
-		const subs: { sess: RelaySession; subId: string }[] = [];
+		const subs: RelaySubscription[] = [];
+		const deadlines = new Map<number, PausableDeadline>()
+
+
+		const stopDeadline = (i: number) => {
+			const deadline = deadlines.get(i)
+			if (!deadline) return
+			deadline.cancel()
+			this.deadlines.delete(deadline)
+			deadlines.delete(i)
+		}
 
 		// batch all EOSEs into a single
 		const eosesReceived: boolean[] = []
 		let handleEose = (i: number) => {
+			stopDeadline(i)
 			if (eosesReceived[i]) return // do not act twice for the same relay
 			eosesReceived[i] = true
 			if (eosesReceived.filter(a => a).length === groupedRequests.length) {
@@ -171,6 +196,7 @@ export class TransportPool {
 		// batch all closes into a single
 		const closesReceived: string[] = []
 		let handleClose = (i: number, reason: string) => {
+			stopDeadline(i)
 			if (closesReceived[i]) return // do not act twice for the same relay
 			handleEose(i)
 			closesReceived[i] = reason
@@ -201,8 +227,21 @@ export class TransportPool {
 					return;
 				}
 
-				const { sub } = sess.trackSubscription(filters, {
-					...params,
+				if (params.oneose) {
+					const deadline = new PausableDeadline(params.maxWait, () => handleEose(i), this.nativePaused)
+					deadlines.set(i, deadline);
+					this.deadlines.add(deadline);
+				}
+
+				if (gen !== this.poolGen) {
+					handleClose(i, 'subscription pool disposed');
+					return;
+				}
+
+				const sub = sess.subscribe(filters, {
+					onevent: params.onevent,
+					id: params.id,
+					label: params.label,
 					oneose: () => handleEose(i),
 					onclose: reason => {
 						handleClose(i, reason)
@@ -211,16 +250,16 @@ export class TransportPool {
 					eoseTimeout: params.maxWait,
 				});
 
-				sub.fire();
-
-				subs.push({ sess, subId: sub.id })
+				subs.push(sub)
 			}),
 		)
 
 		return {
 			async close(reason?: string) {
 				await allOpened;
-				for (const s of subs) s.sess.closeTracked(s.subId, reason);
+				subs.forEach(sub => {
+					sub.close(reason)
+				})
 			},
 		};
 	}
@@ -243,8 +282,8 @@ export class TransportPool {
 
 
 
-	async send(relays: string[], pubKey: string, message: string, keys: NostrKeyPair) {
-		const decoded = await encryptData(message, getSharedSecret(keys.privateKey, pubKey));
+	send(relays: string[], pubKey: string, message: string, keys: NostrKeyPair) {
+		const decoded = encryptData(message, getSharedSecret(keys.privateKey, pubKey));
 		const content = encodePayload(decoded);
 		return this.sendRaw(relays, {
 			content,
@@ -256,7 +295,8 @@ export class TransportPool {
 	}
 
 	async sendNip69(relays: string[], pubKey: string, data: NofferData, keys: NostrKeyPair): Promise<NofferResponse> {
-		return SendNofferRequest(this as any as SimplePool, new Uint8Array(Buffer.from(keys.privateKey, "hex")), relays, pubKey, data);
+		// @ts-expect-error - ClinkSDK wants subscribeMany and publish, which this class has
+		return SendNofferRequest(this as unknown as AbstractSimplePool, new Uint8Array(Buffer.from(keys.privateKey, "hex")), relays, pubKey, data);
 	}
 
 	async sendRaw(relays: string[], event: UnsignedEvent, privateKeyHex: string) {
@@ -325,394 +365,514 @@ export class TransportPool {
 	publish(
 		relays: string[],
 		event: Event,
+		options?: { onauth?: (evt: EventTemplate) => Promise<VerifiedEvent> },
 	) {
-		const normalize = (r: string) => {
-			const url = normalizeWsUrl(r);
-			return url;
-		}
-		return Promise.any(
-			relays.map(normalize).map(async (url, i, arr) => {
-				if (arr.indexOf(url) !== i) {
-					// duplicate
-					return Promise.reject('duplicate url')
-				}
+		return Promise.any(relays.map(normalizeWsUrl).map(async (url, i, arr) => {
+			if (arr.indexOf(url) !== i) {
+				// duplicate
+				return Promise.reject('duplicate url')
+			}
 
-				const sess = this.ensureRelaySession(url);
-				await sess.ensureConnection();
-				return sess.publish(event);
-			})
-		);
+			const r = this.ensureRelaySession(url)
+			await r.ensureConnection();
+			return r
+				.publish(event)
+				.catch(async err => {
+					if (err instanceof Error && err.message.startsWith('auth-required: ') && options?.onauth) {
+						await r.auth(options.onauth)
+						return r.publish(event) // retry
+					}
+					throw err
+				})
+		}))
 	}
 }
 
-type Waiter = { version: number; resolve: () => void; reject: (err: unknown) => void };
-
-type StoredSub = {
-	subId: string; // the id passed to nostr-tools
-	filters: Filter[];
-	params: Partial<SubscriptionParams> & { label?: string; id?: string };
-	sub?: Subscription;
-	lastEmitted?: number;
-};
-
-function cloneFilters(fs: Filter[]) {
-	return fs.map(f => ({ ...f }));
-}
-
-/** Look back to lastEmitted on filters that already have since. Never add since (beacons). */
-function clampSinceFromLastEmitted(filters: Filter[], lastEmitted?: number) {
-	if (lastEmitted === undefined) return;
-	const next = lastEmitted + 1;
-	for (const f of filters) {
-		if (f.since === undefined) continue;
-		if (f.since > next) f.since = next;
-	}
-}
 export type RelaysSettings = {
 	relays: string[];
 	lpk: string;
 	keys: NostrKeyPair
 }
-type RelaySessionEvents = {
+export type RelaySessionEvents = {
 	relayStatus: { url: string; connected: boolean; reason?: string; atMillis: number };
 	nostrEvent: NostrEvent;
 	beacon: BeaconUpdate;
 };
 
-export const CLIENTS_RPC_SUBID = "__internal:rpc_sub";
-export const BEACONS_SUBID = "__internal:beacons_sub";
 export class RelaySession {
 	readonly url: string;
-	private relay: Relay;
-	private emitter: TypedEmitter<RelaySessionEvents>;
 
+	private relay: AbstractRelay;
+	private emitter: TypedEmitter<RelaySessionEvents>;
 	private handledEvents: Set<string>;
+	// Beacon duplicates are tracked per relay, not across sessions
+	private seenBeacons = new Set<string>();
 
 	private recipients = new Map<string, string>();
 	private lpks = new Set<string>();
-	private rpcFilterVersion = 0;
-	private beaconFilterVersion = 0;
-	private rpcAppliedVersion = -1;
-	private beaconAppliedVersion = -1;
-	private rpcWaiters: Waiter[] = [];
+
+	private activeIds: Partial<Record<InternalSubKind, string>> = {};
+	private serials: Record<InternalSubKind, number> = {
+		rpc: 0,
+		beacons: 0,
+	};
+
+	private rpcWaiters: RpcWaiter[] = [];
+
 	private running?: Promise<void>;
 	private pending = false;
+	private disposed = false;
 
+	private log: ReturnType<typeof dLogger.withContext>;
 
-	private subs = new Map<string, StoredSub>();
+	private nativePaused = false;
+	private checkingWebConnection = false;
+	private foregroundCheck?: Promise<void>;
+	// Only invalidates a connect() that was in progress when native backgrounded
+	private reconciliationEpoch = 0;
 
+	// general callers (not rpc nostr clients)
+	private connectionWaiters: Array<{
+		resolve: () => void;
+		reject: (err: unknown) => void;
+	}> = [];
 
-	private paused = false;
-
-	private epoch = 0; // bumps on pause/resume to invalidate in-flight actor work
-
-	private log = dLogger.withContext({ component: "relay-session" });
-
-	constructor(url: string, relay: Relay, emitter: TypedEmitter<RelaySessionEvents>, handledEvents: Set<string>) {
+	constructor(
+		url: string,
+		relay: AbstractRelay,
+		emitter: TypedEmitter<RelaySessionEvents>,
+		handledEvents: Set<string>,
+	) {
 		this.url = url;
 		this.relay = relay;
 		this.emitter = emitter;
 		this.handledEvents = handledEvents;
+		this.log = dLogger.withContext({
+			component: `relay-session-${url}`,
+		});
 	}
 
+	static open(
+		url: string,
+		emitter: TypedEmitter<RelaySessionEvents>,
+		handledEvents: Set<string>,
+	) {
+		const relay = new AbstractRelay(url, {
+			verifyEvent,
+			enableReconnect: true,
+			enablePing: true,
+		});
+
+		return new RelaySession(url, relay, emitter, handledEvents);
+	}
 
 	isConnected() {
 		return this.relay.connected;
 	}
 
-	async ensureConnection() {
-		return this.relay.connect();
+	ensureConnection(): Promise<void> {
+		if (this.disposed) {
+			return Promise.reject(new Error('relay session disposed'));
+		}
+		if (!this.nativePaused && !this.checkingWebConnection && this.relay.connected) {
+			return Promise.resolve();
+		}
+
+		const ready = new Promise<void>((resolve, reject) => {
+			this.connectionWaiters.push({ resolve, reject });
+		});
+
+		if (!this.nativePaused && !this.checkingWebConnection) {
+			const epoch = this.reconciliationEpoch;
+			void this.relay.connect()
+				.then(() => {
+					if (epoch === this.reconciliationEpoch) this.flushConnectionWaiters();
+				})
+				.catch(err => {
+					if (!this.nativePaused && epoch === this.reconciliationEpoch) {
+						this.rejectConnectionWaiters(err);
+					}
+				});
+		}
+
+		return ready;
+	}
+
+	private flushConnectionWaiters() {
+		if (this.nativePaused || this.checkingWebConnection || !this.relay.connected) return;
+
+		const waiters = this.connectionWaiters;
+		this.connectionWaiters = [];
+
+		for (const waiter of waiters) waiter.resolve();
+	}
+
+	private rejectConnectionWaiters(err: unknown) {
+		const waiters = this.connectionWaiters;
+		this.connectionWaiters = [];
+
+		for (const waiter of waiters) waiter.reject(err);
+	}
+
+	subscribe(
+		filters: Filter[],
+		params: SubscriptionParams & { label?: string; id?: string },
+	): RelaySubscription {
+		return this.relay.subscribe(filters, params);
+	}
+
+	publish(event: Event) {
+		return this.relay.publish(event);
+	}
+
+	auth(onauth: (evt: EventTemplate) => Promise<VerifiedEvent>) {
+		return this.relay.auth(onauth);
+	}
+
+	ensureReady(keys: NostrKeyPair, lpk: string): Promise<void> {
+		if (this.disposed) {
+			return Promise.reject(new Error('relay session disposed'));
+		}
+		const existingKey = this.recipients.get(keys.publicKey);
+
+		if (existingKey !== undefined && existingKey !== keys.privateKey) {
+			return Promise.reject(
+				new Error("conflicting private keys for recipient")
+			);
+		}
+
+		this.recipients.set(keys.publicKey, keys.privateKey);
+		this.lpks.add(lpk);
+
+		const ready = this.waitForRpcEose(keys.publicKey);
+		this.schedule();
+		return ready;
+	}
+
+	dispose() {
+		if (this.disposed) return;
+		this.disposed = true;
+		this.nativePaused = true;
+		try {
+			this.relay.dispose();
+			const err = new Error('relay session disposed');
+			this.rejectConnectionWaiters(err);
+			this.rejectRpcWaiters(err);
+		} catch (err) {
+			this.log.warn("dispose-failed", { data: { err } });
+		}
 	}
 
 	close() {
 		try {
-			this.relay.close()
+			this.relay.close();
 		} catch (err) {
-			console.error(err);
+			this.log.warn("close-failed", { data: { err } });
 		}
 	}
 
-	/**
-	 * For a nostr client, this function ensures that the relay and its underlying
-	 * rpc subscription are ready to receive responses of rpc calls.
-	 */
-	async ensureRpcReadyForRecipient(keys: NostrKeyPair, lpk: string) {
-		this.addLpk(lpk);
-		const v = this.addRecipient(keys.publicKey, keys.privateKey);
-		this.applyInterests();
-		await this.waitForRpcApplied(v);
+	onNativeBackground() {
+		if (this.nativePaused) return;
+
+		this.nativePaused = true;
+		this.reconciliationEpoch++;
+		this.close();
 	}
 
-	private addRecipient(pubkey: string, privkeyHex: string): number {
-		if (this.recipients.has(pubkey)) return this.rpcFilterVersion;
-		this.recipients.set(pubkey, privkeyHex);
-		this.rpcFilterVersion++;
-		this.pending = true;
-		return this.rpcFilterVersion;
+	onNativeForeground() {
+		if (this.disposed) return;
+		this.nativePaused = false;
+		const epoch = this.reconciliationEpoch;
+
+		this.relay.connect()
+			.then(() => this.flushConnectionWaiters())
+			.catch(err => {
+				if (!this.nativePaused && epoch === this.reconciliationEpoch) {
+					this.rejectConnectionWaiters(err);
+				}
+				this.log.warn("foreground-connection-failed", { data: { err } });
+			});
+
+		this.schedule();
 	}
 
-	private addLpk(lpk: string) {
-		if (this.lpks.has(lpk)) return;
-		this.lpks.add(lpk);
-		this.beaconFilterVersion++;
-		this.pending = true;
+	// verify responsiveness; reconnect only if necessary
+	onWebForeground(): Promise<void> {
+		if (this.foregroundCheck) return this.foregroundCheck;
+
+		const check = this.checkWebConnection();
+		this.foregroundCheck = check;
+		void check.then(() => {
+			if (this.foregroundCheck === check) this.foregroundCheck = undefined;
+		});
+		return check;
 	}
 
+	private async checkWebConnection() {
+		if (this.disposed) return;
+		this.checkingWebConnection = true;
+		try {
+			if (!this.relay.connected || !(await this.relay.ping())) {
+				if (this.disposed) return;
+				await this.relay.connect();
+			}
+
+			this.checkingWebConnection = false;
+			this.flushRpcWaiters();
+			this.flushConnectionWaiters();
+			this.schedule();
+		} catch (err) {
+			this.checkingWebConnection = false;
+			this.rejectRpcWaiters(err);
+			this.rejectConnectionWaiters(err);
+			this.log.warn("foreground-connection-failed", { data: { err } });
+		}
+	}
+
+	private activeSub(kind: InternalSubKind): RelaySubscription | undefined {
+		const id = this.activeIds[kind];
+		const sub = id === undefined ? undefined : this.relay.openSubs.get(id);
+		return sub && !sub.closed ? sub : undefined;
+	}
+
+	private isRpcReady(recipient: string): boolean {
+		const sub = this.activeSub("rpc");
+
+		return !!(
+			!this.nativePaused &&
+			!this.checkingWebConnection &&
+			this.relay.connected &&
+			sub?.eosed &&
+			allowedKinds.every(k => sub.filters[0]?.kinds?.includes(k)) &&
+			(sub.filters[0]?.["#p"] ?? []).includes(recipient)
+		);
+	}
+
+	private waitForRpcEose(recipient: string): Promise<void> {
+		if (this.isRpcReady(recipient)) return Promise.resolve();
+
+		return new Promise((resolve, reject) => {
+			this.rpcWaiters.push({ recipient, resolve, reject });
+		});
+	}
 
 	private flushRpcWaiters() {
-		const v = this.rpcAppliedVersion;
-		if (v < 0 || !this.isConnected() || this.paused) return;
-
-		const ready = this.rpcWaiters.filter((w) => w.version <= v);
-		this.rpcWaiters = this.rpcWaiters.filter((w) => w.version > v);
-		for (const w of ready) w.resolve();
+		const remaining: RpcWaiter[] = [];
+		for (const waiter of this.rpcWaiters) {
+			if (this.isRpcReady(waiter.recipient)) waiter.resolve();
+			else remaining.push(waiter);
+		}
+		this.rpcWaiters = remaining;
 	}
 
-	private rejectAllRpcWaiters(err: unknown) {
-		const ws = this.rpcWaiters;
+	private rejectRpcWaiters(error: unknown) {
+		this.flushRpcWaiters();
+		const waiters = this.rpcWaiters;
 		this.rpcWaiters = [];
-		for (const w of ws) w.reject(err);
+		for (const waiter of waiters) waiter.reject(error);
 	}
 
-	private applyInterests() {
+	private schedule() {
 		this.pending = true;
-		if (this.running) return this.running;
 
-		this.running = this.runActorLoop()
-			.catch((err) => {
-				// Surface to waiters only — don't leave an unhandled rejection on the actor promise.
-				this.rejectAllRpcWaiters(err);
+		if (this.running || this.nativePaused || this.checkingWebConnection) return;
+
+		const run = this.run();
+		this.running = run;
+
+		void run
+			.catch(err => {
+				this.pending = false;
+				this.rejectRpcWaiters(err);
+				this.log.warn("reconcile-failed", { data: { err } });
 			})
 			.finally(() => {
 				this.running = undefined;
-
-				if (this.pending && !this.paused) {
-					this.applyInterests();
-				}
+				if (this.pending && !this.nativePaused && !this.checkingWebConnection) this.schedule();
 			});
-
-		return this.running;
 	}
 
-	private async runActorLoop() {
-		while (this.pending) {
+	private async run() {
+		while (this.pending && !this.nativePaused && !this.checkingWebConnection) {
 			this.pending = false;
-			if (this.paused) return;
+			const epoch = this.reconciliationEpoch;
 
-			const myEpoch = this.epoch;
+			try {
+				await this.relay.connect();
+			} catch (err) {
+				// A native background may have closed the socket while connect() awaited it.
+				// Foreground will restart this pass without rejecting readiness callers.
+				if (this.nativePaused || epoch !== this.reconciliationEpoch) {
+					this.pending = true;
+					return;
+				}
+				throw err;
+			}
 
-			await this.relay.connect();
-			if (this.paused || myEpoch !== this.epoch) return; // if lifecycle moved during our connect wait then stop
+			if (this.nativePaused || epoch !== this.reconciliationEpoch) {
+				this.pending = true;
+				return;
+			}
 
-			this.ensureClientsInterests();
-			if (this.paused || myEpoch !== this.epoch) return;
+			this.flushConnectionWaiters();
 
+			const [rpc, beacon] = await Promise.allSettled([
+				this.reconcileRpc(),
+				this.reconcileBeacons(),
+			]);
+
+			if (this.nativePaused || epoch !== this.reconciliationEpoch) {
+				this.pending = true;
+				return;
+			}
+
+			if (beacon.status === "rejected") {
+				this.log.warn("beacon-reconcile-failed", {
+					data: { err: beacon.reason },
+				});
+			}
+			if (rpc.status === "rejected") throw rpc.reason;
 		}
 	}
 
-	pause() {
-		if (this.paused) return;
+	private reconcileRpc(): Promise<void> {
+		if (!this.recipients.size) return Promise.resolve();
 
-		this.paused = true;
-		this.epoch++;
-
-		this.rpcAppliedVersion = -1;
-		this.beaconAppliedVersion = -1;
-
-		// snapshot lastEmitted and drop live handles
-		for (const s of this.subs.values()) {
-			s.lastEmitted = s.sub?.lastEmitted ?? s.lastEmitted;
-			s.sub = undefined;
-		}
-
-
-		try {
-			this.relay.close();
-		} catch (err) {
-			this.log.warn("pause-close-failed", { data: { err } });
-		}
-
+		const recipients = [...this.recipients.keys()];
+		return this.reconcileGroup(
+			"rpc",
+			this.rpcFilter(recipients),
+			sub =>
+				allowedKinds.every(k => sub.filters[0]?.kinds?.includes(k)) &&
+				covers(sub.filters[0]?.["#p"], recipients),
+		);
 	}
 
-	resume() {
-		if (!this.paused) return;
+	private reconcileBeacons(): Promise<void> {
+		if (!this.lpks.size) return Promise.resolve();
 
-		this.paused = false;
-		this.epoch++;
-
-		this.relay.connect(); // Don't await connect promise. sub.fire() internally awaits the connect promise
-
-		const stored = [...this.subs.values()];
-		for (const s of stored) {
-			const newFilters = cloneFilters(s.filters);
-			clampSinceFromLastEmitted(newFilters, s.lastEmitted);
-
-			const sub = this.relay.prepareSubscription(newFilters, s.params);
-			s.sub = sub;
-			s.lastEmitted = sub.lastEmitted;
-
-			sub.fire();
-		}
-
-
-		// Drive internal interests too
-		this.pending = true;
-		this.applyInterests();
+		const authors = [...this.lpks];
+		return this.reconcileGroup(
+			"beacons",
+			this.beaconFilter(authors),
+			sub =>
+				!!sub.filters[0]?.kinds?.includes(30078) &&
+				!!sub.filters[0]?.["#d"]?.includes(pubServiceTag) &&
+				covers(sub.filters[0]?.authors, authors),
+		);
 	}
 
+	private async reconcileGroup(
+		kind: InternalSubKind,
+		desiredFilter: Filter,
+		coversDesired: (sub: RelaySubscription) => boolean,
+	): Promise<void> {
+		const active = this.activeSub(kind);
 
 
+		if (active && this.relay.connected && coversDesired(active)) {
+			if (kind === "rpc") this.flushRpcWaiters();
+			return;
+		}
 
-	private waitForRpcApplied(version: number): Promise<void> {
-		if (this.isConnected() && this.rpcAppliedVersion >= version) return Promise.resolve();
+		const candidate = await this.createConfirmedSub(kind, desiredFilter);
 
-		return new Promise((resolve, reject) => {
-			this.rpcWaiters.push({ version, resolve, reject });
-		});
+
+		this.activeIds[kind] = candidate.id;
+		active?.close("replaced after EOSE");
+		if (kind === "rpc") this.flushRpcWaiters();
 	}
 
+	private async createConfirmedSub(
+		kind: InternalSubKind,
+		filter: Filter,
+	): Promise<RelaySubscription> {
+		let id: string;
+		do {
+			id = `${kind}:${++this.serials[kind]}`;
+		} while (this.relay.openSubs.has(id));
 
-
-	/**
-	 * Ensure a stable subscription id matches desired filters.
-	 * - live + !needsUpdate → no-op
-	 * - live + needsUpdate → mutate filters + fire() (same id)
-	 * - missing/closed → create (close any prior handle first)
-	 */
-	private ensureOrRefireSub(
-		subId: string,
-		makeFilters: () => Filter[],
-		makeParams: () => Partial<SubscriptionParams> & { id: string },
-		needsUpdate: boolean,
-	) {
-		const stored = this.subs.get(subId);
-		const live = stored?.sub && !stored.sub.closed ? stored.sub : undefined;
-
-		if (live && !needsUpdate) {
-			return live;
-		}
-
-		const filters = makeFilters();
-		const lastEmitted = live?.lastEmitted ?? stored?.sub?.lastEmitted ?? stored?.lastEmitted;
-		clampSinceFromLastEmitted(filters, lastEmitted);
-
-		if (live && needsUpdate) {
-			live.filters = filters;
-			live.fire();
-			stored!.filters = filters;
-			stored!.lastEmitted = live.lastEmitted;
-			return live;
-		}
-
-		const params = makeParams();
-		params.id = subId;
-		const sub = this.relay.prepareSubscription(filters, params);
-		this.subs.set(subId, {
-			subId: params.id,
-			filters,
-			params,
-			sub,
-			lastEmitted: sub.lastEmitted ?? lastEmitted,
+		let resolveReady: () => void;
+		let rejectReady: (err: Error) => void;
+		const confirmed = new Promise<void>((resolve, reject) => {
+			resolveReady = resolve;
+			rejectReady = reject;
 		});
 
-		sub.fire();
-		return sub;
-	}
+		const finish = (err?: Error) => {
 
-	private ensureClientsInterests() {
-		// RPC
-		this.ensureOrRefireSub(
-			CLIENTS_RPC_SUBID,
-			() => [{
-				since: Math.floor(Date.now() / 1000) - 30,
-				kinds: [...allowedKinds],
-				"#p": [...this.recipients.keys()],
-			}],
-			() => ({
-				id: CLIENTS_RPC_SUBID,
-				onevent: (e) => void this.onIncomingEvent(e),
-				alreadyHaveEvent: (id) => this.handledEvents.has(id),
-			}),
-			this.rpcAppliedVersion !== this.rpcFilterVersion,
-		);
-		this.rpcAppliedVersion = this.rpcFilterVersion;
-		this.flushRpcWaiters();
+			if (err) rejectReady(err);
+			else resolveReady();
+		};
 
-		// Beacons
-		this.ensureOrRefireSub(
-			BEACONS_SUBID,
-			() => [{
-				kinds: [30078],
-				authors: [...this.lpks],
-				"#d": [pubServiceTag],
-			}],
-			() => ({
-				id: BEACONS_SUBID,
-				onevent: (e) => void this.onIncomingEvent(e),
-				alreadyHaveEvent: (id) => this.handledEvents.has(id),
-			}),
-			this.beaconAppliedVersion !== this.beaconFilterVersion,
-		);
-		this.beaconAppliedVersion = this.beaconFilterVersion;
-	}
+		const sub = this.relay.prepareSubscription(
+			[filter],
+			{
+				id,
+				onevent: (e: Event) => void this.onIncomingEvent(e),
+				alreadyHaveEvent: kind === "rpc"
+					? (eventId: string) => this.handledEvents.has(eventId)
+					: (eventId: string) => this.seenBeacons.has(eventId),
+				eoseTimeout: INTERNAL_EOSE_TIMEOUT_MS,
+				oneose: () => {
+					if (this.nativePaused) return;
+					finish();
+					if (kind === "rpc") this.flushRpcWaiters();
+				},
+				onclose: (reason) => {
+					finish(new Error(`subscription ${id} closed: ${reason}`));
+				},
+				onEoseTimeout: () => {
+					if (this.nativePaused) return;
+					const err = new Error(`EOSE timed out for ${id}`);
+					finish(err);
+					if (this.activeIds[kind] === id) {
+						if (kind === "rpc") this.rejectRpcWaiters(err);
 
-	trackSubscription(
-		filters: Filter[],
-		params: Partial<SubscriptionParams> & { label?: string; id?: string },
-	) {
-		const subId = params.id || makeId(16);
-
-		const wrappedParams = {
-			...params,
-			id: subId,
-			onclose: (reason: string) => {
-				if (this.paused) return;
-				params.onclose?.(reason);
+						sub.close("EOSE timed out");
+						delete this.activeIds[kind];
+						this.schedule();
+					}
+				},
 			},
-		};
+		);
 
-		const stored: StoredSub = {
-			subId,
-			filters: cloneFilters(filters),
-			params: wrappedParams,
-		};
-
-
-		const sub = this.relay.prepareSubscription(cloneFilters(stored.filters), stored.params);
-		stored.sub = sub;
-		stored.lastEmitted = sub.lastEmitted;
-
-		this.subs.set(subId, stored);
-
-		return {
-			sub,
-			remove: () => this.subs.delete(subId),
-		};
-	}
-
-	closeTracked(subId: string, reason?: string) {
-		const s = this.subs.get(subId);
-		if (!s) return;
 		try {
-			s.sub?.close(reason);
-		} finally {
-			this.subs.delete(subId);
+			sub.fire();
+			await confirmed;
+			return sub;
+		} catch (err) {
+			sub.close("handover failed");
+			throw err;
 		}
 	}
 
-
-
-	async publish(event: Event): Promise<string> {
-		return this.relay.publish(event);
+	private rpcFilter(recipients: string[]): Filter {
+		return {
+			since: Math.floor(Date.now() / 1000) - 30,
+			kinds: [...allowedKinds],
+			"#p": recipients,
+		};
 	}
 
+	private beaconFilter(authors: string[]): Filter {
+		return {
+			kinds: [30078],
+			authors,
+			"#d": [pubServiceTag],
+		};
+	}
 
 	private async onIncomingEvent(e: Event) {
 		// Beacon
 		if (e.kind === 30078) {
 			const data = parseBeaconContent(e.content);
-			if (data) {
-				this.markHandled(e.id);
+			if (data && !this.seenBeacons.has(e.id)) {
+				this.seenBeacons.add(e.id);
+				if (this.seenBeacons.size > 2_000) {
+					const oldest = this.seenBeacons.values().next().value;
+					if (oldest !== undefined) this.seenBeacons.delete(oldest);
+				}
 				this.emitter.emit("beacon", {
 					updatedAtUnix: e.created_at,
 					createdByPub: e.pubkey,
@@ -755,11 +915,12 @@ export class RelaySession {
 			logger.warn("relay session decrypt/process failed", { relay: this.url, err });
 		}
 	}
-
 	private markHandled(id: string) {
 		this.handledEvents.add(id);
 	}
+
 }
+
 
 let pool: TransportPool | null = readHotData<TransportPool>("transportPool") ?? null;
 export const getPool = () => (pool ??= new TransportPool());
@@ -897,3 +1058,67 @@ export class TypedEmitter<Events extends Record<string, any>> {
 		this.listeners.clear();
 	}
 }
+
+
+
+function covers(have: string[] | undefined, want: Iterable<string>): boolean {
+	if (!have) return false;
+	const got = new Set(have);
+	for (const item of want) {
+		if (!got.has(item)) return false;
+	}
+	return true;
+}
+
+const DEFAULT_QUERY_MAX_WAIT_MS = 10_000;
+
+class PausableDeadline {
+	private remainingMs: number;
+	private startedAt = 0;
+	private timer: ReturnType<typeof setTimeout> | undefined;
+	private ended = false;
+
+	constructor(
+		milliseconds = DEFAULT_QUERY_MAX_WAIT_MS,
+		private readonly onExpire: () => void,
+		paused: boolean,
+	) {
+		this.remainingMs = Math.max(0, milliseconds);
+		if (!paused) this.resume();
+	}
+
+	pause() {
+		if (this.timer === undefined || this.ended) return;
+		clearTimeout(this.timer);
+		this.timer = undefined;
+		this.remainingMs = Math.max(0, this.remainingMs - (performance.now() - this.startedAt));
+	}
+
+	resume() {
+		if (this.ended || this.timer !== undefined) return;
+		this.startedAt = performance.now();
+		this.timer = setTimeout(() => this.expire(), this.remainingMs);
+	}
+
+	expire() {
+		if (this.ended) return;
+		this.cancel();
+		this.onExpire();
+	}
+
+	cancel() {
+		this.ended = true;
+		if (this.timer !== undefined) clearTimeout(this.timer);
+		this.timer = undefined;
+	}
+}
+
+const INTERNAL_EOSE_TIMEOUT_MS = 8_000;
+
+type InternalSubKind = "rpc" | "beacons";
+
+type RpcWaiter = {
+	recipient: string;
+	resolve: () => void;
+	reject: (reason: unknown) => void;
+};
