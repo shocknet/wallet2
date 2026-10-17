@@ -64,6 +64,7 @@ export class AbstractRelay {
 	} | undefined
 	private reconnectAttempts: number = 0
 	private socketGen = 0
+	private disposed = false
 
 	private connectionPromise: Promise<void> | undefined
 	private connectReject: ((error: Error) => void) | undefined
@@ -126,6 +127,8 @@ export class AbstractRelay {
 			}
 		}, backoff)
 	}
+
+
 
 	/** End this connection immediately; keep subscription objects for a future connect(). */
 	private dropConnection(reason: string, notifyRelay = false): boolean {
@@ -200,6 +203,7 @@ export class AbstractRelay {
 	}
 
 	public async connect(): Promise<void> {
+		if (this.disposed) throw new Error('relay disposed')
 		if (this.reconnectTimeoutHandle) {
 			clearTimeout(this.reconnectTimeoutHandle)
 			this.reconnectTimeoutHandle = undefined
@@ -583,6 +587,17 @@ export class AbstractRelay {
 		}
 		this.reconnectAttempts = 0
 		if (this.dropConnection('relay connection closed by us', true)) this.onclose?.()
+	}
+
+	public dispose() {
+		if (this.disposed) return
+		this.disposed = true
+		if (this.reconnectTimeoutHandle) {
+			clearTimeout(this.reconnectTimeoutHandle)
+			this.reconnectTimeoutHandle = undefined
+		}
+		this.dropConnection('relay connection disposed', true);
+		this.closeAllSubscriptions('relay connection disposed');
 	}
 
 	// this is the function assigned to this.ws.onmessage

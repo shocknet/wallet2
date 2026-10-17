@@ -38,6 +38,8 @@ export type NostrEvent = {
 export class TransportPool {
 	private sessions = new Map<string, RelaySession>();
 	private nativePaused = false;
+	private deadlines = new Set<PausableDeadline>();
+	private poolGen = 1;
 
 	readonly events = new TypedEmitter<HubEvents>();
 
@@ -48,8 +50,10 @@ export class TransportPool {
 	constructor() { }
 
 	reset() {
+		this.poolGen++;
+		for (const deadline of [...this.deadlines]) deadline.expire();
 		this.sessions.values().forEach(sess => {
-			sess.close();
+			sess.dispose();
 		});
 
 		this.sessions.clear();
@@ -95,6 +99,7 @@ export class TransportPool {
 
 	onNativeBackground() {
 		this.nativePaused = true;
+		for (const deadline of this.deadlines) deadline.pause();
 		this.sessions.values().forEach((sess) => {
 			sess.onNativeBackground();
 		});
@@ -105,6 +110,7 @@ export class TransportPool {
 		this.sessions.values().forEach(sess => {
 			sess.onNativeForeground();
 		});
+		for (const deadline of this.deadlines) deadline.resume();
 	}
 
 	onWebForeground() {
@@ -153,6 +159,7 @@ export class TransportPool {
 
 
 	private subscribeMap(requests: { url: string; filter: Filter }[], params: SubscribeManyParams): SubCloser {
+		const gen = this.poolGen;
 		const grouped = new Map<string, Filter[]>()
 		for (const req of requests) {
 			const { url, filter } = req
@@ -164,10 +171,21 @@ export class TransportPool {
 
 		const _knownIds = new Set<string>()
 		const subs: RelaySubscription[] = [];
+		const deadlines = new Map<number, PausableDeadline>()
+
+
+		const stopDeadline = (i: number) => {
+			const deadline = deadlines.get(i)
+			if (!deadline) return
+			deadline.cancel()
+			this.deadlines.delete(deadline)
+			deadlines.delete(i)
+		}
 
 		// batch all EOSEs into a single
 		const eosesReceived: boolean[] = []
 		let handleEose = (i: number) => {
+			stopDeadline(i)
 			if (eosesReceived[i]) return // do not act twice for the same relay
 			eosesReceived[i] = true
 			if (eosesReceived.filter(a => a).length === groupedRequests.length) {
@@ -178,6 +196,7 @@ export class TransportPool {
 		// batch all closes into a single
 		const closesReceived: string[] = []
 		let handleClose = (i: number, reason: string) => {
+			stopDeadline(i)
 			if (closesReceived[i]) return // do not act twice for the same relay
 			handleEose(i)
 			closesReceived[i] = reason
@@ -205,6 +224,17 @@ export class TransportPool {
 					await sess.ensureConnection();
 				} catch (err) {
 					handleClose(i, (err as any)?.message || String(err));
+					return;
+				}
+
+				if (params.oneose) {
+					const deadline = new PausableDeadline(params.maxWait, () => handleEose(i), this.nativePaused)
+					deadlines.set(i, deadline);
+					this.deadlines.add(deadline);
+				}
+
+				if (gen !== this.poolGen) {
+					handleClose(i, 'subscription pool disposed');
 					return;
 				}
 
@@ -391,6 +421,7 @@ export class RelaySession {
 
 	private running?: Promise<void>;
 	private pending = false;
+	private disposed = false;
 
 	private log: ReturnType<typeof dLogger.withContext>;
 
@@ -440,6 +471,9 @@ export class RelaySession {
 	}
 
 	ensureConnection(): Promise<void> {
+		if (this.disposed) {
+			return Promise.reject(new Error('relay session disposed'));
+		}
 		if (!this.nativePaused && !this.checkingWebConnection && this.relay.connected) {
 			return Promise.resolve();
 		}
@@ -448,7 +482,19 @@ export class RelaySession {
 			this.connectionWaiters.push({ resolve, reject });
 		});
 
-		this.schedule();
+		if (!this.nativePaused && !this.checkingWebConnection) {
+			const epoch = this.reconciliationEpoch;
+			void this.relay.connect()
+				.then(() => {
+					if (epoch === this.reconciliationEpoch) this.flushConnectionWaiters();
+				})
+				.catch(err => {
+					if (!this.nativePaused && epoch === this.reconciliationEpoch) {
+						this.rejectConnectionWaiters(err);
+					}
+				});
+		}
+
 		return ready;
 	}
 
@@ -484,6 +530,9 @@ export class RelaySession {
 	}
 
 	ensureReady(keys: NostrKeyPair, lpk: string): Promise<void> {
+		if (this.disposed) {
+			return Promise.reject(new Error('relay session disposed'));
+		}
 		const existingKey = this.recipients.get(keys.publicKey);
 
 		if (existingKey !== undefined && existingKey !== keys.privateKey) {
@@ -498,6 +547,20 @@ export class RelaySession {
 		const ready = this.waitForRpcEose(keys.publicKey);
 		this.schedule();
 		return ready;
+	}
+
+	dispose() {
+		if (this.disposed) return;
+		this.disposed = true;
+		this.nativePaused = true;
+		try {
+			this.relay.dispose();
+			const err = new Error('relay session disposed');
+			this.rejectConnectionWaiters(err);
+			this.rejectRpcWaiters(err);
+		} catch (err) {
+			this.log.warn("dispose-failed", { data: { err } });
+		}
 	}
 
 	close() {
@@ -517,6 +580,7 @@ export class RelaySession {
 	}
 
 	onNativeForeground() {
+		if (this.disposed) return;
 		this.nativePaused = false;
 		const epoch = this.reconciliationEpoch;
 
@@ -545,9 +609,11 @@ export class RelaySession {
 	}
 
 	private async checkWebConnection() {
+		if (this.disposed) return;
 		this.checkingWebConnection = true;
 		try {
 			if (!this.relay.connected || !(await this.relay.ping())) {
+				if (this.disposed) return;
 				await this.relay.connect();
 			}
 
@@ -618,7 +684,6 @@ export class RelaySession {
 			.catch(err => {
 				this.pending = false;
 				this.rejectRpcWaiters(err);
-				this.rejectConnectionWaiters(err);
 				this.log.warn("reconcile-failed", { data: { err } });
 			})
 			.finally(() => {
@@ -1003,6 +1068,49 @@ function covers(have: string[] | undefined, want: Iterable<string>): boolean {
 		if (!got.has(item)) return false;
 	}
 	return true;
+}
+
+const DEFAULT_QUERY_MAX_WAIT_MS = 10_000;
+
+class PausableDeadline {
+	private remainingMs: number;
+	private startedAt = 0;
+	private timer: ReturnType<typeof setTimeout> | undefined;
+	private ended = false;
+
+	constructor(
+		milliseconds = DEFAULT_QUERY_MAX_WAIT_MS,
+		private readonly onExpire: () => void,
+		paused: boolean,
+	) {
+		this.remainingMs = Math.max(0, milliseconds);
+		if (!paused) this.resume();
+	}
+
+	pause() {
+		if (this.timer === undefined || this.ended) return;
+		clearTimeout(this.timer);
+		this.timer = undefined;
+		this.remainingMs = Math.max(0, this.remainingMs - (performance.now() - this.startedAt));
+	}
+
+	resume() {
+		if (this.ended || this.timer !== undefined) return;
+		this.startedAt = performance.now();
+		this.timer = setTimeout(() => this.expire(), this.remainingMs);
+	}
+
+	expire() {
+		if (this.ended) return;
+		this.cancel();
+		this.onExpire();
+	}
+
+	cancel() {
+		this.ended = true;
+		if (this.timer !== undefined) clearTimeout(this.timer);
+		this.timer = undefined;
+	}
 }
 
 const INTERNAL_EOSE_TIMEOUT_MS = 8_000;

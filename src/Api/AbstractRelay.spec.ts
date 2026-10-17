@@ -54,7 +54,7 @@ describe("AbstractRelay connection reuse", () => {
 	});
 
 	afterEach(async () => {
-		relay.close();
+		relay.dispose();
 		await server.stop();
 		vi.restoreAllMocks();
 	});
@@ -237,7 +237,7 @@ describe("AbstractRelay subscription lifecycle and genuine EOSE", () => {
 	});
 
 	afterEach(async () => {
-		relay.close();
+		relay.dispose();
 		await server.stop();
 		vi.restoreAllMocks();
 	});
@@ -354,6 +354,134 @@ describe("AbstractRelay subscription lifecycle and genuine EOSE", () => {
 	});
 });
 
+describe("AbstractRelay terminal disposal", () => {
+	let server: MockNostrRelay;
+	let relay: AbstractRelay;
+
+	beforeEach(async () => {
+		server = await MockNostrRelay.start();
+		relay = newRelay(server.url);
+	});
+
+	afterEach(async () => {
+		relay.dispose();
+		await server.stop();
+		vi.restoreAllMocks();
+	});
+
+	it("permanently closes all live subscriptions and refuses future connections", async () => {
+		const firstClosed = vi.fn();
+		const secondClosed = vi.fn();
+		const first = relay.prepareSubscription([{ kinds: [1] }], {
+			id: "first", onclose: firstClosed,
+		});
+		const second = relay.prepareSubscription([{ kinds: [2] }], {
+			id: "second", onclose: secondClosed,
+		});
+
+		await relay.connect();
+		const req = await server.waitForReq(first.id, 1);
+		await server.waitForReq(second.id, 1);
+		server.send(["EOSE", first.id], req.connectionId);
+		await vi.waitFor(() => expect(first.eosed).toBe(true));
+
+		relay.dispose();
+		expect(relay.connected).toBe(false);
+		expect(relay.openSubs.size).toBe(0);
+		expect(first.closed).toBe(true);
+		expect(first.eosed).toBe(false);
+		expect(second.closed).toBe(true);
+		expect(firstClosed).toHaveBeenCalledWith("relay connection disposed");
+		expect(firstClosed).toHaveBeenCalledTimes(1);
+		expect(secondClosed).toHaveBeenCalledWith("relay connection disposed");
+		expect(secondClosed).toHaveBeenCalledTimes(1);
+		await expect(relay.connect()).rejects.toThrow("relay disposed");
+
+		relay.dispose();
+		expect(firstClosed).toHaveBeenCalledTimes(1);
+		expect(secondClosed).toHaveBeenCalledTimes(1);
+	});
+
+	it("closes subscriptions retained by an earlier temporary close()", async () => {
+		const onclose = vi.fn();
+		const sub = relay.prepareSubscription([{ kinds: [1] }], {
+			id: "retained", onclose,
+		});
+		await relay.connect();
+		await server.waitForReq(sub.id, 1);
+
+		relay.close();
+		expect(sub.closed).toBe(false);
+		expect(relay.openSubs.get(sub.id)).toBe(sub);
+
+		relay.dispose();
+		expect(sub.closed).toBe(true);
+		expect(relay.openSubs.has(sub.id)).toBe(false);
+		expect(onclose).toHaveBeenCalledWith("relay connection disposed");
+		expect(onclose).toHaveBeenCalledTimes(1);
+	});
+
+	it("rejects an in-flight connect() and send() and cannot be reopened", async () => {
+		const connecting = relay.connect();
+		const sending = relay.send(JSON.stringify(["REQ", "abandoned", { kinds: [1] }]));
+		const rejectedConnection = expect(connecting).rejects.toThrow("relay connection disposed");
+		const rejectedSend = expect(sending).rejects.toThrow();
+
+		relay.dispose();
+		await Promise.all([rejectedConnection, rejectedSend]);
+		expect(relay.connected).toBe(false);
+		await expect(relay.connect()).rejects.toThrow("relay disposed");
+	});
+
+	it("cancels a reconnect already scheduled after an unexpected disconnect", async () => {
+		relay.resubscribeBackoff = [160];
+		const onclose = vi.fn();
+		relay.onclose = onclose;
+		const sub = relay.prepareSubscription([{ kinds: [1] }], { id: "documents" });
+
+		await relay.connect();
+		await server.waitForReq(sub.id, 1);
+		server.terminate(1);
+		await vi.waitFor(() => expect(onclose).toHaveBeenCalledTimes(1));
+
+		relay.dispose();
+		expect(sub.closed).toBe(true);
+		await sleep(220);
+		expect(server.connectionCount).toBe(1);
+		expect(relay.connected).toBe(false);
+	});
+
+	it("rejects pending publish and count operations on disposal", async () => {
+		await relay.connect();
+		const publishing = relay.publish({ id: "b".repeat(64) } as NostrEvent);
+		const counting = relay.count([{ kinds: [1] }], { id: "count:pending" });
+		const publishRejected = expect(publishing).rejects.toThrow("relay connection disposed");
+		const countRejected = expect(counting).rejects.toThrow("relay connection disposed");
+
+		await server.waitForFrame(f => f.message[0] === "EVENT");
+		await server.waitForFrame(f => f.message[0] === "COUNT");
+		relay.dispose();
+		await Promise.all([publishRejected, countRejected]);
+	});
+
+	it("disposal disarms EOSE timers instead of reporting a synthetic EOSE", async () => {
+		await relay.connect();
+		const onEose = vi.fn();
+		const onclose = vi.fn();
+		const sub = relay.subscribe([{ kinds: [1] }], {
+			id: "pending-eose", eoseTimeout: 70, oneose: onEose, onclose,
+		});
+		await server.waitForReq(sub.id);
+
+		relay.dispose();
+		await sleep(110);
+		expect(onEose).not.toHaveBeenCalled();
+		expect(onclose).toHaveBeenCalledWith("relay connection disposed");
+		expect(onclose).toHaveBeenCalledTimes(1);
+		expect(sub.closed).toBe(true);
+	});
+});
+
 describe("AbstractRelay public ping()", () => {
 	let server: MockNostrRelay;
 	let relay: AbstractRelay;
@@ -366,7 +494,7 @@ describe("AbstractRelay public ping()", () => {
 	});
 
 	afterEach(async () => {
-		relay.close();
+		relay.dispose();
 		await server.stop();
 		vi.restoreAllMocks();
 	});
@@ -490,4 +618,19 @@ describe("AbstractRelay public ping()", () => {
 		await sleep(100);
 		expect(spy).toHaveBeenCalledTimes(callsAtClose);
 	});
+	it("dispose() aborts a pending browser ping and removes its temporary subscription", async () => {
+		await relay.connect();
+		relay.pingTimeout = 400;
+		const checking = relay.ping();
+		const req = await waitForPingReq(server, 1);
+		const id = requestId(req);
+		expect(relay.openSubs.has(id)).toBe(true);
+
+		relay.dispose();
+		expect(await checking).toBe(false);
+		expect(relay.connected).toBe(false);
+		expect(relay.openSubs.has(id)).toBe(false);
+		await expect(relay.connect()).rejects.toThrow("relay disposed");
+	});
+
 });

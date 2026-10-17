@@ -5,11 +5,6 @@ import { AbstractRelay } from "./AbstractRelay";
 import { RelaySession } from "./nostrHandler";
 import { MockNostrRelay } from "@tests/support/mock-nostr-relay";
 
-// Place these files next to your AbstractRelay and RelaySession__ implementation.
-// Vitest environment: node. Only the *remote relay* is mocked; both classes
-// under test are real, and all REQ/EOSE/CLOSE/CLOSED messages cross a real socket.
-//
-// npm install -D vitest ws @types/ws
 
 const keys = (name: string) => ({
 	publicKey: `pub-${name}`,
@@ -27,7 +22,7 @@ async function flush() {
 	await new Promise<void>(resolve => setTimeout(resolve, 15));
 }
 
-describe("RelaySession__ + real AbstractRelay + WebSocket mock relay", () => {
+describe("RelaySession + real AbstractRelay + WebSocket mock relay", () => {
 	let server: MockNostrRelay;
 	let relay: AbstractRelay;
 	let session: RelaySession;
@@ -52,7 +47,7 @@ describe("RelaySession__ + real AbstractRelay + WebSocket mock relay", () => {
 	});
 
 	afterEach(async () => {
-		session.close();
+		session.dispose();
 		await server.stop();
 		vi.restoreAllMocks();
 	});
@@ -706,6 +701,188 @@ describe("RelaySession__ + real AbstractRelay + WebSocket mock relay", () => {
 
 			await ready;
 			expect(rpcResolved).toHaveBeenCalledOnce();
+		});
+
+		it("ensureConnection waits for an in-progress web foreground check", async () => {
+			useBrowserTransport();
+			await session.ensureConnection();
+			const foreground = session.onWebForeground();
+			const ping = await pingReq(1);
+
+			const resolved = vi.fn();
+			const connection = session.ensureConnection().then(resolved);
+			await flush();
+			expect(resolved).not.toHaveBeenCalled();
+			expect(server.connectionCount).toBe(1);
+
+			server.send(["EOSE", ping.message[1] as string], ping.connectionId);
+			await Promise.all([foreground, connection]);
+			expect(resolved).toHaveBeenCalledOnce();
+			expect(server.connectionCount).toBe(1);
+		});
+
+		it("disposal during a web foreground ping cannot reconnect the abandoned session", async () => {
+			useBrowserTransport();
+			const first = await initialA();
+			const foreground = session.onWebForeground();
+			await pingReq(first.rpc.connectionId);
+
+			session.dispose();
+			await foreground;
+			await flush();
+
+			expect(relay.connected).toBe(false);
+			expect(relay.openSubs.size).toBe(0);
+			expect(server.connectionCount).toBe(1);
+		});
+	});
+
+	describe("direct connection readiness", () => {
+		it("connects without any subscriptions or EOSE, sharing the initial socket", async () => {
+			const first = session.ensureConnection();
+			const second = session.ensureConnection();
+			const third = session.ensureConnection();
+			await Promise.all([first, second, third]);
+			await session.ensureConnection();
+
+			expect(session.isConnected()).toBe(true);
+			expect(server.connectionCount).toBe(1);
+			expect(relay.openSubs.size).toBe(0);
+			expect(server.frames.filter(frame => frame.message[0] === "REQ")).toHaveLength(0);
+		});
+
+		it("does not wait for a reconciler blocked on RPC and beacon EOSE", async () => {
+			const readyResolved = vi.fn();
+			const ready = session.ensureReady(keys("A"), "lpk-A").then(readyResolved);
+			const rpc = await server.waitForReq("rpc:1");
+			await server.waitForReq("beacons:1", rpc.connectionId);
+
+			await session.ensureConnection();
+			expect(readyResolved).not.toHaveBeenCalled();
+			expect(server.connectionCount).toBe(1);
+
+			server.send(["EOSE", "rpc:1"], rpc.connectionId);
+			server.send(["EOSE", "beacons:1"], rpc.connectionId);
+			await ready;
+		});
+
+		it("connects directly after an unexpected disconnect while reconciliation awaits EOSE", async () => {
+			relay.resubscribeBackoff = [500];
+			const readyResolved = vi.fn();
+			const ready = session.ensureReady(keys("A"), "lpk-A").then(readyResolved);
+			const original = await server.waitForReq("rpc:1");
+			await server.waitForReq("beacons:1", original.connectionId);
+
+			server.terminate(original.connectionId);
+			await vi.waitFor(() => expect(session.isConnected()).toBe(false));
+
+			await session.ensureConnection();
+			const again = await server.waitForFrame(({ connectionId, message }) =>
+				connectionId > original.connectionId && message[0] === "REQ" && message[1] === "rpc:1"
+			);
+			await server.waitForReq("beacons:1", again.connectionId);
+
+			expect(server.connectionCount).toBe(2);
+			expect(readyResolved).not.toHaveBeenCalled();
+			server.send(["EOSE", "rpc:1"], again.connectionId);
+			server.send(["EOSE", "beacons:1"], again.connectionId);
+			await ready;
+		});
+
+		it("retains a pending connection request when native background interrupts connect", async () => {
+			const resolved = vi.fn();
+			const connection = session.ensureConnection().then(resolved);
+			session.onNativeBackground();
+			await flush();
+
+			expect(session.isConnected()).toBe(false);
+			expect(resolved).not.toHaveBeenCalled();
+
+			session.onNativeForeground();
+			await connection;
+			expect(resolved).toHaveBeenCalledOnce();
+			expect(session.isConnected()).toBe(true);
+		});
+
+		it("rejects every connection waiter when the direct connection attempt fails", async () => {
+			const connect = vi.spyOn(relay, "connect").mockRejectedValue(new Error("connect failed"));
+			const first = session.ensureConnection();
+			const second = session.ensureConnection();
+			await Promise.all([
+				expect(first).rejects.toThrow("connect failed"),
+				expect(second).rejects.toThrow("connect failed"),
+			]);
+			expect(server.connectionCount).toBe(0);
+
+			connect.mockRestore();
+			await session.ensureConnection();
+			expect(session.isConnected()).toBe(true);
+		});
+	});
+
+	describe("terminal disposal", () => {
+		it("closes confirmed RPC, beacon and ordinary subscriptions and cannot resume", async () => {
+			const first = await initialA();
+			const onDocumentClose = vi.fn();
+			const documents = session.subscribe([{ kinds: [1] }], {
+				id: "documents", onclose: onDocumentClose,
+			});
+			await server.waitForReq("documents", first.rpc.connectionId);
+			const rpc = relay.openSubs.get("rpc:1")!;
+			const beacons = relay.openSubs.get("beacons:1")!;
+
+			session.dispose();
+			session.dispose();
+			expect([rpc, beacons, documents].every(sub => sub.closed)).toBe(true);
+			expect(onDocumentClose).toHaveBeenCalledOnce();
+			expect(relay.openSubs.size).toBe(0);
+			expect(session.isConnected()).toBe(false);
+
+			await Promise.all([
+				expect(session.ensureConnection()).rejects.toThrow("disposed"),
+				expect(session.ensureReady(keys("B"), "lpk-B")).rejects.toThrow("disposed"),
+			]);
+			session.onNativeForeground();
+			await flush();
+			expect(server.connectionCount).toBe(1);
+		});
+
+		it("rejects connection and RPC readiness queued while backgrounded", async () => {
+			session.onNativeBackground();
+			const connection = session.ensureConnection();
+			const ready = session.ensureReady(keys("A"), "lpk-A");
+			const rejections = Promise.all([
+				expect(connection).rejects.toThrow("disposed"),
+				expect(ready).rejects.toThrow("disposed"),
+			]);
+
+			await flush();
+			expect(server.connectionCount).toBe(0);
+			session.dispose();
+			await rejections;
+
+			session.onNativeForeground();
+			await flush();
+			expect(server.connectionCount).toBe(0);
+		});
+
+		it("terminates an A -> A+B handover and rejects its pending readiness caller", async () => {
+			const first = await initialA();
+			const confirmed = relay.openSubs.get("rpc:1")!;
+			const readyB = session.ensureReady(keys("B"), "lpk-B");
+			const rejection = expect(readyB).rejects.toThrow(/disposed/);
+			const staged = await server.waitForReq("rpc:2", first.rpc.connectionId);
+			await server.waitForReq("beacons:2", staged.connectionId);
+
+			session.dispose();
+			await rejection;
+			expect(confirmed.closed).toBe(true);
+			expect(relay.openSubs.size).toBe(0);
+			expect(session.isConnected()).toBe(false);
+
+			session.onNativeForeground();
+			await flush();
+			expect(server.connectionCount).toBe(1);
 		});
 	});
 
