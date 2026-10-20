@@ -523,23 +523,29 @@ export class AbstractRelay {
 	}
 
 	public async publish(event: Event): Promise<string> {
+		if (this.openEventPublishes.get(event.id)) {
+			throw new Error(`event ${event.id} is already being published`);
+		}
+
+		let entry!: EventPublishResolver
 		const ret = new Promise<string>((resolve, reject) => {
 			const timeout = setTimeout(() => {
-				const ep = this.openEventPublishes.get(event.id) as EventPublishResolver
-				if (ep) {
-					ep.reject(new Error('publish timed out'))
-					this.openEventPublishes.delete(event.id)
-				}
+				if (this.openEventPublishes.get(event.id) !== entry) return;
+
+
+				this.openEventPublishes.delete(event.id)
+				reject(new Error('publish timed out'))
+
 			}, this.publishTimeout)
-			this.openEventPublishes.set(event.id, { resolve, reject, timeout })
+			entry = { resolve, reject, timeout }
+			this.openEventPublishes.set(event.id, entry)
 		})
 		void this.send('["EVENT",' + JSON.stringify(event) + ']').catch(err => {
-			const ep = this.openEventPublishes.get(event.id)
-			if (ep) {
-				clearTimeout(ep.timeout)
-				this.openEventPublishes.delete(event.id)
-				ep.reject(err)
-			}
+			if (this.openEventPublishes.get(event.id) !== entry) return;
+
+			clearTimeout(entry.timeout)
+			this.openEventPublishes.delete(event.id)
+			entry.reject(err)
 		})
 		return ret
 	}
