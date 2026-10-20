@@ -18,7 +18,7 @@ export type NostrEvent = {
 
 type ShardsInfo = { total: number; parts: (string | null)[] };
 
-type NostrCallbackSingle = {
+export type NostrCallbackSingle = {
 	startedAtMillis: number,
 	timeout?: ReturnType<typeof setTimeout>
 	phase: "ensuring" | "sending" | "awaiting-response" | "idle",
