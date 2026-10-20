@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PublishTimeout } from "./AbstractRelay";
 import { describeSendFailure, eventAlreadyPublished } from "./nostrSendError";
 
 describe("describeSendFailure", () => {
@@ -14,14 +15,20 @@ describe("describeSendFailure", () => {
 			.toBe("All relays of this node are down");
 	});
 });
-
 describe("eventAlreadyPublished", () => {
-	it("treats a missing publish ACK as already sent", () => {
-		expect(eventAlreadyPublished("publish timed out")).toBe(true);
+	it("treats a PublishTimeout anywhere in the aggregate as already sent", () => {
+		expect(eventAlreadyPublished(new AggregateError([
+			new Error("All relays of this node are down"),
+			new PublishTimeout(),
+		]))).toBe(true);
 	});
 
-	it("does not treat a closed socket as published", () => {
-		expect(eventAlreadyPublished("All relays of this node are down")).toBe(false);
-		expect(eventAlreadyPublished("send failed")).toBe(false);
+	it("does not treat other failures as published", () => {
+		expect(eventAlreadyPublished(new Error("All relays of this node are down"))).toBe(false);
+		expect(eventAlreadyPublished(new AggregateError([
+			"duplicate url",
+			new Error("send failed"),
+		]))).toBe(false);
 	});
 });
+
