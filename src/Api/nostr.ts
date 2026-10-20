@@ -324,6 +324,13 @@ export class NostrClient {
 
 		} catch (err) {
 			if (this.clientCbs.get(reqId) !== cb) return;
+
+			if (cb.paused) { // should not happen, but javascript is weird
+				cb.phase = "idle";
+				return;
+			}
+
+
 			this.failClientCb(reqId, err instanceof Error ? err.message : "relays failed to sync");
 			return;
 		}
