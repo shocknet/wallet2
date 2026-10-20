@@ -18,12 +18,14 @@ export type NostrEvent = {
 
 type ShardsInfo = { total: number; parts: (string | null)[] };
 
-type NostrCallbackSingle = {
+export type NostrCallbackSingle = {
 	startedAtMillis: number,
-	timeout: ReturnType<typeof setTimeout>
+	timeout?: ReturnType<typeof setTimeout>
+	phase: "ensuring" | "sending" | "awaiting-response" | "idle",
 	type: "single"
 	message: NostrRequest,
 	paused?: true,
+	safe: boolean
 	to: string,
 	f: (res: any) => void
 }
@@ -285,6 +287,7 @@ export class NostrClient {
 	private failClientCb(reqId: string, reason: string) {
 		const cb = this.clientCbs.get(reqId);
 		if (!cb) return;
+		if (cb.type === "single" && cb.paused) return;
 		if (cb.type === "single") {
 			clearTimeout(cb.timeout);
 		}
@@ -295,16 +298,68 @@ export class NostrClient {
 		}
 	}
 
-	private abortSendUnlessPublished(reqId: string, err: unknown) {
-		const reason = describeSendFailure(err);
-		if (eventAlreadyPublished(reason)) return;
-		this.failClientCb(reqId, reason);
+
+
+	private startSingleTimeout(reqId: string, cb: NostrCallbackSingle) {
+		clearTimeout(cb.timeout);
+
+		if (!cb.safe) return;
+		cb.timeout = setTimeout(() => this.failClientCb(reqId, "Request timed out"), RPC_SINGLE_TIMEOUT_MS);
 	}
 
-	private publishRequest(to: string, message: NostrRequest, reqId: string) {
-		this.ensureReadyForSend()
-			.then(() => this.pool.send(this.relays, to, JSON.stringify(message), this.settings))
-			.catch((err) => this.abortSendUnlessPublished(reqId, err));
+	private async publishRequest(to: string, message: NostrRequest, reqId: string) {
+		const cb = this.clientCbs.get(reqId);
+		if (!cb || cb.type !== "single") return;
+
+		cb.phase = "ensuring";
+		try {
+			await this.ensureReadyForSend();
+			// readiness may settle after the client was reset
+			if (this.clientCbs.get(reqId) !== cb) return;
+			// background might have occurred while we were waiting for readiness
+			if (cb.paused) {
+				cb.phase = "idle";
+				return;
+			}
+
+		} catch (err) {
+			if (this.clientCbs.get(reqId) !== cb) return;
+
+			if (cb.paused) { // should not happen, but javascript is weird
+				cb.phase = "idle";
+				return;
+			}
+
+
+			this.failClientCb(reqId, err instanceof Error ? err.message : "relays failed to sync");
+			return;
+		}
+
+		cb.phase = "sending";
+		this.startSingleTimeout(reqId, cb);
+		try {
+			await this.pool.send(this.relays, to, JSON.stringify(message), this.settings);
+			if (this.clientCbs.get(reqId) !== cb) return;
+			cb.phase = "awaiting-response";
+		} catch (err) {
+			if (this.clientCbs.get(reqId) !== cb) return;
+			if (cb.paused) { // it failed because we paused
+				cb.phase = "idle";
+				return;
+			}
+
+			if (eventAlreadyPublished(err)) {
+				cb.phase = "awaiting-response";
+				return;
+			}
+
+			this.failClientCb(reqId, describeSendFailure(err));
+		}
+
+
+
+
+
 	}
 
 	clientSend = async (to: string, message: NostrRequest): Promise<any> => {
@@ -315,20 +370,16 @@ export class NostrClient {
 
 
 		const ret = new Promise(resolve => {
-			const timeout = setTimeout(() => {
-				if (message.rpcName === "PayInvoice" || message.rpcName === "PayAddress") return;
-				this.failClientCb(reqId, "Request timed out");
-			}, RPC_SINGLE_TIMEOUT_MS);
-
 			const nostrCallback: NostrCallbackSingle = {
 				type: "single",
 				startedAtMillis: Date.now(),
+				phase: "idle",
 				message,
+				safe: !RETRY_UNSAFE.has(message.rpcName || ""),
 				to,
 				f: (response) => {
 					resolve(response);
-				},
-				timeout
+				}
 			};
 
 			this.clientCbs.set(reqId, nostrCallback);
@@ -378,10 +429,8 @@ export class NostrClient {
 		for (const [_, cb] of entries) {
 			if (cb.type !== "single") continue;
 
-			const rpcName = cb.message.rpcName || "";
-			const safe = !RETRY_UNSAFE.has(rpcName);
 
-			if (safe) {
+			if (cb.safe) {
 				cb.paused = true;
 				clearTimeout(cb.timeout);
 			}
@@ -392,13 +441,18 @@ export class NostrClient {
 		for (const [id, cb] of this.clientCbs.entries()) {
 			if (cb.type !== "single" || !cb.paused) continue;
 
-			cb.startedAtMillis = Date.now();
 			cb.paused = undefined;
 
-			const timeout = setTimeout(() => {
-				this.failClientCb(id, "Request timed out");
-			}, RPC_SINGLE_TIMEOUT_MS);
-			cb.timeout = timeout;
+			if (cb.phase === "ensuring") { // reconciler will resume naturally
+				continue;
+			}
+
+			if (cb.phase === "sending") { // one of the relays was waiting on ensureConnection()
+				this.startSingleTimeout(id, cb);
+				continue;
+			}
+
+
 			this.publishRequest(cb.to, cb.message, id);
 		}
 	}

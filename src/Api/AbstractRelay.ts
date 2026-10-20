@@ -534,7 +534,7 @@ export class AbstractRelay {
 
 
 				this.openEventPublishes.delete(event.id)
-				reject(new Error('publish timed out'))
+				reject(new PublishTimeout())
 
 			}, this.publishTimeout)
 			entry = { resolve, reject, timeout }

@@ -1,3 +1,5 @@
+import { PublishTimeout } from "./AbstractRelay";
+
 export const describeSendFailure = (err: unknown): string => {
 	if (err instanceof AggregateError) {
 		for (const inner of err.errors) {
@@ -10,7 +12,10 @@ export const describeSendFailure = (err: unknown): string => {
 	if (err instanceof Error && err.message.trim()) return err.message;
 	return "send failed";
 };
+/** EVENT was written; a missing OK is not a failed RPC send. */
+export const eventAlreadyPublished = (err: unknown): boolean => {
+	if (err instanceof PublishTimeout) return true;
+	if (err instanceof AggregateError) return err.errors.some(eventAlreadyPublished);
+	return false;
+};
 
-/** EVENT was written; missing OK is not a failed RPC send. */
-export const eventAlreadyPublished = (reason: string): boolean =>
-	reason.toLowerCase().includes("publish timed out");
