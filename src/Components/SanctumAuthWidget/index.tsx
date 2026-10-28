@@ -2,8 +2,9 @@ import { useEffect, useId } from "react";
 import { Browser } from "@capacitor/browser";
 import { Device } from "@capacitor/device";
 import { createSanctumDK, type TokensData } from "sanctum-sdk";
-import { SANCTUM_URL } from "@/constants";
+import { SANCTUM_URL, WALLET_URL } from "@/constants";
 import { useEffectiveTheme } from "@/Hooks/useEffectiveTheme";
+import { Capacitor } from "@capacitor/core";
 
 type SanctumAuthWidgetProps = {
 	onTokensUpdated: (tokensData: TokensData) => void | Promise<void>;
@@ -21,6 +22,7 @@ export function SanctumAuthWidget({ onTokensUpdated, className }: SanctumAuthWid
 
 		const sdk = createSanctumDK({
 			url: SANCTUM_URL,
+			returnTo: Capacitor.isNativePlatform() ? WALLET_URL : undefined,
 			tokenDataAdapter: {
 				getTokenData: () => tokensDataRef,
 				setTokenData: (tokens) => {

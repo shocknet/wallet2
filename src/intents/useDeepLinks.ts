@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { App, URLOpenListenerEvent } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { useHistory } from "react-router-dom";
 import { useToast } from "@/lib/contexts/useToast";
 import { useAppDispatch } from "@/State/store/hooks";
@@ -44,6 +45,8 @@ export function useDeepLinks() {
 		const listener = App.addListener(
 			"appUrlOpen",
 			(event: URLOpenListenerEvent) => {
+				// Custom Tabs and SFSafariViewController stay open until dismissed.
+				void Browser.close().catch(() => undefined);
 				void ingest(event.url, resolveAppUrlOpen);
 			},
 		);
