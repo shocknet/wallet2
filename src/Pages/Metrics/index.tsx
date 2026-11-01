@@ -1,10 +1,10 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { IonPage, IonRouterOutlet, IonSplitPane } from "@ionic/react";
 import { Redirect, Route, RouteComponentProps } from "react-router-dom";
-import { useAppSelector } from "@/State/store/hooks";
-import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
-import { selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
-import { activeAdminSourceId, SelectedAdminSourceProvider } from "./DashboardSourceContext";
+import { useAppDispatch } from "@/State/store/hooks";
+import { runtimeActions } from "@/State/runtime/slice";
+import { rememberDashAdminSource } from "@/State/runtime/dashAdminSourceMemory";
+import { SelectedAdminSourceProvider, useDashAdminSelection } from "./DashboardSourceContext";
 import MetricsSelectSource from "./MetricsSelectSource";
 import Dashboard from "./metricsMain";
 import Earnings from "./earnings";
@@ -20,9 +20,16 @@ import { DashRailMenu } from "@/Layout2/Metrics/DashRailMenu";
 import Backups from "./Backups";
 
 const Metrics = ({ match }: RouteComponentProps) => {
-	const adminIds = useAppSelector(selectAdminSourceIds);
-	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
-	const activeId = activeAdminSourceId(adminIds, selectedId);
+	const dispatch = useAppDispatch();
+	const { adminIds, selectedId, pubkey, activeId } = useDashAdminSelection();
+
+	useEffect(() => {
+		if (!activeId) return;
+		if (pubkey) rememberDashAdminSource(pubkey, activeId);
+		if (selectedId !== activeId) {
+			dispatch(runtimeActions.setSelectedMetricsAdminSourceId({ sourceId: activeId }));
+		}
+	}, [activeId, pubkey, selectedId, dispatch]);
 
 	if (adminIds.length === 0) {
 		return <Redirect to="/home" />;

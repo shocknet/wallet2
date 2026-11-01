@@ -199,15 +199,14 @@ ion-toolbar.pub-dash-mobile-toolbar>div {
 	width: 100%;
 }
 
-ion-toolbar.pub-dash-mobile-nav {
-	--background: var(--dash-nav-bg);
-	--min-height: 0;
-	--padding-top: 0;
-	--padding-bottom: 8px;
-	--padding-start: 8px;
-	--padding-end: 8px;
-	--border-width: 0 0 1px 0;
-	--border-color: var(--dash-border);
+ion-menu-button.pub-dash-menu-btn {
+	--color: var(--dash-text);
+	color: var(--dash-text);
+	width: 36px;
+	height: 36px;
+	min-height: 36px;
+	font-size: 22px;
+	flex: 0 0 auto;
 }
 
 .pub-dash-heading {
@@ -477,6 +476,8 @@ ion-toolbar.pub-dash-mobile-nav {
 /* ── Rail ───────────────────────────────────────────────────────────── */
 
 ion-menu.pub-dash-rail-menu {
+	--background: var(--dash-nav-bg);
+	--width: var(--dash-rail);
 	border-inline-end: 1px solid var(--dash-border);
 }
 
@@ -499,10 +500,52 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 }
 
 .pub-dash-rail-brand {
+	min-width: 0;
 	padding: 28px 20px 20px;
 	display: flex;
-	flex-direction: column;
-	gap: 16px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.pub-dash-rail-brand .pub-dash-brand {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.pub-dash-rail-brand .pub-dash-brand img.pub-dash-brand-word {
+	width: auto;
+	max-width: 100%;
+	min-width: 0;
+	height: auto;
+	max-height: 1.625rem;
+	object-fit: contain;
+	object-position: left center;
+}
+
+.pub-dash-drawer-close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--dash-muted);
+	cursor: pointer;
+}
+
+.pub-dash-drawer-close ion-icon {
+	font-size: 22px;
+}
+
+.pub-dash-drawer-close:hover {
+	color: var(--dash-text);
 }
 
 .pub-dash-rail-links {
@@ -511,6 +554,8 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	padding: 0 16px;
 	gap: 2px;
 	flex: 1;
+	min-height: 0;
+	overflow: auto;
 }
 
 .pub-dash-rail-foot {
@@ -535,6 +580,11 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	width: 100%;
 }
 
+.pub-dash-rail-brand ion-menu-toggle {
+	width: auto;
+	flex: 0 0 auto;
+}
+
 .pub-dash-rail .pub-dash-link {
 	padding: 11px 12px;
 	width: 100%;
@@ -550,6 +600,7 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
+	width: 100%;
 	height: 36px;
 	padding: 0 14px;
 	border-radius: var(--dash-radius-sm);
@@ -575,8 +626,11 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 
 @media (min-width: 800px) {
 
-	ion-toolbar.pub-dash-mobile-toolbar,
-	ion-toolbar.pub-dash-mobile-nav {
+	ion-toolbar.pub-dash-mobile-toolbar {
+		display: none;
+	}
+
+	.pub-dash-rail-brand ion-menu-toggle {
 		display: none;
 	}
 
@@ -1304,6 +1358,27 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	word-break: break-word;
 	text-align: right;
 	min-width: 0;
+}
+
+.dash-action-line {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	margin-top: 4px;
+	padding: 12px 2px 2px;
+	border: none;
+	border-top: 1px solid var(--dash-border);
+	background: none;
+	color: var(--dash-danger);
+	font-family: var(--dash-font-body);
+	font-size: 13px;
+	font-weight: 500;
+	text-align: left;
+	cursor: pointer;
+}
+
+.dash-action-line:hover {
+	color: color-mix(in srgb, var(--dash-danger) 70%, var(--dash-text));
 }
 
 .dash-check {

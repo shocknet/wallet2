@@ -247,8 +247,8 @@ export const EditChannel = ({
 			onClose={deselect}
 			footer={
 				<>
-					<button type="button" className="dash-btn dash-btn-ghost" onClick={() => setModal("close")}>
-						Close channel
+					<button type="button" className="dash-btn dash-btn-ghost" onClick={deselect}>
+						Cancel
 					</button>
 					<button type="button" className="dash-btn" onClick={() => setModal("edit")} disabled={!selectedChannel.policy}>
 						{policyLoading ? "Loading fees…" : "Edit policy"}
@@ -275,6 +275,9 @@ export const EditChannel = ({
 					{policyLoading ? "Loading fees…" : "No policy on this channel."}
 				</p>
 			)}
+			<button type="button" className="dash-action-line" onClick={() => setModal("close")}>
+				Close channel
+			</button>
 		</DashDialog>
 	);
 };

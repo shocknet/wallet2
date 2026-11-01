@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 type DashDialogProps = {
@@ -9,6 +9,8 @@ type DashDialogProps = {
 };
 
 export function DashDialog({ title, onClose, children, footer }: DashDialogProps) {
+	const dismiss = useBackdropDismiss(onClose);
+
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") onClose();
@@ -18,13 +20,12 @@ export function DashDialog({ title, onClose, children, footer }: DashDialogProps
 	}, [onClose]);
 
 	return createPortal(
-		<div className="pub-dash dash-dialog-backdrop" onClick={onClose}>
+		<div className="pub-dash dash-dialog-backdrop" {...dismiss}>
 			<div
 				className="dash-dialog"
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby="dash-dialog-title"
-				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="dash-dialog-head">
 					<h2 id="dash-dialog-title">{title}</h2>
@@ -38,4 +39,24 @@ export function DashDialog({ title, onClose, children, footer }: DashDialogProps
 		</div>,
 		document.body
 	);
+}
+
+function useBackdropDismiss(onClose: () => void) {
+	const pressedOnBackdrop = useRef(false);
+
+	const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+		pressedOnBackdrop.current = event.target === event.currentTarget;
+	};
+
+	const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+		const shouldClose = pressedOnBackdrop.current && event.target === event.currentTarget;
+		pressedOnBackdrop.current = false;
+		if (shouldClose) onClose();
+	};
+
+	const onPointerCancel = () => {
+		pressedOnBackdrop.current = false;
+	};
+
+	return { onPointerDown, onPointerUp, onPointerCancel };
 }

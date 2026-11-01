@@ -6,7 +6,12 @@ import {
 	type SourceView,
 } from "@/State/scoped/backups/sources/selectors";
 import { useLiveSourceView } from "@/Hooks/useSourceView";
-import { runtimeActions } from "@/State/runtime/slice";
+import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import {
+	activeAdminSourceId,
+	readRememberedDashAdminSource,
+} from "@/State/runtime/dashAdminSourceMemory";
+import { selectActiveIdentityRuntime } from "@/State/identitiesRegistry/slice";
 import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
 import { BeaconStatusLine } from "@/Components/BeaconStatusLine";
 
@@ -26,13 +31,13 @@ function useDashboardSourceCtx(): DashboardSourceCtx {
 	return ctx;
 }
 
-export function activeAdminSourceId(
-	adminIds: string[],
-	selectedId: string | null,
-): string | null {
-	if (selectedId && adminIds.includes(selectedId)) return selectedId;
-	if (adminIds.length === 1) return adminIds[0];
-	return null;
+export function useDashAdminSelection() {
+	const adminIds = useAppSelector(selectAdminSourceIds);
+	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
+	const pubkey = useAppSelector((s) => selectActiveIdentityRuntime(s)?.pubkey ?? null);
+	const rememberedId = pubkey ? readRememberedDashAdminSource(pubkey) : null;
+	const activeId = activeAdminSourceId(adminIds, selectedId, rememberedId);
+	return { adminIds, selectedId, pubkey, activeId };
 }
 
 export function useDashboardSource(): SourceView {
