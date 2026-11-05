@@ -35,13 +35,13 @@ export function DashBoardPageChrome({
 	const router = useIonRouter();
 	return (
 		<IonPage data-product="lnpub">
-			<IonHeader className="ion-no-border">
+			<IonHeader className="ion-no-border pub-dash-page-header">
 				<DashMobileToolbar title={title} />
 				{headerExtra && (
 					<IonToolbar className="pub-dash-extra" mode="md">{headerExtra}</IonToolbar>
 				)}
 			</IonHeader>
-			<IonContent className="ion-content-only">
+			<IonContent className="ion-content-no-footer">
 				<div className="pub-dash-page-content">
 					<div className="pub-dash-heading">
 						{backHref && (

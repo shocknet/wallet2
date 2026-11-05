@@ -496,6 +496,10 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 	min-width: 0;
 	min-height: 0;
 	height: 100%;
+	box-sizing: border-box;
+	padding-top: var(--ion-safe-area-top, env(safe-area-inset-top, 0px));
+	padding-left: var(--ion-safe-area-left, env(safe-area-inset-left, 0px));
+	padding-right: var(--ion-safe-area-right, env(safe-area-inset-right, 0px));
 	background: var(--dash-nav-bg);
 }
 
@@ -561,6 +565,7 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 .pub-dash-rail-foot {
 	margin-top: auto;
 	padding: 16px;
+	padding-bottom: calc(16px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom, 0px)));
 	border-top: 1px solid var(--dash-border);
 	display: flex;
 	flex-direction: column;
@@ -628,6 +633,12 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 
 	ion-toolbar.pub-dash-mobile-toolbar {
 		display: none;
+	}
+
+	/* The hidden toolbar no longer holds the status-bar gap, so the header does. */
+	ion-header.pub-dash-page-header {
+		padding-top: var(--ion-safe-area-top, env(safe-area-inset-top, 0px));
+		background: var(--dash-bg);
 	}
 
 	.pub-dash-rail-brand ion-menu-toggle {

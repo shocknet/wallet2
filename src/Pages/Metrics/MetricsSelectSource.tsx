@@ -30,7 +30,7 @@ export default function MetricsSelectSource() {
 
 	return (
 		<IonPage data-product="lnpub">
-			<IonContent className="ion-content-no-footer">
+			<IonContent className="ion-content-only">
 				<div className="pub-dash-page">
 					<div className="pub-dash-heading">
 						<h1>Select source</h1>

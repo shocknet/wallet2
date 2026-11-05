@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
 			photoLibraryUsageDescription: "To scan QR codes using the camera"
 		},
 		SystemBars: {
-			insetsHandling: "disable",
+			insetsHandling: "css",
 			animation: "NONE"
 		},
 		StatusBar: {
