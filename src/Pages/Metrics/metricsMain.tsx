@@ -264,9 +264,10 @@ const OverviewLndKpis = memo(function OverviewLndKpis({
 	if (!view) return null;
 
 	const c = view.channelsInfo;
+	const openChannels = () => router.push("/dashboard/channels", "forward");
 	return (
 		<>
-			<button type="button" className="dash-card is-clickable" onClick={() => router.push("/dashboard/channels", "forward")}>
+			<button type="button" className="dash-card is-clickable" onClick={openChannels}>
 				<p className="dash-kpi-label">Channels</p>
 				<p className="dash-kpi-value">
 					{c.onlineChannels + c.pendingChannels + c.offlineChannels + c.closingChannels}
@@ -278,7 +279,7 @@ const OverviewLndKpis = memo(function OverviewLndKpis({
 					<span><i className="dash-dot bad" />{c.closingChannels} closing</span>
 				</div>
 			</button>
-			<div className="dash-card">
+			<button type="button" className="dash-card is-clickable" onClick={openChannels}>
 				<p className="dash-kpi-label">Top channels</p>
 				<div className="dash-kpi-meta">
 					<span className="dash-kpi-pair-k">In</span>
@@ -290,11 +291,11 @@ const OverviewLndKpis = memo(function OverviewLndKpis({
 						{c.bestRemoteChan || "—"}
 					</span>
 				</div>
-			</div>
+			</button>
 			<button
 				type="button"
 				className="dash-card is-clickable"
-				onClick={() => router.push("/dashboard/routing?period=" + period + "&offset=" + offset)}
+				onClick={() => router.push("/dashboard/routing?period=" + period + "&offset=" + offset, "forward")}
 			>
 				<p className="dash-kpi-label">Routing</p>
 				<p className="dash-kpi-value">{formatFr(c.forwardedFees)} sats</p>

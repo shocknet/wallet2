@@ -1,19 +1,19 @@
 import type { ReactNode } from "react";
 import { useCallback } from "react";
+import { menuController } from "@ionic/core/components";
 import {
 	IonContent,
 	IonHeader,
 	IonIcon,
+	IonMenuButton,
 	IonPage,
 	IonToolbar,
 	useIonRouter,
 } from "@ionic/react";
-import { useLocation } from "react-router-dom";
 import { arrowBackOutline, homeOutline } from "ionicons/icons";
-import { DASH_NAV, isDashNavActive } from "./dashNav";
+import { DASH_MENU_ID } from "./dashNav";
 import {
 	LIGHTNING_PUB_MARK_HEIGHT,
-	LIGHTNING_PUB_WORDMARK_HEIGHT,
 	useLightningPubLogo,
 } from "@/Assets/Images/lightning-pub";
 import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
@@ -37,7 +37,6 @@ export function DashBoardPageChrome({
 		<IonPage data-product="lnpub">
 			<IonHeader className="ion-no-border">
 				<DashMobileToolbar title={title} />
-				<DashNavLinks />
 				{headerExtra && (
 					<IonToolbar className="pub-dash-extra" mode="md">{headerExtra}</IonToolbar>
 				)}
@@ -109,7 +108,6 @@ export function DashBrand({ showWordmark = false }: { showWordmark?: boolean }) 
 					src={wordmark}
 					alt="Lightning.pub"
 					className="pub-dash-brand-word"
-					style={{ height: LIGHTNING_PUB_WORDMARK_HEIGHT.nav, width: "auto" }}
 				/>
 			) : (
 				<img
@@ -122,43 +120,22 @@ export function DashBrand({ showWordmark = false }: { showWordmark?: boolean }) 
 	);
 }
 
-export function DashNavLinks() {
-	const router = useIonRouter();
-	const { pathname } = useLocation();
-
-	return (
-		<IonToolbar className="pub-dash-mobile-nav">
-			<nav className="pub-dash-links" aria-label="Dashboard">
-				{DASH_NAV.map((item) => {
-					const active = isDashNavActive(item.href, pathname, item.exact);
-					return (
-						<button
-							key={item.href}
-							type="button"
-							className={`pub-dash-link${active ? " is-active" : ""}`}
-							onClick={() => router.push(item.href, "root")}
-						>
-							<IonIcon icon={item.icon} />
-							{item.label}
-						</button>
-					);
-				})}
-			</nav>
-		</IonToolbar>
-	);
-}
-
 export function DashSourceChip() {
 	const { open } = useDashboardSourceSwitch();
 	const source = useDashboardSource()
 	const name = sourceNodeDisplayName(source);
 	const warn = source.beaconStale === "stale" || source.beaconStale === "warmingUp";
 
+	const openPicker = async () => {
+		await menuController.close(DASH_MENU_ID).catch(() => false);
+		open();
+	};
+
 	return (
 		<button
 			type="button"
 			className={`pub-dash-source-chip${warn ? " is-warn" : ""}`}
-			onClick={open}
+			onClick={() => { void openPicker(); }}
 			title={name}
 			aria-haspopup="dialog"
 			aria-label="Switch admin source"
@@ -187,6 +164,12 @@ function DashMobileToolbar({ title }: { title: string }) {
 	return (
 		<IonToolbar className="pub-dash-mobile-toolbar">
 			<div>
+				<IonMenuButton
+					menu={DASH_MENU_ID}
+					autoHide
+					className="pub-dash-menu-btn"
+					aria-label="Open menu"
+				/>
 				<DashBrand />
 				<h1 className="pub-dash-top-title">{title}</h1>
 				<div className="pub-dash-source">

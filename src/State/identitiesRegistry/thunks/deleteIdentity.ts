@@ -1,6 +1,7 @@
 import dLogger from "@/Api/helpers/debugLog";
 import { persistor, type AppThunk } from "@/State/store/store";
 import { deleteIdentityPersistedData } from "../helpers/deleteIdentityStorage";
+import { forgetDashAdminSource } from "@/State/runtime/dashAdminSourceMemory";
 import { identitiesRegistryActions, selectActiveIdentity } from "../slice";
 
 export const LAST_ACTIVE_IDENTITY_PUBKEY_KEY = "__shockwallet_lai_";
@@ -30,6 +31,7 @@ export const deleteIdentity = (pubkey: string): AppThunk<Promise<void>> => {
 		if (localStorage.getItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY) === pubkey) {
 			localStorage.removeItem(LAST_ACTIVE_IDENTITY_PUBKEY_KEY);
 		}
+		forgetDashAdminSource(pubkey);
 
 		await persistor.flush().catch(() => { });
 		log.info("completed");

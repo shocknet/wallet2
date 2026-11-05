@@ -1,4 +1,5 @@
 import { IonContent, IonIcon, IonMenu, IonMenuToggle, useIonRouter } from "@ionic/react";
+import { closeOutline } from "ionicons/icons";
 import { useLocation } from "react-router-dom";
 import { DashBrand, DashSourceChip } from "./DashBoardPageChrome";
 import { DASH_MENU_ID, DASH_NAV, isDashNavActive } from "./dashNav";
@@ -8,25 +9,37 @@ export function DashRailMenu() {
 	const router = useIonRouter();
 	const walletAvatar = useWalletAvatar();
 	return (
-		<IonMenu menuId={DASH_MENU_ID} contentId="dash-main" className="pub-dash-rail-menu">
+		<IonMenu
+			type="overlay"
+			menuId={DASH_MENU_ID}
+			contentId="dash-main"
+			className="pub-dash-rail-menu"
+		>
 			<IonContent>
 				<div className="pub-dash-rail">
 					<div className="pub-dash-rail-brand">
 						<DashBrand showWordmark />
+						<IonMenuToggle menu={DASH_MENU_ID} autoHide>
+							<button type="button" className="pub-dash-drawer-close" aria-label="Close menu">
+								<IonIcon icon={closeOutline} />
+							</button>
+						</IonMenuToggle>
 					</div>
 					<div className="pub-dash-rail-links">
 						<DashRailNavLinks />
 					</div>
 					<div className="pub-dash-rail-foot">
 						<DashSourceChip />
-						<button
-							type="button"
-							className="pub-dash-wallet-btn"
-							onClick={() => router.push("/home", "root")}
-						>
-							<img src={walletAvatar} alt="" aria-hidden />
-							Back to ShockWallet
-						</button>
+						<IonMenuToggle menu={DASH_MENU_ID} autoHide={false}>
+							<button
+								type="button"
+								className="pub-dash-wallet-btn"
+								onClick={() => router.push("/home", "root")}
+							>
+								<img src={walletAvatar} alt="" aria-hidden />
+								Back to ShockWallet
+							</button>
+						</IonMenuToggle>
 					</div>
 				</div>
 			</IonContent>

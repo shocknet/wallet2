@@ -2,12 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 import { PushRegistrationResult } from "@/notifications/push/types";
 import { DeviceAuthCapability, type DeviceAuthStatus } from "@/lib/deviceAuth/types";
+import type { DashAdminSessionSelection } from "./dashAdminSourceMemory";
 
 interface RuntimeState {
 	isActive: boolean;
 	pushStatus: PushRegistrationResult | null;
 	deviceAuth: DeviceAuthStatus;
-	selectedMetricsAdminSourceId: string | null;
+	metricsAdminSession: DashAdminSessionSelection | null;
 }
 
 const initialDeviceAuthStatus: DeviceAuthStatus = {
@@ -20,7 +21,7 @@ const initialState: RuntimeState = {
 	pushStatus: null,
 
 
-	selectedMetricsAdminSourceId: null,
+	metricsAdminSession: null,
 	deviceAuth: initialDeviceAuthStatus
 }
 
@@ -47,11 +48,11 @@ const runtimeSlice = createSlice({
 			state.deviceAuth = action.payload.deviceAuth;
 		},
 		/* metrics selection */
-		setSelectedMetricsAdminSourceId: (state, action: PayloadAction<{ sourceId: string }>) => {
-			state.selectedMetricsAdminSourceId = action.payload.sourceId;
+		setSelectedMetricsAdminSourceId: (state, action: PayloadAction<DashAdminSessionSelection>) => {
+			state.metricsAdminSession = action.payload;
 		},
 		clearSelectedMetricsAdminSourceId: (state) => {
-			state.selectedMetricsAdminSourceId = null;
+			state.metricsAdminSession = null;
 		},
 	},
 });
@@ -60,8 +61,8 @@ export const selectDeviceAuthStatus = (s: RootState) => s.runtime.deviceAuth;
 export const selectPushStatus = (s: RootState) => s.runtime.pushStatus;
 export const selectIsActive = (s: RootState) => s.runtime.isActive;
 
-export const selectSelectedMetricsAdminSourceId = (s: RootState) =>
-	s.runtime.selectedMetricsAdminSourceId;
+export const selectMetricsAdminSession = (s: RootState) =>
+	s.runtime.metricsAdminSession;
 
 export const runTimeReducer = runtimeSlice.reducer;
 
