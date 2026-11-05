@@ -495,6 +495,7 @@ const OverviewAppCards = memo(function OverviewAppCards({
 	period: Period;
 	offset: number;
 }) {
+	const router = useIonRouter();
 	const { data, error, isFetching } = useGetAppsMetricsQuery({
 		sourceId,
 		period,
@@ -521,14 +522,21 @@ const OverviewAppCards = memo(function OverviewAppCards({
 			invoices: app.invoices,
 		}));
 
+	const openUsers = () => router.push("/dashboard/users", "forward");
+
 	return (
 		<>
 			{appsUsers.map((app) => (
-				<div key={app.appName} className="dash-card">
+				<button
+					key={app.appName}
+					type="button"
+					className="dash-card is-clickable"
+					onClick={openUsers}
+				>
 					<p className="dash-kpi-label">{app.appName}</p>
 					<p className="dash-kpi-value">{formatFr(app.users)} users</p>
 					<div className="dash-kpi-sub">{formatFr(app.invoices)} invoices</div>
-				</div>
+				</button>
 			))}
 		</>
 	);
