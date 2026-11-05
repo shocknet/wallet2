@@ -24,10 +24,13 @@ const Metrics = ({ match }: RouteComponentProps) => {
 	const { adminIds, selectedId, pubkey, activeId } = useDashAdminSelection();
 
 	useEffect(() => {
-		if (!activeId) return;
-		if (pubkey) rememberDashAdminSource(pubkey, activeId);
+		if (!activeId || !pubkey) return;
+		rememberDashAdminSource(pubkey, activeId);
 		if (selectedId !== activeId) {
-			dispatch(runtimeActions.setSelectedMetricsAdminSourceId({ sourceId: activeId }));
+			dispatch(runtimeActions.setSelectedMetricsAdminSourceId({
+				identityPubkey: pubkey,
+				sourceId: activeId,
+			}));
 		}
 	}, [activeId, pubkey, selectedId, dispatch]);
 

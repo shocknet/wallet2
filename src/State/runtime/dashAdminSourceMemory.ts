@@ -4,6 +4,19 @@ function storageKey(pubkey: string): string {
 	return `${KEY_PREFIX}${pubkey}`;
 }
 
+export type DashAdminSessionSelection = {
+	identityPubkey: string;
+	sourceId: string;
+};
+
+export function sessionSourceIdForIdentity(
+	selection: DashAdminSessionSelection | null,
+	identityPubkey: string | null,
+): string | null {
+	if (!identityPubkey || selection?.identityPubkey !== identityPubkey) return null;
+	return selection.sourceId;
+}
+
 export function activeAdminSourceId(
 	adminIds: string[],
 	selectedId: string | null,

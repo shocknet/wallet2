@@ -3,6 +3,7 @@ import { IonButton, IonContent, IonPage } from "@ionic/react";
 
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { selectAdminSourceIds } from "@/State/scoped/backups/sources/selectors";
+import { selectActiveIdentityRuntime } from "@/State/identitiesRegistry/slice";
 import { runtimeActions } from "@/State/runtime/slice";
 import { useLiveSourceView, useSourceView } from "@/Hooks/useSourceView";
 
@@ -23,6 +24,7 @@ function AdminSourceSelected({ sourceId }: { sourceId: string }) {
 export default function MetricsSelectSource() {
 	const dispatch = useAppDispatch();
 	const adminIds = useAppSelector(selectAdminSourceIds);
+	const pubkey = useAppSelector((s) => selectActiveIdentityRuntime(s)?.pubkey ?? null);
 	const [pendingId, setPendingId] = useState("");
 	const pending = useSourceView(pendingId);
 
@@ -49,7 +51,13 @@ export default function MetricsSelectSource() {
 						<IonButton
 							expand="block"
 							disabled={!pending}
-							onClick={() => pending && dispatch(runtimeActions.setSelectedMetricsAdminSourceId({ sourceId: pending.sourceId }))}
+							onClick={() => {
+								if (!pending || !pubkey) return;
+								dispatch(runtimeActions.setSelectedMetricsAdminSourceId({
+									identityPubkey: pubkey,
+									sourceId: pending.sourceId,
+								}));
+							}}
 						>
 							Continue
 						</IonButton>

@@ -6,10 +6,11 @@ import {
 	type SourceView,
 } from "@/State/scoped/backups/sources/selectors";
 import { useLiveSourceView } from "@/Hooks/useSourceView";
-import { runtimeActions, selectSelectedMetricsAdminSourceId } from "@/State/runtime/slice";
+import { runtimeActions, selectMetricsAdminSession } from "@/State/runtime/slice";
 import {
 	activeAdminSourceId,
 	readRememberedDashAdminSource,
+	sessionSourceIdForIdentity,
 } from "@/State/runtime/dashAdminSourceMemory";
 import { selectActiveIdentityRuntime } from "@/State/identitiesRegistry/slice";
 import { sourceNodeDisplayName } from "@/Components/Source/sourceDisplayName";
@@ -33,8 +34,9 @@ function useDashboardSourceCtx(): DashboardSourceCtx {
 
 export function useDashAdminSelection() {
 	const adminIds = useAppSelector(selectAdminSourceIds);
-	const selectedId = useAppSelector(selectSelectedMetricsAdminSourceId);
+	const session = useAppSelector(selectMetricsAdminSession);
 	const pubkey = useAppSelector((s) => selectActiveIdentityRuntime(s)?.pubkey ?? null);
+	const selectedId = sessionSourceIdForIdentity(session, pubkey);
 	const rememberedId = pubkey ? readRememberedDashAdminSource(pubkey) : null;
 	const activeId = activeAdminSourceId(adminIds, selectedId, rememberedId);
 	return { adminIds, selectedId, pubkey, activeId };
@@ -79,10 +81,14 @@ function DashSourceSwitchDialog({ onClose }: { onClose: () => void }) {
 	const dispatch = useAppDispatch();
 	const selectedId = useDashboardSource().sourceId;
 	const adminIds = useAppSelector(selectAdminSourceIds);
+	const pubkey = useAppSelector((s) => selectActiveIdentityRuntime(s)?.pubkey ?? null);
 
 	const pick = (sourceId: string) => {
-		if (sourceId !== selectedId) {
-			dispatch(runtimeActions.setSelectedMetricsAdminSourceId({ sourceId }));
+		if (pubkey && sourceId !== selectedId) {
+			dispatch(runtimeActions.setSelectedMetricsAdminSourceId({
+				identityPubkey: pubkey,
+				sourceId,
+			}));
 		}
 		onClose();
 	};

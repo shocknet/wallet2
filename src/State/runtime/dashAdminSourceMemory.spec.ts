@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { runTimeReducer, runtimeActions } from "./slice";
 import {
 	activeAdminSourceId,
 	forgetDashAdminSource,
 	readRememberedDashAdminSource,
 	rememberDashAdminSource,
+	sessionSourceIdForIdentity,
 } from "./dashAdminSourceMemory";
 
 const pubkey = "dash-admin-memory-spec";
@@ -27,6 +29,45 @@ describe("activeAdminSourceId", () => {
 
 	it("uses the only admin node when nothing else matches", () => {
 		expect(activeAdminSourceId(["only"], null, "gone")).toBe("only");
+	});
+});
+
+describe("sessionSourceIdForIdentity", () => {
+	const alice = "identity-a";
+	const bob = "identity-b";
+
+	beforeEach(() => {
+		forgetDashAdminSource(alice);
+		forgetDashAdminSource(bob);
+	});
+
+	it("keeps a choice made for this identity", () => {
+		const state = runTimeReducer(
+			undefined,
+			runtimeActions.setSelectedMetricsAdminSourceId({ identityPubkey: alice, sourceId: "x" }),
+		);
+
+		expect(sessionSourceIdForIdentity(state.metricsAdminSession, alice)).toBe("x");
+	});
+
+	it("ignores another identity's choice and leaves this identity's remembered source", () => {
+		rememberDashAdminSource(bob, "y");
+		const state = runTimeReducer(
+			undefined,
+			runtimeActions.setSelectedMetricsAdminSourceId({ identityPubkey: alice, sourceId: "x" }),
+		);
+		const selectedId = sessionSourceIdForIdentity(state.metricsAdminSession, bob);
+		const activeId = activeAdminSourceId(
+			["x", "y"],
+			selectedId,
+			readRememberedDashAdminSource(bob),
+		);
+
+		expect(activeId).toBe("y");
+		if (activeId) rememberDashAdminSource(bob, activeId);
+
+		expect(readRememberedDashAdminSource(bob)).toBe("y");
+		expect(readRememberedDashAdminSource(alice)).toBeNull();
 	});
 });
 
