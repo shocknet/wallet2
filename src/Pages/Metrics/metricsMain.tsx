@@ -1,8 +1,10 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import {
+	IonIcon,
 	IonSkeletonText,
 	useIonRouter
 } from "@ionic/react";
+import { refreshOutline } from "ionicons/icons";
 import { Chart as ChartJS, registerables, Legend, TooltipItem } from 'chart.js';
 import { Line } from 'react-chartjs-2'
 ChartJS.register(...registerables, Legend);
@@ -52,6 +54,13 @@ const Dashboard = () => {
 	const apps = useGetAppsMetricsQuery({ sourceId, period, offset });
 	const lnd = useGetLndMetricsQuery({ sourceId, period, offset });
 	const allFailed = queryFailed(lndInfo) && queryFailed(apps) && queryFailed(lnd);
+	const refreshing = lndInfo.isFetching || apps.isFetching || lnd.isFetching;
+	const refresh = () => {
+		if (refreshing) return;
+		void lndInfo.refetch();
+		void apps.refetch();
+		void lnd.refetch();
+	};
 
 	const nextOffset = () => {
 		if (period === Period.ALL_TIME || offset >= 0) {
@@ -77,25 +86,33 @@ const Dashboard = () => {
 			{allFailed ? (
 				<DashErrorBanner
 					message="Couldn't load overview"
-					onRetry={() => {
-						void lndInfo.refetch();
-						void apps.refetch();
-						void lnd.refetch();
-					}}
+					onRetry={refresh}
 				/>
 			) : (
 				<>
 					<div className="dash-toolbar">
 						<OverviewStatusPills sourceId={sourceId} />
-						<PeriodSelector
-							period={period}
-							offset={offset}
-							setPeriod={setPeriod}
-							resetOffset={() => setOffset(0)}
-							prevOffset={prevOffset}
-							nextOffset={nextOffset}
-							disabled={apps.isFetching || lnd.isFetching}
-						/>
+						<div className="flex flex-wrap items-center gap-3">
+							<PeriodSelector
+								period={period}
+								offset={offset}
+								setPeriod={setPeriod}
+								resetOffset={() => setOffset(0)}
+								prevOffset={prevOffset}
+								nextOffset={nextOffset}
+								disabled={apps.isFetching || lnd.isFetching}
+							/>
+							<button
+								type="button"
+								className="dash-btn dash-btn-ghost gap-2"
+								onClick={refresh}
+								disabled={refreshing}
+								aria-busy={refreshing}
+							>
+								<IonIcon icon={refreshOutline} aria-hidden="true" />
+								{refreshing ? "Refreshing..." : "Refresh"}
+							</button>
+						</div>
 					</div>
 					<OverviewLndChart
 						sourceId={sourceId}
