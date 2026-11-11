@@ -849,23 +849,33 @@ ion-grid {
 
 
 
-.ion-content-no-header::part(scroll) {
-	padding-top: var(--ion-safe-area-top, 0);
-	padding-left: var(--ion-safe-area-left, 0);
-	padding-right: var(--ion-safe-area-right, 0);
+.ion-content-no-header,
+.ion-content-only {
+	--padding-top: var(--ion-safe-area-top, 0px);
 }
 
-.ion-content-no-footer::part(scroll) {
-	padding-bottom: var(--ion-safe-area-bottom, 0);
-	padding-left: var(--ion-safe-area-left, 0);
-	padding-right: var(--ion-safe-area-right, 0);
+.ion-content-no-footer,
+.ion-content-only {
+	--padding-bottom: var(--ion-safe-area-bottom, 0px);
 }
 
-.ion-content-only::part(scroll) {
-	padding-top: var(--ion-safe-area-top, 0);
-	padding-bottom: var(--ion-safe-area-bottom, 0);
-	padding-left: var(--ion-safe-area-left, 0);
-	padding-right: var(--ion-safe-area-right, 0);
+:is(.ion-content-no-header, .ion-content-no-footer, .ion-content-only) {
+	--padding-start: var(--ion-safe-area-left, 0px);
+	--padding-end: var(--ion-safe-area-right, 0px);
+}
+
+/* Preserve ion-padding when combined with safe areas */
+:is(.ion-content-no-header, .ion-content-only).ion-padding {
+	--padding-top: calc(var(--ion-padding, 16px) + var(--ion-safe-area-top, 0px));
+}
+
+:is(.ion-content-no-footer, .ion-content-only).ion-padding {
+	--padding-bottom: calc(var(--ion-padding, 16px) + var(--ion-safe-area-bottom, 0px));
+}
+
+:is(.ion-content-no-header, .ion-content-no-footer, .ion-content-only).ion-padding {
+	--padding-start: calc(var(--ion-padding, 16px) + var(--ion-safe-area-left, 0px));
+	--padding-end: calc(var(--ion-padding, 16px) + var(--ion-safe-area-right, 0px));
 }
 
 
