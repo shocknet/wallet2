@@ -1070,7 +1070,7 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 
 .dash-utxo-row {
 	display: grid;
-	grid-template-columns: minmax(72px, 0.7fr) 64px minmax(0, 1.3fr) minmax(0, 1fr);
+	grid-template-columns: minmax(72px, 0.7fr) minmax(110px, 1fr) 44px minmax(0, 1.3fr) minmax(0, 1fr);
 	gap: 8px;
 	align-items: center;
 	padding: 5px 10px;
@@ -1093,6 +1093,46 @@ ion-menu.pub-dash-rail-menu .pub-dash-rail {
 
 .dash-utxo-amt {
 	font-weight: 500;
+}
+
+.dash-utxo-tools {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 12px;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+.dash-utxo-filter {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--dash-muted);
+}
+
+.dash-utxo-filter select {
+	border: 1px solid var(--dash-border);
+	border-radius: 6px;
+	padding: 5px 8px;
+	background: var(--dash-surface);
+	color: var(--dash-text);
+	font: inherit;
+}
+
+.dash-utxo-source {
+	font-size: 11px;
+	color: var(--dash-muted);
+}
+
+.dash-utxo-source.is-user_deposit { color: var(--dash-a, var(--ion-color-primary)); }
+
+@media (max-width: 600px) {
+	.dash-utxo-row {
+		grid-template-columns: minmax(60px, 0.7fr) minmax(100px, 1fr) 32px minmax(0, 1fr);
+	}
+	.dash-utxo-row > :last-child { display: none; }
 }
 
 .dash-utxo-conf {
