@@ -39,6 +39,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { parsePrivateKey } from "@/lib/parse";
 
 export function ImportNostrKeyPage() {
 	const dispatch = useAppDispatch();
@@ -51,17 +52,17 @@ export function ImportNostrKeyPage() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [privKey, setPrivKey] = useState("");
 
-	const inputPrivKeyIsValid =
-		privKey.length === 64 && /^[0-9a-f]{64}$/i.test(privKey);
+	const normalizedPrivateKey = parsePrivateKey(privKey);
+
 
 	const pmUsername = useMemo(
 		() =>
-			privKey
+			normalizedPrivateKey
 				? makeIdentityPrivateKeyPmUsername(
-					getPublicKey(hexToBytes(privKey)),
+					getPublicKey(hexToBytes(normalizedPrivateKey)),
 				)
 				: "",
-		[privKey],
+		[normalizedPrivateKey],
 	);
 
 	const askCreatePassword = usePasswordCreationModal(
@@ -107,9 +108,9 @@ export function ImportNostrKeyPage() {
 	);
 
 	const handleImportNostrKey = useCallback(() => {
-		if (!inputPrivKeyIsValid) return;
-		void completeIdentityCreation(privKey, []);
-	}, [inputPrivKeyIsValid, privKey, completeIdentityCreation]);
+		if (!normalizedPrivateKey) return;
+		completeIdentityCreation(normalizedPrivateKey, []);
+	}, [normalizedPrivateKey, completeIdentityCreation]);
 
 	const getDataFromFileBackup = useCallback(
 		async (e: ChangeEvent<HTMLInputElement>) => {
@@ -201,6 +202,8 @@ export function ImportNostrKeyPage() {
 									label="Nostr key"
 									labelPlacement="stacked"
 									className="filled-input"
+									type="password"
+									autocomplete="off"
 									value={privKey}
 									onIonInput={(e) =>
 										setPrivKey(e.detail.value || "")
@@ -209,7 +212,7 @@ export function ImportNostrKeyPage() {
 									mode="md"
 								/>
 								<IonButton
-									disabled={!inputPrivKeyIsValid}
+									disabled={!normalizedPrivateKey}
 									className="w-full [--border-radius:12px]"
 									color="tertiary"
 									fill="solid"
