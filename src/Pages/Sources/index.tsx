@@ -9,7 +9,6 @@ import {
 	IonFabButton,
 	IonHeader,
 	IonIcon,
-	IonList,
 	IonPage,
 } from "@ionic/react";
 import { add } from "ionicons/icons";
@@ -53,13 +52,13 @@ const SourcesPage = () => {
 				<RootPageToolbar title="Node Connections" />
 			</IonHeader>
 			<IonContent className="ion-padding">
-				<IonList lines="none" className="mt-6">
+				<div className="mt-4 flex w-full flex-col">
 					{
 						favoriteFirstSortedIds.map(id => (
 							<SourceCard key={id} sourceId={id} onClick={(s) => void handleEditSource(s)} />
 						))
 					}
-				</IonList>
+				</div>
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">
 					<IonFabButton color="primary" onClick={() => void askAddSource({})}>
 						<IonIcon icon={add}></IonIcon>
