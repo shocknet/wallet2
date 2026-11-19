@@ -20,7 +20,6 @@ import {
 	IonCol
 } from "@ionic/react";
 import { closeOutline, trashOutline, pencilOutline, starOutline, star } from "ionicons/icons";
-import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
@@ -36,6 +35,9 @@ import { useNestedPromptDangerModal } from "@/Components/prompt";
 import { normalizeHttpUrl } from "@/lib/url";
 import { useOverlayCoordinator, type Dismiss, type OverlayResult } from "@/overlay";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
+
+const sectionListClassName =
+	"rounded-xl pb-4 [&_ion-list-header]:min-h-9 [&_ion-list-header]:items-end [&_ion-list-header]:pb-[0.15rem]";
 
 export type EditSourceOptions = {
 	source: SourceView;
@@ -55,7 +57,7 @@ function SourceIdentity({ source }: { source: SourceView }) {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="rounded-xl bg-[var(--app-surface-muted)] px-3 py-2">
+			<div className="rounded-xl bg-[var(--app-surface-muted)] px-3 pt-4 pb-2">
 				<div className="flex items-center gap-2.5">
 					<Avatar
 						id={source.sourceId}
@@ -88,7 +90,7 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 	const [label, setLabel] = useState<string>(source.label || "");
 	const [bridgeUrl, setBridgeUrl] =
 		useState<string>(source.bridgeUrl || "");
-	const [finalBridgeUrl, setFinalBridgeUrl] = useState<string | null>(null);
+	const [finalBridgeUrl, setFinalBridgeUrl] = useState<string | null>(source.bridgeUrl);
 	const [isEditingRelays, setIsEditingRelays] = useState(false);
 	const [bridgeInputTouched, setBridgeInputTouched] = useState(false);
 	const bridgeInputRef = useRef<HTMLIonInputElement>(null);
@@ -210,7 +212,7 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>
-						<span className={classNames("text-secondary", styles["modal-header"])}>
+						<span className="inline-flex items-center text-secondary">
 							<IonIcon style={{ marginRight: "0.4rem" }} icon={pencilOutline} />
 							Edit Source
 						</span>
@@ -226,10 +228,17 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 			</IonHeader>
 			<IonContent className="ion-padding">
 
-				<SourceIdentity source={original} />
+				<IonList className={sectionListClassName} lines="none">
+					<IonListHeader className="text-secondary font-semibold text-base" lines="full">
+						<IonLabel>Node</IonLabel>
+					</IonListHeader>
+					<div className="px-4 pt-2">
+						<SourceIdentity source={original} />
+					</div>
+				</IonList>
 
-				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
-					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
+				<CardishList listHeader="Source Info" className={sectionListClassName} lines="none">
+					<IonItem className="[--padding-bottom:0.7rem]">
 
 						<IonInput
 							placeholder="My savings source"
@@ -241,7 +250,7 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 							mode="md"
 							fill="outline"
 							style={{ "--padding-end": "50px" }}
-							className="ion-margin-top"
+							className="mt-2"
 
 						/>
 					</IonItem>
@@ -261,7 +270,6 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 								["ion-invalid"]: bridgeInputError,
 								["ion-touched"]: bridgeInputTouched,
 								["ion-margin-top"]: true,
-
 							})}
 							style={{ "--padding-end": "50px" }}
 							errorText="Invalid URL"
@@ -270,23 +278,22 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 							helperText="Enter a valid http URL"
 						/>
 					</IonItem>
-					<IonItem lines="none" className="ion-margin-top">
+				</CardishList>
+
+				<IonList className={`${sectionListClassName} mt-2 pt-4`} lines="none">
+					<IonItem lines="none">
 						<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
 							<IonText className="text-secondary">ndebit discoverable</IonText>
 						</IonToggle>
 					</IonItem>
-
-
-				</CardishList>
+				</IonList>
 
 				<div>
 					<IonList
-
+						className={`${sectionListClassName} mt-2`}
 						lines="none"
-						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
-
 					>
-						<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
+						<IonListHeader className="text-secondary font-semibold text-base" lines="full">
 							<IonLabel >Relays</IonLabel>
 							{
 								isEditingRelays
