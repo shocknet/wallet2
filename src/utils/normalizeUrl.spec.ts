@@ -42,6 +42,8 @@ function expectNormalized(input: string, expected: string, options: Options) {
 
 
 const hostCases: readonly Case[] = [
+	["localhost", "localhost/"],
+	["localhost:8080", "localhost:8080/"],
 	["github.com", "github.com/"],
 	["GITHUB.COM", "github.com/"],
 	["api.github.com", "api.github.com/"],
@@ -190,7 +192,7 @@ describe("normalizeUrl", () => {
 			});
 
 			it.each([
-				"localhost", "localhost:8080", "api.localhost",
+				"api.localhost",
 				"server.internal", "printer.local", "something.test",
 				"github.invalid", "example.com", "example.net.", "api.example.org",
 				"home.arpa", "foo.onion", "foo.alt", "com", "co.uk",

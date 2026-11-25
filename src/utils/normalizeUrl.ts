@@ -9,6 +9,9 @@ type NormalizeUrlOptions = {
 };
 
 function validateHost(url: URL): void {
+	if (url.hostname === "localhost") {
+		return;
+	}
 	// URL already validates IPv6 literals.
 	if (url.hostname.startsWith("[")) {
 		return;
