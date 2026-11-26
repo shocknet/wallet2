@@ -1,7 +1,7 @@
 import { nip05 } from "nostr-tools";
 import type { Event } from "nostr-tools";
 import { fetchNostrUserMetadataEvent } from "@/Api/nostrHandler";
-import { normalizeWsUrl } from "@/lib/url";
+import { canonicalRelayUrls } from "@/lib/relays";
 
 export type NostrProfile = {
 	pubkey: string;
@@ -16,10 +16,6 @@ export type NostrProfile = {
 
 function asOptionalString(value: unknown): string | undefined {
 	return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
-export function normalizeRelays(relays: string[]): string[] {
-	return relays.map(normalizeWsUrl).sort();
 }
 
 export function parseKind0ProfileContent(content: string): Omit<NostrProfile, "pubkey"> | null {
@@ -57,7 +53,7 @@ export async function fetchProfile(
 	pubkey: string,
 	relays: string[],
 ): Promise<NostrProfile | null> {
-	const event = await fetchNostrUserMetadataEvent(pubkey, normalizeRelays(relays));
+	const event = await fetchNostrUserMetadataEvent(pubkey, canonicalRelayUrls(relays));
 	return profileFromKind0Event(pubkey, event);
 }
 

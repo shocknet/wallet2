@@ -15,7 +15,6 @@ import { IdentityType } from "@/State/identitiesRegistry/types";
 import { createAndRequestIdentityLoad } from "@/shell/coordinator";
 import { useAppDispatch } from "@/State/store/hooks";
 import { useToast } from "@/lib/contexts/useToast";
-import { normalizeWsUrl } from "@/lib/url";
 import { NOSTR_RELAYS } from "@/constants";
 import SectionDivider from "@/Components/common/ui/sectionDivider";
 import { ShockwalletHero } from "@/Components/common/ui/ShockwalletHero";
@@ -66,7 +65,7 @@ export function CreateKeysPage() {
 				createAndRequestIdentityLoad({
 					type: IdentityType.NIP07,
 					label: "Nostr extension",
-					relays: NOSTR_RELAYS.map(normalizeWsUrl),
+					relays: NOSTR_RELAYS,
 				}),
 			);
 		} catch (err: unknown) {

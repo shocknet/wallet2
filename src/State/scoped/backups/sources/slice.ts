@@ -1,6 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { bump, bumpFlag, eqFlags, eqLww, mergeLww, mergeRelayFlags, } from "../../../sync/lww";
-import { SourceType, type SourceDocV0 } from "./schema";
+import { bump, bumpFlag, eqFlags, eqLww, Lww, mergeLww, mergeRelayFlags, } from "../../../sync/lww";
+import { BridgeUrlSchema, RelayMapSchema, SourceType, type SourceDocV0 } from "./schema";
 import type { RootState } from "@/State/store/store";
 import { makeScopedPersistedReducer } from "@/State/scope/buildPersistedScopedReducer";
 import { defineScopedModule } from "@/State/scope/scopedModule";
@@ -409,6 +409,36 @@ const migrations = {
 		}
 
 		return state;
+	},
+	// RelayMapSchema + BridgeUrlSchema
+	5: (state: SourcesState): SourcesState => {
+		const canonicalizeBridgeUrl = (
+			field: Lww<string | null>,
+		): Lww<string | null> => {
+			const parsed = BridgeUrlSchema.safeParse(field.value);
+
+			const value = parsed.success ? parsed.data : null;
+
+			if (value === field.value) return field;
+
+			return { ...field, value };
+		};
+
+		for (const id of state.docs.ids) {
+			const src = state.docs.entities[id];
+			if (!src) continue;
+			if (src.draft.type !== SourceType.NPROFILE_SOURCE) continue;
+
+			src.draft.relays = RelayMapSchema.parse(src.draft.relays);
+			src.draft.bridgeUrl = canonicalizeBridgeUrl(src.draft.bridgeUrl);
+			if (src.base?.type === SourceType.NPROFILE_SOURCE) {
+				src.base.relays = RelayMapSchema.parse(src.base.relays);
+				src.base.bridgeUrl = canonicalizeBridgeUrl(src.base.bridgeUrl);
+
+				src.dirty = !equalSourceDoc(src.base, src.draft);
+			}
+		}
+		return state;
 	}
 }
 const persistKey = "__sources";
@@ -424,7 +454,7 @@ export const sourcesModule = defineScopedModule({
 			persistKey,
 			scopeId,
 			{
-				version: 4,
+				version: 5,
 				storage: createEncryptedScopedStorage({ scopeId, sliceName: sourcesSlice.name, dataKey, storage }),
 				// @ts-expect-error redux-persist typing issue
 				migrate: createMigrate(migrations)

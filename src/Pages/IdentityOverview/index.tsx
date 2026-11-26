@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	IonButton,
 	IonButtons,
@@ -29,19 +29,11 @@ import { RelayManager } from "@/Components/RelayManager";
 import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 
 import { useToast } from "@/lib/contexts/useToast";
-import { normalizeWsUrl } from "@/lib/url";
+import { useDraft } from "@/Hooks/useDraft";
+import { WsUrlSchema } from "@/lib/urlZod";
 import { ProfileCard } from "@/Components/User/ProfileCard";
 import { IdentitySecuritySection } from "./IdentitySecuritySection";
 import { CircledBackButton } from "@/Layout2/CircledBackButton";
-
-const sameSet = (a: string[], b: string[]) => {
-	if (a.length === 0 && b.length === 0) return true;
-	const A = new Set(a);
-	const B = new Set(b);
-	if (A.size !== B.size) return false;
-	for (const x of A) if (!B.has(x)) return false;
-	return true;
-};
 
 const IdentityOverviewPage = () => {
 	const dispatch = useAppDispatch();
@@ -54,35 +46,64 @@ const IdentityOverviewPage = () => {
 	);
 
 	const [editingRelays, setEditingRelays] = useState(false);
-	const [relays, setRelays] = useState<string[]>([]);
+	const [sanctumRelays, setSanctumRelays] = useState<string[]>([]);
 
-	useEffect(() => {
-		if (!runtime) return;
-		if (runtime.type === IdentityType.SANCTUM) {
-			void getIdentityNostrApi(runtime)
-				.then((api) => api.getRelays())
-				.then((r) => {
-					setRelays(Object.keys(r).map(normalizeWsUrl));
-				})
-				.catch(() => {
-					/* sanctum relays are informational */
-				});
-			return;
-		}
-		setRelays(runtime.relays);
-	}, [runtime]);
-
-	const registryRelays = useMemo(() => {
-		return registryIdentity && registryIdentity.type !== IdentityType.SANCTUM
+	const savedRelays =
+		registryIdentity && registryIdentity.type !== IdentityType.SANCTUM
 			? registryIdentity.relays
 			: [];
-	}, [registryIdentity]);
+	const { draft, operations, isDirty, setField } = useDraft(
+		{ relays: savedRelays },
+		{
+			relays: (previous, next) => {
+				if (!runtime || runtime.type === IdentityType.SANCTUM) return null;
+				if (
+					previous.length === next.length &&
+					previous.every((url, index) => url === next[index])
+				) return null;
+				const pubkey = runtime.pubkey;
+				return () => {
+					dispatch(setIdentityRelays({ pubkey, relays: next }));
+				};
+			},
+		},
+	);
 
-	const relaysDirty = useMemo(() => {
+	const addRelay = (url: string) => {
+		if (draft.relays.includes(url)) return;
+		setField("relays", [...draft.relays, url]);
+	};
 
-		if (!runtime || runtime.type === IdentityType.SANCTUM) return false;
-		return !sameSet(registryRelays, relays);
-	}, [runtime, registryRelays, relays]);
+	const removeRelay = (url: string) => {
+		setField("relays", draft.relays.filter(relay => relay !== url));
+	};
+
+	useEffect(() => {
+		if (!runtime || runtime.type !== IdentityType.SANCTUM) return;
+
+		let ignore = false;
+		getIdentityNostrApi(runtime)
+			.then((api) => api.getRelays())
+			.then((r) => {
+				if (ignore) return;
+				const urls: string[] = [];
+				for (const url of Object.keys(r)) {
+					const parsed = WsUrlSchema.safeParse(url);
+					if (parsed.success) urls.push(parsed.data);
+				}
+				setSanctumRelays(urls);
+			})
+			.catch(() => {
+				/* sanctum relays are informational */
+			});
+		return () => {
+			ignore = true;
+		};
+	}, [runtime]);
+
+	const visibleRelays = runtime?.type === IdentityType.SANCTUM
+		? sanctumRelays
+		: draft.relays;
 
 	const npub = runtime ? nip19.npubEncode(runtime.pubkey) : "";
 
@@ -91,12 +112,7 @@ const IdentityOverviewPage = () => {
 
 	const saveRelays = () => {
 		if (!runtime || runtime.type === IdentityType.SANCTUM) return;
-		dispatch(
-			setIdentityRelays({
-				pubkey: runtime.pubkey,
-				relays,
-			}),
-		);
+		for (const operation of operations) operation();
 		setEditingRelays(false);
 		showToast({
 			color: "success",
@@ -177,13 +193,14 @@ const IdentityOverviewPage = () => {
 							runtime.type !== IdentityType.SANCTUM ? (
 							<>
 								<RelayManager
-									relays={relays}
-									setRelays={setRelays}
+									relays={draft.relays}
+									onAdd={addRelay}
+									onRemove={removeRelay}
 								/>
 								<IonButton
 									expand="block"
 									className="mt-3 [--border-radius:12px]"
-									disabled={!relaysDirty}
+									disabled={!isDirty}
 									onClick={saveRelays}
 								>
 									<IonIcon
@@ -193,9 +210,9 @@ const IdentityOverviewPage = () => {
 									Save relays
 								</IonButton>
 							</>
-						) : relays.length > 0 ? (
+						) : visibleRelays.length > 0 ? (
 							<ul className="flex flex-col gap-2">
-								{relays.map((relay) => (
+								{visibleRelays.map((relay) => (
 									<li key={relay}>
 										<IonText className="text-sm text-secondary break-all">
 											{relay}

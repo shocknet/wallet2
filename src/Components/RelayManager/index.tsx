@@ -1,202 +1,136 @@
 import {
-	IonItem, IonButton, IonIcon, IonInput, IonText,
+	IonButton,
+	IonIcon,
+	IonInput,
+	IonItem,
+	IonList,
+	IonText,
 } from "@ionic/react";
 import { addOutline, closeOutline } from "ionicons/icons";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { nanoid } from "nanoid";
-import deepEqual from "fast-deep-equal";
-import { normalizeWsUrl } from "@/lib/url";
-
+import { WsUrlSchema } from "@/lib/urlZod";
+import { useValidatedInput } from "@/Hooks/useValidatedInput";
 
 type RelayManagerProps = {
-	relays: string[];
-	setRelays: React.Dispatch<React.SetStateAction<string[]>>;
+	relays: readonly string[];
+	onAdd: (url: string) => void;
+	onRemove: (url: string) => void;
 };
 
-type Row = { id: string; raw: string };
+export function RelayManager({
+	relays,
+	onAdd,
+	onRemove,
+}: RelayManagerProps) {
+	const input = useValidatedInput<string>(
+		"",
+		onAdd,
+		raw => {
+			const parsed = WsUrlSchema.safeParse(raw);
 
-
-
-
-const normalizeRelay = (s: string): string | null => {
-	const trimmed = s.trim();
-	if (!trimmed) return null;
-	try {
-		const res = normalizeWsUrl(trimmed);
-		return res;
-	} catch {
-		return null;
-	}
-};
-
-
-const rowsFromRelays = (vals: string[]): Row[] => {
-	const base = vals.length ? vals : [""];
-	return base.map(v => ({ id: nanoid(), raw: v }));
-};
-
-export const RelayManager = ({ relays, setRelays }: RelayManagerProps) => {
-
-	const [rows, setRows] = useState<Row[]>(() => rowsFromRelays(relays));
-
-
-	const inputsRef = useRef<(HTMLIonInputElement | null)[]>([]);
-	const prevLen = useRef(rows.length);
-
-
-	useEffect(() => {
-		const parentNorm = Array.from(
-			new Set(relays.map(r => normalizeRelay(r)).filter(Boolean) as string[])
-		);
-		const localNorm = Array.from(
-			new Set(
-				rows
-					.map(r => normalizeRelay(r.raw))
-					.filter(Boolean) as string[]
-			)
-		);
-		if (!deepEqual(parentNorm, localNorm)) {
-			setRows(rowsFromRelays(parentNorm.length ? parentNorm : [""]));
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [relays]);
-
-
-	useEffect(() => {
-		if (rows.length > prevLen.current) {
-			// next tick so IonInput is rendered
-			setTimeout(() => inputsRef.current[rows.length - 1]?.setFocus(), 0);
-		}
-		prevLen.current = rows.length;
-	}, [rows.length]);
-
-
-	const problems = useMemo(() => {
-		const errs = new Map<string, string>();
-		const seen = new Map<string, string>(); // norm -> rowId
-		rows.forEach((row) => {
-			if (!row.raw.trim()) return; // allow empty while editing
-			const norm = normalizeRelay(row.raw);
-			if (!norm) {
-				errs.set(row.id, "Invalid relay URL");
-				return;
+			if (!parsed.success) {
+				return {
+					ok: false,
+					error: "Invalid relay URL",
+				};
 			}
-			if (seen.has(norm)) {
-				errs.set(row.id, "Duplicate relay");
 
-			} else {
-				seen.set(norm, row.id);
+			if (relays.includes(parsed.data)) {
+				return {
+					ok: false,
+					error: "Duplicate relay",
+				};
 			}
-		});
-		return errs;
-	}, [rows]);
 
-	// Debounced emit to parent (canonical, unique, valid)
-	useEffect(() => {
-		const t = setTimeout(() => {
-			const cleaned = Array.from(
-				new Set(
-					rows
-						.map(r => normalizeRelay(r.raw))
-						.filter(Boolean) as string[]
-				)
-			);
-			setRelays((prev) => (deepEqual(prev, cleaned) ? prev : cleaned));
-		}, 250);
-		return () => clearTimeout(t);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [rows]);
+			return {
+				ok: true,
+				value: parsed.data,
+			};
+		},
+		"manual",
+	);
 
-
-	const updateRow = (id: string, val: string) => {
-		setRows(rs => rs.map(r => (r.id === id ? { ...r, raw: val } : r)));
+	const addRelay = () => {
+		if (input.commit()) {
+			input.reset();
+		}
 	};
-
-	const removeRow = (id: string) => {
-		setRows(rs => {
-			const next = rs.filter(r => r.id !== id);
-			return next.length ? next : [{ id: nanoid(), raw: "" }];
-		});
-	};
-
-	const addRow = () => {
-		const last = rows[rows.length - 1];
-		const lastErr = problems.get(last.id);
-		if (!last || !last.raw.trim() || lastErr) return;
-		setRows(rs => [...rs, { id: nanoid(), raw: "" }]);
-	};
-
-	const onBlurNormalize = (id: string) => {
-		setRows(rs =>
-			rs.map(r => {
-				if (r.id !== id) return r;
-				const norm = normalizeRelay(r.raw);
-				return { ...r, raw: norm ?? r.raw.trim() };
-			})
-		);
-	};
-
-
-	const lastDisabled = (() => {
-		const last = rows[rows.length - 1];
-		if (!last) return true;
-		if (!last.raw.trim()) return true;
-		return problems.has(last.id);
-	})();
 
 	return (
-		<>
-			{rows.map((row, idx) => (
-				<div key={row.id}>
-					<IonItem>
-						<IonInput
-							ref={el => (inputsRef.current[idx] = el)}
-							mode="md"
-							fill="outline"
-							style={{ marginTop: "0.7rem" }}
-							value={row.raw}
-							spellCheck={false}
-							placeholder="wss://relay.example.com"
-							onIonInput={e => updateRow(row.id, e.detail.value ?? "")}
-							onIonBlur={() => onBlurNormalize(row.id)}
-							onKeyDown={e => {
-								if (e.key === "Enter") {
-									e.preventDefault();
-									addRow();
-								}
-							}}
-							autocapitalize="off"
-							inputmode="url"
+		<IonList
+			lines="none"
+			className="m-0 !bg-transparent p-0 [--background:transparent]"
+		>
+			{relays.map(url => (
+				<IonItem
+					key={url}
+					lines="none"
+					detail={false}
+					className="mb-2 rounded-lg [--background:var(--app-surface-muted)] [--background-activated:var(--app-surface-muted)] [--background-focused:var(--app-surface-muted)] [--background-hover:var(--app-surface-muted)] [--border-radius:0.5rem] [--border-width:0] [--highlight-height:0] [--inner-border-width:0] [--inner-padding-bottom:0] [--inner-padding-end:0] [--inner-padding-top:0] [--min-height:0] [--padding-bottom:0] [--padding-end:0] [--padding-start:0] [--padding-top:0]"
+				>
+					<div className="flex w-full min-w-0 items-center gap-2 px-3 py-2">
+						<span className="min-w-0 flex-1 break-all text-sm text-primary">
+							{url}
+						</span>
+						<button
+							type="button"
+							className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted"
+							onClick={() => onRemove(url)}
+							aria-label={`Remove ${url}`}
 						>
-							<IonButton
-								slot="end"
-								fill="clear"
-								onClick={() => removeRow(row.id)}
-								aria-label="Remove relay"
-							>
-								<IonIcon icon={closeOutline} />
-							</IonButton>
-						</IonInput>
-					</IonItem>
-					{problems.has(row.id) && (
-						<IonItem lines="none">
-							<IonText color="danger">{problems.get(row.id)}</IonText>
-						</IonItem>
-					)}
-				</div>
+							<IonIcon icon={closeOutline} />
+						</button>
+					</div>
+				</IonItem>
 			))}
 
-			<IonButton
-				expand="full"
-				fill="clear"
-				onClick={addRow}
-				className="ion-margin-top"
-				style={{ fontWeight: 600 }}
-				disabled={lastDisabled}
+			<IonItem
+				lines="none"
+				detail={false}
+				className="[--background:transparent] [--background-activated:transparent] [--background-focused:transparent] [--background-hover:transparent] [--border-width:0] [--highlight-height:0] [--highlight-height-focused:0] [--inner-border-width:0] [--inner-padding-bottom:0] [--inner-padding-end:0] [--inner-padding-top:0] [--min-height:0] [--padding-bottom:0] [--padding-end:0] [--padding-start:0] [--padding-top:0]"
 			>
-				<IonIcon icon={addOutline} slot="start" />
-				Add new relay
-			</IonButton>
-		</>
+				<div className="flex w-full min-w-0 items-center gap-2">
+					<IonInput
+						mode="md"
+						fill="outline"
+						className="flex-1 ![--background:transparent]"
+						value={input.value}
+						spellCheck={false}
+						autocapitalize="off"
+						inputmode="url"
+						aria-label="New relay URL"
+						placeholder="wss://relay.example.com"
+						onIonInput={e =>
+							input.onChange(e.detail.value ?? "")
+						}
+						onIonBlur={input.onBlur}
+						onKeyDown={e => {
+							if (e.key === "Enter") {
+								e.preventDefault();
+								addRelay();
+							}
+						}}
+					/>
+					<IonButton
+						fill="clear"
+						size="small"
+						color="primary"
+						type="button"
+						disabled={!input.isValid}
+						className="m-0 shrink-0 [--padding-start:0.6rem] [--padding-end:0.7rem]"
+						onClick={addRelay}
+						aria-label="Add relay"
+					>
+						<IonIcon slot="start" icon={addOutline} />
+						Add
+					</IonButton>
+				</div>
+			</IonItem>
+
+			{input.value.trim() && input.error && (
+				<IonText color="danger" className="px-1 text-sm">
+					{input.error}
+				</IonText>
+			)}
+		</IonList>
 	);
-};
+}

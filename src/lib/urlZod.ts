@@ -1,44 +1,32 @@
 import { z } from "zod";
-import { normalizeHttpUrl, normalizeWsUrl } from "./url";
+import { normalizeUrl } from "@/utils/normalizeUrl";
 
 
-
-
-export const HttpBaseSchema = z
-	.string()
-	.transform((val, ctx) => {
+function createUrlSchema(
+	options: Parameters<typeof normalizeUrl>[1],
+) {
+	return z.string().transform((input, ctx) => {
 		try {
-			const r = normalizeHttpUrl(val);
-			return r;
+			return normalizeUrl(input, options);
 		} catch {
 			ctx.issues.push({
 				code: "custom",
-				message: "Not a valid http URL",
-				input: val
-			})
+				message: "Invalid URL",
+				input,
+			});
+
 			return z.NEVER;
 		}
 	});
-
-export type HttpBaseInput = z.input<typeof HttpBaseSchema>;
-export type HttpBase = z.output<typeof HttpBaseSchema>;
+}
 
 
-export const RelayBaseSchema = z
-	.string()
-	.transform((val, ctx) => {
-		try {
-			const r = normalizeWsUrl(val);
-			return r;
-		} catch {
-			ctx.issues.push({
-				code: "custom",
-				message: "Not a valid relay URL",
-				input: val
-			})
-			return z.NEVER;
-		}
-	});
+export const HttpUrlSchema = createUrlSchema({
+	defaultScheme: "https",
+	allowedSchemes: ["http", "https"],
+});
 
-export type RelayBaseInput = z.input<typeof RelayBaseSchema>;
-export type RelayBase = z.output<typeof RelayBaseSchema>;
+export const WsUrlSchema = createUrlSchema({
+	defaultScheme: "wss",
+	allowedSchemes: ["ws", "wss"],
+});

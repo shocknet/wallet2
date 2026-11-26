@@ -2,7 +2,7 @@ import type { Event, EventTemplate, VerifiedEvent, Nostr, NostrEvent, Filter } f
 import { matchFilters } from "nostr-tools";
 import { getHex64, getSubscriptionId } from "@/utils/json";
 import { Queue } from "@/utils/queue";
-import { normalizeWsUrl } from "@/lib/url";
+import { WsUrlSchema } from "@/lib/urlZod";
 
 
 
@@ -81,7 +81,7 @@ export class AbstractRelay {
 	private _WebSocket: typeof WebSocket
 
 	constructor(url: string, opts: AbstractRelayConstructorOptions) {
-		this.url = normalizeWsUrl(url)
+		this.url = WsUrlSchema.parse(url)
 		this.verifyEvent = opts.verifyEvent
 		this._WebSocket = opts.websocketImplementation || WebSocket
 		this.enablePing = opts.enablePing

@@ -3,7 +3,6 @@ import { type UnsignedEvent, type Event, nip44, finalizeEvent } from "nostr-tool
 import { NostrKeyPair } from "@/Api/nostrHandler";
 import { hexToBytes } from "@noble/hashes/utils";
 import { NOSTR_RELAYS } from "@/constants";
-import { normalizeWsUrl } from "@/lib/url";
 import { IdentityType } from "../types";
 import { getExtentionsWithRetries } from "@/lib/nip07Extension";
 import store, { type RootState } from "@/State/store/store";
@@ -69,7 +68,7 @@ export async function getNostrExtensionIdentityApi(
 		throw new Error("Identity does not match this Nostr Extension profile");
 	}
 
-	const urls = relayUrls?.length ? relayUrls : NOSTR_RELAYS.map(normalizeWsUrl);
+	const urls = relayUrls?.length ? relayUrls : NOSTR_RELAYS;
 
 	return {
 		decrypt: (pubkey, ciphertext) => nipx4.decrypt(pubkey, ciphertext),

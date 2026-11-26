@@ -8,7 +8,7 @@ import { decodePayload, decryptData, encodePayload, encryptData, getSharedSecret
 import logger from "./helpers/logger";
 import { SubCloser, SubscribeManyParams } from "nostr-tools/lib/types/abstract-pool";
 import { NofferData, NofferResponse, SendNofferRequest } from "@shocknet/clink-sdk";
-import { normalizeWsUrl } from "@/lib/url";
+import { WsUrlSchema } from "@/lib/urlZod";
 import { acceptHotModule, persistHotData, readHotData } from "./hotSingleton";
 import {
 	BeaconData,
@@ -64,7 +64,7 @@ export class TransportPool {
 
 
 	private ensureRelaySession(urlRaw: string): RelaySession {
-		const url = normalizeWsUrl(urlRaw);
+		const url = WsUrlSchema.parse(urlRaw);
 
 
 		let sess = this.sessions.get(url);
@@ -134,7 +134,7 @@ export class TransportPool {
 	subscribe(relays: string[], filter: Filter, params: SubscribeManyParams): SubCloser {
 		const request: { url: string; filter: Filter }[] = []
 		for (let i = 0; i < relays.length; i++) {
-			const url = normalizeWsUrl(relays[i]);
+			const url = WsUrlSchema.parse(relays[i]);
 
 			if (!request.find(r => r.url === url)) {
 				request.push({ url, filter: filter })
@@ -148,7 +148,7 @@ export class TransportPool {
 	subscribeMany(relays: string[], filters: Filter[], params: SubscribeManyParams): SubCloser {
 		const request: { url: string; filter: Filter }[] = [];
 		for (let i = 0; i < relays.length; i++) {
-			const url = normalizeWsUrl(relays[i]);
+			const url = WsUrlSchema.parse(relays[i]);
 			for (let f = 0; f < filters.length; f++) {
 				request.push({ url, filter: filters[f] });
 			}
@@ -367,7 +367,7 @@ export class TransportPool {
 		event: Event,
 		options?: { onauth?: (evt: EventTemplate) => Promise<VerifiedEvent> },
 	) {
-		return Promise.any(relays.map(normalizeWsUrl).map(async (url, i, arr) => {
+		return Promise.any(relays.map(url => WsUrlSchema.parse(url)).map(async (url, i, arr) => {
 			if (arr.indexOf(url) !== i) {
 				// duplicate
 				return Promise.reject('duplicate url')

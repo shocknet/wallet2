@@ -8,10 +8,10 @@ import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { RootState } from "@/State/store/store";
 import {
 	fetchProfile,
-	normalizeRelays,
 	type NostrProfile,
 	verifyNip05Claim,
 } from "../../lib/profile";
+import { canonicalRelayUrls } from "@/lib/relays";
 import { requestLnurlServiceParams } from "@/lib/lnurl/get";
 import type { LnurlPayServiceResponse } from "@/lib/types/lnurl";
 
@@ -53,7 +53,7 @@ export const appApi = createApi({
 		getProfile: b.query<NostrProfile | null, { pubkey: string; relays: string[] }>({
 			serializeQueryArgs: ({ queryArgs }) => ({
 				pubkey: queryArgs.pubkey,
-				relays: normalizeRelays(queryArgs.relays),
+				relays: canonicalRelayUrls(queryArgs.relays),
 			}),
 			queryFn: async ({ pubkey, relays }) => {
 				try {

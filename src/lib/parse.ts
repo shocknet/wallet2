@@ -16,7 +16,7 @@ import {
 	LN_ADDRESS_REGEX,
 	HexKeySchema
 } from "./regex";
-import { RelayBaseSchema } from "./urlZod";
+import { WsUrlSchema } from "./urlZod";
 import { bytesToHex } from "@noble/hashes/utils";
 
 
@@ -199,7 +199,7 @@ export async function parseBitcoinInput(
 			if (result.type !== "nprofile") throw new Error("Not an nprofile string");
 			if (!result.data.relays) throw new Error("No relays");
 
-			const parseResults = result.data.relays.map(r => RelayBaseSchema.safeParse(r));
+			const parseResults = result.data.relays.map(r => WsUrlSchema.safeParse(r));
 			const relays = parseResults.filter(res => res.success).map(res => res.data!);
 
 			if (relays.length === 0) {

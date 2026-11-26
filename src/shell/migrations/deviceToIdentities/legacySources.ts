@@ -1,10 +1,10 @@
 import { appTag } from "@/Api/nostrHandler";
 import { decodeNprofile, getDeviceId } from "@/constants";
-import { normalizeWsUrl } from "@/lib/url";
+import { WsUrlSchema } from "@/lib/urlZod";
 import { IdentityNostrApi } from "@/State/identitiesRegistry/helpers/identityNostrApi";
 import { fetchNip78Event } from "@/State/identitiesRegistry/helpers/nostr";
-import { LwwFlag } from "@/State/sync/lww";
-import { SourceDocV0 } from "@/State/scoped/backups/sources/schema";
+import { LwwFlag, newflag, newLww } from "@/State/sync/lww";
+import { BridgeUrlSchema, SourceDocV0 } from "@/State/scoped/backups/sources/schema";
 import { SourceType } from "@/State/scoped/backups/sources/schema";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
 import { docsSelectors } from "@/State/scoped/backups/sources/slice";
@@ -253,29 +253,27 @@ export function migrateLegacySourcesToDocs(sources: SourceToMigrate[]): Migrated
 		const relays = profilePointer.relays || [];
 		const relaysFlags: Record<string, LwwFlag> = {};
 		for (const relay of relays) {
-			relaysFlags[normalizeWsUrl(relay)] = { clock: { v: 0, by: deviceId }, present: true };
+			const parsed = WsUrlSchema.safeParse(relay);
+			if (!parsed.success) continue;
+			relaysFlags[parsed.data] = newflag(true, deviceId);
 		}
+
+		const bridge = BridgeUrlSchema.safeParse(payTo?.bridgeUrl ?? null);
 
 		docs.push({
 			doc_type: "doc/shockwallet/source_",
 			schema_rev: 0,
 			source_id: id,
-			label: {
-				clock: { v: 0, by: deviceId },
-				value: payTo?.label ?? spendFrom?.label ?? null,
-			},
-			deleted: { clock: { v: 0, by: deviceId }, value: false },
+			label: newLww(payTo?.label ?? spendFrom?.label ?? null, deviceId),
+			deleted: newLww(false, deviceId),
 			created_at: Date.now(),
 			type: SourceType.NPROFILE_SOURCE,
 			lpk: profilePointer.pubkey,
 			keys,
-			is_ndebit_discoverable: {
-				clock: { v: 0, by: deviceId },
-				value: !!payTo?.isNdebitDiscoverable,
-			},
-			admin_token: { clock: { v: 0, by: deviceId }, value: spendFrom?.adminToken ?? null },
+			is_ndebit_discoverable: newLww(!!payTo?.isNdebitDiscoverable, deviceId),
+			admin_token: newLww(spendFrom?.adminToken ?? null, deviceId),
 			relays: relaysFlags,
-			bridgeUrl: { clock: { v: 0, by: deviceId }, value: payTo?.bridgeUrl ?? null },
+			bridgeUrl: newLww(bridge.success ? bridge.data : null, deviceId),
 			vanity_name: payTo?.vanityName,
 		});
 	}

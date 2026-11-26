@@ -36,7 +36,7 @@ import {
 
 import { beaconWatcherSpec } from "./beaconWatcher";
 import { beaconsSlice } from "./slice";
-import { canonicalRelayUrl, canonicalRelayUrls } from "./relays";
+import { canonicalRelayUrl, canonicalRelayUrls } from "@/lib/relays";
 import { makeSelectSourceBeaconJoin, type SourceBeaconJoin } from "./selectors";
 import {
 	beaconRelayStaleAtMs,
@@ -1013,10 +1013,10 @@ describe("beaconWatcher", () => {
 
 	it("probes at most three relays at once", async () => {
 		const relays = [
-			"wss://a.example",
-			"wss://b.example",
-			"wss://c.example",
-			"wss://d.example",
+			"wss://a.github.com",
+			"wss://b.github.com",
+			"wss://c.github.com",
+			"wss://d.github.com",
 		];
 		const pending = new Map<string, (result: BeaconDiscoveryResult) => void>();
 		fetchBeaconDiscoveryMock.mockImplementation(
@@ -1046,7 +1046,7 @@ describe("beaconWatcher", () => {
 
 		expect(join(store, source)).toMatchObject({
 			health: "fresh",
-			name: "wss://d.example",
+			name: "wss://d.github.com/",
 		});
 	});
 

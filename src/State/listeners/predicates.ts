@@ -8,7 +8,7 @@ import { RootState } from "../store/store";
 import { listenerKick } from "./actions";
 import { runtimeActions } from "@/State/runtime/slice";
 import { sourceBeaconJoin } from "@/State/scoped/beacons/selectors";
-import { canonicalRelayUrls } from "@/State/scoped/beacons/relays";
+import { canonicalRelayUrls } from "@/lib/relays";
 
 export type ListenerPredicate = (
 	action: UnknownAction,
