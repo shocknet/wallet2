@@ -83,7 +83,7 @@
 		"react-toastify": "^10.0.4",
 		"react-virtuoso": "^4.13.0",
 		"redux-persist": "^6.0.0",
-		"sanctum-sdk": "github:shocknet/sanctumDK#5eb3ed85ef7526f2302b70247348a8061df67a31",
+		"sanctum-sdk": "github:shocknet/sanctumDK#16d703535a6fd6e5411ee12d449a2f3fff793d82",
 		"sortablejs": "^1.15.1",
 		"styled-components": "^6.1.18",
 		"swiper": "^12.1.2",
