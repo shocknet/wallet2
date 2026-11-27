@@ -251,9 +251,9 @@ describe("NostrClient single RPCs through real TransportPool", () => {
 		expect(await outcome).toMatchObject({ requestId: id, status: "OK" });
 	});
 
-	it("does not pause or automatically retry a PayInvoice RPC", async () => {
+	it.each(["PayInvoice", "AdminSendCoins", "AdminSendUserToUser"])("does not pause or automatically retry %s", async (rpcName) => {
 		await ready();
-		const { id, outcome } = request("PayInvoice");
+		const { id, outcome } = request(rpcName);
 		const pub = await waitForPublishedCount(server, 1, caller.publicKey);
 		const cb = single(id);
 		expect(cb.safe).toBe(false);
