@@ -45,7 +45,7 @@ export type Client = ReturnType<typeof NewNostrClientType>
 
 
 const RPC_SINGLE_TIMEOUT_MS = 8_000;
-const RETRY_UNSAFE = new Set(["PayAddress", "PayInvoice"]);
+const RETRY_UNSAFE = new Set(["PayAddress", "PayInvoice", "AdminSendCoins", "AdminSendUserToUser"]);
 
 
 

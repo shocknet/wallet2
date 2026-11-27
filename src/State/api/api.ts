@@ -48,6 +48,7 @@ export const appApi = createApi({
 		"OpenChannels", "LndPeers", "UsersAdmin", "InvoiceSwaps",
 		"TxSwaps", "UserOperations", "AssetsLiabilities",
 		"LndUtxos", "AdminNodeSettings",
+		"FailedOutgoingPayments", "PaymentDestinations",
 	],
 	endpoints: (b) => ({
 		getProfile: b.query<NostrProfile | null, { pubkey: string; relays: string[] }>({

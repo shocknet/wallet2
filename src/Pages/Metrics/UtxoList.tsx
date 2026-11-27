@@ -10,7 +10,7 @@ import { useListUtxosQuery } from "./pubDashApi";
 import { useGetPubDashboardCapabilityQuery } from "./pubDashboardCapabilityApi";
 import { PubUpgradeNotice } from "./PubUpgradeNotice";
 
-export function UtxoList() {
+export function UtxoList({ onSendOnChain }: { onSendOnChain?: () => void } = {}) {
 	const [origin, setOrigin] = useState<UtxoOrigin | "ALL">("ALL");
 	const { sourceId } = useDashboardSource();
 	const cap = useGetPubDashboardCapabilityQuery({ sourceId });
@@ -42,7 +42,14 @@ export function UtxoList() {
 		<div className="dash-section">
 			<div className="dash-section-head">
 				<h2>On-chain</h2>
-				<span className="dash-section-count">{loading ? "…" : ordered.length}</span>
+				<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+					<span className="dash-section-count">{loading ? "…" : ordered.length}</span>
+					{onSendOnChain && (
+						<button type="button" className="dash-btn" onClick={onSendOnChain}>
+							Send on-chain
+						</button>
+					)}
+				</div>
 			</div>
 			{error ? <p className="dash-field-hint">{errMsg}</p> : null}
 			{data?.length ? (

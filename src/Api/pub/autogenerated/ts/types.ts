@@ -2,16 +2,16 @@
 
 export type ResultError = { status: 'ERROR', reason: string }
 export type RequestInfo = { rpcName: string, batch: boolean, nostr: boolean, batchSize: number }
-export type RequestStats = { startMs:number, start:bigint, parse: bigint, guard: bigint, validate: bigint, handle: bigint }
+export type RequestStats = { startMs: number, start: bigint, parse: bigint, guard: bigint, validate: bigint, handle: bigint }
 export type RequestMetric = AuthContext & RequestInfo & RequestStats & { error?: string }
-export type ProtoSocketState = 'OPEN' | 'CLOSED' 
+export type ProtoSocketState = 'OPEN' | 'CLOSED'
 export type ProtoSocket<T> = {
     getState: () => ProtoSocketState
     close: () => void
     send: (res: T, err: Error | null, cb?: (err: Error | undefined) => void) => void
     subMore: (cb: (bytes: Object | Buffer) => void) => void
 }
-export interface RequestLogger {}
+export interface RequestLogger { }
 export type RequestContext = {
     getIp: () => string | undefined
     getHeader: (name: string) => string | undefined
@@ -23,8 +23,8 @@ export type RequestContext = {
 export type AdminContext = {
     admin_id: string
 }
-export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AuthApp_Input | BanUser_Input | BumpTx_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetAdminInvoiceSwapQuotes_Input | GetAdminNodeSettings_Input | GetAdminTransactionSwapQuotes_Input | GetAssetsAndLiabilities_Input | GetAssetsAndLiabilitiesV2_Input | GetInviteLinkState_Input | GetSeed_Input | GetUserOperationsFromAdmin_Input | GetUsersAdminInfo_Input | ListAdminInvoiceSwaps_Input | ListAdminTxSwaps_Input | ListChannels_Input | ListPeers_Input | ListUtxos_Input | LndGetInfo_Input | OpenChannel_Input | PayAdminInvoiceSwap_Input | PayAdminTransactionSwap_Input | RefundAdminInvoiceSwap_Input | UpdateAdminNodeSettings_Input | UpdateChannelPolicy_Input
-export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AuthApp_Output | BanUser_Output | BumpTx_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetAdminInvoiceSwapQuotes_Output | GetAdminNodeSettings_Output | GetAdminTransactionSwapQuotes_Output | GetAssetsAndLiabilities_Output | GetAssetsAndLiabilitiesV2_Output | GetInviteLinkState_Output | GetSeed_Output | GetUserOperationsFromAdmin_Output | GetUsersAdminInfo_Output | ListAdminInvoiceSwaps_Output | ListAdminTxSwaps_Output | ListChannels_Output | ListPeers_Output | ListUtxos_Output | LndGetInfo_Output | OpenChannel_Output | PayAdminInvoiceSwap_Output | PayAdminTransactionSwap_Output | RefundAdminInvoiceSwap_Output | UpdateAdminNodeSettings_Output | UpdateChannelPolicy_Output
+export type AdminMethodInputs = AddApp_Input | AddPeer_Input | AdminSendCoins_Input | AdminSendUserToUser_Input | AuthApp_Input | BanUser_Input | BumpTx_Input | CloseChannel_Input | CreateOneTimeInviteLink_Input | GetAdminInvoiceSwapQuotes_Input | GetAdminNodeSettings_Input | GetAdminOnchainConfSettings_Input | GetAdminTransactionSwapQuotes_Input | GetAssetsAndLiabilities_Input | GetAssetsAndLiabilitiesV2_Input | GetInviteLinkState_Input | GetSeed_Input | GetUserOperationsFromAdmin_Input | GetUsersAdminInfo_Input | ListAdminInvoiceSwaps_Input | ListAdminTxSwaps_Input | ListChannels_Input | ListPeers_Input | ListUtxos_Input | LndGetInfo_Input | OpenChannel_Input | PayAdminInvoiceSwap_Input | PayAdminTransactionSwap_Input | RefundAdminInvoiceSwap_Input | UpdateAdminNodeSettings_Input | UpdateAdminOnchainConfSettings_Input | UpdateChannelPolicy_Input
+export type AdminMethodOutputs = AddApp_Output | AddPeer_Output | AdminSendCoins_Output | AdminSendUserToUser_Output | AuthApp_Output | BanUser_Output | BumpTx_Output | CloseChannel_Output | CreateOneTimeInviteLink_Output | GetAdminInvoiceSwapQuotes_Output | GetAdminNodeSettings_Output | GetAdminOnchainConfSettings_Output | GetAdminTransactionSwapQuotes_Output | GetAssetsAndLiabilities_Output | GetAssetsAndLiabilitiesV2_Output | GetInviteLinkState_Output | GetSeed_Output | GetUserOperationsFromAdmin_Output | GetUsersAdminInfo_Output | ListAdminInvoiceSwaps_Output | ListAdminTxSwaps_Output | ListChannels_Output | ListPeers_Output | ListUtxos_Output | LndGetInfo_Output | OpenChannel_Output | PayAdminInvoiceSwap_Output | PayAdminTransactionSwap_Output | RefundAdminInvoiceSwap_Output | UpdateAdminNodeSettings_Output | UpdateAdminOnchainConfSettings_Output | UpdateChannelPolicy_Output
 export type AppContext = {
     app_id: string
 }
@@ -44,8 +44,8 @@ export type MetricsContext = {
     app_id: string
     operator_id: string
 }
-export type MetricsMethodInputs = GetAppsMetrics_Input | GetBundleMetrics_Input | GetErrorStats_Input | GetLndForwardingMetrics_Input | GetLndMetrics_Input | GetProvidersDisruption_Input | GetSingleBundleMetrics_Input | GetSingleUsageMetrics_Input | GetUsageMetrics_Input | PingSubProcesses_Input | ResetMetricsStorages_Input | SubToWebRtcCandidates_Input | SubmitWebRtcMessage_Input | ZipMetricsStorages_Input
-export type MetricsMethodOutputs = GetAppsMetrics_Output | GetBundleMetrics_Output | GetErrorStats_Output | GetLndForwardingMetrics_Output | GetLndMetrics_Output | GetProvidersDisruption_Output | GetSingleBundleMetrics_Output | GetSingleUsageMetrics_Output | GetUsageMetrics_Output | PingSubProcesses_Output | ResetMetricsStorages_Output | SubToWebRtcCandidates_Output | SubmitWebRtcMessage_Output | ZipMetricsStorages_Output
+export type MetricsMethodInputs = GetAppsMetrics_Input | GetBundleMetrics_Input | GetErrorStats_Input | GetFailedOutgoingPayments_Input | GetLndForwardingMetrics_Input | GetLndMetrics_Input | GetPaymentDestinations_Input | GetProvidersDisruption_Input | GetSingleBundleMetrics_Input | GetSingleUsageMetrics_Input | GetUsageMetrics_Input | PingSubProcesses_Input | ResetMetricsStorages_Input | SubToWebRtcCandidates_Input | SubmitWebRtcMessage_Input | ZipMetricsStorages_Input
+export type MetricsMethodOutputs = GetAppsMetrics_Output | GetBundleMetrics_Output | GetErrorStats_Output | GetFailedOutgoingPayments_Output | GetLndForwardingMetrics_Output | GetLndMetrics_Output | GetPaymentDestinations_Output | GetProvidersDisruption_Output | GetSingleBundleMetrics_Output | GetSingleUsageMetrics_Output | GetUsageMetrics_Output | PingSubProcesses_Output | ResetMetricsStorages_Output | SubToWebRtcCandidates_Output | SubmitWebRtcMessage_Output | ZipMetricsStorages_Output
 export type UserContext = {
     app_id: string
     app_user_id: string
@@ -55,202 +55,217 @@ export type UserMethodInputs = AddProduct_Input | AddUserOffer_Input | Authorize
 export type UserMethodOutputs = AddProduct_Output | AddUserOffer_Output | AuthorizeManage_Output | BanDebit_Output | DecodeInvoice_Output | DeleteUserOffer_Output | EditDebit_Output | EnrollAdminToken_Output | EnrollMessagingToken_Output | GetDebitAuthorizations_Output | GetHttpCreds_Output | GetLNURLChannelLink_Output | GetLiveDebitRequests_Output | GetLiveManageRequests_Output | GetLiveUserOperations_Output | GetLnurlPayLink_Output | GetLnurlWithdrawLink_Output | GetManageAuthorizations_Output | GetMigrationUpdate_Output | GetPaymentState_Output | GetTransactionSwapQuotes_Output | GetUserInfo_Output | GetUserOffer_Output | GetUserOfferInvoices_Output | GetUserOffers_Output | GetUserOperations_Output | ListTxSwaps_Output | NewAddress_Output | NewInvoice_Output | NewProductInvoice_Output | PayAddress_Output | PayInvoice_Output | ResetDebit_Output | ResetManage_Output | RespondToDebit_Output | UpdateCallbackUrl_Output | UpdateUserOffer_Output | UserHealth_Output
 export type AuthContext = AdminContext | AppContext | GuestContext | GuestWithPubContext | MetricsContext | UserContext
 
-export type AddApp_Input = {rpcName:'AddApp', req: AddAppRequest}
+export type AddApp_Input = { rpcName: 'AddApp', req: AddAppRequest }
 export type AddApp_Output = ResultError | ({ status: 'OK' } & AuthApp)
 
-export type AddAppInvoice_Input = {rpcName:'AddAppInvoice', req: AddAppInvoiceRequest}
+export type AddAppInvoice_Input = { rpcName: 'AddAppInvoice', req: AddAppInvoiceRequest }
 export type AddAppInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type AddAppUser_Input = {rpcName:'AddAppUser', req: AddAppUserRequest}
+export type AddAppUser_Input = { rpcName: 'AddAppUser', req: AddAppUserRequest }
 export type AddAppUser_Output = ResultError | ({ status: 'OK' } & AppUser)
 
-export type AddAppUserInvoice_Input = {rpcName:'AddAppUserInvoice', req: AddAppUserInvoiceRequest}
+export type AddAppUserInvoice_Input = { rpcName: 'AddAppUserInvoice', req: AddAppUserInvoiceRequest }
 export type AddAppUserInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type AddPeer_Input = {rpcName:'AddPeer', req: AddPeerRequest}
+export type AddPeer_Input = { rpcName: 'AddPeer', req: AddPeerRequest }
 export type AddPeer_Output = ResultError | { status: 'OK' }
 
-export type AddProduct_Input = {rpcName:'AddProduct', req: AddProductRequest}
+export type AddProduct_Input = { rpcName: 'AddProduct', req: AddProductRequest }
 export type AddProduct_Output = ResultError | ({ status: 'OK' } & Product)
 
-export type AddUserOffer_Input = {rpcName:'AddUserOffer', req: OfferCreateRequest}
+export type AddUserOffer_Input = { rpcName: 'AddUserOffer', req: OfferCreateRequest }
 export type AddUserOffer_Output = ResultError | ({ status: 'OK' } & OfferId)
 
-export type AuthApp_Input = {rpcName:'AuthApp', req: AuthAppRequest}
+export type AdminSendCoins_Input = { rpcName: 'AdminSendCoins', req: AdminSendCoinsRequest }
+export type AdminSendCoins_Output = ResultError | ({ status: 'OK' } & AdminSendCoinsResponse)
+
+export type AdminSendUserToUser_Input = { rpcName: 'AdminSendUserToUser', req: AdminSendUserToUserRequest }
+export type AdminSendUserToUser_Output = ResultError | ({ status: 'OK' } & AdminSendUserToUserResponse)
+
+export type AuthApp_Input = { rpcName: 'AuthApp', req: AuthAppRequest }
 export type AuthApp_Output = ResultError | ({ status: 'OK' } & AuthApp)
 
-export type AuthorizeManage_Input = {rpcName:'AuthorizeManage', req: ManageAuthorizationRequest}
+export type AuthorizeManage_Input = { rpcName: 'AuthorizeManage', req: ManageAuthorizationRequest }
 export type AuthorizeManage_Output = ResultError | ({ status: 'OK' } & ManageAuthorization)
 
-export type BanDebit_Input = {rpcName:'BanDebit', req: DebitOperation}
+export type BanDebit_Input = { rpcName: 'BanDebit', req: DebitOperation }
 export type BanDebit_Output = ResultError | { status: 'OK' }
 
-export type BanUser_Input = {rpcName:'BanUser', req: BanUserRequest}
+export type BanUser_Input = { rpcName: 'BanUser', req: BanUserRequest }
 export type BanUser_Output = ResultError | ({ status: 'OK' } & BanUserResponse)
 
 export type BatchUser_Input = UserMethodInputs
 export type BatchUser_Output = UserMethodOutputs
 
-export type BumpTx_Input = {rpcName:'BumpTx', req: BumpTx}
+export type BumpTx_Input = { rpcName: 'BumpTx', req: BumpTx }
 export type BumpTx_Output = ResultError | { status: 'OK' }
 
-export type CloseChannel_Input = {rpcName:'CloseChannel', req: CloseChannelRequest}
+export type CloseChannel_Input = { rpcName: 'CloseChannel', req: CloseChannelRequest }
 export type CloseChannel_Output = ResultError | ({ status: 'OK' } & CloseChannelResponse)
 
-export type CreateOneTimeInviteLink_Input = {rpcName:'CreateOneTimeInviteLink', req: CreateOneTimeInviteLinkRequest}
+export type CreateOneTimeInviteLink_Input = { rpcName: 'CreateOneTimeInviteLink', req: CreateOneTimeInviteLinkRequest }
 export type CreateOneTimeInviteLink_Output = ResultError | ({ status: 'OK' } & CreateOneTimeInviteLinkResponse)
 
-export type DecodeInvoice_Input = {rpcName:'DecodeInvoice', req: DecodeInvoiceRequest}
+export type DecodeInvoice_Input = { rpcName: 'DecodeInvoice', req: DecodeInvoiceRequest }
 export type DecodeInvoice_Output = ResultError | ({ status: 'OK' } & DecodeInvoiceResponse)
 
-export type DeleteUserOffer_Input = {rpcName:'DeleteUserOffer', req: OfferId}
+export type DeleteUserOffer_Input = { rpcName: 'DeleteUserOffer', req: OfferId }
 export type DeleteUserOffer_Output = ResultError | { status: 'OK' }
 
-export type EditDebit_Input = {rpcName:'EditDebit', req: DebitAuthorizationRequest}
+export type EditDebit_Input = { rpcName: 'EditDebit', req: DebitAuthorizationRequest }
 export type EditDebit_Output = ResultError | { status: 'OK' }
 
-export type EncryptionExchange_Input = {rpcName:'EncryptionExchange', req: EncryptionExchangeRequest}
+export type EncryptionExchange_Input = { rpcName: 'EncryptionExchange', req: EncryptionExchangeRequest }
 export type EncryptionExchange_Output = ResultError | { status: 'OK' }
 
-export type EnrollAdminToken_Input = {rpcName:'EnrollAdminToken', req: EnrollAdminTokenRequest}
+export type EnrollAdminToken_Input = { rpcName: 'EnrollAdminToken', req: EnrollAdminTokenRequest }
 export type EnrollAdminToken_Output = ResultError | { status: 'OK' }
 
-export type EnrollMessagingToken_Input = {rpcName:'EnrollMessagingToken', req: MessagingToken}
+export type EnrollMessagingToken_Input = { rpcName: 'EnrollMessagingToken', req: MessagingToken }
 export type EnrollMessagingToken_Output = ResultError | { status: 'OK' }
 
-export type GetAdminInvoiceSwapQuotes_Input = {rpcName:'GetAdminInvoiceSwapQuotes', req: InvoiceSwapRequest}
+export type GetAdminInvoiceSwapQuotes_Input = { rpcName: 'GetAdminInvoiceSwapQuotes', req: InvoiceSwapRequest }
 export type GetAdminInvoiceSwapQuotes_Output = ResultError | ({ status: 'OK' } & InvoiceSwapQuoteList)
 
-export type GetAdminNodeSettings_Input = {rpcName:'GetAdminNodeSettings'}
+export type GetAdminNodeSettings_Input = { rpcName: 'GetAdminNodeSettings' }
 export type GetAdminNodeSettings_Output = ResultError | ({ status: 'OK' } & AdminNodeSettings)
 
-export type GetAdminTransactionSwapQuotes_Input = {rpcName:'GetAdminTransactionSwapQuotes', req: TransactionSwapRequest}
+export type GetAdminOnchainConfSettings_Input = { rpcName: 'GetAdminOnchainConfSettings' }
+export type GetAdminOnchainConfSettings_Output = ResultError | ({ status: 'OK' } & AdminOnchainConfSettings)
+
+export type GetAdminTransactionSwapQuotes_Input = { rpcName: 'GetAdminTransactionSwapQuotes', req: TransactionSwapRequest }
 export type GetAdminTransactionSwapQuotes_Output = ResultError | ({ status: 'OK' } & TransactionSwapQuoteList)
 
-export type GetApp_Input = {rpcName:'GetApp'}
+export type GetApp_Input = { rpcName: 'GetApp' }
 export type GetApp_Output = ResultError | ({ status: 'OK' } & Application)
 
-export type GetAppUser_Input = {rpcName:'GetAppUser', req: GetAppUserRequest}
+export type GetAppUser_Input = { rpcName: 'GetAppUser', req: GetAppUserRequest }
 export type GetAppUser_Output = ResultError | ({ status: 'OK' } & AppUser)
 
-export type GetAppUserLNURLInfo_Input = {rpcName:'GetAppUserLNURLInfo', req: GetAppUserLNURLInfoRequest}
+export type GetAppUserLNURLInfo_Input = { rpcName: 'GetAppUserLNURLInfo', req: GetAppUserLNURLInfoRequest }
 export type GetAppUserLNURLInfo_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
-export type GetAppsMetrics_Input = {rpcName:'GetAppsMetrics', req: AppsMetricsRequest}
+export type GetAppsMetrics_Input = { rpcName: 'GetAppsMetrics', req: AppsMetricsRequest }
 export type GetAppsMetrics_Output = ResultError | ({ status: 'OK' } & AppsMetrics)
 
-export type GetAssetsAndLiabilities_Input = {rpcName:'GetAssetsAndLiabilities', req: AssetsAndLiabilitiesReq}
+export type GetAssetsAndLiabilities_Input = { rpcName: 'GetAssetsAndLiabilities', req: AssetsAndLiabilitiesReq }
 export type GetAssetsAndLiabilities_Output = ResultError | ({ status: 'OK' } & AssetsAndLiabilities)
 
-export type GetAssetsAndLiabilitiesV2_Input = {rpcName:'GetAssetsAndLiabilitiesV2', req: AssetsAndLiabilitiesReqV2}
+export type GetAssetsAndLiabilitiesV2_Input = { rpcName: 'GetAssetsAndLiabilitiesV2', req: AssetsAndLiabilitiesReqV2 }
 export type GetAssetsAndLiabilitiesV2_Output = ResultError | ({ status: 'OK' } & AssetsAndLiabilitiesV2)
 
-export type GetBundleMetrics_Input = {rpcName:'GetBundleMetrics', req: LatestBundleMetricReq}
+export type GetBundleMetrics_Input = { rpcName: 'GetBundleMetrics', req: LatestBundleMetricReq }
 export type GetBundleMetrics_Output = ResultError | ({ status: 'OK' } & BundleMetrics)
 
-export type GetDebitAuthorizations_Input = {rpcName:'GetDebitAuthorizations'}
+export type GetDebitAuthorizations_Input = { rpcName: 'GetDebitAuthorizations' }
 export type GetDebitAuthorizations_Output = ResultError | ({ status: 'OK' } & DebitAuthorizations)
 
-export type GetErrorStats_Input = {rpcName:'GetErrorStats'}
+export type GetErrorStats_Input = { rpcName: 'GetErrorStats' }
 export type GetErrorStats_Output = ResultError | ({ status: 'OK' } & ErrorStats)
 
-export type GetHttpCreds_Input = {rpcName:'GetHttpCreds'}
+export type GetFailedOutgoingPayments_Input = { rpcName: 'GetFailedOutgoingPayments', req: FailedOutgoingPaymentsRequest }
+export type GetFailedOutgoingPayments_Output = ResultError | ({ status: 'OK' } & FailedOutgoingPayments)
+
+export type GetHttpCreds_Input = { rpcName: 'GetHttpCreds' }
 export type GetHttpCreds_Output = ResultError | ({ status: 'OK' } & HttpCreds)
 
-export type GetInviteLinkState_Input = {rpcName:'GetInviteLinkState', req: GetInviteTokenStateRequest}
+export type GetInviteLinkState_Input = { rpcName: 'GetInviteLinkState', req: GetInviteTokenStateRequest }
 export type GetInviteLinkState_Output = ResultError | ({ status: 'OK' } & GetInviteTokenStateResponse)
 
-export type GetLNURLChannelLink_Input = {rpcName:'GetLNURLChannelLink'}
+export type GetLNURLChannelLink_Input = { rpcName: 'GetLNURLChannelLink' }
 export type GetLNURLChannelLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
-export type GetLiveDebitRequests_Input = {rpcName:'GetLiveDebitRequests',  socket: ProtoSocket<LiveDebitRequest> }
+export type GetLiveDebitRequests_Input = { rpcName: 'GetLiveDebitRequests', socket: ProtoSocket<LiveDebitRequest> }
 export type GetLiveDebitRequests_Output = ResultError | { status: 'OK' }
 
-export type GetLiveManageRequests_Input = {rpcName:'GetLiveManageRequests',  socket: ProtoSocket<LiveManageRequest> }
+export type GetLiveManageRequests_Input = { rpcName: 'GetLiveManageRequests', socket: ProtoSocket<LiveManageRequest> }
 export type GetLiveManageRequests_Output = ResultError | { status: 'OK' }
 
-export type GetLiveUserOperations_Input = {rpcName:'GetLiveUserOperations',  socket: ProtoSocket<LiveUserOperation> }
+export type GetLiveUserOperations_Input = { rpcName: 'GetLiveUserOperations', socket: ProtoSocket<LiveUserOperation> }
 export type GetLiveUserOperations_Output = ResultError | { status: 'OK' }
 
-export type GetLndForwardingMetrics_Input = {rpcName:'GetLndForwardingMetrics', req: LndMetricsRequest}
+export type GetLndForwardingMetrics_Input = { rpcName: 'GetLndForwardingMetrics', req: LndMetricsRequest }
 export type GetLndForwardingMetrics_Output = ResultError | ({ status: 'OK' } & LndForwardingMetrics)
 
-export type GetLndMetrics_Input = {rpcName:'GetLndMetrics', req: LndMetricsRequest}
+export type GetLndMetrics_Input = { rpcName: 'GetLndMetrics', req: LndMetricsRequest }
 export type GetLndMetrics_Output = ResultError | ({ status: 'OK' } & LndMetrics)
 
 export type GetLnurlPayInfo_Query = {
     k1?: string[] | string
 }
-export type GetLnurlPayInfo_Input = {rpcName:'GetLnurlPayInfo', query: GetLnurlPayInfo_Query}
+export type GetLnurlPayInfo_Input = { rpcName: 'GetLnurlPayInfo', query: GetLnurlPayInfo_Query }
 export type GetLnurlPayInfo_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
-export type GetLnurlPayLink_Input = {rpcName:'GetLnurlPayLink'}
+export type GetLnurlPayLink_Input = { rpcName: 'GetLnurlPayLink' }
 export type GetLnurlPayLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
 export type GetLnurlWithdrawInfo_Query = {
     k1?: string[] | string
 }
-export type GetLnurlWithdrawInfo_Input = {rpcName:'GetLnurlWithdrawInfo', query: GetLnurlWithdrawInfo_Query}
+export type GetLnurlWithdrawInfo_Input = { rpcName: 'GetLnurlWithdrawInfo', query: GetLnurlWithdrawInfo_Query }
 export type GetLnurlWithdrawInfo_Output = ResultError | ({ status: 'OK' } & LnurlWithdrawInfoResponse)
 
-export type GetLnurlWithdrawLink_Input = {rpcName:'GetLnurlWithdrawLink'}
+export type GetLnurlWithdrawLink_Input = { rpcName: 'GetLnurlWithdrawLink' }
 export type GetLnurlWithdrawLink_Output = ResultError | ({ status: 'OK' } & LnurlLinkResponse)
 
-export type GetManageAuthorizations_Input = {rpcName:'GetManageAuthorizations'}
+export type GetManageAuthorizations_Input = { rpcName: 'GetManageAuthorizations' }
 export type GetManageAuthorizations_Output = ResultError | ({ status: 'OK' } & ManageAuthorizations)
 
-export type GetMigrationUpdate_Input = {rpcName:'GetMigrationUpdate',  socket: ProtoSocket<MigrationUpdate> }
+export type GetMigrationUpdate_Input = { rpcName: 'GetMigrationUpdate', socket: ProtoSocket<MigrationUpdate> }
 export type GetMigrationUpdate_Output = ResultError | { status: 'OK' }
 
-export type GetNPubLinkingState_Input = {rpcName:'GetNPubLinkingState', req: GetNPubLinking}
+export type GetNPubLinkingState_Input = { rpcName: 'GetNPubLinkingState', req: GetNPubLinking }
 export type GetNPubLinkingState_Output = ResultError | ({ status: 'OK' } & NPubLinking)
 
-export type GetPaymentState_Input = {rpcName:'GetPaymentState', req: GetPaymentStateRequest}
+export type GetPaymentDestinations_Input = { rpcName: 'GetPaymentDestinations', req: PaymentDestinationsRequest }
+export type GetPaymentDestinations_Output = ResultError | ({ status: 'OK' } & PaymentDestinations)
+
+export type GetPaymentState_Input = { rpcName: 'GetPaymentState', req: GetPaymentStateRequest }
 export type GetPaymentState_Output = ResultError | ({ status: 'OK' } & PaymentState)
 
-export type GetProvidersDisruption_Input = {rpcName:'GetProvidersDisruption'}
+export type GetProvidersDisruption_Input = { rpcName: 'GetProvidersDisruption' }
 export type GetProvidersDisruption_Output = ResultError | ({ status: 'OK' } & ProvidersDisruption)
 
-export type GetSeed_Input = {rpcName:'GetSeed'}
+export type GetSeed_Input = { rpcName: 'GetSeed' }
 export type GetSeed_Output = ResultError | ({ status: 'OK' } & LndSeed)
 
-export type GetSingleBundleMetrics_Input = {rpcName:'GetSingleBundleMetrics', req: SingleMetricReq}
+export type GetSingleBundleMetrics_Input = { rpcName: 'GetSingleBundleMetrics', req: SingleMetricReq }
 export type GetSingleBundleMetrics_Output = ResultError | ({ status: 'OK' } & BundleData)
 
-export type GetSingleUsageMetrics_Input = {rpcName:'GetSingleUsageMetrics', req: SingleMetricReq}
+export type GetSingleUsageMetrics_Input = { rpcName: 'GetSingleUsageMetrics', req: SingleMetricReq }
 export type GetSingleUsageMetrics_Output = ResultError | ({ status: 'OK' } & UsageMetricTlv)
 
-export type GetTransactionSwapQuotes_Input = {rpcName:'GetTransactionSwapQuotes', req: TransactionSwapRequest}
+export type GetTransactionSwapQuotes_Input = { rpcName: 'GetTransactionSwapQuotes', req: TransactionSwapRequest }
 export type GetTransactionSwapQuotes_Output = ResultError | ({ status: 'OK' } & TransactionSwapQuoteList)
 
-export type GetUsageMetrics_Input = {rpcName:'GetUsageMetrics', req: LatestUsageMetricReq}
+export type GetUsageMetrics_Input = { rpcName: 'GetUsageMetrics', req: LatestUsageMetricReq }
 export type GetUsageMetrics_Output = ResultError | ({ status: 'OK' } & UsageMetrics)
 
-export type GetUserInfo_Input = {rpcName:'GetUserInfo'}
+export type GetUserInfo_Input = { rpcName: 'GetUserInfo' }
 export type GetUserInfo_Output = ResultError | ({ status: 'OK' } & UserInfo)
 
-export type GetUserOffer_Input = {rpcName:'GetUserOffer', req: OfferId}
+export type GetUserOffer_Input = { rpcName: 'GetUserOffer', req: OfferId }
 export type GetUserOffer_Output = ResultError | ({ status: 'OK' } & OfferConfig)
 
-export type GetUserOfferInvoices_Input = {rpcName:'GetUserOfferInvoices', req: GetUserOfferInvoicesReq}
+export type GetUserOfferInvoices_Input = { rpcName: 'GetUserOfferInvoices', req: GetUserOfferInvoicesReq }
 export type GetUserOfferInvoices_Output = ResultError | ({ status: 'OK' } & OfferInvoices)
 
-export type GetUserOffers_Input = {rpcName:'GetUserOffers'}
+export type GetUserOffers_Input = { rpcName: 'GetUserOffers' }
 export type GetUserOffers_Output = ResultError | ({ status: 'OK' } & UserOffers)
 
-export type GetUserOperations_Input = {rpcName:'GetUserOperations', req: GetUserOperationsRequest}
+export type GetUserOperations_Input = { rpcName: 'GetUserOperations', req: GetUserOperationsRequest }
 export type GetUserOperations_Output = ResultError | ({ status: 'OK' } & GetUserOperationsResponse)
 
-export type GetUserOperationsFromAdmin_Input = {rpcName:'GetUserOperationsFromAdmin', req: GetUserOperationsRequest}
+export type GetUserOperationsFromAdmin_Input = { rpcName: 'GetUserOperationsFromAdmin', req: GetUserOperationsRequest }
 export type GetUserOperationsFromAdmin_Output = ResultError | ({ status: 'OK' } & GetUserOperationsResponse)
 
-export type GetUsersAdminInfo_Input = {rpcName:'GetUsersAdminInfo', req: UsersAdminInfoRequest}
+export type GetUsersAdminInfo_Input = { rpcName: 'GetUsersAdminInfo', req: UsersAdminInfoRequest }
 export type GetUsersAdminInfo_Output = ResultError | ({ status: 'OK' } & UsersAdminInfo)
 
 export type HandleLnurlAddress_RouteParams = {
     address_name: string
 }
-export type HandleLnurlAddress_Input = {rpcName:'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams}
+export type HandleLnurlAddress_Input = { rpcName: 'HandleLnurlAddress', params: HandleLnurlAddress_RouteParams }
 export type HandleLnurlAddress_Output = ResultError | ({ status: 'OK' } & LnurlPayInfoResponse)
 
 export type HandleLnurlPay_Query = {
@@ -259,244 +274,253 @@ export type HandleLnurlPay_Query = {
     lnurl?: string[] | string
     nostr?: string[] | string
 }
-export type HandleLnurlPay_Input = {rpcName:'HandleLnurlPay', query: HandleLnurlPay_Query}
+export type HandleLnurlPay_Input = { rpcName: 'HandleLnurlPay', query: HandleLnurlPay_Query }
 export type HandleLnurlPay_Output = ResultError | ({ status: 'OK' } & HandleLnurlPayResponse)
 
 export type HandleLnurlWithdraw_Query = {
     k1?: string[] | string
     pr?: string[] | string
 }
-export type HandleLnurlWithdraw_Input = {rpcName:'HandleLnurlWithdraw', query: HandleLnurlWithdraw_Query}
+export type HandleLnurlWithdraw_Input = { rpcName: 'HandleLnurlWithdraw', query: HandleLnurlWithdraw_Query }
 export type HandleLnurlWithdraw_Output = ResultError | { status: 'OK' }
 
-export type Health_Input = {rpcName:'Health'}
+export type Health_Input = { rpcName: 'Health' }
 export type Health_Output = ResultError | { status: 'OK' }
 
-export type LinkNPubThroughToken_Input = {rpcName:'LinkNPubThroughToken', req: LinkNPubThroughTokenRequest}
+export type LinkNPubThroughToken_Input = { rpcName: 'LinkNPubThroughToken', req: LinkNPubThroughTokenRequest }
 export type LinkNPubThroughToken_Output = ResultError | { status: 'OK' }
 
-export type ListAdminInvoiceSwaps_Input = {rpcName:'ListAdminInvoiceSwaps'}
+export type ListAdminInvoiceSwaps_Input = { rpcName: 'ListAdminInvoiceSwaps' }
 export type ListAdminInvoiceSwaps_Output = ResultError | ({ status: 'OK' } & InvoiceSwapsList)
 
-export type ListAdminTxSwaps_Input = {rpcName:'ListAdminTxSwaps'}
+export type ListAdminTxSwaps_Input = { rpcName: 'ListAdminTxSwaps' }
 export type ListAdminTxSwaps_Output = ResultError | ({ status: 'OK' } & TxSwapsList)
 
-export type ListChannels_Input = {rpcName:'ListChannels'}
+export type ListChannels_Input = { rpcName: 'ListChannels' }
 export type ListChannels_Output = ResultError | ({ status: 'OK' } & LndChannels)
 
-export type ListPeers_Input = {rpcName:'ListPeers'}
+export type ListPeers_Input = { rpcName: 'ListPeers' }
 export type ListPeers_Output = ResultError | ({ status: 'OK' } & LndPeers)
 
-export type ListTxSwaps_Input = {rpcName:'ListTxSwaps'}
+export type ListTxSwaps_Input = { rpcName: 'ListTxSwaps' }
 export type ListTxSwaps_Output = ResultError | ({ status: 'OK' } & TxSwapsList)
 
-export type ListUtxos_Input = {rpcName:'ListUtxos'}
+export type ListUtxos_Input = { rpcName: 'ListUtxos' }
 export type ListUtxos_Output = ResultError | ({ status: 'OK' } & LndUtxos)
 
-export type LndGetInfo_Input = {rpcName:'LndGetInfo', req: LndGetInfoRequest}
+export type LndGetInfo_Input = { rpcName: 'LndGetInfo', req: LndGetInfoRequest }
 export type LndGetInfo_Output = ResultError | ({ status: 'OK' } & LndGetInfoResponse)
 
-export type NewAddress_Input = {rpcName:'NewAddress', req: NewAddressRequest}
+export type NewAddress_Input = { rpcName: 'NewAddress', req: NewAddressRequest }
 export type NewAddress_Output = ResultError | ({ status: 'OK' } & NewAddressResponse)
 
-export type NewInvoice_Input = {rpcName:'NewInvoice', req: NewInvoiceRequest}
+export type NewInvoice_Input = { rpcName: 'NewInvoice', req: NewInvoiceRequest }
 export type NewInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
 export type NewProductInvoice_Query = {
     id?: string[] | string
 }
-export type NewProductInvoice_Input = {rpcName:'NewProductInvoice', query: NewProductInvoice_Query}
+export type NewProductInvoice_Input = { rpcName: 'NewProductInvoice', query: NewProductInvoice_Query }
 export type NewProductInvoice_Output = ResultError | ({ status: 'OK' } & NewInvoiceResponse)
 
-export type OpenChannel_Input = {rpcName:'OpenChannel', req: OpenChannelRequest}
+export type OpenChannel_Input = { rpcName: 'OpenChannel', req: OpenChannelRequest }
 export type OpenChannel_Output = ResultError | ({ status: 'OK' } & OpenChannelResponse)
 
-export type PayAddress_Input = {rpcName:'PayAddress', req: PayAddressRequest}
+export type PayAddress_Input = { rpcName: 'PayAddress', req: PayAddressRequest }
 export type PayAddress_Output = ResultError | ({ status: 'OK' } & PayAddressResponse)
 
-export type PayAdminInvoiceSwap_Input = {rpcName:'PayAdminInvoiceSwap', req: PayAdminInvoiceSwapRequest}
+export type PayAdminInvoiceSwap_Input = { rpcName: 'PayAdminInvoiceSwap', req: PayAdminInvoiceSwapRequest }
 export type PayAdminInvoiceSwap_Output = ResultError | ({ status: 'OK' } & AdminInvoiceSwapResponse)
 
-export type PayAdminTransactionSwap_Input = {rpcName:'PayAdminTransactionSwap', req: PayAdminTransactionSwapRequest}
+export type PayAdminTransactionSwap_Input = { rpcName: 'PayAdminTransactionSwap', req: PayAdminTransactionSwapRequest }
 export type PayAdminTransactionSwap_Output = ResultError | ({ status: 'OK' } & AdminTxSwapResponse)
 
-export type PayAppUserInvoice_Input = {rpcName:'PayAppUserInvoice', req: PayAppUserInvoiceRequest}
+export type PayAppUserInvoice_Input = { rpcName: 'PayAppUserInvoice', req: PayAppUserInvoiceRequest }
 export type PayAppUserInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
-export type PayInvoice_Input = {rpcName:'PayInvoice', req: PayInvoiceRequest}
+export type PayInvoice_Input = { rpcName: 'PayInvoice', req: PayInvoiceRequest }
 export type PayInvoice_Output = ResultError | ({ status: 'OK' } & PayInvoiceResponse)
 
-export type PingSubProcesses_Input = {rpcName:'PingSubProcesses'}
+export type PingSubProcesses_Input = { rpcName: 'PingSubProcesses' }
 export type PingSubProcesses_Output = ResultError | { status: 'OK' }
 
-export type RefundAdminInvoiceSwap_Input = {rpcName:'RefundAdminInvoiceSwap', req: RefundAdminInvoiceSwapRequest}
+export type RefundAdminInvoiceSwap_Input = { rpcName: 'RefundAdminInvoiceSwap', req: RefundAdminInvoiceSwapRequest }
 export type RefundAdminInvoiceSwap_Output = ResultError | ({ status: 'OK' } & AdminInvoiceSwapResponse)
 
-export type RequestNPubLinkingToken_Input = {rpcName:'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest}
+export type RequestNPubLinkingToken_Input = { rpcName: 'RequestNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
 export type RequestNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
-export type ResetDebit_Input = {rpcName:'ResetDebit', req: DebitOperation}
+export type ResetDebit_Input = { rpcName: 'ResetDebit', req: DebitOperation }
 export type ResetDebit_Output = ResultError | { status: 'OK' }
 
-export type ResetManage_Input = {rpcName:'ResetManage', req: ManageOperation}
+export type ResetManage_Input = { rpcName: 'ResetManage', req: ManageOperation }
 export type ResetManage_Output = ResultError | { status: 'OK' }
 
-export type ResetMetricsStorages_Input = {rpcName:'ResetMetricsStorages'}
+export type ResetMetricsStorages_Input = { rpcName: 'ResetMetricsStorages' }
 export type ResetMetricsStorages_Output = ResultError | { status: 'OK' }
 
-export type ResetNPubLinkingToken_Input = {rpcName:'ResetNPubLinkingToken', req: RequestNPubLinkingTokenRequest}
+export type ResetNPubLinkingToken_Input = { rpcName: 'ResetNPubLinkingToken', req: RequestNPubLinkingTokenRequest }
 export type ResetNPubLinkingToken_Output = ResultError | ({ status: 'OK' } & RequestNPubLinkingTokenResponse)
 
-export type RespondToDebit_Input = {rpcName:'RespondToDebit', req: DebitResponse}
+export type RespondToDebit_Input = { rpcName: 'RespondToDebit', req: DebitResponse }
 export type RespondToDebit_Output = ResultError | { status: 'OK' }
 
-export type SendAppUserToAppPayment_Input = {rpcName:'SendAppUserToAppPayment', req: SendAppUserToAppPaymentRequest}
+export type SendAppUserToAppPayment_Input = { rpcName: 'SendAppUserToAppPayment', req: SendAppUserToAppPaymentRequest }
 export type SendAppUserToAppPayment_Output = ResultError | { status: 'OK' }
 
-export type SendAppUserToAppUserPayment_Input = {rpcName:'SendAppUserToAppUserPayment', req: SendAppUserToAppUserPaymentRequest}
+export type SendAppUserToAppUserPayment_Input = { rpcName: 'SendAppUserToAppUserPayment', req: SendAppUserToAppUserPaymentRequest }
 export type SendAppUserToAppUserPayment_Output = ResultError | { status: 'OK' }
 
-export type SetMockAppBalance_Input = {rpcName:'SetMockAppBalance', req: SetMockAppBalanceRequest}
+export type SetMockAppBalance_Input = { rpcName: 'SetMockAppBalance', req: SetMockAppBalanceRequest }
 export type SetMockAppBalance_Output = ResultError | { status: 'OK' }
 
-export type SetMockAppUserBalance_Input = {rpcName:'SetMockAppUserBalance', req: SetMockAppUserBalanceRequest}
+export type SetMockAppUserBalance_Input = { rpcName: 'SetMockAppUserBalance', req: SetMockAppUserBalanceRequest }
 export type SetMockAppUserBalance_Output = ResultError | { status: 'OK' }
 
-export type SetMockInvoiceAsPaid_Input = {rpcName:'SetMockInvoiceAsPaid', req: SetMockInvoiceAsPaidRequest}
+export type SetMockInvoiceAsPaid_Input = { rpcName: 'SetMockInvoiceAsPaid', req: SetMockInvoiceAsPaidRequest }
 export type SetMockInvoiceAsPaid_Output = ResultError | { status: 'OK' }
 
-export type SubToWebRtcCandidates_Input = {rpcName:'SubToWebRtcCandidates',  socket: ProtoSocket<WebRtcCandidate> }
+export type SubToWebRtcCandidates_Input = { rpcName: 'SubToWebRtcCandidates', socket: ProtoSocket<WebRtcCandidate> }
 export type SubToWebRtcCandidates_Output = ResultError | { status: 'OK' }
 
-export type SubmitWebRtcMessage_Input = {rpcName:'SubmitWebRtcMessage', req: WebRtcMessage}
+export type SubmitWebRtcMessage_Input = { rpcName: 'SubmitWebRtcMessage', req: WebRtcMessage }
 export type SubmitWebRtcMessage_Output = ResultError | ({ status: 'OK' } & WebRtcAnswer)
 
-export type UpdateAdminNodeSettings_Input = {rpcName:'UpdateAdminNodeSettings', req: UpdateAdminNodeSettingsRequest}
+export type UpdateAdminNodeSettings_Input = { rpcName: 'UpdateAdminNodeSettings', req: UpdateAdminNodeSettingsRequest }
 export type UpdateAdminNodeSettings_Output = ResultError | ({ status: 'OK' } & AdminNodeSettings)
 
-export type UpdateCallbackUrl_Input = {rpcName:'UpdateCallbackUrl', req: CallbackUrl}
+export type UpdateAdminOnchainConfSettings_Input = { rpcName: 'UpdateAdminOnchainConfSettings', req: UpdateAdminOnchainConfSettingsRequest }
+export type UpdateAdminOnchainConfSettings_Output = ResultError | ({ status: 'OK' } & AdminOnchainConfSettings)
+
+export type UpdateCallbackUrl_Input = { rpcName: 'UpdateCallbackUrl', req: CallbackUrl }
 export type UpdateCallbackUrl_Output = ResultError | ({ status: 'OK' } & CallbackUrl)
 
-export type UpdateChannelPolicy_Input = {rpcName:'UpdateChannelPolicy', req: UpdateChannelPolicyRequest}
+export type UpdateChannelPolicy_Input = { rpcName: 'UpdateChannelPolicy', req: UpdateChannelPolicyRequest }
 export type UpdateChannelPolicy_Output = ResultError | { status: 'OK' }
 
-export type UpdateUserOffer_Input = {rpcName:'UpdateUserOffer', req: OfferUpdateRequest}
+export type UpdateUserOffer_Input = { rpcName: 'UpdateUserOffer', req: OfferUpdateRequest }
 export type UpdateUserOffer_Output = ResultError | { status: 'OK' }
 
-export type UseInviteLink_Input = {rpcName:'UseInviteLink', req: UseInviteLinkRequest}
+export type UseInviteLink_Input = { rpcName: 'UseInviteLink', req: UseInviteLinkRequest }
 export type UseInviteLink_Output = ResultError | { status: 'OK' }
 
-export type UserHealth_Input = {rpcName:'UserHealth'}
+export type UserHealth_Input = { rpcName: 'UserHealth' }
 export type UserHealth_Output = ResultError | ({ status: 'OK' } & UserHealthState)
 
-export type ZipMetricsStorages_Input = {rpcName:'ZipMetricsStorages'}
+export type ZipMetricsStorages_Input = { rpcName: 'ZipMetricsStorages' }
 export type ZipMetricsStorages_Output = ResultError | ({ status: 'OK' } & ZippedMetrics)
 
 export type ServerMethods = {
-    AddApp?: (req: AddApp_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AuthApp>
-    AddAppInvoice?: (req: AddAppInvoice_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
-    AddAppUser?: (req: AddAppUser_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<AppUser>
-    AddAppUserInvoice?: (req: AddAppUserInvoice_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
-    AddPeer?: (req: AddPeer_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
-    AddProduct?: (req: AddProduct_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<Product>
-    AddUserOffer?: (req: AddUserOffer_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferId>
-    AuthApp?: (req: AuthApp_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AuthApp>
-    AuthorizeManage?: (req: AuthorizeManage_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<ManageAuthorization>
-    BanDebit?: (req: BanDebit_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    BanUser?: (req: BanUser_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<BanUserResponse>
-    BumpTx?: (req: BumpTx_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
-    CloseChannel?: (req: CloseChannel_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<CloseChannelResponse>
-    CreateOneTimeInviteLink?: (req: CreateOneTimeInviteLink_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<CreateOneTimeInviteLinkResponse>
-    DecodeInvoice?: (req: DecodeInvoice_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<DecodeInvoiceResponse>
-    DeleteUserOffer?: (req: DeleteUserOffer_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    EditDebit?: (req: EditDebit_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    EncryptionExchange?: (req: EncryptionExchange_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
-    EnrollAdminToken?: (req: EnrollAdminToken_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    EnrollMessagingToken?: (req: EnrollMessagingToken_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    GetAdminInvoiceSwapQuotes?: (req: GetAdminInvoiceSwapQuotes_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<InvoiceSwapQuoteList>
-    GetAdminNodeSettings?: (req: GetAdminNodeSettings_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminNodeSettings>
-    GetAdminTransactionSwapQuotes?: (req: GetAdminTransactionSwapQuotes_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<TransactionSwapQuoteList>
-    GetApp?: (req: GetApp_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<Application>
-    GetAppUser?: (req: GetAppUser_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<AppUser>
-    GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
-    GetAppsMetrics?: (req: GetAppsMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<AppsMetrics>
-    GetAssetsAndLiabilities?: (req: GetAssetsAndLiabilities_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AssetsAndLiabilities>
-    GetAssetsAndLiabilitiesV2?: (req: GetAssetsAndLiabilitiesV2_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AssetsAndLiabilitiesV2>
-    GetBundleMetrics?: (req: GetBundleMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<BundleMetrics>
-    GetDebitAuthorizations?: (req: GetDebitAuthorizations_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<DebitAuthorizations>
-    GetErrorStats?: (req: GetErrorStats_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ErrorStats>
-    GetHttpCreds?: (req: GetHttpCreds_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<HttpCreds>
-    GetInviteLinkState?: (req: GetInviteLinkState_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetInviteTokenStateResponse>
-    GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
-    GetLiveDebitRequests?: (req: GetLiveDebitRequests_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    GetLiveManageRequests?: (req: GetLiveManageRequests_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    GetLiveUserOperations?: (req: GetLiveUserOperations_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    GetLndForwardingMetrics?: (req: GetLndForwardingMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<LndForwardingMetrics>
-    GetLndMetrics?: (req: GetLndMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<LndMetrics>
-    GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
-    GetLnurlPayLink?: (req: GetLnurlPayLink_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
-    GetLnurlWithdrawInfo?: (req: GetLnurlWithdrawInfo_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlWithdrawInfoResponse>
-    GetLnurlWithdrawLink?: (req: GetLnurlWithdrawLink_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
-    GetManageAuthorizations?: (req: GetManageAuthorizations_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<ManageAuthorizations>
-    GetMigrationUpdate?: (req: GetMigrationUpdate_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    GetNPubLinkingState?: (req: GetNPubLinkingState_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<NPubLinking>
-    GetPaymentState?: (req: GetPaymentState_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<PaymentState>
-    GetProvidersDisruption?: (req: GetProvidersDisruption_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ProvidersDisruption>
-    GetSeed?: (req: GetSeed_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndSeed>
-    GetSingleBundleMetrics?: (req: GetSingleBundleMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<BundleData>
-    GetSingleUsageMetrics?: (req: GetSingleUsageMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<UsageMetricTlv>
-    GetTransactionSwapQuotes?: (req: GetTransactionSwapQuotes_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<TransactionSwapQuoteList>
-    GetUsageMetrics?: (req: GetUsageMetrics_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<UsageMetrics>
-    GetUserInfo?: (req: GetUserInfo_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<UserInfo>
-    GetUserOffer?: (req: GetUserOffer_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferConfig>
-    GetUserOfferInvoices?: (req: GetUserOfferInvoices_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferInvoices>
-    GetUserOffers?: (req: GetUserOffers_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<UserOffers>
-    GetUserOperations?: (req: GetUserOperations_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
-    GetUserOperationsFromAdmin?: (req: GetUserOperationsFromAdmin_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
-    GetUsersAdminInfo?: (req: GetUsersAdminInfo_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<UsersAdminInfo>
-    HandleLnurlAddress?: (req: HandleLnurlAddress_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
-    HandleLnurlPay?: (req: HandleLnurlPay_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<HandleLnurlPayResponse>
-    HandleLnurlWithdraw?: (req: HandleLnurlWithdraw_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
-    Health?: (req: Health_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
-    LinkNPubThroughToken?: (req: LinkNPubThroughToken_Input & {ctx: GuestWithPubContext, requestContext?: RequestContext }) => Promise<void>
-    ListAdminInvoiceSwaps?: (req: ListAdminInvoiceSwaps_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<InvoiceSwapsList>
-    ListAdminTxSwaps?: (req: ListAdminTxSwaps_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
-    ListChannels?: (req: ListChannels_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndChannels>
-    ListPeers?: (req: ListPeers_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndPeers>
-    ListTxSwaps?: (req: ListTxSwaps_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
-    ListUtxos?: (req: ListUtxos_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndUtxos>
-    LndGetInfo?: (req: LndGetInfo_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndGetInfoResponse>
-    NewAddress?: (req: NewAddress_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<NewAddressResponse>
-    NewInvoice?: (req: NewInvoice_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
-    NewProductInvoice?: (req: NewProductInvoice_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
-    OpenChannel?: (req: OpenChannel_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<OpenChannelResponse>
-    PayAddress?: (req: PayAddress_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<PayAddressResponse>
-    PayAdminInvoiceSwap?: (req: PayAdminInvoiceSwap_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminInvoiceSwapResponse>
-    PayAdminTransactionSwap?: (req: PayAdminTransactionSwap_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminTxSwapResponse>
-    PayAppUserInvoice?: (req: PayAppUserInvoice_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<PayInvoiceResponse>
-    PayInvoice?: (req: PayInvoice_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<PayInvoiceResponse>
-    PingSubProcesses?: (req: PingSubProcesses_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
-    RefundAdminInvoiceSwap?: (req: RefundAdminInvoiceSwap_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminInvoiceSwapResponse>
-    RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<RequestNPubLinkingTokenResponse>
-    ResetDebit?: (req: ResetDebit_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    ResetManage?: (req: ResetManage_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    ResetMetricsStorages?: (req: ResetMetricsStorages_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
-    ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<RequestNPubLinkingTokenResponse>
-    RespondToDebit?: (req: RespondToDebit_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
-    SendAppUserToAppUserPayment?: (req: SendAppUserToAppUserPayment_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
-    SetMockAppBalance?: (req: SetMockAppBalance_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
-    SetMockAppUserBalance?: (req: SetMockAppUserBalance_Input & {ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
-    SetMockInvoiceAsPaid?: (req: SetMockInvoiceAsPaid_Input & {ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
-    SubToWebRtcCandidates?: (req: SubToWebRtcCandidates_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
-    SubmitWebRtcMessage?: (req: SubmitWebRtcMessage_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<WebRtcAnswer>
-    UpdateAdminNodeSettings?: (req: UpdateAdminNodeSettings_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminNodeSettings>
-    UpdateCallbackUrl?: (req: UpdateCallbackUrl_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<CallbackUrl>
-    UpdateChannelPolicy?: (req: UpdateChannelPolicy_Input & {ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
-    UpdateUserOffer?: (req: UpdateUserOffer_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
-    UseInviteLink?: (req: UseInviteLink_Input & {ctx: GuestWithPubContext, requestContext?: RequestContext }) => Promise<void>
-    UserHealth?: (req: UserHealth_Input & {ctx: UserContext, requestContext?: RequestContext }) => Promise<UserHealthState>
-    ZipMetricsStorages?: (req: ZipMetricsStorages_Input & {ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ZippedMetrics>
+    AddApp?: (req: AddApp_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AuthApp>
+    AddAppInvoice?: (req: AddAppInvoice_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
+    AddAppUser?: (req: AddAppUser_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<AppUser>
+    AddAppUserInvoice?: (req: AddAppUserInvoice_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
+    AddPeer?: (req: AddPeer_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
+    AddProduct?: (req: AddProduct_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<Product>
+    AddUserOffer?: (req: AddUserOffer_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferId>
+    AdminSendCoins?: (req: AdminSendCoins_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminSendCoinsResponse>
+    AdminSendUserToUser?: (req: AdminSendUserToUser_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminSendUserToUserResponse>
+    AuthApp?: (req: AuthApp_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AuthApp>
+    AuthorizeManage?: (req: AuthorizeManage_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<ManageAuthorization>
+    BanDebit?: (req: BanDebit_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    BanUser?: (req: BanUser_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<BanUserResponse>
+    BumpTx?: (req: BumpTx_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
+    CloseChannel?: (req: CloseChannel_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<CloseChannelResponse>
+    CreateOneTimeInviteLink?: (req: CreateOneTimeInviteLink_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<CreateOneTimeInviteLinkResponse>
+    DecodeInvoice?: (req: DecodeInvoice_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<DecodeInvoiceResponse>
+    DeleteUserOffer?: (req: DeleteUserOffer_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    EditDebit?: (req: EditDebit_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    EncryptionExchange?: (req: EncryptionExchange_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
+    EnrollAdminToken?: (req: EnrollAdminToken_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    EnrollMessagingToken?: (req: EnrollMessagingToken_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    GetAdminInvoiceSwapQuotes?: (req: GetAdminInvoiceSwapQuotes_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<InvoiceSwapQuoteList>
+    GetAdminNodeSettings?: (req: GetAdminNodeSettings_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminNodeSettings>
+    GetAdminOnchainConfSettings?: (req: GetAdminOnchainConfSettings_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminOnchainConfSettings>
+    GetAdminTransactionSwapQuotes?: (req: GetAdminTransactionSwapQuotes_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<TransactionSwapQuoteList>
+    GetApp?: (req: GetApp_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<Application>
+    GetAppUser?: (req: GetAppUser_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<AppUser>
+    GetAppUserLNURLInfo?: (req: GetAppUserLNURLInfo_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
+    GetAppsMetrics?: (req: GetAppsMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<AppsMetrics>
+    GetAssetsAndLiabilities?: (req: GetAssetsAndLiabilities_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AssetsAndLiabilities>
+    GetAssetsAndLiabilitiesV2?: (req: GetAssetsAndLiabilitiesV2_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AssetsAndLiabilitiesV2>
+    GetBundleMetrics?: (req: GetBundleMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<BundleMetrics>
+    GetDebitAuthorizations?: (req: GetDebitAuthorizations_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<DebitAuthorizations>
+    GetErrorStats?: (req: GetErrorStats_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ErrorStats>
+    GetFailedOutgoingPayments?: (req: GetFailedOutgoingPayments_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<FailedOutgoingPayments>
+    GetHttpCreds?: (req: GetHttpCreds_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<HttpCreds>
+    GetInviteLinkState?: (req: GetInviteLinkState_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetInviteTokenStateResponse>
+    GetLNURLChannelLink?: (req: GetLNURLChannelLink_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
+    GetLiveDebitRequests?: (req: GetLiveDebitRequests_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    GetLiveManageRequests?: (req: GetLiveManageRequests_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    GetLiveUserOperations?: (req: GetLiveUserOperations_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    GetLndForwardingMetrics?: (req: GetLndForwardingMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<LndForwardingMetrics>
+    GetLndMetrics?: (req: GetLndMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<LndMetrics>
+    GetLnurlPayInfo?: (req: GetLnurlPayInfo_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
+    GetLnurlPayLink?: (req: GetLnurlPayLink_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
+    GetLnurlWithdrawInfo?: (req: GetLnurlWithdrawInfo_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlWithdrawInfoResponse>
+    GetLnurlWithdrawLink?: (req: GetLnurlWithdrawLink_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<LnurlLinkResponse>
+    GetManageAuthorizations?: (req: GetManageAuthorizations_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<ManageAuthorizations>
+    GetMigrationUpdate?: (req: GetMigrationUpdate_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    GetNPubLinkingState?: (req: GetNPubLinkingState_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<NPubLinking>
+    GetPaymentDestinations?: (req: GetPaymentDestinations_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<PaymentDestinations>
+    GetPaymentState?: (req: GetPaymentState_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<PaymentState>
+    GetProvidersDisruption?: (req: GetProvidersDisruption_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ProvidersDisruption>
+    GetSeed?: (req: GetSeed_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndSeed>
+    GetSingleBundleMetrics?: (req: GetSingleBundleMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<BundleData>
+    GetSingleUsageMetrics?: (req: GetSingleUsageMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<UsageMetricTlv>
+    GetTransactionSwapQuotes?: (req: GetTransactionSwapQuotes_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<TransactionSwapQuoteList>
+    GetUsageMetrics?: (req: GetUsageMetrics_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<UsageMetrics>
+    GetUserInfo?: (req: GetUserInfo_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<UserInfo>
+    GetUserOffer?: (req: GetUserOffer_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferConfig>
+    GetUserOfferInvoices?: (req: GetUserOfferInvoices_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferInvoices>
+    GetUserOffers?: (req: GetUserOffers_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<UserOffers>
+    GetUserOperations?: (req: GetUserOperations_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
+    GetUserOperationsFromAdmin?: (req: GetUserOperationsFromAdmin_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
+    GetUsersAdminInfo?: (req: GetUsersAdminInfo_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<UsersAdminInfo>
+    HandleLnurlAddress?: (req: HandleLnurlAddress_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
+    HandleLnurlPay?: (req: HandleLnurlPay_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<HandleLnurlPayResponse>
+    HandleLnurlWithdraw?: (req: HandleLnurlWithdraw_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
+    Health?: (req: Health_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
+    LinkNPubThroughToken?: (req: LinkNPubThroughToken_Input & { ctx: GuestWithPubContext, requestContext?: RequestContext }) => Promise<void>
+    ListAdminInvoiceSwaps?: (req: ListAdminInvoiceSwaps_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<InvoiceSwapsList>
+    ListAdminTxSwaps?: (req: ListAdminTxSwaps_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
+    ListChannels?: (req: ListChannels_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndChannels>
+    ListPeers?: (req: ListPeers_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndPeers>
+    ListTxSwaps?: (req: ListTxSwaps_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<TxSwapsList>
+    ListUtxos?: (req: ListUtxos_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndUtxos>
+    LndGetInfo?: (req: LndGetInfo_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<LndGetInfoResponse>
+    NewAddress?: (req: NewAddress_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<NewAddressResponse>
+    NewInvoice?: (req: NewInvoice_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
+    NewProductInvoice?: (req: NewProductInvoice_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<NewInvoiceResponse>
+    OpenChannel?: (req: OpenChannel_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<OpenChannelResponse>
+    PayAddress?: (req: PayAddress_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<PayAddressResponse>
+    PayAdminInvoiceSwap?: (req: PayAdminInvoiceSwap_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminInvoiceSwapResponse>
+    PayAdminTransactionSwap?: (req: PayAdminTransactionSwap_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminTxSwapResponse>
+    PayAppUserInvoice?: (req: PayAppUserInvoice_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<PayInvoiceResponse>
+    PayInvoice?: (req: PayInvoice_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<PayInvoiceResponse>
+    PingSubProcesses?: (req: PingSubProcesses_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
+    RefundAdminInvoiceSwap?: (req: RefundAdminInvoiceSwap_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminInvoiceSwapResponse>
+    RequestNPubLinkingToken?: (req: RequestNPubLinkingToken_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<RequestNPubLinkingTokenResponse>
+    ResetDebit?: (req: ResetDebit_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    ResetManage?: (req: ResetManage_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    ResetMetricsStorages?: (req: ResetMetricsStorages_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
+    ResetNPubLinkingToken?: (req: ResetNPubLinkingToken_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<RequestNPubLinkingTokenResponse>
+    RespondToDebit?: (req: RespondToDebit_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    SendAppUserToAppPayment?: (req: SendAppUserToAppPayment_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
+    SendAppUserToAppUserPayment?: (req: SendAppUserToAppUserPayment_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
+    SetMockAppBalance?: (req: SetMockAppBalance_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
+    SetMockAppUserBalance?: (req: SetMockAppUserBalance_Input & { ctx: AppContext, requestContext?: RequestContext }) => Promise<void>
+    SetMockInvoiceAsPaid?: (req: SetMockInvoiceAsPaid_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<void>
+    SubToWebRtcCandidates?: (req: SubToWebRtcCandidates_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<void>
+    SubmitWebRtcMessage?: (req: SubmitWebRtcMessage_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<WebRtcAnswer>
+    UpdateAdminNodeSettings?: (req: UpdateAdminNodeSettings_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminNodeSettings>
+    UpdateAdminOnchainConfSettings?: (req: UpdateAdminOnchainConfSettings_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<AdminOnchainConfSettings>
+    UpdateCallbackUrl?: (req: UpdateCallbackUrl_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<CallbackUrl>
+    UpdateChannelPolicy?: (req: UpdateChannelPolicy_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<void>
+    UpdateUserOffer?: (req: UpdateUserOffer_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<void>
+    UseInviteLink?: (req: UseInviteLink_Input & { ctx: GuestWithPubContext, requestContext?: RequestContext }) => Promise<void>
+    UserHealth?: (req: UserHealth_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<UserHealthState>
+    ZipMetricsStorages?: (req: ZipMetricsStorages_Input & { ctx: MetricsContext, requestContext?: RequestContext }) => Promise<ZippedMetrics>
 }
 
 export enum AddressType {
@@ -553,7 +577,6 @@ export const enumCheckUserOperationType = (e?: UserOperationType): boolean => {
     for (const v in UserOperationType) if (e === v) return true
     return false
 }
-
 export enum UtxoOrigin {
     CHANNEL = 'CHANNEL',
     MIXED = 'MIXED',
@@ -590,7 +613,7 @@ export const AddAppInvoiceRequestValidate = (o?: AddAppInvoiceRequest, opts: Add
 
     const invoice_reqErr = NewInvoiceRequestValidate(o.invoice_req, opts.invoice_req_Options, `${path}.invoice_req`)
     if (invoice_reqErr !== null) return invoice_reqErr
-    
+
 
     if (typeof o.payer_identifier !== 'string') return new Error(`${path}.payer_identifier: is not a string`)
     if (opts.payer_identifier_CustomCheck && !opts.payer_identifier_CustomCheck(o.payer_identifier)) return new Error(`${path}.payer_identifier: custom check failed`)
@@ -653,7 +676,7 @@ export const AddAppUserInvoiceRequestValidate = (o?: AddAppUserInvoiceRequest, o
 
     const invoice_reqErr = NewInvoiceRequestValidate(o.invoice_req, opts.invoice_req_Options, `${path}.invoice_req`)
     if (invoice_reqErr !== null) return invoice_reqErr
-    
+
 
     if ((o.offer_string || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('offer_string')) && typeof o.offer_string !== 'string') return new Error(`${path}.offer_string: is not a string`)
     if (opts.offer_string_CustomCheck && !opts.offer_string_CustomCheck(o.offer_string)) return new Error(`${path}.offer_string: custom check failed`)
@@ -662,7 +685,7 @@ export const AddAppUserInvoiceRequestValidate = (o?: AddAppUserInvoiceRequest, o
         const payer_dataErr = PayerDataValidate(o.payer_data, opts.payer_data_Options, `${path}.payer_data`)
         if (payer_dataErr !== null) return payer_dataErr
     }
-    
+
 
     if (typeof o.payer_identifier !== 'string') return new Error(`${path}.payer_identifier: is not a string`)
     if (opts.payer_identifier_CustomCheck && !opts.payer_identifier_CustomCheck(o.payer_identifier)) return new Error(`${path}.payer_identifier: custom check failed`)
@@ -780,12 +803,12 @@ export type AdminNodeSettings = {
     automate_liquidity: boolean
     automate_liquidity_env_locked: boolean
     avatar_url: string
-    backups_env_locked: boolean
     lsp_channel_threshold: number
     lsp_threshold_env_locked: boolean
     node_name: string
     node_name_env_locked: boolean
-    push_backups_to_nostr: boolean
+    remote_backup: RemoteBackup
+    remote_backup_env_locked: boolean
 }
 export const AdminNodeSettingsOptionalFields: [] = []
 export type AdminNodeSettingsOptions = OptionsBaseMessage & {
@@ -793,12 +816,12 @@ export type AdminNodeSettingsOptions = OptionsBaseMessage & {
     automate_liquidity_CustomCheck?: (v: boolean) => boolean
     automate_liquidity_env_locked_CustomCheck?: (v: boolean) => boolean
     avatar_url_CustomCheck?: (v: string) => boolean
-    backups_env_locked_CustomCheck?: (v: boolean) => boolean
     lsp_channel_threshold_CustomCheck?: (v: number) => boolean
     lsp_threshold_env_locked_CustomCheck?: (v: boolean) => boolean
     node_name_CustomCheck?: (v: string) => boolean
     node_name_env_locked_CustomCheck?: (v: boolean) => boolean
-    push_backups_to_nostr_CustomCheck?: (v: boolean) => boolean
+    remote_backup_Options?: RemoteBackupOptions
+    remote_backup_env_locked_CustomCheck?: (v: boolean) => boolean
 }
 export const AdminNodeSettingsValidate = (o?: AdminNodeSettings, opts: AdminNodeSettingsOptions = {}, path: string = 'AdminNodeSettings::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -813,9 +836,6 @@ export const AdminNodeSettingsValidate = (o?: AdminNodeSettings, opts: AdminNode
     if (typeof o.avatar_url !== 'string') return new Error(`${path}.avatar_url: is not a string`)
     if (opts.avatar_url_CustomCheck && !opts.avatar_url_CustomCheck(o.avatar_url)) return new Error(`${path}.avatar_url: custom check failed`)
 
-    if (typeof o.backups_env_locked !== 'boolean') return new Error(`${path}.backups_env_locked: is not a boolean`)
-    if (opts.backups_env_locked_CustomCheck && !opts.backups_env_locked_CustomCheck(o.backups_env_locked)) return new Error(`${path}.backups_env_locked: custom check failed`)
-
     if (typeof o.lsp_channel_threshold !== 'number') return new Error(`${path}.lsp_channel_threshold: is not a number`)
     if (opts.lsp_channel_threshold_CustomCheck && !opts.lsp_channel_threshold_CustomCheck(o.lsp_channel_threshold)) return new Error(`${path}.lsp_channel_threshold: custom check failed`)
 
@@ -828,8 +848,188 @@ export const AdminNodeSettingsValidate = (o?: AdminNodeSettings, opts: AdminNode
     if (typeof o.node_name_env_locked !== 'boolean') return new Error(`${path}.node_name_env_locked: is not a boolean`)
     if (opts.node_name_env_locked_CustomCheck && !opts.node_name_env_locked_CustomCheck(o.node_name_env_locked)) return new Error(`${path}.node_name_env_locked: custom check failed`)
 
-    if (typeof o.push_backups_to_nostr !== 'boolean') return new Error(`${path}.push_backups_to_nostr: is not a boolean`)
-    if (opts.push_backups_to_nostr_CustomCheck && !opts.push_backups_to_nostr_CustomCheck(o.push_backups_to_nostr)) return new Error(`${path}.push_backups_to_nostr: custom check failed`)
+    const remote_backupErr = RemoteBackupValidate(o.remote_backup, opts.remote_backup_Options, `${path}.remote_backup`)
+    if (remote_backupErr !== null) return remote_backupErr
+
+
+    if (typeof o.remote_backup_env_locked !== 'boolean') return new Error(`${path}.remote_backup_env_locked: is not a boolean`)
+    if (opts.remote_backup_env_locked_CustomCheck && !opts.remote_backup_env_locked_CustomCheck(o.remote_backup_env_locked)) return new Error(`${path}.remote_backup_env_locked: custom check failed`)
+
+    return null
+}
+
+export type AdminOnchainConfSettings = {
+    tier1_confs: number
+    tier1_confs_env_locked: boolean
+    tier1_limit_env_locked: boolean
+    tier1_limit_sats: number
+    tier2_confs: number
+    tier2_confs_env_locked: boolean
+    tier2_limit_env_locked: boolean
+    tier2_limit_sats: number
+    tier3_confs: number
+    tier3_confs_env_locked: boolean
+}
+export const AdminOnchainConfSettingsOptionalFields: [] = []
+export type AdminOnchainConfSettingsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    tier1_confs_CustomCheck?: (v: number) => boolean
+    tier1_confs_env_locked_CustomCheck?: (v: boolean) => boolean
+    tier1_limit_env_locked_CustomCheck?: (v: boolean) => boolean
+    tier1_limit_sats_CustomCheck?: (v: number) => boolean
+    tier2_confs_CustomCheck?: (v: number) => boolean
+    tier2_confs_env_locked_CustomCheck?: (v: boolean) => boolean
+    tier2_limit_env_locked_CustomCheck?: (v: boolean) => boolean
+    tier2_limit_sats_CustomCheck?: (v: number) => boolean
+    tier3_confs_CustomCheck?: (v: number) => boolean
+    tier3_confs_env_locked_CustomCheck?: (v: boolean) => boolean
+}
+export const AdminOnchainConfSettingsValidate = (o?: AdminOnchainConfSettings, opts: AdminOnchainConfSettingsOptions = {}, path: string = 'AdminOnchainConfSettings::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.tier1_confs !== 'number') return new Error(`${path}.tier1_confs: is not a number`)
+    if (opts.tier1_confs_CustomCheck && !opts.tier1_confs_CustomCheck(o.tier1_confs)) return new Error(`${path}.tier1_confs: custom check failed`)
+
+    if (typeof o.tier1_confs_env_locked !== 'boolean') return new Error(`${path}.tier1_confs_env_locked: is not a boolean`)
+    if (opts.tier1_confs_env_locked_CustomCheck && !opts.tier1_confs_env_locked_CustomCheck(o.tier1_confs_env_locked)) return new Error(`${path}.tier1_confs_env_locked: custom check failed`)
+
+    if (typeof o.tier1_limit_env_locked !== 'boolean') return new Error(`${path}.tier1_limit_env_locked: is not a boolean`)
+    if (opts.tier1_limit_env_locked_CustomCheck && !opts.tier1_limit_env_locked_CustomCheck(o.tier1_limit_env_locked)) return new Error(`${path}.tier1_limit_env_locked: custom check failed`)
+
+    if (typeof o.tier1_limit_sats !== 'number') return new Error(`${path}.tier1_limit_sats: is not a number`)
+    if (opts.tier1_limit_sats_CustomCheck && !opts.tier1_limit_sats_CustomCheck(o.tier1_limit_sats)) return new Error(`${path}.tier1_limit_sats: custom check failed`)
+
+    if (typeof o.tier2_confs !== 'number') return new Error(`${path}.tier2_confs: is not a number`)
+    if (opts.tier2_confs_CustomCheck && !opts.tier2_confs_CustomCheck(o.tier2_confs)) return new Error(`${path}.tier2_confs: custom check failed`)
+
+    if (typeof o.tier2_confs_env_locked !== 'boolean') return new Error(`${path}.tier2_confs_env_locked: is not a boolean`)
+    if (opts.tier2_confs_env_locked_CustomCheck && !opts.tier2_confs_env_locked_CustomCheck(o.tier2_confs_env_locked)) return new Error(`${path}.tier2_confs_env_locked: custom check failed`)
+
+    if (typeof o.tier2_limit_env_locked !== 'boolean') return new Error(`${path}.tier2_limit_env_locked: is not a boolean`)
+    if (opts.tier2_limit_env_locked_CustomCheck && !opts.tier2_limit_env_locked_CustomCheck(o.tier2_limit_env_locked)) return new Error(`${path}.tier2_limit_env_locked: custom check failed`)
+
+    if (typeof o.tier2_limit_sats !== 'number') return new Error(`${path}.tier2_limit_sats: is not a number`)
+    if (opts.tier2_limit_sats_CustomCheck && !opts.tier2_limit_sats_CustomCheck(o.tier2_limit_sats)) return new Error(`${path}.tier2_limit_sats: custom check failed`)
+
+    if (typeof o.tier3_confs !== 'number') return new Error(`${path}.tier3_confs: is not a number`)
+    if (opts.tier3_confs_CustomCheck && !opts.tier3_confs_CustomCheck(o.tier3_confs)) return new Error(`${path}.tier3_confs: custom check failed`)
+
+    if (typeof o.tier3_confs_env_locked !== 'boolean') return new Error(`${path}.tier3_confs_env_locked: is not a boolean`)
+    if (opts.tier3_confs_env_locked_CustomCheck && !opts.tier3_confs_env_locked_CustomCheck(o.tier3_confs_env_locked)) return new Error(`${path}.tier3_confs_env_locked: custom check failed`)
+
+    return null
+}
+
+export type AdminSendCoinsRequest = {
+    address: string
+    amount?: number
+    sat_per_v_byte?: number
+    send_all?: boolean
+}
+export type AdminSendCoinsRequestOptionalField = 'amount' | 'sat_per_v_byte' | 'send_all'
+export const AdminSendCoinsRequestOptionalFields: AdminSendCoinsRequestOptionalField[] = ['amount', 'sat_per_v_byte', 'send_all']
+export type AdminSendCoinsRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: AdminSendCoinsRequestOptionalField[]
+    address_CustomCheck?: (v: string) => boolean
+    amount_CustomCheck?: (v?: number) => boolean
+    sat_per_v_byte_CustomCheck?: (v?: number) => boolean
+    send_all_CustomCheck?: (v?: boolean) => boolean
+}
+export const AdminSendCoinsRequestValidate = (o?: AdminSendCoinsRequest, opts: AdminSendCoinsRequestOptions = {}, path: string = 'AdminSendCoinsRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.address !== 'string') return new Error(`${path}.address: is not a string`)
+    if (opts.address_CustomCheck && !opts.address_CustomCheck(o.address)) return new Error(`${path}.address: custom check failed`)
+
+    if ((o.amount || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('amount')) && typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
+    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+
+    if ((o.sat_per_v_byte || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('sat_per_v_byte')) && typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
+    if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
+
+    if ((o.send_all || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('send_all')) && typeof o.send_all !== 'boolean') return new Error(`${path}.send_all: is not a boolean`)
+    if (opts.send_all_CustomCheck && !opts.send_all_CustomCheck(o.send_all)) return new Error(`${path}.send_all: custom check failed`)
+
+    return null
+}
+
+export type AdminSendCoinsResponse = {
+    amount: number
+    network_fee: number
+    tx_id: string
+}
+export const AdminSendCoinsResponseOptionalFields: [] = []
+export type AdminSendCoinsResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    amount_CustomCheck?: (v: number) => boolean
+    network_fee_CustomCheck?: (v: number) => boolean
+    tx_id_CustomCheck?: (v: string) => boolean
+}
+export const AdminSendCoinsResponseValidate = (o?: AdminSendCoinsResponse, opts: AdminSendCoinsResponseOptions = {}, path: string = 'AdminSendCoinsResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
+    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+
+    if (typeof o.network_fee !== 'number') return new Error(`${path}.network_fee: is not a number`)
+    if (opts.network_fee_CustomCheck && !opts.network_fee_CustomCheck(o.network_fee)) return new Error(`${path}.network_fee: custom check failed`)
+
+    if (typeof o.tx_id !== 'string') return new Error(`${path}.tx_id: is not a string`)
+    if (opts.tx_id_CustomCheck && !opts.tx_id_CustomCheck(o.tx_id)) return new Error(`${path}.tx_id: custom check failed`)
+
+    return null
+}
+
+export type AdminSendUserToUserRequest = {
+    amount: number
+    from_user_id: string
+    to_user_id: string
+}
+export const AdminSendUserToUserRequestOptionalFields: [] = []
+export type AdminSendUserToUserRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    amount_CustomCheck?: (v: number) => boolean
+    from_user_id_CustomCheck?: (v: string) => boolean
+    to_user_id_CustomCheck?: (v: string) => boolean
+}
+export const AdminSendUserToUserRequestValidate = (o?: AdminSendUserToUserRequest, opts: AdminSendUserToUserRequestOptions = {}, path: string = 'AdminSendUserToUserRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
+    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+
+    if (typeof o.from_user_id !== 'string') return new Error(`${path}.from_user_id: is not a string`)
+    if (opts.from_user_id_CustomCheck && !opts.from_user_id_CustomCheck(o.from_user_id)) return new Error(`${path}.from_user_id: custom check failed`)
+
+    if (typeof o.to_user_id !== 'string') return new Error(`${path}.to_user_id: is not a string`)
+    if (opts.to_user_id_CustomCheck && !opts.to_user_id_CustomCheck(o.to_user_id)) return new Error(`${path}.to_user_id: custom check failed`)
+
+    return null
+}
+
+export type AdminSendUserToUserResponse = {
+    amount: number
+    fees: number
+}
+export const AdminSendUserToUserResponseOptionalFields: [] = []
+export type AdminSendUserToUserResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    amount_CustomCheck?: (v: number) => boolean
+    fees_CustomCheck?: (v: number) => boolean
+}
+export const AdminSendUserToUserResponseValidate = (o?: AdminSendUserToUserResponse, opts: AdminSendUserToUserResponseOptions = {}, path: string = 'AdminSendUserToUserResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amount !== 'number') return new Error(`${path}.amount: is not a number`)
+    if (opts.amount_CustomCheck && !opts.amount_CustomCheck(o.amount)) return new Error(`${path}.amount: custom check failed`)
+
+    if (typeof o.fees !== 'number') return new Error(`${path}.fees: is not a number`)
+    if (opts.fees_CustomCheck && !opts.fees_CustomCheck(o.fees)) return new Error(`${path}.fees: custom check failed`)
 
     return null
 }
@@ -893,7 +1093,7 @@ export const AppMetricsValidate = (o?: AppMetrics, opts: AppMetricsOptions = {},
 
     const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
     if (appErr !== null) return appErr
-    
+
 
     if (typeof o.available !== 'number') return new Error(`${path}.available: is not a number`)
     if (opts.available_CustomCheck && !opts.available_CustomCheck(o.available)) return new Error(`${path}.available: custom check failed`)
@@ -928,7 +1128,7 @@ export const AppMetricsValidate = (o?: AppMetrics, opts: AppMetricsOptions = {},
 
     const usersErr = UsersInfoValidate(o.users, opts.users_Options, `${path}.users`)
     if (usersErr !== null) return usersErr
-    
+
 
     return null
 }
@@ -976,7 +1176,7 @@ export const AppUserValidate = (o?: AppUser, opts: AppUserOptions = {}, path: st
 
     const infoErr = UserInfoValidate(o.info, opts.info_Options, `${path}.info`)
     if (infoErr !== null) return infoErr
-    
+
 
     if (typeof o.max_withdrawable !== 'number') return new Error(`${path}.max_withdrawable: is not a number`)
     if (opts.max_withdrawable_CustomCheck && !opts.max_withdrawable_CustomCheck(o.max_withdrawable)) return new Error(`${path}.max_withdrawable: custom check failed`)
@@ -1147,7 +1347,7 @@ export const AssetOperationValidate = (o?: AssetOperation, opts: AssetOperationO
         const trackedErr = TrackedOperationValidate(o.tracked, opts.tracked_Options, `${path}.tracked`)
         if (trackedErr !== null) return trackedErr
     }
-    
+
 
     if (typeof o.ts !== 'number') return new Error(`${path}.ts: is not a number`)
     if (opts.ts_CustomCheck && !opts.ts_CustomCheck(o.ts)) return new Error(`${path}.ts: custom check failed`)
@@ -1309,7 +1509,7 @@ export const AuthAppValidate = (o?: AuthApp, opts: AuthAppOptions = {}, path: st
 
     const appErr = ApplicationValidate(o.app, opts.app_Options, `${path}.app`)
     if (appErr !== null) return appErr
-    
+
 
     if (typeof o.auth_token !== 'string') return new Error(`${path}.auth_token: is not a string`)
     if (opts.auth_token_CustomCheck && !opts.auth_token_CustomCheck(o.auth_token)) return new Error(`${path}.auth_token: custom check failed`)
@@ -1448,7 +1648,7 @@ export const BeaconDataValidate = (o?: BeaconData, opts: BeaconDataOptions = {},
         const feesErr = CumulativeFeesValidate(o.fees, opts.fees_Options, `${path}.fees`)
         if (feesErr !== null) return feesErr
     }
-    
+
 
     if (typeof o.name !== 'string') return new Error(`${path}.name: is not a string`)
     if (opts.name_CustomCheck && !opts.name_CustomCheck(o.name)) return new Error(`${path}.name: custom check failed`)
@@ -1941,7 +2141,7 @@ export const DebitResponseValidate = (o?: DebitResponse, opts: DebitResponseOpti
 
     const responseErr = DebitResponse_responseValidate(o.response, opts.response_Options, `${path}.response`)
     if (responseErr !== null) return responseErr
-    
+
 
     return null
 }
@@ -1960,7 +2160,7 @@ export const DebitRuleValidate = (o?: DebitRule, opts: DebitRuleOptions = {}, pa
 
     const ruleErr = DebitRule_ruleValidate(o.rule, opts.rule_Options, `${path}.rule`)
     if (ruleErr !== null) return ruleErr
-    
+
 
     return null
 }
@@ -2134,23 +2334,182 @@ export const ErrorStatsValidate = (o?: ErrorStats, opts: ErrorStatsOptions = {},
 
     const past10mErr = ErrorStatValidate(o.past10m, opts.past10m_Options, `${path}.past10m`)
     if (past10mErr !== null) return past10mErr
-    
+
 
     const past1hErr = ErrorStatValidate(o.past1h, opts.past1h_Options, `${path}.past1h`)
     if (past1hErr !== null) return past1hErr
-    
+
 
     const past1mErr = ErrorStatValidate(o.past1m, opts.past1m_Options, `${path}.past1m`)
     if (past1mErr !== null) return past1mErr
-    
+
 
     const past24hErr = ErrorStatValidate(o.past24h, opts.past24h_Options, `${path}.past24h`)
     if (past24hErr !== null) return past24hErr
-    
+
 
     const past6hErr = ErrorStatValidate(o.past6h, opts.past6h_Options, `${path}.past6h`)
     if (past6hErr !== null) return past6hErr
-    
+
+
+    return null
+}
+
+export type FailedOutgoingPayment = {
+    amount_sats: number
+    app_id?: string
+    dest_pubkey: string
+    failed_at_unix: number
+    failure_reason: string
+    invoice: string
+    liquidity_provider?: string
+    operator_reason: string
+    serial_id: number
+    user_id: string
+}
+export type FailedOutgoingPaymentOptionalField = 'app_id' | 'liquidity_provider'
+export const FailedOutgoingPaymentOptionalFields: FailedOutgoingPaymentOptionalField[] = ['app_id', 'liquidity_provider']
+export type FailedOutgoingPaymentOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: FailedOutgoingPaymentOptionalField[]
+    amount_sats_CustomCheck?: (v: number) => boolean
+    app_id_CustomCheck?: (v?: string) => boolean
+    dest_pubkey_CustomCheck?: (v: string) => boolean
+    failed_at_unix_CustomCheck?: (v: number) => boolean
+    failure_reason_CustomCheck?: (v: string) => boolean
+    invoice_CustomCheck?: (v: string) => boolean
+    liquidity_provider_CustomCheck?: (v?: string) => boolean
+    operator_reason_CustomCheck?: (v: string) => boolean
+    serial_id_CustomCheck?: (v: number) => boolean
+    user_id_CustomCheck?: (v: string) => boolean
+}
+export const FailedOutgoingPaymentValidate = (o?: FailedOutgoingPayment, opts: FailedOutgoingPaymentOptions = {}, path: string = 'FailedOutgoingPayment::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.amount_sats !== 'number') return new Error(`${path}.amount_sats: is not a number`)
+    if (opts.amount_sats_CustomCheck && !opts.amount_sats_CustomCheck(o.amount_sats)) return new Error(`${path}.amount_sats: custom check failed`)
+
+    if ((o.app_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('app_id')) && typeof o.app_id !== 'string') return new Error(`${path}.app_id: is not a string`)
+    if (opts.app_id_CustomCheck && !opts.app_id_CustomCheck(o.app_id)) return new Error(`${path}.app_id: custom check failed`)
+
+    if (typeof o.dest_pubkey !== 'string') return new Error(`${path}.dest_pubkey: is not a string`)
+    if (opts.dest_pubkey_CustomCheck && !opts.dest_pubkey_CustomCheck(o.dest_pubkey)) return new Error(`${path}.dest_pubkey: custom check failed`)
+
+    if (typeof o.failed_at_unix !== 'number') return new Error(`${path}.failed_at_unix: is not a number`)
+    if (opts.failed_at_unix_CustomCheck && !opts.failed_at_unix_CustomCheck(o.failed_at_unix)) return new Error(`${path}.failed_at_unix: custom check failed`)
+
+    if (typeof o.failure_reason !== 'string') return new Error(`${path}.failure_reason: is not a string`)
+    if (opts.failure_reason_CustomCheck && !opts.failure_reason_CustomCheck(o.failure_reason)) return new Error(`${path}.failure_reason: custom check failed`)
+
+    if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
+    if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
+
+    if ((o.liquidity_provider || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('liquidity_provider')) && typeof o.liquidity_provider !== 'string') return new Error(`${path}.liquidity_provider: is not a string`)
+    if (opts.liquidity_provider_CustomCheck && !opts.liquidity_provider_CustomCheck(o.liquidity_provider)) return new Error(`${path}.liquidity_provider: custom check failed`)
+
+    if (typeof o.operator_reason !== 'string') return new Error(`${path}.operator_reason: is not a string`)
+    if (opts.operator_reason_CustomCheck && !opts.operator_reason_CustomCheck(o.operator_reason)) return new Error(`${path}.operator_reason: custom check failed`)
+
+    if (typeof o.serial_id !== 'number') return new Error(`${path}.serial_id: is not a number`)
+    if (opts.serial_id_CustomCheck && !opts.serial_id_CustomCheck(o.serial_id)) return new Error(`${path}.serial_id: custom check failed`)
+
+    if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
+    if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
+
+    return null
+}
+
+export type FailedOutgoingPaymentReasonCount = {
+    count: number
+    failure_reason: string
+    operator_reason: string
+}
+export const FailedOutgoingPaymentReasonCountOptionalFields: [] = []
+export type FailedOutgoingPaymentReasonCountOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    count_CustomCheck?: (v: number) => boolean
+    failure_reason_CustomCheck?: (v: string) => boolean
+    operator_reason_CustomCheck?: (v: string) => boolean
+}
+export const FailedOutgoingPaymentReasonCountValidate = (o?: FailedOutgoingPaymentReasonCount, opts: FailedOutgoingPaymentReasonCountOptions = {}, path: string = 'FailedOutgoingPaymentReasonCount::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.count !== 'number') return new Error(`${path}.count: is not a number`)
+    if (opts.count_CustomCheck && !opts.count_CustomCheck(o.count)) return new Error(`${path}.count: custom check failed`)
+
+    if (typeof o.failure_reason !== 'string') return new Error(`${path}.failure_reason: is not a string`)
+    if (opts.failure_reason_CustomCheck && !opts.failure_reason_CustomCheck(o.failure_reason)) return new Error(`${path}.failure_reason: custom check failed`)
+
+    if (typeof o.operator_reason !== 'string') return new Error(`${path}.operator_reason: is not a string`)
+    if (opts.operator_reason_CustomCheck && !opts.operator_reason_CustomCheck(o.operator_reason)) return new Error(`${path}.operator_reason: custom check failed`)
+
+    return null
+}
+
+export type FailedOutgoingPayments = {
+    payments: FailedOutgoingPayment[]
+    reason_counts: FailedOutgoingPaymentReasonCount[]
+}
+export const FailedOutgoingPaymentsOptionalFields: [] = []
+export type FailedOutgoingPaymentsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    payments_ItemOptions?: FailedOutgoingPaymentOptions
+    payments_CustomCheck?: (v: FailedOutgoingPayment[]) => boolean
+    reason_counts_ItemOptions?: FailedOutgoingPaymentReasonCountOptions
+    reason_counts_CustomCheck?: (v: FailedOutgoingPaymentReasonCount[]) => boolean
+}
+export const FailedOutgoingPaymentsValidate = (o?: FailedOutgoingPayments, opts: FailedOutgoingPaymentsOptions = {}, path: string = 'FailedOutgoingPayments::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.payments)) return new Error(`${path}.payments: is not an array`)
+    for (let index = 0; index < o.payments.length; index++) {
+        const paymentsErr = FailedOutgoingPaymentValidate(o.payments[index], opts.payments_ItemOptions, `${path}.payments[${index}]`)
+        if (paymentsErr !== null) return paymentsErr
+    }
+    if (opts.payments_CustomCheck && !opts.payments_CustomCheck(o.payments)) return new Error(`${path}.payments: custom check failed`)
+
+    if (!Array.isArray(o.reason_counts)) return new Error(`${path}.reason_counts: is not an array`)
+    for (let index = 0; index < o.reason_counts.length; index++) {
+        const reason_countsErr = FailedOutgoingPaymentReasonCountValidate(o.reason_counts[index], opts.reason_counts_ItemOptions, `${path}.reason_counts[${index}]`)
+        if (reason_countsErr !== null) return reason_countsErr
+    }
+    if (opts.reason_counts_CustomCheck && !opts.reason_counts_CustomCheck(o.reason_counts)) return new Error(`${path}.reason_counts: custom check failed`)
+
+    return null
+}
+
+export type FailedOutgoingPaymentsRequest = {
+    from_serial_id?: number
+    from_unix?: number
+    take?: number
+    to_unix?: number
+}
+export type FailedOutgoingPaymentsRequestOptionalField = 'from_serial_id' | 'from_unix' | 'take' | 'to_unix'
+export const FailedOutgoingPaymentsRequestOptionalFields: FailedOutgoingPaymentsRequestOptionalField[] = ['from_serial_id', 'from_unix', 'take', 'to_unix']
+export type FailedOutgoingPaymentsRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: FailedOutgoingPaymentsRequestOptionalField[]
+    from_serial_id_CustomCheck?: (v?: number) => boolean
+    from_unix_CustomCheck?: (v?: number) => boolean
+    take_CustomCheck?: (v?: number) => boolean
+    to_unix_CustomCheck?: (v?: number) => boolean
+}
+export const FailedOutgoingPaymentsRequestValidate = (o?: FailedOutgoingPaymentsRequest, opts: FailedOutgoingPaymentsRequestOptions = {}, path: string = 'FailedOutgoingPaymentsRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.from_serial_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('from_serial_id')) && typeof o.from_serial_id !== 'number') return new Error(`${path}.from_serial_id: is not a number`)
+    if (opts.from_serial_id_CustomCheck && !opts.from_serial_id_CustomCheck(o.from_serial_id)) return new Error(`${path}.from_serial_id: custom check failed`)
+
+    if ((o.from_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('from_unix')) && typeof o.from_unix !== 'number') return new Error(`${path}.from_unix: is not a number`)
+    if (opts.from_unix_CustomCheck && !opts.from_unix_CustomCheck(o.from_unix)) return new Error(`${path}.from_unix: custom check failed`)
+
+    if ((o.take || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('take')) && typeof o.take !== 'number') return new Error(`${path}.take: is not a number`)
+    if (opts.take_CustomCheck && !opts.take_CustomCheck(o.take)) return new Error(`${path}.take: custom check failed`)
+
+    if ((o.to_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('to_unix')) && typeof o.to_unix !== 'number') return new Error(`${path}.to_unix: is not a number`)
+    if (opts.to_unix_CustomCheck && !opts.to_unix_CustomCheck(o.to_unix)) return new Error(`${path}.to_unix: custom check failed`)
 
     return null
 }
@@ -2366,27 +2725,27 @@ export const GetUserOperationsRequestValidate = (o?: GetUserOperationsRequest, o
 
     const latestIncomingInvoiceErr = OperationsCursorValidate(o.latestIncomingInvoice, opts.latestIncomingInvoice_Options, `${path}.latestIncomingInvoice`)
     if (latestIncomingInvoiceErr !== null) return latestIncomingInvoiceErr
-    
+
 
     const latestIncomingTxErr = OperationsCursorValidate(o.latestIncomingTx, opts.latestIncomingTx_Options, `${path}.latestIncomingTx`)
     if (latestIncomingTxErr !== null) return latestIncomingTxErr
-    
+
 
     const latestIncomingUserToUserPaymentErr = OperationsCursorValidate(o.latestIncomingUserToUserPayment, opts.latestIncomingUserToUserPayment_Options, `${path}.latestIncomingUserToUserPayment`)
     if (latestIncomingUserToUserPaymentErr !== null) return latestIncomingUserToUserPaymentErr
-    
+
 
     const latestOutgoingInvoiceErr = OperationsCursorValidate(o.latestOutgoingInvoice, opts.latestOutgoingInvoice_Options, `${path}.latestOutgoingInvoice`)
     if (latestOutgoingInvoiceErr !== null) return latestOutgoingInvoiceErr
-    
+
 
     const latestOutgoingTxErr = OperationsCursorValidate(o.latestOutgoingTx, opts.latestOutgoingTx_Options, `${path}.latestOutgoingTx`)
     if (latestOutgoingTxErr !== null) return latestOutgoingTxErr
-    
+
 
     const latestOutgoingUserToUserPaymentErr = OperationsCursorValidate(o.latestOutgoingUserToUserPayment, opts.latestOutgoingUserToUserPayment_Options, `${path}.latestOutgoingUserToUserPayment`)
     if (latestOutgoingUserToUserPaymentErr !== null) return latestOutgoingUserToUserPaymentErr
-    
+
 
     if (typeof o.max_size !== 'number') return new Error(`${path}.max_size: is not a number`)
     if (opts.max_size_CustomCheck && !opts.max_size_CustomCheck(o.max_size)) return new Error(`${path}.max_size: custom check failed`)
@@ -2424,27 +2783,27 @@ export const GetUserOperationsResponseValidate = (o?: GetUserOperationsResponse,
 
     const latestIncomingInvoiceOperationsErr = UserOperationsValidate(o.latestIncomingInvoiceOperations, opts.latestIncomingInvoiceOperations_Options, `${path}.latestIncomingInvoiceOperations`)
     if (latestIncomingInvoiceOperationsErr !== null) return latestIncomingInvoiceOperationsErr
-    
+
 
     const latestIncomingTxOperationsErr = UserOperationsValidate(o.latestIncomingTxOperations, opts.latestIncomingTxOperations_Options, `${path}.latestIncomingTxOperations`)
     if (latestIncomingTxOperationsErr !== null) return latestIncomingTxOperationsErr
-    
+
 
     const latestIncomingUserToUserPayemntsErr = UserOperationsValidate(o.latestIncomingUserToUserPayemnts, opts.latestIncomingUserToUserPayemnts_Options, `${path}.latestIncomingUserToUserPayemnts`)
     if (latestIncomingUserToUserPayemntsErr !== null) return latestIncomingUserToUserPayemntsErr
-    
+
 
     const latestOutgoingInvoiceOperationsErr = UserOperationsValidate(o.latestOutgoingInvoiceOperations, opts.latestOutgoingInvoiceOperations_Options, `${path}.latestOutgoingInvoiceOperations`)
     if (latestOutgoingInvoiceOperationsErr !== null) return latestOutgoingInvoiceOperationsErr
-    
+
 
     const latestOutgoingTxOperationsErr = UserOperationsValidate(o.latestOutgoingTxOperations, opts.latestOutgoingTxOperations_Options, `${path}.latestOutgoingTxOperations`)
     if (latestOutgoingTxOperationsErr !== null) return latestOutgoingTxOperationsErr
-    
+
 
     const latestOutgoingUserToUserPayemntsErr = UserOperationsValidate(o.latestOutgoingUserToUserPayemnts, opts.latestOutgoingUserToUserPayemnts_Options, `${path}.latestOutgoingUserToUserPayemnts`)
     if (latestOutgoingUserToUserPayemntsErr !== null) return latestOutgoingUserToUserPayemntsErr
-    
+
 
     if ((o.user_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('user_id')) && typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
     if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
@@ -2561,11 +2920,11 @@ export const InvoiceSwapOperationValidate = (o?: InvoiceSwapOperation, opts: Inv
         const operation_paymentErr = UserOperationValidate(o.operation_payment, opts.operation_payment_Options, `${path}.operation_payment`)
         if (operation_paymentErr !== null) return operation_paymentErr
     }
-    
+
 
     const quoteErr = InvoiceSwapQuoteValidate(o.quote, opts.quote_Options, `${path}.quote`)
     if (quoteErr !== null) return quoteErr
-    
+
 
     if ((o.refund_address || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('refund_address')) && typeof o.refund_address !== 'string') return new Error(`${path}.refund_address: is not a string`)
     if (opts.refund_address_CustomCheck && !opts.refund_address_CustomCheck(o.refund_address)) return new Error(`${path}.refund_address: custom check failed`)
@@ -2702,7 +3061,7 @@ export const InvoiceSwapRequestValidate = (o?: InvoiceSwapRequest, opts: Invoice
         const fees_reqErr = TxFeesReqValidate(o.fees_req, opts.fees_req_Options, `${path}.fees_req`)
         if (fees_reqErr !== null) return fees_reqErr
     }
-    
+
 
     return null
 }
@@ -2818,7 +3177,7 @@ export const LiquidityAssetOperationsPageValidate = (o?: LiquidityAssetOperation
         const next_cursorErr = OperationsCursorValidate(o.next_cursor, opts.next_cursor_Options, `${path}.next_cursor`)
         if (next_cursorErr !== null) return next_cursorErr
     }
-    
+
 
     if (!Array.isArray(o.operations)) return new Error(`${path}.operations: is not an array`)
     for (let index = 0; index < o.operations.length; index++) {
@@ -2855,7 +3214,7 @@ export const LiquidityAssetProviderValidate = (o?: LiquidityAssetProvider, opts:
         const trackedErr = TrackedLiquidityProviderValidate(o.tracked, opts.tracked_Options, `${path}.tracked`)
         if (trackedErr !== null) return trackedErr
     }
-    
+
 
     return null
 }
@@ -2882,7 +3241,7 @@ export const LiquidityAssetProviderV2Validate = (o?: LiquidityAssetProviderV2, o
         const trackedErr = TrackedLiquidityProviderV2Validate(o.tracked, opts.tracked_Options, `${path}.tracked`)
         if (trackedErr !== null) return trackedErr
     }
-    
+
 
     return null
 }
@@ -2910,13 +3269,13 @@ export const LiquidityProviderFilterValidate = (o?: LiquidityProviderFilter, opt
         const latestIncomingInvoiceErr = OperationsCursorValidate(o.latestIncomingInvoice, opts.latestIncomingInvoice_Options, `${path}.latestIncomingInvoice`)
         if (latestIncomingInvoiceErr !== null) return latestIncomingInvoiceErr
     }
-    
+
 
     if (typeof o.latestOutgoingInvoice === 'object' || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('latestOutgoingInvoice')) {
         const latestOutgoingInvoiceErr = OperationsCursorValidate(o.latestOutgoingInvoice, opts.latestOutgoingInvoice_Options, `${path}.latestOutgoingInvoice`)
         if (latestOutgoingInvoiceErr !== null) return latestOutgoingInvoiceErr
     }
-    
+
 
     if ((o.limit || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('limit')) && typeof o.limit !== 'number') return new Error(`${path}.limit: is not a number`)
     if (opts.limit_CustomCheck && !opts.limit_CustomCheck(o.limit)) return new Error(`${path}.limit: custom check failed`)
@@ -2948,7 +3307,7 @@ export const LiveDebitRequestValidate = (o?: LiveDebitRequest, opts: LiveDebitRe
 
     const debitErr = LiveDebitRequest_debitValidate(o.debit, opts.debit_Options, `${path}.debit`)
     if (debitErr !== null) return debitErr
-    
+
 
     if ((o.k1 || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('k1')) && typeof o.k1 !== 'string') return new Error(`${path}.k1: is not a string`)
     if (opts.k1_CustomCheck && !opts.k1_CustomCheck(o.k1)) return new Error(`${path}.k1: custom check failed`)
@@ -3004,7 +3363,7 @@ export const LiveUserOperationValidate = (o?: LiveUserOperation, opts: LiveUserO
 
     const operationErr = UserOperationValidate(o.operation, opts.operation_Options, `${path}.operation`)
     if (operationErr !== null) return operationErr
-    
+
 
     return null
 }
@@ -3070,7 +3429,7 @@ export const LndAssetProviderValidate = (o?: LndAssetProvider, opts: LndAssetPro
         const trackedErr = TrackedLndProviderValidate(o.tracked, opts.tracked_Options, `${path}.tracked`)
         if (trackedErr !== null) return trackedErr
     }
-    
+
 
     return null
 }
@@ -3097,7 +3456,7 @@ export const LndAssetProviderV2Validate = (o?: LndAssetProviderV2, opts: LndAsse
         const trackedErr = TrackedLndProviderV2Validate(o.tracked, opts.tracked_Options, `${path}.tracked`)
         if (trackedErr !== null) return trackedErr
     }
-    
+
 
     return null
 }
@@ -3892,13 +4251,13 @@ export const MigrationUpdateValidate = (o?: MigrationUpdate, opts: MigrationUpda
         const closureErr = ClosureMigrationValidate(o.closure, opts.closure_Options, `${path}.closure`)
         if (closureErr !== null) return closureErr
     }
-    
+
 
     if (typeof o.relays === 'object' || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('relays')) {
         const relaysErr = RelaysMigrationValidate(o.relays, opts.relays_Options, `${path}.relays`)
         if (relaysErr !== null) return relaysErr
     }
-    
+
 
     return null
 }
@@ -3917,7 +4276,7 @@ export const NPubLinkingValidate = (o?: NPubLinking, opts: NPubLinkingOptions = 
 
     const stateErr = NPubLinking_stateValidate(o.state, opts.state_Options, `${path}.state`)
     if (stateErr !== null) return stateErr
-    
+
 
     return null
 }
@@ -4341,7 +4700,7 @@ export const OpenChannelValidate = (o?: OpenChannel, opts: OpenChannelOptions = 
         const policyErr = ChannelPolicyValidate(o.policy, opts.policy_Options, `${path}.policy`)
         if (policyErr !== null) return policyErr
     }
-    
+
 
     if (typeof o.remote_balance !== 'number') return new Error(`${path}.remote_balance: is not a number`)
     if (opts.remote_balance_CustomCheck && !opts.remote_balance_CustomCheck(o.remote_balance)) return new Error(`${path}.remote_balance: custom check failed`)
@@ -4579,7 +4938,7 @@ export const PayAppUserInvoiceRequestValidate = (o?: PayAppUserInvoiceRequest, o
         const expected_feesErr = CumulativeFeesValidate(o.expected_fees, opts.expected_fees_Options, `${path}.expected_fees`)
         if (expected_feesErr !== null) return expected_feesErr
     }
-    
+
 
     if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
     if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
@@ -4619,7 +4978,7 @@ export const PayInvoiceRequestValidate = (o?: PayInvoiceRequest, opts: PayInvoic
         const expected_feesErr = CumulativeFeesValidate(o.expected_fees, opts.expected_fees_Options, `${path}.expected_fees`)
         if (expected_feesErr !== null) return expected_feesErr
     }
-    
+
 
     if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
     if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
@@ -4686,6 +5045,87 @@ export const PayerDataValidate = (o?: PayerData, opts: PayerDataOptions = {}, pa
     for (const key in o.data) {
         if (typeof o.data[key] !== 'string') return new Error(`${path}.data['${key}']: is not a string`)
     }
+
+    return null
+}
+
+export type PaymentDestination = {
+    alias?: string
+    count: number
+    pubkey: string
+    volume_sats: number
+}
+export type PaymentDestinationOptionalField = 'alias'
+export const PaymentDestinationOptionalFields: PaymentDestinationOptionalField[] = ['alias']
+export type PaymentDestinationOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: PaymentDestinationOptionalField[]
+    alias_CustomCheck?: (v?: string) => boolean
+    count_CustomCheck?: (v: number) => boolean
+    pubkey_CustomCheck?: (v: string) => boolean
+    volume_sats_CustomCheck?: (v: number) => boolean
+}
+export const PaymentDestinationValidate = (o?: PaymentDestination, opts: PaymentDestinationOptions = {}, path: string = 'PaymentDestination::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.alias || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('alias')) && typeof o.alias !== 'string') return new Error(`${path}.alias: is not a string`)
+    if (opts.alias_CustomCheck && !opts.alias_CustomCheck(o.alias)) return new Error(`${path}.alias: custom check failed`)
+
+    if (typeof o.count !== 'number') return new Error(`${path}.count: is not a number`)
+    if (opts.count_CustomCheck && !opts.count_CustomCheck(o.count)) return new Error(`${path}.count: custom check failed`)
+
+    if (typeof o.pubkey !== 'string') return new Error(`${path}.pubkey: is not a string`)
+    if (opts.pubkey_CustomCheck && !opts.pubkey_CustomCheck(o.pubkey)) return new Error(`${path}.pubkey: custom check failed`)
+
+    if (typeof o.volume_sats !== 'number') return new Error(`${path}.volume_sats: is not a number`)
+    if (opts.volume_sats_CustomCheck && !opts.volume_sats_CustomCheck(o.volume_sats)) return new Error(`${path}.volume_sats: custom check failed`)
+
+    return null
+}
+
+export type PaymentDestinations = {
+    destinations: PaymentDestination[]
+}
+export const PaymentDestinationsOptionalFields: [] = []
+export type PaymentDestinationsOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    destinations_ItemOptions?: PaymentDestinationOptions
+    destinations_CustomCheck?: (v: PaymentDestination[]) => boolean
+}
+export const PaymentDestinationsValidate = (o?: PaymentDestinations, opts: PaymentDestinationsOptions = {}, path: string = 'PaymentDestinations::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (!Array.isArray(o.destinations)) return new Error(`${path}.destinations: is not an array`)
+    for (let index = 0; index < o.destinations.length; index++) {
+        const destinationsErr = PaymentDestinationValidate(o.destinations[index], opts.destinations_ItemOptions, `${path}.destinations[${index}]`)
+        if (destinationsErr !== null) return destinationsErr
+    }
+    if (opts.destinations_CustomCheck && !opts.destinations_CustomCheck(o.destinations)) return new Error(`${path}.destinations: custom check failed`)
+
+    return null
+}
+
+export type PaymentDestinationsRequest = {
+    from_unix?: number
+    to_unix?: number
+}
+export type PaymentDestinationsRequestOptionalField = 'from_unix' | 'to_unix'
+export const PaymentDestinationsRequestOptionalFields: PaymentDestinationsRequestOptionalField[] = ['from_unix', 'to_unix']
+export type PaymentDestinationsRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: PaymentDestinationsRequestOptionalField[]
+    from_unix_CustomCheck?: (v?: number) => boolean
+    to_unix_CustomCheck?: (v?: number) => boolean
+}
+export const PaymentDestinationsRequestValidate = (o?: PaymentDestinationsRequest, opts: PaymentDestinationsRequestOptions = {}, path: string = 'PaymentDestinationsRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.from_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('from_unix')) && typeof o.from_unix !== 'number') return new Error(`${path}.from_unix: is not a number`)
+    if (opts.from_unix_CustomCheck && !opts.from_unix_CustomCheck(o.from_unix)) return new Error(`${path}.from_unix: custom check failed`)
+
+    if ((o.to_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('to_unix')) && typeof o.to_unix !== 'number') return new Error(`${path}.to_unix: is not a number`)
+    if (opts.to_unix_CustomCheck && !opts.to_unix_CustomCheck(o.to_unix)) return new Error(`${path}.to_unix: custom check failed`)
 
     return null
 }
@@ -4859,7 +5299,7 @@ export const PushNotificationPayloadValidate = (o?: PushNotificationPayload, opt
 
     const dataErr = PushNotificationPayload_dataValidate(o.data, opts.data_Options, `${path}.data`)
     if (dataErr !== null) return dataErr
-    
+
 
     return null
 }
@@ -4904,6 +5344,49 @@ export const RelaysMigrationValidate = (o?: RelaysMigration, opts: RelaysMigrati
         if (typeof o.relays[index] !== 'string') return new Error(`${path}.relays[${index}]: is not a string`)
     }
     if (opts.relays_CustomCheck && !opts.relays_CustomCheck(o.relays)) return new Error(`${path}.relays: custom check failed`)
+
+    return null
+}
+
+export type RemoteBackup = {
+    enabled: boolean
+    host: string
+    host_fingerprint: string
+    pass: string
+    port: number
+    user: string
+}
+export const RemoteBackupOptionalFields: [] = []
+export type RemoteBackupOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    enabled_CustomCheck?: (v: boolean) => boolean
+    host_CustomCheck?: (v: string) => boolean
+    host_fingerprint_CustomCheck?: (v: string) => boolean
+    pass_CustomCheck?: (v: string) => boolean
+    port_CustomCheck?: (v: number) => boolean
+    user_CustomCheck?: (v: string) => boolean
+}
+export const RemoteBackupValidate = (o?: RemoteBackup, opts: RemoteBackupOptions = {}, path: string = 'RemoteBackup::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.enabled !== 'boolean') return new Error(`${path}.enabled: is not a boolean`)
+    if (opts.enabled_CustomCheck && !opts.enabled_CustomCheck(o.enabled)) return new Error(`${path}.enabled: custom check failed`)
+
+    if (typeof o.host !== 'string') return new Error(`${path}.host: is not a string`)
+    if (opts.host_CustomCheck && !opts.host_CustomCheck(o.host)) return new Error(`${path}.host: custom check failed`)
+
+    if (typeof o.host_fingerprint !== 'string') return new Error(`${path}.host_fingerprint: is not a string`)
+    if (opts.host_fingerprint_CustomCheck && !opts.host_fingerprint_CustomCheck(o.host_fingerprint)) return new Error(`${path}.host_fingerprint: custom check failed`)
+
+    if (typeof o.pass !== 'string') return new Error(`${path}.pass: is not a string`)
+    if (opts.pass_CustomCheck && !opts.pass_CustomCheck(o.pass)) return new Error(`${path}.pass: custom check failed`)
+
+    if (typeof o.port !== 'number') return new Error(`${path}.port: is not a number`)
+    if (opts.port_CustomCheck && !opts.port_CustomCheck(o.port)) return new Error(`${path}.port: custom check failed`)
+
+    if (typeof o.user !== 'string') return new Error(`${path}.user: is not a string`)
+    if (opts.user_CustomCheck && !opts.user_CustomCheck(o.user)) return new Error(`${path}.user: custom check failed`)
 
     return null
 }
@@ -5263,11 +5746,11 @@ export const TrackedLiquidityProviderV2Validate = (o?: TrackedLiquidityProviderV
 
     const invoicesErr = LiquidityAssetOperationsPageValidate(o.invoices, opts.invoices_Options, `${path}.invoices`)
     if (invoicesErr !== null) return invoicesErr
-    
+
 
     const paymentsErr = LiquidityAssetOperationsPageValidate(o.payments, opts.payments_Options, `${path}.payments`)
     if (paymentsErr !== null) return paymentsErr
-    
+
 
     return null
 }
@@ -5372,19 +5855,19 @@ export const TrackedLndProviderV2Validate = (o?: TrackedLndProviderV2, opts: Tra
 
     const incoming_txErr = LndAssetOperationsPageValidate(o.incoming_tx, opts.incoming_tx_Options, `${path}.incoming_tx`)
     if (incoming_txErr !== null) return incoming_txErr
-    
+
 
     const invoicesErr = LndAssetOperationsPageValidate(o.invoices, opts.invoices_Options, `${path}.invoices`)
     if (invoicesErr !== null) return invoicesErr
-    
+
 
     const outgoing_txErr = LndAssetOperationsPageValidate(o.outgoing_tx, opts.outgoing_tx_Options, `${path}.outgoing_tx`)
     if (outgoing_txErr !== null) return outgoing_txErr
-    
+
 
     const paymentsErr = LndAssetOperationsPageValidate(o.payments, opts.payments_Options, `${path}.payments`)
     if (paymentsErr !== null) return paymentsErr
-    
+
 
     if (typeof o.unconfirmed_balance !== 'number') return new Error(`${path}.unconfirmed_balance: is not a number`)
     if (opts.unconfirmed_balance_CustomCheck && !opts.unconfirmed_balance_CustomCheck(o.unconfirmed_balance)) return new Error(`${path}.unconfirmed_balance: custom check failed`)
@@ -5544,7 +6027,7 @@ export const TxFeesReqValidate = (o?: TxFeesReq, opts: TxFeesReqOptions = {}, pa
 
     const feesErr = TxFeesReq_feesValidate(o.fees, opts.fees_Options, `${path}.fees`)
     if (feesErr !== null) return feesErr
-    
+
 
     return null
 }
@@ -5580,11 +6063,11 @@ export const TxSwapOperationValidate = (o?: TxSwapOperation, opts: TxSwapOperati
         const operation_paymentErr = UserOperationValidate(o.operation_payment, opts.operation_payment_Options, `${path}.operation_payment`)
         if (operation_paymentErr !== null) return operation_paymentErr
     }
-    
+
 
     const quoteErr = TransactionSwapQuoteValidate(o.quote, opts.quote_Options, `${path}.quote`)
     if (quoteErr !== null) return quoteErr
-    
+
 
     if ((o.tx_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('tx_id')) && typeof o.tx_id !== 'string') return new Error(`${path}.tx_id: is not a string`)
     if (opts.tx_id_CustomCheck && !opts.tx_id_CustomCheck(o.tx_id)) return new Error(`${path}.tx_id: custom check failed`)
@@ -5620,7 +6103,7 @@ export type UpdateAdminNodeSettingsRequest = {
     avatar_url: string
     lsp_channel_threshold: number
     node_name: string
-    push_backups_to_nostr: boolean
+    remote_backup: RemoteBackup
 }
 export const UpdateAdminNodeSettingsRequestOptionalFields: [] = []
 export type UpdateAdminNodeSettingsRequestOptions = OptionsBaseMessage & {
@@ -5629,7 +6112,7 @@ export type UpdateAdminNodeSettingsRequestOptions = OptionsBaseMessage & {
     avatar_url_CustomCheck?: (v: string) => boolean
     lsp_channel_threshold_CustomCheck?: (v: number) => boolean
     node_name_CustomCheck?: (v: string) => boolean
-    push_backups_to_nostr_CustomCheck?: (v: boolean) => boolean
+    remote_backup_Options?: RemoteBackupOptions
 }
 export const UpdateAdminNodeSettingsRequestValidate = (o?: UpdateAdminNodeSettingsRequest, opts: UpdateAdminNodeSettingsRequestOptions = {}, path: string = 'UpdateAdminNodeSettingsRequest::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -5647,8 +6130,47 @@ export const UpdateAdminNodeSettingsRequestValidate = (o?: UpdateAdminNodeSettin
     if (typeof o.node_name !== 'string') return new Error(`${path}.node_name: is not a string`)
     if (opts.node_name_CustomCheck && !opts.node_name_CustomCheck(o.node_name)) return new Error(`${path}.node_name: custom check failed`)
 
-    if (typeof o.push_backups_to_nostr !== 'boolean') return new Error(`${path}.push_backups_to_nostr: is not a boolean`)
-    if (opts.push_backups_to_nostr_CustomCheck && !opts.push_backups_to_nostr_CustomCheck(o.push_backups_to_nostr)) return new Error(`${path}.push_backups_to_nostr: custom check failed`)
+    const remote_backupErr = RemoteBackupValidate(o.remote_backup, opts.remote_backup_Options, `${path}.remote_backup`)
+    if (remote_backupErr !== null) return remote_backupErr
+
+
+    return null
+}
+
+export type UpdateAdminOnchainConfSettingsRequest = {
+    tier1_confs: number
+    tier1_limit_sats: number
+    tier2_confs: number
+    tier2_limit_sats: number
+    tier3_confs: number
+}
+export const UpdateAdminOnchainConfSettingsRequestOptionalFields: [] = []
+export type UpdateAdminOnchainConfSettingsRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    tier1_confs_CustomCheck?: (v: number) => boolean
+    tier1_limit_sats_CustomCheck?: (v: number) => boolean
+    tier2_confs_CustomCheck?: (v: number) => boolean
+    tier2_limit_sats_CustomCheck?: (v: number) => boolean
+    tier3_confs_CustomCheck?: (v: number) => boolean
+}
+export const UpdateAdminOnchainConfSettingsRequestValidate = (o?: UpdateAdminOnchainConfSettingsRequest, opts: UpdateAdminOnchainConfSettingsRequestOptions = {}, path: string = 'UpdateAdminOnchainConfSettingsRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.tier1_confs !== 'number') return new Error(`${path}.tier1_confs: is not a number`)
+    if (opts.tier1_confs_CustomCheck && !opts.tier1_confs_CustomCheck(o.tier1_confs)) return new Error(`${path}.tier1_confs: custom check failed`)
+
+    if (typeof o.tier1_limit_sats !== 'number') return new Error(`${path}.tier1_limit_sats: is not a number`)
+    if (opts.tier1_limit_sats_CustomCheck && !opts.tier1_limit_sats_CustomCheck(o.tier1_limit_sats)) return new Error(`${path}.tier1_limit_sats: custom check failed`)
+
+    if (typeof o.tier2_confs !== 'number') return new Error(`${path}.tier2_confs: is not a number`)
+    if (opts.tier2_confs_CustomCheck && !opts.tier2_confs_CustomCheck(o.tier2_confs)) return new Error(`${path}.tier2_confs: custom check failed`)
+
+    if (typeof o.tier2_limit_sats !== 'number') return new Error(`${path}.tier2_limit_sats: is not a number`)
+    if (opts.tier2_limit_sats_CustomCheck && !opts.tier2_limit_sats_CustomCheck(o.tier2_limit_sats)) return new Error(`${path}.tier2_limit_sats: custom check failed`)
+
+    if (typeof o.tier3_confs !== 'number') return new Error(`${path}.tier3_confs: is not a number`)
+    if (opts.tier3_confs_CustomCheck && !opts.tier3_confs_CustomCheck(o.tier3_confs)) return new Error(`${path}.tier3_confs: custom check failed`)
 
     return null
 }
@@ -5669,11 +6191,11 @@ export const UpdateChannelPolicyRequestValidate = (o?: UpdateChannelPolicyReques
 
     const policyErr = ChannelPolicyValidate(o.policy, opts.policy_Options, `${path}.policy`)
     if (policyErr !== null) return policyErr
-    
+
 
     const updateErr = UpdateChannelPolicyRequest_updateValidate(o.update, opts.update_Options, `${path}.update`)
     if (updateErr !== null) return updateErr
-    
+
 
     return null
 }
@@ -5824,24 +6346,22 @@ export const UseInviteLinkRequestValidate = (o?: UseInviteLinkRequest, opts: Use
 export type UserAdminInfo = {
     app_users: AppUserAdminInfo[]
     balance: number
+    last_seen_at_unix?: number
     locked: boolean
     owner_of_app_id?: string
     user_id: string
-    last_seen_at_unix?: number
-    is_node_admin?: boolean
 }
-export type UserAdminInfoOptionalField = 'owner_of_app_id' | 'last_seen_at_unix' | 'is_node_admin'
-export const UserAdminInfoOptionalFields: UserAdminInfoOptionalField[] = ['owner_of_app_id', 'last_seen_at_unix', 'is_node_admin']
+export type UserAdminInfoOptionalField = 'last_seen_at_unix' | 'owner_of_app_id'
+export const UserAdminInfoOptionalFields: UserAdminInfoOptionalField[] = ['last_seen_at_unix', 'owner_of_app_id']
 export type UserAdminInfoOptions = OptionsBaseMessage & {
     checkOptionalsAreSet?: UserAdminInfoOptionalField[]
     app_users_ItemOptions?: AppUserAdminInfoOptions
     app_users_CustomCheck?: (v: AppUserAdminInfo[]) => boolean
     balance_CustomCheck?: (v: number) => boolean
+    last_seen_at_unix_CustomCheck?: (v?: number) => boolean
     locked_CustomCheck?: (v: boolean) => boolean
     owner_of_app_id_CustomCheck?: (v?: string) => boolean
     user_id_CustomCheck?: (v: string) => boolean
-    last_seen_at_unix_CustomCheck?: (v?: number) => boolean
-    is_node_admin_CustomCheck?: (v?: boolean) => boolean
 }
 export const UserAdminInfoValidate = (o?: UserAdminInfo, opts: UserAdminInfoOptions = {}, path: string = 'UserAdminInfo::root.'): Error | null => {
     if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
@@ -5857,6 +6377,9 @@ export const UserAdminInfoValidate = (o?: UserAdminInfo, opts: UserAdminInfoOpti
     if (typeof o.balance !== 'number') return new Error(`${path}.balance: is not a number`)
     if (opts.balance_CustomCheck && !opts.balance_CustomCheck(o.balance)) return new Error(`${path}.balance: custom check failed`)
 
+    if ((o.last_seen_at_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('last_seen_at_unix')) && typeof o.last_seen_at_unix !== 'number') return new Error(`${path}.last_seen_at_unix: is not a number`)
+    if (opts.last_seen_at_unix_CustomCheck && !opts.last_seen_at_unix_CustomCheck(o.last_seen_at_unix)) return new Error(`${path}.last_seen_at_unix: custom check failed`)
+
     if (typeof o.locked !== 'boolean') return new Error(`${path}.locked: is not a boolean`)
     if (opts.locked_CustomCheck && !opts.locked_CustomCheck(o.locked)) return new Error(`${path}.locked: custom check failed`)
 
@@ -5865,12 +6388,6 @@ export const UserAdminInfoValidate = (o?: UserAdminInfo, opts: UserAdminInfoOpti
 
     if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
     if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
-
-    if ((o.last_seen_at_unix || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('last_seen_at_unix')) && typeof o.last_seen_at_unix !== 'number') return new Error(`${path}.last_seen_at_unix: is not a number`)
-    if (opts.last_seen_at_unix_CustomCheck && !opts.last_seen_at_unix_CustomCheck(o.last_seen_at_unix)) return new Error(`${path}.last_seen_at_unix: custom check failed`)
-
-    if ((o.is_node_admin || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('is_node_admin')) && typeof o.is_node_admin !== 'boolean') return new Error(`${path}.is_node_admin: is not a boolean`)
-    if (opts.is_node_admin_CustomCheck && !opts.is_node_admin_CustomCheck(o.is_node_admin)) return new Error(`${path}.is_node_admin: custom check failed`)
 
     return null
 }
@@ -6081,7 +6598,7 @@ export const UserOperationsValidate = (o?: UserOperations, opts: UserOperationsO
 
     const fromIndexErr = OperationsCursorValidate(o.fromIndex, opts.fromIndex_Options, `${path}.fromIndex`)
     if (fromIndexErr !== null) return fromIndexErr
-    
+
 
     if (!Array.isArray(o.operations)) return new Error(`${path}.operations: is not an array`)
     for (let index = 0; index < o.operations.length; index++) {
@@ -6092,7 +6609,7 @@ export const UserOperationsValidate = (o?: UserOperations, opts: UserOperationsO
 
     const toIndexErr = OperationsCursorValidate(o.toIndex, opts.toIndex_Options, `${path}.toIndex`)
     if (toIndexErr !== null) return toIndexErr
-    
+
 
     return null
 }
@@ -6243,7 +6760,7 @@ export const WebRtcMessageValidate = (o?: WebRtcMessage, opts: WebRtcMessageOpti
 
     const messageErr = WebRtcMessage_messageValidate(o.message, opts.message_Options, `${path}.message`)
     if (messageErr !== null) return messageErr
-    
+
 
     return null
 }
@@ -6275,39 +6792,39 @@ export const enumCheckDebitResponse_response_type = (e?: DebitResponse_response_
     for (const v in DebitResponse_response_type) if (e === v) return true
     return false
 }
-export type DebitResponse_response = 
-    {type:DebitResponse_response_type.AUTHORIZE, authorize:DebitToAuthorize}|
-    {type:DebitResponse_response_type.DENIED, denied:Empty}|
-    {type:DebitResponse_response_type.INVOICE, invoice:string}
+export type DebitResponse_response =
+    { type: DebitResponse_response_type.AUTHORIZE, authorize: DebitToAuthorize } |
+    { type: DebitResponse_response_type.DENIED, denied: Empty } |
+    { type: DebitResponse_response_type.INVOICE, invoice: string }
 
 export type DebitResponse_responseOptions = {
     authorize_Options?: DebitToAuthorizeOptions
     denied_Options?: EmptyOptions
     invoice_CustomCheck?: (v: string) => boolean
 }
-export const DebitResponse_responseValidate = (o?: DebitResponse_response, opts:DebitResponse_responseOptions = {}, path: string = 'DebitResponse_response::root.'): Error | null => {
+export const DebitResponse_responseValidate = (o?: DebitResponse_response, opts: DebitResponse_responseOptions = {}, path: string = 'DebitResponse_response::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case DebitResponse_response_type.AUTHORIZE:
-        const authorizeErr = DebitToAuthorizeValidate(o.authorize, opts.authorize_Options, `${path}.authorize`)
-        if (authorizeErr !== null) return authorizeErr
-        
+            const authorizeErr = DebitToAuthorizeValidate(o.authorize, opts.authorize_Options, `${path}.authorize`)
+            if (authorizeErr !== null) return authorizeErr
 
-        break
+
+            break
         case DebitResponse_response_type.DENIED:
-        const deniedErr = EmptyValidate(o.denied, opts.denied_Options, `${path}.denied`)
-        if (deniedErr !== null) return deniedErr
-        
+            const deniedErr = EmptyValidate(o.denied, opts.denied_Options, `${path}.denied`)
+            if (deniedErr !== null) return deniedErr
 
-        break
+
+            break
         case DebitResponse_response_type.INVOICE:
-        if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
-        if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
+            if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
+            if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
 
-        break
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6319,32 +6836,32 @@ export const enumCheckDebitRule_rule_type = (e?: DebitRule_rule_type): boolean =
     for (const v in DebitRule_rule_type) if (e === v) return true
     return false
 }
-export type DebitRule_rule = 
-    {type:DebitRule_rule_type.EXPIRATION_RULE, expiration_rule:DebitExpirationRule}|
-    {type:DebitRule_rule_type.FREQUENCY_RULE, frequency_rule:FrequencyRule}
+export type DebitRule_rule =
+    { type: DebitRule_rule_type.EXPIRATION_RULE, expiration_rule: DebitExpirationRule } |
+    { type: DebitRule_rule_type.FREQUENCY_RULE, frequency_rule: FrequencyRule }
 
 export type DebitRule_ruleOptions = {
     expiration_rule_Options?: DebitExpirationRuleOptions
     frequency_rule_Options?: FrequencyRuleOptions
 }
-export const DebitRule_ruleValidate = (o?: DebitRule_rule, opts:DebitRule_ruleOptions = {}, path: string = 'DebitRule_rule::root.'): Error | null => {
+export const DebitRule_ruleValidate = (o?: DebitRule_rule, opts: DebitRule_ruleOptions = {}, path: string = 'DebitRule_rule::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case DebitRule_rule_type.EXPIRATION_RULE:
-        const expiration_ruleErr = DebitExpirationRuleValidate(o.expiration_rule, opts.expiration_rule_Options, `${path}.expiration_rule`)
-        if (expiration_ruleErr !== null) return expiration_ruleErr
-        
+            const expiration_ruleErr = DebitExpirationRuleValidate(o.expiration_rule, opts.expiration_rule_Options, `${path}.expiration_rule`)
+            if (expiration_ruleErr !== null) return expiration_ruleErr
 
-        break
+
+            break
         case DebitRule_rule_type.FREQUENCY_RULE:
-        const frequency_ruleErr = FrequencyRuleValidate(o.frequency_rule, opts.frequency_rule_Options, `${path}.frequency_rule`)
-        if (frequency_ruleErr !== null) return frequency_ruleErr
-        
+            const frequency_ruleErr = FrequencyRuleValidate(o.frequency_rule, opts.frequency_rule_Options, `${path}.frequency_rule`)
+            if (frequency_ruleErr !== null) return frequency_ruleErr
 
-        break
+
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6357,39 +6874,39 @@ export const enumCheckLiveDebitRequest_debit_type = (e?: LiveDebitRequest_debit_
     for (const v in LiveDebitRequest_debit_type) if (e === v) return true
     return false
 }
-export type LiveDebitRequest_debit = 
-    {type:LiveDebitRequest_debit_type.FREQUENCY, frequency:FrequencyRule}|
-    {type:LiveDebitRequest_debit_type.FULL_ACCESS, full_access:Empty}|
-    {type:LiveDebitRequest_debit_type.INVOICE, invoice:string}
+export type LiveDebitRequest_debit =
+    { type: LiveDebitRequest_debit_type.FREQUENCY, frequency: FrequencyRule } |
+    { type: LiveDebitRequest_debit_type.FULL_ACCESS, full_access: Empty } |
+    { type: LiveDebitRequest_debit_type.INVOICE, invoice: string }
 
 export type LiveDebitRequest_debitOptions = {
     frequency_Options?: FrequencyRuleOptions
     full_access_Options?: EmptyOptions
     invoice_CustomCheck?: (v: string) => boolean
 }
-export const LiveDebitRequest_debitValidate = (o?: LiveDebitRequest_debit, opts:LiveDebitRequest_debitOptions = {}, path: string = 'LiveDebitRequest_debit::root.'): Error | null => {
+export const LiveDebitRequest_debitValidate = (o?: LiveDebitRequest_debit, opts: LiveDebitRequest_debitOptions = {}, path: string = 'LiveDebitRequest_debit::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case LiveDebitRequest_debit_type.FREQUENCY:
-        const frequencyErr = FrequencyRuleValidate(o.frequency, opts.frequency_Options, `${path}.frequency`)
-        if (frequencyErr !== null) return frequencyErr
-        
+            const frequencyErr = FrequencyRuleValidate(o.frequency, opts.frequency_Options, `${path}.frequency`)
+            if (frequencyErr !== null) return frequencyErr
 
-        break
+
+            break
         case LiveDebitRequest_debit_type.FULL_ACCESS:
-        const full_accessErr = EmptyValidate(o.full_access, opts.full_access_Options, `${path}.full_access`)
-        if (full_accessErr !== null) return full_accessErr
-        
+            const full_accessErr = EmptyValidate(o.full_access, opts.full_access_Options, `${path}.full_access`)
+            if (full_accessErr !== null) return full_accessErr
 
-        break
+
+            break
         case LiveDebitRequest_debit_type.INVOICE:
-        if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
-        if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
+            if (typeof o.invoice !== 'string') return new Error(`${path}.invoice: is not a string`)
+            if (opts.invoice_CustomCheck && !opts.invoice_CustomCheck(o.invoice)) return new Error(`${path}.invoice: custom check failed`)
 
-        break
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6402,38 +6919,38 @@ export const enumCheckNPubLinking_state_type = (e?: NPubLinking_state_type): boo
     for (const v in NPubLinking_state_type) if (e === v) return true
     return false
 }
-export type NPubLinking_state = 
-    {type:NPubLinking_state_type.LINKED_NPUB, linked_npub:string}|
-    {type:NPubLinking_state_type.LINKING_TOKEN, linking_token:string}|
-    {type:NPubLinking_state_type.UNLINKED, unlinked:Empty}
+export type NPubLinking_state =
+    { type: NPubLinking_state_type.LINKED_NPUB, linked_npub: string } |
+    { type: NPubLinking_state_type.LINKING_TOKEN, linking_token: string } |
+    { type: NPubLinking_state_type.UNLINKED, unlinked: Empty }
 
 export type NPubLinking_stateOptions = {
     linked_npub_CustomCheck?: (v: string) => boolean
     linking_token_CustomCheck?: (v: string) => boolean
     unlinked_Options?: EmptyOptions
 }
-export const NPubLinking_stateValidate = (o?: NPubLinking_state, opts:NPubLinking_stateOptions = {}, path: string = 'NPubLinking_state::root.'): Error | null => {
+export const NPubLinking_stateValidate = (o?: NPubLinking_state, opts: NPubLinking_stateOptions = {}, path: string = 'NPubLinking_state::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case NPubLinking_state_type.LINKED_NPUB:
-        if (typeof o.linked_npub !== 'string') return new Error(`${path}.linked_npub: is not a string`)
-        if (opts.linked_npub_CustomCheck && !opts.linked_npub_CustomCheck(o.linked_npub)) return new Error(`${path}.linked_npub: custom check failed`)
+            if (typeof o.linked_npub !== 'string') return new Error(`${path}.linked_npub: is not a string`)
+            if (opts.linked_npub_CustomCheck && !opts.linked_npub_CustomCheck(o.linked_npub)) return new Error(`${path}.linked_npub: custom check failed`)
 
-        break
+            break
         case NPubLinking_state_type.LINKING_TOKEN:
-        if (typeof o.linking_token !== 'string') return new Error(`${path}.linking_token: is not a string`)
-        if (opts.linking_token_CustomCheck && !opts.linking_token_CustomCheck(o.linking_token)) return new Error(`${path}.linking_token: custom check failed`)
+            if (typeof o.linking_token !== 'string') return new Error(`${path}.linking_token: is not a string`)
+            if (opts.linking_token_CustomCheck && !opts.linking_token_CustomCheck(o.linking_token)) return new Error(`${path}.linking_token: custom check failed`)
 
-        break
+            break
         case NPubLinking_state_type.UNLINKED:
-        const unlinkedErr = EmptyValidate(o.unlinked, opts.unlinked_Options, `${path}.unlinked`)
-        if (unlinkedErr !== null) return unlinkedErr
-        
+            const unlinkedErr = EmptyValidate(o.unlinked, opts.unlinked_Options, `${path}.unlinked`)
+            if (unlinkedErr !== null) return unlinkedErr
 
-        break
+
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6447,11 +6964,11 @@ export const enumCheckPushNotificationPayload_data_type = (e?: PushNotificationP
     for (const v in PushNotificationPayload_data_type) if (e === v) return true
     return false
 }
-export type PushNotificationPayload_data = 
-    {type:PushNotificationPayload_data_type.DEBIT_AUTH_REQ, debit_auth_req:LiveDebitRequest}|
-    {type:PushNotificationPayload_data_type.MANAGE_AUTH_REQ, manage_auth_req:LiveManageRequest}|
-    {type:PushNotificationPayload_data_type.RECEIVED_OPERATION, received_operation:UserOperation}|
-    {type:PushNotificationPayload_data_type.SENT_OPERATION, sent_operation:UserOperation}
+export type PushNotificationPayload_data =
+    { type: PushNotificationPayload_data_type.DEBIT_AUTH_REQ, debit_auth_req: LiveDebitRequest } |
+    { type: PushNotificationPayload_data_type.MANAGE_AUTH_REQ, manage_auth_req: LiveManageRequest } |
+    { type: PushNotificationPayload_data_type.RECEIVED_OPERATION, received_operation: UserOperation } |
+    { type: PushNotificationPayload_data_type.SENT_OPERATION, sent_operation: UserOperation }
 
 export type PushNotificationPayload_dataOptions = {
     debit_auth_req_Options?: LiveDebitRequestOptions
@@ -6459,36 +6976,36 @@ export type PushNotificationPayload_dataOptions = {
     received_operation_Options?: UserOperationOptions
     sent_operation_Options?: UserOperationOptions
 }
-export const PushNotificationPayload_dataValidate = (o?: PushNotificationPayload_data, opts:PushNotificationPayload_dataOptions = {}, path: string = 'PushNotificationPayload_data::root.'): Error | null => {
+export const PushNotificationPayload_dataValidate = (o?: PushNotificationPayload_data, opts: PushNotificationPayload_dataOptions = {}, path: string = 'PushNotificationPayload_data::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case PushNotificationPayload_data_type.DEBIT_AUTH_REQ:
-        const debit_auth_reqErr = LiveDebitRequestValidate(o.debit_auth_req, opts.debit_auth_req_Options, `${path}.debit_auth_req`)
-        if (debit_auth_reqErr !== null) return debit_auth_reqErr
-        
+            const debit_auth_reqErr = LiveDebitRequestValidate(o.debit_auth_req, opts.debit_auth_req_Options, `${path}.debit_auth_req`)
+            if (debit_auth_reqErr !== null) return debit_auth_reqErr
 
-        break
+
+            break
         case PushNotificationPayload_data_type.MANAGE_AUTH_REQ:
-        const manage_auth_reqErr = LiveManageRequestValidate(o.manage_auth_req, opts.manage_auth_req_Options, `${path}.manage_auth_req`)
-        if (manage_auth_reqErr !== null) return manage_auth_reqErr
-        
+            const manage_auth_reqErr = LiveManageRequestValidate(o.manage_auth_req, opts.manage_auth_req_Options, `${path}.manage_auth_req`)
+            if (manage_auth_reqErr !== null) return manage_auth_reqErr
 
-        break
+
+            break
         case PushNotificationPayload_data_type.RECEIVED_OPERATION:
-        const received_operationErr = UserOperationValidate(o.received_operation, opts.received_operation_Options, `${path}.received_operation`)
-        if (received_operationErr !== null) return received_operationErr
-        
+            const received_operationErr = UserOperationValidate(o.received_operation, opts.received_operation_Options, `${path}.received_operation`)
+            if (received_operationErr !== null) return received_operationErr
 
-        break
+
+            break
         case PushNotificationPayload_data_type.SENT_OPERATION:
-        const sent_operationErr = UserOperationValidate(o.sent_operation, opts.sent_operation_Options, `${path}.sent_operation`)
-        if (sent_operationErr !== null) return sent_operationErr
-        
+            const sent_operationErr = UserOperationValidate(o.sent_operation, opts.sent_operation_Options, `${path}.sent_operation`)
+            if (sent_operationErr !== null) return sent_operationErr
 
-        break
+
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6500,30 +7017,30 @@ export const enumCheckTxFeesReq_fees_type = (e?: TxFeesReq_fees_type): boolean =
     for (const v in TxFeesReq_fees_type) if (e === v) return true
     return false
 }
-export type TxFeesReq_fees = 
-    {type:TxFeesReq_fees_type.SAT_PER_V_BYTE, sat_per_v_byte:number}|
-    {type:TxFeesReq_fees_type.TARGET_CONF, target_conf:number}
+export type TxFeesReq_fees =
+    { type: TxFeesReq_fees_type.SAT_PER_V_BYTE, sat_per_v_byte: number } |
+    { type: TxFeesReq_fees_type.TARGET_CONF, target_conf: number }
 
 export type TxFeesReq_feesOptions = {
     sat_per_v_byte_CustomCheck?: (v: number) => boolean
     target_conf_CustomCheck?: (v: number) => boolean
 }
-export const TxFeesReq_feesValidate = (o?: TxFeesReq_fees, opts:TxFeesReq_feesOptions = {}, path: string = 'TxFeesReq_fees::root.'): Error | null => {
+export const TxFeesReq_feesValidate = (o?: TxFeesReq_fees, opts: TxFeesReq_feesOptions = {}, path: string = 'TxFeesReq_fees::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case TxFeesReq_fees_type.SAT_PER_V_BYTE:
-        if (typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
-        if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
+            if (typeof o.sat_per_v_byte !== 'number') return new Error(`${path}.sat_per_v_byte: is not a number`)
+            if (opts.sat_per_v_byte_CustomCheck && !opts.sat_per_v_byte_CustomCheck(o.sat_per_v_byte)) return new Error(`${path}.sat_per_v_byte: custom check failed`)
 
-        break
+            break
         case TxFeesReq_fees_type.TARGET_CONF:
-        if (typeof o.target_conf !== 'number') return new Error(`${path}.target_conf: is not a number`)
-        if (opts.target_conf_CustomCheck && !opts.target_conf_CustomCheck(o.target_conf)) return new Error(`${path}.target_conf: custom check failed`)
+            if (typeof o.target_conf !== 'number') return new Error(`${path}.target_conf: is not a number`)
+            if (opts.target_conf_CustomCheck && !opts.target_conf_CustomCheck(o.target_conf)) return new Error(`${path}.target_conf: custom check failed`)
 
-        break
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6535,31 +7052,31 @@ export const enumCheckUpdateChannelPolicyRequest_update_type = (e?: UpdateChanne
     for (const v in UpdateChannelPolicyRequest_update_type) if (e === v) return true
     return false
 }
-export type UpdateChannelPolicyRequest_update = 
-    {type:UpdateChannelPolicyRequest_update_type.ALL, all:Empty}|
-    {type:UpdateChannelPolicyRequest_update_type.CHANNEL_POINT, channel_point:string}
+export type UpdateChannelPolicyRequest_update =
+    { type: UpdateChannelPolicyRequest_update_type.ALL, all: Empty } |
+    { type: UpdateChannelPolicyRequest_update_type.CHANNEL_POINT, channel_point: string }
 
 export type UpdateChannelPolicyRequest_updateOptions = {
     all_Options?: EmptyOptions
     channel_point_CustomCheck?: (v: string) => boolean
 }
-export const UpdateChannelPolicyRequest_updateValidate = (o?: UpdateChannelPolicyRequest_update, opts:UpdateChannelPolicyRequest_updateOptions = {}, path: string = 'UpdateChannelPolicyRequest_update::root.'): Error | null => {
+export const UpdateChannelPolicyRequest_updateValidate = (o?: UpdateChannelPolicyRequest_update, opts: UpdateChannelPolicyRequest_updateOptions = {}, path: string = 'UpdateChannelPolicyRequest_update::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case UpdateChannelPolicyRequest_update_type.ALL:
-        const allErr = EmptyValidate(o.all, opts.all_Options, `${path}.all`)
-        if (allErr !== null) return allErr
-        
+            const allErr = EmptyValidate(o.all, opts.all_Options, `${path}.all`)
+            if (allErr !== null) return allErr
 
-        break
+
+            break
         case UpdateChannelPolicyRequest_update_type.CHANNEL_POINT:
-        if (typeof o.channel_point !== 'string') return new Error(`${path}.channel_point: is not a string`)
-        if (opts.channel_point_CustomCheck && !opts.channel_point_CustomCheck(o.channel_point)) return new Error(`${path}.channel_point: custom check failed`)
+            if (typeof o.channel_point !== 'string') return new Error(`${path}.channel_point: is not a string`)
+            if (opts.channel_point_CustomCheck && !opts.channel_point_CustomCheck(o.channel_point)) return new Error(`${path}.channel_point: custom check failed`)
 
-        break
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }
@@ -6571,30 +7088,30 @@ export const enumCheckWebRtcMessage_message_type = (e?: WebRtcMessage_message_ty
     for (const v in WebRtcMessage_message_type) if (e === v) return true
     return false
 }
-export type WebRtcMessage_message = 
-    {type:WebRtcMessage_message_type.CANDIDATE, candidate:string}|
-    {type:WebRtcMessage_message_type.OFFER, offer:string}
+export type WebRtcMessage_message =
+    { type: WebRtcMessage_message_type.CANDIDATE, candidate: string } |
+    { type: WebRtcMessage_message_type.OFFER, offer: string }
 
 export type WebRtcMessage_messageOptions = {
     candidate_CustomCheck?: (v: string) => boolean
     offer_CustomCheck?: (v: string) => boolean
 }
-export const WebRtcMessage_messageValidate = (o?: WebRtcMessage_message, opts:WebRtcMessage_messageOptions = {}, path: string = 'WebRtcMessage_message::root.'): Error | null => {
+export const WebRtcMessage_messageValidate = (o?: WebRtcMessage_message, opts: WebRtcMessage_messageOptions = {}, path: string = 'WebRtcMessage_message::root.'): Error | null => {
     if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
     const stringType: string = o.type
     switch (o.type) {
         case WebRtcMessage_message_type.CANDIDATE:
-        if (typeof o.candidate !== 'string') return new Error(`${path}.candidate: is not a string`)
-        if (opts.candidate_CustomCheck && !opts.candidate_CustomCheck(o.candidate)) return new Error(`${path}.candidate: custom check failed`)
+            if (typeof o.candidate !== 'string') return new Error(`${path}.candidate: is not a string`)
+            if (opts.candidate_CustomCheck && !opts.candidate_CustomCheck(o.candidate)) return new Error(`${path}.candidate: custom check failed`)
 
-        break
+            break
         case WebRtcMessage_message_type.OFFER:
-        if (typeof o.offer !== 'string') return new Error(`${path}.offer: is not a string`)
-        if (opts.offer_CustomCheck && !opts.offer_CustomCheck(o.offer)) return new Error(`${path}.offer: custom check failed`)
+            if (typeof o.offer !== 'string') return new Error(`${path}.offer: is not a string`)
+            if (opts.offer_CustomCheck && !opts.offer_CustomCheck(o.offer)) return new Error(`${path}.offer: custom check failed`)
 
-        break
+            break
         default:
-            return new Error(path + ': unknown type '+ stringType)
+            return new Error(path + ': unknown type ' + stringType)
     }
     return null
 }

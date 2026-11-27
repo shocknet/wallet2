@@ -9,6 +9,7 @@ import MetricsSelectSource from "./MetricsSelectSource";
 import Dashboard from "./metricsMain";
 import Earnings from "./earnings";
 import Routing from "./routing";
+import Payments from "./payments";
 import Manage from "../Manage";
 import Channels from "../Channels";
 import Peers from "./Peers";
@@ -64,6 +65,7 @@ const MetricsPages = memo(function MetricsPages({
 					<Route exact path={url} component={Dashboard} />
 					<Route path={`${url}/earnings`} component={Earnings} />
 					<Route path={`${url}/routing`} component={Routing} />
+					<Route path={`${url}/payments`} component={Payments} />
 					<Route path={`${url}/manage`} component={Manage} />
 					<Route path={`${url}/channels`} component={Channels} />
 					<Route path={`${url}/peers`} component={Peers} />
