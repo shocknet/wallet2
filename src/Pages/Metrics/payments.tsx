@@ -65,13 +65,15 @@ export default function Payments() {
 	const destinations = useGetPaymentDestinationsQuery({ sourceId, period, offset });
 
 	const needsUpgrade = isUnknownRpc(failed.error) || isUnknownRpc(destinations.error);
+	const failedData = failed.currentData;
+	const destData = destinations.currentData;
 	const payments = useMemo(
-		() => failed.data?.pages.flatMap((page) => page.payments) ?? [],
-		[failed.data],
+		() => failedData?.pages.flatMap((page) => page.payments) ?? [],
+		[failedData],
 	);
-	const reasonCounts = failed.data?.pages[0]?.reason_counts ?? [];
-	const failedLoading = !failed.data && (failed.isFetching || !failed.error);
-	const destLoading = !destinations.data && (destinations.isFetching || !destinations.error);
+	const reasonCounts = failedData?.pages[0]?.reason_counts ?? [];
+	const failedLoading = !failedData && (failed.isFetching || !failed.error);
+	const destLoading = !destData && (destinations.isFetching || !destinations.error);
 	const failedErr = (failed.error as AppApiError | undefined)?.message || "Failed to load failed payments";
 	const destErr = (destinations.error as AppApiError | undefined)?.message || "Failed to load destinations";
 
@@ -110,7 +112,7 @@ export default function Payments() {
 				<>
 					<FailedPaymentsSection
 						loading={failedLoading}
-						error={!failed.data ? failedErr : null}
+						error={!failedData ? failedErr : null}
 						onRetry={() => void failed.refetch()}
 						reasonCounts={reasonCounts}
 						payments={payments}
@@ -120,9 +122,9 @@ export default function Payments() {
 					/>
 					<DestinationsSection
 						loading={destLoading}
-						error={!destinations.data ? destErr : null}
+						error={!destData ? destErr : null}
 						onRetry={() => void destinations.refetch()}
-						destinations={destinations.data?.destinations ?? []}
+						destinations={destData?.destinations ?? []}
 					/>
 				</>
 			)}

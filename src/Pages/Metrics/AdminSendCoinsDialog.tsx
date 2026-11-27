@@ -34,10 +34,10 @@ export function AdminSendCoinsDialog({ onClose }: AdminSendCoinsDialogProps) {
 	}, [averageRate, feeTouched]);
 
 	const parsedAmount = Number(amount.replace(/\s/g, ""));
-	const amountOk = sendAll || (Number.isFinite(parsedAmount) && parsedAmount > 0 && Number.isInteger(parsedAmount));
+	const amountOk = sendAll || (Number.isSafeInteger(parsedAmount) && parsedAmount > 0);
 	const addressOk = address.trim().length > 0;
 	const feeNum = Number(satsPerVByte);
-	const feeOk = satsPerVByte.trim() === "" || (Number.isFinite(feeNum) && feeNum > 0);
+	const feeOk = satsPerVByte.trim() === "" || (Number.isSafeInteger(feeNum) && feeNum > 0);
 	const canReview = addressOk && amountOk && feeOk;
 
 	const goConfirm = () => {
@@ -50,7 +50,7 @@ export function AdminSendCoinsDialog({ onClose }: AdminSendCoinsDialogProps) {
 			return;
 		}
 		if (!feeOk) {
-			toast.error("Enter a positive sat/vbyte, or leave blank to let Pub estimate");
+			toast.error("Enter a positive whole number of sat/vbyte, or leave blank to let Pub estimate");
 			return;
 		}
 		setStep("confirm");
