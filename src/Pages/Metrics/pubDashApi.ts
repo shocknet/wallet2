@@ -2,10 +2,14 @@ import { getNostrClient } from "@/Api/nostr";
 import {
 	UpdateChannelPolicyRequest_update_type,
 	type AdminNodeSettings,
+	type AdminSendCoinsResponse,
+	type AdminSendUserToUserResponse,
 	type AppsMetrics,
 	type AssetsAndLiabilitiesReqV2,
 	type AssetsAndLiabilitiesV2,
 	type ChannelPolicy,
+	type FailedOutgoingPayment,
+	type FailedOutgoingPayments,
 	type InvoiceSwapQuoteList,
 	type InvoiceSwapsList,
 	type LndForwardingMetrics,
@@ -14,6 +18,7 @@ import {
 	type LndPeer,
 	type LndUtxo,
 	type OpenChannel,
+	type PaymentDestinations,
 	type TransactionSwapQuoteList,
 	type TxSwapsList,
 	type UpdateAdminNodeSettingsRequest,
@@ -127,6 +132,31 @@ type CloseChannelArg = SourceArg & {
 	output_index: number;
 	force: boolean;
 	sat_per_v_byte: number;
+};
+
+type AdminSendUserToUserArg = SourceArg & {
+	from_user_id: string;
+	to_user_id: string;
+	amount: number;
+};
+
+type AdminSendCoinsArg = SourceArg & {
+	address: string;
+	amount?: number;
+	sat_per_v_byte?: number;
+	send_all?: boolean;
+};
+
+const FAILED_PAYMENTS_PAGE_SIZE = 50;
+
+type FailedPaymentsPage = {
+	payments: FailedOutgoingPayment[];
+	reason_counts: FailedOutgoingPayments["reason_counts"];
+	hasMore: boolean;
+};
+
+type FailedPaymentsPageParam = {
+	from_serial_id?: number;
 };
 
 function isAlreadyConnected(reason: string) {
@@ -487,8 +517,8 @@ export const pubDashApi = appApi.injectEndpoints({
 			},
 		}),
 		getUsersAdminInfo: b.query<UsersAdminInfo, SourcePageArg>({
-			providesTags: (_result, _error, { sourceId, skip, take }) => [
-				{ type: "UsersAdmin", id: `${sourceId}:${skip}:${take}` },
+			providesTags: (_result, _error, { sourceId }) => [
+				{ type: "UsersAdmin", id: sourceId },
 			],
 			queryFn: async ({ sourceId, skip, take }, api): Promise<AppApiResult<UsersAdminInfo>> => {
 				try {
@@ -500,6 +530,116 @@ export const pubDashApi = appApi.injectEndpoints({
 					return { data: res };
 				} catch (e: unknown) {
 					return appApiCaughtError(e, "Could not list users");
+				}
+			},
+		}),
+		adminSendUserToUser: b.mutation<AdminSendUserToUserResponse, AdminSendUserToUserArg>({
+			invalidatesTags: (_result, _error, { sourceId, from_user_id, to_user_id }) => [
+				{ type: "UsersAdmin", id: sourceId },
+				{ type: "UserOperations", id: `${sourceId}:${from_user_id}` },
+				{ type: "UserOperations", id: `${sourceId}:${to_user_id}` },
+			],
+			queryFn: async ({ sourceId, from_user_id, to_user_id, amount }, api): Promise<AppApiResult<AdminSendUserToUserResponse>> => {
+				try {
+					const client = await clientForSource(api.getState, sourceId);
+					const res = await client.AdminSendUserToUser({ from_user_id, to_user_id, amount });
+					if (res.status !== "OK") {
+						return appApiError(res.reason || "Could not transfer sats");
+					}
+					return { data: res };
+				} catch (e: unknown) {
+					return appApiCaughtError(e, "Could not transfer sats");
+				}
+			},
+		}),
+		adminSendCoins: b.mutation<AdminSendCoinsResponse, AdminSendCoinsArg>({
+			invalidatesTags: (_result, _error, { sourceId }) => [
+				{ type: "AssetsLiabilities", id: sourceId },
+				{ type: "LndUtxos", id: sourceId },
+			],
+			queryFn: async ({ sourceId, address, amount, sat_per_v_byte, send_all }, api): Promise<AppApiResult<AdminSendCoinsResponse>> => {
+				try {
+					const client = await clientForSource(api.getState, sourceId);
+					const req: {
+						address: string;
+						amount?: number;
+						sat_per_v_byte?: number;
+						send_all?: boolean;
+					} = { address };
+					if (send_all) {
+						req.send_all = true;
+					} else if (amount !== undefined) {
+						req.amount = amount;
+					}
+					if (sat_per_v_byte !== undefined) {
+						req.sat_per_v_byte = sat_per_v_byte;
+					}
+					const res = await client.AdminSendCoins(req);
+					if (res.status !== "OK") {
+						return appApiError(res.reason || "Could not send on-chain");
+					}
+					return { data: res };
+				} catch (e: unknown) {
+					return appApiCaughtError(e, "Could not send on-chain");
+				}
+			},
+		}),
+		getFailedOutgoingPayments: b.infiniteQuery<FailedPaymentsPage, SourcePeriodArg, FailedPaymentsPageParam>({
+			providesTags: (_result, _error, { sourceId, period, offset }) => [
+				{ type: "FailedOutgoingPayments", id: `${sourceId}:${period}:${offset}` },
+			],
+			infiniteQueryOptions: {
+				initialPageParam: {},
+				getNextPageParam: (lastPage): FailedPaymentsPageParam | undefined => {
+					if (!lastPage.hasMore || lastPage.payments.length === 0) return undefined;
+					const last = lastPage.payments[lastPage.payments.length - 1];
+					return { from_serial_id: last.serial_id };
+				},
+			},
+			queryFn: async ({ queryArg, pageParam }, api): Promise<AppApiResult<FailedPaymentsPage>> => {
+				const { sourceId, period, offset } = queryArg;
+				try {
+					const client = await clientForSource(api.getState, sourceId);
+					const periodRange = getUnixTimeRange(period, offset);
+					const res = await client.GetFailedOutgoingPayments({
+						...periodRange,
+						take: FAILED_PAYMENTS_PAGE_SIZE,
+						...(pageParam.from_serial_id != null
+							? { from_serial_id: pageParam.from_serial_id }
+							: {}),
+					});
+					if (res.status !== "OK") {
+						return appApiError(res.reason || "Failed to load failed payments");
+					}
+					return {
+						data: {
+							payments: res.payments,
+							reason_counts: res.reason_counts,
+							hasMore: res.payments.length >= FAILED_PAYMENTS_PAGE_SIZE,
+						},
+					};
+				} catch (e: unknown) {
+					return appApiCaughtError(e, "Failed to load failed payments");
+				}
+			},
+		}),
+		getPaymentDestinations: b.query<PaymentDestinations, SourcePeriodArg>({
+			providesTags: (_result, _error, { sourceId, period, offset }) => [
+				{ type: "PaymentDestinations", id: `${sourceId}:${period}:${offset}` },
+			],
+			queryFn: async ({ sourceId, period, offset }, api): Promise<AppApiResult<PaymentDestinations>> => {
+				try {
+					const client = await clientForSource(api.getState, sourceId);
+					const periodRange = getUnixTimeRange(period, offset);
+					const res = await client.GetPaymentDestinations({
+						...periodRange,
+					});
+					if (res.status !== "OK") {
+						return appApiError(res.reason || "Failed to load payment destinations");
+					}
+					return { data: res };
+				} catch (e: unknown) {
+					return appApiCaughtError(e, "Failed to load payment destinations");
 				}
 			},
 		}),
@@ -701,6 +841,10 @@ export const {
 	useUpdateChannelPolicyMutation,
 	useCloseChannelMutation,
 	useGetUsersAdminInfoQuery,
+	useAdminSendUserToUserMutation,
+	useAdminSendCoinsMutation,
+	useGetFailedOutgoingPaymentsInfiniteQuery,
+	useGetPaymentDestinationsQuery,
 	useGetUserOperationsFromAdminInfiniteQuery,
 	useGetEarningsOpsInfiniteQuery,
 	useListAdminInvoiceSwapsQuery,
