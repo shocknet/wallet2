@@ -14,11 +14,18 @@ export enum SourceType {
 
 const CURRENT_SCHEMA_REV = 0;
 
-export const BridgeUrlSchema = z.union([
-	HttpUrlSchema,
-	z.literal(""),
-	z.null(),
-]);
+
+
+export const BridgeUrlSchema = z.string().nullable().transform((value) => {
+	if (value === null || value === "") return null;
+	const parsed = HttpUrlSchema.safeParse(value);
+	if (!parsed.success) {
+		dLogger.withContext({ procedure: "BridgeUrlSchema" })
+			.warn(`Invalid bridge url: ${value}`);
+		return null;
+	}
+	return parsed.data;
+});
 
 
 export const RelayMapSchema = z
@@ -63,8 +70,7 @@ export const SourceDocV0Schema = DocBaseSchema.safeExtend({
 	is_ndebit_discoverable: LwwSchema(z.boolean()),
 	admin_token: LwwSchema(z.string().nullable()),
 	bridgeUrl: LwwSchema(BridgeUrlSchema)
-
-})
+});
 
 export type SourceDocV0 = z.infer<typeof SourceDocV0Schema>;
 

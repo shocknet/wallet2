@@ -13,11 +13,7 @@ import { HistoryCursor, SourceOperation, SourceOptimsticOperation } from "./hist
 import { Satoshi } from "@/lib/types/units";
 import { createMigrate, } from "redux-persist";
 import { createEncryptedScopedStorage } from "@/storage/encryptedScopedStorage";
-
-
-
-
-
+import { WsUrlSchema } from "@/lib/urlZod";
 
 const mergeSourceDoc = (b: SourceDocV0, r: SourceDocV0) => {
 	const base: SourceDocV0 = { ...b, label: mergeLww<string | null>(b.label, r.label), deleted: mergeLww<boolean>(b.deleted, r.deleted) }
@@ -64,6 +60,19 @@ function getIntialMetadataEntry(sourceId: string, lpk: string): SourceMetadata {
 
 
 
+type RelayPresencePayload = {
+	sourceId: string;
+	relayUrl: string;
+	present: boolean;
+	by: string;
+};
+
+type BridgeUrlPayload = {
+	sourceId: string;
+	bridgeUrl: string | null;
+	by: string;
+};
+
 export const sourcesSlice = createSlice({
 	name: "sources",
 	initialState: getIntialState(),
@@ -105,14 +114,23 @@ export const sourcesSlice = createSlice({
 			e.dirty = true;
 		},
 
-		updateBridgeUrl(state, a: PayloadAction<{ sourceId: string; bridgeUrl: string | null; by: string }>) {
-			const e = state.docs.entities[a.payload.sourceId];
-			if (!e) return;
-			const d = e.draft;
-			if (d.bridgeUrl.value !== a.payload.bridgeUrl) {
-				d.bridgeUrl = bump(d.bridgeUrl, a.payload.bridgeUrl, a.payload.by);
-				e.dirty = true;
-			}
+		updateBridgeUrl: {
+			reducer(state, a: PayloadAction<BridgeUrlPayload>) {
+				const e = state.docs.entities[a.payload.sourceId];
+				if (!e) return;
+				const d = e.draft;
+				if (d.bridgeUrl.value !== a.payload.bridgeUrl) {
+					d.bridgeUrl = bump(d.bridgeUrl, a.payload.bridgeUrl, a.payload.by);
+					e.dirty = true;
+				}
+			},
+			prepare(payload: BridgeUrlPayload) {
+				const parsed = BridgeUrlSchema.safeParse(payload.bridgeUrl);
+				if (!parsed.success) {
+					throw new Error("ERROR: updateBridgeUrl called with invalid bridge URL");
+				}
+				return { payload: { ...payload, bridgeUrl: parsed.data } };
+			},
 		},
 
 		updateisNDebitDiscoverable(state, a: PayloadAction<{ sourceId: string; isNdebitDiscoverable: boolean; by: string }>) {
@@ -136,15 +154,24 @@ export const sourcesSlice = createSlice({
 		},
 
 
-		setRelayPresence(state, a: PayloadAction<{ sourceId: string; relayUrl: string; present: boolean; by: string; }>) {
-			const e = state.docs.entities[a.payload.sourceId];
-			if (!e) return;
-			const relays = e.draft.relays;
-			const cur = relays[a.payload.relayUrl];
-			if (!cur || cur.present !== a.payload.present) {
-				relays[a.payload.relayUrl] = bumpFlag(cur, a.payload.present, a.payload.by);
-				e.dirty = true;
-			}
+		setRelayPresence: {
+			reducer(state, a: PayloadAction<RelayPresencePayload>) {
+				const e = state.docs.entities[a.payload.sourceId];
+				if (!e) return;
+				const relays = e.draft.relays;
+				const cur = relays[a.payload.relayUrl];
+				if (!cur || cur.present !== a.payload.present) {
+					relays[a.payload.relayUrl] = bumpFlag(cur, a.payload.present, a.payload.by);
+					e.dirty = true;
+				}
+			},
+			prepare(payload: RelayPresencePayload) {
+				const parsed = WsUrlSchema.safeParse(payload.relayUrl);
+				if (!parsed.success) {
+					throw new Error("ERROR: setRelayPresence called with invalid relay URL");
+				}
+				return { payload: { ...payload, relayUrl: parsed.data } };
+			},
 		},
 
 		applyRemoteSource(state, a: PayloadAction<{ sourceId: string, remote: SourceDocV0 }>) {

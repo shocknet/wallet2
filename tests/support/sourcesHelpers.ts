@@ -10,8 +10,9 @@ import {
 import { SourceMetadata } from "@/State/scoped/backups/sources/metadata/types"
 import { generateNewKeyPair, type KeyPair } from "@/Api/helpers"
 import { TEST_CLOCK_BY } from "./identityFixtures"
+import { WsUrlSchema } from "@/lib/urlZod"
 
-export const TEST_RELAY_URL = "wss://test-relay.lightning.pub";
+export const TEST_RELAY_URL = WsUrlSchema.parse("wss://test-relay.lightning.pub");
 
 export type TestRelayFlag = ReturnType<typeof newflag>;
 

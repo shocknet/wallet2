@@ -9,6 +9,7 @@ import { listenerKick } from "./actions";
 import { runtimeActions } from "@/State/runtime/slice";
 import { sourceBeaconJoin } from "@/State/scoped/beacons/selectors";
 import { canonicalRelayUrls } from "@/lib/relays";
+import { sameSet } from "@/utils/array";
 
 export type ListenerPredicate = (
 	action: UnknownAction,
@@ -57,11 +58,9 @@ export const sourceIdOf = (action: UnknownAction): string =>
 const presentRelayUrls = (relays?: Record<string, { present: boolean }>) =>
 	relays ? Object.keys(relays).filter(url => relays[url]?.present) : [];
 
+// TODO: stop canonicalizing here sense it's already done in ingestion
 const canonicalPresentRelays = (state: RootState, sourceId: string) =>
 	canonicalRelayUrls(presentRelayUrls(draft(state, sourceId)?.relays));
-
-const sameRelays = (a: string[], b: string[]) =>
-	a.length === b.length && a.every((url, i) => url === b[i]);
 
 const isPotentialRelayChangeAction = isAnyOf(
 	sourcesActions.setRelayPresence,
@@ -72,7 +71,7 @@ export const isSourceRelaysChanged: ListenerPredicate = (action, curr, prev) => 
 	if (!isPotentialRelayChangeAction(action)) return false;
 
 	const sourceId = sourceIdOf(action);
-	return !sameRelays(
+	return !sameSet(
 		canonicalPresentRelays(curr, sourceId),
 		canonicalPresentRelays(prev, sourceId),
 	);

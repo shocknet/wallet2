@@ -30,6 +30,7 @@ import { getIdentityNostrApi } from "@/State/identitiesRegistry/helpers/identity
 
 import { useToast } from "@/lib/contexts/useToast";
 import { useDraft } from "@/Hooks/useDraft";
+import { sameSet } from "@/utils/array";
 import { WsUrlSchema } from "@/lib/urlZod";
 import { ProfileCard } from "@/Components/User/ProfileCard";
 import { IdentitySecuritySection } from "./IdentitySecuritySection";
@@ -57,10 +58,7 @@ const IdentityOverviewPage = () => {
 		{
 			relays: (previous, next) => {
 				if (!runtime || runtime.type === IdentityType.SANCTUM) return null;
-				if (
-					previous.length === next.length &&
-					previous.every((url, index) => url === next[index])
-				) return null;
+				if (sameSet(previous, next)) return null;
 				const pubkey = runtime.pubkey;
 				return () => {
 					dispatch(setIdentityRelays({ pubkey, relays: next }));

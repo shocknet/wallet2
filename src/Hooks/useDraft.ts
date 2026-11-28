@@ -2,8 +2,8 @@ import { useState } from "react";
 export type Operation<R = unknown> = () => R;
 
 export type FieldRule<T> = (
-	previous: Readonly<T>,
-	next: Readonly<T>
+	previous: T,
+	next: T
 ) => Operation | null;
 
 export type FieldRules<S> = {
