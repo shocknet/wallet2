@@ -20,22 +20,26 @@ import {
 	IonCol
 } from "@ionic/react";
 import { closeOutline, trashOutline, pencilOutline, starOutline, star } from "ionicons/icons";
-import styles from "../styles/index.module.scss";
 import classNames from "classnames";
 import { useAppDispatch, useAppSelector } from "@/State/store/hooks";
 import { sourcesActions } from "@/State/scoped/backups/sources/slice";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { DEFAULT_BRIDGE_URL, getDeviceId } from "@/constants";
 import { Avatar } from "@/Components/Avatar";
 import { SourceReachabilityHint } from "@/Components/Source/SourceReachabilityHint";
 import { identityActions, selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import CardishList from "@/Components/CardishList";
-import { RelayManager } from "@/Components/RelayManager";
-import useDebounce from "@/Hooks/useDebounce";
 import { useNestedPromptDangerModal } from "@/Components/prompt";
-import { normalizeHttpUrl } from "@/lib/url";
+import { HttpUrlSchema } from "@/lib/urlZod";
 import { useOverlayCoordinator, type Dismiss, type OverlayResult } from "@/overlay";
 import { removeSource } from "@/State/scoped/backups/sources/thunks";
+import { useDraft, type FieldRules } from "@/Hooks/useDraft";
+import { useValidatedInput } from "@/Hooks/useValidatedInput";
+import type { AppDispatch } from "@/State/store/store";
+import { RelayManager } from "@/Components/RelayManager";
+
+const sectionListClassName =
+	"rounded-xl pb-4 [&_ion-list-header]:min-h-9 [&_ion-list-header]:items-end [&_ion-list-header]:pb-[0.15rem]";
 
 export type EditSourceOptions = {
 	source: SourceView;
@@ -50,12 +54,19 @@ type EditSourceModalProps = EditSourceOptions & {
 	dismiss: Dismiss<EditSourceResult>;
 };
 
+type SourceDraft = {
+	label: string | null;
+	bridgeUrl: string;
+	relays: string[];
+	isNDebitDiscoverable: boolean;
+};
+
 function SourceIdentity({ source }: { source: SourceView }) {
 	const name = source.beaconName?.trim() || "Unnamed node";
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="rounded-xl bg-[var(--app-surface-muted)] px-3 py-2">
+			<div className="rounded-xl bg-[var(--app-surface-muted)] px-3 pt-4 pb-2">
 				<div className="flex items-center gap-2.5">
 					<Avatar
 						id={source.sourceId}
@@ -76,119 +87,124 @@ function SourceIdentity({ source }: { source: SourceView }) {
 	);
 }
 
-function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
-	const dispatch = useAppDispatch();
+function sourceFieldRules(
+	sourceId: string,
+	dispatch: AppDispatch,
+): FieldRules<SourceDraft> {
+	return {
+		label: (previous, next) => {
+			if (previous === next) return null;
+			return () => dispatch(sourcesActions.updateSourceLabel({
+				sourceId,
+				label: next,
+				by: getDeviceId(),
+			}));
+		},
+		bridgeUrl: (previous, next) => {
+			if (previous === next) return null;
+			return () => dispatch(sourcesActions.updateBridgeUrl({
+				sourceId,
+				bridgeUrl: next === "" ? null : next,
+				by: getDeviceId(),
+			}));
+		},
+		relays: (previous, next) => {
+			const before = new Set(previous);
+			const after = new Set(next);
+			const removed = previous.filter(url => !after.has(url));
+			const added = next.filter(url => !before.has(url));
+			if (added.length === 0 && removed.length === 0) return null;
 
-	const promptDanger = useNestedPromptDangerModal();
+			return () => {
+				for (const relayUrl of added) {
+					dispatch(sourcesActions.setRelayPresence({
+						sourceId,
+						relayUrl,
+						present: true,
+						by: getDeviceId(),
+					}));
+				}
+				for (const relayUrl of removed) {
+					dispatch(sourcesActions.setRelayPresence({
+						sourceId,
+						relayUrl,
+						present: false,
+						by: getDeviceId(),
+					}));
+				}
+			};
+		},
+		isNDebitDiscoverable: (previous, next) => {
+			if (previous === next) return null;
+			return () => dispatch(sourcesActions.updateisNDebitDiscoverable({
+				sourceId,
+				isNdebitDiscoverable: next,
+				by: getDeviceId(),
+			}));
+		},
+	};
+}
 
-	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+function validateBridgeUrl(raw: string) {
+	const trimmed = raw.trim();
+	if (!trimmed) return { ok: true as const, value: "" };
 
-	const original = useMemo<SourceView>(() => structuredClone(source), [source]);
-
-	const [label, setLabel] = useState<string>(source.label || "");
-	const [bridgeUrl, setBridgeUrl] =
-		useState<string>(source.bridgeUrl || "");
-	const [finalBridgeUrl, setFinalBridgeUrl] = useState<string | null>(null);
-	const [isEditingRelays, setIsEditingRelays] = useState(false);
-	const [bridgeInputTouched, setBridgeInputTouched] = useState(false);
-	const bridgeInputRef = useRef<HTMLIonInputElement>(null);
-	const [bridgeInputError, setBridgeInputError] = useState(false);
-
-	const debouncedBridgeUrl = useDebounce(bridgeUrl, 500);
-
-	const onBridgeInputChange = (e: CustomEvent) => {
-		setBridgeUrl(e.detail.value || "");
-		setBridgeInputError(false);
-		bridgeInputRef.current?.classList.remove("ion-invalid");
+	const parsed = HttpUrlSchema.safeParse(trimmed);
+	if (!parsed.success) {
+		return {
+			ok: false as const,
+			error: parsed.error.issues[0]?.message ?? "Invalid URL",
+		};
 	}
 
-	const onBridgeBlur = () => {
-		setBridgeInputTouched(true);
+	return { ok: true as const, value: parsed.data };
+}
 
-		// If we already computed a canonical good one, snap the field to it
-		if (!bridgeInputError && finalBridgeUrl) {
-			setBridgeUrl(finalBridgeUrl);
-		}
+function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
+	const dispatch = useAppDispatch();
+	const promptDanger = useNestedPromptDangerModal();
+	const favoriteSourceId = useAppSelector(selectFavoriteSourceId);
+
+	const snapshot: SourceDraft = {
+		label: source.label,
+		bridgeUrl: source.bridgeUrl ?? "",
+		relays: source.relays,
+		isNDebitDiscoverable: source.isNDebitDiscoverable,
+	};
+	const rules = sourceFieldRules(source.sourceId, dispatch);
+	const { draft, operations, isDirty, setField } = useDraft(snapshot, rules);
+
+	const [isEditingRelays, setIsEditingRelays] = useState(false);
+	const bridge = useValidatedInput(
+		source.bridgeUrl ?? "",
+		(value) => setField("bridgeUrl", value),
+		validateBridgeUrl,
+	);
+	const showBridgeError = bridge.isTouched && bridge.error !== null;
+
+	const addRelay = (url: string) => {
+		if (draft.relays.includes(url)) return;
+		setField("relays", [...draft.relays, url]);
 	};
 
-	useEffect(() => {
-		if (bridgeInputTouched) {
-			try {
-				const res = normalizeHttpUrl(debouncedBridgeUrl);
-				setFinalBridgeUrl(res);
-			} catch {
-				setBridgeInputError(true);
-				setFinalBridgeUrl(null);
-			}
-		}
-	}, [debouncedBridgeUrl, bridgeInputTouched])
+	const removeRelay = (url: string) => {
+		setField("relays", draft.relays.filter(relay => relay !== url));
+	};
 
-	const [relays, setRelays] = useState<string[]>(source.relays);
-	const [isNDebitDiscoverable, setIsNDebitDiscoverable] = useState(
-		source.isNDebitDiscoverable
-	);
-
-
-	const draft: SourceView = useMemo(() => {
-		return {
-			...original,
-			label,
-			bridgeUrl: finalBridgeUrl,
-			relays: relays,
-			isNDebitDiscoverable
-		};
-	}, [original, label, finalBridgeUrl, relays, isNDebitDiscoverable]);
-
-
-	const locallyDirty = useMemo(() => {
-		return buildSourceChanges(original, draft).length > 0;
-	}, [original, draft]);
-
-
-
-	const handleSave = useCallback(() => {
-		const ops = buildSourceChanges(original, draft);
-		if (ops.length === 0) {
-			return;
-		}
-
-		const by = getDeviceId();
-
-
-		for (const op of ops) {
-			switch (op.kind) {
-				case "label":
-					dispatch(sourcesActions.updateSourceLabel({ sourceId: original.sourceId, label: op.value, by }));
-					break;
-				case "bridgeUrl":
-					dispatch(sourcesActions.updateBridgeUrl({ sourceId: original.sourceId, bridgeUrl: op.value, by }));
-					break;
-				case "relaySet":
-					dispatch(sourcesActions.setRelayPresence({
-						sourceId: original.sourceId,
-						relayUrl: op.relayUrl,
-						present: op.present,
-						by,
-					}));
-					break;
-				case "isNDebitDiscoverable":
-					dispatch(sourcesActions.updateisNDebitDiscoverable({
-						sourceId: original.sourceId,
-						isNdebitDiscoverable: op.discoverable,
-						by,
-					}));
-			}
-		}
-
+	const handleSave = () => {
+		if (bridge.error !== null) return;
+		for (const operation of operations) operation();
 		dismiss({ role: "change" });
-	}, [original, dispatch, draft, dismiss])
+	};
 
 	const isFavorite = source.sourceId === favoriteSourceId;
 
 	const makeFavorite = useCallback(() => {
 		if (favoriteSourceId === source.sourceId) return;
-		const deviceId = getDeviceId();
-		dispatch(identityActions.setFavoriteSource({ sourceId: source.sourceId, by: deviceId }));
+		dispatch(identityActions.setFavoriteSource({
+			sourceId: source.sourceId,
+			by: getDeviceId(),
+		}));
 	}, [source.sourceId, favoriteSourceId, dispatch]);
 
 	const handleDelete = useCallback(() => {
@@ -203,14 +219,14 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 		});
 	}, [promptDanger, dispatch, dismiss, source.sourceId]);
 
-	const canSave = locallyDirty && !bridgeInputError;
+	const canSave = isDirty && bridge.error === null && bridge.isValid;
 
 	return (
 		<>
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>
-						<span className={classNames("text-secondary", styles["modal-header"])}>
+						<span className="inline-flex items-center text-secondary">
 							<IonIcon style={{ marginRight: "0.4rem" }} icon={pencilOutline} />
 							Edit Source
 						</span>
@@ -221,28 +237,31 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 						</IonButton>
 						<IonButton onClick={() => dismiss({ role: "cancel" })}><IonIcon icon={closeOutline} /></IonButton>
 					</IonButtons>
-
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding">
+				<IonList className={sectionListClassName} lines="none">
+					<IonListHeader className="text-secondary font-semibold text-base" lines="full">
+						<IonLabel>Node</IonLabel>
+					</IonListHeader>
+					<div className="px-4 pt-2">
+						<SourceIdentity source={source} />
+					</div>
+				</IonList>
 
-				<SourceIdentity source={original} />
-
-				<CardishList listHeader="Source Info" className={classNames(styles["edit-list"], "ion-margin-top")} lines="none">
-					<IonItem className={classNames(styles["edit-item-input"], "ion-margin-top")}>
-
+				<CardishList listHeader="Source Info" className={sectionListClassName} lines="none">
+					<IonItem className="[--padding-bottom:0.7rem]">
 						<IonInput
 							placeholder="My savings source"
 							color="primary"
 							labelPlacement="stacked"
 							label="Label"
-							value={label}
-							onIonInput={(e) => setLabel(e.detail.value ?? "")}
+							value={draft.label ?? ""}
+							onIonInput={(e) => setField("label", e.detail.value || null)}
 							mode="md"
 							fill="outline"
 							style={{ "--padding-end": "50px" }}
-							className="ion-margin-top"
-
+							className="mt-2"
 						/>
 					</IonItem>
 					<IonItem>
@@ -252,42 +271,44 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 							labelPlacement="stacked"
 							inputmode="url"
 							placeholder={DEFAULT_BRIDGE_URL}
-							value={bridgeUrl}
-							ref={bridgeInputRef}
-
+							value={bridge.value}
 							mode="md"
 							fill="outline"
 							className={classNames({
-								["ion-invalid"]: bridgeInputError,
-								["ion-touched"]: bridgeInputTouched,
+								["ion-invalid"]: showBridgeError,
+								["ion-touched"]: bridge.isTouched,
 								["ion-margin-top"]: true,
-
 							})}
 							style={{ "--padding-end": "50px" }}
-							errorText="Invalid URL"
-							onIonInput={onBridgeInputChange}
-							onIonBlur={onBridgeBlur}
+							errorText={bridge.error ?? "Invalid URL"}
+							onIonInput={(e) => bridge.onChange(e.detail.value ?? "")}
+							onIonBlur={bridge.onBlur}
 							helperText="Enter a valid http URL"
 						/>
 					</IonItem>
-					<IonItem lines="none" className="ion-margin-top">
-						<IonToggle checked={isNDebitDiscoverable} onIonChange={(e) => setIsNDebitDiscoverable(e.detail.checked)}>
+				</CardishList>
+
+				<IonList className={`${sectionListClassName} mt-2 pt-4`} lines="none">
+					<IonItem lines="none">
+						<IonToggle
+							checked={draft.isNDebitDiscoverable}
+							onIonChange={(e) => {
+								if (e.detail.checked === draft.isNDebitDiscoverable) return;
+								setField("isNDebitDiscoverable", e.detail.checked);
+							}}
+						>
 							<IonText className="text-secondary">ndebit discoverable</IonText>
 						</IonToggle>
 					</IonItem>
-
-
-				</CardishList>
+				</IonList>
 
 				<div>
 					<IonList
-
+						className={`${sectionListClassName} mt-2`}
 						lines="none"
-						style={{ borderRadius: "12px", marginTop: "0.5rem" }}
-
 					>
-						<IonListHeader className="text-secondary" style={{ fontWeight: "600", fontSize: "1rem" }} lines="full">
-							<IonLabel >Relays</IonLabel>
+						<IonListHeader className="text-secondary font-semibold text-base" lines="full">
+							<IonLabel>Relays</IonLabel>
 							{
 								isEditingRelays
 									?
@@ -311,10 +332,14 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 												</IonText>
 											</IonLabel>
 										</IonItem>
-										<RelayManager relays={relays} setRelays={setRelays} />
+										<RelayManager
+											relays={draft.relays}
+											onAdd={addRelay}
+											onRemove={removeRelay}
+										/>
 									</>
 								)
-								: relays.map(r => (
+								: draft.relays.map(r => (
 									<IonItem key={r}>
 										<IonText className="text-secondary text-weight-medium" style={{ textDecoration: "underline" }}>
 											{r}
@@ -324,12 +349,9 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 						}
 					</IonList>
 				</div>
-
-
 			</IonContent>
 			<IonFooter>
 				<IonToolbar className="ion-border">
-
 					<IonGrid>
 						<IonRow className="ion-align-items-center ion-justify-content-end">
 							<IonCol
@@ -349,10 +371,9 @@ function EditSourceModal({ source, dismiss }: EditSourceModalProps) {
 						</IonRow>
 					</IonGrid>
 				</IonToolbar>
-
 			</IonFooter>
 		</>
-	)
+	);
 }
 
 export function useEditSourceModal() {
@@ -363,52 +384,4 @@ export function useEditSourceModal() {
 			{ cssClass: "wallet-modal" },
 		);
 	}, [present]);
-}
-
-
-const diffSets = (a: string[], b: string[]) => {
-	const A = new Set(a);
-	const B = new Set(b);
-	const added: string[] = [];
-	const removed: string[] = [];
-	for (const x of B) if (!A.has(x)) added.push(x);
-	for (const x of A) if (!B.has(x)) removed.push(x);
-	return { added, removed };
-}
-
-const changedStr = (a: string | null | undefined, b: string | null | undefined) => {
-	return (a || null) !== (b || null);
-}
-
-
-
-const buildSourceChanges = (
-	original: SourceView,
-	draft: SourceView
-): (
-	| { kind: "label"; value: string | null }
-	| { kind: "bridgeUrl"; value: string | null }
-	| { kind: "relaySet"; relayUrl: string; present: boolean }
-	| { kind: "isNDebitDiscoverable"; discoverable: boolean }
-)[] => {
-	const ops: ReturnType<typeof buildSourceChanges> = [];
-
-	if (changedStr(original.label, draft.label)) {
-		ops.push({ kind: "label", value: draft.label || null });
-	}
-
-	if (changedStr(original.bridgeUrl, draft.bridgeUrl)) {
-		ops.push({ kind: "bridgeUrl", value: draft.bridgeUrl || null });
-	}
-
-	if (original.isNDebitDiscoverable !== draft.isNDebitDiscoverable) {
-		ops.push({ kind: "isNDebitDiscoverable", discoverable: draft.isNDebitDiscoverable });
-	}
-
-	// relays: original.relays is string[] in your SourceView;
-	const { added, removed } = diffSets(original.relays, draft.relays);
-	for (const r of added) ops.push({ kind: "relaySet", relayUrl: r, present: true });
-	for (const r of removed) ops.push({ kind: "relaySet", relayUrl: r, present: false });
-
-	return ops;
 }

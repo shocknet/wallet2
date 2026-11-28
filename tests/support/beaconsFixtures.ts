@@ -1,4 +1,4 @@
-import { canonicalRelayUrl } from "@/State/scoped/beacons/relays"
+import { canonicalRelayUrl } from "@/lib/relays"
 import {
 	beaconRelayNodeKey,
 	beaconRelayNodesAdapter,

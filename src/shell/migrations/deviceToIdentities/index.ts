@@ -17,7 +17,6 @@ import { generateNewKeyPair } from "@/Api/helpers";
 import { createIdentity, switchIdentity, type CreateIdentityInput } from "@/State/identitiesRegistry/thunks";
 import { identitiesSelectors, selectActiveIdentity } from "@/State/identitiesRegistry/slice";
 import { IdentityType } from "@/State/identitiesRegistry/types";
-import { normalizeWsUrl } from "@/lib/url";
 import { getSanctumAccessToken } from "@/Api/sanctum";
 import { upgradeLegacySanctumAccessToken } from "./sanctumUpgrade";
 import { clearLegacyDeviceStorage } from "./cleanupLegacyDeviceStorage";
@@ -144,7 +143,7 @@ async function migrateLegacyDeviceToIdentity(
 						type: IdentityType.LOCAL_KEY,
 						privkey: keyPair.privateKey,
 						label: "My Nostr pair Identity",
-						relays: NOSTR_RELAYS.map(normalizeWsUrl),
+						relays: NOSTR_RELAYS,
 					},
 					legacyKind,
 				);
@@ -195,7 +194,7 @@ async function migrateLegacyDeviceToIdentity(
 				{
 					type: IdentityType.NIP07,
 					label: "My Nostr Extension Identity",
-					relays: NOSTR_RELAYS.map(normalizeWsUrl),
+					relays: NOSTR_RELAYS,
 				},
 				legacyKind,
 			);

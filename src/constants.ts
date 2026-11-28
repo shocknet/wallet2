@@ -5,6 +5,7 @@ import axios from "axios";
 import { decode } from "@gandlaf21/bolt11-decode";
 import { nip19 } from 'nostr-tools'
 import { decodeBech32, OfferPointer } from '@shocknet/clink-sdk';
+import { WsUrlSchema } from "@/lib/urlZod";
 const { decode: decodeNip19 } = nip19
 
 export const decodeNprofile = (data: string) => {
@@ -36,7 +37,18 @@ export const NOSTR_PRIVATE_KEY_STORAGE_KEY = "NOSTR_PRIVATE_KEY"
 export const SANCTUM_ACCESS_TOKEN_STORAGE_KEY = "SANCTUM_ACCESS_TOKEN"
 export const HAS_MIGRATED_TO_IDENTITIES_STORAGE_KEY = "HAS_MIGRATED_TO_IDENTITIES__";
 export const NOSTR_PUBLIC_KEY_STORAGE_KEY = "NOSTR_PUBLIC_KEY"
-export const NOSTR_RELAYS = import.meta.env.VITE_NOSTR_RELAYS ? [import.meta.env.VITE_NOSTR_RELAYS] : ["wss://relay.lightning.pub"]
+const DEFAULT_NOSTR_RELAY = "wss://relay.lightning.pub";
+
+function nostrRelaysFromEnv(raw: string | undefined): string[] {
+	const configured = (raw ?? "")
+		.split(",")
+		.map(url => url.trim())
+		.filter(url => url.length > 0);
+	const relays = configured.length > 0 ? configured : [DEFAULT_NOSTR_RELAY];
+	return [...new Set(relays.map(url => WsUrlSchema.parse(url)))];
+}
+
+export const NOSTR_RELAYS = nostrRelaysFromEnv(import.meta.env.VITE_NOSTR_RELAYS);
 export const OLD_NOSTR_PUB_DESTINATION = "e306c45ee0a7c772540f1dc88b00f79d2d3910bfd4047e910584998de9c9e2be";
 export const NOSTR_PUB_DESTINATION = import.meta.env.VITE_NOSTR_PUB_DESTINATION || "76ed45f00cea7bac59d8d0b7d204848f5319d7b96c140ffb6fcbaaab0a13d44e";
 export const DEFAULT_BRIDGE_URL = import.meta.env.VITE_DEFAULT_BRIDGE_URL || "https://shockwallet.app";

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { identifyBitcoinInput, parseAs } from "@/lib/parse";
+import { bytesToHex } from "@noble/hashes/utils";
+import { generateSecretKey, nip19 } from "nostr-tools";
+import { identifyBitcoinInput, parseAs, parsePrivateKey } from "@/lib/parse";
 import { InputClassification } from "@/lib/types/parse";
 import { satoshi } from "@/lib/units";
 
@@ -119,5 +121,30 @@ describe("parseAs", () => {
 		await expect(
 			parseAs(REAL_INVOICE.bolt11, InputClassification.LN_INVOICE, satoshi(1)),
 		).rejects.toThrow("Amount mismatch");
+	});
+});
+
+describe("parsePrivateKey", () => {
+	const secret = generateSecretKey();
+	const hex = bytesToHex(secret);
+	const nsec = nip19.nsecEncode(secret);
+
+	it("accepts hex, including uppercase", () => {
+		expect(parsePrivateKey(hex)).toBe(hex);
+		expect(parsePrivateKey(hex.toUpperCase())).toBe(hex);
+		expect(parsePrivateKey(`  ${hex}  `)).toBe(hex);
+	});
+
+	it("accepts nsec and a nostr: prefix", () => {
+		expect(parsePrivateKey(nsec)).toBe(hex);
+		expect(parsePrivateKey(nsec.toUpperCase())).toBe(hex);
+		expect(parsePrivateKey(`nostr:${nsec}`)).toBe(hex);
+	});
+
+	it("rejects other input", () => {
+		expect(parsePrivateKey("")).toBeNull();
+		expect(parsePrivateKey("nsec1notakey")).toBeNull();
+		expect(parsePrivateKey("hello")).toBeNull();
+		expect(parsePrivateKey(nip19.npubEncode(hex))).toBeNull();
 	});
 });

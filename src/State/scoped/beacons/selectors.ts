@@ -11,7 +11,7 @@ import {
 import {
 	beaconRelayNodesSelectors,
 } from "./slice";
-import { sameArray } from "@/utils";
+import { sameSet } from "@/utils/array";
 
 
 export type BeaconHealth =
@@ -65,8 +65,8 @@ const makeSelectRelayNodes = () => {
 		);
 
 		if (
-			sameArray(previousIds, ids) &&
-			sameArray(previousNodes, nodes)
+			sameSet(previousIds, ids) &&
+			sameSet(previousNodes, nodes)
 		) {
 			return previousNodes;
 		}

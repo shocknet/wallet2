@@ -13,9 +13,11 @@ import {
 	NOFFER_REGEX,
 	BITCOIN_ADDRESS_BASE58_REGEX,
 	NPROFILE_WITH_TOKEN_REGEX,
-	LN_ADDRESS_REGEX
+	LN_ADDRESS_REGEX,
+	HexKeySchema
 } from "./regex";
-import { RelayBaseSchema } from "./urlZod";
+import { WsUrlSchema } from "./urlZod";
+import { bytesToHex } from "@noble/hashes/utils";
 
 
 
@@ -197,7 +199,7 @@ export async function parseBitcoinInput(
 			if (result.type !== "nprofile") throw new Error("Not an nprofile string");
 			if (!result.data.relays) throw new Error("No relays");
 
-			const parseResults = result.data.relays.map(r => RelayBaseSchema.safeParse(r));
+			const parseResults = result.data.relays.map(r => WsUrlSchema.safeParse(r));
 			const relays = parseResults.filter(res => res.success).map(res => res.data!);
 
 			if (relays.length === 0) {
@@ -270,4 +272,27 @@ export async function parseAs<T extends ExpectedClassification>(
 }
 
 
+export function parsePrivateKey(input: string): string | null {
+	let value = input.trim();
+	if (value.toLowerCase().startsWith("nostr:")) {
+		value = value.slice("nostr:".length).trim();
+	}
 
+	if (value.length === 64) {
+		const result = HexKeySchema.safeParse(value);
+		return result.success ? result.data : null;
+	}
+
+	if (!value.toLowerCase().startsWith("nsec")) {
+		return null;
+	}
+
+	try {
+		const decoded = nip19.decode(value.toLowerCase());
+		if (decoded.type !== "nsec") return null;
+
+		return bytesToHex(decoded.data);
+	} catch {
+		return null;
+	}
+}

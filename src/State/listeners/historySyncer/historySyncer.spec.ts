@@ -26,6 +26,7 @@ import {
 import { makeListenerStore } from "@tests/support/listenerStore";
 import type { BeaconsState } from "@/State/scoped/beacons/state";
 import { historySyncerSpec } from "./historySyncer";
+import { WsUrlSchema } from "@/lib/urlZod";
 
 vi.mock("@/Api/nostr", () => ({
 	getNostrClient: vi.fn(),
@@ -37,7 +38,7 @@ vi.mock("@/lib/invoice", () => ({
 const getNostrClientMock = vi.mocked(getNostrClient);
 
 const NOW_MS = 1_000_000;
-const OTHER_RELAY = "wss://other-relay.lightning.pub";
+const OTHER_RELAY = WsUrlSchema.parse("wss://other-relay.lightning.pub");
 const INVOICE = "lnbc1testinvoice";
 
 type HistoryClient = {

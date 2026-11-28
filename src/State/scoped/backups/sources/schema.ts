@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { LwwFlagSchema, LwwSchema } from "../../../sync/lww";
+import { LwwFlagSchema, LwwSchema, mergeFlagLww } from "../../../sync/lww";
 import { HexDashHexSchema, HexKeySchema, NostrKeyPairSchema } from "@/lib/regex";
 import { DocBase, DocBaseSchema } from "../../../sync/docBase";
-import { HttpBaseSchema } from "@/lib/urlZod";
+import { HttpUrlSchema, WsUrlSchema } from "@/lib/urlZod";
+import dLogger from "@/Api/helpers/debugLog";
 
 
 export enum SourceType {
@@ -13,12 +14,48 @@ export enum SourceType {
 
 const CURRENT_SCHEMA_REV = 0;
 
-const BridgeUrlSchema = z.union([
-	HttpBaseSchema,
-	z.literal(""),
-	z.null(),
-]);
 
+
+export const BridgeUrlSchema = z.string().nullable().transform((value) => {
+	if (value === null || value === "") return null;
+	const parsed = HttpUrlSchema.safeParse(value);
+	if (!parsed.success) {
+		dLogger.withContext({ procedure: "BridgeUrlSchema" })
+			.warn(`Invalid bridge url: ${value}`);
+		return null;
+	}
+	return parsed.data;
+});
+
+
+export const RelayMapSchema = z
+	.record(z.string(), LwwFlagSchema)
+	.transform((relays) => {
+		const log = dLogger.withContext({
+			component: "RelayMapSchema",
+		});
+		const result: Record<string, z.infer<typeof LwwFlagSchema>> =
+			Object.create(null);
+
+		for (const [rawUrl, entry] of Object.entries(relays)) {
+			const parsed = WsUrlSchema.safeParse(rawUrl);
+
+			if (!parsed.success) {
+				log.warn(`Invalid relay url: ${rawUrl}`);
+				continue;
+			}
+
+			const url = parsed.data;
+			const existing = result[url];
+
+			result[url] =
+				existing === undefined
+					? entry
+					: mergeFlagLww(existing, entry);
+		}
+
+		return result;
+	});
 
 export const SourceDocV0Schema = DocBaseSchema.safeExtend({
 	doc_type: z.literal("doc/shockwallet/source_"),
@@ -29,12 +66,11 @@ export const SourceDocV0Schema = DocBaseSchema.safeExtend({
 	source_id: HexDashHexSchema,
 	lpk: HexKeySchema,
 	keys: NostrKeyPairSchema,
-	relays: z.record(z.url({ protocol: /^ws?s$/ }), LwwFlagSchema),
+	relays: RelayMapSchema,
 	is_ndebit_discoverable: LwwSchema(z.boolean()),
 	admin_token: LwwSchema(z.string().nullable()),
 	bridgeUrl: LwwSchema(BridgeUrlSchema)
-
-})
+});
 
 export type SourceDocV0 = z.infer<typeof SourceDocV0Schema>;
 

@@ -9,14 +9,14 @@ import {
 	IonFabButton,
 	IonHeader,
 	IonIcon,
-	IonList,
 	IonPage,
 } from "@ionic/react";
-import { add } from "ionicons/icons";
+import { add, gitNetworkOutline } from "ionicons/icons";
 import { useCallback, useMemo } from "react";
 import { selectFavoriteSourceId } from "@/State/scoped/backups/identity/slice";
 import RootPageToolbar from "@/Layout2/RootPageToolbar";
 import { useToast } from "@/lib/contexts/useToast";
+import EmptyState from "@/Components/common/ui/EmptyState";
 
 
 const SourcesPage = () => {
@@ -53,13 +53,21 @@ const SourcesPage = () => {
 				<RootPageToolbar title="Node Connections" />
 			</IonHeader>
 			<IonContent className="ion-padding">
-				<IonList lines="none" className="mt-6">
-					{
-						favoriteFirstSortedIds.map(id => (
-							<SourceCard key={id} sourceId={id} onClick={(s) => void handleEditSource(s)} />
-						))
-					}
-				</IonList>
+				{favoriteFirstSortedIds.length === 0 ? (
+					<EmptyState
+						title="No node connections"
+						description="Add a node to send and receive with this profile."
+						ionicon={gitNetworkOutline}
+					/>
+				) : (
+					<div className="mt-4 flex w-full flex-col">
+						{
+							favoriteFirstSortedIds.map(id => (
+								<SourceCard key={id} sourceId={id} onClick={(s) => void handleEditSource(s)} />
+							))
+						}
+					</div>
+				)}
 				<IonFab slot="fixed" vertical="bottom" horizontal="end">
 					<IonFabButton color="primary" onClick={() => void askAddSource({})}>
 						<IonIcon icon={add}></IonIcon>

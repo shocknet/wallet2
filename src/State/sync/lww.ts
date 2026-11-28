@@ -1,5 +1,4 @@
 import { getDeviceId } from "@/constants";
-import { normalizeWsUrl } from "@/lib/url";
 import { z } from "zod";
 
 const ClockSchema = z.strictObject({
@@ -18,7 +17,7 @@ export const newLww = <T extends string | number | boolean | null>(value: T, by 
 export const LwwFlagSchema = z.strictObject({ clock: ClockSchema, present: z.boolean() });
 export type LwwFlag = z.infer<typeof LwwFlagSchema>;
 
-export const newflag = (present: boolean, by: string): LwwFlag => ({ clock: { v: 0, by }, present });
+export const newflag = (present: boolean, by = getDeviceId()): LwwFlag => ({ clock: { v: 0, by }, present });
 
 
 
@@ -42,40 +41,19 @@ export function mergeLww<T>(a: Lww<T>, b: Lww<T>): Lww<T> {
 	return chooseByClock(a, b);
 }
 
-function normalizeFlagMapPreferSlashOnTie(
-	m: Record<string, LwwFlag> = {}
-): Record<string, LwwFlag> {
-	const out: Record<string, LwwFlag> = {};
-	const meta: Record<string, { hadTrailingSlash: boolean }> = {};
+export function mergeFlagLww(a: LwwFlag, b: LwwFlag): LwwFlag {
+	if (!a) return b;
+	if (!b) return a;
 
-	for (const [k, v] of Object.entries(m)) {
-		const nk = normalizeWsUrl(k);
-		const hadTrailingSlash = k.endsWith("/");
-
-		const existing = out[nk];
-		if (!existing) {
-			out[nk] = v;
-			meta[nk] = { hadTrailingSlash };
-			continue;
-		}
-
-		// Prefer higher clock value
-		const chosen = chooseByClock(existing, v);
-
-		if (chosen !== existing) {
-			out[nk] = chosen;
-			meta[nk] = { hadTrailingSlash };
-			continue;
-		}
-
-		// Tie-break (same clock): prefer the one that *had* a trailing slash
-		if (!meta[nk]?.hadTrailingSlash && hadTrailingSlash) {
-			out[nk] = v;
-			meta[nk] = { hadTrailingSlash };
-		}
+	// if hard tie prefer removal
+	if (
+		a.clock.v === b.clock.v &&
+		a.clock.by === b.clock.by
+	) {
+		return a.present ? b : a;
 	}
 
-	return out;
+	return chooseByClock(a, b);
 }
 
 export function mergeRelayFlags(
@@ -83,11 +61,8 @@ export function mergeRelayFlags(
 	b: Record<string, LwwFlag> = {}
 ): Record<string, LwwFlag> {
 
-	const na = normalizeFlagMapPreferSlashOnTie(a);
-	const nb = normalizeFlagMapPreferSlashOnTie(b);
 
-
-	return mergeFlags(na, nb);
+	return mergeFlags(a, b);
 }
 
 export function mergeFlags(
@@ -99,7 +74,8 @@ export function mergeFlags(
 		const av = a[k], bv = b[k];
 		if (!av) { out[k] = bv!; continue; }
 		if (!bv) { out[k] = av!; continue; }
-		out[k] = chooseByClock(av, bv);
+
+		out[k] = mergeFlagLww(av, bv);
 	}
 	return out;
 }

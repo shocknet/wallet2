@@ -1,16 +1,14 @@
 import { AppThunk } from "@/State/store/store"
 import { docsSelectors, sourcesActions } from "./slice"
 import { identityActions } from "@/State/scoped/backups/identity/slice"
-import { SourceDocV0, SourceType } from "./schema"
+import { BridgeUrlSchema, SourceDocV0, SourceType } from "./schema"
+import { WsUrlSchema } from "@/lib/urlZod"
 import { LwwFlag, newflag, newLww } from "../../../sync/lww"
 import { getDeviceId, NOSTR_PUB_DESTINATION, NOSTR_RELAYS } from "@/constants"
 import { generateNewKeyPair } from "@/Api/helpers"
 import { readLiveSourceViewsByLpk } from "./selectors"
 import { getNostrClient } from "@/Api/nostr"
 import type { NostrKeyPair } from "@/Api/nostrHandler"
-import { normalizeWsUrl } from "@/lib/url"
-
-
 export type AddSourceArgs = {
 	lpk: string;
 	relays: string[];
@@ -28,11 +26,6 @@ type NprofileConnection = {
 	bridgeUrl?: string | null;
 };
 
-function requireRelays(relays: string[]) {
-	if (relays.length === 0) {
-		throw new Error("This nprofile has no relays");
-	}
-}
 
 
 
@@ -46,14 +39,23 @@ export const addSource = ({
 	adminToken,
 	vanityName,
 }: AddSourceArgs): AppThunk<void> => (dispatch) => {
-	requireRelays(relays);
 	const deviceId = getDeviceId();
 	const sourceId = `${lpk}-${keys.publicKey}`;
 
 	const relayMap: Record<string, LwwFlag> = {};
 	for (const r of relays) {
-		relayMap[normalizeWsUrl(r)] = newflag(true, deviceId);
+		const parsed = WsUrlSchema.safeParse(r);
+		if (!parsed.success) continue;
+		relayMap[parsed.data] = newflag(true, deviceId);
 	}
+	if (Object.keys(relayMap).length === 0) {
+		throw new Error("This nprofile has no relays");
+	}
+
+
+	const parsedBridgeUrl = BridgeUrlSchema.safeParse(bridgeUrl ?? null);
+	const normalizedBridgeUrl = parsedBridgeUrl.success ? parsedBridgeUrl.data : null;
+
 
 	const sourceDoc: SourceDocV0 = {
 		doc_type: "doc/shockwallet/source_",
@@ -68,7 +70,7 @@ export const addSource = ({
 		relays: relayMap,
 		is_ndebit_discoverable: newLww(false, deviceId),
 		admin_token: newLww(adminToken ?? null, deviceId),
-		bridgeUrl: newLww(bridgeUrl ?? null, deviceId),
+		bridgeUrl: newLww(normalizedBridgeUrl, deviceId),
 	};
 
 	dispatch(sourcesActions._createDraftDoc({ sourceId, draft: sourceDoc }));

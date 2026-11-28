@@ -18,6 +18,7 @@ import {
 	cancelIdentityUnlock,
 	completeSanctumReauth,
 } from "../coordinator";
+import { useToast } from "@/lib/contexts/useToast";
 
 export function SanctumReauthScreen({
 	runtimeIdentity,
@@ -29,6 +30,7 @@ export function SanctumReauthScreen({
 	error?: string;
 }) {
 	const dispatch = useAppDispatch();
+	const { showToast } = useToast();
 	const [submitting, setSubmitting] = useState(false);
 	const identity = useAppSelector((state) =>
 		selectIdentityByPubkey(state, runtimeIdentity.pubkey),
@@ -36,13 +38,18 @@ export function SanctumReauthScreen({
 
 	const handleTokensUpdated = useCallback(async (tokens: TokensData) => {
 		setSubmitting(true);
-
 		try {
 			await dispatch(completeSanctumReauth(tokens));
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Failed to refresh Sanctum session";
+			showToast({
+				message,
+				color: "danger",
+			});
 		} finally {
 			setSubmitting(false);
 		}
-	}, [dispatch])
+	}, [dispatch, showToast]);
 
 	return (
 		<IonPage className="ion-page-width">

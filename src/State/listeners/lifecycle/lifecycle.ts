@@ -19,7 +19,6 @@ export type ListenerSpec<
 	listeners: Array<(add: TypedAddListener<State, DispatchType>) => ReturnType<TypedAddListener<State, DispatchType>>>;
 	beforeUnload?: (args: {
 		dispatch: DispatchType;
-		identityId: string;
 	}) => Promise<void> | void;
 };
 
@@ -64,7 +63,6 @@ export const addIdentityLifecycle = <
 				.map(s =>
 					s.beforeUnload?.({
 						dispatch: listenerApi.dispatch,
-						identityId: "gibberish",
 					})
 				)
 				.filter(Boolean) as Promise<void>[];

@@ -397,10 +397,8 @@ const SourceSection = ({ sourceId }: { sourceId: string }) => {
 	return (
 		<>
 			<SectionDivider title="Source" />
-
 			<IonList className="secondary" lines="none">
-				<SourceCard sourceId={sourceId} button={false} onClick={() => { }} />
-
+				<SourceCard sourceId={sourceId} onClick={() => { }} />
 			</IonList>
 		</>
 	)

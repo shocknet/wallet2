@@ -36,13 +36,14 @@ import {
 
 import { beaconWatcherSpec } from "./beaconWatcher";
 import { beaconsSlice } from "./slice";
-import { canonicalRelayUrl, canonicalRelayUrls } from "./relays";
+import { canonicalRelayUrl, canonicalRelayUrls } from "@/lib/relays";
 import { makeSelectSourceBeaconJoin, type SourceBeaconJoin } from "./selectors";
 import {
 	beaconRelayStaleAtMs,
 	getInitialBeaconsState,
 	type BeaconsState,
 } from "./state";
+import { WsUrlSchema } from "@/lib/urlZod";
 
 vi.mock("@/Api/nostrHandler", () => ({
 	fetchBeaconDiscovery: vi.fn(),
@@ -57,7 +58,7 @@ const getNostrClientMock = vi.mocked(getNostrClient);
 const subToBeaconsMock = vi.mocked(subToBeacons);
 
 const NOW_MS = 1_000_000;
-const OTHER_RELAY = "wss://other-relay.lightning.pub";
+const OTHER_RELAY = WsUrlSchema.parse("wss://other-relay.lightning.pub");
 
 type BeaconStore = ReturnType<typeof openBeaconStore>;
 
@@ -158,7 +159,7 @@ function holdJoin(
 }
 
 function pendingDiscovery() {
-	let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => {};
+	let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => { };
 	const result = new Promise<BeaconDiscoveryResult>(resolve => {
 		resolveDiscovery = resolve;
 	});
@@ -201,7 +202,7 @@ describe("beaconWatcher", () => {
 	});
 
 	it("shows warmingUp until discovery records a fresh beacon", async () => {
-		let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => {};
+		let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => { };
 		fetchBeaconDiscoveryMock.mockImplementation(
 			() => new Promise(resolve => {
 				resolveDiscovery = resolve;
@@ -381,7 +382,7 @@ describe("beaconWatcher", () => {
 		const lastSeenAtMs = NOW_MS + expiresInMs - BEACON_STALE_OLDER_THAN - 1;
 		expect(beaconRelayStaleAtMs(lastSeenAtMs)).toBe(NOW_MS + expiresInMs);
 
-		let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => {};
+		let resolveDiscovery: (result: BeaconDiscoveryResult) => void = () => { };
 		fetchBeaconDiscoveryMock.mockImplementation(
 			() => new Promise(resolve => {
 				resolveDiscovery = resolve;
@@ -1013,10 +1014,10 @@ describe("beaconWatcher", () => {
 
 	it("probes at most three relays at once", async () => {
 		const relays = [
-			"wss://a.example",
-			"wss://b.example",
-			"wss://c.example",
-			"wss://d.example",
+			"wss://a.github.com",
+			"wss://b.github.com",
+			"wss://c.github.com",
+			"wss://d.github.com",
 		];
 		const pending = new Map<string, (result: BeaconDiscoveryResult) => void>();
 		fetchBeaconDiscoveryMock.mockImplementation(
@@ -1046,7 +1047,7 @@ describe("beaconWatcher", () => {
 
 		expect(join(store, source)).toMatchObject({
 			health: "fresh",
-			name: "wss://d.example",
+			name: "wss://d.github.com/",
 		});
 	});
 

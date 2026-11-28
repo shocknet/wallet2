@@ -35,7 +35,7 @@ import {
 import {
 	canonicalRelayUrl,
 	canonicalRelayUrls,
-} from "@/State/scoped/beacons/relays";
+} from "@/lib/relays";
 
 import {
 	isSourceRelaysChanged,
