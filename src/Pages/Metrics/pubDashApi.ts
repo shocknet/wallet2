@@ -29,8 +29,6 @@ import type { Period } from "@/Components/Dropdowns/LVDropdown";
 import { appApi, appApiCaughtError, appApiError, type AppApiResult } from "@/State/api/api";
 import { selectSourceViewById } from "@/State/scoped/backups/sources/selectors";
 import type { RootState } from "@/State/store/store";
-import { emptyCursor, parseOperationsResponse } from "@/State/scoped/backups/sources/history/helpers";
-import type { HistoryCursor } from "@/State/scoped/backups/sources/history/types";
 import { getUnixTimeRange } from "./unixTimeRange";
 
 type SourceArg = {
@@ -74,7 +72,11 @@ type UserOpsArg = {
 type UserOpsPage = {
 	operations: UserOperation[];
 	hasMore: boolean;
-	cursor: HistoryCursor;
+};
+
+type UserOpsPageParam = {
+	beforeTs?: number;
+	beforeOperationId?: string;
 };
 
 type AddPeerArg = SourceArg & {
@@ -643,15 +645,17 @@ export const pubDashApi = appApi.injectEndpoints({
 				}
 			},
 		}),
-		getUserOperationsFromAdmin: b.infiniteQuery<UserOpsPage, UserOpsArg, HistoryCursor>({
+		getUserOperationsFromAdmin: b.infiniteQuery<UserOpsPage, UserOpsArg, UserOpsPageParam>({
 			providesTags: (_result, _error, { sourceId, userId }) => [
 				{ type: "UserOperations", id: `${sourceId}:${userId}` },
 			],
 			infiniteQueryOptions: {
-				initialPageParam: emptyCursor(),
-				getNextPageParam: (lastPage): HistoryCursor | undefined => {
+				initialPageParam: {},
+				getNextPageParam: (lastPage): UserOpsPageParam | undefined => {
 					if (!lastPage.hasMore) return undefined;
-					return lastPage.cursor;
+					const last = lastPage.operations[lastPage.operations.length - 1];
+					if (!last?.operationId) return undefined;
+					return { beforeTs: last.paidAtUnix, beforeOperationId: last.operationId };
 				},
 			},
 			queryFn: async ({ queryArg, pageParam }, api): Promise<AppApiResult<UserOpsPage>> => {
@@ -659,18 +663,19 @@ export const pubDashApi = appApi.injectEndpoints({
 				try {
 					const client = await clientForSource(api.getState, sourceId);
 					const res = await client.GetUserOperationsFromAdmin({
-						...pageParam,
 						user_id: userId,
+						max_size: 50,
+						...(pageParam.beforeOperationId
+							? { before_ts: pageParam.beforeTs, before_operation_id: pageParam.beforeOperationId }
+							: {}),
 					});
 					if (res.status !== "OK") {
 						return appApiError(res.reason || "Failed to fetch operations");
 					}
-					const { operations, newCursor, needMoreData } = parseOperationsResponse(res, pageParam);
 					return {
 						data: {
-							operations,
-							hasMore: needMoreData,
-							cursor: newCursor,
+							operations: res.operations,
+							hasMore: res.has_more,
 						},
 					};
 				} catch (e: unknown) {

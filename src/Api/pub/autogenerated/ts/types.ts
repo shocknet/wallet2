@@ -256,8 +256,8 @@ export type GetUserOffers_Output = ResultError | ({ status: 'OK' } & UserOffers)
 export type GetUserOperations_Input = { rpcName: 'GetUserOperations', req: GetUserOperationsRequest }
 export type GetUserOperations_Output = ResultError | ({ status: 'OK' } & GetUserOperationsResponse)
 
-export type GetUserOperationsFromAdmin_Input = { rpcName: 'GetUserOperationsFromAdmin', req: GetUserOperationsRequest }
-export type GetUserOperationsFromAdmin_Output = ResultError | ({ status: 'OK' } & GetUserOperationsResponse)
+export type GetUserOperationsFromAdmin_Input = { rpcName: 'GetUserOperationsFromAdmin', req: GetUserOperationsFromAdminRequest }
+export type GetUserOperationsFromAdmin_Output = ResultError | ({ status: 'OK' } & GetUserOperationsFromAdminResponse)
 
 export type GetUsersAdminInfo_Input = { rpcName: 'GetUsersAdminInfo', req: UsersAdminInfoRequest }
 export type GetUsersAdminInfo_Output = ResultError | ({ status: 'OK' } & UsersAdminInfo)
@@ -475,7 +475,7 @@ export type ServerMethods = {
     GetUserOfferInvoices?: (req: GetUserOfferInvoices_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<OfferInvoices>
     GetUserOffers?: (req: GetUserOffers_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<UserOffers>
     GetUserOperations?: (req: GetUserOperations_Input & { ctx: UserContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
-    GetUserOperationsFromAdmin?: (req: GetUserOperationsFromAdmin_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetUserOperationsResponse>
+    GetUserOperationsFromAdmin?: (req: GetUserOperationsFromAdmin_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<GetUserOperationsFromAdminResponse>
     GetUsersAdminInfo?: (req: GetUsersAdminInfo_Input & { ctx: AdminContext, requestContext?: RequestContext }) => Promise<UsersAdminInfo>
     HandleLnurlAddress?: (req: HandleLnurlAddress_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<LnurlPayInfoResponse>
     HandleLnurlPay?: (req: HandleLnurlPay_Input & { ctx: GuestContext, requestContext?: RequestContext }) => Promise<HandleLnurlPayResponse>
@@ -2692,6 +2692,73 @@ export const GetUserOfferInvoicesReqValidate = (o?: GetUserOfferInvoicesReq, opt
 
     if (typeof o.offer_id !== 'string') return new Error(`${path}.offer_id: is not a string`)
     if (opts.offer_id_CustomCheck && !opts.offer_id_CustomCheck(o.offer_id)) return new Error(`${path}.offer_id: custom check failed`)
+
+    return null
+}
+
+export type GetUserOperationsFromAdminRequest = {
+    before_operation_id?: string
+    before_ts?: number
+    max_size?: number
+    user_id: string
+}
+export type GetUserOperationsFromAdminRequestOptionalField = 'before_operation_id' | 'before_ts' | 'max_size'
+export const GetUserOperationsFromAdminRequestOptionalFields: GetUserOperationsFromAdminRequestOptionalField[] = ['before_operation_id', 'before_ts', 'max_size']
+export type GetUserOperationsFromAdminRequestOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: GetUserOperationsFromAdminRequestOptionalField[]
+    before_operation_id_CustomCheck?: (v?: string) => boolean
+    before_ts_CustomCheck?: (v?: number) => boolean
+    max_size_CustomCheck?: (v?: number) => boolean
+    user_id_CustomCheck?: (v: string) => boolean
+}
+export const GetUserOperationsFromAdminRequestValidate = (o?: GetUserOperationsFromAdminRequest, opts: GetUserOperationsFromAdminRequestOptions = {}, path: string = 'GetUserOperationsFromAdminRequest::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if ((o.before_operation_id || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('before_operation_id')) && typeof o.before_operation_id !== 'string') return new Error(`${path}.before_operation_id: is not a string`)
+    if (opts.before_operation_id_CustomCheck && !opts.before_operation_id_CustomCheck(o.before_operation_id)) return new Error(`${path}.before_operation_id: custom check failed`)
+
+    if ((o.before_ts || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('before_ts')) && typeof o.before_ts !== 'number') return new Error(`${path}.before_ts: is not a number`)
+    if (opts.before_ts_CustomCheck && !opts.before_ts_CustomCheck(o.before_ts)) return new Error(`${path}.before_ts: custom check failed`)
+
+    if ((o.max_size || opts.allOptionalsAreSet || opts.checkOptionalsAreSet?.includes('max_size')) && typeof o.max_size !== 'number') return new Error(`${path}.max_size: is not a number`)
+    if (opts.max_size_CustomCheck && !opts.max_size_CustomCheck(o.max_size)) return new Error(`${path}.max_size: custom check failed`)
+
+    if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
+    if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
+
+    return null
+}
+
+export type GetUserOperationsFromAdminResponse = {
+    has_more: boolean
+    operations: UserOperation[]
+    user_id: string
+}
+export const GetUserOperationsFromAdminResponseOptionalFields: [] = []
+export type GetUserOperationsFromAdminResponseOptions = OptionsBaseMessage & {
+    checkOptionalsAreSet?: []
+    has_more_CustomCheck?: (v: boolean) => boolean
+    operations_ItemOptions?: UserOperationOptions
+    operations_CustomCheck?: (v: UserOperation[]) => boolean
+    user_id_CustomCheck?: (v: string) => boolean
+}
+export const GetUserOperationsFromAdminResponseValidate = (o?: GetUserOperationsFromAdminResponse, opts: GetUserOperationsFromAdminResponseOptions = {}, path: string = 'GetUserOperationsFromAdminResponse::root.'): Error | null => {
+    if (opts.checkOptionalsAreSet && opts.allOptionalsAreSet) return new Error(path + ': only one of checkOptionalsAreSet or allOptionalNonDefault can be set for each message')
+    if (typeof o !== 'object' || o === null) return new Error(path + ': object is not an instance of an object or is null')
+
+    if (typeof o.has_more !== 'boolean') return new Error(`${path}.has_more: is not a boolean`)
+    if (opts.has_more_CustomCheck && !opts.has_more_CustomCheck(o.has_more)) return new Error(`${path}.has_more: custom check failed`)
+
+    if (!Array.isArray(o.operations)) return new Error(`${path}.operations: is not an array`)
+    for (let index = 0; index < o.operations.length; index++) {
+        const operationsErr = UserOperationValidate(o.operations[index], opts.operations_ItemOptions, `${path}.operations[${index}]`)
+        if (operationsErr !== null) return operationsErr
+    }
+    if (opts.operations_CustomCheck && !opts.operations_CustomCheck(o.operations)) return new Error(`${path}.operations: custom check failed`)
+
+    if (typeof o.user_id !== 'string') return new Error(`${path}.user_id: is not a string`)
+    if (opts.user_id_CustomCheck && !opts.user_id_CustomCheck(o.user_id)) return new Error(`${path}.user_id: custom check failed`)
 
     return null
 }

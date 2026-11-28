@@ -799,7 +799,7 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         }
         return { status: 'ERROR', reason: 'invalid response' }
     },
-    GetUserOperationsFromAdmin: async (request: Types.GetUserOperationsRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetUserOperationsResponse)> => {
+    GetUserOperationsFromAdmin: async (request: Types.GetUserOperationsFromAdminRequest): Promise<ResultError | ({ status: 'OK' } & Types.GetUserOperationsFromAdminResponse)> => {
         const auth = await params.retrieveNostrAdminAuth()
         if (auth === null) throw new Error('retrieveNostrAdminAuth() returned null')
         const nostrRequest: NostrRequest = {}
@@ -809,7 +809,7 @@ export default (params: NostrClientParams, send: (to: string, message: NostrRequ
         if (data.status === 'OK') {
             const result = data
             if (!params.checkResult) return { status: 'OK', ...result }
-            const error = Types.GetUserOperationsResponseValidate(result)
+            const error = Types.GetUserOperationsFromAdminResponseValidate(result)
             if (error === null) { return { status: 'OK', ...result } } else return { status: 'ERROR', reason: error.message }
         }
         return { status: 'ERROR', reason: 'invalid response' }
