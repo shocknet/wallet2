@@ -1,5 +1,6 @@
 import { getNostrClient } from "@/Api/nostr";
 import {
+	GetUserOperationsFromAdminResponseValidate,
 	UpdateChannelPolicyRequest_update_type,
 	type AdminNodeSettings,
 	type AdminSendCoinsResponse,
@@ -671,6 +672,10 @@ export const pubDashApi = appApi.injectEndpoints({
 					});
 					if (res.status !== "OK") {
 						return appApiError(res.reason || "Failed to fetch operations");
+					}
+					const validationErr = GetUserOperationsFromAdminResponseValidate(res);
+					if (validationErr) {
+						return appApiError(validationErr.message || "Invalid operations response");
 					}
 					return {
 						data: {
