@@ -8,11 +8,7 @@ export function isNodeAdmin(user: UserAdminInfo, adminNpub: string): boolean {
 	return user.app_users.some((appUser) => (appUser.npub || "").toLowerCase() === want);
 }
 
-export function arrangeUsers(
-	users: UserAdminInfo[],
-	adminNpub: string,
-	sort: ((users: UserAdminInfo[]) => UserAdminInfo[]) | null,
-): UserAdminInfo[] {
+export function arrangeUsers(users: UserAdminInfo[], adminNpub: string): UserAdminInfo[] {
 	const pinned: UserAdminInfo[] = [];
 	const rest: UserAdminInfo[] = [];
 	for (const user of users) {
@@ -20,7 +16,7 @@ export function arrangeUsers(
 		else rest.push(user);
 	}
 	pinned.sort((a, b) => pinRank(a, adminNpub) - pinRank(b, adminNpub) || a.user_id.localeCompare(b.user_id));
-	return [...pinned, ...(sort ? sort(rest) : rest)];
+	return [...pinned, ...rest];
 }
 
 function isPinnedUser(user: UserAdminInfo, adminNpub: string): boolean {
@@ -66,10 +62,6 @@ function withOwnerLabel(
 	const next = labels.slice();
 	next[existing] = { ...next[existing], owner: true };
 	return next;
-}
-
-export function userAppSortKey(user: UserAdminInfo, names: Map<string, string>): string {
-	return userAppLabels(user, names).map((label) => label.name).join(", ").toLowerCase();
 }
 
 export function listHasLastSeen(users: UserAdminInfo[]): boolean {
