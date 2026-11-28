@@ -16,6 +16,7 @@ import {
 } from "@tests/support/sourcesHelpers";
 import { makeListenerStore } from "@tests/support/listenerStore";
 import { bridgeListenerSpec } from "./bridgeListener";
+import { HttpUrlSchema } from "@/lib/urlZod";
 
 vi.mock("@/Api/nostr", () => ({
 	getNostrClient: vi.fn(),
@@ -39,8 +40,8 @@ const BridgeMock = vi.mocked(Bridge);
 const getTokenMock = vi.mocked(nip98.getToken);
 
 const NOW_MS = 1_000_000;
-const LOCAL_BRIDGE = "https://custom-bridge.example";
-const USERINFO_BRIDGE = "https://bridge-from-userinfo.com";
+const LOCAL_BRIDGE = HttpUrlSchema.parse("https://custom-bridge.com");
+const USERINFO_BRIDGE = HttpUrlSchema.parse("https://bridge-from-userinfo.com");
 const NOFFER = "noffer1abc";
 
 type BridgeClient = {
@@ -177,7 +178,7 @@ describe("bridgeListener", () => {
 			);
 			expect(client.GetUserInfo).toHaveBeenCalledTimes(1);
 			expect(getTokenMock).toHaveBeenCalledWith(
-				`${LOCAL_BRIDGE}/api/v1/noffer/vanity`,
+				HttpUrlSchema.parse(`${LOCAL_BRIDGE}/api/v1/noffer/vanity`),
 				"POST",
 				expect.any(Function),
 				true,
@@ -185,7 +186,7 @@ describe("bridgeListener", () => {
 			);
 			expect(BridgeMock).toHaveBeenCalledWith(LOCAL_BRIDGE, "nostr-header");
 			expect(bridge.GetOrCreateNofferName).toHaveBeenCalledWith({ noffer: NOFFER });
-			expect(vanityName(store, source.id)).toBe("alice@custom-bridge.example");
+			expect(vanityName(store, source.id)).toBe("alice@custom-bridge.com");
 		});
 
 		it("falls back to GetUserInfo.bridge_url when the source has none", async () => {
@@ -202,7 +203,7 @@ describe("bridgeListener", () => {
 			await settle();
 
 			expect(getTokenMock.mock.calls[0][0]).toBe(
-				`${USERINFO_BRIDGE}/api/v1/noffer/vanity`,
+				HttpUrlSchema.parse(`${USERINFO_BRIDGE}/api/v1/noffer/vanity`),
 			);
 			expect(BridgeMock).toHaveBeenCalledWith(USERINFO_BRIDGE, "nostr-header");
 			expect(vanityName(store, source.id)).toBe("bob@bridge-from-userinfo.com");
@@ -213,7 +214,7 @@ describe("bridgeListener", () => {
 		it("on identity load, fetches sources that still have no vanity", async () => {
 			const needs = sourceWithBridge(LOCAL_BRIDGE);
 			const has = sourceWithBridge(LOCAL_BRIDGE, {
-				meta: { vanityName: "frank@custom-bridge.example" },
+				meta: { vanityName: "frank@custom-bridge.com" },
 			});
 			const lv = sourceWithBridge(LOCAL_BRIDGE, {
 				meta: { vanityName: "guest@lightning.video" },
@@ -228,8 +229,8 @@ describe("bridgeListener", () => {
 				{ pubkey: needs.lpk, relays: [TEST_RELAY_URL] },
 				needs.keys,
 			);
-			expect(vanityName(store, needs.id)).toBe("erin@custom-bridge.example");
-			expect(vanityName(store, has.id)).toBe("frank@custom-bridge.example");
+			expect(vanityName(store, needs.id)).toBe("erin@custom-bridge.com");
+			expect(vanityName(store, has.id)).toBe("frank@custom-bridge.com");
 			expect(vanityName(store, lv.id)).toBe("guest@lightning.video");
 		});
 
@@ -247,12 +248,12 @@ describe("bridgeListener", () => {
 			await settle();
 
 			expect(getNostrClientMock).toHaveBeenCalledTimes(1);
-			expect(vanityName(store, source.id)).toBe("carol@custom-bridge.example");
+			expect(vanityName(store, source.id)).toBe("carol@custom-bridge.com");
 		});
 
 		it("fetches when the local bridge url is updated", async () => {
 			const source = sourceWithBridge(LOCAL_BRIDGE, {
-				meta: { vanityName: "old@custom-bridge.example" },
+				meta: { vanityName: "old@custom-bridge.com" },
 			});
 			useClient(mockClient());
 			okBridge("dave");
@@ -260,7 +261,7 @@ describe("bridgeListener", () => {
 			await settle();
 			clearCalls();
 
-			const nextBridge = "https://other-bridge.example";
+			const nextBridge = HttpUrlSchema.parse("https://other-bridge.com");
 			store.dispatch(sourcesActions.updateBridgeUrl({
 				sourceId: source.id,
 				bridgeUrl: nextBridge,
@@ -269,14 +270,14 @@ describe("bridgeListener", () => {
 			await settle();
 
 			expect(getTokenMock.mock.calls[0][0]).toBe(
-				`${nextBridge}/api/v1/noffer/vanity`,
+				HttpUrlSchema.parse(`${nextBridge}/api/v1/noffer/vanity`),
 			);
-			expect(vanityName(store, source.id)).toBe("dave@other-bridge.example");
+			expect(vanityName(store, source.id)).toBe("dave@other-bridge.com");
 		});
 
 		it("does not fetch when the source already has a vanity and the bridge url is unchanged", async () => {
 			const source = sourceWithBridge(LOCAL_BRIDGE, {
-				meta: { vanityName: "frank@custom-bridge.example" },
+				meta: { vanityName: "frank@custom-bridge.com" },
 			});
 			useClient(mockClient());
 			okBridge();
@@ -291,7 +292,7 @@ describe("bridgeListener", () => {
 			await settle();
 
 			expect(getNostrClientMock).not.toHaveBeenCalled();
-			expect(vanityName(store, source.id)).toBe("frank@custom-bridge.example");
+			expect(vanityName(store, source.id)).toBe("frank@custom-bridge.com");
 		});
 	});
 
@@ -307,7 +308,7 @@ describe("bridgeListener", () => {
 
 			store.dispatch(sourcesActions.updateBridgeUrl({
 				sourceId: source.id,
-				bridgeUrl: "https://should-not-be-used.example",
+				bridgeUrl: "https://should-not-be-used.com",
 				by: TEST_CLOCK_BY,
 			}));
 			await settle();

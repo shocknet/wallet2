@@ -11,6 +11,7 @@ import type { ListenerSpec } from "../lifecycle/lifecycle";
 import { listenerKick } from "../actions";
 import type { AppDispatch, RootState } from "@/State/store/store";
 import { draft, exists, justAdded } from "../predicates";
+import { HttpUrlSchema } from "@/lib/urlZod";
 
 const { getToken } = nip98
 
@@ -61,7 +62,7 @@ const fetchVanityForSource = (
 				throw new Error(`GetUserInfo failed: ${userInfoRes.reason}`);
 			}
 
-			const bridgeUrl = source.bridgeUrl || userInfoRes.bridge_url;
+			const bridgeUrl = HttpUrlSchema.parse(source.bridgeUrl || userInfoRes.bridge_url);
 
 			if (!bridgeUrl) {
 				throw new Error("No bridgeUrl from local source or GetUserInfo response!");
@@ -69,7 +70,7 @@ const fetchVanityForSource = (
 
 
 			const payload = { noffer: userInfoRes.noffer };
-			const nostrHeader = await forkApi.pause(getToken(`${bridgeUrl}/api/v1/noffer/vanity`, "POST", e => finalizeEvent(e, Buffer.from(source.keys.privateKey, 'hex')), true, payload))
+			const nostrHeader = await forkApi.pause(getToken(HttpUrlSchema.parse(`${bridgeUrl}/api/v1/noffer/vanity`), "POST", e => finalizeEvent(e, Buffer.from(source.keys.privateKey, 'hex')), true, payload))
 			const bridgeHandler = new Bridge(bridgeUrl, nostrHeader);
 			const bridgeRes = await forkApi.pause(bridgeHandler.GetOrCreateNofferName(payload));
 			if (bridgeRes.status !== "OK") {
